@@ -4,33 +4,33 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.CheckBox ===
+--- === cp.ui.TextField ===
 ---
---- Check Box UI Module.
+--- Text Field Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local CheckBox = {}
+local TextField = {}
 
 -- TODO: Add documentation
-function CheckBox.matches(element)
-	return element:attributeValue("AXRole") == "AXCheckBox"
+function TextField.matches(element)
+	return element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.apple.finalcutpro.ui.CheckBox:new(axuielement, function) -> CheckBox
+--- cp.ui.TextField:new(axuielement, function) -> TextField
 --- Function
---- Creates a new CheckBox
-function CheckBox:new(parent, finderFn)
+--- Creates a new TextField
+function TextField:new(parent, finderFn)
 	local o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
 	self.__index = self
@@ -38,86 +38,62 @@ function CheckBox:new(parent, finderFn)
 end
 
 -- TODO: Add documentation
-function CheckBox:parent()
+function TextField:parent()
 	return self._parent
 end
 
-function CheckBox:isShowing()
+-- TODO: Add documentation
+function TextField:UI()
+	return axutils.cache(self, "_ui", function()
+		return self._finder()
+	end,
+	TextField.matches)
+end
+
+-- TODO: Add documentation
+function TextField:isShowing()
 	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -- TODO: Add documentation
-function CheckBox:UI()
-	return axutils.cache(self, "_ui", function()
-		return self._finder()
-	end,
-	CheckBox.matches)
-end
-
--- TODO: Add documentation
-function CheckBox:isChecked()
+function TextField:getValue()
 	local ui = self:UI()
-	return ui and ui:value() == 1
+	return ui and ui:attributeValue("AXValue")
 end
 
 -- TODO: Add documentation
-function CheckBox:check()
-	local ui = self:UI()
-	if ui and ui:value() == 0 then
-		ui:doPress()
-	end
-	return self
-end
-
--- TODO: Add documentation
-function CheckBox:uncheck()
-	local ui = self:UI()
-	if ui and ui:value() == 1 then
-		ui:doPress()
-	end
-	return self
-end
-
--- TODO: Add documentation
-function CheckBox:toggle()
+function TextField:setValue(value)
 	local ui = self:UI()
 	if ui then
-		ui:doPress()
+		ui:setAttributeValue("AXValue", value)
+		ui:performAction("AXConfirm")
 	end
 	return self
 end
 
 -- TODO: Add documentation
-function CheckBox:isEnabled()
+function TextField:clear()
+	self:setValue("")
+end
+
+-- TODO: Add documentation
+function TextField:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
-function CheckBox:press()
-	local ui = self:UI()
-	if ui then
-		ui:doPress()
-	end
-	return self
+function TextField:saveLayout()
+	local layout = {}
+	layout.value = self:getValue()
+	return layout
 end
 
 -- TODO: Add documentation
-function CheckBox:saveLayout()
-	return {
-		checked = self:isChecked()
-	}
-end
-
--- TODO: Add documentation
-function CheckBox:loadLayout(layout)
+function TextField:loadLayout(layout)
 	if layout then
-		if layout.checked then
-			self:check()
-		else
-			self:uncheck()
-		end
+		self:setValue(layout.value)
 	end
 end
 
-return CheckBox
+return TextField

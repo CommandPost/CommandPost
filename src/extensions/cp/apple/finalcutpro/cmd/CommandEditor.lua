@@ -16,11 +16,11 @@
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 
-local Button						= require("cp.apple.finalcutpro.ui.Button")
-local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
+local Button						= require("cp.ui.Button")
+local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local id							= require("cp.apple.finalcutpro.ids").current("CommandEditor")
 local prop							= require("cp.prop")

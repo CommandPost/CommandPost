@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.axutils ===
+--- === cp.ui.axutils ===
 ---
 --- Utility functions to support `hs._asm.axuielement`
 
@@ -29,7 +29,7 @@ function axutils.hasAttributeValue(element, name, value)
 	return element and element:attributeValue(name) == value
 end
 
---- cp.apple.finalcutpro.axutils.childWith(element, name, value) -> axuielement
+--- cp.ui.axutils.childWith(element, name, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has an attribute with the matching name and value.
 ---
@@ -44,7 +44,7 @@ function axutils.childWith(element, name, value)
 	return axutils.childMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
 end
 
---- cp.apple.finalcutpro.axutils.childWithID(element, value) -> axuielement
+--- cp.ui.axutils.childWithID(element, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has `AXIdentifier` with the specified value.
 ---
@@ -58,7 +58,7 @@ function axutils.childWithID(element, value)
 	return axutils.childWith(element, "AXIdentifier", value)
 end
 
---- cp.apple.finalcutpro.axutils.childWithRole(element, value) -> axuielement
+--- cp.ui.axutils.childWithRole(element, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has `AXRole` with the specified value.
 ---
@@ -72,7 +72,7 @@ function axutils.childWithRole(element, value)
 	return axutils.childWith(element, "AXRole", value)
 end
 
---- cp.apple.finalcutpro.axutils.childWithDescription(element, value) -> axuielement
+--- cp.ui.axutils.childWithDescription(element, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has `AXDescription` with the specified value.
 ---
@@ -86,7 +86,7 @@ function axutils.childWithDescription(element, value)
 	return axutils.childWith(element, "AXDescription", value)
 end
 
---- cp.apple.finalcutpro.axutils.childMatching(element, matcherFn) -> axuielement
+--- cp.ui.axutils.childMatching(element, matcherFn) -> axuielement
 --- Function
 --- This searches for the first child of the specified element for which the provided function returns `true`.
 --- The function will receive one parameter - the current child.
@@ -116,7 +116,7 @@ function axutils.childMatching(element, matcherFn)
 	return nil
 end
 
---- cp.apple.finalcutpro.axutils.childAtIndex(element, index, compareFn) -> axuielement
+--- cp.ui.axutils.childAtIndex(element, index, compareFn) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted using the `compareFn`.
 ---
@@ -143,7 +143,7 @@ function axutils.childAtIndex(element, index, compareFn)
 	return nil
 end
 
---- cp.apple.finalcutpro.axutils.childFromLeft(element, index) -> axuielement
+--- cp.ui.axutils.childFromLeft(element, index) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted left-to-right.
 ---
@@ -157,7 +157,7 @@ function axutils.childFromLeft(element, index)
 	return axutils.childAtIndex(element, index, function(a, b) return a:frame().x < b:frame().x end)
 end
 
---- cp.apple.finalcutpro.axutils.childFromRight(element, index) -> axuielement
+--- cp.ui.axutils.childFromRight(element, index) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted right-to-left.
 ---
@@ -171,7 +171,7 @@ function axutils.childFromRight(element, index)
 	return axutils.childAtIndex(element, index, function(a, b) return a:frame().x > b:frame().x end)
 end
 
---- cp.apple.finalcutpro.axutils.childFromTop(element, index) -> axuielement
+--- cp.ui.axutils.childFromTop(element, index) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted top-to-botom.
 ---
@@ -185,7 +185,7 @@ function axutils.childFromTop(element, index)
 	return axutils.childAtIndex(element, index, function(a, b) return a:frame().y < b:frame().y end)
 end
 
---- cp.apple.finalcutpro.axutils.childFromTop(element, index) -> axuielement
+--- cp.ui.axutils.childFromTop(element, index) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted top-to-botom.
 ---
@@ -199,7 +199,7 @@ function axutils.childFromBottom(element, index)
 	return axutils.childAtIndex(element, index, function(a, b) return a:frame().y > b:frame().y end)
 end
 
---- cp.apple.finalcutpro.axutils.childrenWith(element, name, value) -> axuielement
+--- cp.ui.axutils.childrenWith(element, name, value) -> axuielement
 --- Function
 --- This searches for all children of the specified element which has an attribute with the matching name and value.
 ---
@@ -214,7 +214,7 @@ function axutils.childrenWith(element, name, value)
 	return axutils.childrenMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
 end
 
---- cp.apple.finalcutpro.axutils.childrenWithRole(element, value) -> axuielement
+--- cp.ui.axutils.childrenWithRole(element, value) -> axuielement
 --- Function
 --- This searches for all children of the specified element which has an `AXRole` attribute with the matching value.
 ---
@@ -228,7 +228,7 @@ function axutils.childrenWithRole(element, value)
 	return axutils.childrenWith(element, "AXRole", value)
 end
 
---- cp.apple.finalcutpro.axutils.childrenMatching(element, matcherFn) -> { axuielement }
+--- cp.ui.axutils.childrenMatching(element, matcherFn) -> { axuielement }
 --- Function
 --- This searches for all children of the specified element for which the provided
 --- function returns true. The function will receive one parameter - the current child.
@@ -246,7 +246,7 @@ function axutils.childrenMatching(element, matcherFn)
 	return nil
 end
 
---- cp.apple.finalcutpro.axutils.isValid(element) -> boolean
+--- cp.ui.axutils.isValid(element) -> boolean
 --- Function
 --- Checks if the axuilelement is still valid - that is, still active in the UI.
 ---
@@ -259,7 +259,7 @@ function axutils.isValid(element)
 	return element ~= nil and element.role
 end
 
---- cp.apple.finalcutpro.axutils.cache(source, key, finderFn, verifyFn) -> axuielement
+--- cp.ui.axutils.cache(source, key, finderFn, verifyFn) -> axuielement
 --- Function
 --- Checks if the cached value at the `source[key]` is a valid axuielement. If not
 --- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.

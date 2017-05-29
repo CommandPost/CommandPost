@@ -18,9 +18,9 @@ local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
-local RadioButton						= require("cp.apple.finalcutpro.ui.RadioButton")
+local axutils							= require("cp.ui.axutils")
+local CheckBox							= require("cp.ui.CheckBox")
+local RadioButton						= require("cp.ui.RadioButton")
 
 local id								= require("cp.apple.finalcutpro.ids") "ImportPanel"
 

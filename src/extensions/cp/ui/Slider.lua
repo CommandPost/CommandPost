@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.Slider ===
+--- === cp.ui.Slider ===
 ---
 --- Slider Module.
 
@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ function Slider.matches(element)
 	return element:attributeValue("AXRole") == "AXSlider"
 end
 
---- cp.apple.finalcutpro.ui.Slider:new(axuielement, function) -> Slider
+--- cp.ui.Slider:new(axuielement, function) -> Slider
 --- Function
 --- Creates a new Slider
 function Slider:new(parent, finderFn)

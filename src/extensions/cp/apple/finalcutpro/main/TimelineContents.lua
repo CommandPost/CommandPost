@@ -20,7 +20,7 @@ local fnutils							= require("hs.fnutils")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 

@@ -4,33 +4,33 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.TextField ===
+--- === cp.ui.PopUpButton ===
 ---
---- Text Field Module.
+--- Pop Up Button Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextField = {}
+local PopUpButton = {}
 
 -- TODO: Add documentation
-function TextField.matches(element)
-	return element:attributeValue("AXRole") == "AXTextField"
+function PopUpButton.matches(element)
+	return element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
---- cp.apple.finalcutpro.ui.TextField:new(axuielement, function) -> TextField
+--- cp.ui.PopUpButton:new(axuielement, function) -> PopUpButton
 --- Function
---- Creates a new TextField
-function TextField:new(parent, finderFn)
+--- Creates a new PopUpButton
+function PopUpButton:new(parent, finderFn)
 	local o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
 	self.__index = self
@@ -38,62 +38,84 @@ function TextField:new(parent, finderFn)
 end
 
 -- TODO: Add documentation
-function TextField:parent()
+function PopUpButton:parent()
 	return self._parent
 end
 
 -- TODO: Add documentation
-function TextField:UI()
+function PopUpButton:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
 	end,
-	TextField.matches)
+	PopUpButton.matches)
 end
 
 -- TODO: Add documentation
-function TextField:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
-end
-
--- TODO: Add documentation
-function TextField:getValue()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXValue")
-end
-
--- TODO: Add documentation
-function TextField:setValue(value)
+function PopUpButton:selectItem(index)
 	local ui = self:UI()
 	if ui then
-		ui:setAttributeValue("AXValue", value)
-		ui:performAction("AXConfirm")
+		local items = ui:doPress()[1]
+		local item = items[index]
+		if item then
+			-- select the menu item
+			item:doPress()
+		else
+			-- close the menu again
+			items:doCancel()
+		end
 	end
 	return self
 end
 
 -- TODO: Add documentation
-function TextField:clear()
-	self:setValue("")
+function PopUpButton:getValue()
+	local ui = self:UI()
+	return ui and ui:value()
 end
 
 -- TODO: Add documentation
-function TextField:isEnabled()
+function PopUpButton:setValue(value)
+	local ui = self:UI()
+	if ui and not ui:value() == value then
+		local items = ui:doPress()[1]
+		for i,item in items do
+			if item:title() == value then
+				item:doPress()
+				return
+			end
+		end
+		items:doCancel()
+	end
+	return self
+end
+
+-- TODO: Add documentation
+function PopUpButton:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
-function TextField:saveLayout()
+function PopUpButton:press()
+	local ui = self:UI()
+	if ui then
+		ui:doPress()
+	end
+	return self
+end
+
+-- TODO: Add documentation
+function PopUpButton:saveLayout()
 	local layout = {}
 	layout.value = self:getValue()
 	return layout
 end
 
 -- TODO: Add documentation
-function TextField:loadLayout(layout)
+function PopUpButton:loadLayout(layout)
 	if layout then
 		self:setValue(layout.value)
 	end
 end
 
-return TextField
+return PopUpButton

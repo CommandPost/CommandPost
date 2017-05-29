@@ -16,13 +16,13 @@
 local log							= require("hs.logger").new("primaryWindow")
 local inspect						= require("hs.inspect")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
 
-local Button						= require("cp.apple.finalcutpro.ui.Button")
-local Window						= require("cp.apple.finalcutpro.ui.Window")
-local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
+local Button						= require("cp.ui.Button")
+local Window						= require("cp.ui.Window")
+local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.main.Inspector")
 local ColorBoard					= require("cp.apple.finalcutpro.main.ColorBoard")
@@ -91,7 +91,7 @@ function PrimaryWindow:app()
 	return self._app
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow:window() -> cp.apple.finalcutpro.ui.Window
+--- cp.apple.finalcutpro.main.PrimaryWindow:window() -> cp.ui.Window
 --- Method
 --- Returns the `Window` instance.
 ---

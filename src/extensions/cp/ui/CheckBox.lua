@@ -4,33 +4,33 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.RadioButton ===
+--- === cp.ui.CheckBox ===
 ---
---- Radio Button Module.
+--- Check Box UI Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local RadioButton = {}
+local CheckBox = {}
 
 -- TODO: Add documentation
-function RadioButton.matches(element)
-	return element:attributeValue("AXRole") == "AXRadioButton"
+function CheckBox.matches(element)
+	return element:attributeValue("AXRole") == "AXCheckBox"
 end
 
---- cp.apple.finalcutpro.ui.RadioButton:new(axuielement, function) -> RadioButton
+--- cp.ui.CheckBox:new(axuielement, function) -> CheckBox
 --- Function
---- Creates a new RadioButton
-function RadioButton:new(parent, finderFn)
+--- Creates a new CheckBox
+function CheckBox:new(parent, finderFn)
 	local o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
 	self.__index = self
@@ -38,30 +38,30 @@ function RadioButton:new(parent, finderFn)
 end
 
 -- TODO: Add documentation
-function RadioButton:parent()
+function CheckBox:parent()
 	return self._parent
 end
 
-function RadioButton:isShowing()
+function CheckBox:isShowing()
 	return self:UI() ~= nil and self:parent():isShowing()
 end
 
 -- TODO: Add documentation
-function RadioButton:UI()
+function CheckBox:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
 	end,
-	RadioButton.matches)
+	CheckBox.matches)
 end
 
 -- TODO: Add documentation
-function RadioButton:isChecked()
+function CheckBox:isChecked()
 	local ui = self:UI()
 	return ui and ui:value() == 1
 end
 
 -- TODO: Add documentation
-function RadioButton:check()
+function CheckBox:check()
 	local ui = self:UI()
 	if ui and ui:value() == 0 then
 		ui:doPress()
@@ -70,7 +70,7 @@ function RadioButton:check()
 end
 
 -- TODO: Add documentation
-function RadioButton:uncheck()
+function CheckBox:uncheck()
 	local ui = self:UI()
 	if ui and ui:value() == 1 then
 		ui:doPress()
@@ -79,7 +79,7 @@ function RadioButton:uncheck()
 end
 
 -- TODO: Add documentation
-function RadioButton:toggle()
+function CheckBox:toggle()
 	local ui = self:UI()
 	if ui then
 		ui:doPress()
@@ -88,13 +88,13 @@ function RadioButton:toggle()
 end
 
 -- TODO: Add documentation
-function RadioButton:isEnabled()
+function CheckBox:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
-function RadioButton:press()
+function CheckBox:press()
 	local ui = self:UI()
 	if ui then
 		ui:doPress()
@@ -103,14 +103,14 @@ function RadioButton:press()
 end
 
 -- TODO: Add documentation
-function RadioButton:saveLayout()
+function CheckBox:saveLayout()
 	return {
 		checked = self:isChecked()
 	}
 end
 
 -- TODO: Add documentation
-function RadioButton:loadLayout(layout)
+function CheckBox:loadLayout(layout)
 	if layout then
 		if layout.checked then
 			self:check()
@@ -120,4 +120,4 @@ function RadioButton:loadLayout(layout)
 	end
 end
 
-return RadioButton
+return CheckBox

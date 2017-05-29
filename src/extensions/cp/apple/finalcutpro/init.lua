@@ -99,7 +99,7 @@ local strings									= require("cp.strings")
 local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
-local axutils									= require("cp.apple.finalcutpro.axutils")
+local axutils									= require("cp.ui.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")

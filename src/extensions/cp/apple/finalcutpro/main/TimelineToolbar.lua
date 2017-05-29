@@ -13,11 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 local prop								= require("cp.prop")
 
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
-local RadioButton						= require("cp.apple.finalcutpro.ui.RadioButton")
+local CheckBox							= require("cp.ui.CheckBox")
+local RadioButton						= require("cp.ui.RadioButton")
 
 local TimelineAppearance				= require("cp.apple.finalcutpro.main.TimelineAppearance")
 

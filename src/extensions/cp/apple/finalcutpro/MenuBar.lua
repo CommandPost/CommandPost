@@ -17,7 +17,7 @@ local log											= require("hs.logger").new("menubar")
 
 local json											= require("hs.json")
 local fnutils										= require("hs.fnutils")
-local axutils										= require("cp.apple.finalcutpro.axutils")
+local axutils										= require("cp.ui.axutils")
 local just											= require("cp.just")
 local plist											= require("cp.plist")
 local archiver										= require("cp.plist.archiver")

@@ -18,14 +18,14 @@ local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local LibrariesBrowser					= require("cp.apple.finalcutpro.main.LibrariesBrowser")
 local MediaBrowser						= require("cp.apple.finalcutpro.main.MediaBrowser")
 local GeneratorsBrowser					= require("cp.apple.finalcutpro.main.GeneratorsBrowser")
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
+local CheckBox							= require("cp.ui.CheckBox")
 
 --------------------------------------------------------------------------------
 --

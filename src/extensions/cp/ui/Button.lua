@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.Button ===
+--- === cp.ui.Button ===
 ---
 --- Button Module.
 
@@ -16,7 +16,7 @@
 local log							= require("hs.logger").new("button")
 local inspect						= require("hs.inspect")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
@@ -30,7 +30,7 @@ function Button.matches(element)
 	return element and element:attributeValue("AXRole") == "AXButton"
 end
 
---- cp.apple.finalcutpro.ui.Button:new(axuielement, table) -> Button
+--- cp.ui.Button:new(axuielement, table) -> Button
 --- Function
 --- Creates a new Button
 function Button:new(parent, finderFn)

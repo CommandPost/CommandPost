@@ -16,10 +16,10 @@
 local log								= require("hs.logger").new("playbackPanel")
 local inspect							= require("hs.inspect")
 
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
+local CheckBox							= require("cp.ui.CheckBox")
 
 local id								= require("cp.apple.finalcutpro.ids") "PlaybackPanel"
 

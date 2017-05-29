@@ -13,8 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils							= require("cp.apple.finalcutpro.axutils")
-local Table								= require("cp.apple.finalcutpro.ui.Table")
+local axutils							= require("cp.ui.axutils")
+local Table								= require("cp.ui.Table")
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"

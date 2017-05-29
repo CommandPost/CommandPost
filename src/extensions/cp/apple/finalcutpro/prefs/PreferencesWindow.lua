@@ -16,7 +16,7 @@
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
 

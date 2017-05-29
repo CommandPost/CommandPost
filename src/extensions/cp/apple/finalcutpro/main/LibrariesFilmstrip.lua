@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 
 local tools								= require("cp.tools")
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")

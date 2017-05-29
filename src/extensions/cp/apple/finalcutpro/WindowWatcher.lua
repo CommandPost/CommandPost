@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.WindowWatcher ===
+--- === cp.apple.finalcutpro.WindowWatcher ===
 ---
 --- Window Watcher Module.
 
@@ -26,7 +26,7 @@ local watcher						= require("cp.watcher")
 --------------------------------------------------------------------------------
 local WindowWatcher = {}
 
---- cp.apple.finalcutpro.ui.WindowWatcher:new(windowFn) -> WindowWatcher
+--- cp.apple.finalcutpro.WindowWatcher:new(windowFn) -> WindowWatcher
 --- Method
 --- Creates a new WindowWatcher
 ---
@@ -42,7 +42,7 @@ function WindowWatcher:new(window)
 	return o
 end
 
---- cp.apple.finalcutpro.ui.WindowWatcher:watch() -> bool
+--- cp.apple.finalcutpro.WindowWatcher:watch() -> bool
 --- Method
 --- Watch for events that happen in the window
 --- The optional functions will be called when the window
@@ -121,7 +121,7 @@ function WindowWatcher:watch(events)
 	return id
 end
 
---- cp.apple.finalcutpro.ui.WindowWatcher:unwatch() -> bool
+--- cp.apple.finalcutpro.WindowWatcher:unwatch() -> bool
 --- Method
 --- Removes the watch with the specified ID
 ---

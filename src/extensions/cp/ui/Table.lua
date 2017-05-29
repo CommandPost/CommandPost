@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.Table ===
+--- === cp.ui.Table ===
 ---
 --- Table Module.
 
@@ -19,7 +19,7 @@ local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 
 local just							= require("cp.just")
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local tools							= require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -34,7 +34,7 @@ function Table.matches(element)
 	return element ~= nil
 end
 
---- cp.apple.finalcutpro.ui.Table:new(axuielement, table) -> Table
+--- cp.ui.Table:new(axuielement, table) -> Table
 --- Function
 --- Creates a new Table
 function Table:new(parent, finder)

@@ -4,33 +4,33 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.PopUpButton ===
+--- === cp.ui.RadioButton ===
 ---
---- Pop Up Button Module.
+--- Radio Button Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PopUpButton = {}
+local RadioButton = {}
 
 -- TODO: Add documentation
-function PopUpButton.matches(element)
-	return element:attributeValue("AXRole") == "AXPopUpButton"
+function RadioButton.matches(element)
+	return element:attributeValue("AXRole") == "AXRadioButton"
 end
 
---- cp.apple.finalcutpro.ui.PopUpButton:new(axuielement, function) -> PopUpButton
+--- cp.ui.RadioButton:new(axuielement, function) -> RadioButton
 --- Function
---- Creates a new PopUpButton
-function PopUpButton:new(parent, finderFn)
+--- Creates a new RadioButton
+function RadioButton:new(parent, finderFn)
 	local o = {_parent = parent, _finder = finderFn}
 	setmetatable(o, self)
 	self.__index = self
@@ -38,65 +38,48 @@ function PopUpButton:new(parent, finderFn)
 end
 
 -- TODO: Add documentation
-function PopUpButton:parent()
+function RadioButton:parent()
 	return self._parent
 end
 
+function RadioButton:isShowing()
+	return self:UI() ~= nil and self:parent():isShowing()
+end
+
 -- TODO: Add documentation
-function PopUpButton:UI()
+function RadioButton:UI()
 	return axutils.cache(self, "_ui", function()
 		return self._finder()
 	end,
-	PopUpButton.matches)
+	RadioButton.matches)
 end
 
 -- TODO: Add documentation
-function PopUpButton:selectItem(index)
+function RadioButton:isChecked()
 	local ui = self:UI()
-	if ui then
-		local items = ui:doPress()[1]
-		local item = items[index]
-		if item then
-			-- select the menu item
-			item:doPress()
-		else
-			-- close the menu again
-			items:doCancel()
-		end
+	return ui and ui:value() == 1
+end
+
+-- TODO: Add documentation
+function RadioButton:check()
+	local ui = self:UI()
+	if ui and ui:value() == 0 then
+		ui:doPress()
 	end
 	return self
 end
 
 -- TODO: Add documentation
-function PopUpButton:getValue()
+function RadioButton:uncheck()
 	local ui = self:UI()
-	return ui and ui:value()
-end
-
--- TODO: Add documentation
-function PopUpButton:setValue(value)
-	local ui = self:UI()
-	if ui and not ui:value() == value then
-		local items = ui:doPress()[1]
-		for i,item in items do
-			if item:title() == value then
-				item:doPress()
-				return
-			end
-		end
-		items:doCancel()
+	if ui and ui:value() == 1 then
+		ui:doPress()
 	end
 	return self
 end
 
 -- TODO: Add documentation
-function PopUpButton:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
-end
-
--- TODO: Add documentation
-function PopUpButton:press()
+function RadioButton:toggle()
 	local ui = self:UI()
 	if ui then
 		ui:doPress()
@@ -105,17 +88,36 @@ function PopUpButton:press()
 end
 
 -- TODO: Add documentation
-function PopUpButton:saveLayout()
-	local layout = {}
-	layout.value = self:getValue()
-	return layout
+function RadioButton:isEnabled()
+	local ui = self:UI()
+	return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
-function PopUpButton:loadLayout(layout)
+function RadioButton:press()
+	local ui = self:UI()
+	if ui then
+		ui:doPress()
+	end
+	return self
+end
+
+-- TODO: Add documentation
+function RadioButton:saveLayout()
+	return {
+		checked = self:isChecked()
+	}
+end
+
+-- TODO: Add documentation
+function RadioButton:loadLayout(layout)
 	if layout then
-		self:setValue(layout.value)
+		if layout.checked then
+			self:check()
+		else
+			self:uncheck()
+		end
 	end
 end
 
-return PopUpButton
+return RadioButton

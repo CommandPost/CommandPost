@@ -4,14 +4,14 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.ui.Window ===
+--- === cp.ui.Window ===
 ---
 --- A Window UI element.
 
 local log							= require("hs.logger").new("button")
 local inspect						= require("hs.inspect")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 local hswindow						= require("hs.window")
 local hswindowfilter				= require("hs.window.filter")
@@ -45,14 +45,14 @@ end
 --------------------------------------------------------------------------------
 local Window = {}
 
---- cp.apple.finalcutpro.ui.Window.matches(element) -> boolean
+--- cp.ui.Window.matches(element) -> boolean
 --- Function
 --- Checks if the provided element is a valid window.
 function Window.matches(element)
 	return element and element:attributeValue("AXRole") == "AXWindow"
 end
 
---- cp.apple.finalcutpro.ui.Window:new(finderFn) -> Window
+--- cp.ui.Window:new(finderFn) -> Window
 --- Constructor
 --- Creates a new Window
 ---
@@ -90,7 +90,7 @@ function Window:new(finderFn)
 	return o
 end
 
---- cp.apple.finalcutpro.ui.Window.UI <cp.prop: axuielement; read-only>
+--- cp.ui.Window.UI <cp.prop: axuielement; read-only>
 --- Field
 --- Returns the `axuielement` UI for the window, or `nil` if it can't be found.
 Window.UI = prop(
@@ -102,7 +102,7 @@ Window.UI = prop(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.hsWindow <cp.prop: hs.window; read-only>
+--- cp.ui.Window.hsWindow <cp.prop: hs.window; read-only>
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
 Window.hsWindow = Window.UI:mutate(
@@ -111,7 +111,7 @@ Window.hsWindow = Window.UI:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.id <cp.prop: number; read-only>
+--- cp.ui.Window.id <cp.prop: number; read-only>
 --- Field
 --- The unique ID for the window.
 Window.id = Window.hsWindow:mutate(
@@ -120,7 +120,7 @@ Window.id = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.visible <cp.prop: boolean; read-only>
+--- cp.ui.Window.visible <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the window is visible on a screen.
 Window.visible = Window.hsWindow:mutate(
@@ -129,7 +129,7 @@ Window.visible = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.focused <cp.prop: boolean>
+--- cp.ui.Window.focused <cp.prop: boolean>
 --- Field
 --- Is `true` if the window has mouse/keyboard focused.
 --- Note: Setting to `false` has no effect, since 'defocusing' isn't definable.
@@ -144,7 +144,7 @@ Window.focused = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.exists <cp.prop: boolean; read-only>
+--- cp.ui.Window.exists <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the window exists. It may not be visible.
 Window.exists = Window.UI:mutate(
@@ -153,7 +153,7 @@ Window.exists = Window.UI:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.minimized <cp.prop: boolean>
+--- cp.ui.Window.minimized <cp.prop: boolean>
 --- Field
 --- Returns `true` if the window exists and is minimised.
 Window.minimized = Window.hsWindow:mutate(
@@ -171,7 +171,7 @@ Window.minimized = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.frame <cp.prop: hs.geometry rect>
+--- cp.ui.Window.frame <cp.prop: hs.geometry rect>
 --- Field
 --- The `hs.geometry` rect value describing the window's position.
 Window.frame = Window.hsWindow:mutate(
@@ -185,7 +185,7 @@ Window.frame = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.fullScreen <cp.prop: boolean>
+--- cp.ui.Window.fullScreen <cp.prop: boolean>
 --- Field
 --- Returns `true` if the window is full-screen.
 Window.fullScreen = Window.hsWindow:mutate(
@@ -199,7 +199,7 @@ Window.fullScreen = Window.hsWindow:mutate(
 	end
 ):bind(Window)
 
---- cp.apple.finalcutpro.ui.Window.close() -> boolean
+--- cp.ui.Window.close() -> boolean
 --- Method
 --- Attempts to close the window.
 ---
@@ -213,7 +213,7 @@ function Window:close()
 	return hsWindow ~= nil and hsWindow:close()
 end
 
---- cp.apple.finalcutpro.ui.Window.focus() -> boolean
+--- cp.ui.Window.focus() -> boolean
 --- Method
 --- Attempts to focus the window.
 ---
