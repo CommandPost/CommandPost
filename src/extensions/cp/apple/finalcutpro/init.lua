@@ -192,7 +192,14 @@ App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTE
 function App:init()
 	self:_initWatchers()
 	self:_initStrings()
+	self.application:watch(function() self:reset() end)
 	return self
+end
+
+function App:reset()
+	-- resets the language cache
+	self._currentLanguage = nil
+	self._activeCommandSet = nil
 end
 
 function App:_initStrings()

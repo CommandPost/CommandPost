@@ -70,7 +70,7 @@ return {
 		Content								=  "_NS:33",
 	},
 	LibrariesList = {
-		Player								= "_NS:590",
+		Player								= 1,
 		RowIcon								= "_NS:11",
 	},
 	MediaBrowser = {

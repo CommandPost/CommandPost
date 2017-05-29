@@ -39,9 +39,6 @@ return {
 	LibrariesFilmstrip = {
 		Content								= "_NS:18",
 	},
-	LibrariesList = {
-		Player								= "_NS:119",
-	},
 	TimelineAppearance = {
 		ClipHeight							= "_NS:85",
 		ZoomAmount							= "_NS:35",

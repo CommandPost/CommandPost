@@ -99,7 +99,7 @@ end
 -- TODO: Add documentation
 function List:playerUI()
 	return axutils.cache(self, "_player", function()
-		return axutils.childWithID(self:UI(), id "Player")
+		return axutils.childFromTop(self:UI(), id "Player")
 	end)
 end
 

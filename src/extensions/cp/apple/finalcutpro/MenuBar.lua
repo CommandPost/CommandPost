@@ -226,7 +226,7 @@ function MenuBar:findMenuUI(path, language)
 				for _,item in ipairs(menuMap) do
 					if item[language] == step then
 						menuItemUI = item.item
-						if not menuItemUI then
+						if not axutils.isValid(menuItemUI) then
 							menuItemUI = axutils.childWith(menuUI, "AXTitle", item[appLang])
 							-- cache the menu item, since getting children can be expensive.
 							item.item = menuItemUI
