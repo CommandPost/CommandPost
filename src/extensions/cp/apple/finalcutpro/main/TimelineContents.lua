@@ -313,7 +313,6 @@ function TimelineContents:rangeSelectionUI()
 	local ui = self:UI()
 	if ui then
 		local rangeSelectionDescription = self:app():string("FFTimelineRangeSelectionAccessibilityDescription")
-		log.df("rangeSelectionDescription: %s", rangeSelectionDescription)
 		return axutils.childWithDescription(ui, rangeSelectionDescription)
 	end
 	return nil
