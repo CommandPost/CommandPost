@@ -46,22 +46,23 @@ end
 -- TODO: Add documentation
 function ImportPanel:UI()
 	return axutils.cache(self, "_ui", function()
-		local toolbarUI = self:parent():toolbarUI()
-		return toolbarUI and toolbarUI[id "ID"]
+		return axutils.childFromLeft(self:parent():toolbarUI(), id "ID")
 	end)
 end
 
 -- TODO: Add documentation
 ImportPanel.isShowing = prop.new(function(self)
-	if self:parent():isShowing() then
-		local toolbar = self:parent():toolbarUI()
-		if toolbar then
-			local selected = toolbar:selectedChildren()
-			return #selected == 1 and selected[1] == toolbar[id "ID"]
-		end
+	local toolbar = self:parent():toolbarUI()
+	if toolbar then
+		local selected = toolbar:selectedChildren()
+		return #selected == 1 and selected[1] == self:UI()
 	end
 	return false
 end):bind(ImportPanel)
+
+function ImportPanel:contentsUI()
+	return self:isShowing() and self:parent():groupUI() or nil
+end
 
 -- TODO: Add documentation
 function ImportPanel:show()
@@ -85,7 +86,7 @@ end
 function ImportPanel:createProxyMedia()
 	if not self._createProxyMedia then
 		self._createProxyMedia = CheckBox:new(self, function()
-			return axutils.childWithID(self:parent():groupUI(), id "CreateProxyMedia")
+			return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateProxyMedia")
 		end)
 	end
 	return self._createProxyMedia
@@ -94,7 +95,7 @@ end
 function ImportPanel:createOptimizedMedia()
 	if not self._createOptimizedMedia then
 		self._createOptimizedMedia = CheckBox:new(self, function()
-			return axutils.childWithID(self:parent():groupUI(), id "CreateOptimizedMedia")
+			return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateOptimizedMedia")
 		end)
 	end
 	return self._createOptimizedMedia
@@ -102,7 +103,7 @@ end
 
 function ImportPanel:mediaLocationGroupUI()
 	return axutils.cache(self, "_mediaLocationGroup", function()
-		return axutils.childWithID(self:parent():groupUI(), id "MediaLocationGroup")
+		return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXRadioGroup"), id "MediaLocationGroup")
 	end)
 end
 

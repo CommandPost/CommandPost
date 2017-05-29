@@ -46,8 +46,33 @@ function mod.mt:find(language, key)
 	return self._cache[language] and self._cache[language][key]
 end
 
+--- cp.strings.source.plist:findKeys(language, value) -> {string}
+--- Method
+--- Finds the array of keys with the matching value in the plist file for the specified `language`, if the plist can be found, and contains matching key.
+---
+--- Parameters:
+---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `value`		- The value.
+---
+--- Returns:
+---  * The array of keys, or `{}` if none were fround
+function mod.mt:findKeys(language, value)
+
+	local cache = self._cache[language]
+	local keys = {}
+	
+	if cache then
+		for k,v in pairs(cache) do
+			if v == value then
+				table.insert(keys, k)
+			end
+		end
+	end
+	return keys
+end
+
 function mod.mt:reset()
-	self._cache = nil
+	self._cache = {}
 end
 
 --- cp.strings.source.table.new(language) -> source
@@ -61,7 +86,6 @@ end
 --- Returns:
 ---  * The new plist `source` instance.
 mod.new = function()
-	cacheSeconds = cacheSeconds or mod.defaultCacheSeconds
 	local o = {
 		_cache = {},
 	}

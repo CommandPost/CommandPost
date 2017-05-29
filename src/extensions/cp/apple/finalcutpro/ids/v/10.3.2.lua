@@ -95,16 +95,16 @@ return {
 	},
 	ImportPanel = {
 		ID									= 4,
-		CreateProxyMedia					= "_NS:177",
-		CreateOptimizedMedia				= "_NS:15",
-		MediaLocationGroup					= "_NS:84",
+		CreateProxyMedia					= 5,
+		CreateOptimizedMedia				= 4,
+		MediaLocationGroup					= 1,
 		CopyToMediaFolder					= 1,
 		LeaveInPlace						= 2,
 	},
 	PlaybackPanel = {
 		ID									= 3,
-		CreateMulticamOptimizedMedia		= "_NS:145",
-		BackgroundRender					= "_NS:15",
+		CreateMulticamOptimizedMedia		= 2,
+		BackgroundRender					= 1,
 	},
 	PreferencesWindow = {
 		Group								= "_NS:9"

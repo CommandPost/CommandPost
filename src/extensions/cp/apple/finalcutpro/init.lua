@@ -12,9 +12,8 @@
 ---
 --- * `init.lua` - the main module that gets imported.
 --- * `axutils.lua` - some utility functions for working with `axuielement` objects.
---- * `test.lua` - some support functions for testing. TODO: Make this better.
 ---
---- Generally, you will `require` the `cp.finalcutpro` module to import it, like so:
+--- Generally, you will `require` the `cp.apple.finalcutpro` module to import it, like so:
 ---
 --- ```lua
 --- local fcp = require("cp.apple.finalcutpro")
@@ -223,6 +222,24 @@ end
 function App:string(key)
 	local lang = self:getCurrentLanguage()
 	return self._strings and self._strings:find(lang, key)
+end
+
+--- cp.apple.finalcutpro:keysWithString(string[, lang]) -> {string}
+--- Method
+--- Looks up an application string and returns an array of keys that match. It will take into account current language the app is running in, or use `lang` if provided.
+---
+--- Parameters:
+---  * `key`	- The key to look up.
+---  * `lang`	- The language (defaults to current FCPX language).
+---
+--- Returns:
+---  * The array of keys with a matching string.
+---
+--- Notes:
+---  * This method may be very inefficient, since it has to search through every possible key/value pair to find matches. It is not recommended that this is used in production.
+function App:keysWithString(string, lang)
+	local lang = lang or self:getCurrentLanguage()
+	return self._strings and self._strings:findKeys(lang, string)
 end
 
 --- cp.apple.finalcutpro:application() -> hs.application

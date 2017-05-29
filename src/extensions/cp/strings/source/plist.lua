@@ -63,13 +63,14 @@ function mod.mt:loadFile(language)
 		langFile = self:pathToAbsolute(aliases[language])
 	end
 	
+	self._cleanup:start()
 	if langFile then
 		return plist.fileToTable(langFile)
 	end
 	return nil
 end
 
---- cp.strings.source.plist:find(language) -> string
+--- cp.strings.source.plist:find(language, key) -> string
 --- Method
 --- Finds the specified `key` value in the plist file for the specified `language`, if the plist can be found, and contains matching key value.
 ---
@@ -84,8 +85,32 @@ function mod.mt:find(language, key)
 	self._cache = self._cache or {}
 	self._cache[language] = self._cache[language] or self:loadFile(language) or {}
 	
-	self._cleanup:start()
 	return self._cache[language][key]
+end
+
+--- cp.strings.source.plist:findKeys(language, value) -> {string}
+--- Method
+--- Finds the array of keys with the matching value in the plist file for the specified `language`, if the plist can be found, and contains matching key.
+---
+--- Parameters:
+---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `value`		- The value.
+---
+--- Returns:
+---  * The array of keys, or `{}` if none were fround
+function mod.mt:findKeys(language, value)
+
+	self._cache = self._cache or {}
+	self._cache[language] = self._cache[language] or self:loadFile(language) or {}
+	
+	local keys = {}
+	local cache = self._cache[language]
+	for k,v in pairs(cache) do
+		if v == value then
+			table.insert(keys, k)
+		end
+	end
+	return keys
 end
 
 --- cp.strings.source.plist:reset() -> cp.strings

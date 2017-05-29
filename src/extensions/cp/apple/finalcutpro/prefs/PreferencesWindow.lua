@@ -32,7 +32,13 @@ local id							= require("cp.apple.finalcutpro.ids") "PreferencesWindow"
 --------------------------------------------------------------------------------
 local PreferencesWindow = {}
 
-PreferencesWindow.GROUP						= id "Group"
+function PreferencesWindow.matches(element)
+	return element:attributeValue("AXSubrole") == "AXDialog"
+		and not element:attributeValue("AXModal")
+		and element:attributeValue("AXTitle") ~= ""
+		and axutils.childWithRole(element, "AXToolbar") ~= nil
+		and axutils.childWithRole(element, "AXGroup") ~= nil
+end
 
 -- TODO: Add documentation
 function PreferencesWindow:new(app)
@@ -55,16 +61,7 @@ end
 
 -- TODO: Add documentation
 function PreferencesWindow:_findWindowUI(windows)
-	for i,w in ipairs(windows) do
-		if w:attributeValue("AXSubrole") == "AXDialog"
-		and not w:attributeValue("AXModal")
-		and w:attributeValue("AXTitle") ~= ""
-		and axutils.childWith(w, "AXIdentifier", PreferencesWindow.GROUP)
-		then
-			return w
-		end
-	end
-	return nil
+	return axutils.childMatching(windows, PreferencesWindow.matches)
 end
 
 -- TODO: Add documentation
@@ -80,8 +77,8 @@ end
 -- Returns the UI for the AXGroup containing this panel's elements
 function PreferencesWindow:groupUI()
 	return axutils.cache(self, "_group", function()
-		local ax = self:UI()
-		local group = ax and axutils.childWith(ax, "AXIdentifier", PreferencesWindow.GROUP)
+		local ui = self:UI()
+		local group = ui and axutils.childWithRole(ui, "AXGroup")
 		-- The group conains another single group that contains the actual checkboxes, etc.
 		return group and #group == 1 and group[1]
 	end)
@@ -123,9 +120,9 @@ end
 
 -- TODO: Add documentation
 function PreferencesWindow:hide()
-	local ax = self:UI()
-	if ax then
-		local closeBtn = axutils.childWith(ax, "AXSubrole", "AXCloseButton")
+	local ui = self:UI()
+	if ui then
+		local closeBtn = axutils.childWith(ui, "AXSubrole", "AXCloseButton")
 		if closeBtn then
 			closeBtn:doPress()
 		end

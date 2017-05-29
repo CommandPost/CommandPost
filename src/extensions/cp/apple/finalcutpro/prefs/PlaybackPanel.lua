@@ -45,22 +45,23 @@ end
 -- TODO: Add documentation
 function PlaybackPanel:UI()
 	return axutils.cache(self, "_ui", function()
-		local toolbarUI = self:parent():toolbarUI()
-		return toolbarUI and toolbarUI[id "ID"]
+		return axutils.childFromLeft(self:parent():toolbarUI(), id "ID")
 	end)
 end
 
 -- TODO: Add documentation
 PlaybackPanel.isShowing = prop.new(function(self)
-	if self:parent():isShowing() then
-		local toolbar = self:parent():toolbarUI()
-		if toolbar then
-			local selected = toolbar:selectedChildren()
-			return #selected == 1 and selected[1] == toolbar[id "ID"]
-		end
+	local toolbar = self:parent():toolbarUI()
+	if toolbar then
+		local selected = toolbar:selectedChildren()
+		return #selected == 1 and selected[1] == self:UI()
 	end
 	return false
 end):bind(PlaybackPanel)
+
+function PlaybackPanel:contentsUI()
+	return self:isShowing() and self:parent():groupUI() or nil
+end
 
 -- TODO: Add documentation
 function PlaybackPanel:show()
@@ -84,7 +85,7 @@ end
 function PlaybackPanel:createMulticamOptimizedMedia()
 	if not self._createOptimizedMedia then
 		self._createOptimizedMedia = CheckBox:new(self, function()
-			return axutils.childWithID(self:parent():groupUI(), id "CreateMulticamOptimizedMedia")
+			return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateMulticamOptimizedMedia")
 		end)
 	end
 	return self._createOptimizedMedia
@@ -93,7 +94,7 @@ end
 function PlaybackPanel:backgroundRender()
 	if not self._backgroundRender then
 		self._backgroundRender = CheckBox:new(self, function()
-			return axutils.childWithID(self:parent():groupUI(), id "BackgroundRender")
+			return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "BackgroundRender")
 		end)
 	end
 	return self._backgroundRender

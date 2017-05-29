@@ -12,6 +12,7 @@
 
 local log				= require("hs.logger").new("strings")
 local plistSrc			= require("cp.strings.source.plist")
+local _					= require("moses")
 
 local mod = {}
 mod.mt = {}
@@ -64,6 +65,24 @@ function mod.mt:findInSources(language, key)
 	return nil
 end
 
+--- cp.strings:findKeysInSources(language, value) -> string | nil
+--- Method
+--- Searches directly in the sources for the specified language/value combination.
+---
+--- Parameters:
+---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `value`		- The value to search for.
+---
+--- Returns:
+---  * The array of keys, or `{}` if not found.
+function mod.mt:findKeysInSources(language, value)
+	local keys = {}
+	for i,source in ipairs(self._sources) do
+		keys = _.append(keys, source:findKeys(language, value))
+	end
+	return keys
+end
+
 
 --- cp.strings:find(language, key) -> string | nil
 --- Method
@@ -92,6 +111,21 @@ function mod.mt:find(language, key)
 	else
 		return value
 	end
+end
+
+--- cp.strings:findKeysIn(language, value) -> string | nil
+--- Method
+--- Searches for the list of keys with a matching value, in the specified language.
+---
+--- Parameters:
+---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `value`		- The value to search for.
+---
+--- Returns:
+---  * The array of keys, or `{}` if not found.
+function mod.mt:findKeys(language, value)
+	-- NOTE: Not bothering to cache results currently, since it should not be a frequent operation.
+	return self:findKeysInSources(language, value)
 end
 
 --- cp.strings.new() -> cp.strings
