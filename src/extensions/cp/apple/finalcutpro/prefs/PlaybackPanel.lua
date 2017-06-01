@@ -67,15 +67,15 @@ end
 function PlaybackPanel:show()
 	local parent = self:parent()
 	-- show the parent.
-	if parent:show() then
+	if parent:show():isShowing() then
 		-- get the toolbar UI
 		local panel = just.doUntil(function() return self:UI() end)
 		if panel then
 			panel:doPress()
-			return true
+			just.doUntil(function() return self:isShowing() end)
 		end
 	end
-	return false
+	return self
 end
 
 function PlaybackPanel:hide()

@@ -151,7 +151,7 @@ local function run()
 		-- Check the search UI
 		ok(libraries:searchToggle():isShowing())
 		-- Show the search field if necessary
-		if not libraries:search():isShowing() then
+		while not libraries:search():isShowing() or not libraries:filterToggle():isShowing() do
 			libraries:searchToggle():press()
 		end
 		ok(libraries:search():isShowing())
@@ -214,7 +214,7 @@ local function run()
 		ok(not appearance:clipHeight():isShowing())
 		
 		appearance:show()
-		ok(appearance:isShowing())
+		ok(just.doUntil(function() return appearance:isShowing() end))
 		ok(appearance:clipHeight():isShowing())
 		
 		appearance:hide()
@@ -284,7 +284,6 @@ local function run()
 		ok(panel:copyToMediaFolder():isChecked() or panel:leaveInPlace():isChecked())
 		
 		panel:hide()
-		ok(not panel:isShowing())
 	end)
 	
 	test("PlaybackPanel", function()
@@ -302,7 +301,6 @@ local function run()
 		ok(panel:backgroundRender():isShowing())
 		
 		panel:hide()
-		ok(not panel:isShowing())
 	end)
 end
 

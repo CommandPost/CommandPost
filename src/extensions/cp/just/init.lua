@@ -23,15 +23,15 @@ local timer 					= require("hs.timer")
 --------------------------------------------------------------------------------
 local just = {}
 
---- cp.just.doWhile(actionFn, period, loops) -> UI
+--- cp.just.doWhile(actionFn[, timeout[, frequency]]) -> value
 --- Function
---- Performs an 'action' function, looping while the result of the function evaluates to 'true'.
---- It will halt after 'loops' repetitions if the result is never 'false'.
+--- Performs an 'action' function, looping while the result of the function evaluates to `true`.
+--- It will halt after `timeout` seconds, checking with the specified `frequency`.
 ---
 --- Parameters:
----  * actionFn	- a fuction which is called on each loop. It should return a 'truthy' value.
+---  * `actionFn`	- a fuction which is called on each loop. It should return a 'truthy' value.
 ---  * `timeout`	- (optional) the number of seconds after which we will give up. Defaults to 1 second.
----  * `frequency`	- (optional) the number of loops to perform before giving up. Defaults to 1 millisecond.
+---  * `frequency`	- (optional) the time between checks. Defaults to 1 millisecond.
 ---
 --- Returns:
 ---  * The last return value of the action function.
@@ -50,15 +50,15 @@ function just.doWhile(actionFn, timeout, frequency)
 	return result
 end
 
---- cp.just.doUntil(actionFn, period, loops) -> result
+--- cp.just.doUntil(actionFn[, timeout[, frequency]]) -> value
 --- Function
 --- Performs an `action` function, looping until the result of the function evaluates to `true` (or a non-nil value).
---- It will halt after the `timeout` (default)
+--- It will halt after the `timeout` in seconds after checking every `frequency` seconds.
 ---
 --- Parameters:
 ---  * `actionFn`	- a fuction which is called on each loop. It should return a 'truthy' value.
 ---  * `timeout`	- (optional) the number of seconds after which we will give up. Defaults to 1 second.
----  * `frequency`	- (optional) the number of loops to perform before giving up. Defaults to 1 millisecond.
+---  * `frequency`	- (optional) the amount of time between checks. Defaults to 1 millisecond.
 ---
 --- Returns:
 ---  * The last return value of the action function.

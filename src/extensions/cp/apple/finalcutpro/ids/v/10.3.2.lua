@@ -63,7 +63,6 @@ return {
 		AppearanceAndFiltering				= "_NS:68",
 		SearchToggle						= "_NS:92",
 		Search								= "_NS:34",
-		FilterButton						= "_NS:9",
 		Sidebar								= "_NS:9",
 	},
 	LibrariesFilmstrip = {

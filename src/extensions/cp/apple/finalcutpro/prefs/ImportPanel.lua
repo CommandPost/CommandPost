@@ -68,15 +68,15 @@ end
 function ImportPanel:show()
 	local parent = self:parent()
 	-- show the parent.
-	if parent:show() then
+	if parent:show():isShowing() then
 		-- get the toolbar UI
 		local panel = just.doUntil(function() return self:UI() end)
 		if panel then
 			panel:doPress()
-			return true
+			just.doUntil(function() return self:isShowing() end)
 		end
 	end
-	return false
+	return self
 end
 
 function ImportPanel:hide()
@@ -129,7 +129,7 @@ end
 
 -- TODO: Add documentation
 function ImportPanel:toggleMediaLocation()
-	if self:show() then
+	if self:show():isShowing() then
 		if self:copyToMediaFolder():isChecked() then
 			self:leaveInPlace():check()
 		else
