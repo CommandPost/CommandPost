@@ -605,6 +605,28 @@ local function scanDirectory(directoryPath)
 	return success
 end
 
+-- translateEffectBundle(input, language) -> none
+-- Function
+-- Translates an Effect Bundle Item
+--
+-- Parameters:
+--  * input - The original name
+--  * language - The language code you want to attempt to translate to
+--
+-- Returns:
+--  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/de.lproj/FFEffectBundleLocalizable.strings")
+local function translateEffectBundle(input, language)
+	local prefsPath = mod.effectBundlesPreferencesPath .. language .. ".lproj/FFEffectBundleLocalizable.strings"
+	local plistResult = plist.fileToTable(prefsPath)
+	if plistResult then
+		if plistResult[input] then
+			return plistResult[input]
+		else
+			return input
+		end
+	end
+end
+
 -- scanEffectBundles() -> none
 -- Function
 -- Scans the Effect Bundles directories
@@ -625,8 +647,10 @@ local function scanEffectBundles()
 					--------------------------------------------------------------------------------
 					if effectComponents and effectComponents[3] and effectComponents[3] == "audio" then
 						local category = effectComponents[2]
-						local plugin = effectComponents[1]
+
 						for _, currentLanguage in pairs(mod.supportedLanguages) do
+
+							local plugin = translateEffectBundle(effectComponents[1], currentLanguage)
 
 							if not mod._currentScan[currentLanguage]["AudioEffects"] then
 								mod._currentScan[currentLanguage]["AudioEffects"] = {}
@@ -787,10 +811,10 @@ end
 --  * None
 local function compareResultToGUIScriptingAudioEffects()
 
-	local guiVideoEffects = config.get("en.allAudioEffects")
+	local guiVideoEffects = config.get(mod.currentLanguage .. ".allAudioEffects")
 
 	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan["en"]["AudioEffects"]) do
+	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["AudioEffects"]) do
 		for category, videoEffect in pairs(videoEffects) do
 			if type(videoEffect) == "table" then
 				for _, plugin in pairs(videoEffect) do
@@ -828,10 +852,10 @@ end
 --  * None
 local function compareResultToGUIScriptingGenerators()
 
-	local guiVideoEffects = config.get("en.allGenerators")
+	local guiVideoEffects = config.get(mod.currentLanguage .. ".allGenerators")
 
 	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan["en"]["Generators"]) do
+	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["Generators"]) do
 		for category, videoEffect in pairs(videoEffects) do
 			if type(videoEffect) == "table" then
 				for _, plugin in pairs(videoEffect) do
@@ -869,10 +893,10 @@ end
 --  * None
 local function compareResultToGUIScriptingTitles()
 
-	local guiVideoEffects = config.get("en.allTitles")
+	local guiVideoEffects = config.get(mod.currentLanguage .. ".allTitles")
 
 	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan["en"]["Titles"]) do
+	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["Titles"]) do
 		for category, videoEffect in pairs(videoEffects) do
 			if type(videoEffect) == "table" then
 				for _, plugin in pairs(videoEffect) do
@@ -910,10 +934,10 @@ end
 --  * None
 local function compareResultToGUIScriptingTransitions()
 
-	local guiVideoEffects = config.get("en.allTransitions")
+	local guiVideoEffects = config.get(mod.currentLanguage .. ".allTransitions")
 
 	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan["en"]["Transitions"]) do
+	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["Transitions"]) do
 		for category, videoEffect in pairs(videoEffects) do
 			if type(videoEffect) == "table" then
 				for _, plugin in pairs(videoEffect) do
@@ -965,6 +989,7 @@ function mod:scan(fcp)
 	-- Define Supported Languages:
 	--------------------------------------------------------------------------------
 	mod.supportedLanguages = fcp.SUPPORTED_LANGUAGES
+	mod.currentLanguage = fcp:getCurrentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Core Audio Preferences File:
@@ -987,6 +1012,11 @@ function mod:scan(fcp)
 	mod.effectBundlesPaths = {
 		fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/Effect Bundles",
 	}
+
+	--------------------------------------------------------------------------------
+	-- Effect Bundles Preferences Path:
+	--------------------------------------------------------------------------------
+	mod.effectBundlesPreferencesPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
 
 	--------------------------------------------------------------------------------
 	-- Define Effect Presets Paths:
