@@ -27,6 +27,8 @@ local config									= require("cp.config")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
+local slaxdom 									= require("slaxml.slaxdom")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -93,14 +95,13 @@ end
 --  * currentLanguageFile - Path to the current language file.
 --
 -- Returns:
---  * The translated file name or nil
+--  * The translated file name or `nil`
 local function readLocalizedFile(folder, currentLanguageFile)
 	if tools.doesFileExist(currentLanguageFile) then
 		--------------------------------------------------------------------------------
 		-- Binary Plist:
 		--------------------------------------------------------------------------------
 		if isBinaryPlist(currentLanguageFile) then
-
 			local plistValues = plist.fileToTable(currentLanguageFile)
 			if plistValues then
 				local folderCode = string.sub(folder, 1, -11)
@@ -141,6 +142,19 @@ local function readLocalizedFile(folder, currentLanguageFile)
 	return nil
 end
 
+-- fixDashes(input) -> string
+-- Function
+-- Replaces columns with dashes
+--
+-- Parameters:
+--  * input - The string you want to process
+--
+-- Returns:
+--  * The string with columns replaced with dashes
+function fixDashes(input)
+	return string.gsub(input, ":", "/")
+end
+
 -- getLocalizedFolderName(path, folder) -> string
 -- Function
 -- Gets the localised folder name
@@ -150,20 +164,20 @@ end
 --  * folder - Folder name
 --
 -- Returns:
---  * String
-local function getLocalizedFolderName(path, folder)
-	local languageCode = mod.currentLanguage
+--  * Localised folder name as a string
+local function getLocalizedFolderName(path, folder, languageCode)
 	if string.sub(folder, -10) == ".localized" then
 		local localizedFolder = path .. "/" .. folder .. "/.localized"
 		local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
 		if localizedFolderExists then
 			--------------------------------------------------------------------------------
-			-- Try current locale first:
+			-- Try languageCode first:
 			--------------------------------------------------------------------------------
 			local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
 			local result = readLocalizedFile(folder, currentLanguageFile)
 			if result then
-				return result
+				--log.df("Result: Current Locale")
+				return fixDashes(result)
 			end
 			--------------------------------------------------------------------------------
 			-- If that fails try English:
@@ -171,23 +185,12 @@ local function getLocalizedFolderName(path, folder)
 			local currentLanguageFile = localizedFolder .. "/en.strings"
 			local result = readLocalizedFile(folder, currentLanguageFile)
 			if result then
-				return result
-			end
-			--------------------------------------------------------------------------------
-			-- If that fails try whatever is left:
-			--------------------------------------------------------------------------------
-			for localizedFile in fs.dir(localizedFolder) do
-				if string.sub(localizedFile, -8) == ".strings" then
-					local result = readLocalizedFile(folder, localizedFolder .. "/" .. localizedFile)
-					if result then
-						return result
-					end
-				end
+				return fixDashes(result)
 			end
 		end
-		return string.sub(folder, 1, -11)
+		return fixDashes(string.sub(folder, 1, -11))
 	end
-	return folder
+	return fixDashes(folder)
 end
 
 -- getLocalizedFileName(path, folder) -> string
@@ -199,12 +202,10 @@ end
 --  * file - File name
 --
 -- Returns:
---  * String
-local function getLocalizedFileName(path, file)
+--  * Localised file name as a string
+local function getLocalizedFileName(path, file, languageCode)
 
 	local fileWithoutExtension = string.match(file, "(.+)%..+")
-
-	local languageCode = mod.currentLanguage
 
 	local localizedFolder = path .. "/.localized"
 	local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
@@ -217,7 +218,7 @@ local function getLocalizedFileName(path, file)
 		local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
 		local result = readLocalizedFile(fileWithoutExtension, currentLanguageFile)
 		if result then
-			return result
+			return fixDashes(result)
 		end
 
 		--------------------------------------------------------------------------------
@@ -226,24 +227,12 @@ local function getLocalizedFileName(path, file)
 		local currentLanguageFile = localizedFolder .. "/en.strings"
 		local result = readLocalizedFile(fileWithoutExtension, currentLanguageFile)
 		if result then
-			return result
-		end
-
-		--------------------------------------------------------------------------------
-		-- If that fails try anything else:
-		--------------------------------------------------------------------------------
-		for localizedFile in fs.dir(localizedFolder) do
-			if string.sub(localizedFile, -8) == ".strings" then
-				local result = readLocalizedFile(fileWithoutExtension, localizedFolder .. "/" .. localizedFile)
-				if result then
-					return result
-				end
-			end
+			return fixDashes(result)
 		end
 
 	end
 
-	return fileWithoutExtension
+	return fixDashes(fileWithoutExtension)
 
 end
 
@@ -263,147 +252,20 @@ function string:split(sep)
 	return fields
 end
 
--- scanFolder(path, extension) -> table
+-- scanAudioUnits() -> none
 -- Function
--- Scan a folder for specific plugins
---
--- Parameters:
---  * path - Path to search
---  * extension - Type of extension to look for
---
--- Returns:
---  * Table
-function scanFolder(path, extension)
-
-	local result = {}
-
-	--------------------------------------------------------------------------------
-	-- Does directory exist?
-	--------------------------------------------------------------------------------
-	local exist = tools.doesDirectoryExist(path)
-	if not exist then
-		return nil
-	end
-
-	--------------------------------------------------------------------------------
-	-- Scan Folder:
-	--------------------------------------------------------------------------------
-	if extension == "effectBundle" then
-		--------------------------------------------------------------------------------
-		-- Audio Effects:
-		--------------------------------------------------------------------------------
-		for file in fs.dir(path) do
-			if string.sub(file, -13) == ".effectBundle" then
-				local effectComponents = string.split(file, ".")
-				if result[effectComponents[2]] == nil then
-					result[effectComponents[2]] = {}
-				end
-				result[effectComponents[2]][#result[effectComponents[2]] + 1] = effectComponents[1]
-			end
-		end
-	else
-		--------------------------------------------------------------------------------
-		-- Everything Else:
-		--------------------------------------------------------------------------------
-		for group in fs.dir(path) do
-			if string.sub(group, 1, 1) ~= "." then
-				local specificGroup = path .. "/" .. group
-				if tools.doesDirectoryExist(specificGroup) then
-					for element in fs.dir(specificGroup) do
-						if string.sub(element, 1, 1) ~= "." then
-							local specificElement = specificGroup .. "/" .. element
-							if tools.doesDirectoryExist(specificElement) then
-								for file in fs.dir(specificElement) do
-									if string.sub(file, 1, 1) ~= "." then
-										if string.sub(file, -(string.len(extension) + 1) ) == "." .. extension then
-											local friendlyGroupName = getLocalizedFolderName(path, group)
-											local friendlyEffectName = nil
-											local localisedFileName = getLocalizedFileName(specificElement, file)
-											if localisedFileName then
-												friendlyEffectName = localisedFileName
-											else
-												friendlyEffectName = getLocalizedFolderName(specificGroup, element)
-												if not string.find(element, ".localized") then
-													local fileWithoutExtension = string.sub(file, 1, -6)
-													if fileWithoutExtension ~= element then
-														friendlyEffectName = fileWithoutExtension
-													end
-												end
-											end
-
-											if result[friendlyGroupName] == nil then
-												result[friendlyGroupName] = {}
-											end
-											result[friendlyGroupName][#result[friendlyGroupName] + 1] = friendlyEffectName
-										else
-											--------------------------------------------------------------------------------
-											-- Sub Category:
-											--------------------------------------------------------------------------------
-											local subCategoryPath = specificElement .. "/" .. file
-											if tools.doesDirectoryExist(subCategoryPath) then
-
-												for subfile in fs.dir(subCategoryPath) do
-													if string.sub(subfile, 1, 1) ~= "." then
-														if string.sub(subfile, -(string.len(extension) + 1) ) == "." .. extension then
-															local friendlyGroupName = getLocalizedFolderName(path, group)
-															local friendlyEffectName = nil
-															local localisedFileName = getLocalizedFileName(subCategoryPath, subfile)
-															local subcategory = element
-
-															if localisedFileName then
-																friendlyEffectName = localisedFileName
-															else
-																friendlyEffectName = getLocalizedFolderName(specificElement, file)
-																if not string.find(element, ".localized") then
-																	local fileWithoutExtension = string.sub(file, 1, -6)
-																	if fileWithoutExtension ~= element then
-																		friendlyEffectName = fileWithoutExtension
-																	end
-																end
-															end
-
-															if result[friendlyGroupName] == nil then
-																result[friendlyGroupName] = {}
-															end
-															if result[friendlyGroupName][subcategory] == nil then
-																result[friendlyGroupName][subcategory] = {}
-															end
-
-															result[friendlyGroupName][subcategory][#result[friendlyGroupName][subcategory] + 1] = friendlyEffectName
-
-														end
-													end
-												end
-											end
-										end
-									end
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-
-	return result
-
-end
-
--- scanAudioUnits() -> table
--- Function
--- Returns a list of Validated Audio Units as a table
+-- Scans for Validated Audio Units
 --
 -- Parameters:
 --  * None
 --
 -- Returns:
---  * Table
-function scanAudioUnits()
+--  * None
+local function scanAudioUnits()
 	local audioUnits = {}
 	local output, status = hs.execute("auval -s aufx")
 	if status and output then
-		local coreAudioPlistPath = "/System/Library/Components/CoreAudio.component/Contents/Info.plist"
+		local coreAudioPlistPath = mod.coreAudioPreferences
 		local coreAudioPlistData = plist.fileToTable(coreAudioPlistPath)
 		local lines = tools.lines(output)
 		for _, line in pairs(lines) do
@@ -434,95 +296,716 @@ function scanAudioUnits()
 							end
 						end
 					end
-					local value = tools.trim(values[2])
-					if audioUnits[key] == nil then
-						audioUnits[key] = {}
+					local category = key
+					local plugin = tools.trim(values[2])
+					for _, currentLanguage in pairs(mod.supportedLanguages) do
+						if not mod._currentScan[currentLanguage]["AudioEffects"] then
+							mod._currentScan[currentLanguage]["AudioEffects"] = {}
+						end
+						if not mod._currentScan[currentLanguage]["AudioEffects"]["OS X"] then
+							mod._currentScan[currentLanguage]["AudioEffects"]["OS X"] = {}
+						end
+						if not mod._currentScan[currentLanguage]["AudioEffects"]["OS X"][category] then
+							mod._currentScan[currentLanguage]["AudioEffects"]["OS X"][category] = {}
+						end
+						local pluginID = #mod._currentScan[currentLanguage]["AudioEffects"]["OS X"][category] + 1
+						mod._currentScan[currentLanguage]["AudioEffects"]["OS X"][category][pluginID] = plugin
 					end
-					audioUnits[key][#audioUnits[key] + 1] = value
 				end
 			end
 		end
 	else
 		log.ef("Failed to scan for Audio Units.")
 	end
-	return audioUnits
 end
 
--- scanEffectsPresets() -> table
+-- scanEffectsPresets() -> none
 -- Function
--- Returns a list of Effects Presets as a table
+-- Scans Final Cut Pro Effects Presets
 --
 -- Parameters:
 --  * None
 --
 -- Returns:
---  * Table
-function scanEffectsPresets()
-
-	local path = "~/Library/Application Support/ProApps/Effects Presets/"
-
-	local exist = tools.doesDirectoryExist(path)
-	if not exist then
-		return nil
-	end
-
-	local result = {}
-
-	for file in fs.dir(path) do
-		if string.sub(file, -14) == ".effectsPreset" then
-			local plistResult = plist.fileToTable(path .. file)
-			if plistResult then
-				local unarchivedPlist = archiver.unarchive(plistResult)
-				if unarchivedPlist then
-					local category = unarchivedPlist["category"]
-					if category then
-						if result[category] == nil then
-							result[category] = {}
+--  * None
+local function scanEffectsPresets()
+	for _, path in pairs(mod.effectPresetPaths) do
+		if tools.doesDirectoryExist(path) then
+			for file in fs.dir(path) do
+				if string.sub(file, -14) == ".effectsPreset" then
+					local plistResult = plist.fileToTable(path .. file)
+					if plistResult then
+						local unarchivedPlist = archiver.unarchive(plistResult)
+						if unarchivedPlist then
+							local category = unarchivedPlist["category"]
+							if category then
+								local plugin = string.sub(file, 1, -15)
+								for _, currentLanguage in pairs(mod.supportedLanguages) do
+									if not mod._currentScan[currentLanguage]["Effects"] then
+										mod._currentScan[currentLanguage]["Effects"] = {}
+									end
+									if not mod._currentScan[currentLanguage]["Effects"][category] then
+										mod._currentScan[currentLanguage]["Effects"][category] = {}
+									end
+									local pluginID = #mod._currentScan[currentLanguage]["Effects"][category] + 1
+									mod._currentScan[currentLanguage]["Effects"][category][pluginID] = plugin
+								end
+							end
 						end
-						result[category][#result[category] + 1] = string.sub(file, 1, -15)
 					end
 				end
 			end
 		end
 	end
+end
 
-	return result
+-- isPluginExtension(path) -> boolean
+-- Function
+-- Does the path have a Plugin File Extension?
+--
+-- Parameters:
+--  * path - Path to the plugin
+--
+-- Returns:
+--  * Boolean
+local function isPluginExtension(path)
+	local pluginTypes = mod.pluginTypes
+	for _, extensions in pairs(mod.pluginTypes) do
+		for _, extension in pairs(extensions) do
+			if path:sub(extension:len() * -1) == extension then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+-- combinePath(pathTable, number) -> string
+-- Function
+-- Does the path have a Plugin File Extension?
+--
+-- Parameters:
+--  * pathTable - A table containing all the components of a path
+--  * number - How many components you want to combine
+--
+-- Returns:
+--  * A string
+local function combinePath(pathTable, number)
+	local path = "/" .. pathTable[1]
+	for i=2,number do
+		path = path .. "/" .. pathTable[i]
+	end
+	return path
+end
+
+local function fileToString(file)
+    local f = io.open(file, "r")
+    local content = f:read("*all")
+    f:close()
+    return content
+end
+
+-- processPlugin(path, file) -> boolean
+-- Function
+-- Process a plugin so that it's added to the current scan
+--
+-- Parameters:
+--  * path - Path to the plugin
+--  * file - Filename of the plugin
+--
+-- Returns:
+--  * `true` if successful otherwise `false`
+--
+-- Notes:
+--  * getMotionTheme("/Users/latenitechris/Movies/Motion Templates.localized/Effects.localized/3065D03D-92D7-4FD9-B472-E524B87B5012.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.moef")
+function getMotionTheme(file)
+	if tools.doesFileExist(file) then
+		local content = fileToString(file)
+		if content then
+			local xml = slaxdom:dom(tostring(content))
+			if xml and xml.root and xml.root.kids then
+				for _,n in ipairs(xml.root.kids) do
+					if n.name and n.name == "template" then
+						local theme = nil
+						for _,x in ipairs(n.kids) do
+							if x.name and x.name == "theme" and x.kids[1] and x.kids[1].value then
+								theme = x.kids[1].value
+							end
+						end
+						if theme and theme ~= "~Obsolete" then
+							return theme
+						end
+					end
+				end
+			end
+		end
+	end
+	return false
+end
+
+-- processPlugin(path, file) -> boolean
+-- Function
+-- Process a plugin so that it's added to the current scan
+--
+-- Parameters:
+--  * path - Path to the plugin
+--  * file - Filename of the plugin
+--
+-- Returns:
+--  * `true` if successful otherwise `false`
+local function processPlugin(path, file)
+
+	local fullPath = path .. "/" .. file
+	local pathCompontents = fullPath:split("/")
+
+	for pluginType,_ in pairs(mod.pluginTypes) do
+
+		if pathCompontents[#pathCompontents - 4] == pluginType or pathCompontents[#pathCompontents - 4] == pluginType .. ".localized" then
+			--------------------------------------------------------------------------------
+			-- Get subcategory from Motion File is exists:
+			--------------------------------------------------------------------------------
+			local subcategory = nil
+			local motionTheme = getMotionTheme(fullPath)
+			if motionTheme then
+				subcategory = motionTheme
+			end
+
+			--------------------------------------------------------------------------------
+			-- Has Subcategory:
+			--------------------------------------------------------------------------------
+			for _, currentLanguage in pairs(mod.supportedLanguages) do
+
+				local category = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 4), pathCompontents[#pathCompontents - 3], currentLanguage)
+
+				if not subcategory then
+					subcategory = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 3), pathCompontents[#pathCompontents - 2], currentLanguage)
+				end
+
+				local plugin = getLocalizedFileName(combinePath(pathCompontents, #pathCompontents - 1), pathCompontents[#pathCompontents], currentLanguage)
+
+				if not mod._currentScan[currentLanguage][pluginType][category] then
+					mod._currentScan[currentLanguage][pluginType][category] = {}
+				end
+
+				if not mod._currentScan[currentLanguage][pluginType][category][subcategory] then
+					mod._currentScan[currentLanguage][pluginType][category][subcategory] = {}
+				end
+
+				local pluginID = #mod._currentScan[currentLanguage][pluginType][category][subcategory] + 1
+				mod._currentScan[currentLanguage][pluginType][category][subcategory][pluginID] = plugin
+
+			end
+			return true
+		elseif pathCompontents[#pathCompontents - 3] == pluginType or pathCompontents[#pathCompontents - 3] == pluginType .. ".localized" then
+
+			local motionTheme = getMotionTheme(fullPath)
+			if motionTheme then
+
+				--------------------------------------------------------------------------------
+				-- Has a Motion Theme:
+				--------------------------------------------------------------------------------
+				for _, currentLanguage in pairs(mod.supportedLanguages) do
+
+					local category = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 4), pathCompontents[#pathCompontents - 3], currentLanguage)
+					local subcategory = motionTheme
+					local plugin = getLocalizedFileName(combinePath(pathCompontents, #pathCompontents - 1), pathCompontents[#pathCompontents], currentLanguage)
+
+					if not mod._currentScan[currentLanguage][pluginType][category] then
+						mod._currentScan[currentLanguage][pluginType][category] = {}
+					end
+
+					if not mod._currentScan[currentLanguage][pluginType][category][subcategory] then
+						mod._currentScan[currentLanguage][pluginType][category][subcategory] = {}
+					end
+
+					local pluginID = #mod._currentScan[currentLanguage][pluginType][category][subcategory] + 1
+					mod._currentScan[currentLanguage][pluginType][category][subcategory][pluginID] = plugin
+
+				end
+				return true
+
+			else
+				--------------------------------------------------------------------------------
+				-- No Subcategory:
+				--------------------------------------------------------------------------------
+				for _, currentLanguage in pairs(mod.supportedLanguages) do
+
+					local category = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 3), pathCompontents[#pathCompontents - 2], currentLanguage)
+					local plugin = getLocalizedFileName(combinePath(pathCompontents, #pathCompontents - 1), pathCompontents[#pathCompontents], currentLanguage)
+
+					if not mod._currentScan[currentLanguage][pluginType][category] then
+						mod._currentScan[currentLanguage][pluginType][category] = {}
+					end
+
+					local pluginID = #mod._currentScan[currentLanguage][pluginType][category] + 1
+					mod._currentScan[currentLanguage][pluginType][category][pluginID] = plugin
+
+				end
+				return true
+			end
+		end
+	end
+	return false
+end
+
+-- scanDirectory(directoryPath) -> boolean
+-- Function
+-- Scans a directory for plugins
+--
+-- Parameters:
+--  * directoryPath - Directory to scan
+--
+-- Returns:
+--  * `true` if successful otherwise `false`
+local function scanDirectory(directoryPath)
+
+	--------------------------------------------------------------------------------
+	-- Check that the directoryPath actually exists:
+	--------------------------------------------------------------------------------
+	local path = fs.pathToAbsolute(directoryPath)
+	if not path then
+		log.wf("The provided path does not exist: '%s'", directoryPath)
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Check that the directoryPath is actually a directory:
+	--------------------------------------------------------------------------------
+	local attrs = fs.attributes(path)
+	if not attrs or attrs.mode ~= "directory" then
+		log.ef("The provided path is not a directory: '%s'", directoryPath)
+		return false
+	end
+
+	--------------------------------------------------------------------------------
+	-- Scan directoryPath:
+	--------------------------------------------------------------------------------
+	local files = tools.dirFiles(path)
+	local success = true
+	for i,file in ipairs(files) do
+		--------------------------------------------------------------------------------
+		-- If it's not a hidden directory/file then:
+		--------------------------------------------------------------------------------
+		if file:sub(1,1) ~= "." then
+			local filePath = fs.pathToAbsolute(path .. "/" .. file)
+			attrs = fs.attributes(filePath)
+			if attrs.mode == "directory" then
+				--------------------------------------------------------------------------------
+				-- Scan Directory:
+				--------------------------------------------------------------------------------
+				success = scanDirectory(filePath) and success
+			elseif isPluginExtension(file) then
+				--------------------------------------------------------------------------------
+				-- Process Plugin:
+				--------------------------------------------------------------------------------
+				processPlugin(path, file)
+			end
+		end
+	end
+	return success
+end
+
+-- scanEffectBundles() -> none
+-- Function
+-- Scans the Effect Bundles directories
+--
+-- Parameters:
+--  * directoryPath - Directory to scan
+--
+-- Returns:
+--  * None
+local function scanEffectBundles()
+	for _, path in pairs(mod.effectBundlesPaths) do
+		if tools.doesDirectoryExist(path) then
+			for file in fs.dir(path) do
+				if string.sub(file, -13) == ".effectBundle" then
+					local effectComponents = string.split(file, ".")
+					--------------------------------------------------------------------------------
+					-- Example: Alien.Voice.audio.effectBundle
+					--------------------------------------------------------------------------------
+					if effectComponents and effectComponents[3] and effectComponents[3] == "audio" then
+						local category = effectComponents[2]
+						local plugin = effectComponents[1]
+						for _, currentLanguage in pairs(mod.supportedLanguages) do
+
+							if not mod._currentScan[currentLanguage]["AudioEffects"] then
+								mod._currentScan[currentLanguage]["AudioEffects"] = {}
+							end
+
+							if not mod._currentScan[currentLanguage]["AudioEffects"][category] then
+								mod._currentScan[currentLanguage]["AudioEffects"][category] = {}
+							end
+
+							local pluginID = #mod._currentScan[currentLanguage]["AudioEffects"][category] + 1
+							mod._currentScan[currentLanguage]["AudioEffects"][category][pluginID] = plugin
+
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+-- scanPlugins() -> none
+-- Function
+-- Scans for Final Cut Pro Plugins
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function scanPlugins()
+	for _, path in pairs(mod.scanPaths) do
+		for pluginType, _ in pairs(mod.pluginTypes) do
+			scanDirectory(string.gsub(path, "{type}", pluginType))
+		end
+	end
+end
+
+-- scanSoundtrackProEDELEffects() -> none
+-- Function
+-- Scans for Soundtrack Pro EDEL Effects.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function scanSoundtrackProEDELEffects()
+
+	for _, currentLanguage in pairs(mod.supportedLanguages) do
+		for category, plugins in pairs(mod.buildinSoundtrackProEDELEffects) do
+			for _, plugin in pairs(plugins) do
+
+				if not mod._currentScan[currentLanguage]["AudioEffects"] then
+					mod._currentScan[currentLanguage]["AudioEffects"] = {}
+				end
+
+				if not mod._currentScan[currentLanguage]["AudioEffects"]["Logic"] then
+					mod._currentScan[currentLanguage]["AudioEffects"]["Logic"] = {}
+				end
+
+				if not mod._currentScan[currentLanguage]["AudioEffects"]["Logic"][category] then
+					mod._currentScan[currentLanguage]["AudioEffects"]["Logic"][category] = {}
+				end
+
+				local pluginID = #mod._currentScan[currentLanguage]["AudioEffects"]["Logic"][category] + 1
+				mod._currentScan[currentLanguage]["AudioEffects"]["Logic"][category][pluginID] = plugin
+
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	-- NOTE: I haven't worked out a way to programatically work out the category
+	-- yet, so aborted this method:
+	--------------------------------------------------------------------------------
+	--[[
+ 	for _, path in pairs(mod.edelEffectPaths) do
+		if tools.doesDirectoryExist(path) then
+			for file in fs.dir(path) do
+				local filePath = fs.pathToAbsolute(path .. "/" .. file)
+				attrs = fs.attributes(filePath)
+				if attrs.mode == "directory" then
+
+					local category = "All"
+					local plugin = file
+
+					for _, currentLanguage in pairs(mod.supportedLanguages) do
+
+						if not mod._currentScan[currentLanguage]["AudioEffects"] then
+							mod._currentScan[currentLanguage]["AudioEffects"] = {}
+						end
+
+						if not mod._currentScan[currentLanguage]["AudioEffects"][category] then
+							mod._currentScan[currentLanguage]["AudioEffects"][category] = {}
+						end
+
+						local pluginID = #mod._currentScan[currentLanguage]["AudioEffects"][category] + 1
+						mod._currentScan[currentLanguage]["AudioEffects"][category][pluginID] = plugin
+
+					end
+				end
+			end
+		end
+	end
+	--]]
 
 end
 
---- cp.apple.finalcutpro.scanplugins:scan() -> string or nil
+-- compareResultToGUIScriptingEffects() -> none
+-- Function
+-- Compares these Scan Results to the original method.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function compareResultToGUIScriptingEffects()
+
+	local guiVideoEffects = config.get("en.allVideoEffects")
+
+	local effects = {}
+	for _, videoEffects in pairs(mod._currentScan["en"]["Effects"]) do
+		for category, videoEffect in pairs(videoEffects) do
+			if type(videoEffect) == "table" then
+				for _, plugin in pairs(videoEffect) do
+					--log.df("Match: %s", category .. " - " .. plugin)
+					effects[#effects + 1] = category .. " - " .. plugin
+				end
+			else
+				effects[#effects + 1] = videoEffect
+			end
+		end
+	end
+
+	for _, guiVideoEffect in pairs(guiVideoEffects) do
+		local match = false
+		for _, videoEffect in pairs(effects) do
+			if guiVideoEffect == videoEffect then
+				match = true
+			end
+		end
+		if not match then
+			log.df("Missing Effect: %s", guiVideoEffect)
+		end
+	end
+
+end
+
+-- compareResultToGUIScriptingAudioEffects() -> none
+-- Function
+-- Compares these Scan Results to the original method.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function compareResultToGUIScriptingAudioEffects()
+
+	local guiVideoEffects = config.get("en.allAudioEffects")
+
+	local effects = {}
+	for _, videoEffects in pairs(mod._currentScan["en"]["AudioEffects"]) do
+		for category, videoEffect in pairs(videoEffects) do
+			if type(videoEffect) == "table" then
+				for _, plugin in pairs(videoEffect) do
+					--log.df("Match: %s", category .. " - " .. plugin)
+					effects[#effects + 1] = plugin
+				end
+			else
+				effects[#effects + 1] = videoEffect
+			end
+		end
+	end
+
+	for _, guiVideoEffect in pairs(guiVideoEffects) do
+		local match = false
+		for _, videoEffect in pairs(effects) do
+			if guiVideoEffect == videoEffect then
+				match = true
+			end
+		end
+		if not match then
+			log.df("Missing Audio Effect: %s", guiVideoEffect)
+		end
+	end
+
+end
+
+-- compareResultToGUIScriptingGenerators() -> none
+-- Function
+-- Compares these Scan Results to the original method.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function compareResultToGUIScriptingGenerators()
+
+	local guiVideoEffects = config.get("en.allGenerators")
+
+	local effects = {}
+	for _, videoEffects in pairs(mod._currentScan["en"]["Generators"]) do
+		for category, videoEffect in pairs(videoEffects) do
+			if type(videoEffect) == "table" then
+				for _, plugin in pairs(videoEffect) do
+					--log.df("Match: %s", category .. " - " .. plugin)
+					effects[#effects + 1] = category .. " - " .. plugin
+				end
+			else
+				effects[#effects + 1] = videoEffect
+			end
+		end
+	end
+
+	for _, guiVideoEffect in pairs(guiVideoEffects) do
+		local match = false
+		for _, videoEffect in pairs(effects) do
+			if guiVideoEffect == videoEffect then
+				match = true
+			end
+		end
+		if not match then
+			log.df("Missing Generator: %s", guiVideoEffect)
+		end
+	end
+
+end
+
+-- compareResultToGUIScriptingTitles() -> none
+-- Function
+-- Compares these Scan Results to the original method.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function compareResultToGUIScriptingTitles()
+
+	local guiVideoEffects = config.get("en.allTitles")
+
+	local effects = {}
+	for _, videoEffects in pairs(mod._currentScan["en"]["Titles"]) do
+		for category, videoEffect in pairs(videoEffects) do
+			if type(videoEffect) == "table" then
+				for _, plugin in pairs(videoEffect) do
+					--log.df("Match: %s", category .. " - " .. plugin)
+					effects[#effects + 1] = category .. " - " .. plugin
+				end
+			else
+				effects[#effects + 1] = videoEffect
+			end
+		end
+	end
+
+	for _, guiVideoEffect in pairs(guiVideoEffects) do
+		local match = false
+		for _, videoEffect in pairs(effects) do
+			if guiVideoEffect == videoEffect then
+				match = true
+			end
+		end
+		if not match then
+			log.df("Missing Title: %s", guiVideoEffect)
+		end
+	end
+
+end
+
+-- compareResultToGUIScriptingTransitions() -> none
+-- Function
+-- Compares these Scan Results to the original method.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function compareResultToGUIScriptingTransitions()
+
+	local guiVideoEffects = config.get("en.allTransitions")
+
+	local effects = {}
+	for _, videoEffects in pairs(mod._currentScan["en"]["Transitions"]) do
+		for category, videoEffect in pairs(videoEffects) do
+			if type(videoEffect) == "table" then
+				for _, plugin in pairs(videoEffect) do
+					--log.df("Match: %s", category .. " - " .. plugin)
+					effects[#effects + 1] = category .. " - " .. plugin
+				end
+			else
+				effects[#effects + 1] = videoEffect
+			end
+		end
+	end
+
+	for _, guiVideoEffect in pairs(guiVideoEffects) do
+		local match = false
+		for _, videoEffect in pairs(effects) do
+			if guiVideoEffect == videoEffect then
+				match = true
+			end
+		end
+		if not match then
+			log.df("Missing Transition: %s", guiVideoEffect)
+		end
+	end
+
+end
+
+--- cp.apple.finalcutpro.scanplugins:scan() -> none
 --- Function
 --- Scans Final Cut Pro for Effects, Transitions, Generators & Titles
 ---
 --- Parameters:
----  * None
+---  * fcp - the `cp.apple.finalcutpro` instance
 ---
 --- Returns:
 ---  * None
 function mod:scan(fcp)
 
 	--------------------------------------------------------------------------------
+	-- Reset Results Table:
+	--------------------------------------------------------------------------------
+	mod._currentScan = {}
+
+	--------------------------------------------------------------------------------
 	-- Setup Final Cut Pro Variables:
 	--------------------------------------------------------------------------------
 	local fcpPath = fcp:getPath()
-	local supportedLanguages = fcp.SUPPORTED_LANGUAGES
+
+	--------------------------------------------------------------------------------
+	-- Define Supported Languages:
+	--------------------------------------------------------------------------------
+	mod.supportedLanguages = fcp.SUPPORTED_LANGUAGES
+
+	--------------------------------------------------------------------------------
+	-- Core Audio Preferences File:
+	--------------------------------------------------------------------------------
+	mod.coreAudioPreferences = "/System/Library/Components/CoreAudio.component/Contents/Info.plist"
 
 	--------------------------------------------------------------------------------
 	-- Define Search Paths:
 	--------------------------------------------------------------------------------
-	local paths = {
+	mod.scanPaths = {
 		"~/Movies/Motion Templates.localized/{type}.localized",
 		"/Library/Application Support/Final Cut Pro/Templates.localized/{type}.localized",
 		fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized/{type}.localized",
 		fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/{type}.localized",
+	}
+
+	--------------------------------------------------------------------------------
+	-- Define Effect Bundles Paths:
+	--------------------------------------------------------------------------------
+	mod.effectBundlesPaths = {
 		fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/Effect Bundles",
+	}
+
+	--------------------------------------------------------------------------------
+	-- Define Effect Presets Paths:
+	--------------------------------------------------------------------------------
+	mod.effectPresetPaths = {
+		"~/Library/Application Support/ProApps/Effects Presets/",
+	}
+
+	--------------------------------------------------------------------------------
+	-- Define Soundtrack Pro EDEL Effects Paths:
+	--------------------------------------------------------------------------------
+	mod.edelEffectPaths = {
+		fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
 	}
 
 	--------------------------------------------------------------------------------
 	-- Define Plugin Types:
 	--------------------------------------------------------------------------------
-	local types = {
-		["AudioEffects"] 	= 	{ "effectBundle" },
+	mod.pluginTypes = {
 		["Effects"] 		= 	{ "moef" },
 		["Transitions"]		= 	{ "motr" },
 		["Generators"] 		= 	{ "motn" },
@@ -532,7 +1015,7 @@ function mod:scan(fcp)
 	--------------------------------------------------------------------------------
 	-- Built-in Effects:
 	--------------------------------------------------------------------------------
-	local builtinEffects = {
+	mod.builtinEffects = {
 		["Color"] 			= 	{ "Color Correction" },
 		["Masks"] 			= 	{ "Draw Mask", "Shape Mask" },
 		["Stylize"] 		= 	{ "Drop Shadow" },
@@ -540,150 +1023,157 @@ function mod:scan(fcp)
 	}
 
 	--------------------------------------------------------------------------------
-	-- Setup Results Table:
+	-- Built-in Transitions:
 	--------------------------------------------------------------------------------
-	local scanResults = {}
+	mod.builtinTransitions = {
+		["Dissolves"] = { "Cross Dissolve", "Fade To Color", "Flow" },
+		["Movements"] = { "Spin", "Swap", "Ripple", "Mosaic", "Puzzle" },
+		["Objects"] = { "Star", "Doorway" },
+		["Wipes"] = { "Band", "Center", "Checker", "Chevron", "Circle", "Clock", "Gradient Image", "Inset Wipe", "Letter X", "Wipe" },
+		["Blurs"] = { "Zoom & Pan", "Simple" },
+	}
 
 	--------------------------------------------------------------------------------
-	-- Scan Plugins for Every Supported Language:
+	-- Built-in Soundtrack Pro EDEL Effects:
 	--------------------------------------------------------------------------------
-	for _, currentLanguage in pairs(supportedLanguages) do
+	mod.buildinSoundtrackProEDELEffects = {
+		["Distortion"] = {
+			"Bitcrusher",
+			"Clip Distortion",
+			"Distortion",
+			"Distortion II",
+			"Overdrive",
+			"Phase Distortion",
+			"Ringshifter",
+		},
+		["Echo"] = {
+			"Delay Designer",
+			"Modulation Delay",
+			"Stereo Delay",
+			"Tape Delay",
+		},
+		["EQ"] = {
+			"AutoFilter",
+			"Channel EQ", -- This isn't actually listed as a Logic plugin in FCPX, but it is.
+			"Fat EQ",
+			"Linear Phase EQ",
+		},
+		["Levels"] = {
+			"Adaptive Limiter",
+			"Compressor",
+			"Enveloper",
+			"Expander",
+			"Gain",
+			"Limiter",
+			"Multichannel Gain",
+			"Multipressor",
+			"Noise Gate",
+			"Spectral Gate",
+			"Surround Compressor",
+		},
+		["Modulation"] = {
+			"Chorus",
+			"Ensemble",
+			"Flanger",
+			"Phaser",
+			"Scanner Vibrato",
+			"Tremolo"
+		},
+		["Spaces"] = {
+			"PlatinumVerb",
+			"Space Designer",
+		},
+		["Specialized"] = {
+			"Correlation Meter",
+			"Denoiser",
+			"Direction Mixer",
+			"Exciter",
+			"MultiMeter",
+			"Stereo Spread",
+			"SubBass",
+			"Test Oscillator",
+		},
+		["Voice"] = {
+			"DeEsser",
+			"Pitch Correction",
+			"Pitch Shifter II",
+			"Vocal Transformer",
+		},
+	}
 
-		--------------------------------------------------------------------------------
-		-- Define Current Language we're working with:
-		--------------------------------------------------------------------------------
-		mod.currentLanguage = currentLanguage
-
-		--------------------------------------------------------------------------------
-		-- Setup Blank Table for each Language:
-		--------------------------------------------------------------------------------
-		scanResults[currentLanguage] = {}
-
-		--------------------------------------------------------------------------------
-		-- Setup Blank Table for each Type:
-		--------------------------------------------------------------------------------
-		for v, _ in pairs(types) do
-			scanResults[currentLanguage][v] = {}
-		end
-
-		--------------------------------------------------------------------------------
-		-- Scan Audio Units:
-		--------------------------------------------------------------------------------
-		local audioUnits = scanAudioUnits()
-		for key, value in pairs(audioUnits) do
-			if scanResults[currentLanguage]["AudioEffects"][key] == nil then
-				scanResults[currentLanguage]["AudioEffects"][key] = {}
-			end
-			for _, individualValue in pairs(value) do
-				scanResults[currentLanguage]["AudioEffects"][key][#scanResults[currentLanguage]["AudioEffects"][key] + 1] = individualValue
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Add Built-in Effects:
-		--------------------------------------------------------------------------------
-		for group, effects in pairs(builtinEffects) do
-			if scanResults[currentLanguage]["Effects"][group] == nil then
-				scanResults[currentLanguage]["Effects"][group] = {}
-			end
-			for _, effect in pairs(effects) do
-				scanResults[currentLanguage]["Effects"][group][#scanResults[currentLanguage]["Effects"][group] + 1] = effect
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Scan Effects Presets:
-		--------------------------------------------------------------------------------
-		local effectsPresets = scanEffectsPresets()
-		for group, effects in pairs(effectsPresets) do
-			if scanResults[currentLanguage]["Effects"][group] == nil then
-				scanResults[currentLanguage]["Effects"][group] = {}
-			end
-			for _, effect in pairs(effects) do
-				scanResults[currentLanguage]["Effects"][group][#scanResults[currentLanguage]["Effects"][group] + 1] = effect
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- Scan Plugins:
-		--------------------------------------------------------------------------------
-		for whichType, whichExtensions in pairs(types) do
-			for _, whichExtension in pairs(whichExtensions) do
-				for _, whichPath in ipairs(paths) do
-					local currentPath = string.gsub(whichPath, "{type}", whichType)
-					local result = scanFolder(currentPath, whichExtension)
-					if result then
-						for key, value in pairs(result) do
-							if scanResults[currentLanguage][whichType][key] == nil then
-								scanResults[currentLanguage][whichType][key] = {}
-							end
-							for subcategory, individualValue in pairs(value) do
-								if type(individualValue) == "table" then
-									--------------------------------------------------------------------------------
-									-- Has Subcategory:
-									--------------------------------------------------------------------------------
-									for _, subcategoryItem in pairs(individualValue) do
-										if scanResults[currentLanguage][whichType][key][subcategory] == nil then
-											scanResults[currentLanguage][whichType][key][subcategory] = {}
-										end
-										scanResults[currentLanguage][whichType][key][subcategory][#scanResults[currentLanguage][whichType][key][subcategory] + 1] = subcategoryItem
-									end
-								else
-									--------------------------------------------------------------------------------
-									-- No Subcategory:
-									--------------------------------------------------------------------------------
-									scanResults[currentLanguage][whichType][key][#scanResults[currentLanguage][whichType][key] + 1] = individualValue
-								end
-							end
+	--------------------------------------------------------------------------------
+	-- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
+	--------------------------------------------------------------------------------
+	for _, currentLanguage in pairs(mod.supportedLanguages) do
+		mod._currentScan[currentLanguage] = {}
+		for pluginType, _ in pairs(mod.pluginTypes) do
+			mod._currentScan[currentLanguage][pluginType] = {}
+			if pluginType == "Effects" then
+				--------------------------------------------------------------------------------
+				-- Add Built-in Effects:
+				--------------------------------------------------------------------------------
+				for category, effects in pairs(mod.builtinEffects) do
+					for _, effect in pairs(effects) do
+						if not mod._currentScan[currentLanguage][pluginType][category] then
+							mod._currentScan[currentLanguage][pluginType][category] = {}
 						end
+						mod._currentScan[currentLanguage][pluginType][category][#mod._currentScan[currentLanguage][pluginType][category] + 1] = effect
+					end
+				end
+			elseif pluginType == "Transitions" then
+				--------------------------------------------------------------------------------
+				-- Add Built-in Transitions:
+				--------------------------------------------------------------------------------
+				for category, transitions in pairs(mod.builtinTransitions) do
+					for _, transition in pairs(transitions) do
+						if not mod._currentScan[currentLanguage][pluginType][category] then
+							mod._currentScan[currentLanguage][pluginType][category] = {}
+						end
+						mod._currentScan[currentLanguage][pluginType][category][#mod._currentScan[currentLanguage][pluginType][category] + 1] = transition
 					end
 				end
 			end
 		end
-
 	end
 
 	--------------------------------------------------------------------------------
-	-- Compare GUI Scripting Results to this method:
+	-- Scan Audio Units:
+	--------------------------------------------------------------------------------
+	scanAudioUnits()
+
+	--------------------------------------------------------------------------------
+	-- Scan Soundtrack Pro EDEL Effects:
+	--------------------------------------------------------------------------------
+	scanSoundtrackProEDELEffects()
+
+	--------------------------------------------------------------------------------
+	-- Scan Effect Bundles:
+	--------------------------------------------------------------------------------
+	scanEffectBundles()
+
+	--------------------------------------------------------------------------------
+	-- Scan Effect Presets:
+	--------------------------------------------------------------------------------
+	scanEffectsPresets()
+
+	--------------------------------------------------------------------------------
+	-- Scan Plugins:
+	--------------------------------------------------------------------------------
+	scanPlugins()
+
+	--------------------------------------------------------------------------------
+	-- Tests to compare these scans to previous GUI Scripted scans:
 	--------------------------------------------------------------------------------
 	--[[
-	local guiVideoEffects = config.get(fcp:getCurrentLanguage() .. ".allVideoEffects")
-
-	local effects = {}
-	for _, videoEffects in pairs(scanResults["en"]["Effects"]) do
-		for _, videoEffect in pairs(videoEffects) do
-			effects[#effects + 1] = videoEffect
-		end
-	end
-
-	for _, guiVideoEffect in pairs(guiVideoEffects) do
-
-		local match = false
-		for _, videoEffect in pairs(effects) do
-
-			if guiVideoEffect == videoEffect then
-				match = true
-			end
-			if string.find(guiVideoEffect, "%s%-%s") then
-				if string.sub(guiVideoEffect, string.find(guiVideoEffect, "%s%-%s") + 3) == videoEffect then
-					match = true
-				end
-			end
-		end
-		if not match then
-			log.df("Missing Effect: %s", guiVideoEffect)
-		end
-	end
-
-	log.df("------")
-
-	log.df("effects: %s", hs.inspect(effects))
+	log.df("Results: %s", hs.inspect(mod._currentScan))
+	compareResultToGUIScriptingEffects()
+	compareResultToGUIScriptingAudioEffects()
+	compareResultToGUIScriptingGenerators()
+	compareResultToGUIScriptingTitles()
+	compareResultToGUIScriptingTransitions()
 	--]]
 
-
-	--log.df("scanResults: %s", hs.inspect(scanResults))
-
-	return scanResults
+	return mod._currentScan
 
 end
 
