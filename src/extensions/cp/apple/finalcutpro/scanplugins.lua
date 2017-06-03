@@ -10,6 +10,9 @@
 ---
 --- Usage: require("cp.apple.finalcutpro"):scanPlugins()
 
+-- TO-DO:
+--  * Work out a way to translate the built-in effects and transitions
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -104,7 +107,10 @@ local function readLocalizedFile(folder, currentLanguageFile)
 		if isBinaryPlist(currentLanguageFile) then
 			local plistValues = plist.fileToTable(currentLanguageFile)
 			if plistValues then
-				local folderCode = string.sub(folder, 1, -11)
+				local folderCode = folder
+				if string.sub(folder, -10) == ".localized" then
+					folderCode = string.sub(folder, 1, -11)
+				end
 				if plistValues[folderCode] then
 					return plistValues[folderCode]
 				end
@@ -165,32 +171,35 @@ end
 --
 -- Returns:
 --  * Localised folder name as a string
-local function getLocalizedFolderName(path, folder, languageCode)
-	if string.sub(folder, -10) == ".localized" then
-		local localizedFolder = path .. "/" .. folder .. "/.localized"
-		local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
-		if localizedFolderExists then
-			--------------------------------------------------------------------------------
-			-- Try languageCode first:
-			--------------------------------------------------------------------------------
-			local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
-			local result = readLocalizedFile(folder, currentLanguageFile)
-			if result then
-				--log.df("Result: Current Locale")
-				return fixDashes(result)
-			end
-			--------------------------------------------------------------------------------
-			-- If that fails try English:
-			--------------------------------------------------------------------------------
-			local currentLanguageFile = localizedFolder .. "/en.strings"
-			local result = readLocalizedFile(folder, currentLanguageFile)
-			if result then
-				return fixDashes(result)
-			end
+--
+-- Notes:
+--  * getLocalizedFolderName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/Transitions.localized/Stylized.localized", "Sports.localized", "de")
+function getLocalizedFolderName(path, folder, languageCode)
+	local localizedFolder = path .. "/" .. folder .. "/.localized"
+	local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
+	if localizedFolderExists then
+		--------------------------------------------------------------------------------
+		-- Try languageCode first:
+		--------------------------------------------------------------------------------
+		local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
+		local result = readLocalizedFile(folder, currentLanguageFile)
+		if result then
+			return fixDashes(result)
 		end
-		return fixDashes(string.sub(folder, 1, -11))
+		--------------------------------------------------------------------------------
+		-- If that fails try English:
+		--------------------------------------------------------------------------------
+		local currentLanguageFile = localizedFolder .. "/en.strings"
+		local result = readLocalizedFile(folder, currentLanguageFile)
+		if result then
+			return fixDashes(result)
+		end
 	end
-	return fixDashes(folder)
+	if string.sub(folder, -10) == ".localized" then
+		return fixDashes(string.sub(folder, 1, -11))
+	else
+		return fixDashes(folder)
+	end
 end
 
 -- getLocalizedFileName(path, folder) -> string
@@ -203,7 +212,10 @@ end
 --
 -- Returns:
 --  * Localised file name as a string
-local function getLocalizedFileName(path, file, languageCode)
+--
+-- Notes:
+--  * getLocalizedFileName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/Transitions.localized/Stylized.localized/Sports.localized/Diagonal Slide.localized", "Diagonal Slide.motr", "de")
+function getLocalizedFileName(path, file, languageCode)
 
 	local fileWithoutExtension = string.match(file, "(.+)%..+")
 
@@ -478,7 +490,25 @@ local function processPlugin(path, file)
 				local category = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 4), pathCompontents[#pathCompontents - 3], currentLanguage)
 
 				if not subcategory then
+					--------------------------------------------------------------------------------
+					-- There was not Motion Theme:
+					--------------------------------------------------------------------------------
 					subcategory = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 3), pathCompontents[#pathCompontents - 2], currentLanguage)
+				else
+					--------------------------------------------------------------------------------
+					-- There was a Motion Theme but maybe it should be overridden:
+					--------------------------------------------------------------------------------
+					local localisedSubcategory = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 3), pathCompontents[#pathCompontents - 2], currentLanguage)
+					local folderName = pathCompontents[#pathCompontents - 2]
+
+					if string.sub(folderName, -10) == ".localized" then
+						folderName = string.sub(folderName, 1, -11)
+					end
+
+					if folderName ~= localisedSubcategory then
+						subcategory = localisedSubcategory
+					end
+
 				end
 
 				local plugin = getLocalizedFileName(combinePath(pathCompontents, #pathCompontents - 1), pathCompontents[#pathCompontents], currentLanguage)
