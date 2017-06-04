@@ -1008,6 +1008,45 @@ local function compareResultToGUIScriptingTransitions()
 
 end
 
+-- translateInternalEffect(input, language) -> none
+-- Function
+-- Translates an Effect Bundle Item
+--
+-- Parameters:
+--  * input - The original name
+--  * language - The language code you want to attempt to translate to
+--
+-- Returns:
+--  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings")
+function translateInternalEffect(input, language)
+
+	languageCodes = {
+		fr	= "French",
+		de	= "German",
+		ja	= "Japanese",
+		es	= "Spanish",
+		zh_CN = "zh_CN",
+	}
+
+	if language == "en" or not languageCodes[language] then
+		return input
+	end
+	local prefsPath = mod.internalEffectPreferencesPath .. "English.lproj/Localizable.strings"
+	local plistResult = plist.fileToTable(prefsPath)
+	if plistResult then
+		for key, string in pairs(plistResult) do
+			if string == input then
+				local newPrefsPath = mod.internalEffectPreferencesPath .. languageCodes[language] .. ".lproj/Localizable.strings"
+				local newPlistResult = plist.fileToTable(newPrefsPath)
+				if newPlistResult and newPlistResult[key] then
+					return newPlistResult[key]
+				end
+			end
+		end
+	end
+	return input
+end
+
 --- cp.apple.finalcutpro.scanplugins:scan() -> none
 --- Function
 --- Scans Final Cut Pro for Effects, Transitions, Generators & Titles
@@ -1085,6 +1124,11 @@ function mod:scan(fcp)
 		["Generators"] 		= 	{ "motn" },
 		["Titles"] 			= 	{ "moti" },
 	}
+
+	--------------------------------------------------------------------------------
+	-- Define Internal Effect Preferences Path:
+	--------------------------------------------------------------------------------
+	mod.internalEffectPreferencesPath = fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/"
 
 	--------------------------------------------------------------------------------
 	-- Built-in Effects:
@@ -1191,7 +1235,7 @@ function mod:scan(fcp)
 						if not mod._currentScan[currentLanguage][pluginType][category] then
 							mod._currentScan[currentLanguage][pluginType][category] = {}
 						end
-						mod._currentScan[currentLanguage][pluginType][category][#mod._currentScan[currentLanguage][pluginType][category] + 1] = effect
+						mod._currentScan[currentLanguage][pluginType][category][#mod._currentScan[currentLanguage][pluginType][category] + 1] = translateInternalEffect(effect, currentLanguage)
 					end
 				end
 			elseif pluginType == "Transitions" then
@@ -1203,7 +1247,7 @@ function mod:scan(fcp)
 						if not mod._currentScan[currentLanguage][pluginType][category] then
 							mod._currentScan[currentLanguage][pluginType][category] = {}
 						end
-						mod._currentScan[currentLanguage][pluginType][category][#mod._currentScan[currentLanguage][pluginType][category] + 1] = transition
+						mod._currentScan[currentLanguage][pluginType][category][#mod._currentScan[currentLanguage][pluginType][category] + 1] = translateInternalEffect(transition, currentLanguage)
 					end
 				end
 			end
