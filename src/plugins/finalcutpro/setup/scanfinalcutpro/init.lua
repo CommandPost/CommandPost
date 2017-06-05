@@ -39,6 +39,43 @@ local PRIORITY = 1
 local mod = {}
 
 --------------------------------------------------------------------------------
+-- NEW SCAN FINAL CUT PRO:
+--------------------------------------------------------------------------------
+function mod.newScanFinalCutPro()
+	dialog.displayMessage("We will now scan Final Cut Pro for Effects, Transitions, Generators and Titles. This can take several minutes.")
+	local result = fcp:scanPlugins()
+
+	log.df("Result: %s", hs.inspect(result))
+
+	if result then
+		local effectTypes = { "Effects", "Transitions", "AudioEffects", "Generators", "Titles" }
+		for _, currentLanguage in pairs(fcp.SUPPORTED_LANGUAGES) do
+			for _, effectType in pairs(effectTypes) do
+
+				local effects = {}
+				for _, videoEffects in ipairs(result[currentLanguage][effectType]) do
+					for category, videoEffect in ipairs(videoEffects) do
+						if type(videoEffect) == "table" then
+							for _, plugin in ipairs(videoEffect) do
+								--log.df("Match: %s", category .. " - " .. plugin)
+								effects[#effects + 1] = category .. " - " .. plugin
+							end
+						else
+							effects[#effects + 1] = videoEffect
+						end
+					end
+				end
+
+				config.set(currentLanguage .. ".all" .. effectType)
+
+			end
+		end
+	else
+		dialog.displayErrorMessage("Something went wrong when scanning Final Cut Pro.")
+	end
+end
+
+--------------------------------------------------------------------------------
 -- SCAN FINAL CUT PRO:
 --------------------------------------------------------------------------------
 function mod.scanFinalCutPro()
@@ -145,10 +182,18 @@ function plugin.init(deps, env)
 
 		:addButton(11,
 			{
-				label = i18n("scanFinalCutPro"),
+				label = i18n("scanFinalCutPro") .. " (GUI Scripting)",
 				onclick = mod.scanFinalCutPro,
 			}
 		)
+
+		:addButton(12,
+			{
+				label = i18n("scanFinalCutPro") .. " (File System)",
+				onclick = mod.newScanFinalCutPro,
+			}
+		)
+
 	end
 
 	-- Add a setup panel if the initial onboarding is not complete and a scan is required.

@@ -101,6 +101,7 @@ local watcher									= require("cp.watcher")
 local axutils									= require("cp.apple.finalcutpro.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local destinations								= require("cp.apple.finalcutpro.export.destinations")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
 local kc										= require("cp.apple.finalcutpro.keycodes")
@@ -108,11 +109,11 @@ local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local MenuBar									= require("cp.apple.finalcutpro.MenuBar")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
+local scanPlugins								= require("cp.apple.finalcutpro.scanplugins")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
-local destinations								= require("cp.apple.finalcutpro.export.destinations")
 
 --------------------------------------------------------------------------------
 --
@@ -504,6 +505,28 @@ App.isModalDialogOpen = prop.new(function(self)
 	end
 	return false
 end):bind(App)
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- SCAN PLUGINS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:scanPlugins() -> table
+--- Method
+--- Scan Final Cut Pro Plugins
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A MenuBar object
+function App:scanPlugins()
+	return scanPlugins:scan(self)
+end
+
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
@@ -1159,6 +1182,20 @@ App.fileMenuTitle = {
 	["ファイル"]		= "ja",
 	["文件"]			= "zh_CN"
 }
+
+--- cp.apple.finalcutpro:setCurrentLanguage() -> none
+--- Method
+--- Sets the language Final Cut Pro is currently using.
+---
+--- Parameters:
+---  * none
+---
+--- Returns:
+---  * Returns the current language as string.
+function App:setCurrentLanguage(language)
+	self._currentLanguage = language
+	return self._currentLanguage
+end
 
 --- cp.apple.finalcutpro:getCurrentLanguage() -> string
 --- Method
