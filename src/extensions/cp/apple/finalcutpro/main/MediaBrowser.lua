@@ -117,7 +117,7 @@ end
 -- TODO: Add documentation
 function MediaBrowser:sidebar()
 	if not self._sidebar then
-		self._sidebar = Table:new(self, function()
+		self._sidebar = Table.new(self, function()
 			return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
 		end)
 	end

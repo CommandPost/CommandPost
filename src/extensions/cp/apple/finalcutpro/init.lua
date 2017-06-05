@@ -592,16 +592,19 @@ function App:menuBar()
 			end
 			return nil
 		end)
-		-- Add a finder for 'Commands'
+		-- Add a finder for missing menus
+		local missingMenuMap = {
+			{ path = {"Final Cut Pro"},					child = "Commands",		key = "CommandSubmenu" },
+			{ path = {"Final Cut Pro", "Commands"},		child = "Customize…",	key = "Customize" },
+			{ path = {"Clip"},							child = "Open Clip",	key = "FFOpenInTimeline" },
+			{ path = {"Window", "Show in Workspace"},	child = "Sidebar",		key = "PEEventsLibrary" },
+			{ path = {"Window", "Show in Workspace"},	child = "Timeline",		key = "PETimeline" },
+		}
+		
 		menuBar:addMenuFinder(function(parentItem, path, childName, language)
-			if _.isEqual(path, {"Final Cut Pro"}) then
-				if childName == "Commands" then
-					-- look for Commands with the local name via `CommandsSubmenu`.
-					return axutils.childWith(parentItem, "AXTitle", self:string("CommandSubmenu"))
-				end
-			elseif _.isEqual(path, {"Final Cut Pro", "Commands"}) then
-				if childName == "Customize…" then
-					return axutils.childWith(parentItem, "AXTitle", self:string("Customize"))
+			for i,item in ipairs(missingMenuMap) do
+				if _.isEqual(path, item.path) and childName == item.child then
+					return axutils.childWith(parentItem, "AXTitle", self:string(item.key))
 				end
 			end
 			return nil
@@ -1219,14 +1222,29 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
-App.fileMenuTitle = {
-	["File"]		= "en",
-	["Ablage"]		= "de",
-	["Archivo"]		= "es",
-	["Fichier"]		= "fr",
-	["ファイル"]		= "ja",
-	["文件"]			= "zh_CN"
-}
+--- cp.apple.finalcutpro:setCurrentLanguage(language) -> boolean
+--- Method
+--- Sets the langauge to the specified `language` and restarts FCPX if necessary.
+---
+--- Properties:
+---  * `language`	 - The language key (e.g. "en")
+---
+--- Returns:
+---  * `true` if the language was changed successfully.
+function App:setCurrentLanguage(language)
+	local current = self:getCurrentLanguage()
+	if self:isSupportedLanguage(language) then
+		if current ~= language then
+			self:setPreference("AppleLanguages", {language})
+			self._currentLanguage = nil
+			if self:isRunning() then
+				self:restart()
+			end
+		end
+		return true
+	end
+	return false
+end
 
 --- cp.apple.finalcutpro:getCurrentLanguage() -> string
 --- Method

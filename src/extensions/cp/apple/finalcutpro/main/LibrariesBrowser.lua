@@ -245,7 +245,7 @@ end
 -- TODO: Add documentation
 function Libraries:sidebar()
 	if not self._sidebar then
-		self._sidebar = Table:new(self, function()
+		self._sidebar = Table.new(self, function()
 			return axutils.childMatching(self:mainGroupUI(), Libraries.matchesSidebar)
 		end):uncached()
 	end
@@ -258,12 +258,40 @@ function Libraries.matchesSidebar(element)
 		and element:attributeValue("AXIdentifier") == id "Sidebar"
 end
 
+function Libraries:selectLibrary(...)
+	return Table.selectRow(self:sidebar():topRowsUI(), table.pack(...))
+end
+
+function Libraries:openClipTitled(name)
+	if self:selectClipTitled(name) then
+		self:app():launch()
+		local menuBar = self:app():menuBar()
+		-- ensure the Libraries browser is focused
+		menuBar:selectMenu({"Window", "Go To", "Libraries"})
+		-- open the clip.
+		just.doUntil(function() return menuBar:findMenuUI({"Clip", "Open Clip"}):enabled() end)
+		menuBar:selectMenu({"Clip", "Open Clip"})
+		return true
+	end
+	return false
+end
+
 -- TODO: Add documentation
-function Libraries:clipsUI()
+function Libraries:clipsUI(filterFn)
 	if self:isListView() then
-		return self:list():clipsUI()
+		return self:list():clipsUI(filterFn)
 	elseif self:isFilmstripView() then
-		return self:filmstrip():clipsUI()
+		return self:filmstrip():clipsUI(filterFn)
+	else
+		return nil
+	end
+end
+
+function Libraries:clips(filterFn)
+	if self:isListView() then
+		return self:list():clips(filterFn)
+	elseif self:isFilmstripView() then
+		return self:filmstrip():clips(filterFn)
 	else
 		return nil
 	end
@@ -280,53 +308,73 @@ function Libraries:selectedClipsUI()
 	end
 end
 
--- TODO: Add documentation
-function Libraries:showClip(clipUI)
+function Libraries:selectedClips()
 	if self:isListView() then
-		self:list():showClip(clipUI)
+		return self:list():selectedClips()
+	elseif self:isFilmstripView() then
+		return self:filmstrip():selectedClips()
 	else
-		self:filmstrip():showClip(clipUI)
+		return nil
 	end
-	return self
 end
 
 -- TODO: Add documentation
-function Libraries:selectClip(clipUI)
+function Libraries:showClip(clip)
 	if self:isListView() then
-		self:list():selectClip(clipUI)
+		return self:list():showClip(clip)
+	else
+		return self:filmstrip():showClip(clip)
+	end
+	return false
+end
+
+-- TODO: Add documentation
+function Libraries:selectClip(clip)
+	if self:isListView() then
+		return self:list():selectClip(clip)
 	elseif self:isFilmstripView() then
-		self:filmstrip():selectClip(clipUI)
+		return self:filmstrip():selectClip(clip)
 	else
 		log.df("ERROR: cannot find either list or filmstrip UI")
+		return false
 	end
-	return self
 end
 
 -- TODO: Add documentation
 function Libraries:selectClipAt(index)
 	if self:isListView() then
-		self:list():selectClipAt(index)
+		return self:list():selectClipAt(index)
 	else
-		self:filmstrip():selectClipAt(index)
+		return self:filmstrip():selectClipAt(index)
 	end
-	return self
+end
+
+function Libraries:selectClipTitled(title)
+	local clips = self:clips()
+	for _,clip in ipairs(clips) do
+		if clip:getTitle() == title then
+			self:selectClip(clip)
+			return true
+		end
+	end
+	return false
 end
 
 -- TODO: Add documentation
-function Libraries:selectAll(clipsUI)
+function Libraries:selectAll(clips)
 	if self:isListView() then
-		self:list():selectAll(clipsUI)
+		return self:list():selectAll(clips)
 	else
-		self:filmstrip():selectAll(clipsUI)
+		return self:filmstrip():selectAll(clips)
 	end
 end
 
 -- TODO: Add documentation
 function Libraries:deselectAll()
 	if self:isListView() then
-		self:list():deselectAll()
+		return self:list():deselectAll()
 	else
-		self:filmstrip():deselectAll()
+		return self:filmstrip():deselectAll()
 	end
 end
 

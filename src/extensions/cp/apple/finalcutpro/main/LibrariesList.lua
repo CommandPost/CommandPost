@@ -13,8 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local _									= require("moses")
+
 local axutils							= require("cp.ui.axutils")
 local Table								= require("cp.ui.Table")
+
+local Clip								= require("cp.apple.finalcutpro.content.Clip")
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
@@ -132,7 +136,7 @@ end
 -- TODO: Add documentation
 function List:contents()
 	if not self._content then
-		self._content = Table:new(self, function()
+		self._content = Table.new(self, function()
 			return axutils.childWithRole(self:UI(), "AXScrollArea")
 		end)
 	end
@@ -140,7 +144,7 @@ function List:contents()
 end
 
 -- TODO: Add documentation
-function List:clipsUI()
+function List:clipsUI(filterFn)
 	local rowsUI = self:contents():rowsUI()
 	if rowsUI then
 		local level = 0
@@ -149,9 +153,33 @@ function List:clipsUI()
 		if firstCell and axutils.childWithID(firstCell, id "RowIcon") == nil then
 			level = 1
 		end
-		return axutils.childrenWith(rowsUI, "AXDisclosureLevel", level)
+		return axutils.childrenMatching(rowsUI, function(row)
+			return row:attributeValue("AXDisclosureLevel") == level
+			   and (filterFn == nil or filterFn(row))
+		end)
 	end
 	return nil
+end
+
+function List:_uiToClips(clipsUI)
+	local columnIndex = self:contents():findColumnIndex("filmlist name col")
+	local options = {columnIndex = columnIndex}
+	return _.map(clipsUI, function(_,clipUI)
+		return Clip.new(clipUI, options)
+	end)
+end
+
+function List:_clipsToUI(clips)
+	return _.map(clips, function(_,clip) return clip:UI() end)
+end
+
+function List:clips(filterFn)
+	local clips = self:_uiToClips(self:clipsUI())
+	if filterFn then
+		clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+	end
+	return clips
+	
 end
 
 -- TODO: Add documentation
@@ -159,33 +187,51 @@ function List:selectedClipsUI()
 	return self:contents():selectedRowsUI()
 end
 
+function List:selectedClips()
+	return self:_uiToClips(self:contents():selectedRowsUI())
+end
+
 -- TODO: Add documentation
-function List:showClip(clipUI)
-	self:contents():showRow(clipUI)
+function List:showClip(clip)
+	self:contents():showRow(clip:UI())
 	return self
 end
 
 -- TODO: Add documentation
-function List:selectClip(clipUI)
-	self:contents():selectRow(clipUI)
+function List:selectClip(clip)
+	self:contents():selectRow(clip:UI())
 	return self
 end
 
 -- TODO: Add documentation
 function List:selectClipAt(index)
-	self:contents():selectRowAt(index)
+	local clips = self:clipsUI()
+	if clips and #clips <= index then
+		self:contents():selectRow(clips[index])
+	end
+	return self
+end
+
+function List:selectClipTitled(title)
+	local clips = self:clips()
+	for _,clip in ipairs(clips) do
+		if clip:getTitle() == title then
+			self:selectClip(clip)
+			return self
+		end
+	end
 	return self
 end
 
 -- TODO: Add documentation
-function List:selectAll(clipsUI)
-	self:contents():selectAll(clipsUI)
+function List:selectAll(clips)
+	self:contents():selectAll(self:_clipsToUI(clips))
 	return self
 end
 
 -- TODO: Add documentation
-function List:deselectAll(clipsUI)
-	self:contents():deselectAll(clipsUI)
+function List:deselectAll(clips)
+	self:contents():deselectAll(self:_clipsToUI(clips))
 	return self
 end
 

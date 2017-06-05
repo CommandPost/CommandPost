@@ -59,12 +59,14 @@ end
 
 -- TODO: Add documentation
 function Button:isEnabled()
-	return self:UI():enabled()
+	local ui = self:UI()
+	return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
 function Button:press()
-	self:UI():doPress()
+	local ui = self:UI()
+	if ui then ui:doPress() end
 	return self
 end
 

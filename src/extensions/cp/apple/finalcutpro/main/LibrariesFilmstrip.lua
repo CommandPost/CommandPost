@@ -13,9 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local _									= require("moses")
+
 local axutils							= require("cp.ui.axutils")
 
 local tools								= require("cp.tools")
+local Clip								= require("cp.apple.finalcutpro.content.Clip")
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
@@ -146,17 +149,36 @@ function Filmstrip.sortClips(a, b)
 	return false -- b is first
 end
 
+function Filmstrip:_uiToClips(clipsUI)
+	return _.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
+end
+
+function Filmstrip:_clipsToUI(clips)
+	return _.map(clips, function(_,clip) return clip:UI() end)
+end
+
 -- TODO: Add documentation
-function Filmstrip:clipsUI()
+function Filmstrip:clipsUI(filterFn)
 	local ui = self:contentsUI()
 	if ui then
-		local clips = axutils.childrenWithRole(ui, "AXGroup")
+		local clips = axutils.childrenMatching(ui, function(child)
+			return child:attributeValue("AXRole") == "AXGroup"
+			   and (filterFn == nil or filterFn(child))
+		end)
 		if clips then
 			table.sort(clips, Filmstrip.sortClips)
 			return clips
 		end
 	end
 	return nil
+end
+
+function Filmstrip:clips(filterFn)
+	local clips = self:_uiToClips(self:clipsUI())
+	if filterFn then
+		clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+	end
+	return clips
 end
 
 -- TODO: Add documentation
@@ -174,8 +196,13 @@ function Filmstrip:selectedClipsUI()
 	return nil
 end
 
+function Filmstrip:selectedClips()
+	return self:_uiToClips(self:selectedClipsUI())
+end
+
 -- TODO: Add documentation
-function Filmstrip:showClip(clipUI)
+function Filmstrip:showClip(clip)
+	local clipUI = clip:UI()
 	local ui = self:UI()
 	if ui then
 		local vScroll = self:verticalScrollBarUI()
@@ -201,45 +228,58 @@ function Filmstrip:showClip(clipUI)
 			end
 			vScroll:setAttributeValue("AXValue", vValue)
 		end
+		return true
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
 function Filmstrip:showClipAt(index)
-	local ui = self:clipsUI()
+	local ui = self:clips()
 	if ui and #ui >= index then
-		self:showClip(ui[index])
+		return self:showClip(ui[index])
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
-function Filmstrip:selectClip(clipUI)
+function Filmstrip:selectClip(clip)
+	local clipUI = clip:UI()
 	if axutils.isValid(clipUI) then
 		clipUI:parent():setSelectedChildren( { clipUI } )
+		return true
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
 function Filmstrip:selectClipAt(index)
-	local ui = self:clipsUI()
+	local ui = self:clips()
 	if ui and #ui >= index then
-		self:selectClip(ui[index])
+		return self:selectClip(ui[index])
 	end
-	return self
+	return false
+end
+
+function Filmstrip:selectClipTitled(title)
+	local clips = self:clips()
+	for _,clip in ipairs(clips) do
+		if clip:getTitle() == title then
+			return self:selectClip(clip)
+		end
+	end
+	return false
 end
 
 -- TODO: Add documentation
-function Filmstrip:selectAll(clipsUI)
-	clipsUI = clipsUI or self:clipsUI()
-	if clipsUI then
-		for i,clip in ipairs(clipsUI) do
-			self:selectClip(clip)
+function Filmstrip:selectAll(clips)
+	clips = clips or self:clips()
+	if clips then
+		for i,clip in ipairs(clips) do
+			return self:selectClip(clip)
 		end
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
@@ -247,8 +287,9 @@ function Filmstrip:deselectAll()
 	local contents = self:contentsUI()
 	if contents then
 		contents:setSelectedChildren({})
+		return true
 	end
-	return self
+	return false
 end
 
 return Filmstrip
