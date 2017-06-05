@@ -54,7 +54,7 @@ function plist.base64ToTable(base64Data)
 		log.d("Failed to convert base64 data to a binary plist: " .. tostring(executeOutput))
 	else
 		-- Convert the Binary plist file to a LUA table:
-		plistTable, err = plist.binaryFileToTable(plistFileName)
+		plistTable, err = plist.fileToTable(plistFileName)
 	end
 
 	-- Clean up the Temporary Files:
