@@ -6,14 +6,28 @@
 
 --- === cp.apple.finalcutpro.scanplugins ===
 ---
---- Scan Final Cut Pro files for Effects, Generators, Titles & Transitions
+--- Scan Final Cut Pro bundle for Effects, Generators, Titles & Transitions.
 ---
---- Usage: require("cp.apple.finalcutpro"):scanPlugins()
+--- Usage:
+--- require("cp.apple.finalcutpro"):scanPlugins()
 
--- TO-DO:
---  * Use /Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings
---    values to determine translation for built-in effects.
 
+--------------------------------------------------------------------------------
+--
+-- NOTE: This might be useful? But no cache for 'es'?
+--
+-- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_de
+-- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_en
+-- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_fr
+-- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_ja
+-- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_zh-Hans
+--
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+-- GREP NOTES:
+--------------------------------------------------------------------------------
 --[[
 grep -lr "Cross Dissolve" /Applications/Final\ Cut\ Pro.app/Contents
 /Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFAnchoredTimelineModule-iMovie.nib
@@ -25,7 +39,15 @@ grep -lr "Cross Dissolve" /Applications/Final\ Cut\ Pro.app/Contents
 /Applications/Final Cut Pro.app/Contents/PlugIns/FxPlug/FiltersLegacyPath.bundle/Contents/Resources/English.lproj/Localizable.strings
 /Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings
 /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/MacOS/MotionEffect
+
+grep -lr "Draw Mask" /Applications/Final\ Cut\ Pro.app/Contents
+/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFLocalizable.strings
+/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings
+/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFLocalizable.strings
+/Applications/Final Cut Pro.app/Contents/Resources/FinalCutPro10.help/Contents/Resources/en.lproj/navigation.json
 --]]
+--------------------------------------------------------------------------------
+
 
 --------------------------------------------------------------------------------
 --
@@ -48,10 +70,74 @@ local slaxdom 									= require("slaxml.slaxdom")
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- HELPER FUNCTIONS:
 --
 --------------------------------------------------------------------------------
-local mod = {}
+
+local sbyte, schar = string.byte, string.char
+local sfind, ssub, gsub = string.find, string.sub, string.gsub
+
+local function sub_hex_ent(s)
+	return schar(tonumber(s, 16))
+end
+
+local function sub_dec_ent(s)
+	return schar(tonumber(s))
+end
+
+-- unescape(s) -> string
+-- Function
+-- Unescapes a string
+--
+-- Parameters:
+--  * s - The string you want to unescape
+--
+-- Returns:
+--  * String
+local function unescape(s)
+	s = gsub(s, "&lt;", "<")
+	s = gsub(s, "&gt;", ">")
+	s = gsub(s, "&apos;", "'")
+	s = gsub(s, "&quot;", '"')
+	s = gsub(s, "&#x(%x+);", sub_hex_ent)
+	s = gsub(s, "&#(%d+);", sub_dec_ent)
+	s = gsub(s, "&amp;", "&")
+	return s
+end
+
+-- escape(s) -> string
+-- Function
+-- Escapes a string
+--
+-- Parameters:
+--  * s - The string you want to escape
+--
+-- Returns:
+--  * String
+local function escape(s)
+	s = gsub(s, "&", "&amp;")
+	s = gsub(s, "<", "&lt;")
+	s = gsub(s, ">", "&gt;")
+	s = gsub(s, "'", "&apos;")
+	s = gsub(s, '"', "&quot;")
+	return s
+end
+
+-- string:split(sep) -> table
+-- Function
+-- Splits a string into a table, separated by sep
+--
+-- Parameters:
+--  * sep - Character to use as separator
+--
+-- Returns:
+--  * Table
+function string:split(sep)
+	local sep, fields = sep or ":", {}
+	local pattern = string.format("([^%s]+)", sep)
+	self:gsub(pattern, function(c) fields[#fields+1] = c end)
+	return fields
+end
 
 -- linesFrom(file) -> table
 -- Function
@@ -104,6 +190,26 @@ local function isBinaryPlist(plistList)
 
 end
 
+-- fixDashes(input) -> string
+-- Function
+-- Replaces columns with dashes
+--
+-- Parameters:
+--  * input - The string you want to process
+--
+-- Returns:
+--  * The string with columns replaced with dashes
+local function fixDashes(input)
+	return string.gsub(input, ":", "/")
+end
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
 -- readLocalizedFile(currentLanguageFile) -> string or nil
 -- Function
 -- Reads a .localized file
@@ -114,19 +220,30 @@ end
 -- Returns:
 --  * The translated file name or `nil`
 local function readLocalizedFile(folder, currentLanguageFile)
+
 	if tools.doesFileExist(currentLanguageFile) then
 		--------------------------------------------------------------------------------
 		-- Binary Plist:
 		--------------------------------------------------------------------------------
 		if isBinaryPlist(currentLanguageFile) then
 			local plistValues = plist.fileToTable(currentLanguageFile)
+
 			if plistValues then
 				local folderCode = folder
 				if string.sub(folder, -10) == ".localized" then
 					folderCode = string.sub(folder, 1, -11)
 				end
+
+				--------------------------------------------------------------------------------
+				-- Escape folderCode:
+				--------------------------------------------------------------------------------
+				folderCode = escape(folderCode)
+
+				--------------------------------------------------------------------------------
+				-- Unescape Result:
+				--------------------------------------------------------------------------------
 				if plistValues[folderCode] then
-					return plistValues[folderCode]
+					return unescape(plistValues[folderCode])
 				end
 			end
 		--------------------------------------------------------------------------------
@@ -158,21 +275,10 @@ local function readLocalizedFile(folder, currentLanguageFile)
 				end
 			end
 		end
+	else
+		log.df("Directory doesn't exist: %s", currentLanguageFile)
 	end
 	return nil
-end
-
--- fixDashes(input) -> string
--- Function
--- Replaces columns with dashes
---
--- Parameters:
---  * input - The string you want to process
---
--- Returns:
---  * The string with columns replaced with dashes
-function fixDashes(input)
-	return string.gsub(input, ":", "/")
 end
 
 -- getLocalizedFolderName(path, folder) -> string
@@ -188,7 +294,8 @@ end
 --
 -- Notes:
 --  * getLocalizedFolderName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/Transitions.localized/Stylized.localized", "Sports.localized", "de")
-function getLocalizedFolderName(path, folder, languageCode)
+--  * getLocalizedFolderName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Distortion.localized", "Crop & Feather.localized", "de")
+local function getLocalizedFolderName(path, folder, languageCode)
 	local localizedFolder = path .. "/" .. folder .. "/.localized"
 	local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
 	if localizedFolderExists then
@@ -229,7 +336,8 @@ end
 --
 -- Notes:
 --  * getLocalizedFileName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/Transitions.localized/Stylized.localized/Sports.localized/Diagonal Slide.localized", "Diagonal Slide.motr", "de")
-function getLocalizedFileName(path, file, languageCode)
+--  * getLocalizedFileName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized/Effects.localized/Distortion.localized/Crop & Feather.localized", "Crop & Feather.moef", "de")
+local function getLocalizedFileName(path, file, languageCode)
 
 	local fileWithoutExtension = string.match(file, "(.+)%..+")
 
@@ -239,7 +347,7 @@ function getLocalizedFileName(path, file, languageCode)
 	if localizedFolderExists then
 
 		--------------------------------------------------------------------------------
-		-- Try current locale first:
+		-- Try languageCode first:
 		--------------------------------------------------------------------------------
 		local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
 		local result = readLocalizedFile(fileWithoutExtension, currentLanguageFile)
@@ -255,27 +363,10 @@ function getLocalizedFileName(path, file, languageCode)
 		if result then
 			return fixDashes(result)
 		end
-
 	end
 
 	return fixDashes(fileWithoutExtension)
 
-end
-
--- string:split(sep) -> table
--- Function
--- Splits a string into a table, separated by sep
---
--- Parameters:
---  * sep - Character to use as separator
---
--- Returns:
---  * Table
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields+1] = c end)
-	return fields
 end
 
 -- scanAudioUnits() -> none
@@ -444,7 +535,7 @@ end
 --
 -- Notes:
 --  * getMotionTheme("/Users/latenitechris/Movies/Motion Templates.localized/Effects.localized/3065D03D-92D7-4FD9-B472-E524B87B5012.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.moef")
-function getMotionTheme(file)
+local function getMotionTheme(file)
 	if tools.doesFileExist(file) then
 		local content = fileToString(file)
 		if content then
@@ -487,25 +578,27 @@ local function processPlugin(path, file)
 	for pluginType,_ in pairs(mod.pluginTypes) do
 
 		if pathCompontents[#pathCompontents - 4] == pluginType or pathCompontents[#pathCompontents - 4] == pluginType .. ".localized" then
+
 			--------------------------------------------------------------------------------
-			-- Get subcategory from Motion File is exists:
+			-- Get Motion Theme if available:
 			--------------------------------------------------------------------------------
-			local subcategory = nil
 			local motionTheme = getMotionTheme(fullPath)
-			if motionTheme then
-				subcategory = motionTheme
-			end
 
 			--------------------------------------------------------------------------------
 			-- Has Subcategory:
 			--------------------------------------------------------------------------------
 			for _, currentLanguage in pairs(mod.supportedLanguages) do
 
+				local subcategory = nil
+				if motionTheme then
+					subcategory = motionTheme
+				end
+
 				local category = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 4), pathCompontents[#pathCompontents - 3], currentLanguage)
 
 				if not subcategory then
 					--------------------------------------------------------------------------------
-					-- There was not Motion Theme:
+					-- There was no Motion Theme:
 					--------------------------------------------------------------------------------
 					subcategory = getLocalizedFolderName(combinePath(pathCompontents, #pathCompontents - 3), pathCompontents[#pathCompontents - 2], currentLanguage)
 				else
@@ -522,7 +615,6 @@ local function processPlugin(path, file)
 					if folderName ~= localisedSubcategory then
 						subcategory = localisedSubcategory
 					end
-
 				end
 
 				local plugin = getLocalizedFileName(combinePath(pathCompontents, #pathCompontents - 1), pathCompontents[#pathCompontents], currentLanguage)
@@ -542,7 +634,11 @@ local function processPlugin(path, file)
 			return true
 		elseif pathCompontents[#pathCompontents - 3] == pluginType or pathCompontents[#pathCompontents - 3] == pluginType .. ".localized" then
 
+			--------------------------------------------------------------------------------
+			-- Get Motion Theme if available:
+			--------------------------------------------------------------------------------
 			local motionTheme = getMotionTheme(fullPath)
+
 			if motionTheme then
 
 				--------------------------------------------------------------------------------
@@ -566,8 +662,6 @@ local function processPlugin(path, file)
 					mod._currentScan[currentLanguage][pluginType][category][subcategory][pluginID] = plugin
 
 				end
-				return true
-
 			else
 				--------------------------------------------------------------------------------
 				-- No Subcategory:
@@ -585,8 +679,8 @@ local function processPlugin(path, file)
 					mod._currentScan[currentLanguage][pluginType][category][pluginID] = plugin
 
 				end
-				return true
 			end
+			return true
 		end
 	end
 	return false
@@ -803,211 +897,6 @@ local function scanSoundtrackProEDELEffects()
 
 end
 
--- compareResultToGUIScriptingEffects() -> none
--- Function
--- Compares these Scan Results to the original method.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function compareResultToGUIScriptingEffects()
-
-	local guiVideoEffects = config.get("en.allVideoEffects")
-
-	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan["en"]["Effects"]) do
-		for category, videoEffect in pairs(videoEffects) do
-			if type(videoEffect) == "table" then
-				for _, plugin in pairs(videoEffect) do
-					--log.df("Match: %s", category .. " - " .. plugin)
-					effects[#effects + 1] = category .. " - " .. plugin
-				end
-			else
-				effects[#effects + 1] = videoEffect
-			end
-		end
-	end
-
-	for _, guiVideoEffect in pairs(guiVideoEffects) do
-		local match = false
-		for _, videoEffect in pairs(effects) do
-			if guiVideoEffect == videoEffect then
-				match = true
-			end
-		end
-		if not match then
-			log.df("Missing Effect: %s", guiVideoEffect)
-		end
-	end
-
-end
-
--- compareResultToGUIScriptingAudioEffects() -> none
--- Function
--- Compares these Scan Results to the original method.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function compareResultToGUIScriptingAudioEffects()
-
-	local guiVideoEffects = config.get(mod.currentLanguage .. ".allAudioEffects")
-
-	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["AudioEffects"]) do
-		for category, videoEffect in pairs(videoEffects) do
-			if type(videoEffect) == "table" then
-				for _, plugin in pairs(videoEffect) do
-					--log.df("Match: %s", category .. " - " .. plugin)
-					effects[#effects + 1] = plugin
-				end
-			else
-				effects[#effects + 1] = videoEffect
-			end
-		end
-	end
-
-	for _, guiVideoEffect in pairs(guiVideoEffects) do
-		local match = false
-		for _, videoEffect in pairs(effects) do
-			if guiVideoEffect == videoEffect then
-				match = true
-			end
-		end
-		if not match then
-			log.df("Missing Audio Effect: %s", guiVideoEffect)
-		end
-	end
-
-end
-
--- compareResultToGUIScriptingGenerators() -> none
--- Function
--- Compares these Scan Results to the original method.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function compareResultToGUIScriptingGenerators()
-
-	local guiVideoEffects = config.get(mod.currentLanguage .. ".allGenerators")
-
-	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["Generators"]) do
-		for category, videoEffect in pairs(videoEffects) do
-			if type(videoEffect) == "table" then
-				for _, plugin in pairs(videoEffect) do
-					--log.df("Match: %s", category .. " - " .. plugin)
-					effects[#effects + 1] = category .. " - " .. plugin
-				end
-			else
-				effects[#effects + 1] = videoEffect
-			end
-		end
-	end
-
-	for _, guiVideoEffect in pairs(guiVideoEffects) do
-		local match = false
-		for _, videoEffect in pairs(effects) do
-			if guiVideoEffect == videoEffect then
-				match = true
-			end
-		end
-		if not match then
-			log.df("Missing Generator: %s", guiVideoEffect)
-		end
-	end
-
-end
-
--- compareResultToGUIScriptingTitles() -> none
--- Function
--- Compares these Scan Results to the original method.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function compareResultToGUIScriptingTitles()
-
-	local guiVideoEffects = config.get(mod.currentLanguage .. ".allTitles")
-
-	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["Titles"]) do
-		for category, videoEffect in pairs(videoEffects) do
-			if type(videoEffect) == "table" then
-				for _, plugin in pairs(videoEffect) do
-					--log.df("Match: %s", category .. " - " .. plugin)
-					effects[#effects + 1] = category .. " - " .. plugin
-				end
-			else
-				effects[#effects + 1] = videoEffect
-			end
-		end
-	end
-
-	for _, guiVideoEffect in pairs(guiVideoEffects) do
-		local match = false
-		for _, videoEffect in pairs(effects) do
-			if guiVideoEffect == videoEffect then
-				match = true
-			end
-		end
-		if not match then
-			log.df("Missing Title: %s", guiVideoEffect)
-		end
-	end
-
-end
-
--- compareResultToGUIScriptingTransitions() -> none
--- Function
--- Compares these Scan Results to the original method.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function compareResultToGUIScriptingTransitions()
-
-	local guiVideoEffects = config.get(mod.currentLanguage .. ".allTransitions")
-
-	local effects = {}
-	for _, videoEffects in pairs(mod._currentScan[mod.currentLanguage]["Transitions"]) do
-		for category, videoEffect in pairs(videoEffects) do
-			if type(videoEffect) == "table" then
-				for _, plugin in pairs(videoEffect) do
-					--log.df("Match: %s", category .. " - " .. plugin)
-					effects[#effects + 1] = category .. " - " .. plugin
-				end
-			else
-				effects[#effects + 1] = videoEffect
-			end
-		end
-	end
-
-	for _, guiVideoEffect in pairs(guiVideoEffects) do
-		local match = false
-		for _, videoEffect in pairs(effects) do
-			if guiVideoEffect == videoEffect then
-				match = true
-			end
-		end
-		if not match then
-			log.df("Missing Transition: %s", guiVideoEffect)
-		end
-	end
-
-end
-
 -- translateInternalEffect(input, language) -> none
 -- Function
 -- Translates an Effect Bundle Item
@@ -1017,9 +906,36 @@ end
 --  * language - The language code you want to attempt to translate to
 --
 -- Returns:
+--  * Result as string
+--
+-- Notes:
 --  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings")
-function translateInternalEffect(input, language)
+--  * translateInternalEffect("Draw Mask", "en")
+local function translateInternalEffect(input, language)
 
+	--------------------------------------------------------------------------------
+	-- Ignore if English:
+	--------------------------------------------------------------------------------
+	if language == "en" then
+		return input
+	end
+
+	--------------------------------------------------------------------------------
+	-- For debugging:
+	--------------------------------------------------------------------------------
+	--[[
+	if not mod.internalEffectPreferencesPath then
+		mod.internalEffectPreferencesPath =  "/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/"
+	end
+
+	if not mod.internalEffectFlexoPath then
+		mod.internalEffectFlexoPath = "/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
+	end
+	--]]
+
+	--------------------------------------------------------------------------------
+	-- Language Codes for InternalFiltersXPC.pluginkit:
+	--------------------------------------------------------------------------------
 	languageCodes = {
 		fr	= "French",
 		de	= "German",
@@ -1028,15 +944,34 @@ function translateInternalEffect(input, language)
 		zh_CN = "zh_CN",
 	}
 
-	if language == "en" or not languageCodes[language] then
-		return input
+	--------------------------------------------------------------------------------
+	-- Check InternalFiltersXPC.pluginkit first:
+	--------------------------------------------------------------------------------
+	if languageCodes[language] then
+		local prefsPath = mod.internalEffectPreferencesPath .. "English.lproj/Localizable.strings"
+		local plistResult = plist.fileToTable(prefsPath)
+		if plistResult then
+			for key, string in pairs(plistResult) do
+				if string == input then
+					local newPrefsPath = mod.internalEffectPreferencesPath .. languageCodes[language] .. ".lproj/Localizable.strings"
+					local newPlistResult = plist.fileToTable(newPrefsPath)
+					if newPlistResult and newPlistResult[key] then
+						return newPlistResult[key]
+					end
+				end
+			end
+		end
 	end
-	local prefsPath = mod.internalEffectPreferencesPath .. "English.lproj/Localizable.strings"
+
+	--------------------------------------------------------------------------------
+	-- If that fails check Flexo.framework:
+	--------------------------------------------------------------------------------
+	local prefsPath = mod.internalEffectFlexoPath .. "en.lproj/FFLocalizable.strings"
 	local plistResult = plist.fileToTable(prefsPath)
 	if plistResult then
 		for key, string in pairs(plistResult) do
 			if string == input then
-				local newPrefsPath = mod.internalEffectPreferencesPath .. languageCodes[language] .. ".lproj/Localizable.strings"
+				local newPrefsPath = mod.internalEffectFlexoPath .. language .. ".lproj/FFLocalizable.strings"
 				local newPlistResult = plist.fileToTable(newPrefsPath)
 				if newPlistResult and newPlistResult[key] then
 					return newPlistResult[key]
@@ -1044,7 +979,129 @@ function translateInternalEffect(input, language)
 			end
 		end
 	end
+
+	--------------------------------------------------------------------------------
+	-- If that fails just return input:
+	--------------------------------------------------------------------------------
+	log.df("Failed to find a match:")
 	return input
+
+end
+
+-- compareOldMethodToNewMethodResults() -> none
+-- Function
+-- Compares the new Scan Results to the original scan results stored in settings.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function compareOldMethodToNewMethodResults()
+
+	--------------------------------------------------------------------------------
+	-- Debug Message:
+	--------------------------------------------------------------------------------
+	log.df("---------------------------------------------------------")
+	log.df(" RESULTS FROM NEW SCAN:")
+	log.df("---------------------------------------------------------")
+	log.df("Scan Results: %s", hs.inspect(mod._currentScan))
+	log.df("-----------------------------------------------------------")
+	log.df(" COMPARING RESULTS TO THE RESULTS STORED IN YOUR SETTINGS:")
+	log.df("-----------------------------------------------------------\n")
+
+	--------------------------------------------------------------------------------
+	-- Plugin Types:
+	--------------------------------------------------------------------------------
+	local pluginTypes = {
+		"AudioEffects",
+		"VideoEffects",
+		"Transitions",
+		"Generators",
+		"Titles",
+	}
+
+	--------------------------------------------------------------------------------
+	-- Begin Scan:
+	--------------------------------------------------------------------------------
+	for _, language in pairs(mod.supportedLanguages) do
+
+		--------------------------------------------------------------------------------
+		-- Debug Message:
+		--------------------------------------------------------------------------------
+		log.df("---------------------------------------------------------")
+		log.df(" CHECKING LANGUAGE: %s", language)
+		log.df("---------------------------------------------------------")
+
+		for _, pluginType in pairs(pluginTypes) do
+
+			--------------------------------------------------------------------------------
+			-- Get settings from GUI Scripting Results:
+			--------------------------------------------------------------------------------
+			local settingResults = config.get(language .. ".all" .. pluginType)
+
+			if settingResults then
+
+				--------------------------------------------------------------------------------
+				-- Debug Message:
+				--------------------------------------------------------------------------------
+				log.df(" - Checking Plugin Type: %s", pluginType)
+
+				--------------------------------------------------------------------------------
+				-- Convert Scan Plugins result into similar format to GUI Scripting Method:
+				--------------------------------------------------------------------------------
+				local effects = {}
+				if pluginType == "VideoEffects" then
+					pluginType = "Effects"
+				end
+				for _, pluginResults in pairs(mod._currentScan[language][pluginType]) do
+					for category, newPluginName in pairs(pluginResults) do
+						if type(newPluginName) == "table" then
+							for _, plugin in pairs(newPluginName) do
+								if pluginType == "AudioEffects" then
+									effects[#effects + 1] = plugin
+								else
+									effects[#effects + 1] = category .. " - " .. plugin
+								end
+							end
+						else
+							effects[#effects + 1] = newPluginName
+						end
+					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- Compare Results:
+				--------------------------------------------------------------------------------
+				local errorCount = 0
+				for _, oldPluginName in pairs(settingResults) do
+					local match = false
+					for _, newPluginName in pairs(effects) do
+						if oldPluginName == newPluginName then
+							match = true
+						end
+					end
+					if not match then
+						log.df("  - ERROR: Missing " .. pluginType .. ": %s", oldPluginName)
+						errorCount = errorCount + 1
+					end
+				end
+
+				--------------------------------------------------------------------------------
+				-- If all results matched:
+				--------------------------------------------------------------------------------
+				if errorCount == 0 then
+					log.df("  - SUCCESS: %s all matched!\n", pluginType)
+				else
+					log.df("")
+				end
+
+			else
+				log.df(" - SKIPPING: Could not find settings for: %s (%s)", pluginType, language)
+			end
+		end
+		log.df("")
+	end
 end
 
 --- cp.apple.finalcutpro.scanplugins:scan() -> none
@@ -1072,7 +1129,6 @@ function mod:scan(fcp)
 	-- Define Supported Languages:
 	--------------------------------------------------------------------------------
 	mod.supportedLanguages = fcp.SUPPORTED_LANGUAGES
-	mod.currentLanguage = fcp:getCurrentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Core Audio Preferences File:
@@ -1129,6 +1185,7 @@ function mod:scan(fcp)
 	-- Define Internal Effect Preferences Path:
 	--------------------------------------------------------------------------------
 	mod.internalEffectPreferencesPath = fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/"
+	mod.internalEffectFlexoPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
 
 	--------------------------------------------------------------------------------
 	-- Built-in Effects:
@@ -1280,16 +1337,9 @@ function mod:scan(fcp)
 	scanPlugins()
 
 	--------------------------------------------------------------------------------
-	-- Tests to compare these scans to previous GUI Scripted scans:
+	-- Test to compare these scans to previous GUI Scripted scans:
 	--------------------------------------------------------------------------------
-	--[[
-	log.df("Results: %s", hs.inspect(mod._currentScan))
-	compareResultToGUIScriptingEffects()
-	compareResultToGUIScriptingAudioEffects()
-	compareResultToGUIScriptingGenerators()
-	compareResultToGUIScriptingTitles()
-	compareResultToGUIScriptingTransitions()
-	--]]
+	compareOldMethodToNewMethodResults()
 
 	return mod._currentScan
 

@@ -1180,6 +1180,20 @@ App.fileMenuTitle = {
 	["文件"]			= "zh_CN"
 }
 
+--- cp.apple.finalcutpro:setCurrentLanguage() -> none
+--- Method
+--- Sets the language Final Cut Pro is currently using.
+---
+--- Parameters:
+---  * none
+---
+--- Returns:
+---  * Returns the current language as string.
+function App:setCurrentLanguage(language)
+	self._currentLanguage = language
+	return self._currentLanguage
+end
+
 --- cp.apple.finalcutpro:getCurrentLanguage() -> string
 --- Method
 --- Returns the language Final Cut Pro is currently using.

@@ -66,7 +66,7 @@ function mod.changeFinalCutProLanguage(language)
 	--------------------------------------------------------------------------------
 	-- Change Language:
 	--------------------------------------------------------------------------------
-	fcp:getCurrentLanguage(true, language)
+	fcp:setCurrentLanguage(language)
 
 	--------------------------------------------------------------------------------
 	-- Restart Final Cut Pro:
