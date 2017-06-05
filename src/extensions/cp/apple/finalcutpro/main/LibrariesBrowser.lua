@@ -266,12 +266,16 @@ function Libraries:openClipTitled(name)
 	if self:selectClipTitled(name) then
 		self:app():launch()
 		local menuBar = self:app():menuBar()
+		
 		-- ensure the Libraries browser is focused
 		menuBar:selectMenu({"Window", "Go To", "Libraries"})
 		-- open the clip.
-		just.doUntil(function() return menuBar:findMenuUI({"Clip", "Open Clip"}):enabled() end)
-		menuBar:selectMenu({"Clip", "Open Clip"})
-		return true
+		local openClip = menuBar:findMenuUI({"Clip", "Open Clip"})
+		if openClip then
+			just.doUntil(function() return openClip:enabled() end)
+			menuBar:selectMenu({"Clip", "Open Clip"})
+			return true
+		end
 	end
 	return false
 end
