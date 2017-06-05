@@ -275,8 +275,6 @@ local function readLocalizedFile(folder, currentLanguageFile)
 				end
 			end
 		end
-	else
-		log.df("Directory doesn't exist: %s", currentLanguageFile)
 	end
 	return nil
 end
@@ -1002,10 +1000,12 @@ local function compareOldMethodToNewMethodResults()
 	--------------------------------------------------------------------------------
 	-- Debug Message:
 	--------------------------------------------------------------------------------
+	--[[
 	log.df("---------------------------------------------------------")
 	log.df(" RESULTS FROM NEW SCAN:")
 	log.df("---------------------------------------------------------")
 	log.df("Scan Results: %s", hs.inspect(mod._currentScan))
+	--]]
 	log.df("-----------------------------------------------------------")
 	log.df(" COMPARING RESULTS TO THE RESULTS STORED IN YOUR SETTINGS:")
 	log.df("-----------------------------------------------------------\n")
@@ -1101,6 +1101,12 @@ local function compareOldMethodToNewMethodResults()
 			end
 		end
 		log.df("")
+		log.df("---------------------------------------------------------")
+		log.df(" DEBUGGING:")
+		log.df("---------------------------------------------------------")
+		log.df(" - Scan Results saved to global table: debugScanPlugin")
+		debugScanPlugin = mod._currentScan
+
 	end
 end
 
