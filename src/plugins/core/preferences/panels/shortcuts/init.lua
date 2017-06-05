@@ -206,7 +206,7 @@ local baseModifiers = {
 	{ value = "command",	label = "⌘" },
 	{ value = "shift",		label = "⇧" },
 	{ value = "option",		label = "⌥" },
-	{ value = "control",	label = "^" },
+	{ value = "control",	label = "⌃" },
 }
 
 function _.combinations(list)
@@ -319,7 +319,7 @@ end
 -- GENERATE CONTENT:
 --------------------------------------------------------------------------------
 local function generateContent()
-	
+
 	-- the group select
 	local groupOptions = {}
 	local defaultGroup = nil
@@ -328,7 +328,7 @@ local function generateContent()
 		groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
 	end
 	table.sort(groupOptions, function(a, b) return a.label < b.label end)
-	
+
 	local groupSelect = ui.select({
 		id			= "shortcutsGroupSelect",
 		value		= defaultGroup,
@@ -357,12 +357,12 @@ local function generateContent()
 		groupSelect				= groupSelect,
 		groups					= commands.groups(),
 		defaultGroup			= defaultGroup,
-		
+
 		groupEditor				= mod.getGroupEditor,
 		modifierOptions 		= modifierOptions,
 		keyCodeOptions 			= keyCodeOptions,
 		checkModifier 			= checkModifier,
-		
+
 		webviewLabel 			= mod._manager.getLabel(),
 	}
 
