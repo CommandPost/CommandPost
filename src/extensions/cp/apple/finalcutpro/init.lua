@@ -524,7 +524,7 @@ end):bind(App)
 function App:menuBar()
 	if not self._menuBar then
 		self._menuBar = MenuBar:new(self)
-		
+
 		-- Add a finder for Share Destinations
 		self._menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			if _.isEqual(path, {"File", "Share"}) then
@@ -939,6 +939,9 @@ function App:setPreference(key, value)
 	elseif type(value) == "string" then
 		preferenceType = "string"
 		value = "'" .. value .. "'"
+	elseif type(value) == "number" then
+		preferenceType = "int"
+		value = tostring(value)
 	else
 		return false
 	end
@@ -1231,7 +1234,7 @@ function App:getCurrentLanguage()
 					local lang = line:match("^%s*\"?([%w%-]+)")
 					-- switch "-" to "_"
 					lang = lang:gsub("-", "_")
-					
+
 					if self:isSupportedLanguage(lang) then
 						self.currentLanguage = lang
 						return lang

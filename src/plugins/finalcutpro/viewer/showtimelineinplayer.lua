@@ -1,19 +1,19 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---              T I M E C O D E    O V E R L A Y    P L U G I N               --
+--               S H O W   T I M E L I N E   I N   P L A Y E R                --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.hacks.timecodeoverlay ===
+--- === plugins.finalcutpro.viewer.showtimelineinplayer ===
 ---
---- Timecode Overlay.
+--- Show Timeline In Player.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("timecodeoverlay")
+local log				= require("hs.logger").new("showtimelineinplayer")
 
 local application		= require("hs.application")
 
@@ -27,9 +27,9 @@ local prop				= require("cp.prop")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 5000
-local DEFAULT_VALUE		= false
-local PREFERENCES_KEY 	= "FFEnableGuards"
+local PRIORITY 			= 20
+local DEFAULT_VALUE		= 0
+local PREFERENCES_KEY 	= "FFPlayerDisplayedTimeline"
 
 --------------------------------------------------------------------------------
 --
@@ -40,15 +40,28 @@ local mod = {}
 
 mod.enabled = prop.new(
 	function()
-		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+		local value = fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+		if value == 1 then
+			value = true
+		else
+			value = false
+		end
+		return value
 	end,
-	
+
 	function(value)
+
+		if value then
+			value = 1
+		else
+			value = 0
+		end
+
 		--------------------------------------------------------------------------------
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local running = fcp:isRunning()
-		if running and not dialog.displayYesNoQuestion(i18n("togglingTimecodeOverlayRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+		if running and not dialog.displayYesNoQuestion(i18n("togglingShowTimelineInPlayerRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
 			return
 		end
 
@@ -80,10 +93,10 @@ mod.enabled = prop.new(
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.hacks.timecodeoverlay",
+	id				= "finalcutpro.viewer.showtimelineinplayer",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.menu.timeline"]	= "menu",
+		["finalcutpro.menu.viewer"]		= "menu",
 		["finalcutpro.commands"] 		= "fcpxCmds",
 	}
 }
@@ -94,15 +107,14 @@ local plugin = {
 function plugin.init(deps)
 
 	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableTimecodeOverlay"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
+		return { title = i18n("showTimelineInPlayer"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
 	end)
 
 	--------------------------------------------------------------------------------
 	-- Commands:
 	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpToggleTimecodeOverlays")
+	deps.fcpxCmds:add("cpShowTimelineInPlayer")
 		:groupedBy("hacks")
-		:activatedBy():ctrl():option():cmd("t")
 		:whenActivated(function() mod.enabled:toggle() end)
 
 	return mod
