@@ -128,7 +128,7 @@ end
 --- Returns:
 ---  * The localized name, or `name` if not available.
 function getLocalizedName(path, language)
-	local file = match(path, "^.-([^/%.]+)%.local$")
+	local file = match(path, "^.-([^/%.]+)%.localized$")
 	if file then -- it's localized
 		return readLocalizedName(path, file, language)
 	else
