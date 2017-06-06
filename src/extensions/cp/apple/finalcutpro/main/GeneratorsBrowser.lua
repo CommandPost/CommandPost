@@ -18,18 +18,18 @@ local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 local geometry							= require("hs.geometry")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Button							= require("cp.apple.finalcutpro.ui.Button")
-local Table								= require("cp.apple.finalcutpro.ui.Table")
-local ScrollArea						= require("cp.apple.finalcutpro.ui.ScrollArea")
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
-local PopUpButton						= require("cp.apple.finalcutpro.ui.PopUpButton")
-local TextField							= require("cp.apple.finalcutpro.ui.TextField")
+local Button							= require("cp.ui.Button")
+local Table								= require("cp.ui.Table")
+local ScrollArea						= require("cp.ui.ScrollArea")
+local CheckBox							= require("cp.ui.CheckBox")
+local PopUpButton						= require("cp.ui.PopUpButton")
+local TextField							= require("cp.ui.TextField")
 
 local id								= require("cp.apple.finalcutpro.ids") "GeneratorsBrowser"
 
@@ -114,7 +114,7 @@ end
 -- TODO: Add documentation
 function GeneratorsBrowser:sidebar()
 	if not self._sidebar then
-		self._sidebar = Table:new(self, function()
+		self._sidebar = Table.new(self, function()
 			return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
 		end):uncached()
 	end
@@ -156,7 +156,9 @@ end
 
 -- TODO: Add documentation
 function GeneratorsBrowser:showSidebar()
-	self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Sidebar"})
+	if not self:sidebar():isShowing() then
+		self:app():menuBar():checkMenu({"Window", "Show in Workspace", 1})
+	end
 end
 
 -- TODO: Add documentation

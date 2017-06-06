@@ -18,9 +18,9 @@ local log							= require("hs.logger").new("PrefsDlg")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local id							= require("cp.apple.finalcutpro.ids") "MediaImporter"
-local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
+local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 --------------------------------------------------------------------------------
 --

@@ -20,7 +20,7 @@ local fnutils							= require("hs.fnutils")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
@@ -36,7 +36,6 @@ local TimelineContents = {}
 -- TODO: Add documentation
 function TimelineContents.matches(element)
 	return element
-	    and element:attributeValue("AXIdentifier") == id "Contents"
 		and element:attributeValue("AXRole") == "AXLayoutArea"
 		and element:attributeValueCount("AXAuditIssues") < 1
 end
@@ -80,7 +79,7 @@ function TimelineContents:scrollAreaUI()
 	local main = self:parent():mainUI()
 	if main then
 		return axutils.childMatching(main, function(child)
-			if child:attributeValue("AXIdentifier") == id "ScrollArea" and child:attributeValue("AXRole") == "AXScrollArea" then
+			if child:attributeValue("AXRole") == "AXScrollArea" then
 				local contents = child:attributeValue("AXContents")
 				return axutils.childMatching(contents, TimelineContents.matches) ~= nil
 			end
@@ -313,10 +312,8 @@ end
 function TimelineContents:rangeSelectionUI()
 	local ui = self:UI()
 	if ui then
-		local clips = fnutils.filter(ui:children(), function(child)
-			return child:attributeValue("AXRole") and fnutils.contains(id "RangeSelectionDescription", child:attributeValue("AXDescription"))
-		end)
-		return #clips > 0 and clips[1] or nil
+		local rangeSelectionDescription = self:app():string("FFTimelineRangeSelectionAccessibilityDescription")
+		return axutils.childWithDescription(ui, rangeSelectionDescription)
 	end
 	return nil
 end

@@ -19,7 +19,7 @@ local eventtap							= require("hs.eventtap")
 local inspect							= require("hs.inspect")
 local timer								= require("hs.timer")
 
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 

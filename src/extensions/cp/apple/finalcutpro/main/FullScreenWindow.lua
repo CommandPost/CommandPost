@@ -13,10 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
-local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
+local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 --------------------------------------------------------------------------------
 --
