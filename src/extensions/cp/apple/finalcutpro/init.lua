@@ -208,7 +208,7 @@ end
 
 function App:_resetStrings()
 	self._strings = strings.new()
-	
+
 	local appPath = self:getPath()
 	if appPath then
 		self._strings:fromPlist(appPath .. "/Contents/Resources/${language}.lproj/PELocalizable.strings")
@@ -579,7 +579,7 @@ end):bind(App)
 function App:menuBar()
 	if not self._menuBar then
 		local menuBar = MenuBar:new(self)
-		
+
 		-- Add a finder for Share Destinations
 		menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			if _.isEqual(path, {"File", "Share"}) then
@@ -600,7 +600,7 @@ function App:menuBar()
 			{ path = {"Window", "Show in Workspace"},	child = "Sidebar",		key = "PEEventsLibrary" },
 			{ path = {"Window", "Show in Workspace"},	child = "Timeline",		key = "PETimeline" },
 		}
-		
+
 		menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			for i,item in ipairs(missingMenuMap) do
 				if _.isEqual(path, item.path) and childName == item.child then
@@ -609,7 +609,7 @@ function App:menuBar()
 			end
 			return nil
 		end)
-		
+
 		self._menuBar = menuBar
 	end
 	return self._menuBar
@@ -1013,6 +1013,9 @@ function App:setPreference(key, value)
 	elseif type(value) == "string" then
 		preferenceType = "string"
 		value = "'" .. value .. "'"
+	elseif type(value) == "number" then
+		preferenceType = "int"
+		value = tostring(value)
 	else
 		return false
 	end
@@ -1320,7 +1323,7 @@ function App:getCurrentLanguage()
 					local lang = line:match("^%s*\"?([%w%-]+)")
 					-- switch "-" to "_"
 					lang = lang:gsub("-", "_")
-					
+
 					if self:isSupportedLanguage(lang) then
 						self.currentLanguage = lang
 						return lang

@@ -238,7 +238,7 @@ return {
 			togglingMovingMarkersRestart		=			"Toggling Moving Markers requires Final Cut Pro to restart.",
 			togglingBackgroundTasksRestart 		=			"Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.",
 			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
-
+			togglingShowTimelineInPlayerRestart =			"Toggling Show Timeline In Player requires Final Cut Pro to restart.",
 
 			trashPreferencesConfirmation		=			"Are you sure you want to trash the CommandPost Preferences?",
 
@@ -298,6 +298,17 @@ return {
 				one								=			"Enable Background Render (%{count} sec)",
 				other 							= 			"Enable Background Render (%{count} secs)",
 			},
+
+			--------------------------------------------------------------------------------
+			-- Viewer:
+			--------------------------------------------------------------------------------
+			viewer								=			"Viewer",
+			showTimecode						=			"Show Timecode",
+
+			showProjectTimecodeTop 				= 			"Show Project Timecode Top",
+			showProjectTimecodeBottom			=			"Show Project Timecode Bottom",
+			showSourceTimecodeTop				=			"Show Source Timecode Top",
+			showSourceTimecodeBottom			= 			"Show Source Timecode Bottom",
 
 			--------------------------------------------------------------------------------
 			-- Timeline:
@@ -415,6 +426,7 @@ return {
 			keyboardShortcuts					=			"Keyboard Shortcuts",
 			enableHacksShortcuts				=			"Control CommandPost Shortcuts within Final Cut Pro",
 			enableTimecodeOverlay				=			"Enable Timecode Overlay",
+			showTimelineInPlayer				=			"Show Timeline in Player",
 			enableMovingMarkers					=			"Enable Moving Markers",
 			enableRenderingDuringPlayback		=			"Enable Rendering During Playback",
 			changeBackupInterval				=			"Change Backup Interval",
@@ -1002,8 +1014,14 @@ return {
 
 		cpChangeBackupInterval_title							=	"Change Backup Interval...",
 		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
+		cpShowTimelineInPlayer_title							=	"Show Timeline in Player",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
+
+		cpShowProjectTimecodeTop_title 							= 	"Show Project Timecode Top",
+		cpShowProjectTimecodeBottom_title						=	"Show Project Timecode Bottom",
+		cpShowSourceTimecodeTop_title							=	"Show Source Timecode Top",
+		cpShowSourceTimecodeBottom_title						= 	"Show Source Timecode Bottom",
 
 		cpBatchExportFromBrowser_title							=	"Batch Export from Browser",
 		cpChangeSmartCollectionsLabel_title						=	"Change Smart Collections Label",
