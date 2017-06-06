@@ -222,24 +222,39 @@ function plist.fileToTable(plistFileName)
 		return nil, string.format("Unable to find '%s'", plistFileName)
 	end
 	
-	-- open it
-	local file = io.open(absoluteFilename, "r")
+	if plist.isBinaryPlist(absoluteFilename) then
+		-- it's a binary plist
+		return plist.binaryFileToTable(absoluteFilename)
+	else
+		return plist.xmlFileToTable(absoluteFilename)
+	end
+end
+
+--- cp.plist.isBinaryPlist(plistList) -> boolean
+--- Function
+--- Returns true if plistList is a binary plist file otherwise false
+---
+--- Parameters:
+---  * plistList - Path to the file
+---
+--- Returns:
+---  * Boolean
+function plist.isBinaryPlist(plistFileName)
+
+	if not plistFileName then
+		return false
+	end
+
+	local file = io.open(plistFileName, "r")
 	if not file then
-		return nil, string.format("Unable to open '%s'", plistFileName)
+		return false
 	end
 
 	-- Check for the marker
 	local marker = file:read(6)
 	file:close()
 
-	-- log.d("Marker: "..marker)
-
-	if marker == "bplist" then
-		-- it's a binary plist
-		return plist.binaryFileToTable(absoluteFilename)
-	else
-		return plist.xmlFileToTable(absoluteFilename)
-	end
+	return marker == "bplist"
 end
 
 return plist

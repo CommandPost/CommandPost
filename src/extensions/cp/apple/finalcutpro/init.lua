@@ -109,11 +109,12 @@ local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
 local MenuBar									= require("cp.apple.finalcutpro.MenuBar")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local scanPlugins								= require("cp.apple.finalcutpro.scanplugins")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
+
+local plugins									= require("cp.apple.finalcutpro.scanplugins")
 
 --------------------------------------------------------------------------------
 --
@@ -514,6 +515,22 @@ end):bind(App)
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- cp.apple.finalcutpro:plugins() -> cp.apple.finalcutpro.plugins
+--- Method
+--- Returns the plugins manager for the app.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The plugins manager.
+function App:plugins()
+	if not self._plugins then
+		self._plugins = plugins.new(self)
+	end
+	return self._plugins
+end
+
 --- cp.apple.finalcutpro:scanPlugins() -> table
 --- Method
 --- Scan Final Cut Pro Plugins
@@ -524,7 +541,7 @@ end):bind(App)
 --- Returns:
 ---  * A MenuBar object
 function App:scanPlugins()
-	return scanPlugins:scan(self)
+	return self:plugins():scan()
 end
 
 ----------------------------------------------------------------------------------------
