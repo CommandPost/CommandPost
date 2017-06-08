@@ -10,7 +10,8 @@
 			<description><![CDATA[
 				<h2>New Features:</h2>
 				<ul><li>Console should also search subtext (issue #654)</li>
-				<li>Added Show Timeline in Player & Timecode Overlays (issue #682)</li></ul>
+				<li>Added Show Timeline in Player & Timecode Overlays (issue #682)</li>
+				<li>Zoom in FCPX by holding down OPTION and using your mouse scroll wheel</li></ul>
 
 				<h2>Bug Fixes:</h2>
 				<ul><li>Virtual Touch Bar - Release Touch Bar when feature disabled (issue #631)</li>
