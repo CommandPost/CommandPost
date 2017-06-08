@@ -449,7 +449,7 @@ end
 ---  * A string containing Final Cut Pro's filesystem path, or nil if Final Cut Pro's path could not be determined.
 function App:getPath()
 	local app = self:application()
-	if app then
+	if app and app:isRunning() then
 		----------------------------------------------------------------------------------------
 		-- FINAL CUT PRO IS CURRENTLY RUNNING:
 		----------------------------------------------------------------------------------------
@@ -487,7 +487,7 @@ App.getVersion = App.application:mutate(function(app)
 	----------------------------------------------------------------------------------------
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
 	----------------------------------------------------------------------------------------
-	if app then
+	if app and app:isRunning() then
 		local appPath = app:path()
 		if appPath then
 			local info = application.infoForBundlePath(appPath)
