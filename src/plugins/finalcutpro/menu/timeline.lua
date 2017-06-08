@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.menu.timeline ===
 ---
---- The TIMEILNE menu section.
+--- The TIMELINE menu section.
 
 --------------------------------------------------------------------------------
 --
