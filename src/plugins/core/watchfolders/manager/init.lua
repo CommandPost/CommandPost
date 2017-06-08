@@ -172,7 +172,8 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	local screenFrame = screen.mainScreen():frame()
 	local defaultRect = {x = (screenFrame.w/2) - (mod.defaultWidth/2), y = (screenFrame.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
-	if mod.position() then
+	local position = mod.position()
+	if position and next(position) ~= nil then
 		defaultRect = mod.position()
 	end
 
