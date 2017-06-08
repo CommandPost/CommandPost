@@ -6,6 +6,42 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.9</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Console should also search subtext (issue #654)</li>
+				<li>Added Show Timeline in Player & Timecode Overlays (issue #682)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Virtual Touch Bar - Release Touch Bar when feature disabled (issue #631)</li>
+				<li>Added back missing dialog require in Action Manager</li>
+				<li>Fixed Background Render Menu Item Bug (issue #640)</li>
+				<li>Fixed Scrolling Timeline Breaks SHIFT+Scroll (issue #628)</li>
+				<li>Fixed Display Proxy/Original Icon in Menubar (issue #645)</li>
+				<li>Fixed bug in Virtual Touch Bar</li>
+				<li>Serious performance issue with "File > Share" menu items on large Libraries (issue #648)</li>
+				<li>Fixed Documentation Error in `cp.apple.finalcutpro.ui.Window:new` (issue #672)</li>
+				<li>Fixed Hacks Shortcuts Bug (issue #675)</li>
+				<li>Local Clipboard History Unreliable (issue #685)</li>
+				<li>Bug in `hs.menubar:setMenu()` (issue #681)</li>
+				<li>Watch Folders Preferences default position is top left of screen <li>not centre (issue #689)</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>Improved reliability with FCPX in languages other than English (issue #636)</li>
+				<li>Added ‘unarchiveFile’ to `cp.plist.archiver`</li>
+				<li>Bring all Hacks Shortcut-specific code into the one plugin. (issue #546)</li>
+				<li>Changed Control Key Label</li></ul>
+			]]>
+			</description>
+			<pubDate>Fri,  9 Jun 2017 01:21:29 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.9/CommandPost_1.0.0-beta.9.dmg"
+				sparkle:version="1.0.0-beta.9"
+				sparkle:dsaSignature="MC0CFBMUlkPWbmvc7sQHk51+LB8b9rNXAhUA0sBav4o5IX0/TIBMLR6MnFqh03g="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.8</title>
 			<description><![CDATA[
 				<h2>New Features:</h2>
