@@ -60,6 +60,9 @@ function run()
 		ok(eq(char(false, utf8.codepoint("𐐷")),	"\x01\xD8\x37\xDC"))	-- little-endian
 		ok(eq(char(true, utf8.codepoint("𐐷")),	"\xD8\x01\xDC\x37"))	-- big-endian
 		
+		ok(eq(char(false, 0xFEFF), "\xFF\xFE"))							-- marker
+		ok(eq(char(true,  0xFEFF), "\xFE\xFF"))							-- marker
+		
 		-- combo
 		local utf8text = 	"a".."丽".."𐐷"
 		
@@ -119,6 +122,14 @@ function run()
 		ok(eq(cp, utf8.codepoint("𐐷")))
 		ok(eq(length, 4))
 		
+		cp, length = fromBytes(false, "\xFF\xFE", 1)		-- BOM marker (little-endian)
+		ok(eq(cp, 0xFEFF))
+		ok(eq(length, 2))
+
+		cp, length = fromBytes(true, "\xFE\xFF", 1)			-- BOM marker (big-endian)
+		ok(eq(cp, 0xFEFF))
+		ok(eq(length, 2))
+		
 		expectError(fromByes, true, "\xDC\x37", 1)				-- 2-bytes, but match 'excluded' range
 		
 		expectError(fromBytes, false, utf16le, 7)				-- reading half way into "𐐷"
@@ -148,6 +159,47 @@ function run()
 		ok(eq({codepoint(false, utf16le, 3, 8)}, {utf8.codepoint("a丽𐐷", 2, 8)}))
 		
 		ok(eq(codepoint(true, utf16be, -4), utf8.codepoint("𐐷")))		-- third character of the string, big-endian
+	end)
+	
+	test("codes", function()
+		local codes = utf16.codes
+		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
+		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
+		local codepoints = {utf8.codepoint("a丽𐐷", 1, 8)}		-- "a".."丽".."𐐷" (codepoints)
+		
+		local result = {}
+		for i,cp in codes(utf16le) do							-- little-endian by default
+			table.insert(result, cp)
+		end
+		ok(eq(result, codepoints))
+
+		result = {}
+		for i,cp in codes(false, utf16le) do					-- explicitly little-endian
+			table.insert(result, cp)
+		end
+		ok(eq(result, codepoints))
+
+		result = {}
+		for i,cp in codes(true, utf16be) do						-- explicitly big-endian
+			table.insert(result, cp)
+		end
+		ok(eq(result, codepoints))
+	end)
+	
+	test("len", function()
+		local len = utf16.len
+		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
+		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
+		local utf8text = "a丽𐐷"
+		
+		ok(eq(len(utf16le),					utf8.len(utf8text)))
+		ok(eq(len(false, utf16le),			utf8.len(utf8text)))
+		ok(eq(len(false, utf16le, 3),		utf8.len(utf8text, 2)))
+		ok(eq(len(false, utf16le, 1, 3),	utf8.len(utf8text, 1, 2)))
+		
+		ok(eq(len(true, utf16be),			utf8.len(utf8text)))
+		ok(eq(len(true, utf16be, 3),		utf8.len(utf8text, 2)))
+		ok(eq(len(true, utf16be, 1, 3),		utf8.len(utf8text, 1, 2)))
 	end)
 end
 

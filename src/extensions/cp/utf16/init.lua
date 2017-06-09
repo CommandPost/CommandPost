@@ -1,19 +1,11 @@
+--- === cp.utf16 ===
+---
+--- A pure-LUA implementation of UTF-16 decoding
+local bench				= require("cp.bench")
+
 local schar = string.char
 
 local mod = {}
-
---[[
-UTF-16 encoding (from Wikipedia):
-U+0000 to U+D7FF uses 2-byte 0000hex to D7FFhex
-U+D800 to U+DFFF are invalid codepoints reserved for 4-byte UTF-16
-U+E000 to U+FFFF uses 2-byte E000hex to FFFFhex
-
-U+10000 to U+10FFFF uses 4-byte UTF-16 encoded as follows:
-
-Subtract 10000hex from the codepoint.
-Express result as 20-bit binary.
-Use the pattern 110110xxxxxxxxxx 110111xxxxxxxxxxbin to encode the upper- and lower- 10 bits into two 16-bit words.
-]]
 
 local TWO_BYTE_MIN		= 0x0000
 local TWO_BYTE_MAX		= 0xFFFF
@@ -27,6 +19,9 @@ local ONE_BYTE_MASK		= 0x00FF
 local UPPER_MASK		= 0xD800
 local LOWER_MASK		= 0xDC00
 local TEN_BIT_MASK		= 0x03FF
+
+local UPPER_MAX			= UPPER_MASK + TEN_BIT_MASK
+local LOWER_MAX			= LOWER_MASK + TEN_BIT_MASK
 
 -- toBytes(number[, count[, bigEndian]])
 -- Function
@@ -45,7 +40,7 @@ local function toBytes(number, count, bigEndian)
 	end
 end
 
---- cp.utf16.le.char([bigEndian, ]...) -> string
+--- cp.utf16.char([bigEndian, ]...) -> string
 --- Function
 --- Receives zero or more integers, converts each one to its corresponding UTF-16 byte sequence and returns a string with the concatenation of all these sequences.
 ---
@@ -68,7 +63,7 @@ local function char(bigEndian, ...)
 		  error(string.format("bad argument #%s to 'char' (value out of range)", n))
 	  end
 	  
-	  if cp & UPPER_MASK == UPPER_MASK or cp & LOWER_MASK == LOWER_MASK then
+	  if cp >= UPPER_MASK and cp <= LOWER_MAX then
 		  error(string.format("bad argument #%s to 'char' (reserved value)", n))
 	  end
 	  
@@ -116,19 +111,31 @@ end
 local function fromBytes(bigEndian, s, i)
 	local length = 2
 	local result = read2Bytes(bigEndian, s, i)
-	if result & UPPER_MASK == UPPER_MASK then -- it's a 4-byte codepoint
+	if result >= UPPER_MASK and result <= UPPER_MAX then -- it's a 4-byte codepoint
 		local second = read2Bytes(bigEndian, s, i+2)
-		if second & LOWER_MASK ~= LOWER_MASK then
-			error "invalid UTF-16 code"
+		if second < LOWER_MASK or second > LOWER_MAX then
+			error(string.format("invalid UTF-16 code at byte %s: 0x%04X", i+2, second))
 		end
 		result = ((result - UPPER_MASK) << 10) + (second - LOWER_MASK) + FOUR_BYTE_SHIFT
 		length = 4
-	elseif result & LOWER_MASK == LOWER_MASK then -- it's invalid - it can't come first.
-		error "invalid UTF-16 code"
+	elseif result >= LOWER_MASK and result <= LOWER_MAX then -- it's invalid - it can't come first.
+		error(string.format("invalid UTF-16 code at byte %s: 0x%04X", i, result))
 	end
 	return result, length
 end
 
+--- cp.utf16.codepoint([bigEndian, ]s [, i [, j]]) -> integer...
+--- Function
+--- Returns the codepoints (as integers) from all characters in `s` that start between byte position `i` and `j` (both included). The default for `i` is 1 and for `j` is `i`. It raises an error if it meets any invalid byte sequence.
+---
+--- Parameters:
+---  * `bigEndian`		- (optional) If set to `true`, the string is encoded in 'big-endian' format. Defaults to `false`
+---  * `s`				- The string
+---  * `i`				- The starting index. Defaults to `1`.
+---  * `j`				- The ending index. Defaults to `i`.
+---
+--- Returns:
+---  * a list of codepoint integers for all characters in the matching range.
 local function codepoint(bigEndian, s, i, j)
 	if type(bigEndian) == "string" then
 		return codepoint(false, bigEndian, s, i)
@@ -151,10 +158,91 @@ local function codepoint(bigEndian, s, i, j)
 	end
 end
 
+--- cp.utf16.codes([bigEndian, ]s) -> iterator
+--- Function
+--- Returns values so that the construction
+---
+--- ```lua
+---      for p, c in utf16.codes(s) do body end
+--- ```
+---
+--- will iterate over all characters in string `s`, with `p` being the position (in bytes) and `c` the code point of each character. It raises an error if it meets any invalid byte sequence.
+---
+--- Parameters:
+---  * `bigEndian`		- If `true`, the provided string is in 'big-endian' encoding. If not provided, defaults to `false`.
+---  * `s`				- The string to iterate through.
+---
+--- Returns:
+---  * An iterator
+local function codes(bigEndian, s)
+	if type(bigEndian) == "string" then
+		return codes(false, bigEndian)
+	end
+	
+	local count = s:len()
+	local pos, code, length = 1, nil, 0
+	
+	return function()
+		pos = pos + length
+		if pos > count then
+			return nil
+		else
+			code, length = fromBytes(bigEndian, s, pos)
+			return pos, code
+		end
+	end
+end
+
+--- cp.utf16.len ([bigEndian, ]s [, i [, j]]) -> number | boolean, number
+--- Function
+--- Returns the number of UTF-16 characters in string `s` that start between positions `i` and `j` (both inclusive). The default for `i` is 1 and for `j` is -1. If it finds any invalid byte sequence, returns a false value plus the position of the first invalid byte.
+---
+--- Parameters:
+---  * `bigEndian`		- If true, the string is 'big-endian'. Defaults to `false`.
+---  * `s`				- The UTF-16 string
+---  * `i`				- The starting index. Defaults to `1`.
+---  * `j`				- The ending index. Defaults to `-1`.
+---
+--- Returns:
+---  * the length, or `false` and the first invalid byte index.
+local function len(bigEndian, s, i, j)
+	if type(bigEndian) == "string" then
+		return len(false, bigEndian, s, i)
+	end
+	i = i or 1
+	j = j or -1
+	if j < 0 then
+		j = #s + j
+	end
+	local length = 0
+	local bytes
+	local k, size = i, 0
+	while k <= j do
+		bytes = read2Bytes(bigEndian, s, k)
+		if bytes >= UPPER_MASK and bytes <= UPPER_MAX then
+			bytes = read2Bytes(bigEndian, s, k+2)
+			if bytes < LOWER_MASK or bytes > LOWER_MAX then -- invalid bytes
+				return false, k+2
+			end
+			size = 4
+		elseif bytes >= LOWER_MASK and bytes <= LOWER_MAX then
+			return false, k
+		else
+			size = 2
+		end
+		length = length + 1
+		k = k + size		
+	end
+	
+	return length
+end
+
 return {
 	_toBytes	= toBytes,
-	char		= char,
-	codepoint	= codepoint,
 	_fromBytes	= fromBytes,
 	_read2Bytes	= read2Bytes,
+	char		= char,
+	codepoint	= codepoint,
+	codes		= codes,
+	len			= len,
 }
