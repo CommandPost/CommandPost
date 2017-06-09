@@ -5,7 +5,7 @@ local inspect			= require("hs.inspect")
 local bench				= require("cp.bench")
 
 local config			= require("cp.config")
-local utf16le			= require("cp.utf16")
+local utf16				= require("cp.utf16")
 
 local TEXT_PATH = config.scriptPath .. "/tests/unicode/"
 
@@ -16,17 +16,17 @@ function expectError(fn, ...)
 end
 
 function run()
-	test("asBytes", function()
-		local asBytes = utf16le.asBytes
+	test("toBytes", function()
+		local toBytes = utf16._toBytes
 		
-		ok(eq({asBytes(1)}, {0x1, 0, 0, 0, 0, 0, 0, 0}))
-		ok(eq({asBytes(0x1234)}, {0x34, 0x12, 0, 0, 0, 0, 0, 0}))
-		ok(eq({asBytes(0x1234, 2)}, {0x34, 0x12}))
-		ok(eq({asBytes(0x1234, 2, true)}, {0x12, 0x34}))
+		ok(eq({toBytes(1)}, {0x1, 0, 0, 0, 0, 0, 0, 0}))
+		ok(eq({toBytes(0x1234)}, {0x34, 0x12, 0, 0, 0, 0, 0, 0}))
+		ok(eq({toBytes(0x1234, 2)}, {0x34, 0x12}))
+		ok(eq({toBytes(0x1234, 2, true)}, {0x12, 0x34}))
 	end)
 	
-	test("UTF-16LE Invalid Codepoints", function()
-		local char = utf16le.char
+	test("UTF-16 Invalid Codepoints", function()
+		local char = utf16.char
 		expectError(char, -1)		-- less than 0x0
 		expectError(char, 0xD800)	-- reserved
 		expectError(char, 0xDFFF)	-- reserved
@@ -34,37 +34,120 @@ function run()
 	end)
 	
 	test("UTF-16LE file", function()
-		local file = io.open(TEXT_PATH .. "utf16le.txt", "rb")
-		for line in file:lines() do
+		for line in io.lines(TEXT_PATH .. "utf16le.txt") do
 			ok(eq(line, "\xFF\xFEA\x00B\x00C\x001\x002\x003\x00"))
 		end
 	end)
 
 	test("UTF-16BE file", function()
-		local file = io.open(TEXT_PATH .. "utf16be.txt", "rb")
-		for line in file:lines() do
+		for line in io.lines(TEXT_PATH .. "utf16be.txt") do
 			ok(eq(line, "\xFE\xFF\x00A\x00B\x00C\x001\x002\x003"))
 		end
 	end)
 	
-	test("UTF-16", function()
-		local char = utf16le.char
+	test("UTF-16 char conversion", function()
+		local char = utf16.char
 		
 		-- ASCII character
-		ok(eq(char(string.byte("a")),		"a\x00"))			-- default to little-endian.
-		ok(eq(char(true, string.byte("a")),	"\x00a"))			-- big-endian
+		ok(eq(char(utf8.codepoint("a")),		"a\x00"))				-- default to little-endian.
+		ok(eq(char(true, utf8.codepoint("a")),	"\x00a"))				-- big-endian
 		
 		-- non-ASCII character
-		for i, code in utf8.codes("丽") do
-			ok(eq(char(code),			"\x3D\x4E"))			-- default to little-endian.
-			ok(eq(char(true, code),		"\x4E\x3D"))			-- big-endian
-		end
+		ok(eq(char(utf8.codepoint("丽")),		"\x3D\x4E"))			-- default to little-endian.
+		ok(eq(char(true, utf8.codepoint("丽")),	"\x4E\x3D"))			-- big-endian
 		
 		-- test a character above 0x10000
-		for i, code in utf8.codes("𐐷") do
-			ok(eq(char(false, code),	"\x01\xD8\x37\xDC"))	-- little-endian
-			ok(eq(char(true, code),		"\xD8\x01\xDC\x37"))	-- big-endian
-		end
+		ok(eq(char(false, utf8.codepoint("𐐷")),	"\x01\xD8\x37\xDC"))	-- little-endian
+		ok(eq(char(true, utf8.codepoint("𐐷")),	"\xD8\x01\xDC\x37"))	-- big-endian
+		
+		-- combo
+		local utf8text = 	"a".."丽".."𐐷"
+		
+		local utf16le = char(false, utf8.codepoint(utf8text, 1, #utf8text))
+		ok(eq(utf16le,		"a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"))
+
+		local utf16be = char(true,  utf8.codepoint(utf8text, 1, #utf8text))
+		ok(eq(utf16be,		"\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37"))
+	end)
+	
+	test("read2Bytes", function()
+		local read2Bytes = utf16._read2Bytes
+		
+		local string = "\x00\x01\x00\x02\x00\x03"
+		
+		ok(eq(read2Bytes(false, string, 1), 0x0100))			-- little-endian `1`
+		ok(eq(read2Bytes(true,  string, 1), 0x0001))			-- big-endian `1`
+		
+		ok(eq(read2Bytes(true,  string, 5), 0x0003))			-- big-endian `2`
+		ok(eq(read2Bytes(false, string, 5), 0x0300))			-- little-endian `768`
+		
+		expectError(read2Bytes, true,  string, -1)				-- out of range
+		expectError(read2Bytes, true,  string, 6)				-- not enough bits left for 16 bytes.
+	end)
+	
+	test("fromBytes", function()
+		local fromBytes = utf16._fromBytes
+		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
+		
+		local cp, length = fromBytes(false, utf16le, 1)			-- "a"
+		ok(eq(cp, utf8.codepoint("a")))
+		ok(eq(length, 2))
+		
+		cp, length = fromBytes(false, utf16le, 3)			-- "丽"
+		ok(eq(cp, utf8.codepoint("丽")))
+		ok(eq(length, 2))
+
+		cp, length = fromBytes(false, utf16le, 5)			-- "𐐷"
+		ok(eq(cp, utf8.codepoint("𐐷")))
+		ok(eq(length, 4))
+		
+		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
+		
+		cp, length = fromBytes(true, utf16be, 1)			-- "a"
+		ok(eq(cp, utf8.codepoint("a")))
+		ok(eq(length, 2))
+		
+		cp, length = fromBytes(true, utf16be, 3)			-- "丽"
+		ok(eq(cp, utf8.codepoint("丽")))
+		ok(eq(length, 2))
+
+		cp, length = fromBytes(true, utf16be, 5)			-- "𐐷"
+		ok(eq(cp, utf8.codepoint("𐐷")))
+		ok(eq(length, 4))
+		
+		cp, length = fromBytes(false, utf16le, -4)			-- "𐐷", searching from rear.
+		ok(eq(cp, utf8.codepoint("𐐷")))
+		ok(eq(length, 4))
+		
+		expectError(fromByes, true, "\xDC\x37", 1)				-- 2-bytes, but match 'excluded' range
+		
+		expectError(fromBytes, false, utf16le, 7)				-- reading half way into "𐐷"
+		expectError(fromBytes, true,  utf16be, 7)				-- reading half way into "𐐷"
+		
+		expectError(fromBytes, false, utf16le, 0)
+		expectError(fromBytes, false, utf16le, 8)
+		expectError(fromBytes, false, utf16le, 9)
+	end)
+	
+	test("codepoint", function()
+		local codepoint = utf16.codepoint
+		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
+		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
+		
+		ok(eq(codepoint(utf16le), utf8.codepoint("a")))					-- first character of the string, little-endian
+		ok(eq(codepoint(utf16le, 3), utf8.codepoint("丽")))				-- second character of the string, little-endian
+		ok(eq(codepoint(utf16le, 5), utf8.codepoint("𐐷")))				-- third character of the string, little-endian
+
+		ok(eq(codepoint(true, utf16be), utf8.codepoint("a")))			-- first character of the string, big-endian
+		ok(eq(codepoint(true, utf16be, 3), utf8.codepoint("丽")))		-- second character of the string, big-endian
+		ok(eq(codepoint(true, utf16be, 5), utf8.codepoint("𐐷")))		-- third character of the string, big-endian
+
+		ok(eq({codepoint(false, utf16le, 1, 3)}, {utf8.codepoint("a丽𐐷", 1, 3)}))
+		ok(eq({codepoint(false, utf16le, 1, 3)}, {utf8.codepoint("a丽𐐷", 1, 3)}))
+		ok(eq({codepoint(false, utf16le, 1, 8)}, {utf8.codepoint("a丽𐐷", 1, 8)}))
+		ok(eq({codepoint(false, utf16le, 3, 8)}, {utf8.codepoint("a丽𐐷", 2, 8)}))
+		
+		ok(eq(codepoint(true, utf16be, -4), utf8.codepoint("𐐷")))		-- third character of the string, big-endian
 	end)
 end
 

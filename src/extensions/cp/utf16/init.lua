@@ -28,17 +28,17 @@ local UPPER_MASK		= 0xD800
 local LOWER_MASK		= 0xDC00
 local TEN_BIT_MASK		= 0x03FF
 
--- asBytes(number[, count[, bigEndian]])
+-- toBytes(number[, count[, bigEndian]])
 -- Function
 -- Returns the integer as a series of bytes.
-local function asBytes(number, count, bigEndian)
+local function toBytes(number, count, bigEndian)
 	local byte = number & ONE_BYTE_MASK
 	count = count or 8 -- 8 bytes in a 64-bit integer
 	if count > 1 then
 		if bigEndian then
-			return asBytes(number >> 8, count-1, bigEndian), byte
+			return toBytes(number >> 8, count-1, bigEndian), byte
 		else
-			return byte, asBytes(number >> 8, count-1, bigEndian)
+			return byte, toBytes(number >> 8, count-1, bigEndian)
 		end
 	else
 		return byte
@@ -73,18 +73,88 @@ local function char(bigEndian, ...)
 	  end
 	  
 	  if cp < FOUR_BYTE_MIN then -- 2-byte character
-		  result = result .. schar(asBytes(cp, 2, bigEndian))
+		  result = result .. schar(toBytes(cp, 2, bigEndian))
 	  else -- 4-byte character
 		  local shifted = cp - FOUR_BYTE_SHIFT
 		  local lower = (shifted & TEN_BIT_MASK) + LOWER_MASK
 		  local upper = ((shifted >> 10) & TEN_BIT_MASK) + UPPER_MASK
-		  result = result .. schar(asBytes(upper, 2, bigEndian)) .. schar(asBytes(lower, 2, bigEndian))
+		  result = result .. schar(toBytes(upper, 2, bigEndian)) .. schar(toBytes(lower, 2, bigEndian))
 	  end
 	end
 	return result
 end
 
+-- read2Bytes(bigEndian, s, i) -> number
+-- Function
+-- Reads two bytes from `s`, starting at position `i`, with either 'big-endian' or 'little-endian' encoding.
+--
+-- Parameters:
+--  * `bigEndian`	- If `true`, the string is encoded in 'big-endian' format.
+--  * `s`			- The string to read from.
+--  * `i`			- The index to start reading from.
+--
+-- Returns:
+--  * The integer read by combining two bytes, in the order specified.
+local function read2Bytes(bigEndian, s, i)
+	local first, second = s:byte(i), s:byte(i+1)
+	return bigEndian and (first << 8) + second or first + (second << 8)
+end
+
+-- fromBytes([bigEndian, ]s, i) -> number, number
+-- Function
+-- Returns a single 'codepoint' integer value, reading from the string, starting at position `i`.
+-- Because UTF-16 can be stored in 'big-endian` or `little-endian` format, the
+--
+-- Parameters:
+--  * `bigEndian`	- If `true`, the string is encoded in 'big-endian' format.
+--  * `s`			- The string containing the text.
+--  * `i`			- The index to start reading from.
+--
+-- Returns:
+--  * `codepoint`	- The codepoint integer value.
+--  * `length`		- The number of bytes used by the codepoint.
+local function fromBytes(bigEndian, s, i)
+	local length = 2
+	local result = read2Bytes(bigEndian, s, i)
+	if result & UPPER_MASK == UPPER_MASK then -- it's a 4-byte codepoint
+		local second = read2Bytes(bigEndian, s, i+2)
+		if second & LOWER_MASK ~= LOWER_MASK then
+			error "invalid UTF-16 code"
+		end
+		result = ((result - UPPER_MASK) << 10) + (second - LOWER_MASK) + FOUR_BYTE_SHIFT
+		length = 4
+	elseif result & LOWER_MASK == LOWER_MASK then -- it's invalid - it can't come first.
+		error "invalid UTF-16 code"
+	end
+	return result, length
+end
+
+local function codepoint(bigEndian, s, i, j)
+	if type(bigEndian) == "string" then
+		return codepoint(false, bigEndian, s, i)
+	end
+	assert(s ~= nil, "bad argument #2 to 'codepoint' (string expected, got nil)")
+	
+	local count = #s
+	
+	i = i and (i < 0 and count+i+1) or i or 1
+	assert(i >= 1 or i <= count, "bad argument #3 to 'codepoint' (out of range)")
+	
+	j = j and (j < 0 and count+j+1) or j or i
+	assert(j >= 1 or j <= count, "bad argument #4 to 'codepoint' (out of range)")
+	
+	local cp, length = fromBytes(bigEndian, s, i)
+	if i + length <= j then
+		return cp, codepoint(bigEndian, s, i+length, j)
+	else
+		return cp
+	end
+end
+
 return {
-	asBytes		= asBytes,
+	_toBytes	= toBytes,
 	char		= char,
+	codepoint	= codepoint,
+	_fromBytes	= fromBytes,
+	_read2Bytes	= read2Bytes,
 }
