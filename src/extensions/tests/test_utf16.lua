@@ -201,6 +201,34 @@ function run()
 		ok(eq(len(true, utf16be, 3),		utf8.len(utf8text, 2)))
 		ok(eq(len(true, utf16be, 1, 3),		utf8.len(utf8text, 1, 2)))
 	end)
+	
+	test("offset", function()
+		local offset = utf16.offset
+		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
+		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
+		local utf8text = "a丽𐐷"
+		
+		ok(eq(offset(false, utf16le, 1), 1))
+		ok(eq(offset(false, utf16le, 2), 3))
+		ok(eq(offset(false, utf16le, 3), 5))
+		
+		ok(eq(offset(false, utf16le, 0, 4), 3))
+		ok(eq(offset(false, utf16le, 0, -1), 5))
+		
+		ok(eq(offset(false, utf16le, 1, -4), 5))
+
+		ok(eq(offset(true, utf16be, 1), 1))
+		ok(eq(offset(true, utf16be, 2), 3))
+		ok(eq(offset(true, utf16be, 3), 5))
+		
+		ok(eq(offset(true, utf16be, 0, 4), 3))
+		ok(eq(offset(true, utf16be, 0, -1), 5))
+		
+		ok(eq(offset(true, utf16be, 1, -4), 5))
+		
+		expectError(offset, false, utf16le, 5)
+		expectError(offset, false, utf16le, -5)
+	end)
 end
 
 return run

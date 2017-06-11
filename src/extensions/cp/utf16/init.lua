@@ -2,6 +2,7 @@
 ---
 --- A pure-LUA implementation of UTF-16 decoding
 local bench				= require("cp.bench")
+local log				= require("hs.logger").new("utf16")
 
 local schar = string.char
 
@@ -119,7 +120,7 @@ local function fromBytes(bigEndian, s, i)
 		result = ((result - UPPER_MASK) << 10) + (second - LOWER_MASK) + FOUR_BYTE_SHIFT
 		length = 4
 	elseif result >= LOWER_MASK and result <= LOWER_MAX then -- it's invalid - it can't come first.
-		error(string.format("invalid UTF-16 code at byte %s: 0x%04X", i, result))
+		error(string.format("initial position is a continuation byte: 0x%04X", i, result))
 	end
 	return result, length
 end
@@ -237,6 +238,78 @@ local function len(bigEndian, s, i, j)
 	return length
 end
 
+--- cp.utf16.offset ([bigEndian, ]s, n [, i]) -> number
+--- Function
+--- Returns the position (in bytes) where the encoding of the `n`-th character of `s` (counting from position `i`) starts. A negative `n` gets characters before position `i`. The default for `i` is 1 when `n` is non-negative and `#s + 1` otherwise, so that `utf8.offset(s, -n)` gets the offset of the `n`-th character from the end of the string. If the specified character is neither in the subject nor right after its end, the function returns nil.
+--- 
+--- As a special case, when `n` is 0 the function returns the start of the encoding of the character that contains the `i`-th byte of `s`.
+---
+--- This function assumes that `s` is a valid UTF-16 string
+---
+--- Parameters:
+---  * `bigEndian`		- If `true`, the encoding is 'big-endian'. Defaults to `false`
+---  * `s`				- The string
+---  * `n`				- The character number to find.
+---  * `i`				- The initial position to start from.
+---
+--- Returns:
+---  * The index
+local function offset(bigEndian, s, n, i)
+	if not s then
+		error("bad argument #2 to 'offset' (string expected, got nil)")
+	end
+	local count = #s
+	local shift = n < 0 and -1 or 1
+	
+	-- shift i to the end of the string, or the beginning, if no value is provided.
+	i = i or (n < 0 and count+1 or 1)
+	i = i < 0 and count+1+i or i
+	if i < 1 or i > count+1 then
+		error(string.format("bad argument #4 to 'offset' (position out of range): %s", i))
+	end
+	
+	if n == 0 then -- find the start of the char at i
+		-- round down to nearest odd number
+		if i % 2 == 0 then i = i-1 end
+		local bytes = read2Bytes(bigEndian, s, i)
+		if bytes >= LOWER_MASK and bytes <= LOWER_MAX then
+			return i-2
+		else
+			return i
+		end
+	else -- find the nth character, starting from i
+		if i > count then
+			error(string.format("bad argument #4 to 'offset' (position out of range): %s", i))
+		elseif i % 2 == 0 then
+			error("initial position #%s is a continuation byte", i)
+		end
+		local bytes = read2Bytes(bigEndian, s, i)
+		if bytes >= LOWER_MASK and bytes <= LOWER_MAX then
+			error("initial position #%s is a continuation byte: 0x%04X", i, bytes)
+		end
+		
+		local nx = 1
+		while i < count and nx ~= n do
+			bytes = read2Bytes(bigEndian, s, i)
+			if bytes >= UPPER_MASK and bytes <= UPPER_MAX then
+				bytes = read2Bytes(bigEndian, s, i+2)
+				if bytes < LOWER_MASK or bytes > LOWER_MAX then
+					error("position #%s should be a continuation byte: 0x%04X", i, bytes)
+				end
+				i = i + 4
+			else
+				i = i + 2
+			end
+			nx = nx + shift
+		end
+		if nx == n then
+			return i
+		else
+			error("the string is not valid UTF-16 text")
+		end
+	end
+end
+
 return {
 	_toBytes	= toBytes,
 	_fromBytes	= fromBytes,
@@ -245,4 +318,5 @@ return {
 	codepoint	= codepoint,
 	codes		= codes,
 	len			= len,
+	offset		= offset,
 }
