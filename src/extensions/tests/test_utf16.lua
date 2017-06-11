@@ -27,10 +27,10 @@ function run()
 	
 	test("UTF-16 Invalid Codepoints", function()
 		local char = utf16.char
-		expectError(char, -1)		-- less than 0x0
-		expectError(char, 0xD800)	-- reserved
-		expectError(char, 0xDFFF)	-- reserved
-		expectError(char, 0x110000)	-- the maximum codepoint is 0x10FFFF
+		expectError(char, false, -1)		-- less than 0x0
+		expectError(char, false, 0xD800)	-- reserved
+		expectError(char, false, 0xDFFF)	-- reserved
+		expectError(char, false, 0x110000)	-- the maximum codepoint is 0x10FFFF
 	end)
 	
 	test("UTF-16LE file", function()
@@ -49,11 +49,11 @@ function run()
 		local char = utf16.char
 		
 		-- ASCII character
-		ok(eq(char(utf8.codepoint("a")),		"a\x00"))				-- default to little-endian.
-		ok(eq(char(true, utf8.codepoint("a")),	"\x00a"))				-- big-endian
+		ok(eq(char(false, utf8.codepoint("a")),		"a\x00"))				-- default to little-endian.
+		ok(eq(char(true, utf8.codepoint("a")),		"\x00a"))				-- big-endian
 		
 		-- non-ASCII character
-		ok(eq(char(utf8.codepoint("丽")),		"\x3D\x4E"))			-- default to little-endian.
+		ok(eq(char(false, utf8.codepoint("丽")),	"\x3D\x4E"))		--little-endian.
 		ok(eq(char(true, utf8.codepoint("丽")),	"\x4E\x3D"))			-- big-endian
 		
 		-- test a character above 0x10000
@@ -145,9 +145,9 @@ function run()
 		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
 		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
 		
-		ok(eq(codepoint(utf16le), utf8.codepoint("a")))					-- first character of the string, little-endian
-		ok(eq(codepoint(utf16le, 3), utf8.codepoint("丽")))				-- second character of the string, little-endian
-		ok(eq(codepoint(utf16le, 5), utf8.codepoint("𐐷")))				-- third character of the string, little-endian
+		ok(eq(codepoint(false, utf16le), utf8.codepoint("a")))					-- first character of the string, little-endian
+		ok(eq(codepoint(false, utf16le, 3), utf8.codepoint("丽")))				-- second character of the string, little-endian
+		ok(eq(codepoint(false, utf16le, 5), utf8.codepoint("𐐷")))				-- third character of the string, little-endian
 
 		ok(eq(codepoint(true, utf16be), utf8.codepoint("a")))			-- first character of the string, big-endian
 		ok(eq(codepoint(true, utf16be, 3), utf8.codepoint("丽")))		-- second character of the string, big-endian
@@ -168,12 +168,6 @@ function run()
 		local codepoints = {utf8.codepoint("a丽𐐷", 1, 8)}		-- "a".."丽".."𐐷" (codepoints)
 		
 		local result = {}
-		for i,cp in codes(utf16le) do							-- little-endian by default
-			table.insert(result, cp)
-		end
-		ok(eq(result, codepoints))
-
-		result = {}
 		for i,cp in codes(false, utf16le) do					-- explicitly little-endian
 			table.insert(result, cp)
 		end
@@ -192,7 +186,6 @@ function run()
 		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
 		local utf8text = "a丽𐐷"
 		
-		ok(eq(len(utf16le),					utf8.len(utf8text)))
 		ok(eq(len(false, utf16le),			utf8.len(utf8text)))
 		ok(eq(len(false, utf16le, 3),		utf8.len(utf8text, 2)))
 		ok(eq(len(false, utf16le, 1, 3),	utf8.len(utf8text, 1, 2)))

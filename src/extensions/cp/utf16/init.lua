@@ -41,21 +41,17 @@ local function toBytes(number, count, bigEndian)
 	end
 end
 
---- cp.utf16.char([bigEndian, ]...) -> string
+--- cp.utf16.char(bigEndian, ...) -> string
 --- Function
 --- Receives zero or more integers, converts each one to its corresponding UTF-16 byte sequence and returns a string with the concatenation of all these sequences.
 ---
 --- Parameters:
----  * `bigEndian`	- If `true`, the output will list the 'big' bytes first. Defaults to `false`.
+---  * `bigEndian`	- If `true`, the output will list the 'big' bytes first
 ---  * `...`		- The list of UCL codepoint integers to convert.
 ---
 --- Returns:
 ---  * All the codepoints converted to UTF-16, concatonated into a string.
 local function char(bigEndian, ...)
-	if type(bigEndian) == "number" then
-		return char(false, bigEndian, ...)
-	end
-	
 	local result = ""
 	for n=1,select('#',...) do
 	  local cp = select(n,...)
@@ -125,12 +121,12 @@ local function fromBytes(bigEndian, s, i)
 	return result, length
 end
 
---- cp.utf16.codepoint([bigEndian, ]s [, i [, j]]) -> integer...
+--- cp.utf16.codepoint(bigEndian, s [, i [, j]]) -> integer...
 --- Function
 --- Returns the codepoints (as integers) from all characters in `s` that start between byte position `i` and `j` (both included). The default for `i` is 1 and for `j` is `i`. It raises an error if it meets any invalid byte sequence.
 ---
 --- Parameters:
----  * `bigEndian`		- (optional) If set to `true`, the string is encoded in 'big-endian' format. Defaults to `false`
+---  * `bigEndian`		- (optional) If set to `true`, the string is encoded in 'big-endian' format.
 ---  * `s`				- The string
 ---  * `i`				- The starting index. Defaults to `1`.
 ---  * `j`				- The ending index. Defaults to `i`.
@@ -138,9 +134,6 @@ end
 --- Returns:
 ---  * a list of codepoint integers for all characters in the matching range.
 local function codepoint(bigEndian, s, i, j)
-	if type(bigEndian) == "string" then
-		return codepoint(false, bigEndian, s, i)
-	end
 	assert(s ~= nil, "bad argument #2 to 'codepoint' (string expected, got nil)")
 	
 	local count = #s
@@ -159,7 +152,7 @@ local function codepoint(bigEndian, s, i, j)
 	end
 end
 
---- cp.utf16.codes([bigEndian, ]s) -> iterator
+--- cp.utf16.codes(bigEndian, s) -> iterator
 --- Function
 --- Returns values so that the construction
 ---
@@ -170,16 +163,12 @@ end
 --- will iterate over all characters in string `s`, with `p` being the position (in bytes) and `c` the code point of each character. It raises an error if it meets any invalid byte sequence.
 ---
 --- Parameters:
----  * `bigEndian`		- If `true`, the provided string is in 'big-endian' encoding. If not provided, defaults to `false`.
+---  * `bigEndian`		- If `true`, the provided string is in 'big-endian' encoding.
 ---  * `s`				- The string to iterate through.
 ---
 --- Returns:
 ---  * An iterator
 local function codes(bigEndian, s)
-	if type(bigEndian) == "string" then
-		return codes(false, bigEndian)
-	end
-	
 	local count = s:len()
 	local pos, code, length = 1, nil, 0
 	
@@ -194,12 +183,12 @@ local function codes(bigEndian, s)
 	end
 end
 
---- cp.utf16.len ([bigEndian, ]s [, i [, j]]) -> number | boolean, number
+--- cp.utf16.len (bigEndian, s [, i [, j]]) -> number | boolean, number
 --- Function
 --- Returns the number of UTF-16 characters in string `s` that start between positions `i` and `j` (both inclusive). The default for `i` is 1 and for `j` is -1. If it finds any invalid byte sequence, returns a false value plus the position of the first invalid byte.
 ---
 --- Parameters:
----  * `bigEndian`		- If true, the string is 'big-endian'. Defaults to `false`.
+---  * `bigEndian`		- If true, the string is 'big-endian'.
 ---  * `s`				- The UTF-16 string
 ---  * `i`				- The starting index. Defaults to `1`.
 ---  * `j`				- The ending index. Defaults to `-1`.
@@ -207,9 +196,6 @@ end
 --- Returns:
 ---  * the length, or `false` and the first invalid byte index.
 local function len(bigEndian, s, i, j)
-	if type(bigEndian) == "string" then
-		return len(false, bigEndian, s, i)
-	end
 	i = i or 1
 	j = j or -1
 	if j < 0 then
@@ -238,7 +224,7 @@ local function len(bigEndian, s, i, j)
 	return length
 end
 
---- cp.utf16.offset ([bigEndian, ]s, n [, i]) -> number
+--- cp.utf16.offset (bigEndian, s, n [, i]) -> number
 --- Function
 --- Returns the position (in bytes) where the encoding of the `n`-th character of `s` (counting from position `i`) starts. A negative `n` gets characters before position `i`. The default for `i` is 1 when `n` is non-negative and `#s + 1` otherwise, so that `utf8.offset(s, -n)` gets the offset of the `n`-th character from the end of the string. If the specified character is neither in the subject nor right after its end, the function returns nil.
 --- 
