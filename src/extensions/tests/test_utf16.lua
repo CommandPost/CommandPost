@@ -49,8 +49,8 @@ function run()
 		local char = utf16.char
 		
 		-- ASCII character
-		ok(eq(char(false, utf8.codepoint("a")),		"a\x00"))				-- default to little-endian.
-		ok(eq(char(true, utf8.codepoint("a")),		"\x00a"))				-- big-endian
+		ok(eq(char(false, utf8.codepoint("a")),		"a\x00"))			-- default to little-endian.
+		ok(eq(char(true, utf8.codepoint("a")),		"\x00a"))			-- big-endian
 		
 		-- non-ASCII character
 		ok(eq(char(false, utf8.codepoint("丽")),	"\x3D\x4E"))		--little-endian.
@@ -157,6 +157,9 @@ function run()
 		ok(eq({codepoint(false, utf16le, 1, 3)}, {utf8.codepoint("a丽𐐷", 1, 3)}))
 		ok(eq({codepoint(false, utf16le, 1, 8)}, {utf8.codepoint("a丽𐐷", 1, 8)}))
 		ok(eq({codepoint(false, utf16le, 3, 8)}, {utf8.codepoint("a丽𐐷", 2, 8)}))
+		
+		-- complete string
+		ok(eq({codepoint(false, utf16le, 1, -1)}, {utf8.codepoint("a丽𐐷", 1, -1)}))
 		
 		ok(eq(codepoint(true, utf16be, -4), utf8.codepoint("𐐷")))		-- third character of the string, big-endian
 	end)

@@ -296,13 +296,26 @@ local function offset(bigEndian, s, n, i)
 	end
 end
 
-return {
-	_toBytes	= toBytes,
-	_fromBytes	= fromBytes,
-	_read2Bytes	= read2Bytes,
-	char		= char,
-	codepoint	= codepoint,
-	codes		= codes,
-	len			= len,
-	offset		= offset,
-}
+-- Adds support for calling `require("cp.utf16").le` directly, rather than `require("cp.utf16.le")`
+local function __index(t,k)
+	local value = rawget(t,k)
+	if not value and (k == "be" or k == "le") then
+		value = require("cp.utf16."..k)
+		t[k] = value
+	end
+	return value	
+end
+
+return setmetatable(
+	{
+		_toBytes	= toBytes,
+		_fromBytes	= fromBytes,
+		_read2Bytes	= read2Bytes,
+		char		= char,
+		codepoint	= codepoint,
+		codes		= codes,
+		len			= len,
+		offset		= offset,
+	},
+	{__index		= __index}
+)
