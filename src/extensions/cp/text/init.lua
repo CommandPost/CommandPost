@@ -92,9 +92,55 @@ function text.new(value, encoding)
 	if not decoder then
 		error(string.format("unsupported encoding: %s", encoding))
 	end
-	local o = {}
-	o[codesKey] = {decoder(tostring(value), 1, -1)}
+	return text.newFromCodepoints({decoder(tostring(value), 1, -1)})
+end
+
+--- cp.text.newFromCodepoints(codepoints[, i[, j]]) -> text
+--- Constructor
+--- Returns a new `text` instance representing specified codepoints.
+---
+--- Parameters:
+---  * `codepoints`	- The array of codepoint integers.
+---  * `i`			- The starting index to read from codepoints. Defaults to `1`.
+---  * `j`			- The ending index to read from codepoints. Default to `-1`.
+---
+--- Returns:
+---  * A new `text` instance.
+---
+--- Notes:
+---  * You can use a *negative* value for `i` and `j`. If so, it will count back from then end of the `codepoints` array.
+function text.newFromCodepoints(codepoints, i, j)
+	i = i or 1
+	j = j or -1
+	local len = #codepoints
+	if type(i) ~= "number" then
+		error("bad argument #2 for 'newFromCodepoints' (integer expected, got "..type(i)..")")
+	end
+	if type(j) ~= "number" then
+		error("bad argument #3 for 'newFromCodepoints' (integer expected, got "..type(i)..")")
+	end
 	
+	if i < 0 then i = len +1 + i end
+	if j < 0 then j = len +1 + j end
+
+	if i < 1 or i > len then
+		error("bad argument #2 for 'newFromCodepoints' (index out of range: "..i..")")
+	end
+	if j < 1 or j > len then
+		error("bad argument #3 for 'newFromCodepoints' (index out of range: "..j..")")
+	end
+	
+	local result = {}
+	for x = i,j do
+		local cp = codepoints[x]
+		if type(cp) ~= "number" then
+			error("bad argument #1 for 'newFromCodepoints (integer expected, got "..type(cp).." for codepoint #"..x..")")
+		end
+		result[x] = cp
+	end
+	
+	local o = {}
+	o[codesKey] = result
 	return setmetatable(o, text.mt)
 end
 

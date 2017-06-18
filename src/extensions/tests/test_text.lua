@@ -14,7 +14,7 @@ function expectError(fn, ...)
 end
 
 function run()
-	test("text round-trip", function()
+	test("text from string", function()
 		local utf8text = "a丽𐐷"
 		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
 		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
@@ -24,7 +24,31 @@ function run()
 
 		ok(text.is(value))
 		
-		ok(eq(value, codepoints))
+		for i,cp in ipairs(value) do
+			ok(eq(cp, codepoints[i]))
+		end
+		
+		ok(eq(value:encode(), utf8text))
+		ok(eq(value:encode(text.encoding.utf16le), utf16le))
+		ok(eq(value:encode(text.encoding.utf16be), utf16be))
+		
+		ok(eq(tostring(value), utf8text))
+	end)
+
+	test("text from codepoints", function()
+		local utf8text = "a丽𐐷"
+		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
+		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
+		local codepoints = {97, 20029, 66615}					-- "a".."丽".."𐐷" (codepoints)
+		
+		local value = text.newFromCodepoints(codepoints)
+
+		ok(text.is(value))
+		
+		for i,cp in ipairs(value) do
+			ok(eq(cp, codepoints[i]))
+		end
+		
 		ok(eq(value:encode(), utf8text))
 		ok(eq(value:encode(text.encoding.utf16le), utf16le))
 		ok(eq(value:encode(text.encoding.utf16be), utf16be))
