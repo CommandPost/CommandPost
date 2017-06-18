@@ -145,7 +145,10 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("localClipboardHistory") end)
 		:addItem(OPTIONS_PRIORITY, function()
-			return { title = i18n("enableClipboardHistory"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled()}
+			return { title = i18n("enableClipboardHistory"),	fn = function()
+				mod.enabled:toggle()
+				mod.update()
+			end, checked = mod.enabled()}
 		end)
 		:addSeparator(2000)
 		:addItems(3000, function()

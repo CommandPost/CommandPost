@@ -12,9 +12,8 @@
 ---
 --- * `init.lua` - the main module that gets imported.
 --- * `axutils.lua` - some utility functions for working with `axuielement` objects.
---- * `test.lua` - some support functions for testing. TODO: Make this better.
 ---
---- Generally, you will `require` the `cp.finalcutpro` module to import it, like so:
+--- Generally, you will `require` the `cp.apple.finalcutpro` module to import it, like so:
 ---
 --- ```lua
 --- local fcp = require("cp.apple.finalcutpro")
@@ -95,10 +94,11 @@ local just										= require("cp.just")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
 local shortcut									= require("cp.commands.shortcut")
+local strings									= require("cp.strings")
 local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
-local axutils									= require("cp.apple.finalcutpro.axutils")
+local axutils									= require("cp.ui.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local destinations								= require("cp.apple.finalcutpro.export.destinations")
@@ -193,7 +193,62 @@ App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTE
 ---  * The app.
 function App:init()
 	self:_initWatchers()
+	self:_initStrings()
+	self.application:watch(function() self:reset() end)
 	return self
+end
+
+function App:reset()
+	-- resets the language cache
+	self._currentLanguage = nil
+	self._activeCommandSet = nil
+end
+
+function App:_initStrings()
+	self.isRunning:watch(function() self:_resetStrings() end, true)
+end
+
+function App:_resetStrings()
+	self._strings = strings.new()
+
+	local appPath = self:getPath()
+	if appPath then
+		self._strings:fromPlist(appPath .. "/Contents/Resources/${language}.lproj/PELocalizable.strings")
+		self._strings:fromPlist(appPath .. "/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFLocalizable.strings")
+		self._strings:fromPlist(appPath .. "/Contents/Frameworks/LunaKit.framework/Resources/${language}.lproj/Commands.strings")
+	end
+end
+
+--- cp.apple.finalcutpro:string(key) -> string
+--- Method
+--- Looks up an application string with the specified `key`. It will take into account current language the app is running in.
+---
+--- Parameters:
+---  * `key`	- The key to look up.
+---
+--- Returns:
+---  * The requested string or `nil` if the application is not running.
+function App:string(key)
+	local lang = self:getCurrentLanguage()
+	return self._strings and self._strings:find(lang, key)
+end
+
+--- cp.apple.finalcutpro:keysWithString(string[, lang]) -> {string}
+--- Method
+--- Looks up an application string and returns an array of keys that match. It will take into account current language the app is running in, or use `lang` if provided.
+---
+--- Parameters:
+---  * `key`	- The key to look up.
+---  * `lang`	- The language (defaults to current FCPX language).
+---
+--- Returns:
+---  * The array of keys with a matching string.
+---
+--- Notes:
+---  * This method may be very inefficient, since it has to search through every possible key/value pair to find matches. It is not recommended that this is used in production.
+function App:keysWithString(string, lang)
+	local lang = lang or self:getCurrentLanguage()
+	return self._strings and self._strings:findKeys(lang, string)
 end
 
 --- cp.apple.finalcutpro:application() -> hs.application
@@ -396,7 +451,7 @@ end
 ---  * A string containing Final Cut Pro's filesystem path, or nil if Final Cut Pro's path could not be determined.
 function App:getPath()
 	local app = self:application()
-	if app then
+	if app and app:isRunning() then
 		----------------------------------------------------------------------------------------
 		-- FINAL CUT PRO IS CURRENTLY RUNNING:
 		----------------------------------------------------------------------------------------
@@ -434,7 +489,7 @@ App.getVersion = App.application:mutate(function(app)
 	----------------------------------------------------------------------------------------
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
 	----------------------------------------------------------------------------------------
-	if app then
+	if app and app:isRunning() then
 		local appPath = app:path()
 		if appPath then
 			local info = application.infoForBundlePath(appPath)
@@ -563,10 +618,10 @@ end
 ---  * A MenuBar object
 function App:menuBar()
 	if not self._menuBar then
-		self._menuBar = MenuBar:new(self)
+		local menuBar = MenuBar:new(self)
 
 		-- Add a finder for Share Destinations
-		self._menuBar:addMenuFinder(function(parentItem, path, childName, language)
+		menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			if _.isEqual(path, {"File", "Share"}) then
 				childName = childName:match("(.*)…$") or childName
 				local index = destinations.indexOf(childName)
@@ -577,6 +632,25 @@ function App:menuBar()
 			end
 			return nil
 		end)
+		-- Add a finder for missing menus
+		local missingMenuMap = {
+			{ path = {"Final Cut Pro"},					child = "Commands",		key = "CommandSubmenu" },
+			{ path = {"Final Cut Pro", "Commands"},		child = "Customize…",	key = "Customize" },
+			{ path = {"Clip"},							child = "Open Clip",	key = "FFOpenInTimeline" },
+			{ path = {"Window", "Show in Workspace"},	child = "Sidebar",		key = "PEEventsLibrary" },
+			{ path = {"Window", "Show in Workspace"},	child = "Timeline",		key = "PETimeline" },
+		}
+
+		menuBar:addMenuFinder(function(parentItem, path, childName, language)
+			for i,item in ipairs(missingMenuMap) do
+				if _.isEqual(path, item.path) and childName == item.child then
+					return axutils.childWith(parentItem, "AXTitle", self:string(item.key))
+				end
+			end
+			return nil
+		end)
+
+		self._menuBar = menuBar
 	end
 	return self._menuBar
 end
@@ -979,6 +1053,9 @@ function App:setPreference(key, value)
 	elseif type(value) == "string" then
 		preferenceType = "string"
 		value = "'" .. value .. "'"
+	elseif type(value) == "number" then
+		preferenceType = "int"
+		value = tostring(value)
 	else
 		return false
 	end
@@ -1188,14 +1265,29 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
-App.fileMenuTitle = {
-	["File"]		= "en",
-	["Ablage"]		= "de",
-	["Archivo"]		= "es",
-	["Fichier"]		= "fr",
-	["ファイル"]		= "ja",
-	["文件"]			= "zh_CN"
-}
+--- cp.apple.finalcutpro:setCurrentLanguage(language) -> boolean
+--- Method
+--- Sets the langauge to the specified `language` and restarts FCPX if necessary.
+---
+--- Properties:
+---  * `language`	 - The language key (e.g. "en")
+---
+--- Returns:
+---  * `true` if the language was changed successfully.
+function App:setCurrentLanguage(language)
+	local current = self:getCurrentLanguage()
+	if self:isSupportedLanguage(language) then
+		if current ~= language then
+			self:setPreference("AppleLanguages", {language})
+			self._currentLanguage = nil
+			if self:isRunning() then
+				self:restart()
+			end
+		end
+		return true
+	end
+	return false
+end
 
 --- cp.apple.finalcutpro:setCurrentLanguage() -> none
 --- Method

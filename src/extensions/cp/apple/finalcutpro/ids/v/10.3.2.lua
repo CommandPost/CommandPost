@@ -63,15 +63,13 @@ return {
 		AppearanceAndFiltering				= "_NS:68",
 		SearchToggle						= "_NS:92",
 		Search								= "_NS:34",
-		FilterButton						= "_NS:9",
 		Sidebar								= "_NS:9",
 	},
 	LibrariesFilmstrip = {
 		Content								=  "_NS:33",
 	},
 	LibrariesList = {
-		Player								= "_NS:590",
-		ContentsTable						= "_NS:9",
+		Player								= 1,
 		RowIcon								= "_NS:11",
 	},
 	MediaBrowser = {
@@ -85,33 +83,27 @@ return {
 		ClipHeight							= "_NS:104",
 		ZoomAmount							= "_NS:56",
 	},
-	TimelineContents = {
-		Contents							= "_NS:16",
-		ScrollArea							= "_NS:9",
-		RangeSelectionDescription 			= {"Range Selection", "Bereichauswahl", "Selección de intervalo", "Plage de sélection", "範囲選択", "范围选择"}
-	},
 	TimelineToolbar = {
 		ID									= "_NS:237",
 		SkimmingGroup						= "_NS:178",
 		EffectsGroup						= "_NS:165",
 	},
 	Viewer = {
-		Title								= "_NS:16",
-		Timecode							= "_NS:31",
-		Format								= "_NS:274",
+		Title								= 3,
+		Format								= 1,
 	},
 	ImportPanel = {
 		ID									= 4,
-		CreateProxyMedia					= "_NS:177",
-		CreateOptimizedMedia				= "_NS:15",
-		MediaLocationGroup					= "_NS:84",
+		CreateProxyMedia					= 5,
+		CreateOptimizedMedia				= 4,
+		MediaLocationGroup					= 1,
 		CopyToMediaFolder					= 1,
 		LeaveInPlace						= 2,
 	},
 	PlaybackPanel = {
 		ID									= 3,
-		CreateMulticamOptimizedMedia		= "_NS:145",
-		BackgroundRender					= "_NS:15",
+		CreateMulticamOptimizedMedia		= 2,
+		BackgroundRender					= 1,
 	},
 	PreferencesWindow = {
 		Group								= "_NS:9"

@@ -18,14 +18,14 @@ local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local LibrariesBrowser					= require("cp.apple.finalcutpro.main.LibrariesBrowser")
 local MediaBrowser						= require("cp.apple.finalcutpro.main.MediaBrowser")
 local GeneratorsBrowser					= require("cp.apple.finalcutpro.main.GeneratorsBrowser")
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
+local CheckBox							= require("cp.ui.CheckBox")
 
 --------------------------------------------------------------------------------
 --
@@ -110,9 +110,13 @@ function Browser:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
 	-- if the browser is on the secondary, we need to turn it off before enabling in primary
-	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Browser"})
+	if self:isOnSecondary() then
+		menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
+	end
 	-- Then enable it in the primary
-	menuBar:checkMenu({"Window", "Show in Workspace", "Browser"})
+	if not self:isShowing() then
+		menuBar:checkMenu({"Window", "Show in Workspace", "Browser"})
+	end
 	return self
 end
 
@@ -121,15 +125,18 @@ function Browser:showOnSecondary()
 	-- show the parent.
 	local menuBar = self:app():menuBar()
 
-	menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
+	if not self:isOnSecondary() then
+		menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
+	end
 	return self
 end
 
 -- TODO: Add documentation
 function Browser:hide()
-	local menuBar = self:app():menuBar()
-	-- Uncheck it from the workspace
-	menuBar:uncheckMenu({"Window", "Show in Workspace", "Browser"})
+	if self:isShowing() then
+		-- Uncheck it from the workspace
+		self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Browser"})
+	end
 	return self
 end
 

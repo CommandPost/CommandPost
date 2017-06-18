@@ -157,6 +157,11 @@ function text.is(value)
 	return value and getmetatable(value) == text.mt
 end
 
+--- cp.text:sub(i [, j]) -> cp.text
+--- Method
+--- Returns the substring of this text that starts at `i` and continues until `j`; `i` and `j` can be negative. If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length). In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
+function text.mt:sub()
+
 -- provides access to the internal codes array
 function text.mt:__index(key)
 	if type(key) == "number" then

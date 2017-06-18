@@ -18,6 +18,8 @@ local geometry								= require("hs.geometry")
 local drawing								= require("hs.drawing")
 local timer									= require("hs.timer")
 
+local prop									= require("cp.prop")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -37,10 +39,10 @@ function Pucker:new(colorBoard, aspect, property)
 		xShift = 0,
 		yShift = 0
 	}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+	return prop.extend(o, Pucker)
 end
+
+Pucker.skimming = prop(function(self) return not self:app():getPreference("FFDisableSkimming", false) end):bind(Pucker)
 
 -- TODO: Add documentation
 function Pucker:start()
@@ -50,8 +52,9 @@ function Pucker:start()
 
 	-- disable skimming while the pucker is running
 	self.menuBar = self.colorBoard:app():menuBar()
-	self.skimming = self.menuBar:isChecked({"View", "Skimming"})
-	self.menuBar:uncheckMenu({"View", "Skimming"})
+	if self.skimming() then
+		self.menuBar:checkMenu({"View", "Skimming"})
+	end
 
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
@@ -170,7 +173,7 @@ function Pucker:cleanup()
 	self.pctUI = nil
 	self.angleUI = nil
 	self.origin = nil
-	if self.skimming and self.menuBar then
+	if self.skimming() and self.menuBar then
 		self.menuBar:checkMenu({"View", "Skimming"})
 	end
 	self.menuBar = nil

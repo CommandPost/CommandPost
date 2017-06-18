@@ -16,11 +16,11 @@
 local log							= require("hs.logger").new("PrefsDlg")
 local inspect						= require("hs.inspect")
 
-local axutils						= require("cp.apple.finalcutpro.axutils")
+local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 
 local SaveSheet						= require("cp.apple.finalcutpro.export.SaveSheet")
-local WindowWatcher					= require("cp.apple.finalcutpro.ui.WindowWatcher")
+local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local id							= require "cp.apple.finalcutpro.ids" "ExportDialog"
 
@@ -82,8 +82,8 @@ end):bind(ExportDialog)
 function ExportDialog:show()
 	if not self:isShowing() then
 		-- open the window
-		if self:app():menuBar():isEnabled({"File", "Share", "Master File…"}) then
-			self:app():menuBar():selectMenu({"File", "Share", "Master File…"})
+		if self:app():menuBar():isEnabled({"File", "Share", 1}) then
+			self:app():menuBar():selectMenu({"File", "Share", 1})
 			local ui = just.doUntil(function() return self:UI() end)
 		end
 	end

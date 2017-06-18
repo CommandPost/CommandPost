@@ -19,7 +19,7 @@ local geometry							= require("hs.geometry")
 
 local prop								= require("cp.prop")
 local just								= require("cp.just")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 
 local Pucker							= require("cp.apple.finalcutpro.main.ColorPucker")

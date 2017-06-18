@@ -15,10 +15,10 @@
 --------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
-local axutils							= require("cp.apple.finalcutpro.axutils")
+local axutils							= require("cp.ui.axutils")
 
-local CheckBox							= require("cp.apple.finalcutpro.ui.CheckBox")
-local Slider							= require("cp.apple.finalcutpro.ui.Slider")
+local CheckBox							= require("cp.ui.CheckBox")
+local Slider							= require("cp.ui.Slider")
 
 local id								= require("cp.apple.finalcutpro.ids") "TimelineAppearance"
 
