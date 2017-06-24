@@ -238,8 +238,8 @@ return {
 			togglingMovingMarkersRestart		=			"Toggling Moving Markers requires Final Cut Pro to restart.",
 			togglingBackgroundTasksRestart 		=			"Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.",
 			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
+			togglingWaveformsRestart			=			"Toggling Waveform Drawings requires Final Cut Pro to restart.",
 			togglingShowTimelineInPlayerRestart =			"Toggling Show Timeline In Player requires Final Cut Pro to restart.",
-
 			trashPreferencesConfirmation		=			"Are you sure you want to trash the CommandPost Preferences?",
 
 			--------------------------------------------------------------------------------
@@ -431,6 +431,7 @@ return {
 			enableRenderingDuringPlayback		=			"Enable Rendering During Playback",
 			changeBackupInterval				=			"Change Backup Interval",
 			changeSmartCollectionLabel			=			"Change Smart Collections Label",
+			enableWaveformDrawing				=			"Enable Waveform Drawing",
 
 		--------------------------------------------------------------------------------
     	-- PREFERENCES:
@@ -888,6 +889,7 @@ return {
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
+	finalcutpro_timeline_disablewaveforms_label				=	"Timeline: Waveform Drawing",
 	finalcutpro_timeline_effects_label						=	"Timeline: Effects",
 	finalcutpro_timeline_generators_label					=	"Timeline: Generators",
 	finalcutpro_timeline_height_label						=	"Timeline: Height",
@@ -1035,8 +1037,10 @@ return {
 		cpCopyWithCustomLabelAndFolder_title					=	"Copy with Custom Label and Folder",
 		cpHUD_title												=	"Toggle HUD",
 		cpSingleMatchFrameAndHighlight_title					=	"Single Match Frame and Highlight",
-		cpToggleTouchBar_title									=	"Toggle TouchBar",
+		cpToggleTouchBar_title									=	"Toggle Virtual Touch Bar",
 		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
+
+		cpDisableWaveforms_title								=	"Toggle Waveform Drawing",
 
 	}
 }
