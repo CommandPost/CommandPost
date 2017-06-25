@@ -617,6 +617,11 @@ return {
 			checkForUpdates						=			"Check for Updates",
 
 	--------------------------------------------------------------------------------
+	-- BUG REPORT
+	--------------------------------------------------------------------------------
+	reportBugToApple					=		"Report Final Cut Pro Bug to Apple",
+
+	--------------------------------------------------------------------------------
 	-- FINAL CUT PRO MEDIA WATCH FOLDER PLUGIN:
 	--------------------------------------------------------------------------------
 	addWatchFolder						=			"Add Watch Folder",
@@ -853,6 +858,7 @@ return {
 	finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
 	finalcutpro_console_label								=	"Console",
 	finalcutpro_export_batch_label							=	"Batch Export",
+	finalcutpro_feedback_bugreport_label					=	"Help & Support: Report Bug to Apple",
 	finalcutpro_fullscreen_shortcuts_label					=	"Fullscreen Shortcuts",
 	finalcutpro_hacks_backupinterval_label					=	"Backup Interval",
 	finalcutpro_hacks_movingmarkers_label					=	"Moving Makers",
@@ -1041,6 +1047,8 @@ return {
 		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
 
 		cpDisableWaveforms_title								=	"Toggle Waveform Drawing",
+
+		cpBugReport_title										=	"Report Final Cut Pro Bug to Apple",
 
 	}
 }
