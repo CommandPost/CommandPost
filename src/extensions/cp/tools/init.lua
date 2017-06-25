@@ -18,11 +18,13 @@ local log										= require("hs.logger").new("tools")
 local eventtap									= require("hs.eventtap")
 local fnutils									= require("hs.fnutils")
 local fs										= require("hs.fs")
+local geometry									= require("hs.geometry")
 local host										= require("hs.host")
 local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
+local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local window									= require("hs.window")
 
@@ -46,6 +48,45 @@ tools.DEFAULT_DELAY 	= 0
 local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
+
+--- cp.tools.round(num, numDecimalPlaces) -> number
+--- Function
+--- Rounds a number to a set number of decimal places
+---
+--- Parameters:
+---  * num - The number you want to round
+---  * numDecimalPlaces - How many numbers of decimal places (defaults to 0)
+---
+--- Returns:
+---  * A rounded number
+function tools.round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
+--- cp.tools.isOffScreen(rect) -> boolean
+--- Function
+--- Determines if the given rect is off screen or not.
+---
+--- Parameters:
+---  * rect - the rect you want to check
+---
+--- Returns:
+---  * `true` if offscreen otherwise `false`
+function tools.isOffScreen(rect)
+	if rect then
+		-- check all the screens
+		rect = geometry.new(rect)
+		for _,screen in ipairs(screen.allScreens()) do
+			if rect:inside(screen:frame()) then
+				return false
+			end
+		end
+		return true
+	else
+		return true
+	end
+end
 
 --- cp.tools.safeFilename(value[, defaultValue]) -> string
 --- Function
