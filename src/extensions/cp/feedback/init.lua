@@ -24,8 +24,9 @@ local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
-local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+local dialog									= require("cp.dialog")
+local tools										= require("cp.tools")
 
 local template									= require("resty.template")
 
@@ -43,6 +44,8 @@ mod.defaultWidth 		= 365
 mod.defaultHeight 		= 438
 mod.defaultTitle 		= config.appName .. " " .. i18n("feedback")
 mod.quitOnComplete		= false
+
+mod.position 			= config.prop("feedbackPosition", nil)
 
 -- getScreenshotsAsBase64() -> table
 -- Function
@@ -127,6 +130,30 @@ local function urlQueryStringDecode(s)
 	return string.sub(s, 2, -2)
 end
 
+--------------------------------------------------------------------------------
+-- CENTRED POSITION:
+--------------------------------------------------------------------------------
+local function centredPosition()
+	local sf = screen.mainScreen():frame()
+	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+end
+
+--------------------------------------------------------------------------------
+-- WEBVIEW WINDOW CALLBACK:
+--------------------------------------------------------------------------------
+local function windowCallback(action, webview, frame)
+	if action == "closing" then
+		if not hs.shuttingDown then
+			mod.webview = nil
+		end
+	elseif action == "focusChange" then
+	elseif action == "frameChange" then
+		if frame then
+			mod.position(frame)
+		end
+	end
+end
+
 --- cp.feedback.showFeedback(quitOnComplete) -> nil
 --- Function
 --- Displays the Feedback Screen.
@@ -148,10 +175,12 @@ function mod.showFeedback(quitOnComplete)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Centre on Screen:
+	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
-	local screenFrame = screen.mainScreen():frame()
-	local defaultRect = {x = (screenFrame['w']/2) - (mod.defaultWidth/2), y = (screenFrame['h']/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+	local defaultRect = mod.position()
+	if tools.isOffScreen(defaultRect) then
+		defaultRect = centredPosition()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
@@ -187,6 +216,7 @@ function mod.showFeedback(quitOnComplete)
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:html(generateHTML())
+		:windowCallback(windowCallback)
 		:policyCallback(function(action, wv, details1, details2)
 			if action == "navigationResponse" then
 				local statusCode = details1.response.statusCode
