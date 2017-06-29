@@ -41,7 +41,7 @@ function run()
 		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
 		local codepoints = {97, 20029, 66615}					-- "a".."丽".."𐐷" (codepoints)
 		
-		local value = text.newFromCodepoints(codepoints)
+		local value = text.fromCodepoints(codepoints)
 
 		ok(text.is(value))
 		
@@ -54,6 +54,10 @@ function run()
 		ok(eq(value:encode(text.encoding.utf16be), utf16be))
 		
 		ok(eq(tostring(value), utf8text))
+		
+		ok(eq(text.fromCodepoints(codepoints, 2),		text "丽𐐷"))
+		ok(eq(text.fromCodepoints(codepoints, -1),		text "𐐷"))
+		ok(eq(text.fromCodepoints(codepoints, 2, 1),	text ""))
 	end)
 	
 	test("read-only", function()
@@ -83,8 +87,28 @@ function run()
 		
 		ok(eq(utf8String:len(), 8))
 		ok(eq(unicodeText:len(), 3))
+		ok(eq(#unicodeText, 3))
+		ok(eq(unicodeText:encode(text.encoding.utf16le):len(), 8))
 	end)
 	
+	test("equality", function()
+		ok("a丽𐐷" == "a丽𐐷", "string == string")
+		ok("a丽𐐷" ~= text "a丽𐐷" ,"string ~= text")
+		ok(text "a丽𐐷" == text "a丽𐐷", "text == text")
+		ok(text "a丽𐐷" ~= text "other text", "text ~= different text")
+	end)
+	
+	test("sub", function()
+		local value = text("123456789")
+		
+		ok(eq(value:sub(1),			text "123456789"))
+		ok(eq(value:sub(1,1),		text "1"))
+		ok(eq(value:sub(5),			text "56789"))
+		ok(eq(value:sub(5,7),		text "567"))
+		ok(eq(value:sub(-2),		text "89"))
+		ok(eq(value:sub(-5, -3),	text "567"))
+		ok(eq(value:sub(5,1),		text ""))
+	end)
 end
 
 return run

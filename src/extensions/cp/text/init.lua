@@ -36,11 +36,13 @@
 
 local utf16LE				= require("cp.utf16.le")
 local utf16BE				= require("cp.utf16.be")
+local protect				= require("cp.protect")
 
 local utf8char, utf8codepoint, utf8codes, utf8len, utf8offset = utf8.char, utf8.codepoint, utf8.codes, utf8.len, utf8.offset
 local utf16LEchar, utf16LEcodepoint, utf16LEcodes, utf16LElen, utf16LEoffset = utf16LE.char, utf16LE.codepoint, utf16LE.codes, utf16LE.len, utf16LE.offset
 local utf16BEchar, utf16BEcodepoint, utf16BEcodes, utf16BElen, utf16BEoffset = utf16BE.char, utf16BE.codepoint, utf16BE.codes, utf16BE.len, utf16BE.offset
 local unpack				= table.unpack
+local floor					= math.floor
 
 local text = {}
 
@@ -53,25 +55,43 @@ text.mt.__index = text.mt
 ---  * `utf8`		- UTF-8. The most common format on the web, backwards compatible with ANSI/ASCII.
 ---  * `utf16le`	- UTF-16 (little-endian). Commonly used in Windows and Mac text files.
 ---  * `utf16be`	- UTF-16 (big-endian). Alternate 16-bit format, common on Linux and PowerPC-based architectures.
-text.encoding = {
+text.encoding = protect {
 	utf8	= "utf8",
 	utf16le	= "utf16le",
 	utf16be	= "utf16be",
 }
 
-local decoder = {
+local decoder = protect {
 	utf8	= utf8codepoint,
 	utf16le	= utf16LEcodepoint,
 	utf16be	= utf16BEcodepoint,
 }
 
-local encoder = {
+local encoder = protect {
 	utf8	= utf8char,
 	utf16le	= utf16LEchar,
 	utf16be	= utf16BEchar,
 }
 
-local codesKey = {}
+local function isint(n)
+  return n==floor(n)
+end
+
+local function constrain(value, min, max)
+	if value < min then return min end
+	if value > max then return max end
+	return value
+end
+
+-- gets the 'codes' value for a text value
+local function getCodes(text)
+	return rawget(text, "codes")
+end
+
+-- sets the 'codes' value for a text value.
+local function setCodes(text, value)
+	rawset(text, "codes", protect(value))
+end
 
 --- cp.text.new(value[, encoding]) -> text
 --- Constructor
@@ -92,12 +112,13 @@ function text.new(value, encoding)
 	if not decoder then
 		error(string.format("unsupported encoding: %s", encoding))
 	end
-	return text.newFromCodepoints({decoder(tostring(value), 1, -1)})
+	return text.fromCodepoints({decoder(tostring(value), 1, -1)})
 end
 
---- cp.text.newFromCodepoints(codepoints[, i[, j]]) -> text
+--- cp.text.fromCodepoints(codepoints[, i[, j]]) -> text
 --- Constructor
---- Returns a new `text` instance representing specified codepoints.
+--- Returns a new `text` instance representing the specified array of codepoints. Since `i` and `j` default to the first
+--- and last indexes of the array, simply passing in the array will convert all codepoints in that array.
 ---
 --- Parameters:
 ---  * `codepoints`	- The array of codepoint integers.
@@ -109,39 +130,45 @@ end
 ---
 --- Notes:
 ---  * You can use a *negative* value for `i` and `j`. If so, it will count back from then end of the `codepoints` array.
-function text.newFromCodepoints(codepoints, i, j)
-	i = i or 1
-	j = j or -1
-	local len = #codepoints
-	if type(i) ~= "number" then
-		error("bad argument #2 for 'newFromCodepoints' (integer expected, got "..type(i)..")")
-	end
-	if type(j) ~= "number" then
-		error("bad argument #3 for 'newFromCodepoints' (integer expected, got "..type(i)..")")
-	end
-	
-	if i < 0 then i = len +1 + i end
-	if j < 0 then j = len +1 + j end
-
-	if i < 1 or i > len then
-		error("bad argument #2 for 'newFromCodepoints' (index out of range: "..i..")")
-	end
-	if j < 1 or j > len then
-		error("bad argument #3 for 'newFromCodepoints' (index out of range: "..j..")")
-	end
-	
+function text.fromCodepoints(codepoints, i, j)
 	local result = {}
-	for x = i,j do
-		local cp = codepoints[x]
-		if type(cp) ~= "number" then
-			error("bad argument #1 for 'newFromCodepoints (integer expected, got "..type(cp).." for codepoint #"..x..")")
+	local len = #codepoints
+	
+	if len > 0 then
+		i = i or 1
+		j = j or -1
+		if type(i) ~= "number" then
+			error("bad argument #2 (integer expected, got "..type(i)..")")
 		end
-		result[x] = cp
+		if type(j) ~= "number" then
+			error("bad argument #3 (integer expected, got "..type(i)..")")
+		end
+		if not isint(i) then
+			error(string.format("bad argument #2 (number has no integer representation: %s)", i))
+		end
+		if not isint(j) then
+			error(string.format("bad argument #3 (number has no integer representation: %s)", j))
+		end
+	
+		if i < 0 then i = len + 1 + i end
+		if j < 0 then j = len + 1 + j end
+
+		i = constrain(i, 1, len)
+		j = constrain(j, 1, len)
+	
+		for x = i,j do
+			local cp = codepoints[x]
+			if type(cp) ~= "number" then
+				error("bad argument #1 for 'fromCodepoints (integer expected, got "..type(cp).." for codepoint #"..x..")")
+			end
+			result[x-i+1] = cp
+		end
 	end
 	
 	local o = {}
-	o[codesKey] = result
-	return setmetatable(o, text.mt)
+	setmetatable(o, text.mt)
+	setCodes(o, result)
+	return o
 end
 
 --- cp.text.is(value) -> boolean
@@ -159,15 +186,20 @@ end
 
 --- cp.text:sub(i [, j]) -> cp.text
 --- Method
---- Returns the substring of this text that starts at `i` and continues until `j`; `i` and `j` can be negative. If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length). In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
-function text.mt:sub()
+--- Returns the substring of this text that starts at `i` and continues until `j`; `i` and `j` can be negative.
+--- If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length).
+--- In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
+function text.mt:sub(i, j)
+	j = j or -1
+	return text.fromCodepoints(getCodes(self), i, j)
+end
 
 -- provides access to the internal codes array
 function text.mt:__index(key)
 	if type(key) == "number" then
-		local codes = rawget(self, codesKey)
+		local codes = getCodes(self)
 		return codes[key]
-	elseif key ~= "_codes" then
+	elseif key ~= codesKey then
 		return rawget(text.mt, key)
 	end
 	return nil
@@ -179,7 +211,7 @@ function text.mt:__newindex(k, v)
 end
 
 function text.mt:__len()
-	local codes = rawget(self, codesKey)
+	local codes = getCodes(self)
 	return #codes
 end
 
@@ -205,22 +237,47 @@ end
 ---
 --- Parameters:
 ---  * `encoding`	- The encoding to use when converting. Defaults to `cp.text.encoding.utf8`.
+--
+-- Returns:
+--  * The `string` version of the `cp.text` value with the specified encoding..
 function text.mt:encode(encoding)
 	encoding = encoding or text.encoding.utf8
 	local encoder = encoder[encoding]
+	if not encoder then
+		error(string.format("Unsupported encoding: %s", encoding))
+	end
 	return encoder(unpack(self))
 end
 
+-- cp.text:__tostring() -> string
+-- Method
+-- Returns the text as an `string` value encoded as UTF-8.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The `string` version of the `cp.text` value.
 function text.mt:__tostring()
 	return self:encode(text.encoding.utf8)
 end
 
+-- cp.text:__eq(other) -> boolean
+-- Method
+-- Checks if `other` is a `cp.text` instance, and if so, all codepoints are present in the same order.
+--
+-- Parameters:
+--  * `other`	- The other value to compare to.
+--
+-- Returns:
+--  * `true` if `other` is a `cp.text` and all codepoints are present in the same order.
 function text.mt:__eq(other)
 	if text.is(other) then
-		local len = #self
-		if len == #other then
+		local localCodes, otherCodes = getCodes(self), getCodes(other)
+		local len = #localCodes
+		if len == #otherCodes then
 			for i = 1,len do
-				if not self[i] == other[i] then
+				if not localCodes[i] == otherCodes[i] then
 					return false
 				end
 			end
