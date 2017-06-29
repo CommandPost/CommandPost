@@ -21,8 +21,10 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
-local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+local dialog									= require("cp.dialog")
+local just										= require("cp.just")
+local tools										= require("cp.tools")
 
 local panel										= require("panel")
 
@@ -185,28 +187,13 @@ local function centredPosition()
 	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.defaultWidth, h = mod.defaultHeight}
 end
 
-local function isOffScreen(rect)
-	if rect then
-		-- check all the screens
-		rect = geometry.new(rect)
-		for _,screen in ipairs(screen.allScreens()) do
-			if rect:inside(screen:frame()) then
-				return false
-			end
-		end
-		return true
-	else
-		return true
-	end
-end
-
 function mod.new()
 
 	--------------------------------------------------------------------------------
 	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
 	local defaultRect = mod.position()
-	if isOffScreen(defaultRect) then
+	if tools.isOffScreen(defaultRect) then
 		defaultRect = centredPosition()
 	end
 
@@ -292,15 +279,17 @@ function mod.show()
 		mod.focus()
 	end
 
-	--------------------------------------------------------------------------------
-	-- Select Panel:
-	--------------------------------------------------------------------------------
-
 	return true
 end
 
 function mod.focus()
-	return mod.webview and mod.webview:hswindow() and mod.webview:hswindow():raise():focus()
+	just.doUntil(function()
+		if mod.webview and mod.webview:hswindow() and mod.webview:hswindow():raise():focus() then
+			return true
+		else
+			return false
+		end
+	end)
 end
 
 function mod.hide()
