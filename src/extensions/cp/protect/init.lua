@@ -15,8 +15,7 @@ function protect(tbl)
     return setmetatable({}, {
         __index			= tbl,
         __newindex		= function(t, key, value)
-            error("attempting to change constant " ..
-                   tostring(key) .. " to " .. tostring(value), 2)
+            error(string.format("unable to modify read-only value for '%s' to %s", key, value), 2)
         end,
 		__len			= function() return #tbl end,
     })
