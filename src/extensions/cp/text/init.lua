@@ -171,6 +171,19 @@ function text.fromCodepoints(codepoints, i, j)
 	return o
 end
 
+--- cp.text.char(...) -> cp.text
+--- Constructor
+--- Returns the list of one or more codepoint items into a text value, concatenating the results.
+---
+--- Parameters:
+---  * `...`	- The list of codepoint integers.
+---
+--- Returns:
+---  * The `cp.text` value for the list of codepoint values.
+function text.char(...)
+	return text.fromCodepoints(pack(...))
+end
+
 --- cp.text.is(value) -> boolean
 --- Function
 --- Checks if the provided value is a `text` instance.
