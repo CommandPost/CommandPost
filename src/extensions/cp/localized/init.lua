@@ -7,13 +7,16 @@ local fs 										= require("hs.fs")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
-local text										= require("cp.web.text")
+local text										= require("cp.text")
+local matcher									= require("cp.text.matcher")
+
+local wtext										= require("cp.web.text")
 
 local lines, flush								= io.lines, io.flush
 local pathToAbsolute							= fs.pathToAbsolute
-local escapeXML, unescapeXML 					= text.escapeXML, text.unescapeXML
+local escapeXML, unescapeXML					= wtext.escapeXML, wtext.unescapeXML
 local isBinaryPlist, binaryFileToTable			= plist.isBinaryPlist, plist.binaryFileToTable
-local match, gsub								= string.match, string.gsub
+local match										= string.match
 
 local aliases = {
 	de	= "German",
@@ -23,6 +26,8 @@ local aliases = {
 	it	= "Italian",
 	ja	= "Japanese",
 }
+
+local KEY_VALUE = matcher('^%"(.+)%"%s*%=%s*%"(.+)%";$')
 
 -- cp.localized.readLocalizedStrings(stringsFile, name) -> string | nil
 -- Function
@@ -37,12 +42,10 @@ local aliases = {
 local function readLocalizedStrings(stringsFile, name)
 	local stringsPath = pathToAbsolute(stringsFile)
 	if stringsPath then
-		log.df("readLocalizedStrings: %s", stringsPath)
 		--------------------------------------------------------------------------------
 		-- Binary Plist:
 		--------------------------------------------------------------------------------
 		if isBinaryPlist(stringsFile) then
-			log.df("It's a plist")
 			local plistValues = binaryFileToTable(stringsFile)
 
 			if plistValues then
@@ -61,27 +64,17 @@ local function readLocalizedStrings(stringsFile, name)
 		--
 		--------------------------------------------------------------------------------
 		else
-			log.df("It's a string file")
-			local file = io.open(stringsFile, "rb")
-			local localized = nil
-			while true do
-				local line = file:read("*l")
-				if not line then break end
-				log.df("line: %s", line)
-				local key, value = match(line, '^%"(.+)%"%s*%=%s*%"(.+)%";$')
-				log.df("%s = %s", key, value)
-				if key and value then
-					-- unescape the key.
-					key = gsub(key, '%\\(.)', '%1')
-					if key == name then
-						-- unescape the value.
-						localized = gsub(value, '%\\(.)', '%1')
-						break
-					end
+			local content = text.fromFile(stringsFile)
+			local key, value = KEY_VALUE:match(content)
+			if key and value then
+				-- unescape the key.
+				key = key:gsub('%\\(.)', '%1')
+				if key == text(name) then
+					-- unescape the value.
+					value = value:gsub('%\\(.)', '%1')
+					return tostring(value)
 				end
 			end
-			file:close()
-			return localized
 		end
 	end
 	return nil

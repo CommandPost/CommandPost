@@ -178,6 +178,13 @@ function run()
 		local t = {name="lua", version="5.1"}
 		x = text("$name-$version.tar.gz"):gsub("%$(%w+)", t)
 		ok(eq(x, text "lua-5.1.tar.gz"))
+		
+		
+		x = text("Is \\Escaped"):gsub('%\\(.)', '%1')
+		ok(eq(x, text "Is Escaped"))
+		
+		x = text("Is Unescaped"):gsub('%\\(.)', '%1')
+		ok(eq(x, text "Is Unscaped"))
 	end)
 	
 end
