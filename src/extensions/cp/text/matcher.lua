@@ -226,7 +226,7 @@ local function replace(repl, args)
 					local num = c - ZERO -- shifts 'c' to an index from 0 to 9
 					local value = args[num]
 					if value then
-						appendAll(chars, text.fromStringtring(value)))
+						appendAll(chars, text.fromString(value))
 					end
 				else
 					insert(chars, c)
@@ -426,7 +426,7 @@ end
 
 --- cp.text.matcher:match(value[, start]) -> ...
 --- Method
---- Looks for the first match of pattern in the string s. If it finds one, then match returns the captures from the pattern; otherwise it returns nil. If pattern specifies no captures, then the whole match is returned. A third, optional numerical argument init specifies where to start the search; its default value is 1 and can be negative.
+--- Looks for the first match of the pattern in the string `value`. If it finds one, then match returns the captures from the pattern; otherwise it returns `nil`. If pattern specifies no captures, then the whole match is returned. A third, optional numerical argument init specifies where to start the search; its default value is `1` and can be negative.
 ---
 --- Parameters:
 ---  * `value`		- The `cp.text` value to process.
@@ -446,7 +446,7 @@ matcher.mt.match = function(self, value, start)
 	end
 end
 
---- cp.text.matcher:gmatch(value[, start]) -> function
+--- cp.text.matcher:gmatch(value) -> function
 --- Method
 --- Returns an iterator function that, each time it is called, returns the next captures from pattern over string s. If pattern specifies no captures, then the whole match is produced in each call.
 ---
@@ -472,7 +472,7 @@ matcher.mt.gmatch = function(self, value, all)
 	end
 end
 
---- cp.text.match:gsub (value, repl [, n]) -> 
+--- cp.text.match:gsub (value, repl [, n]) -> text, number
 --- Returns a copy of `value` in which all (or the first `n`, if given) occurrences of the pattern have been replaced by a replacement string specified by `repl`, which can be text, a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred.
 ---
 --- If repl is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in repl of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
@@ -487,6 +487,10 @@ end
 --- * `value`	- The text or string value to process.
 --- * `repl`	- The replacement text/string/table/function
 --- * `limit`	- The maximum number of times to do the replacement. Defaults to unlimited.
+---
+--- Returns:
+--- * `text`	- The text value with replacements.
+--- * `number`	- The number of matches that occurred.
 matcher.mt.gsub = function(self, value, repl, limit)
 	value = text.is(value) and value or text(tostring(value))
 	limit = limit or -1

@@ -46,6 +46,12 @@ local utf16BEchar, utf16BEcodepoint, utf16BEcodes, utf16BElen, utf16BEoffset = u
 local unpack				= table.unpack
 local floor					= math.floor
 
+-- Loads the 'cp.text.matcher' module on demand, to avoid a dependency loop.
+local matcher				= function(...)
+	matcher = require("cp.text.matcher")
+	return matcher(...)
+end
+
 local text = {}
 
 text.mt = {}
@@ -267,6 +273,73 @@ end
 function text.mt:sub(i, j)
 	j = j or -1
 	return text.fromCodepoints(getCodes(self), i, j)
+end
+
+--- cp.text:find(pattern [, init [, plain]])
+--- Method
+--- Looks for the first match of pattern in the string `value`. If it finds a match, then find returns the indices of `value` where this occurrence starts and ends; otherwise, it returns `nil`. A third, optional numerical argument `init` specifies where to start the search; its default value is `1` and can be negative. A value of `true` as a fourth, optional argument plain turns off the pattern matching facilities, so the function does a plain "find substring" operation, with no characters in pattern being considered "magic". Note that if plain is given, then `init` must be given as well.
+---
+--- If the pattern has captures, then in a successful match the captured values are also returned, after the two indices.
+---
+--- Preferences:
+---  * `pattern`		- The pattern to find.
+---  * `init`			- The index to start matching from. Defaults to `1`.
+---  * `plain`			- If `true`, the pattern is treated as plain text.
+---
+--- Returns:
+---  * the start index, the end index, followed by any captures
+function text.mt:find(pattern, init, plain)
+	return matcher(pattern):find(self, init, plain)
+end
+
+--- cp.text:match(pattern[, start]) -> ...
+--- Method
+--- Looks for the first match of the `pattern` in the text value. If it finds one, then match returns the captures from the pattern; otherwise it returns `nil`. If pattern specifies no captures, then the whole match is returned. A third, optional numerical argument `init` specifies where to start the search; its default value is `1` and can be negative.
+---
+--- Parameters:
+---  * `pattern`	- The text pattern to process.
+---  * `start`		- If specified, indicates the starting position to process from. Defaults to `1`.
+---
+--- Returns:
+---  * The capture results, the whole match, or `nil`.
+function text.mt:match(pattern, start)
+	return matcher(pattern):match(self, start)
+end
+
+--- cp.text.matcher:gmatch(pattern[, start]) -> function
+--- Method
+--- Returns an iterator function that, each time it is called, returns the next captures from pattern over string s. If pattern specifies no captures, then the whole match is produced in each call.
+---
+--- Parameters:
+---  * `pattern`		- The `cp.text` value to process.
+---
+--- Returns:
+---  * The iterator function.
+function text.mt:gmatch(pattern, all)
+	return matcher(pattern):gmatch(self, all)
+end
+
+--- cp.text.match:gsub(pattern, repl [, n]) -> text, number
+--- Returns a copy of this text in which all (or the first `n`, if given) occurrences of the `pattern` have been replaced by a replacement string specified by `repl`, which can be text, a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred.
+---
+--- If repl is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in repl of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
+---
+--- If `repl` is a table, then the table is queried for every match, using the first capture as the key; if the pattern specifies no captures, then the whole match is used as the key.
+---
+--- If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
+---
+--- If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
+---
+--- Parameters:
+--- * `pattern`	- The text or string value to process.
+--- * `repl`	- The replacement text/string/table/function
+--- * `limit`	- The maximum number of times to do the replacement. Defaults to unlimited.
+---
+--- Returns:
+--- * `text`	- The text value with replacements.
+--- * `number`	- The number of matches that occurred.
+function text.mt:gsub(pattern, repl, limit)
+	return matcher(pattern):gsub(self, repl, limit)
 end
 
 -- provides access to the internal codes array

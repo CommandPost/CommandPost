@@ -128,6 +128,58 @@ function run()
 		ok(eq(text.fromFile(TEXT_PATH.."utf16be.txt"), text "ABC123"))
 	end)
 	
+
+	test("match", function()
+		local grp1, grp2 = text("valid@email"):match("^([^@]+)@([^@]+)$")
+		ok(eq(grp1, text "valid"))
+		ok(eq(grp2, text "email"))
+
+		local grp1, grp2 = text("@bad"):match("^([^@]+)@([^@]+)$")
+		ok(eq(grp1, nil))
+		ok(eq(grp2, nil))
+		
+		local result = text("foobar"):match("^.*$")
+		ok(eq(result, text "foobar"))
+		
+		local result = text("foobar"):match("^%d*$")
+		ok(eq(result, nil))
+	end)
+	
+	test("gmatch", function()
+		local v = text("banana")
+		local count = 0
+		for w in v:gmatch("an") do
+			ok(eq(w, text "an"))
+			count = count + 1
+		end
+		ok(eq(count, 2))
+	end)
+	
+	test("gsub", function()
+		local x
+		
+		x = text("hello world"):gsub("%w+", "%1 %1")
+		ok(eq(x, text "hello hello world world"))
+
+		x = text("hello world"):gsub("%w+", "%0 %0", 1)
+		ok(eq(x, text "hello hello world"))
+
+		x = text("hello world from Lua"):gsub("(%w+)%s*(%w+)", "%2 %1")
+		ok(eq(x, text "world hello Lua from"))
+
+		x = text("home = $HOME, user = $USER"):gsub("%$(%w+)", {HOME = "/home/foo", USER = "foo"})
+		ok(eq(x, text "home = /home/foo, user = foo"))
+
+		x = text("4+5 = $return 4+5$"):gsub("%$(.-)%$", function (s)
+			return load(tostring(s))()
+		end)
+		ok(eq(x, text "4+5 = 9"))
+
+		local t = {name="lua", version="5.1"}
+		x = text("$name-$version.tar.gz"):gsub("%$(%w+)", t)
+		ok(eq(x, text "lua-5.1.tar.gz"))
+	end)
+	
 end
 
 return run
