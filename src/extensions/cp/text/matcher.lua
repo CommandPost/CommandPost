@@ -177,32 +177,6 @@ local PRINTABLE			= charClass('g',											-- %g: printable characters
 							{8203, 8231}, {8234, 8238}, {8240, 8286}, {8288, 12287}
 						  )
 
--- gensub(pattern, subLen) -> function
--- Function
--- Returns an iterator which returns the next substring and its byte interval
---
--- Parameters:
---  * `pattern`		- The `cp.text` value to process
---  * `subLen`	- The length of the subsection to return with each chunk.
---
--- Returns:
---  * An iterator function that will return the specified sub-length of the text value, until running out of characters.
-local function gensub(pattern, subLen)
-	subLen        = subLen or 1
-	local pos = 1
-	local length   = #pattern
-	return function(skip)
-		if skip then pos = pos + skip end
-		if pos > length then return end
-		
-		local start		= pos
-		pos 			= start + subLen
-		local last  	= pos-1
-		local slice = pattern:sub(start,last)
-		return slice, start, last
-	end
-end
-
 local function binsearch(sortedTable, item, comp)
 	local head, tail = 1, #sortedTable
 	local mid = floor((head + tail)/2)
@@ -351,14 +325,186 @@ local function classMatchGenerator(pattern, pos, len, plain)
 	end
 end
 
-
-
 local cache = setmetatable({},{
 	__mode = 'kv'
 })
 local cachePlain = setmetatable({},{
 	__mode = 'kv'
 })
+
+-- The 'matcher' metatable
+local matcher = {}
+matcher.mt = {}
+matcher.mt.__index = matcher.mt
+
+matcher.mt.nextFunc = function(self)
+	self.func = self.func + 1
+	-- log.df("nextFunc: %s of %s", self.func, #self.functions)
+end
+matcher.mt.nextPos = function(self)
+	self.textPos = self.textPos + 1
+	-- log.df("nextPos: %s", self.textPos)
+end
+matcher.mt.resetPos = function(self)
+	local oldReset = self.reset
+	local textPos = self.textPos
+	self.reset = function(s)
+		s.textPos = textPos
+		s.reset = oldReset
+	end
+	-- log.df("resetPos: %s", self.textPos)
+end
+matcher.mt.fullResetOnNextFunc = function(self)
+	local oldReset = self.reset
+	local func = self.func +1
+	local textPos = self.textPos
+	self.reset = function(s)
+		s.func = func
+		s.textPos = textPos
+		s.reset = oldReset
+	end
+end
+matcher.mt.fullResetOnNextStr = function(self)
+	local oldReset = self.reset
+	local textPos = self.textPos + 1
+	local func = self.func
+	self.reset = function(s)
+		s.func = func
+		s.textPos = textPos
+		s.reset = oldReset
+	end
+end
+
+--- cp.text.matcher:find(value[, start]) -> number, number, ...
+--- Method
+--- Processes the text, returning the start position, the end position, followed by any capture group values.
+---
+--- Parameters:
+---  * `value`		- The `cp.text` value to process.
+---  * `start`		- If specified, indicates the starting position to process from. Defaults to `1`.
+---
+--- Returns:
+---  * The start position for the match, end position, and the list of capture group values.
+matcher.mt.find = function(self, value, start)
+	value = text.is(value) and value or text(tostring(value))
+
+	self.func = 1
+	start = start or 1
+	self.textLen = #value + 1
+	self.textStart = (start >= 0) and start or self.textLen + start
+	self.seqStart = self.textStart
+	self.textPos = self.textStart
+	self.text = value
+	self.stop = false
+
+	self.reset = function(s)
+		s.func = 1
+	end
+
+	local ch
+	while not self.stop do
+		if self.textPos < self.textLen then
+			ch = value[self.textPos]
+			self.functions[self.func](ch)
+		else
+			self.functions[self.func](EOF)
+		end
+	end
+
+	if self.seqStart then
+		local captures = {}
+		for _,pair in pairs(self.captures) do
+			if pair.empty then
+				insert(captures, pair[1])
+			else
+				insert(captures, value:sub(pair[1], pair[2]))
+			end
+		end
+		return self.seqStart, self.textPos-1, unpack(captures)
+	end
+end
+
+--- cp.text.matcher:match(value[, start]) -> ...
+--- Method
+--- Looks for the first match of pattern in the string s. If it finds one, then match returns the captures from the pattern; otherwise it returns nil. If pattern specifies no captures, then the whole match is returned. A third, optional numerical argument init specifies where to start the search; its default value is 1 and can be negative.
+---
+--- Parameters:
+---  * `value`		- The `cp.text` value to process.
+---  * `start`		- If specified, indicates the starting position to process from. Defaults to `1`.
+---
+--- Returns:
+---  * The capture results, the whole match, or `nil`.
+matcher.mt.match = function(self, value, start)
+	value = text.is(value) and value or text(tostring(value))
+	start = start or 1
+	local found = {self:find(value, start)}
+	if found[1] then
+		if found[3] then
+			return unpack(found, 3)
+		end
+		return value:sub(found[1], found[2])
+	end
+end
+
+--- cp.text.matcher:gmatch(value[, start]) -> function
+--- Method
+--- Returns an iterator function that, each time it is called, returns the next captures from pattern over string s. If pattern specifies no captures, then the whole match is produced in each call.
+---
+--- Parameters:
+---  * `value`		- The `cp.text` value to process.
+---
+--- Returns:
+---  * The iterator function.
+matcher.mt.gmatch = function(self, value, all)
+	value = text.is(value) and value or text(tostring(value))
+	local pattern = self.pattern
+	local regex = (pattern:sub(1,1) ~= '^') and pattern or '%' .. pattern
+	local lastChar = 1
+	return function()
+		local found = {self:find(value, lastChar)}
+		if found[1] then
+			lastChar = found[2] + 1
+			if found[all and 1 or 3] then
+				return unpack(found, all and 1 or 3)
+			end
+			return value:sub(found[1], found[2])
+		end
+	end
+end
+
+--- cp.text.match:gsub (value, repl [, n]) -> 
+--- Returns a copy of `value` in which all (or the first `n`, if given) occurrences of the pattern have been replaced by a replacement string specified by `repl`, which can be text, a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred.
+---
+--- If repl is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in repl of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
+---
+--- If `repl` is a table, then the table is queried for every match, using the first capture as the key; if the pattern specifies no captures, then the whole match is used as the key.
+---
+--- If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
+---
+--- If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
+---
+--- Parameters:
+--- * `value`	- The text or string value to process.
+--- * `repl`	- The replacement text/string/table/function
+--- * `limit`	- The maximum number of times to do the replacement. Defaults to unlimited.
+matcher.mt.gsub = function(self, value, repl, limit)
+	value = text.is(value) and value or text(tostring(value))
+	limit = limit or -1
+	local ret = ''
+	local prevEnd = 1
+	local it = self:gmatch(value, true)
+	local found = {it()}
+	local n = 0
+	while #found > 0 and limit ~= n do
+		local args = {[0] = value:sub(found[1], found[2]), unpack(found, 3)}
+		ret = ret .. value:sub(prevEnd, found[1] - 1) .. replace(repl, args)
+		prevEnd = found[2] + 1
+		n = n + 1
+		found = {it()}
+	end
+	return ret .. value:sub(prevEnd), n
+end
+
 
 -- cp.text.matcher.matcherGenerator(pattern, plain)
 -- Constructor
@@ -371,23 +517,27 @@ local cachePlain = setmetatable({},{
 -- Returns:
 --  * A new `cp.text.matcher` instance.
 local function matcherGenerator(pattern, plain)
-	local matcher = {
+	local m = {
 		functions = {},
-		captures = {}
+		captures = {},
+		pattern = pattern,
 	}
+	setmetatable(m, matcher.mt)
+	
 	if not plain then
-		cache[pattern] =  matcher
+		cache[pattern] = m
 	else
-		cachePlain[pattern] = matcher
+		cachePlain[pattern] = m
 	end
+	
 	local function simple(func)
 		return function(cC)
 			-- log.df("simple: %s", utf8char(cC))
 			if func(cC) then
-				matcher:nextFunc()
-				matcher:nextPos()
+				m:nextFunc()
+				m:nextPos()
 			else
-				matcher:reset()
+				m:reset()
 			end
 		end
 	end
@@ -395,10 +545,10 @@ local function matcherGenerator(pattern, plain)
 		return function(cC)
 			-- log.df("star: %s", utf8char(cC))
 			if func(cC) then
-				matcher:fullResetOnNextFunc()
-				matcher:nextPos()
+				m:fullResetOnNextFunc()
+				m:nextPos()
 			else
-				matcher:nextFunc()
+				m:nextFunc()
 			end
 		end
 	end
@@ -406,50 +556,50 @@ local function matcherGenerator(pattern, plain)
 		return function(cC)
 			-- log.df("minus: %s", utf8char(cC))
 			if func(cC) then
-				matcher:fullResetOnNextStr()
+				m:fullResetOnNextStr()
 			end
-			matcher:nextFunc()
+			m:nextFunc()
 		end
 	end
 	local function question(func)
 		return function(cC)
 			-- log.df("question: %s", utf8char(cC))
 			if func(cC) then
-				matcher:fullResetOnNextFunc()
-				matcher:nextPos()
+				m:fullResetOnNextFunc()
+				m:nextPos()
 			end
-			matcher:nextFunc()
+			m:nextFunc()
 		end
 	end
 
 	local function capture(id)
 		return function(_)
 			-- log.df("capture")
-			local l = matcher.captures[id][2] - matcher.captures[id][1]
-			local captured = matcher.text:sub(matcher.captures[id][1], matcher.captures[id][2])
-			local check = matcher.text:sub(matcher.textPos, matcher.textPos + l)
+			local l = m.captures[id][2] - m.captures[id][1]
+			local captured = m.text:sub(m.captures[id][1], m.captures[id][2])
+			local check = m.text:sub(m.textPos, m.textPos + l)
 			if captured == check then
 				for _ = 0, l do
-					matcher:nextPos()
+					m:nextPos()
 				end
-				matcher:nextFunc()
+				m:nextFunc()
 			else
-				matcher:reset()
+				m:reset()
 			end
 		end
 	end
 	local function captureStart(id)
 		return function(_)
 			-- log.df("capture start")
-			matcher.captures[id][1] = matcher.textPos
-			matcher:nextFunc()
+			m.captures[id][1] = m.textPos
+			m:nextFunc()
 		end
 	end
 	local function captureStop(id)
 		return function(_)
 			-- log.df("capture stop")
-			matcher.captures[id][2] = matcher.textPos - 1
-			matcher:nextFunc()
+			m.captures[id][2] = m.textPos - 1
+			m:nextFunc()
 		end
 	end
 
@@ -460,30 +610,30 @@ local function matcherGenerator(pattern, plain)
 			if cC == ec and sum > 0 then
 				sum = sum - 1
 				if sum == 0 then
-					matcher:nextFunc()
+					m:nextFunc()
 				end
-				matcher:nextPos()
+				m:nextPos()
 			elseif cC == bc then
 				sum = sum + 1
-				matcher:nextPos()
+				m:nextPos()
 			else
 				if sum == 0 or cC == -1 then
 					sum = 0
-					matcher:reset()
+					m:reset()
 				else
-					matcher:nextPos()
+					m:nextPos()
 				end
 			end
 		end
 	end
 
-	matcher.functions[1] = function(_)
-		matcher:fullResetOnNextStr()
-		matcher.seqStart = matcher.textPos
-		matcher:nextFunc()
-		if (matcher.textPos > matcher.textStart and matcher.fromStart) or matcher.textPos >= matcher.textLen then
-			matcher.stop = true
-			matcher.seqStart = nil
+	m.functions[1] = function(_)
+		m:fullResetOnNextStr()
+		m.seqStart = m.textPos
+		m:nextFunc()
+		if (m.textPos > m.textStart and m.fromStart) or m.textPos >= m.textLen then
+			m.stop = true
+			m.seqStart = nil
 		end
 	end
 
@@ -494,76 +644,76 @@ local function matcherGenerator(pattern, plain)
 	while pos <= len do
 		local c = pattern[pos]
 		if plain then
-			insert(matcher.functions, simple(classMatchGenerator(pattern, pos, pos, plain)))
+			insert(m.functions, simple(classMatchGenerator(pattern, pos, pos, plain)))
 		else
 			if c == ANY_GREEDY then									-- '*': grabs as many of the matching characters as possible
 				if lastFunc then
-					insert(matcher.functions, star(lastFunc))
+					insert(m.functions, star(lastFunc))
 					lastFunc = nil
 				else
 					error('invalid pattern after ' .. pattern:sub(1, pos))
 				end
 			elseif c == ONE_OR_MORE then							-- '+': grabs at least one matching character, more if possible.
 				if lastFunc then
-					insert(matcher.functions, simple(lastFunc))
-					insert(matcher.functions, star(lastFunc))
+					insert(m.functions, simple(lastFunc))
+					insert(m.functions, star(lastFunc))
 					lastFunc = nil
 				else
 					error('invalid pattern after ' .. pattern:sub(1, pos))
 				end
 			elseif c == ANY_LAZY then								-- '-': grabs the fewest possible characters that match.
 				if lastFunc then
-					insert(matcher.functions, minus(lastFunc))
+					insert(m.functions, minus(lastFunc))
 					lastFunc = nil
 				else
 					error('invalid pattern after ' .. pattern:sub(1, pos))
 				end
 			elseif c == ONE_OR_ZERO then							-- '?': One or zero instances of the character
 				if lastFunc then
-					insert(matcher.functions, question(lastFunc))
+					insert(m.functions, question(lastFunc))
 					lastFunc = nil
 				else
 					error('invalid pattern after ' .. pattern:sub(1, pos))
 				end
 			elseif c == PATTERN_FIRST then							-- '^': Matches the beginning of the text
 				if pos == 1 then
-					matcher.fromStart = true
+					m.fromStart = true
 				else
 					error('invalid pattern after ' .. pattern:sub(1, pos))
 				end
 			elseif c == PATTERN_LAST then							-- '$': Matches the end of the text.
 				if pos == len then
-					matcher.toEnd = true
+					m.toEnd = true
 				else
 					error('invalid pattern after ' .. pattern:sub(1, pos))
 				end
 			elseif c == CLASS_OPEN then								-- '[': opens a custom character class
 				if lastFunc then
-					insert(matcher.functions, simple(lastFunc))
+					insert(m.functions, simple(lastFunc))
 				end
 				lastFunc, pos = classMatchGenerator(pattern, pos+1)
 			elseif c == GROUP_OPEN then								-- '(': opens a capture group.
 				if lastFunc then
-					insert(matcher.functions, simple(lastFunc))
+					insert(m.functions, simple(lastFunc))
 					lastFunc = nil
 				end
-				insert(matcher.captures, {})
-				insert(cs, #matcher.captures)
-				insert(matcher.functions, captureStart(cs[#cs]))
-				if pattern[pos+1] == GROUP_CLOSE then matcher.captures[#matcher.captures].empty = true end
+				insert(m.captures, {})
+				insert(cs, #m.captures)
+				insert(m.functions, captureStart(cs[#cs]))
+				if pattern[pos+1] == GROUP_CLOSE then m.captures[#m.captures].empty = true end
 			elseif c == GROUP_CLOSE then							-- ')': closes a capture group
 				if lastFunc then
-					insert(matcher.functions, simple(lastFunc))
+					insert(m.functions, simple(lastFunc))
 					lastFunc = nil
 				end
 				local cap = remove(cs)
 				if not cap then
 					error('invalid capture: "(" missing')
 				end
-				insert(matcher.functions, captureStop(cap))
+				insert(m.functions, captureStop(cap))
 			elseif c == ANY_CHAR then
 				if lastFunc then
-					insert(matcher.functions, simple(lastFunc))
+					insert(m.functions, simple(lastFunc))
 				end
 				lastFunc = function(cC) return cC ~= -1 end
 			elseif c == ESCAPE then
@@ -574,28 +724,28 @@ local function matcherGenerator(pattern, plain)
 				-- log.df("Escape: %s", utf8char(cx))
 				if ONE <= cx and cx <= NINE then							-- it's a capture group reference
 					if lastFunc then
-						insert(matcher.functions, simple(lastFunc))
+						insert(m.functions, simple(lastFunc))
 						lastFunc = nil
 					end
-					insert(matcher.functions, capture(c - ONE + 1))
+					insert(m.functions, capture(c - ONE + 1))
 					pos = pos + 1
 				elseif cx == BALANCED then								-- it's a 'balanced' pattern matcher
 					if lastFunc then
-						insert(matcher.functions, simple(lastFunc))
+						insert(m.functions, simple(lastFunc))
 						lastFunc = nil
 					end
 					local b = balancer(pattern[pos+2], pattern[pos+3])
-					insert(matcher.functions, b)
+					insert(m.functions, b)
 					pos = pos + 3
 				else													-- it's a character class/escape value
 					if lastFunc then
-						insert(matcher.functions, simple(lastFunc))
+						insert(m.functions, simple(lastFunc))
 					end
 					lastFunc, pos = classMatchGenerator(pattern, pos, pos+1)
 				end
 			else
 				if lastFunc then
-					insert(matcher.functions, simple(lastFunc))
+					insert(m.functions, simple(lastFunc))
 				end
 				lastFunc, pos = classMatchGenerator(pattern, pos, pos)
 			end
@@ -606,185 +756,18 @@ local function matcherGenerator(pattern, plain)
 		error('invalid capture: ")" missing')
 	end
 	if lastFunc then
-		insert(matcher.functions, simple(lastFunc))
+		insert(m.functions, simple(lastFunc))
 	end
 
-	insert(matcher.functions, function()
-		if matcher.toEnd and matcher.textPos ~= matcher.textLen then
-			matcher:reset()
+	insert(m.functions, function()
+		if m.toEnd and m.textPos ~= m.textLen then
+			m:reset()
 		else
-			matcher.stop = true
+			m.stop = true
 		end
 	end)
 
-	matcher.nextFunc = function(self)
-		self.func = self.func + 1
-		-- log.df("nextFunc: %s of %s", self.func, #self.functions)
-	end
-	matcher.nextPos = function(self)
-		self.textPos = self.textPos + 1
-		-- log.df("nextPos: %s", self.textPos)
-	end
-	matcher.resetPos = function(self)
-		local oldReset = self.reset
-		local textPos = self.textPos
-		self.reset = function(s)
-			s.textPos = textPos
-			s.reset = oldReset
-		end
-		-- log.df("resetPos: %s", self.textPos)
-	end
-	matcher.fullResetOnNextFunc = function(self)
-		local oldReset = self.reset
-		local func = self.func +1
-		local textPos = self.textPos
-		self.reset = function(s)
-			s.func = func
-			s.textPos = textPos
-			s.reset = oldReset
-		end
-	end
-	matcher.fullResetOnNextStr = function(self)
-		local oldReset = self.reset
-		local textPos = self.textPos + 1
-		local func = self.func
-		self.reset = function(s)
-			s.func = func
-			s.textPos = textPos
-			s.reset = oldReset
-		end
-	end
-
-	--- cp.text.matcher:find(value[, start]) -> number, number, ...
-	--- Method
-	--- Processes the text, returning the start position, the end position, followed by any capture group values.
-	---
-	--- Parameters:
-	---  * `value`		- The `cp.text` value to process.
-	---  * `start`		- If specified, indicates the starting position to process from. Defaults to `1`.
-	---
-	--- Returns:
-	---  * The start position for the match, end position, and the list of capture group values.
-	matcher.find = function(self, value, start)
-		value = text.is(value) and value or text(tostring(value))
-
-		self.func = 1
-		start = start or 1
-		self.textLen = #value + 1
-		self.textStart = (start >= 0) and start or self.textLen + start
-		self.seqStart = self.textStart
-		self.textPos = self.textStart
-		self.text = value
-		self.stop = false
-
-		self.reset = function(s)
-			s.func = 1
-		end
-
-		local ch
-		while not self.stop do
-			if self.textPos <= self.textLen then
-				ch = value[self.textPos]
-				self.functions[self.func](ch)
-			else
-				self.functions[self.func](EOF)
-			end
-		end
-
-		if self.seqStart then
-			local captures = {}
-			for _,pair in pairs(self.captures) do
-				if pair.empty then
-					insert(captures, pair[1])
-				else
-					insert(captures, value:sub(pair[1], pair[2]))
-				end
-			end
-			return self.seqStart, self.textPos-1, unpack(captures)
-		end
-	end
-	
-	--- cp.text.matcher:match(value[, start]) -> ...
-	--- Method
-	--- Looks for the first match of pattern in the string s. If it finds one, then match returns the captures from the pattern; otherwise it returns nil. If pattern specifies no captures, then the whole match is returned. A third, optional numerical argument init specifies where to start the search; its default value is 1 and can be negative.
-	---
-	--- Parameters:
-	---  * `value`		- The `cp.text` value to process.
-	---  * `start`		- If specified, indicates the starting position to process from. Defaults to `1`.
-	---
-	--- Returns:
-	---  * The capture results, the whole match, or `nil`.
-	matcher.match = function(self, value, start)
-		value = text.is(value) and value or text(tostring(value))
-		start = start or 1
-		local found = {self:find(value, start)}
-		if found[1] then
-			if found[3] then
-				return unpack(found, 3)
-			end
-			return value:sub(found[1], found[2])
-		end
-	end
-	
-	--- cp.text.matcher:gmatch(value[, start]) -> function
-	--- Method
-	--- Returns an iterator function that, each time it is called, returns the next captures from pattern over string s. If pattern specifies no captures, then the whole match is produced in each call.
-	---
-	--- Parameters:
-	---  * `value`		- The `cp.text` value to process.
-	---
-	--- Returns:
-	---  * The iterator function.
-	matcher.gmatch = function(self, value, all)
-		value = text.is(value) and value or text(tostring(value))
-		local regex = (pattern:sub(1,1) ~= '^') and pattern or '%' .. pattern
-		local lastChar = 1
-		return function()
-			local found = {self:find(value, lastChar)}
-			if found[1] then
-				lastChar = found[2] + 1
-				if found[all and 1 or 3] then
-					return unpack(found, all and 1 or 3)
-				end
-				return value:sub(found[1], found[2])
-			end
-		end
-	end
-	
-	--- cp.text.match:gsub (value, repl [, n]) -> 
-	--- Returns a copy of `value` in which all (or the first `n`, if given) occurrences of the pattern have been replaced by a replacement string specified by `repl`, which can be text, a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred.
-	---
-	--- If repl is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in repl of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
-	---
-	--- If `repl` is a table, then the table is queried for every match, using the first capture as the key; if the pattern specifies no captures, then the whole match is used as the key.
-	---
-	--- If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
-	---
-	--- If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
-	---
-	--- Parameters:
-	--- * `value`	- The text or string value to process.
-	--- * `repl`	- The replacement text/string/table/function
-	--- * `limit`	- The maximum number of times to do the replacement. Defaults to unlimited.
-	matcher.gsub = function(self, value, repl, limit)
-		value = text.is(value) and value or text(tostring(value))
-		limit = limit or -1
-		local ret = ''
-		local prevEnd = 1
-		local it = self:gmatch(value, true)
-		local found = {it()}
-		local n = 0
-		while #found > 0 and limit ~= n do
-			local args = {[0] = value:sub(found[1], found[2]), unpack(found, 3)}
-			ret = ret .. value:sub(prevEnd, found[1] - 1) .. replace(repl, args)
-			prevEnd = found[2] + 1
-			n = n + 1
-			found = {it()}
-		end
-		return ret .. value:sub(prevEnd), n
-	end
-
-	return matcher
+	return m
 end
 
 --- cp.text.matcher(pattern[, plain]) -> cp.text.matcher
@@ -794,9 +777,10 @@ end
 --- Parameters:
 ---  * `pattern`	- The pattern to parse
 ---  * `plain`		- If `true`, the pattern is not parsed and the provided text must match exactly.
-local function matcher(pattern, plain)
+local function newMatcher(pattern, plain)
 	pattern = text.is(pattern) and pattern or text(tostring(pattern))
-	return cache[pattern] or matcherGenerator(pattern, plain)
+	local m = plain and cachePlain[pattern] or cache[pattern]
+	return m or matcherGenerator(pattern, plain)
 end
 
-return matcher	
+return newMatcher
