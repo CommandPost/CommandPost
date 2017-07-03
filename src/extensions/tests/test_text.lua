@@ -20,7 +20,7 @@ function run()
 		local utf16be = "\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37" -- "a".."丽".."𐐷" (big-endian)
 		local codepoints = {97, 20029, 66615}					-- "a".."丽".."𐐷" (codepoints)
 		
-		local value = text.new(utf8text)
+		local value = text.fromString(utf8text)
 
 		ok(text.is(value))
 		
@@ -109,6 +109,25 @@ function run()
 		ok(eq(value:sub(-5, -3),	text "567"))
 		ok(eq(value:sub(5,1),		text ""))
 	end)
+	
+	test("text with BOM", function()
+		local utf8text		= "\239\187\191".."a丽𐐷"								-- BOM.."a丽𐐷"
+		local utf16le		= "\255\254".."a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- BOM.."a".."丽".."𐐷" (little-endian)
+		local utf16be		= "\254\255".."\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37"	-- BOM.."a".."丽".."𐐷" (big-endian)
+		local codepoints	= {97, 20029, 66615}									-- "a".."丽".."𐐷" (codepoints - BOM is skipped)
+		
+		ok(eq(text.fromString(utf8text).codes, codepoints))
+		ok(eq(text.fromString(utf16le).codes, codepoints))
+		ok(eq(text.fromString(utf16be).codes, codepoints))
+	end)
+	
+	test("text from file", function()
+		-- loading from BOM
+		ok(eq(text.fromFile(TEXT_PATH.."utf8.txt"), text "ABC123"))
+		ok(eq(text.fromFile(TEXT_PATH.."utf16le.txt"), text "ABC123"))
+		ok(eq(text.fromFile(TEXT_PATH.."utf16be.txt"), text "ABC123"))
+	end)
+	
 end
 
 return run

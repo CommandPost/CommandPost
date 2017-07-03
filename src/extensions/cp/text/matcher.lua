@@ -226,7 +226,7 @@ local function replace(repl, args)
 					local num = c - ZERO -- shifts 'c' to an index from 0 to 9
 					local value = args[num]
 					if value then
-						appendAll(chars, text.new(tostring(value)))
+						appendAll(chars, text.fromStringtring(value)))
 					end
 				else
 					insert(chars, c)

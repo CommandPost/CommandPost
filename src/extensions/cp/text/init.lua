@@ -34,6 +34,8 @@
 --- 
 --- Note that `text` values are not in any specific encoding, since they are stored as 64-bit integer `code-points` rather than 8-bit characers.
 
+local log					= require("hs.logger").new("text")
+
 local utf16LE				= require("cp.utf16.le")
 local utf16BE				= require("cp.utf16.be")
 local protect				= require("cp.protect")
@@ -61,17 +63,36 @@ text.encoding = protect {
 	utf16be	= "utf16be",
 }
 
-local decoder = protect {
+local decoders = {
 	utf8	= utf8codepoint,
 	utf16le	= utf16LEcodepoint,
 	utf16be	= utf16BEcodepoint,
 }
 
-local encoder = protect {
+local encoders = {
 	utf8	= utf8char,
 	utf16le	= utf16LEchar,
 	utf16be	= utf16BEchar,
 }
+
+local BOM = 0xFEFF
+local boms = {
+	utf8	= string.char(239, 187, 191),
+	utf16le	= string.char(255, 254),
+	utf16be = string.char(254, 255),
+}
+
+local function startsWith(self, otherString)
+	local len = otherString:len()
+	
+	if self:len() >= len then
+		for i = 1,len do
+			if self:byte(i) ~= otherString:byte(i) then return false end
+		end
+		return true
+	end
+	return false
+end
 
 local function isint(n)
   return n==floor(n)
@@ -93,9 +114,10 @@ local function setCodes(text, value)
 	rawset(text, "codes", protect(value))
 end
 
---- cp.text.new(value[, encoding]) -> text
+--- cp.text.fromString(value[, encoding]) -> text
 --- Constructor
---- Returns a new `text` instance representing the string value of the specified value.
+--- Returns a new `text` instance representing the string value of the specified value. If no encoding is specified,
+--- it will attempt to determine the encoding from a leading Byte-Order Marker (BOM). If none is present, it defaults to UTF-8.
 ---
 --- Parameters:
 ---  * `value`		- The value to turn into a unicode text instance.
@@ -105,14 +127,27 @@ end
 ---  * A new `text` instance.
 ---
 --- Notes:
----  * Calling `text.new(...)` is the same as calling `text(...)`, so text can be initialized via `local x = text "foo"`
-function text.new(value, encoding)
-	encoding = encoding or text.encoding.utf8
-	local decoder = decoder[encoding]
+---  * Calling `text(value)` is the same as calling `text.fromString(value, text.encoding.utf8)`, so simple text can be initialized via `local x = text "foo"` when the `.lua` file's encoding is UTF-8.
+function text.fromString(value, encoding)
+	local start = 1
+	value = tostring(value)
+	if not encoding then
+		-- first, check if there are any BOMs
+		for enc,bom in pairs(boms) do
+			if startsWith(value, bom) then
+				encoding = enc
+				start = start + bom:len()
+				break
+			end
+		end
+		encoding = encoding or text.encoding.utf8
+	end
+	
+	local decoder = decoders[encoding]
 	if not decoder then
 		error(string.format("unsupported encoding: %s", encoding))
 	end
-	return text.fromCodepoints({decoder(tostring(value), 1, -1)})
+	return text.fromCodepoints({decoder(value, start, -1)})
 end
 
 --- cp.text.fromCodepoints(codepoints[, i[, j]]) -> text
@@ -130,6 +165,7 @@ end
 ---
 --- Notes:
 ---  * You can use a *negative* value for `i` and `j`. If so, it will count back from then end of the `codepoints` array.
+---  * If the codepoint array begins with a Byte-Order Marker (BOM), the BOM is skipped in the resulting text.
 function text.fromCodepoints(codepoints, i, j)
 	local result = {}
 	local len = #codepoints
@@ -155,6 +191,10 @@ function text.fromCodepoints(codepoints, i, j)
 
 		i = constrain(i, 1, len)
 		j = constrain(j, 1, len)
+		
+		if codepoints[i] == BOM then
+			i = i+1
+		end
 	
 		for x = i,j do
 			local cp = codepoints[x]
@@ -171,7 +211,29 @@ function text.fromCodepoints(codepoints, i, j)
 	return o
 end
 
---- cp.text.char(...) -> cp.text
+--- cp.text.fromFile(path[, encoding]) -> text
+--- Constructor
+--- Returns a new `text` instance representing the text loaded from the specified path. If no encoding is specified,
+--- it will attempt to determine the encoding from a leading Byte-Order Marker (BOM). If none is present, it defaults to UTF-8.
+---
+--- Parameters:
+---  * `value`		- The value to turn into a unicode text instance.
+---  * `encoding`	- One of the falues from `text.encoding`: `utf8`, `utf16le`, or `utf16be`. Defaults to `utf8`.
+---
+--- Returns:
+---  * A new `text` instance.
+function text.fromFile(path, encoding)
+	local file = io.open(path, "r") 		-- r read mode
+    if not file then
+		error(string.format("Unable to open '%s'", path))
+	end
+    local content = file:read "*a" 					-- *a or *all reads the whole file
+    file:close()
+	
+	return text.fromString(content, encoding)
+end
+
+--- cp.text.char(...) -> text
 --- Constructor
 --- Returns the list of one or more codepoint items into a text value, concatenating the results.
 ---
@@ -241,7 +303,7 @@ text.mt.len = text.mt.__len
 
 -- concatenates the left and right values into a single text value.
 function text.mt.__concat(left, right)
-	return text.new(tostring(left) .. tostring(right))
+	return text.fromString(tostring(left) .. tostring(right), text.encoding.utf8)
 end
 
 --- cp.text:encode([encoding]) -> string
@@ -255,7 +317,7 @@ end
 --  * The `string` version of the `cp.text` value with the specified encoding..
 function text.mt:encode(encoding)
 	encoding = encoding or text.encoding.utf8
-	local encoder = encoder[encoding]
+	local encoder = encoders[encoding]
 	if not encoder then
 		error(string.format("Unsupported encoding: %s", encoding))
 	end
@@ -301,7 +363,7 @@ function text.mt:__eq(other)
 end
 
 function text.__call(_, ...)
-	return text.new(...)
+	return text.fromString(..., text.encoding.utf8)
 end
 
 return setmetatable(text, text)
