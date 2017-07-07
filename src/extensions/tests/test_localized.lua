@@ -14,6 +14,7 @@ function run()
 	test("Read Localized Strings", function()
 		local result = localized.readLocalizedStrings(EFFECTS_PATH.."/.localized/French.strings", "Effects")
 		ok(eq(result, "Effets"))
+		
 	end)
 	
 	test("Read Localized Name", function()
@@ -22,8 +23,16 @@ function run()
 	end)
 	
 	test("Get Localized Name", function()
-		ok(eq(localized.getLocalizedName(EFFECTS_PATH, "en"), "Effects"))
-		ok(eq(localized.getLocalizedName(EFFECTS_PATH, "ja"), "エフェクト"))
+		local l, o = localized.getLocalizedName(EFFECTS_PATH, "en")
+		ok(eq(l, "Effects"))
+		ok(eq(o, "Effects"))
+		l, o = localized.getLocalizedName(EFFECTS_PATH, "ja")
+		ok(eq(l, "エフェクト"))
+		ok(eq(o, "Effects"))
+		
+		local l, o = localized.getLocalizedName(EFFECTS_PATH.."/Local.localized", "en")
+		ok(eq(l, "Local EN"))
+		ok(eq(o, "Local"))
 	end)
 end
 

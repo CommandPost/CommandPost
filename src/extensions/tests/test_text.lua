@@ -185,6 +185,11 @@ function run()
 		
 		x = text("Is Unescaped"):gsub('%\\(.)', '%1')
 		ok(eq(x, text "Is Unscaped"))
+		
+		x = text("A\\U1234B"):gsub('%\\[Uu]%d%d%d%d', function(s)
+			return utf8.char(tonumber(s:sub(3):encode()))
+		end)
+		ok(eq(x, text "AXB"))
 	end)
 	
 end

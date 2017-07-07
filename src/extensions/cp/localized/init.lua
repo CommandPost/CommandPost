@@ -27,7 +27,13 @@ local aliases = {
 	ja	= "Japanese",
 }
 
-local KEY_VALUE = matcher('^%"(.+)%"%s*%=%s*%"(.+)%";$')
+local KEY_VALUE			= matcher('^%"(.+)%"%s*%=%s*%"(.+)%";.*$')
+local UNICODE_ESCAPE	= matcher('%\\[Uu]%d%d%d%d')
+local CHAR_ESCAPE		= matcher('%\\(.)')
+
+local function uParser(s)
+	return utf8.char(tonumber(s:sub(3):encode()))
+end
 
 -- cp.localized.readLocalizedStrings(stringsFile, name) -> string | nil
 -- Function
@@ -68,10 +74,12 @@ local function readLocalizedStrings(stringsFile, name)
 			local key, value = KEY_VALUE:match(content)
 			if key and value then
 				-- unescape the key.
-				key = key:gsub('%\\(.)', '%1')
+				key = UNICODE_ESCAPE:gsub(key, uParser)
+				key = CHAR_ESCAPE:gsub(key, '%1')
 				if key == text(name) then
 					-- unescape the value.
-					value = value:gsub('%\\(.)', '%1')
+					value = UNICODE_ESCAPE:gsub(value, uParser)
+					value = CHAR_ESCAPE:gsub(value, '%1')
 					return tostring(value)
 				end
 			end
@@ -109,10 +117,10 @@ local function readLocalizedName(path, name, language)
 	return localized or name
 end
 
---- cp.localized.getLocalizedName(path[, language]) -> string
+--- cp.localized.getLocalizedName(path[, language]) -> string, string
 --- Function
 --- Returns the localized name for the `path` in the specified `language`. If all else fails, the
---- original folder name is returned.
+--- original folder name is returned. The 'unlocalized' folder name is returned as the second value, without `.localized` at the end, if it was present.
 ---
 --- Parameters:
 ---  * `path`			- The full path to the folder
@@ -120,12 +128,14 @@ end
 ---
 --- Returns:
 ---  * The localized name, or `name` if not available.
+---  * The original name, minus `.localized`
 function getLocalizedName(path, language)
 	local file = match(path, "^.-([^/%.]+)%.localized$")
 	if file then -- it's localized
-		return readLocalizedName(path, file, language)
+		return readLocalizedName(path, file, language), file
 	else
-		return match(path, "^.-([^/%.]+)$")
+		file = match(path, "^.-([^/%.]+)$")
+		return file, file
 	end
 end
 

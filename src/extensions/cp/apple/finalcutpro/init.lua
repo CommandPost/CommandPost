@@ -114,7 +114,7 @@ local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
-local plugins									= require("cp.apple.finalcutpro.scanplugins")
+local plugins									= require("cp.apple.finalcutpro.plugins")
 
 --------------------------------------------------------------------------------
 --

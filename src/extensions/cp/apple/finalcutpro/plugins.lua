@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.scanplugins ===
+--- === cp.apple.finalcutpro.plugins ===
 ---
 --- Scan Final Cut Pro bundle for Effects, Generators, Titles & Transitions.
 ---
@@ -70,6 +70,8 @@ local tools										= require("cp.tools")
 local text										= require("cp.web.text")
 local localized									= require("cp.localized")
 
+local prop										= require("cp.prop")
+
 --------------------------------------------------------------------------------
 --
 -- HELPER FUNCTIONS:
@@ -79,6 +81,7 @@ local localized									= require("cp.localized")
 local escapeXML, unescapeXML	= text.escapeXML, text.unescapeXML
 local isBinaryPlist				= plist.isBinaryPlist
 local getLocalizedName			= localized.getLocalizedName
+local insert					= table.insert
 
 -- string:split(sep) -> table
 -- Function
@@ -94,417 +97,6 @@ function string:split(sep)
 	local pattern = string.format("([^%s]+)", sep)
 	self:gsub(pattern, function(c) fields[#fields+1] = c end)
 	return fields
-end
-
--- linesFrom(file) -> table
--- Function
--- Returns all the individual lines from a file as a table
---
--- Parameters:
---  * file - Path to the file
---
--- Returns:
---  * Table
-local function linesFrom(file)
-	if not tools.doesFileExist(file) then return {} end
-	file = fs.pathToAbsolute(file)
-	lines = {}
-	for line in io.lines(file) do
-		lines[#lines + 1] = line
-	end
-	return lines
-end
-
--- fixDashes(input) -> string
--- Function
--- Replaces columns with dashes
---
--- Parameters:
---  * input - The string you want to process
---
--- Returns:
---  * The string with columns replaced with dashes
-local function fixDashes(input)
-	return string.gsub(input, ":", "/")
-end
-
-
--- readLocalizedFile(currentLanguageFile) -> string or nil
--- Function
--- Reads a .localized file
---
--- Parameters:
---  * currentLanguageFile - Path to the current language file.
---
--- Returns:
---  * The translated file name or `nil`
-local function readLocalizedFile(folder, currentLanguageFile)
-
-	if tools.doesFileExist(currentLanguageFile) then
-		--------------------------------------------------------------------------------
-		-- Binary Plist:
-		--------------------------------------------------------------------------------
-		if isBinaryPlist(currentLanguageFile) then
-			local plistValues = plist.fileToTable(currentLanguageFile)
-
-			if plistValues then
-				local folderCode = folder
-				if string.sub(folder, -10) == ".localized" then
-					folderCode = string.sub(folder, 1, -11)
-				end
-
-				--------------------------------------------------------------------------------
-				-- Escape folderCode:
-				--------------------------------------------------------------------------------
-				folderCode = escapeXML(folderCode)
-
-				--------------------------------------------------------------------------------
-				-- Unescape Result:
-				--------------------------------------------------------------------------------
-				if plistValues[folderCode] then
-					return unescapeXML(plistValues[folderCode])
-				end
-			end
-		--------------------------------------------------------------------------------
-		--
-		-- Plain Text:
-		--
-		-- Example:
-		-- "03EF6CA6-E3E2-4DA0-B68F-26B2762A46BC" = "Perspective Reflection";
-		--
-		--------------------------------------------------------------------------------
-		else
-			local values = {}
-			local data = linesFrom(currentLanguageFile)
-			if next(data) ~= nil then
-				for i, v in ipairs(data) do
-					local unescape = string.gsub(v, [[\"]], "@!@")
-					if unescape then
-						local key, value = string.match(unescape, '%"([^%"]+)%"[^%"]+%"([^%"]+)%"')
-						if key and value then
-							values[key] = string.gsub(value, "@!@", '"')
-						end
-					end
-				end
-				if string.sub(folder, -10) == ".localized" then
-					folder = string.sub(folder, 1, -11)
-				end
-				if values[folder] then
-					return values[folder]
-				end
-			end
-		end
-	end
-	return nil
-end
-
--- getLocalizedFolderName(path, folder) -> string
--- Function
--- Gets the localised folder name
---
--- Parameters:
---  * path - Path to the file
---  * folder - Folder name
---
--- Returns:
---  * Localised folder name as a string
---
--- Notes:
---  * getLocalizedFolderName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/Transitions.localized/Stylized.localized", "Sports.localized", "de")
---  * getLocalizedFolderName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Distortion.localized", "Crop & Feather.localized", "de")
-local function getLocalizedFolderName(path, folder, languageCode)
-	local localizedFolder = path .. "/" .. folder .. "/.localized"
-	
--- return bench(string.format("localizedFolderName: %s : %s", folder, languageCode), function()
-	local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
-	if localizedFolderExists then
-		--------------------------------------------------------------------------------
-		-- Try languageCode first:
-		--------------------------------------------------------------------------------
-		local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
-		local result = readLocalizedFile(folder, currentLanguageFile)
-		if result then
-			return fixDashes(result)
-		end
-		--------------------------------------------------------------------------------
-		-- If that fails try English:
-		--------------------------------------------------------------------------------
-		local currentLanguageFile = localizedFolder .. "/en.strings"
-		local result = readLocalizedFile(folder, currentLanguageFile)
-		if result then
-			return fixDashes(result)
-		end
-	end
-	if string.sub(folder, -10) == ".localized" then
-		return fixDashes(string.sub(folder, 1, -11))
-	else
-		return fixDashes(folder)
-	end
--- end) --bench
-end
-
--- getLocalizedFileName(path, folder) -> string
--- Function
--- Gets the localised file name
---
--- Parameters:
---  * path - Path to the file
---  * file - File name
---
--- Returns:
---  * Localised file name as a string
---
--- Notes:
---  * getLocalizedFileName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/Transitions.localized/Stylized.localized/Sports.localized/Diagonal Slide.localized", "Diagonal Slide.motr", "de")
---  * getLocalizedFileName("/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized/Effects.localized/Distortion.localized/Crop & Feather.localized", "Crop & Feather.moef", "de")
-local function getLocalizedFileName(path, file, languageCode)
-
-	local fileWithoutExtension = string.match(file, "(.+)%..+")
-
-	local localizedFolder = path .. "/.localized"
-	local localizedFolderExists = tools.doesDirectoryExist(localizedFolder)
-
-	if localizedFolderExists then
-
-		--------------------------------------------------------------------------------
-		-- Try languageCode first:
-		--------------------------------------------------------------------------------
-		local currentLanguageFile = localizedFolder .. "/" .. languageCode .. ".strings"
-		local result = readLocalizedFile(fileWithoutExtension, currentLanguageFile)
-		if result then
-			return fixDashes(result)
-		end
-
-		--------------------------------------------------------------------------------
-		-- If that fails try English:
-		--------------------------------------------------------------------------------
-		local currentLanguageFile = localizedFolder .. "/en.strings"
-		local result = readLocalizedFile(fileWithoutExtension, currentLanguageFile)
-		if result then
-			return fixDashes(result)
-		end
-	end
-
-	return fixDashes(fileWithoutExtension)
-
-end
-
-local aliases = {
-	de	= "German",
-	en	= "English",
-	es	= "Spanish",
-	fr	= "French",
-	it	= "Italian",
-	ja	= "Japanese",
-}
-
--- readLocalizedFile(currentLanguageFile) -> string or nil
--- Function
--- Reads a .localized file
---
--- Parameters:
---  * currentLanguageFile - Path to the current language file.
---
--- Returns:
---  * The translated file name or `nil`
-local function readLocalizedStrings(stringsFile, name)
-	local stringsPath = fs.pathToAbsolute(stringsFile)
-	if stringsPath then
-		--------------------------------------------------------------------------------
-		-- Binary Plist:
-		--------------------------------------------------------------------------------
-		if isBinaryPlist(stringsFile) then
-			local plistValues = plist.binaryFileToTable(stringsFile)
-
-			if plistValues then
-				--------------------------------------------------------------------------------
-				-- Escape folderCode:
-				--------------------------------------------------------------------------------
-				local localName = plistValues[escapeXML(name)]
-				return localName and unescapeXML(localName)
-			end
-		--------------------------------------------------------------------------------
-		--
-		-- Plain Text:
-		--
-		-- Example:
-		-- "03EF6CA6-E3E2-4DA0-B68F-26B2762A46BC" = "Perspective Reflection";
-		--
-		--------------------------------------------------------------------------------
-		else
-			local values = {}
-			local data = linesFrom(currentLanguageFile)
-			for i, v in ipairs(data) do
-				local key, value = string.match(unescape, '^%"(.+)%"%s*%=%s*%"(.+)%";$')
-				if key and value then
-					-- unescape the key.
-					key = key:gsub('%\\(.)', '%1')
-					if key == name then
-						-- unescape the value.
-						return value:gsub('%\\(.)', '%1')
-					end
-				end
-			end
-		end
-	end
-	return nil
-end
-
-local function readLocalizedName(path, name, language)
-	local localizedPath = path .. "/.localized/"
-	local localized = readLocalizedStrings(localizedPath .. language .. ".strings", name)
-	if not localized then
-		local alias = aliases[language]
-		if alias then
-			localized = readLocalizedStrings(localizedPath .. alias .. ".strings", name)
-		end
-		if not localized and name ~= "en" then
-			localized = readLocalizedName(path, name, "en")
-		end
-	end
-	return localized or name
-end
-
-local function getLocalizedName(path, language)
-	local file = path:match("^.-([^/%.]+)%.localized$")
-	if file then -- it's localized
-		return readLocalizedName(path, file, language)
-	else
-		return path:match("^.-([^/%.]+)$")
-	end
-end
-
---------------------------------------------------------------------------------
---
--- KIND:
---
---------------------------------------------------------------------------------
-
---- === cp.apple.finalcutpro.plugins.kind ===
----
---- Represents a kind of plugin, such as `Effect`, `Transition`. `Generator`, or `Title`.
-
-local kind = {}
-kind.mt = {}
-kind.mt.__index = kind.mt
-
-function kind.new(app, titleKey)
-	local o = {
-		_app 		= app,
-		_titleKey	= titleKey,
-		_categories	= {},
-	}
-	return setmetatable(o, kind.mt)
-end
-
-function kind.mt:app()
-	return self._app
-end
-
-function kind.mt:title(language)
-	-- TODO: look up the title based on the key
-	-- language = language or self:app():getCurrentLanguage()
-	return self._titleKey
-end
-
-function kind.mt:addCategory(category)
-	table.insert(self._categories, category)
-	return self
-end
-
-function kind.mt:categories()
-	return self._categories
-end
-
---------------------------------------------------------------------------------
---
--- CATEGORY:
---
---------------------------------------------------------------------------------
-
---- === cp.apple.finalcutpro.plugins.category ===
----
---- Represents a category of plugins.
-
-local category = {}
-category.mt = {}
-category.mt.__index = category.mt
-
-function category.new(kind, path)
-	local o = {
-		_kind		= kind,
-		_path		= path,
-		_plugins	= {},
-		_themes		= {},
-	}
-	return setmetatable(o, category.mt)
-end
-
-function category.mt:app()
-	return self:kind():app()
-end
-
-function category.mt:kind()
-	return self._kind
-end
-
-function category.mt:title(language)
-	language = language or self:app():getCurrentLanguage()
-	local title = self[language]
-	if not title then
-		title = getLocalizedName(self._path, language)
-		self[language] = title
-	end
-	return title
-end
-
-function category.mt:addPlugin(plugin)
-	table.insert(self._plugins, plugin)
-	return self
-end
-
-function category.mt:plugins()
-	return self._plugins
-end
-
---------------------------------------------------------------------------------
---
--- THEME:
---
---------------------------------------------------------------------------------
-
-local theme = {}
-theme.mt = {}
-theme.mt.__index = theme.mt
-
-function theme.new(app, path)
-	local o = {
-		_app 		= app,
-		_path		= path,
-		_plugins	= {},
-	}
-	return setmetatable(o, theme.mt)
-end
-
---------------------------------------------------------------------------------
---
--- PLUGIN:
---
---------------------------------------------------------------------------------
-
-local plugin = {}
-plugin.mt = {}
-plugin.mt.__index = plugin.mt
-
-function plugin.new(app, path, type, category, theme)
-	local o = {
-		_app 		= app,
-		_pluginPath = pluginPath,
-		_type		= type,
-		_category	= category,
-		_theme		= theme,
-	}
-	return setmetatable(o, plugin.mt)
 end
 
 --------------------------------------------------------------------------------
@@ -578,7 +170,7 @@ function mod.mt:scanAudioUnits()
 						if not scan["AudioEffects"]["OS X"][category] then
 							scan["AudioEffects"]["OS X"][category] = {}
 						end
-						table.insert(scan["AudioEffects"]["OS X"][category], plugin)
+						insert(scan["AudioEffects"]["OS X"][category], plugin)
 					end
 				end
 			end
@@ -617,7 +209,7 @@ function mod.mt:scanEffectsPresets()
 									if not scan["Effects"][category] then
 										scan["Effects"][category] = {}
 									end
-									table.insert(scan["Effects"][category], plugin)
+									insert(scan["Effects"][category], plugin)
 								end
 							end
 						end
@@ -626,52 +218,6 @@ function mod.mt:scanEffectsPresets()
 			end
 		end
 	end
-end
-
--- isPluginExtension(path) -> boolean
--- Function
--- Does the path have a Plugin File Extension?
---
--- Parameters:
---  * path - Path to the plugin
---
--- Returns:
---  * Boolean
-local function isPluginExtension(path)
-	local pluginTypes = mod.pluginTypes
-	for _, extensions in pairs(mod.pluginTypes) do
-		for _, extension in pairs(extensions) do
-			if path:sub(extension:len() * -1) == extension then
-				return true
-			end
-		end
-	end
-	return false
-end
-
--- combinePath(pathTable, number) -> string
--- Function
--- Does the path have a Plugin File Extension?
---
--- Parameters:
---  * pathTable - A table containing all the components of a path
---  * number - How many components you want to combine
---
--- Returns:
---  * A string
-local function combinePath(pathTable, number)
-	local path = "/" .. pathTable[1]
-	for i=2,number do
-		path = path .. "/" .. pathTable[i]
-	end
-	return path
-end
-
-local function fileToString(file)
-    local f = io.open(file, "r")
-    local content = f:read("*all")
-    f:close()
-    return content
 end
 
 local TEMPLATE_PATTERN	= ".*<template>.*"
@@ -695,6 +241,7 @@ function mod.getMotionTheme(filename)
 		local inTemplate = false
 		local theme = nil
 		
+		-- reads through the motion file, looking for the template/theme elements.
 		local file = io.open(filename,"r")
 		while not theme do
 			local line = file:read("*l")
@@ -716,144 +263,55 @@ function mod.getMotionTheme(filename)
 	return nil
 end
 
---- cp.apple.finalcutpro.scanplugins:processPlugin(path, file) -> boolean
---- Method
---- Process a plugin so that it's added to the current scan
----
---- Parameters:
----  * path - Path to the plugin
----  * file - Filename of the plugin
----
---- Returns:
----  * `true` if successful otherwise `false`
-function mod.mt:processPlugin(path, file)
-
-	local fullPath = path .. "/" .. file
-	local pathComponents = fullPath:split("/")
-	local pathCount = #pathComponents
-
-	for pluginType,_ in pairs(mod.pluginTypes) do
-		local pathType = pathComponents[pathCount - 4]
-		if pathType == pluginType or pathType == pluginType .. ".localized" then
-
-			--------------------------------------------------------------------------------
-			-- Get Motion Theme if available:
-			--------------------------------------------------------------------------------
-			local motionTheme = mod.getMotionTheme(fullPath)
-
-			--------------------------------------------------------------------------------
-			-- Has Subcategory:
-			--------------------------------------------------------------------------------
-			for _, currentLanguage in pairs(self:getSupportedLanguages()) do
-
-				local subcategory = motionTheme
-
-				local category = getLocalizedFolderName(combinePath(pathComponents, pathCount - 4), pathComponents[pathCount - 3], currentLanguage)
-
-				if not subcategory then
-					--------------------------------------------------------------------------------
-					-- There was no Motion Theme:
-					--------------------------------------------------------------------------------
-					subcategory = getLocalizedFolderName(combinePath(pathComponents, pathCount - 3), pathComponents[pathCount - 2], currentLanguage)
-				else
-					--------------------------------------------------------------------------------
-					-- There was a Motion Theme but maybe it should be overridden:
-					--------------------------------------------------------------------------------
-					local localisedSubcategory = getLocalizedFolderName(combinePath(pathComponents, pathCount - 3), pathComponents[pathCount - 2], currentLanguage)
-					local folderName = pathComponents[pathCount - 2]
-
-					if string.sub(folderName, -10) == ".localized" then
-						folderName = string.sub(folderName, 1, -11)
-					end
-
-					if folderName ~= localisedSubcategory then
-						subcategory = localisedSubcategory
-					end
-				end
-
-				local plugin = getLocalizedFileName(combinePath(pathComponents, pathCount - 1), pathComponents[pathCount], currentLanguage)
-				local categoryList = self._plugins[currentLanguage][pluginType][category]
-				if not categoryList then
-					categoryList = {}
-					self._plugins[currentLanguage][pluginType][category] = categoryList
-				end
-
-				if not categoryList[subcategory] then
-					categoryList[subcategory] = {}
-				end
-
-				table.insert(categoryList[subcategory], plugin)
+-- cp.apple.finalcutpro.plugins.isPluginFactory(path, pluginExt) -> boolean
+-- Function
+-- Checks if the specified path is a plugin directory with the specified extension(s).
+--
+-- Parameters:
+--  * `path`		- The path to the directory to check
+--  * `pluginExt`	- The plugin extensions to check for.
+--
+-- Returns:
+--  * `true` if the path is a plugin path for the specified extension type.
+local function isPluginDirectory(path, pluginExt)
+	local _,realName = getLocalizedName(path, "en")
+	if realName then
+		for _,ext in ipairs(pluginExt) do
+			if fs.pathToAbsolute(path .. "/" .. realName .. "." .. ext) ~= nil then -- the plugin file exists.
+				return true
 			end
-			return true
-		elseif pathComponents[pathCount - 3] == pluginType or pathComponents[pathCount - 3] == pluginType .. ".localized" then
-
-			--------------------------------------------------------------------------------
-			-- Get Motion Theme if available:
-			--------------------------------------------------------------------------------
-			local motionTheme = mod.getMotionTheme(fullPath)
-
-			if motionTheme then
-
-				--------------------------------------------------------------------------------
-				-- Has a Motion Theme:
-				--------------------------------------------------------------------------------
-				for _, currentLanguage in pairs(self:getSupportedLanguages()) do
-
-					local category = getLocalizedFolderName(combinePath(pathComponents, pathCount - 4), pathComponents[pathCount - 3], currentLanguage)
-					local subcategory = motionTheme
-					local plugin = getLocalizedFileName(combinePath(pathComponents, pathCount - 1), pathComponents[pathCount], currentLanguage)
-
-					local pluginTypeList = self._plugins[currentLanguage][pluginType]
-					local categoryList = pluginTypeList[category] or {}
-					pluginTypeList[category] = categoryList
-
-					categoryList[subcategory] = categoryList[subcategory] or {}
-					
-					table.insert(categoryList[subcategory], plugin)
-				end
-			else
-				--------------------------------------------------------------------------------
-				-- No Subcategory:
-				--------------------------------------------------------------------------------
-				for _, currentLanguage in pairs(self:getSupportedLanguages()) do
-
-					local category = getLocalizedFolderName(combinePath(pathComponents, pathCount - 3), pathComponents[pathCount - 2], currentLanguage)
-					local plugin = getLocalizedFileName(combinePath(pathComponents, pathCount - 1), pathComponents[pathCount], currentLanguage)
-
-					local pluginTypeList = self._plugins[currentLanguage][pluginType]
-					local categoryList = pluginTypeList[category] or {}
-					pluginTypeList[category] = categoryList
-
-					table.insert(categoryList, plugin)
-				end
-			end
-			return true
 		end
 	end
 	return false
 end
 
--- cp.apple.finalcutpro.scanplugins:scanDirectory(directoryPath) -> boolean
+-- cp.apple.finalcutpro.plugins:scanPluginsDirectory(path, language) -> boolean
 -- Method
--- Scans a directory for plugins
+-- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
+--
+-- 1. <type>/<group>/<plugin name>/<plugin name>.<ext>
+-- 2. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
+--
+-- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of languages.
+--
+-- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `language` provided. Other languages are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
 --
 -- Parameters:
---  * directoryPath - Directory to scan
+--  * `path`		- The path of the root plugin directory to scan.
+--  * `language`	- The language code to scan for (e.g. "en" or "fr").
 --
 -- Returns:
---  * `true` if successful otherwise `false`
-function mod.mt:scanDirectory(directoryPath)
-
-return bench("scanDirectory: "..directoryPath, function()
+--  * `true` if the plugin directory was successfully scanned.
+function mod.mt:scanPluginsDirectory(path, language)
 	--------------------------------------------------------------------------------
 	-- Check that the directoryPath actually exists:
 	--------------------------------------------------------------------------------
-	local path = fs.pathToAbsolute(directoryPath)
+	path = fs.pathToAbsolute(path)
 	if not path then
 		log.wf("The provided path does not exist: '%s'", directoryPath)
 		return false
 	end
-
+	
 	--------------------------------------------------------------------------------
 	-- Check that the directoryPath is actually a directory:
 	--------------------------------------------------------------------------------
@@ -862,35 +320,155 @@ return bench("scanDirectory: "..directoryPath, function()
 		log.ef("The provided path is not a directory: '%s'", directoryPath)
 		return false
 	end
-
-	--------------------------------------------------------------------------------
-	-- Scan directoryPath:
-	--------------------------------------------------------------------------------
-	local files = tools.dirFiles(path)
-	local success = true
-	for i,file in ipairs(files) do
-		--------------------------------------------------------------------------------
-		-- If it's not a hidden directory/file then:
-		--------------------------------------------------------------------------------
+	
+	local failure = false
+	
+	-- loop through the files in the directory
+	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
-			local filePath = path .. "/" .. file
-			attrs = fs.attributes(filePath)
-			if attrs.mode == "directory" then
-				--------------------------------------------------------------------------------
-				-- Scan Directory:
-				--------------------------------------------------------------------------------
-				success = self:scanDirectory(filePath) and success
-			elseif isPluginExtension(file) then
-				--------------------------------------------------------------------------------
-				-- Process Plugin:
-				--------------------------------------------------------------------------------
-				self:processPlugin(path, file)
+			local typePath = path .. "/" .. file
+			local typeName = getLocalizedName(typePath, "en")
+			local typeExt = mod.pluginTypes[typeName]
+			if typeExt then -- it's a recognised plugin type
+				failure = failure or not self:scanPluginTypeDirectory(typePath, typeName, typeExt, language)
 			end
 		end
 	end
-	return success
-end) --bench
+	
+	return not failure
+end
 
+-- cp.apple.finalcutpro.plugins:scanPluginTypeDirectory(path, typeName, typeExt, language) -> boolean
+-- Method
+-- Scans a folder as a plugin type folder, such as 'Effects', 'Transitions', etc. The contents will be folders that are 'groups' of plugins, containing related plugins.
+--
+-- Parameters:
+--  * `path`		- The path to the plugin type directory
+--  * `typeName`	- The plugin type name, in English (e.g. "Effects")
+--  * `typeExt`		- The plugin file extension for the type.
+--  * `language`	- The language to scan with.
+--
+-- Returns:
+-- * `true` if the folder was scanned successfully.
+function mod.mt:scanPluginTypeDirectory(path, typeName, typeExt, language)
+	local failure = false
+	
+	for file in fs.dir(path) do
+		if file:sub(1,1) ~= "." then
+			local categoryPath = path .. "/" .. file
+			local categoryName = getLocalizedName(categoryPath, language)
+			failure = failure or not self:scanPluginCategoryDirectory(categoryPath, typeName, typeExt, categoryName, language)
+		end
+	end
+	
+	return not failure
+end
+
+-- cp.apple.finalcutpro.plugins:scanPluginCategoryDirectory(path, typeName, typeExt, categoryName, language) -> boolean
+-- Method
+-- Scans a folder as a plugin category folder. The contents will be folders that are either theme folders or actual plugins.
+--
+-- Parameters:
+--  * `path`			- The path to the plugin type directory
+--  * `typeName`		- The plugin type name, in English (e.g. "Effects")
+--  * `typeExt`			- The plugin file extension for the type.
+--  * `categoryName`	- The category name, in the target language.
+--  * `language`		- The language to scan with.
+--
+-- Returns:
+-- * `true` if the folder was scanned successfully.
+function mod.mt:scanPluginCategoryDirectory(path, typeName, typeExt, categoryName, language)
+	local failure = false
+	
+	for file in fs.dir(path) do
+		if file:sub(1,1) ~= "." then
+			local childPath = path .. "/" .. file
+			local childName = getLocalizedName(childPath, language)
+			if isPluginDirectory(childPath, typeExt) then
+				self:registerPlugin(childPath, typeName, categoryName, nil, childName, language)
+			else
+				local attrs = fs.attributes(childPath)
+				if attrs.mode == "directory" then
+					failure = failure or not self:scanPluginThemeDirectory(childPath, typeName, typeExt, categoryName, childName, language)
+				end
+			end
+		end
+	end
+	
+	return not failure
+end
+
+-- cp.apple.finalcutpro.plugins:scanPluginThemeDirectory(path, typeName, typeExt, categoryName, themeName, language) -> boolean
+-- Method
+-- Scans a folder as a plugin theme folder. The contents will be plugin folders.
+--
+-- Parameters:
+--  * `path`			- The path to the plugin type directory
+--  * `typeName`		- The plugin type name, in English (e.g. "Effects")
+--  * `typeExt`			- The plugin file extension for the type.
+--  * `categoryName`	- The plugin category name, in the target language.
+--  * `themeName`		- The plugin theme name, in the target language.
+--  * `language`		- The language to scan with.
+--
+-- Returns:
+-- * `true` if the folder was scanned successfully.
+function mod.mt:scanPluginThemeDirectory(path, typeName, typeExt, categoryName, themeName, language)
+	for file in fs.dir(path) do
+		if file:sub(1,1) ~= "." then
+			local pluginPath = path .. "/" .. file
+			local pluginName = getLocalizedName(pluginPath, language)
+			if isPluginDirectory(pluginPath, typeExt) then
+				self:registerPlugin(pluginPath, typeName, categoryName, themeName, pluginName, language)
+			end
+		end
+	end
+	return true
+end
+
+--- cp.apple.finalcutpro.plugins:registerPlugin(path, typeName, categoryName, themeName, pluginName, langauge) -> plugin
+--- Method
+--- Registers a plugin with the specified details.
+---
+--- Parameters:
+---  * `path`			- The path to the plugin directory.
+---  * `typeName`		- The type of plugin, in English (e.g. 'Effect')
+---  * `categoryName`	- The category name, in the specified language.
+---  * `themeName`		- The theme name, in the specified langauge. May be `nil` if not in a theme.
+---  * `pluginName`		- The plugin name, in the specified language.
+---  * `language`		- The language code (e.g. "en", "fr", "de")
+function mod.mt:registerPlugin(path, typeName, categoryName, themeName, pluginName, language)
+	local plugins = self._plugins
+	if not plugins then
+		plugins = {}
+		self._plugins = plugins
+	end
+
+	local lang = plugins[language]
+	if not lang then
+		lang = {}
+		plugins[language] = lang
+	end
+	
+	local type = lang[typeName]
+	if not type then
+		type = {}
+		lang[typeName] = type
+	end
+	
+	local plugin = {
+		path = path,
+		type = typeName,
+		category = categoryName,
+		theme = themeName,
+		name = pluginName,
+		language = language,
+	}
+	insert(type, plugin)
+	return plugin
+end
+
+function mod.mt:reset()
+	self._plugins = {}
 end
 
 -- translateEffectBundle(input, language) -> none
@@ -903,8 +481,8 @@ end
 --
 -- Returns:
 --  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/de.lproj/FFEffectBundleLocalizable.strings")
-local function translateEffectBundle(input, language)
-	local prefsPath = mod.effectBundlesPreferencesPath .. language .. ".lproj/FFEffectBundleLocalizable.strings"
+function mod.mt:translateEffectBundle(input, language)
+	local prefsPath = self.effectBundlesPreferencesPath .. language .. ".lproj/FFEffectBundleLocalizable.strings"
 	local plistResult = plist.fileToTable(prefsPath)
 	if plistResult then
 		if plistResult[input] then
@@ -915,17 +493,17 @@ local function translateEffectBundle(input, language)
 	end
 end
 
--- scanEffectBundles() -> none
+-- scanAudioEffectBundles() -> none
 -- Function
--- Scans the Effect Bundles directories
+-- Scans the Audio Effect Bundles directories
 --
 -- Parameters:
 --  * directoryPath - Directory to scan
 --
 -- Returns:
 --  * None
-local function scanEffectBundles()
-	for _, path in pairs(mod.effectBundlesPaths) do
+function mod.mt:scanAudioEffectBundles(language)
+	for _, path in pairs(self.effectBundlesPaths) do
 		if tools.doesDirectoryExist(path) then
 			for file in fs.dir(path) do
 				if string.sub(file, -13) == ".effectBundle" then
@@ -936,19 +514,8 @@ local function scanEffectBundles()
 					if effectComponents and effectComponents[3] and effectComponents[3] == "audio" then
 						local category = effectComponents[2]
 
-						for _, currentLanguage in pairs(mod.supportedLanguages) do
-
-							local plugin = translateEffectBundle(effectComponents[1], currentLanguage)
-
-							local scan = mod._plugins[currentLanguage]
-							scan["AudioEffects"] = scan["AudioEffects"] or {}
-
-							if not scan["AudioEffects"][category] then
-								scan["AudioEffects"][category] = {}
-							end
-
-							table.insert(scan["AudioEffects"][category], plugin)
-						end
+						local plugin = self:translateEffectBundle(effectComponents[1], language)
+						self:registerPlugin(path, "AudioEffects", category, nil, plugin, language)
 					end
 				end
 			end
@@ -956,28 +523,22 @@ local function scanEffectBundles()
 	end
 end
 
--- scanPlugins() -> none
+-- scanPlugins(language) -> none
 -- Function
 -- Scans for Final Cut Pro Plugins
 --
 -- Parameters:
---  * None
+--  * `language`	- The language to scan for.
 --
 -- Returns:
 --  * None
-function mod.mt:scanPlugins()
+function mod.mt:scanPlugins(language)
 	for _, path in pairs(self.scanPaths) do
-bench("scanPlugins:path: "..path, function()
-		for pluginType, _ in pairs(mod.pluginTypes) do
-bench("scanPlugins:type: "..pluginType, function()
-			self:scanDirectory(string.gsub(path, "{type}", pluginType))
-end) --bench
-		end
-end) --bench
+		self:scanPluginsDirectory(path, language)
 	end
 end
 
--- cp.apple.finalcutpro.scanplugins:scanSoundtrackProEDELEffects() -> none
+-- cp.apple.finalcutpro.plugins:scanSoundtrackProEDELEffects() -> none
 -- Method
 -- Scans for Soundtrack Pro EDEL Effects.
 --
@@ -1367,6 +928,10 @@ function mod.mt:getSupportedLanguages()
 	return self._app:getSupportedLanguages()
 end
 
+function mod.mt:getCurrentLanguage()
+	return self._app:getCurrentLanguage()
+end
+
 function mod.mt:init()
 	bench("scan:init", function()
 
@@ -1379,17 +944,17 @@ function mod.mt:init()
 		-- Define Search Paths:
 		--------------------------------------------------------------------------------
 		self.scanPaths = {
-			"~/Movies/Motion Templates.localized/{type}.localized",
-			"/Library/Application Support/Final Cut Pro/Templates.localized/{type}.localized",
-			fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized/{type}.localized",
-			fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/{type}.localized",
+			"~/Movies/Motion Templates.localized",
+			"/Library/Application Support/Final Cut Pro/Templates.localized",
+			fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized",
+			fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized",
 		}
 
 		--------------------------------------------------------------------------------
 		-- Define Effect Bundles Paths:
 		--------------------------------------------------------------------------------
 		self.effectBundlesPaths = {
-			fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/Effect Bundles",
+			fcpPath .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles",
 		}
 
 		--------------------------------------------------------------------------------
@@ -1429,7 +994,7 @@ function mod.mt:plugins()
 	return self._plugins
 end
 
---- cp.apple.finalcutpro.scanplugins:scan() -> none
+--- cp.apple.finalcutpro.plugins:scan() -> none
 --- Function
 --- Scans Final Cut Pro for Effects, Transitions, Generators & Titles
 ---
@@ -1443,44 +1008,47 @@ function mod.mt:scan()
 	-- Reset Results Table:
 	--------------------------------------------------------------------------------
 	self._plugins = {}
+	
+	local language = self:getCurrentLanguage()
+	log.df("scan: language = '%s'", language)
 
-bench("scan:setup", function()
-	--------------------------------------------------------------------------------
-	-- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
-	--------------------------------------------------------------------------------
-	for _, currentLanguage in pairs(mod.supportedLanguages) do
-		local scan = {}
-		mod._plugins[currentLanguage] = scan
-		for pluginType, _ in pairs(mod.pluginTypes) do
-			local pluginTypeList = {}
-			scan[pluginType] = pluginTypeList
-			
-			if pluginType == "Effects" then
-				--------------------------------------------------------------------------------
-				-- Add Built-in Effects:
-				--------------------------------------------------------------------------------
-				for category, effects in pairs(mod.builtinEffects) do
-					local categoryList = pluginTypeList[category] or {}
-					pluginTypeList[category] = categoryList
-					for _, effect in pairs(effects) do
-						table.insert(categoryList, translateInternalEffect(effect, currentLanguage))
-					end
-				end
-			elseif pluginType == "Transitions" then
-				--------------------------------------------------------------------------------
-				-- Add Built-in Transitions:
-				--------------------------------------------------------------------------------
-				for category, transitions in pairs(mod.builtinTransitions) do
-					local categoryList = pluginTypeList[category] or {}
-					pluginTypeList[category] = categoryList
-					for _, transition in pairs(transitions) do
-						table.insert(categoryList, translateInternalEffect(transition, currentLanguage))
-					end
-				end
-			end
-		end
-	end
- end) --bench	
+-- bench("scan:setup", function()
+-- 	--------------------------------------------------------------------------------
+-- 	-- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
+-- 	--------------------------------------------------------------------------------
+-- 	for _, currentLanguage in pairs(mod.supportedLanguages) do
+-- 		local scan = {}
+-- 		mod._plugins[currentLanguage] = scan
+-- 		for pluginType, _ in pairs(mod.pluginTypes) do
+-- 			local pluginTypeList = {}
+-- 			scan[pluginType] = pluginTypeList
+--
+-- 			if pluginType == "Effects" then
+-- 				--------------------------------------------------------------------------------
+-- 				-- Add Built-in Effects:
+-- 				--------------------------------------------------------------------------------
+-- 				for category, effects in pairs(mod.builtinEffects) do
+-- 					local categoryList = pluginTypeList[category] or {}
+-- 					pluginTypeList[category] = categoryList
+-- 					for _, effect in pairs(effects) do
+-- 						table.insert(categoryList, translateInternalEffect(effect, currentLanguage))
+-- 					end
+-- 				end
+-- 			elseif pluginType == "Transitions" then
+-- 				--------------------------------------------------------------------------------
+-- 				-- Add Built-in Transitions:
+-- 				--------------------------------------------------------------------------------
+-- 				for category, transitions in pairs(mod.builtinTransitions) do
+-- 					local categoryList = pluginTypeList[category] or {}
+-- 					pluginTypeList[category] = categoryList
+-- 					for _, transition in pairs(transitions) do
+-- 						table.insert(categoryList, translateInternalEffect(transition, currentLanguage))
+-- 					end
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+--  end) --bench
 
 -- 	--------------------------------------------------------------------------------
 -- 	-- Scan Audio Units:
@@ -1496,11 +1064,11 @@ bench("scan:setup", function()
 -- 	self:scanSoundtrackProEDELEffects()
 -- end) --bench
 --
--- 	--------------------------------------------------------------------------------
--- 	-- Scan Effect Bundles:
--- 	--------------------------------------------------------------------------------
--- bench("scan:effectBundles", function()
--- 	self:scanEffectBundles()
+	--------------------------------------------------------------------------------
+	-- Scan Effect Bundles:
+	--------------------------------------------------------------------------------
+-- bench("scan:audioEffectBundles", function()
+-- 	self:scanAudioEffectBundles(language)
 -- end) --bench
 --
 -- 	--------------------------------------------------------------------------------
@@ -1513,9 +1081,9 @@ bench("scan:setup", function()
 	--------------------------------------------------------------------------------
 	-- Scan Plugins:
 	--------------------------------------------------------------------------------
-bench("scan:plugins", function()
-	self:scanPlugins()
-end) --bench
+-- bench("scan:plugins", function()
+-- 	self:scanPlugins(language)
+-- end) --bench
 
 -- 	--------------------------------------------------------------------------------
 -- 	-- Test to compare these scans to previous GUI Scripted scans:
@@ -1524,7 +1092,7 @@ end) --bench
 -- 	compareOldMethodToNewMethodResults()
 -- end) --bench
 
-	return mod._plugins
+	return self._plugins
 
 end
 
