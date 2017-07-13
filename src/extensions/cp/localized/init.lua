@@ -32,7 +32,7 @@ local UNICODE_ESCAPE	= matcher('%\\[Uu]%d%d%d%d')
 local CHAR_ESCAPE		= matcher('%\\(.)')
 
 local function uParser(s)
-	return utf8.char(tonumber(s:sub(3):encode()))
+	return utf8.char(tonumber(s:sub(3):encode(), 16))
 end
 
 -- cp.localized.readLocalizedStrings(stringsFile, name) -> string | nil
