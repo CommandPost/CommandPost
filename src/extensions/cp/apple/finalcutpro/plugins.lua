@@ -350,8 +350,9 @@ mod._getPluginName = getPluginName
 -- Method
 -- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
 --
--- 1. <type>/<group>/<plugin name>/<plugin name>.<ext>
--- 2. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
+-- 1. <type>/<plugin name>/<plugin name>.<ext>
+-- 2. <type>/<group>/<plugin name>/<plugin name>.<ext>
+-- 3. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
 --
 -- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of languages.
 --
@@ -433,8 +434,8 @@ function mod.mt:scanPluginTypeDirectory(path, type, typeExt, language)
 						failure = failure or not self:scanPluginCategoryDirectory(childPath, type, typeExt, categoryName, language)
 					end
 				end
-			else
-				log.df("Obsolete %s plugin: %s", type, pluginName)
+			-- else
+			-- 	log.df("Obsolete %s plugin: %s", type, pluginName)
 			end
 		end
 	end
@@ -508,7 +509,7 @@ function mod.mt:scanPluginThemeDirectory(path, type, typeExt, categoryName, them
 
 				if pluginName and not obsolete then
 					-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
-					themeName = pluginThemeName or themeName
+					themeName = themeName or pluginThemeName
 					self:registerPlugin(pluginPath, type, categoryName, themeName, pluginName, language)
 				elseif obsolete then
 					log.df("Obsolete %s plugin: %s", type, pluginName)
@@ -890,8 +891,14 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
 					end
 
 					for _,plugin in ipairs(plugins.unmatched) do
-						log.df("  - ERROR: New %s plugin unmatched: %s (%s)", newType, newName, plugin.path)
-						errorCount = errorCount + 1
+						local newFullName = plugin.name
+						if plugin.theme then
+							newFullName = plugin.theme .." - "..newFullName
+						end
+						if plugin.category ~= "Simple" then
+							log.df("  - ERROR: New %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
+							errorCount = errorCount + 1
+						end
 					end
 				end
 			end
