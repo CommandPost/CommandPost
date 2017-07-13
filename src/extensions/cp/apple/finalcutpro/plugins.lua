@@ -85,20 +85,32 @@ local getLocalizedName			= localized.getLocalizedName
 local insert, remove			= table.insert, table.remove
 local contains					= fnutils.contains
 
--- string:split(sep) -> table
+-- string:split(delimiter) -> table
 -- Function
--- Splits a string into a table, separated by sep
+-- Splits a string into a table, separated by a separator pattern.
 --
 -- Parameters:
---  * sep - Character to use as separator
+--  * delimiter - Separator pattern
 --
 -- Returns:
---  * Table
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields+1] = c end)
-	return fields
+--  * table
+function string:split(delimiter)
+   local list = {}
+   local pos = 1
+   if string.find("", delimiter, 1) then -- this would result in endless loops
+      error("delimiter matches empty string: %s", delimiter)
+   end
+   while true do
+      local first, last = self:find(delimiter, pos)
+      if first then -- found?
+         insert(list, self:sub(pos, first-1))
+         pos = last+1
+      else
+         insert(list, self:sub(pos))
+         break
+      end
+   end
+   return list
 end
 
 --------------------------------------------------------------------------------
@@ -154,17 +166,17 @@ mod.motionTemplates = {
 --  * None
 function mod.mt:scanAudioUnits(language)
 	local audioEffect = mod.types.audioEffect
-	
+
 	local audioUnits = {}
 	-- get the full list of aufx plugins
 	local output, status = hs.execute("auval -s aufx")
-	
+
 	if status and output then
-		
+
 		local coreAudioPlistPath = mod.coreAudioPreferences
 		local coreAudioPlistData = plist.fileToTable(coreAudioPlistPath)
 		-- log.df("coreAudioPlistData: %s", hs.inspect(coreAudioPlistData))
-		
+
 		local lines = tools.lines(output)
 		for _, line in pairs(lines) do
 			local fullName = string.match(line, "^%w%w%w%w%s%w%w%w%w%s%w%w%w%w%s+%-%s+(.*)$")
@@ -209,7 +221,7 @@ end
 --  * None
 function mod.mt:scanEffectsPresets(language)
 	local videoEffect, audioEffect = mod.types.videoEffect, mod.types.audioEffect
-	
+
 	for _, path in ipairs(self.effectPresetPaths) do
 		if tools.doesDirectoryExist(path) then
 			for file in fs.dir(path) do
@@ -268,19 +280,19 @@ function getMotionTheme(filename)
 		local inTemplate = false
 		local theme = nil
 		local flags = nil
-		
+
 		-- reads through the motion file, looking for the template/theme elements.
 		local file = io.open(filename,"r")
-		while theme == nil and flags == nil do
+		while theme == nil or flags == nil do
 			local line = file:read("*l")
-			if line == nil then return nil end
-			
+			if line == nil then break end
+
 			if not inTemplate then
 				-- local start = line:find(TEMPLATE_START_PATTERN)
 				-- inTemplate = start ~= nil
 				inTemplate = endsWith(line, "<template>")
 			end
-			
+
 			if inTemplate then
 				theme = theme or line:match(THEME_PATTERN)
 				flags = line:match(FLAGS_PATTERN) or flags
@@ -291,10 +303,14 @@ function getMotionTheme(filename)
 			end
 		end
 		file:close()
-		
+
+		-- unescape the theme text
+		theme = theme and unescapeXML(theme) or nil
+
+		-- convert flags to a number for checking
 		flags = flags and tonumber(flags) or 0
-		log.df("Theme: %s, Flags: %d", theme, flags)
-		return theme, flags & OBSOLETE_FLAG == OBSOLETE_FLAG
+		local isObsolete = (flags & OBSOLETE_FLAG) == OBSOLETE_FLAG
+		return theme, isObsolete
 	end
 	return nil
 end
@@ -315,38 +331,7 @@ local function getPluginName(path, pluginExt, language)
 	if realName then
 		local pluginPath = path .. "/" .. realName .. "." .. pluginExt
 		if fs.pathToAbsolute(pluginPath) ~= nil then -- the plugin file exists.
-			
-			return localName, getMotionTheme(pluginPath)
-		else -- check there aren't any other files with the extension
-			for file in fs.dir(path) do
-				local name, ext = file:match("^(.+)%.([^%.]+)")
-				if ext == pluginExt then
-					pluginPath = path .. "/" .. name .. "." .. ext
-					return name, getMotionTheme(pluginPath)
-				end
-			end
-		end
-	end
-	return nil
-end
 
--- cp.apple.finalcutpro.plugins.getPluginName(path, pluginExt) -> boolean
--- Function
--- Checks if the specified path is a plugin directory, and returns the plugin name.
---
--- Parameters:
---  * `path`		- The path to the directory to check
---  * `pluginExt`	- The plugin extensions to check for.
---
--- Returns:
---  * The plugin name.
---  * The plugin theme.
-local function getPlugin(path, pluginExt, language)
-	local localName, realName = getLocalizedName(path, language)
-	if realName then
-		local pluginPath = path .. "/" .. realName .. "." .. pluginExt
-		if fs.pathToAbsolute(pluginPath) ~= nil then -- the plugin file exists.
-			
 			return localName, getMotionTheme(pluginPath)
 		else -- check there aren't any other files with the extension
 			for file in fs.dir(path) do
@@ -387,7 +372,7 @@ function mod.mt:scanPluginsDirectory(path, language)
 		log.wf("The provided path does not exist: '%s'", directoryPath)
 		return false
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Check that the directoryPath is actually a directory:
 	--------------------------------------------------------------------------------
@@ -396,9 +381,9 @@ function mod.mt:scanPluginsDirectory(path, language)
 		log.ef("The provided path is not a directory: '%s'", directoryPath)
 		return false
 	end
-	
+
 	local failure = false
-	
+
 	-- loop through the files in the directory
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
@@ -414,7 +399,7 @@ function mod.mt:scanPluginsDirectory(path, language)
 			end
 		end
 	end
-	
+
 	return not failure
 end
 
@@ -432,13 +417,14 @@ end
 -- * `true` if the folder was scanned successfully.
 function mod.mt:scanPluginTypeDirectory(path, type, typeExt, language)
 	local failure = false
-	
+
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
 			local childPath = path .. "/" .. file
 			local pluginName, themeName, obsolete = getPluginName(childPath, typeExt, language)
 			if not obsolete then
 				if pluginName then
+					-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
 					self:registerPlugin(childPath, type, categoryName, themeName, pluginName, language)
 				else
 					local categoryName = getLocalizedName(childPath, language)
@@ -452,7 +438,7 @@ function mod.mt:scanPluginTypeDirectory(path, type, typeExt, language)
 			end
 		end
 	end
-	
+
 	return not failure
 end
 
@@ -471,14 +457,16 @@ end
 -- * `true` if the folder was scanned successfully.
 function mod.mt:scanPluginCategoryDirectory(path, type, typeExt, categoryName, language)
 	local failure = false
-	
+
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
 			local childPath = path .. "/" .. file
 			if fs.attributes(childPath).mode == "directory" then
 				local pluginName, themeName, obsolete = getPluginName(childPath, typeExt, language)
+
 				if not obsolete then
 					if pluginName then
+						-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
 						self:registerPlugin(childPath, type, categoryName, themeName, pluginName, language)
 					else
 						local themeName = getLocalizedName(childPath, language)
@@ -493,7 +481,7 @@ function mod.mt:scanPluginCategoryDirectory(path, type, typeExt, categoryName, l
 			end
 		end
 	end
-	
+
 	return not failure
 end
 
@@ -517,10 +505,12 @@ function mod.mt:scanPluginThemeDirectory(path, type, typeExt, categoryName, them
 			local pluginPath = path .. "/" .. file
 			if fs.attributes(pluginPath).mode == "directory" then
 				local pluginName, pluginThemeName, obsolete = getPluginName(pluginPath, typeExt, language)
+
 				if pluginName and not obsolete then
+					-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
 					themeName = pluginThemeName or themeName
 					self:registerPlugin(pluginPath, type, categoryName, themeName, pluginName, language)
-				else
+				elseif obsolete then
 					log.df("Obsolete %s plugin: %s", type, pluginName)
 				end
 			end
@@ -552,13 +542,13 @@ function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, 
 		lang = {}
 		plugins[language] = lang
 	end
-	
+
 	local types = lang[type]
 	if not types then
 		types = {}
 		lang[type] = types
 	end
-	
+
 	local plugin = {
 		path = path,
 		type = type,
@@ -828,7 +818,7 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
 	log.df("---------------------------------------------------------")
 	log.df(" CHECKING LANGUAGE: %s", language)
 	log.df("---------------------------------------------------------")
-	
+
 	for oldType,newType in pairs(pluginTypes) do
 		--------------------------------------------------------------------------------
 		-- Get settings from GUI Scripting Results:
@@ -847,30 +837,65 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
 			if newPlugins then
 				for _,plugin in ipairs(newPlugins) do
 					local name = plugin.name
-					newPluginNames[name] = plugin
+					local plugins = newPluginNames[name]
+					local unmatched = nil
+					if not plugins then
+						plugins = {
+							matched = {},
+							unmatched = {},
+							partials = {},
+						}
+						newPluginNames[name] = plugins
+					end
+					insert(plugins.unmatched, plugin)
 				end
 			end
-			
+
 			--------------------------------------------------------------------------------
 			-- Compare Results:
 			--------------------------------------------------------------------------------
 			local errorCount = 0
 			for _, oldFullName in pairs(oldPlugins) do
-				local oldCategory, oldName = string.match(oldFullName, "^(.-) %- (.+)$")
+				local oldTheme, oldName = string.match(oldFullName, "^(.-) %- (.+)$")
 				oldName = oldName or oldFullName
-				if not newPluginNames[oldName] and not newPluginNames[oldFullName] then
+				local newPlugins = newPluginNames[oldFullName] or newPluginNames[oldName]
+				if not newPlugins then
 					log.df("  - ERROR: Missing %s: %s", oldType, oldFullName)
 					errorCount = errorCount + 1
 				else
-					newPluginNames[oldName] = nil
+					local unmatched = newPlugins.unmatched
+					local found = false
+					for i,plugin in ipairs(unmatched) do
+						-- log.df("  - INFO:  Checking plugin: %s (%s)", plugin.name, plugin.theme)
+						if plugin.theme == oldTheme then
+							-- log.df("  - INFO:  Exact match for plugin: %s (%s)", oldName, oldTheme)
+							insert(newPlugins.matched, plugin)
+							remove(unmatched, i)
+							found = true
+							break
+						end
+					end
+					if not found then
+						-- log.df("  - INFO:  Partial for '%s' plugin.", oldFullName)
+						insert(newPlugins.partials, oldFullName)
+					end
 				end
 			end
-			
-			for newName, plugin in pairs(newPluginNames) do
-				log.df("  - ERROR: Unmatched %s: %s (%s)", newType, newName, plugin.path)
-				errorCount = errorCount + 1
+
+			for newName, plugins in pairs(newPluginNames) do
+				if #plugins.partials ~= #plugins.unmatched then
+					for _,oldFullName in ipairs(plugins.partials) do
+						log.df("  - ERROR: Old %s plugin unmatched: %s", newType, oldFullName)
+						errorCount = errorCount + 1
+					end
+
+					for _,plugin in ipairs(plugins.unmatched) do
+						log.df("  - ERROR: New %s plugin unmatched: %s (%s)", newType, newName, plugin.path)
+						errorCount = errorCount + 1
+					end
+				end
 			end
-			
+
 			--------------------------------------------------------------------------------
 			-- If all results matched:
 			--------------------------------------------------------------------------------
@@ -1049,7 +1074,7 @@ function mod.mt:init()
 		self.internalEffectFlexoPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
 
 	end) --bench
-	
+
 	return self
 end
 
@@ -1074,7 +1099,7 @@ function mod.mt:scan()
 	-- Reset Results Table:
 	--------------------------------------------------------------------------------
 	self._plugins = {}
-	
+
 	local language = self:getCurrentLanguage()
 	log.df("scan: language = '%s'", language)
 
