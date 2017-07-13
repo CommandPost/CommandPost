@@ -329,22 +329,22 @@ end
 local function getPluginName(path, pluginExt, language)
 	local localName, realName = getLocalizedName(path, language)
 	if realName then
-		local pluginPath = path .. "/" .. realName .. "." .. pluginExt
-		if fs.pathToAbsolute(pluginPath) ~= nil then -- the plugin file exists.
-
-			return localName, getMotionTheme(pluginPath)
-		else -- check there aren't any other files with the extension
-			for file in fs.dir(path) do
-				local name, ext = file:match("^(.+)%.([^%.]+)")
-				if ext == pluginExt then
-					pluginPath = path .. "/" .. name .. "." .. ext
-					return name, getMotionTheme(pluginPath)
+		local targetExt = "."..pluginExt
+		for file in fs.dir(path) do
+			if endsWith(file, targetExt) then
+				local name = file:sub(1, (targetExt:len()+1)*-1)
+				pluginPath = path .. "/" .. name .. targetExt
+				if name == realName then
+					name = localName
 				end
+				return name, getMotionTheme(pluginPath)
 			end
 		end
 	end
 	return nil
 end
+
+mod._getPluginName = getPluginName
 
 -- cp.apple.finalcutpro.plugins:scanPluginsDirectory(path, language) -> boolean
 -- Method
