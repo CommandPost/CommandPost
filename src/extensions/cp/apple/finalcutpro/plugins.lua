@@ -70,6 +70,7 @@ local protect									= require("cp.protect")
 
 local text										= require("cp.web.text")
 local localized									= require("cp.localized")
+local strings									= require("cp.strings")
 
 local prop										= require("cp.prop")
 
@@ -476,8 +477,6 @@ function mod.mt:scanPluginCategoryDirectory(path, type, typeExt, categoryName, l
 							failure = failure or not self:scanPluginThemeDirectory(childPath, type, typeExt, categoryName, themeName, language)
 						end
 					end
-				else
-					log.df("Obsolete %s plugin: %s", type, pluginName)
 				end
 			end
 		end
@@ -511,8 +510,6 @@ function mod.mt:scanPluginThemeDirectory(path, type, typeExt, categoryName, them
 					-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
 					themeName = themeName or pluginThemeName
 					self:registerPlugin(pluginPath, type, categoryName, themeName, pluginName, language)
-				elseif obsolete then
-					log.df("Obsolete %s plugin: %s", type, pluginName)
 				end
 			end
 		end
@@ -566,6 +563,15 @@ function mod.mt:reset()
 	self._plugins = {}
 end
 
+function mod.mt:effectBundleStrings()
+	local source = self._effectBundleStrings
+	if not source then
+		source = strings.new():fromPlist(self.effectBundlesPreferencesPath .. "${language}.lproj/FFEffectBundleLocalizable.strings")
+		self._effectBundleStrings = source
+	end
+	return source
+end
+
 -- translateEffectBundle(input, language) -> none
 -- Function
 -- Translates an Effect Bundle Item
@@ -577,15 +583,7 @@ end
 -- Returns:
 --  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/de.lproj/FFEffectBundleLocalizable.strings")
 function mod.mt:translateEffectBundle(input, language)
-	local prefsPath = self.effectBundlesPreferencesPath .. language .. ".lproj/FFEffectBundleLocalizable.strings"
-	local plistResult = plist.fileToTable(prefsPath)
-	if plistResult then
-		if plistResult[input] then
-			return plistResult[input]
-		else
-			return input
-		end
-	end
+	return self:effectBundleStrings():find(language, input) or input
 end
 
 -- scanAudioEffectBundles() -> none
@@ -684,6 +682,17 @@ function mod.mt:scanSoundtrackProEDELEffects(language)
 
 end
 
+function mod.mt:effectStrings()
+	local source = self._effectStrings
+	if not source then
+		source = strings.new()
+		source:fromPlist(self:app():getPath() .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${language}.lproj/Localizable.strings")
+		source:fromPlist(self.internalEffectFlexoPath .. "/${language}.lproj/FFLocalizable.strings")
+		self._effectStrings = source
+	end
+	return source
+end
+
 -- translateInternalEffect(input, language) -> none
 -- Function
 -- Translates an Effect Bundle Item
@@ -699,80 +708,7 @@ end
 --  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings")
 --  * translateInternalEffect("Draw Mask", "en")
 function mod.mt:translateInternalEffect(input, language)
-
-	--------------------------------------------------------------------------------
-	-- Ignore if English:
-	--------------------------------------------------------------------------------
-	if language == "en" then
-		return input
-	end
-
-	--------------------------------------------------------------------------------
-	-- For debugging:
-	--------------------------------------------------------------------------------
-	--[[
-	if not mod.internalEffectPreferencesPath then
-		mod.internalEffectPreferencesPath =  "/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/"
-	end
-
-	if not mod.internalEffectFlexoPath then
-		mod.internalEffectFlexoPath = "/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
-	end
-	--]]
-
-	--------------------------------------------------------------------------------
-	-- Language Codes for InternalFiltersXPC.pluginkit:
-	--------------------------------------------------------------------------------
-	languageCodes = {
-		fr	= "French",
-		de	= "German",
-		ja	= "Japanese",
-		es	= "Spanish",
-		zh_CN = "zh_CN",
-	}
-
-	--------------------------------------------------------------------------------
-	-- Check InternalFiltersXPC.pluginkit first:
-	--------------------------------------------------------------------------------
-	if languageCodes[language] then
-		local prefsPath = self.internalEffectPreferencesPath .. "English.lproj/Localizable.strings"
-		local plistResult = plist.fileToTable(prefsPath)
-		if plistResult then
-			local newPrefsPath = self.internalEffectPreferencesPath .. languageCodes[language] .. ".lproj/Localizable.strings"
-			local newPlistResult = plist.fileToTable(newPrefsPath)
-			for key, string in pairs(plistResult) do
-				if string == input then
-					if newPlistResult and newPlistResult[key] then
-						return newPlistResult[key]
-					end
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If that fails check Flexo.framework:
-	--------------------------------------------------------------------------------
-	local prefsPath = self.internalEffectFlexoPath .. "en.lproj/FFLocalizable.strings"
-	local plistResult = plist.fileToTable(prefsPath)
-	if plistResult then
-		local newPrefsPath = self.internalEffectFlexoPath .. language .. ".lproj/FFLocalizable.strings"
-		local newPlistResult = plist.fileToTable(newPrefsPath)
-		for key, string in pairs(plistResult) do
-			if string == input then
-				if newPlistResult and newPlistResult[key] then
-					return newPlistResult[key]
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If that fails just return input:
-	--------------------------------------------------------------------------------
-	log.df("Failed to find a match:")
-	return input
-
+	return self:effectStrings():find(language, input) or input
 end
 
 -- compareOldMethodToNewMethodResults() -> none
@@ -895,10 +831,8 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
 						if plugin.theme then
 							newFullName = plugin.theme .." - "..newFullName
 						end
-						if plugin.category ~= "Simple" then
-							log.df("  - ERROR: New %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
-							errorCount = errorCount + 1
-						end
+						log.df("  - ERROR: New %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
+						errorCount = errorCount + 1
 					end
 				end
 			end
@@ -933,21 +867,21 @@ mod.coreAudioPreferences = "/System/Library/Components/CoreAudio.component/Conte
 -- Built-in Effects:
 --------------------------------------------------------------------------------
 mod.builtinEffects = {
-	["Color"] 			= 	{ "Color Correction" },
-	["Masks"] 			= 	{ "Draw Mask", "Shape Mask" },
-	["Stylize"] 		= 	{ "Drop Shadow" },
-	["Keying"] 			=	{ "Keyer", "Luma Keyer" }
+	["FFEffectCategoryColor"]	= { "FFCorrectorEffectName" },
+	["FFMaskEffect"]			= { "FFSplineMaskEffect", "FFShapeMaskEffect" },
+	["Stylize"] 				= { "DropShadow::Filter Name" },
+	["FFEffectCategoryKeying"]	={ "Keyer::Filter Name", "LumaKeyer::Filter Name" }
 }
 
 --------------------------------------------------------------------------------
 -- Built-in Transitions:
 --------------------------------------------------------------------------------
 mod.builtinTransitions = {
-	["Dissolves"] = { "Cross Dissolve", "Fade To Color", "Flow" },
-	["Movements"] = { "Spin", "Swap", "Ripple", "Mosaic", "Puzzle" },
-	["Objects"] = { "Star", "Doorway" },
-	["Wipes"] = { "Band", "Center", "Checker", "Chevron", "Circle", "Clock", "Gradient Image", "Inset Wipe", "Letter X", "Wipe" },
-	["Blurs"] = { "Zoom & Pan", "Simple" },
+	["Transitions::Dissolves"] = { "CrossDissolve::Filter Name", "DipToColorDissolve::Transition Name", "FFTransition_OpticalFlow" },
+	["Movements"] = { "SpinSlide::Transition Name", "Swap::Transition Name", "RippleTransition::Transition Name", "Mosaic::Transition Name", "PageCurl::Transition Name", "PuzzleSlide::Transition Name", "Slide::Transition Name" },
+	["Objects"] = { "Cube::Transition Name", "StarIris::Transition Name", "Doorway::Transition Name" },
+	["Wipes"] = { "BandWipe::Transition Name", "CenterWipe::Transition Name", "CheckerWipe::Transition Name", "ChevronWipe::Transition Name", "OvalIris::Transition Name", "ClockWipe::Transition Name", "GradientImageWipe::Transition Name", "Inset Wipe::Transition Name", "X-Wipe::Transition Name", "EdgeWipe::Transition Name" },
+	["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
 }
 
 --------------------------------------------------------------------------------
@@ -1077,8 +1011,8 @@ function mod.mt:init()
 		--------------------------------------------------------------------------------
 		-- Define Internal Effect Preferences Path:
 		--------------------------------------------------------------------------------
-		self.internalEffectPreferencesPath = fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/"
-		self.internalEffectFlexoPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
+		self.internalEffectPreferencesPath = fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources"
+		self.internalEffectFlexoPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources"
 
 	end) --bench
 
@@ -1101,13 +1035,13 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.mt:scan()
+function mod.mt:scan(language)
 	--------------------------------------------------------------------------------
 	-- Reset Results Table:
 	--------------------------------------------------------------------------------
 	self._plugins = {}
 
-	local language = self:getCurrentLanguage()
+	language = language or self:getCurrentLanguage()
 	log.df("scan: language = '%s'", language)
 
 bench("scan:setup", function()
