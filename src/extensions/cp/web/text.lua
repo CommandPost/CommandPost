@@ -25,6 +25,9 @@ end
 --- Returns:
 ---  * The string, unescaped.
 function mod.unescapeXML(s)
+	if not s then
+		return nil
+	end
 	s = gsub(s, "&lt;", "<")
 	s = gsub(s, "&gt;", ">")
 	s = gsub(s, "&apos;", "'")
@@ -45,6 +48,9 @@ end
 --- Returns:
 ---  * The string, escaped for XML.
 function mod.escapeXML(s)
+	if not s then
+		return nil
+	end
 	s = gsub(s, "&", "&amp;")
 	s = gsub(s, "<", "&lt;")
 	s = gsub(s, ">", "&gt;")
