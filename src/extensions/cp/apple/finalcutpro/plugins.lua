@@ -9,7 +9,7 @@
 --- Scan Final Cut Pro bundle for Effects, Generators, Titles & Transitions.
 ---
 --- Usage:
---- require("cp.apple.finalcutpro"):scanPlugins()
+--- require("cp.apple.finalcutpro"):plugins():scan("en")
 
 
 --------------------------------------------------------------------------------
@@ -59,8 +59,6 @@ local bench										= require("cp.bench")
 
 local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
-local host										= require("hs.host")
-local inspect									= require("hs.inspect")
 
 local archiver									= require("cp.plist.archiver")
 local config									= require("cp.config")
@@ -72,15 +70,13 @@ local text										= require("cp.web.text")
 local localized									= require("cp.localized")
 local strings									= require("cp.strings")
 
-local prop										= require("cp.prop")
-
 --------------------------------------------------------------------------------
 --
 -- HELPER FUNCTIONS:
 --
 --------------------------------------------------------------------------------
 
-local escapeXML, unescapeXML	= text.escapeXML, text.unescapeXML
+local unescapeXML				= text.unescapeXML
 local isBinaryPlist				= plist.isBinaryPlist
 local getLocalizedName			= localized.getLocalizedName
 local insert, remove			= table.insert, table.remove
@@ -176,7 +172,6 @@ function mod.mt:scanAudioUnits(language)
 
 		local coreAudioPlistPath = mod.coreAudioPreferences
 		local coreAudioPlistData = plist.fileToTable(coreAudioPlistPath)
-		-- log.df("coreAudioPlistData: %s", hs.inspect(coreAudioPlistData))
 
 		local lines = tools.lines(output)
 		for _, line in pairs(lines) do
@@ -211,7 +206,7 @@ function mod.mt:scanAudioUnits(language)
 	end
 end
 
--- scanEffectsPresets(language) -> none
+-- scanUserEffectsPresets(language) -> none
 -- Function
 -- Scans Final Cut Pro Effects Presets
 --
@@ -220,10 +215,10 @@ end
 --
 -- Returns:
 --  * None
-function mod.mt:scanEffectsPresets(language)
+function mod.mt:scanUserEffectsPresets(language)
 	local videoEffect, audioEffect = mod.types.videoEffect, mod.types.audioEffect
 
-	for _, path in ipairs(self.effectPresetPaths) do
+	for _, path in ipairs(self.userEffectPresetPaths) do
 		if tools.doesDirectoryExist(path) then
 			for file in fs.dir(path) do
 				local plugin = string.match(file, "(.+)%.effectsPreset")
@@ -347,7 +342,7 @@ end
 
 mod._getPluginName = getPluginName
 
--- cp.apple.finalcutpro.plugins:scanPluginsDirectory(path, language) -> boolean
+-- cp.apple.finalcutpro.plugins:scanPluginsDirectory(language, path, filter) -> boolean
 -- Method
 -- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
 --
@@ -360,12 +355,13 @@ mod._getPluginName = getPluginName
 -- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `language` provided. Other languages are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
 --
 -- Parameters:
---  * `path`		- The path of the root plugin directory to scan.
 --  * `language`	- The language code to scan for (e.g. "en" or "fr").
+--  * `path`		- The path of the root plugin directory to scan.
+--  * `checkFn`		- A function which will receive the path being scanned and return `true` if it should be scanned.
 --
 -- Returns:
 --  * `true` if the plugin directory was successfully scanned.
-function mod.mt:scanPluginsDirectory(path, language)
+function mod.mt:scanPluginsDirectory(language, path, checkFn)
 	--------------------------------------------------------------------------------
 	-- Check that the directoryPath actually exists:
 	--------------------------------------------------------------------------------
@@ -393,11 +389,12 @@ function mod.mt:scanPluginsDirectory(path, language)
 			local typeNameEN = getLocalizedName(typePath, "en")
 			local mt = mod.motionTemplates[typeNameEN]
 			if mt then
-				local type = mt.type
-				local typeExt = mt.extension
-				if typeExt then -- it's a recognised plugin type
-					failure = failure or not self:scanPluginTypeDirectory(typePath, type, typeExt, language)
-				end
+				local plugin = {
+					type = mt.type,
+					extension = mt.extension,
+					check = checkFn or function() return true end,
+				}
+				failure = failure or not self:scanPluginTypeDirectory(language, typePath, plugin)
 			end
 		end
 	end
@@ -405,38 +402,52 @@ function mod.mt:scanPluginsDirectory(path, language)
 	return not failure
 end
 
--- cp.apple.finalcutpro.plugins:scanPluginTypeDirectory(path, type, typeExt, language) -> boolean
+function mod.mt:handlePluginDirectory(language, path, plugin)
+	local pluginName, themeName, obsolete = getPluginName(path, plugin.extension, language)
+	if pluginName then
+		plugin.name = pluginName
+		plugin.themeLocal = plugin.themeLocal or themeName
+		-- only register it if not obsolete and if the check function passes (if present)
+		if not obsolete and plugin:check() then
+			self:registerPlugin(
+				path,
+				plugin.type,
+				plugin.categoryLocal,
+				plugin.themeLocal,
+				plugin.name,
+				language
+			)
+		end
+		-- return true if it's a legit plugin directory, even if we didn't register it.
+		return true
+	end
+	-- return false if it's not a plugin directory.
+	return false
+end
+
+-- cp.apple.finalcutpro.plugins:scanPluginTypeDirectory(language, path, plugin) -> boolean
 -- Method
 -- Scans a folder as a plugin type folder, such as 'Effects', 'Transitions', etc. The contents will be folders that are 'groups' of plugins, containing related plugins.
 --
 -- Parameters:
---  * `path`		- The path to the plugin type directory
---  * `type`		- The plugin type
---  * `typeExt`		- The plugin file extension for the type.
 --  * `language`	- The language to scan with.
+--  * `path`		- The path to the plugin type directory.
+--  * `plugin`		- A table containing the plugin details collected so far.
 --
 -- Returns:
 -- * `true` if the folder was scanned successfully.
-function mod.mt:scanPluginTypeDirectory(path, type, typeExt, language)
+function mod.mt:scanPluginTypeDirectory(language, path, plugin)
 	local failure = false
 
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
 			local childPath = path .. "/" .. file
-			local pluginName, themeName, obsolete = getPluginName(childPath, typeExt, language)
-			if not obsolete then
-				if pluginName then
-					-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
-					self:registerPlugin(childPath, type, categoryName, themeName, pluginName, language)
-				else
-					local categoryName = getLocalizedName(childPath, language)
-					local attrs = fs.attributes(childPath)
-					if attrs.mode == "directory" then
-						failure = failure or not self:scanPluginCategoryDirectory(childPath, type, typeExt, categoryName, language)
-					end
+			local attrs = fs.attributes(childPath)
+			if attrs and attrs.mode == "directory" then
+				if not self:handlePluginDirectory(language, childPath, plugin) then
+					plugin.categoryLocal, plugin.categoryReal = getLocalizedName(childPath, language)
+					failure = failure or not self:scanPluginCategoryDirectory(language, childPath, plugin)
 				end
-			-- else
-			-- 	log.df("Obsolete %s plugin: %s", type, pluginName)
 			end
 		end
 	end
@@ -444,39 +455,28 @@ function mod.mt:scanPluginTypeDirectory(path, type, typeExt, language)
 	return not failure
 end
 
--- cp.apple.finalcutpro.plugins:scanPluginCategoryDirectory(path, type, typeExt, categoryName, language) -> boolean
+-- cp.apple.finalcutpro.plugins:scanPluginCategoryDirectory(language, path, plugin) -> boolean
 -- Method
 -- Scans a folder as a plugin category folder. The contents will be folders that are either theme folders or actual plugins.
 --
 -- Parameters:
---  * `path`			- The path to the plugin type directory
---  * `type`			- The plugin type
---  * `typeExt`			- The plugin file extension for the type.
---  * `categoryName`	- The category name, in the target language.
 --  * `language`		- The language to scan with.
+--  * `path`			- The path to the plugin type directory
+--  * `plugin`		- A table containing the plugin details collected so far.
 --
 -- Returns:
 -- * `true` if the folder was scanned successfully.
-function mod.mt:scanPluginCategoryDirectory(path, type, typeExt, categoryName, language)
+function mod.mt:scanPluginCategoryDirectory(language, path, plugin)
 	local failure = false
 
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
 			local childPath = path .. "/" .. file
-			if fs.attributes(childPath).mode == "directory" then
-				local pluginName, themeName, obsolete = getPluginName(childPath, typeExt, language)
-
-				if not obsolete then
-					if pluginName then
-						-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
-						self:registerPlugin(childPath, type, categoryName, themeName, pluginName, language)
-					else
-						local themeName = getLocalizedName(childPath, language)
-						local attrs = fs.attributes(childPath)
-						if attrs.mode == "directory" then
-							failure = failure or not self:scanPluginThemeDirectory(childPath, type, typeExt, categoryName, themeName, language)
-						end
-					end
+			local attrs = fs.attributes(childPath)
+			if attrs and attrs.mode == "directory" then
+				if not self:handlePluginDirectory(language, childPath, plugin) then
+					plugin.themeLocal, plugin.themeReal = getLocalizedName(childPath, language)
+					failure = failure or not self:scanPluginThemeDirectory(language, childPath, plugin)
 				end
 			end
 		end
@@ -485,32 +485,23 @@ function mod.mt:scanPluginCategoryDirectory(path, type, typeExt, categoryName, l
 	return not failure
 end
 
--- cp.apple.finalcutpro.plugins:scanPluginThemeDirectory(path, type, typeExt, categoryName, themeName, language) -> boolean
+-- cp.apple.finalcutpro.plugins:scanPluginThemeDirectory(language, path, plugin) -> boolean
 -- Method
 -- Scans a folder as a plugin theme folder. The contents will be plugin folders.
 --
 -- Parameters:
---  * `path`			- The path to the plugin type directory
---  * `type`			- The plugin type
---  * `typeExt`			- The plugin file extension for the type.
---  * `categoryName`	- The plugin category name, in the target language.
---  * `themeName`		- The plugin theme name, in the target language.
 --  * `language`		- The language to scan with.
+--  * `path`			- The path to the plugin type directory
+--  * `plugin`			- A table containing the plugin details collected so far.
 --
 -- Returns:
 -- * `true` if the folder was scanned successfully.
-function mod.mt:scanPluginThemeDirectory(path, type, typeExt, categoryName, themeName, language)
+function mod.mt:scanPluginThemeDirectory(language, path, plugin)
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
 			local pluginPath = path .. "/" .. file
 			if fs.attributes(pluginPath).mode == "directory" then
-				local pluginName, pluginThemeName, obsolete = getPluginName(pluginPath, typeExt, language)
-
-				if pluginName and not obsolete then
-					-- log.df("pluginName: %s; themeName: %s; obsolete: %s", pluginName, themeName, obsolete)
-					themeName = themeName or pluginThemeName
-					self:registerPlugin(pluginPath, type, categoryName, themeName, pluginName, language)
-				end
+				self:handlePluginDirectory(language, pluginPath, plugin)
 			end
 		end
 	end
@@ -566,7 +557,7 @@ end
 function mod.mt:effectBundleStrings()
 	local source = self._effectBundleStrings
 	if not source then
-		source = strings.new():fromPlist(self.effectBundlesPreferencesPath .. "${language}.lproj/FFEffectBundleLocalizable.strings")
+		source = strings.new():fromPlist(self:app():getPath() .. "/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFEffectBundleLocalizable.strings")
 		self._effectBundleStrings = source
 	end
 	return source
@@ -581,14 +572,14 @@ end
 --  * language - The language code you want to attempt to translate to
 --
 -- Returns:
---  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/de.lproj/FFEffectBundleLocalizable.strings")
+--  * The translated value for `input` in the specified language, if present.
 function mod.mt:translateEffectBundle(input, language)
 	return self:effectBundleStrings():find(language, input) or input
 end
 
 -- scanAudioEffectBundles() -> none
 -- Function
--- Scans the Audio Effect Bundles directories
+-- Scans the Audio Effect Bundles directories.
 --
 -- Parameters:
 --  * directoryPath - Directory to scan
@@ -597,7 +588,7 @@ end
 --  * None
 function mod.mt:scanAudioEffectBundles(language)
 	local audioEffect = mod.types.audioEffect
-	for _, path in pairs(self.effectBundlesPaths) do
+	for _, path in pairs(self.appEffectBundlesPaths) do
 		if tools.doesDirectoryExist(path) then
 			for file in fs.dir(path) do
 				--------------------------------------------------------------------------------
@@ -613,18 +604,38 @@ function mod.mt:scanAudioEffectBundles(language)
 	end
 end
 
--- scanPlugins(language) -> none
+-- cp.apple.finalcutpro.plugins:scanAppPlugins(language) -> none
 -- Function
--- Scans for Final Cut Pro Plugins
+-- Scans for app-provided Final Cut Pro Plugins.
 --
 -- Parameters:
 --  * `language`	- The language to scan for.
 --
 -- Returns:
 --  * None
-function mod.mt:scanPlugins(language)
-	for _, path in pairs(self.scanPaths) do
-		self:scanPluginsDirectory(path, language)
+function mod.mt:scanAppPlugins(language)
+	local fcpPath = self:app():getPath()
+	self:scanPluginsDirectory(language, fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized")
+	self:scanPluginsDirectory(
+		language,
+		fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized",
+		-- we filter out the 'Simple' category here, since it contains unlisted iMovie titles.
+		function(plugin) return plugin.categoryReal ~= "Simple" end
+	)
+end
+
+-- cp.apple.finalcutpro.plugins:scanUserPlugins(language) -> none
+-- Function
+-- Scans for user-provided Final Cut Pro Plugins.
+--
+-- Parameters:
+--  * `language`	- The language to scan for.
+--
+-- Returns:
+--  * None
+function mod.mt:scanUserPlugins(language)
+	for _, path in pairs(self.userPluginPaths) do
+		self:scanPluginsDirectory(language, path)
 	end
 end
 
@@ -639,7 +650,7 @@ end
 --  * None
 function mod.mt:scanSoundtrackProEDELEffects(language)
 	local audioEffect = mod.types.audioEffect
-	for category, plugins in pairs(mod.builtinSoundtrackProEDELEffects) do
+	for category, plugins in pairs(mod.appEdelEffects) do
 		for _, plugin in ipairs(plugins) do
 			self:registerPlugin(nil, audioEffect, "Logic", category, plugin, language)
 		end
@@ -650,7 +661,7 @@ function mod.mt:scanSoundtrackProEDELEffects(language)
 	-- yet, so aborted this method:
 	--------------------------------------------------------------------------------
 	--[[
- 	for _, path in pairs(mod.edelEffectPaths) do
+ 	for _, path in pairs(mod.appEdelEffectPaths) do
 		if tools.doesDirectoryExist(path) then
 			for file in fs.dir(path) do
 				local filePath = fs.pathToAbsolute(path .. "/" .. file)
@@ -686,8 +697,9 @@ function mod.mt:effectStrings()
 	local source = self._effectStrings
 	if not source then
 		source = strings.new()
-		source:fromPlist(self:app():getPath() .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${language}.lproj/Localizable.strings")
-		source:fromPlist(self.internalEffectFlexoPath .. "/${language}.lproj/FFLocalizable.strings")
+		local fcpPath = self:app():getPath()
+		source:fromPlist(fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${language}.lproj/Localizable.strings")
+		source:fromPlist(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/${language}.lproj/FFLocalizable.strings")
 		self._effectStrings = source
 	end
 	return source
@@ -725,12 +737,6 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
 	--------------------------------------------------------------------------------
 	-- Debug Message:
 	--------------------------------------------------------------------------------
-	--[[
-	log.df("---------------------------------------------------------")
-	log.df(" RESULTS FROM NEW SCAN:")
-	log.df("---------------------------------------------------------")
-	log.df("Scan Results: %s", hs.inspect(mod._plugins))
-	--]]
 	log.df("-----------------------------------------------------------")
 	log.df(" COMPARING RESULTS TO THE RESULTS STORED IN YOUR SETTINGS:")
 	log.df("-----------------------------------------------------------\n")
@@ -863,31 +869,34 @@ end
 mod.coreAudioPreferences = "/System/Library/Components/CoreAudio.component/Contents/Info.plist"
 
 
---------------------------------------------------------------------------------
--- Built-in Effects:
---------------------------------------------------------------------------------
-mod.builtinEffects = {
-	["FFEffectCategoryColor"]	= { "FFCorrectorEffectName" },
-	["FFMaskEffect"]			= { "FFSplineMaskEffect", "FFShapeMaskEffect" },
-	["Stylize"] 				= { "DropShadow::Filter Name" },
-	["FFEffectCategoryKeying"]	={ "Keyer::Filter Name", "LumaKeyer::Filter Name" }
+mod.builtInPlugins = {
+	--------------------------------------------------------------------------------
+	-- Built-in Effects:
+	--------------------------------------------------------------------------------
+	[mod.types.videoEffect] = {
+		["FFEffectCategoryColor"]	= { "FFCorrectorEffectName" },
+		["FFMaskEffect"]			= { "FFSplineMaskEffect", "FFShapeMaskEffect" },
+		["Stylize"] 				= { "DropShadow::Filter Name" },
+		["FFEffectCategoryKeying"]	= { "Keyer::Filter Name", "LumaKeyer::Filter Name" }
+	},
+
+	--------------------------------------------------------------------------------
+	-- Built-in Transitions:
+	--------------------------------------------------------------------------------
+	[mod.types.transition] = {
+		["Transitions::Dissolves"] = { "CrossDissolve::Filter Name", "DipToColorDissolve::Transition Name", "FFTransition_OpticalFlow" },
+		["Movements"] = { "SpinSlide::Transition Name", "Swap::Transition Name", "RippleTransition::Transition Name", "Mosaic::Transition Name", "PageCurl::Transition Name", "PuzzleSlide::Transition Name", "Slide::Transition Name" },
+		["Objects"] = { "Cube::Transition Name", "StarIris::Transition Name", "Doorway::Transition Name" },
+		["Wipes"] = { "BandWipe::Transition Name", "CenterWipe::Transition Name", "CheckerWipe::Transition Name", "ChevronWipe::Transition Name", "OvalIris::Transition Name", "ClockWipe::Transition Name", "GradientImageWipe::Transition Name", "Inset Wipe::Transition Name", "X-Wipe::Transition Name", "EdgeWipe::Transition Name" },
+		["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
+	},
 }
 
---------------------------------------------------------------------------------
--- Built-in Transitions:
---------------------------------------------------------------------------------
-mod.builtinTransitions = {
-	["Transitions::Dissolves"] = { "CrossDissolve::Filter Name", "DipToColorDissolve::Transition Name", "FFTransition_OpticalFlow" },
-	["Movements"] = { "SpinSlide::Transition Name", "Swap::Transition Name", "RippleTransition::Transition Name", "Mosaic::Transition Name", "PageCurl::Transition Name", "PuzzleSlide::Transition Name", "Slide::Transition Name" },
-	["Objects"] = { "Cube::Transition Name", "StarIris::Transition Name", "Doorway::Transition Name" },
-	["Wipes"] = { "BandWipe::Transition Name", "CenterWipe::Transition Name", "CheckerWipe::Transition Name", "ChevronWipe::Transition Name", "OvalIris::Transition Name", "ClockWipe::Transition Name", "GradientImageWipe::Transition Name", "Inset Wipe::Transition Name", "X-Wipe::Transition Name", "EdgeWipe::Transition Name" },
-	["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
-}
 
 --------------------------------------------------------------------------------
 -- Built-in Soundtrack Pro EDEL Effects:
 --------------------------------------------------------------------------------
-mod.builtinSoundtrackProEDELEffects = {
+mod.appEdelEffects = {
 	["Distortion"] = {
 		"Bitcrusher",
 		"Clip Distortion",
@@ -975,9 +984,12 @@ function mod.mt:init()
 		--------------------------------------------------------------------------------
 		-- Define Search Paths:
 		--------------------------------------------------------------------------------
-		self.scanPaths = {
+		self.userPluginPaths = {
 			"~/Movies/Motion Templates.localized",
 			"/Library/Application Support/Final Cut Pro/Templates.localized",
+		}
+
+		self.appPluginPaths = {
 			fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized",
 			fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized",
 		}
@@ -985,35 +997,23 @@ function mod.mt:init()
 		--------------------------------------------------------------------------------
 		-- Define Effect Bundles Paths:
 		--------------------------------------------------------------------------------
-		self.effectBundlesPaths = {
+		self.appEffectBundlesPaths = {
 			fcpPath .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles",
 		}
 
 		--------------------------------------------------------------------------------
-		-- Effect Bundles Preferences Path:
-		--------------------------------------------------------------------------------
-		self.effectBundlesPreferencesPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/"
-
-		--------------------------------------------------------------------------------
 		-- Define Effect Presets Paths:
 		--------------------------------------------------------------------------------
-		self.effectPresetPaths = {
+		self.userEffectPresetPaths = {
 			"~/Library/Application Support/ProApps/Effects Presets",
 		}
 
 		--------------------------------------------------------------------------------
 		-- Define Soundtrack Pro EDEL Effects Paths:
 		--------------------------------------------------------------------------------
-		self.edelEffectPaths = {
-			fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
+		self.appEdelEffectPaths = {
+			fcpPath .. "/Contents/Frameworks/Flexo.framework/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
 		}
-
-		--------------------------------------------------------------------------------
-		-- Define Internal Effect Preferences Path:
-		--------------------------------------------------------------------------------
-		self.internalEffectPreferencesPath = fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources"
-		self.internalEffectFlexoPath = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources"
-
 	end) --bench
 
 	return self
@@ -1024,6 +1024,22 @@ function mod.mt:plugins()
 		self:scan()
 	end
 	return self._plugins
+end
+
+function mod.mt:scanAppBuiltInPlugins(language)
+	--------------------------------------------------------------------------------
+	-- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
+	--------------------------------------------------------------------------------
+	local videoEffect, transitionType = mod.types.videoEffect, mod.types.transition
+
+	for pluginType,categories in pairs(mod.builtInPlugins) do
+		for category,plugins in pairs(categories) do
+			category = self:translateInternalEffect(category, language)
+			for _,plugin in pairs(plugins) do
+				self:registerPlugin(nil, pluginType, category, nil, self:translateInternalEffect(plugin, language), language)
+			end
+		end
+	end
 end
 
 --- cp.apple.finalcutpro.plugins:scan() -> none
@@ -1045,31 +1061,7 @@ function mod.mt:scan(language)
 	log.df("scan: language = '%s'", language)
 
 bench("scan:setup", function()
-	--------------------------------------------------------------------------------
-	-- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
-	--------------------------------------------------------------------------------
-	local videoEffect, transitionType = mod.types.videoEffect, mod.types.transition
-	for pluginType, _ in pairs(mod.motionTemplates) do
-		if pluginType == "Effects" then
-			--------------------------------------------------------------------------------
-			-- Add Built-in Effects:
-			--------------------------------------------------------------------------------
-			for category, effects in pairs(mod.builtinEffects) do
-				for _, effect in pairs(effects) do
-					self:registerPlugin(nil, videoEffect, category, nil, self:translateInternalEffect(effect, language), language)
-				end
-			end
-		elseif pluginType == "Transitions" then
-			--------------------------------------------------------------------------------
-			-- Add Built-in Transitions:
-			--------------------------------------------------------------------------------
-			for category, transitions in pairs(mod.builtinTransitions) do
-				for _, transition in pairs(transitions) do
-					self:registerPlugin(nil, transitionType, category, nil, self:translateInternalEffect(transition, language), language)
-				end
-			end
-		end
-	end
+	self:scanAppBuiltInPlugins(language)
  end) --bench
 
 -- 	--------------------------------------------------------------------------------
@@ -1092,19 +1084,27 @@ end) --bench
 bench("scan:audioEffectBundles", function()
 	self:scanAudioEffectBundles(language)
 end) --bench
---
+
+
+	--------------------------------------------------------------------------------
+	-- Scan App Plugins:
+	--------------------------------------------------------------------------------
+bench("scan:appPlugins", function()
+	self:scanAppPlugins(language)
+end) --bench
+
 -- 	--------------------------------------------------------------------------------
--- 	-- Scan Effect Presets:
+-- 	-- Scan User Effect Presets:
 -- 	--------------------------------------------------------------------------------
 bench("scan:effectPresets", function()
-	self:scanEffectsPresets(language)
+	self:scanUserEffectsPresets(language)
 end) --bench
 
 	--------------------------------------------------------------------------------
-	-- Scan Plugins:
+	-- Scan User Plugins:
 	--------------------------------------------------------------------------------
-bench("scan:plugins", function()
-	self:scanPlugins(language)
+bench("scan:userPlugins", function()
+	self:scanUserPlugins(language)
 end) --bench
 
 -- 	--------------------------------------------------------------------------------
