@@ -9,7 +9,7 @@
 --- Scan Final Cut Pro bundle for Effects, Generators, Titles & Transitions.
 ---
 --- Usage:
---- require("cp.apple.finalcutpro"):plugins():scan("en")
+--- require("cp.apple.finalcutpro"):plugins():scan()
 
 
 --------------------------------------------------------------------------------
@@ -1013,11 +1013,95 @@ function mod.mt:init()
 	return self
 end
 
-function mod.mt:plugins()
-	if not self._plugins then
-		self:scan()
+--- cp.apple.finalcutpro.plugins:ofType(type[, language]) -> table
+--- Method
+--- Finds the plugins of the specified type (`types.videoEffect`, etc.) and if provided, language.
+---
+--- Parameters:
+--- * `type`		- The plugin type. See `types` for the complete list.
+--- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+--- * A table of the available pugins of the specified type.
+function mod.mt:ofType(type, language)
+	local plugins = self._plugins
+	if language and not contains(self:getSupportedLanguages(), language) then
+		log.wf("Unsupported language was requested: %s", language)
+		return nil
 	end
-	return self._plugins
+	language = language or self:app():getCurrentLanguage()
+
+	if not plugins or not plugins[language] then
+		plugins = self:scan(language)
+	else
+		plugins = plugins[language]
+	end
+	return plugins and plugins[type]
+end
+
+--- cp.apple.finalcutpro.plugins:videoEffects([language]) -> table
+--- Method
+--- Finds the 'video effect' plugins.
+---
+--- Parameters:
+--- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+--- * A table of the available pugins.
+function mod.mt:videoEffects(language)
+	return self:ofType(mod.types.videoEffect, language)
+end
+
+--- cp.apple.finalcutpro.plugins:audioEffects([language]) -> table
+--- Method
+--- Finds the 'audio effect' plugins.
+---
+--- Parameters:
+--- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+--- * A table of the available pugins.
+function mod.mt:audioEffects(language)
+	return self:ofType(mod.types.audioEffect, language)
+end
+
+--- cp.apple.finalcutpro.plugins:titles([language]) -> table
+--- Method
+--- Finds the 'title' plugins.
+---
+--- Parameters:
+--- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+--- * A table of the available pugins.
+function mod.mt:titles(language)
+	return self:ofType(mod.types.titles, language)
+end
+
+--- cp.apple.finalcutpro.plugins:transitions([language]) -> table
+--- Method
+--- Finds the 'transitions' plugins.
+---
+--- Parameters:
+--- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+--- * A table of the available pugins.
+function mod.mt:transitions(language)
+	return self:ofType(mod.types.transition, language)
+end
+
+--- cp.apple.finalcutpro.plugins:generators([language]) -> table
+--- Method
+--- Finds the 'generator' plugins.
+---
+--- Parameters:
+--- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+--- * A table of the available pugins.
+function mod.mt:generators(language)
+	return self:ofType(mod.types.generator, language)
 end
 
 function mod.mt:scanAppBuiltInPlugins(language)
@@ -1253,7 +1337,7 @@ bench("scan:compare", function()
 	self:compareOldMethodToNewMethodResults(language)
 end) --bench
 
-	return self._plugins
+	return self._plugins[language]
 
 end) --bench(scan:language)
 
