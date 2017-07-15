@@ -71,6 +71,8 @@ local text										= require("cp.web.text")
 local localized									= require("cp.localized")
 local strings									= require("cp.strings")
 
+local v											= require("semver")
+
 --------------------------------------------------------------------------------
 --
 -- HELPER FUNCTIONS:
@@ -1034,18 +1036,23 @@ function mod.mt:scanAppBuiltInPlugins(language)
 	end
 end
 
---------------------------------------------------------------------------------
--- GET HISTORY:
---------------------------------------------------------------------------------
-function mod.mt:_loadAppPluginCache(language)
-	local fcpVersion = self:app():getVersion()
-	if not fcpVersion then
-		return nil
-	end
+-- cp.apple.finalcutpro.plugins:_loadPluginVersionCache(rootPath, version, language, searchHistory) -> boolean
+-- Method
+-- Tries to load the cached plugin list from the specified root path. It will search previous version history if enabled and available.
+--
+-- Parameters:
+-- * `rootPath`			- The path the version folders are stored under.
+-- * `version`			- The FCPX version number.
+-- * `language`			- The language to load.
+-- * `searchHistory`	- If `true`, previous versions of this minor version will be searched.
+--
+-- Notes:
+-- * When `searchHistory` is `true`, it will only search to the `0` patch level. E.g. `10.3.2` will stop searching at `10.3.0`.
+function mod.mt:_loadPluginVersionCache(rootPath, version, language, searchHistory)
+	version = type(version) == "string" and v(version) or version
 
-	local filePath = fs.pathToAbsolute("~/Library/Caches/org.latenitefilms.CommandPost/FinalCutPro/"..fcpVersion.."/plugins."..language..".json")
+	local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, language))
 	if filePath then
-		log.df("Loading plugins cache: %s", filePath)
 		local file = io.open(filePath, "r")
 		if file then
 			local content = file:read("*all")
@@ -1054,9 +1061,26 @@ function mod.mt:_loadAppPluginCache(language)
 			self._plugins[language] = result
 			return result ~= nil
 		end
+	elseif searchHistory and version.patch > 0 then
+		return self:_loadPluginVersionCache(rootPath, v(version.major, version.minor, version.patch-1), language, searchHistory)
 	end
-	log.df("Unable to load plugins cache: %s", filePath)
 	return false
+end
+
+local USER_PLUGIN_CACHE	= "~/Library/Caches/org.latenitefilms.CommandPost/FinalCutPro"
+local CP_PLUGIN_CACHE	= config.scriptPath .. "/cp/apple/finalcutpro/plugins/cache"
+
+--------------------------------------------------------------------------------
+-- GET HISTORY:
+--------------------------------------------------------------------------------
+function mod.mt:_loadAppPluginCache(language)
+	local fcpVersion = self:app():getVersion()
+	if not fcpVersion then
+		return false
+	end
+
+	return self:_loadPluginVersionCache(USER_PLUGIN_CACHE, fcpVersion, language, false)
+	    or self:_loadPluginVersionCache(CP_PLUGIN_CACHE, fcpVersion, language, true)
 end
 
 -- ensureDirectoryExists(rootPath, ...) -> string | nil
@@ -1075,7 +1099,6 @@ local function ensureDirectoryExists(rootPath, ...)
 	for _,path in ipairs(table.pack(...)) do
 		fullPath = fullPath .. "/" .. path
 		if not fs.pathToAbsolute(fullPath) then
-			log.df("Creating directory: %s", fullPath)
 			local success, err = fs.mkdir(fullPath)
 			if not success then
 				log.ef("Problem ensuring that '%s' exists: %s", fullPath, err)
@@ -1102,18 +1125,14 @@ function mod.mt:_saveAppPluginCache(language)
 	local cachePath = path .. "/plugins."..language..".json"
 	local plugins = self._plugins[language]
 	if plugins then
-		log.df("Saving plugin cache data to '%s'", cachePath)
 		local file = io.open(cachePath, "w")
 		if file then
-			log.df("Writing to data file")
 			file:write(json.encode(plugins))
 			file:close()
-			log.df("Success!")
 			return true
 		end
 	else
 		-- Remove it
-		log.df("Removing plugin cache data at '%s'", cachePath)
 		os.remove(cachePath)
 	end
 	return false
@@ -1122,7 +1141,6 @@ end
 function mod.mt:scanAppPlugins(language)
 	-- First, try loading from the cache
 	if not self:_loadAppPluginCache(language) then
-		log.df("Building app plugins manually...")
 bench("scanAppBuiltInPlugins", function()
 		self:scanAppBuiltInPlugins(language)
 end) --bench
@@ -1148,7 +1166,6 @@ bench("scanAppMotionTemplates", function()
 end) --bench
 
 bench("_saveAppPluginCache", function()
-		log.df("Saving app plugin cache...")
 		self:_saveAppPluginCache(language)
 end) --bench
 	end
@@ -1199,14 +1216,14 @@ end
 ---  * None
 function mod.mt:scan(language)
 
+	language = language or self:getCurrentLanguage()
+
 return bench("scan:"..language, function()
 
 	--------------------------------------------------------------------------------
 	-- Reset Results Table:
 	--------------------------------------------------------------------------------
 	self._plugins = {}
-
-	language = language or self:getCurrentLanguage()
 
 	--------------------------------------------------------------------------------
 	-- Scan app-bundled plugins:
