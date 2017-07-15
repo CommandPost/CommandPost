@@ -350,16 +350,16 @@ function App:launch()
 	return result
 end
 
---- cp.apple.finalcutpro:restart() -> boolean
+--- cp.apple.finalcutpro:restart(waitUntilRestarted) -> boolean
 --- Method
 --- Restart Final Cut Pro
 ---
 --- Parameters:
----  * None
+---  * `waitUntilRestarted`	- If `true`, the function will not return until the app has restarted.
 ---
 --- Returns:
 ---  * `true` if Final Cut Pro was running and restarted successfully.
-function App:restart()
+function App:restart(waitUntilRestarted)
 	local app = self:application()
 	if app then
 		local appPath = app:path()
@@ -373,6 +373,10 @@ function App:restart()
 		if appPath then
 			local _, result = hs.execute([[open "]] .. tostring(appPath) .. [["]])
 			return result
+		end
+
+		if waitUntilRestarted then
+			just.doUntil(function() return self:isRunning() end, 20, 0.1)
 		end
 
 	end
@@ -1281,26 +1285,12 @@ function App:setCurrentLanguage(language)
 			self:setPreference("AppleLanguages", {language})
 			self._currentLanguage = nil
 			if self:isRunning() then
-				self:restart()
+				self:restart(true)
 			end
 		end
 		return true
 	end
 	return false
-end
-
---- cp.apple.finalcutpro:setCurrentLanguage() -> none
---- Method
---- Sets the language Final Cut Pro is currently using.
----
---- Parameters:
----  * none
----
---- Returns:
----  * Returns the current language as string.
-function App:setCurrentLanguage(language)
-	self._currentLanguage = language
-	return self._currentLanguage
 end
 
 --- cp.apple.finalcutpro:getCurrentLanguage() -> string

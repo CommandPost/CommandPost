@@ -46,39 +46,15 @@ function mod.changeFinalCutProLanguage(language)
 	--------------------------------------------------------------------------------
 	-- If Final Cut Pro is running...
 	--------------------------------------------------------------------------------
-	local restartStatus = false
-	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-			restartStatus = true
-		else
-			return "Done"
-		end
+	if fcp:isRunning() and not dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
+		return "Done"
 	end
 
 	--------------------------------------------------------------------------------
 	-- Update Final Cut Pro's settings::
 	--------------------------------------------------------------------------------
-	local result = fcp:setPreference("AppleLanguages", {language})
-	if not result then
+	if not fcp:setCurrentLanguage(language) then
 		dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
-	end
-
-	--------------------------------------------------------------------------------
-	-- Change Language:
-	--------------------------------------------------------------------------------
-	fcp:setCurrentLanguage(language)
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartStatus then
-		if not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return "Failed"
-		end
 	end
 
 end

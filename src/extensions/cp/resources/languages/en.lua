@@ -150,6 +150,7 @@ return {
 			--------------------------------------------------------------------------------
 			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			scanFinalCutProDone					=			"Final Cut Pro was scanned successfully.",
+			scanFinalCutProErrors				=			"The scan completed with errors. Please check the Error Log for details.",
 
 			updateEffectsListFailed				=			"Unfortunately the Effects List was not successfully updated.",
 			updateTransitionsListFailed			=			"Unfortunately the Transitions List was not successfully updated.",
