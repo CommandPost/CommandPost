@@ -22,6 +22,8 @@ local urlevent					= require("hs.urlevent")
 local config					= require("cp.config")
 local dialog					= require("cp.dialog")
 
+local prop						= require("cp.prop")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -125,6 +127,11 @@ function mod.addAction(action)
 	local id = action.id()
 	mod._actions[id] = action
 	mod._actionIds[#mod._actionIds + 1] = id
+
+	-- watch for changes to the choice list.
+	if prop.is(action.choices) then
+		action.choices:watch(function() mod.refresh() end)
+	end
 
 	urlevent.bind(id, function(eventName, params)
 		if eventName ~= id then

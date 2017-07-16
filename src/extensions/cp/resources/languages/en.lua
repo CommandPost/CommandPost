@@ -326,14 +326,14 @@ return {
 			highlightPlayheadShape				=			"Shape",
 			highlightPlayheadTime				=			"Time",
 
-			unassignedTitle						=			"Unassigned",
+			unassignedTitle						=			"(Unassigned)",
 
 				--------------------------------------------------------------------------------
 				-- Effects Shortcuts:
 				--------------------------------------------------------------------------------
 				updateEffectsList				=			"Update Effects List",
 				effectShortcut					=			"Effect Shortcut",
-				effectShortcutTitle				=			"Effect Shortcut %{number} (%{title})",
+				effectShortcutTitle				=			"%{number}: %{title}",
 				applyEffectsShortcut			=			"Apply Effects Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
@@ -341,7 +341,7 @@ return {
 				--------------------------------------------------------------------------------
 				updateTransitionsList			=			"Update Transitions List",
 				transitionShortcut				=			"Transition Shortcut",
-				transitionShortcutTitle			=			"Transition Shortcut %{number} (%{title})",
+				transitionShortcutTitle			=			"%{number}: %{title}",
 				applyTransitionsShortcut		=			"Apply Transitions Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ return {
 				--------------------------------------------------------------------------------
 				updateTitlesList				=			"Update Titles List",
 				titleShortcut					=			"Title Shortcut",
-				titleShortcutTitle				=			"Title Shortcut %{number} (%{title})",
+				titleShortcutTitle				=			"%{number}: %{title}",
 				applyTitlesShortcut				=			"Apply Titles Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
@@ -357,7 +357,7 @@ return {
 				--------------------------------------------------------------------------------
 				updateGeneratorsList			=			"Update Generators List",
 				generatorShortcut				=			"Generator Shortcut",
-				generatorShortcutTitle			=			"Generator Shortcut %{number} (%{title})",
+				generatorShortcutTitle			=			"%{number}: %{title}",
 				applyGeneratorsShortcut			=			"Apply Generators Shortcut %{count}",
 
 				--------------------------------------------------------------------------------

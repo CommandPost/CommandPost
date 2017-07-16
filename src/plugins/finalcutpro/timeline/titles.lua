@@ -17,7 +17,6 @@ local log				= require("hs.logger").new("titles")
 
 local chooser			= require("hs.chooser")
 local drawing			= require("hs.drawing")
-local inspect			= require("hs.inspect")
 local screen			= require("hs.screen")
 local timer				= require("hs.timer")
 
@@ -48,6 +47,11 @@ local action = {}
 function action.init(actionmanager)
 	action._manager = actionmanager
 	action._manager.addAction(action)
+
+	fcp.currentLanguage:watch(function(value)
+		action.reset()
+		timer.doAfter(0.01, function() action.choices:update() end)
+	end)
 end
 
 function action.id()
@@ -56,14 +60,11 @@ end
 
 action.enabled = config.prop(action.id().."ActionEnabled", true)
 
-function action.choices()
+action.choices = prop(function()
 	if not action._choices then
 		action._choices = choices.new(action.id())
-		--------------------------------------------------------------------------------
-		-- Titles List:
-		--------------------------------------------------------------------------------
 
-		-- get the titles in the current langauge.
+		-- get the titles in the current language.
 		local list = fcp:plugins():titles()
 		if list then
 			for i,plugin in ipairs(list) do
@@ -80,14 +81,14 @@ function action.choices()
 		end
 	end
 	return action._choices
-end
+end)
 
 function action.getId(params)
 	return string.format("%s:%s:%s", action.id(), params.category, params.name)
 end
 
 function action.execute(params)
-	if params and params.name then
+	if action.enabled() and params and params.name then
 		mod.apply(params.name, params.category)
 		return true
 	end
@@ -95,7 +96,6 @@ function action.execute(params)
 end
 
 function action.reset()
-	log.df("Resetting titles action choices...")
 	action._choices = nil
 end
 
@@ -103,15 +103,16 @@ function mod.getShortcuts()
 	return config.get(fcp:currentLanguage() .. ".titlesShortcuts", {})
 end
 
+function mod.getShortcut(number)
+	local shortcuts = mod.getShortcuts()
+	return shortcuts and shortcuts[number]
+end
+
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
 	config.set(fcp:currentLanguage() .. ".titlesShortcuts", shortcuts)
-end
-
-function mod.getTitles()
-	return config.get(fcp:currentLanguage() .. ".allTitles")
 end
 
 --------------------------------------------------------------------------------
@@ -125,7 +126,13 @@ function mod.apply(shortcut, category)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	if type(shortcut) == "number" then
-		shortcut = mod.getShortcuts()[shortcut]
+		local params = mod.getShortcut(shortcut)
+		if type(params) == "table" then
+			shortcut = params.name
+			category = params.category
+		else
+			shortcut = tostring(params)
+		end
 	end
 
 	if shortcut == nil then
@@ -145,7 +152,6 @@ function mod.apply(shortcut, category)
 	local generators = fcp:generators()
 	local generatorsShowing = generators:isShowing()
 	local generatorsLayout = generators:saveLayout()
-
 
 	--------------------------------------------------------------------------------
 	-- Make sure FCPX is at the front.
@@ -243,37 +249,24 @@ function mod.assignTitlesShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:currentLanguage()
-	local listUpdated 	= mod.listUpdated()
-	local allTitles 			= mod.getTitles()
+	local listUpdated 				= mod.listUpdated()
+
+	local choices 					= action.choices():getChoices()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not listUpdated
-	   or allTitles == nil
-	   or next(allTitles) == nil then
+	if not listUpdated or choices == nil or #choices == 0 then
 		dialog.displayMessage(i18n("assignTitlesShortcutError"))
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Titles List:
-	--------------------------------------------------------------------------------
-	local choices = {}
-	if allTitles ~= nil and next(allTitles) ~= nil then
-		for i=1, #allTitles do
-			item = {
-				["text"] = allTitles[i],
-				["subText"] = "Title",
-			}
-			table.insert(choices, 1, item)
-		end
+		return false
 	end
 
 	--------------------------------------------------------------------------------
 	-- Sort everything:
 	--------------------------------------------------------------------------------
-	table.sort(choices, function(a, b) return a.text < b.text end)
+	table.sort(choices, function(a, b)
+		return a.text < b.text or a.text == b.text and a.subText < b.subText
+	end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
@@ -285,7 +278,7 @@ function mod.assignTitlesShortcut(whichShortcut)
 			--------------------------------------------------------------------------------
 			-- Save the selection:
 			--------------------------------------------------------------------------------
-			mod.setShortcut(whichShortcut, result.text)
+			mod.setShortcut(whichShortcut, result.params)
 		end
 
 		--------------------------------------------------------------------------------
@@ -294,7 +287,7 @@ function mod.assignTitlesShortcut(whichShortcut)
 		if wasFinalCutProOpen then fcp:launch() end
 	end)
 
-	theChooser:bgDark(true):choices(choices)
+	theChooser:bgDark(true):choices(choices):searchSubText(true)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -348,12 +341,12 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	fcp.application:watch(function(app)
+	-- Reset when the language changes.
+	fcp.currentLanguage:watch(function(app)
 		if app then
 			action.reset()
 		end
 	end)
-
 
 	mod.touchbar = deps.touchbar
 
