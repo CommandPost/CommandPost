@@ -222,17 +222,19 @@ function App:_resetStrings()
 	end
 end
 
---- cp.apple.finalcutpro:string(key) -> string
+--- cp.apple.finalcutpro:string(key[, lang]) -> string
 --- Method
---- Looks up an application string with the specified `key`. It will take into account current language the app is running in.
+--- Looks up an application string with the specified `key`.
+--- If no `lang` value is provided, the [current language](#currentLanguage) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
+---  * `lang`	- The language code to use. Defaults to the current language.
 ---
 --- Returns:
 ---  * The requested string or `nil` if the application is not running.
-function App:string(key)
-	local lang = self:currentLanguage()
+function App:string(key, lang)
+	lang = lang or self:currentLanguage()
 	return self._strings and self._strings:find(lang, key)
 end
 
