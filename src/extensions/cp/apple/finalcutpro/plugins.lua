@@ -1051,7 +1051,7 @@ end
 --- Returns:
 --- * A table of the available pugins.
 function mod.mt:titles(language)
-	return self:ofType(mod.types.titles, language)
+	return self:ofType(mod.types.title, language)
 end
 
 --- cp.apple.finalcutpro.plugins:transitions([language]) -> table

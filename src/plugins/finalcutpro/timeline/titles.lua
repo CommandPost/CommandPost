@@ -63,12 +63,17 @@ function action.choices()
 		-- Titles List:
 		--------------------------------------------------------------------------------
 
-		local list = mod.getTitles()
-		if list ~= nil and next(list) ~= nil then
-			for i,name in ipairs(list) do
-				local params = { name = name }
-				action._choices:add(name)
-					:subText(i18n("title_group"))
+		-- get the titles in the current langauge.
+		local list = fcp:plugins():titles()
+		if list then
+			for i,plugin in ipairs(list) do
+				local params = { name = plugin.name, category = plugin.category }
+				local subText = i18n("title_group")
+				if plugin.category then
+					subText = subText..": "..plugin.category
+				end
+				action._choices:add(plugin.name)
+					:subText(subText)
 					:params(params)
 					:id(action.getId(params))
 			end
@@ -78,18 +83,19 @@ function action.choices()
 end
 
 function action.getId(params)
-	return action.id() .. ":" .. params.name
+	return string.format("%s:%s:%s", action.id(), params.category, params.name)
 end
 
 function action.execute(params)
 	if params and params.name then
-		mod.apply(params.name)
+		mod.apply(params.name, params.category)
 		return true
 	end
 	return false
 end
 
 function action.reset()
+	log.df("Resetting titles action choices...")
 	action._choices = nil
 end
 
@@ -113,7 +119,7 @@ end
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
 -- or it may be the name of the title to apply in the current FCPX language.
 --------------------------------------------------------------------------------
-function mod.apply(shortcut)
+function mod.apply(shortcut, category)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
@@ -164,7 +170,11 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	generators:showAllTitles()
+	if category then
+		generators:showTitlesCategory(category)
+	else
+		generators:showAllTitles()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Titles" is selected:
@@ -214,7 +224,7 @@ function mod.apply(shortcut)
 		if browserLayout then browser:loadLayout(browserLayout) end
 		if not generatorsShowing then generators:hide() end
 	end)
-	
+
 	--- Success!
 	return true
 end
@@ -308,65 +318,8 @@ end
 --------------------------------------------------------------------------------
 function mod.updateTitlesList()
 
-	--------------------------------------------------------------------------------
-	-- Make sure Final Cut Pro is active:
-	--------------------------------------------------------------------------------
-	fcp:launch()
-
-	local generators = fcp:generators()
-
-	local browserLayout = fcp:browser():saveLayout()
-
-	--------------------------------------------------------------------------------
-	-- Make sure Titles and Generators panel is open:
-	--------------------------------------------------------------------------------
-	if not generators:show():isShowing() then
-		dialog.displayErrorMessage("Unable to activate the Titles and Generators panel.\n\nError occurred in updateTitlesList().")
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	generators:search():clear()
-
-	--------------------------------------------------------------------------------
-	-- Click 'Titles':
-	--------------------------------------------------------------------------------
-	generators:showAllTitles()
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Titles" is selected:
-	--------------------------------------------------------------------------------
-	generators:group():selectItem(1)
-
-	--------------------------------------------------------------------------------
-	-- Get list of All Transitions:
-	--------------------------------------------------------------------------------
-	local effectsList = generators:contents():childrenUI()
-	local allTitles = {}
-	if effectsList ~= nil then
-		for i=1, #effectsList do
-			allTitles[i] = effectsList[i]:attributeValue("AXTitle")
-		end
-	else
-		dialog.displayErrorMessage("Unable to get list of all titles.\n\nError occurred in updateTitlesList().")
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restore Effects or Transitions Panel:
-	--------------------------------------------------------------------------------
-	fcp:browser():loadLayout(browserLayout)
-
-	--------------------------------------------------------------------------------
-	-- Save Results to Settings:
-	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
-	config.set(currentLanguage .. ".allTitles", allTitles)
-	config.set(currentLanguage .. ".titlesListUpdated", true)
 	action.reset()
-	
+
 	--- Success!
 	return true
 end
@@ -384,10 +337,10 @@ local plugin = {
 	id = "finalcutpro.timeline.titles",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.menu.timeline.assignshortcuts"]	= "automation",
+		["finalcutpro.menu.timeline.assignshortcuts"]	= "menu",
 		["finalcutpro.commands"]						= "fcpxCmds",
 		["finalcutpro.os.touchbar"]						= "touchbar",
-		["finalcutpro.action.manager"]							= "actionmanager",
+		["finalcutpro.action.manager"]					= "actionmanager",
 	}
 }
 
@@ -395,14 +348,20 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	local fcpxRunning = fcp:isRunning()
+	fcp.application:watch(function(app)
+		if app then
+			action.reset()
+		end
+	end)
+
+
 	mod.touchbar = deps.touchbar
 
 	-- Register the Action
 	action.init(deps.actionmanager)
 
 	-- The 'Assign Shortcuts' menu
-	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignTitlesShortcuts") end)
+	local menu = deps.menu:addMenu(PRIORITY, function() return i18n("assignTitlesShortcuts") end)
 
 	menu:addItems(1000, function()
 		--------------------------------------------------------------------------------
