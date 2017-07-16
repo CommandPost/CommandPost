@@ -261,13 +261,25 @@ end
 --- Returns:
 ---  * The hs.application, or `nil` if the application is not running.
 App.application = prop.new(function()
-	if not App._application or not App._application:isRunning() then
+	local app = App._application
+	if not app or app:bundleID() == nil or not app:isRunning() then
 		local result = application.applicationsForBundleID(App.BUNDLE_ID)
 		if result and #result > 0 then
-			App._application = result[1] -- If there is at least one copy running, return the first one
+			app = result[1] -- If there is at least one copy running, return the first one
+		else
+			app = nil
 		end
+		App._application = app
 	end
-	return App._application
+	return app
+end):bind(App)
+
+--- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
+--- Field
+--- Is Final Cut Pro Running?
+App.isRunning = prop.new(function()
+	local app = App.application()
+	return app ~= nil and app:bundleID() ~= nil and app:isRunning()
 end):bind(App)
 
 --- cp.apple.finalcutpro:getBundleID() -> string
@@ -311,13 +323,6 @@ function App:UI()
 		return fcp and ax.applicationElement(fcp)
 	end)
 end
-
---- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
---- Field
---- Is Final Cut Pro Running?
-App.isRunning = App.application:mutate(function(application)
-	return application and application:isRunning()
-end):bind(App)
 
 --- cp.apple.finalcutpro:launch() -> boolean
 --- Method
@@ -1489,7 +1494,8 @@ function App:_initWatchers()
 	--log.df("Setting up Application Watcher...")
 	self._appWatcher = applicationwatcher.new(
 		function(appName, eventType, application)
-			if (application:bundleID() == App.BUNDLE_ID) then
+			local bundleID = application:bundleID()
+			if (bundleID == App.BUNDLE_ID or bundleID == nil and appName == "Final Cut Pro") then
 				if eventType == applicationwatcher.activated then
 					timer.doAfter(0.01, function()
 						self.isShowing:update()
@@ -1507,12 +1513,14 @@ function App:_initWatchers()
 				elseif eventType == applicationwatcher.launched then
 					timer.doAfter(0.01, function()
 						self.application:update()
+						self.isRunning:update()
 					end)
 					self._watchers:notify("launched")
 					return
 				elseif eventType == applicationwatcher.terminated then
 					timer.doAfter(0.01, function()
 						self.application:update()
+						self.isRunning:update()
 					end)
 					self._watchers:notify("terminated")
 					return
