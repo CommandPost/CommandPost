@@ -386,6 +386,9 @@ function prop.mt:toggle()
 	return self:set(negate(self:get()))
 end
 
+-- private unique marker for the 'lastValue' of new watchers.
+local NOTHING = {}
+
 --- cp.prop:watch(watchFn[, notifyNow]) -> cp.prop, function
 --- Method
 --- Adds the watch function to the value. When the value changes, watchers are notified by calling the function. The function should have the following signature:
@@ -414,7 +417,7 @@ function prop.mt:watch(watchFn, notifyNow, uncloned)
 	end
 	local watchers = self._watchers
 	
-	watchers[#watchers + 1] = {fn = watchFn, uncloned = uncloned}
+	watchers[#watchers + 1] = {fn = watchFn, uncloned = uncloned, lastValue = NOTHING}
 	
 	-- run any prewatch functions
 	self:_preWatch()
