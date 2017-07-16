@@ -995,7 +995,7 @@ end
 function mod.mt:ofType(type, language)
 	local plugins = self._plugins
 	local langCode = self:app():getSupportedLanguage(language or self:app():currentLanguage())
-	if not language then
+	if not langCode then
 		log.wf("Unsupported language was requested: %s", language)
 		return nil
 	end
@@ -1270,7 +1270,7 @@ function mod.mt:scan(language)
 	--------------------------------------------------------------------------------
 	-- Reset Results Table:
 	--------------------------------------------------------------------------------
-	self.reset()
+	self:reset()
 
 	--------------------------------------------------------------------------------
 	-- Scan app-bundled plugins:
