@@ -1046,6 +1046,12 @@ function App:setPreference(key, value)
 	local executeStatus
 	local preferenceType = nil
 
+	if value == nil then
+		local executeString = "defaults delete " .. App.PREFS_PLIST_PATH .. " '" .. key .. "'"
+		local _, executeStatus = hs.execute(executeString)
+		return executeStatus ~= nil
+	end
+
 	if type(value) == "boolean" then
 		value = tostring(value)
 		preferenceType = "bool"
@@ -1274,6 +1280,116 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- cp.apple.finalcutpro.currentLanguage <cp.prop:string>
+--- Constant
+--- The current language the FCPX is displayed in.
+App.currentLanguage = prop(
+	-- getter
+	function(self)
+		--------------------------------------------------------------------------------
+		-- Caching:
+		--------------------------------------------------------------------------------
+		if self._currentLanguage ~= nil then
+			--log.df("Using Final Cut Pro Language from Cache")
+			return self._currentLanguage
+		end
+
+		--------------------------------------------------------------------------------
+		-- If FCPX is already running, we determine the language off the menu:
+		--------------------------------------------------------------------------------
+		if self:isRunning() then
+			local menuMap = self:menuBar():getMainMenu()
+			local menuUI = self:menuBar():UI()
+			if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
+				local fileMap = menuMap[2]
+				local fileUI = menuUI[2]
+				local title = fileUI:attributeValue("AXTitle")
+				for lang,name in pairs(fileMap) do
+					if name == title then
+						self._currentLanguage = lang
+						return lang
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If FCPX is not running, we next try to determine the language using
+		-- the Final Cut Pro Plist File:
+		--------------------------------------------------------------------------------
+		local appLanguages = self:getPreference("AppleLanguages", nil)
+		if appLanguages and #appLanguages > 0 then
+			local lang = appLanguages[1]
+			if self:isSupportedLanguage(lang) then
+				self._currentLanguage = lang
+				return lang
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If that fails, we try and use the user locale:
+		--------------------------------------------------------------------------------
+		local success, userLocale = osascript.applescript("return user locale of (get system info)")
+		if success and userLocale then
+			userLocale = self:getSupportedLanguage(userLocale)
+			if userLocale then
+				self._currentLanguage = userLocale
+				return userLocale
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
+		--------------------------------------------------------------------------------
+		local output, status, _, _ = hs.execute("defaults read NSGlobalDomain AppleLanguages")
+		if status then
+			local appleLanguages = tools.lines(output)
+			if next(appleLanguages) ~= nil then
+				if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
+					for i=2, #appleLanguages - 1 do
+						local line = appleLanguages[i]
+						-- match the main country code
+						local lang = line:match("^%s*\"?([%w%-]+)")
+						-- switch "-" to "_"
+						lang = self:getSupportedLanguage(lang:gsub("-", "_"))
+
+						if lang then
+							self._currentLanguage = lang
+							return lang
+						end
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If all else fails, assume it's English:
+		--------------------------------------------------------------------------------
+		self._currentLanguage = "en"
+		return self._currentLanguage
+	end,
+
+	-- setter
+	function(value, self, prop)
+		if value == prop:get() then return end
+
+		if value == nil then
+			log.df("Value is nil")
+			self:setPreference("AppleLanguages", nil)
+		elseif self:isSupportedLanguage(value) then
+			log.df("Value is supported: "..value)
+			self:setPreference("AppleLanguages", {value})
+		else
+			log.df("Value is unsupported: "..value)
+			error("Unsupported language: "..value)
+		end
+		self._currentLanguage = nil
+		if self:isRunning() then
+			self:restart(true)
+		end
+	end
+):bind(App):monitor(App.isRunning)
+
 --- cp.apple.finalcutpro:setCurrentLanguage(language) -> boolean
 --- Method
 --- Sets the langauge to the specified `language` and restarts FCPX if necessary.
@@ -1284,18 +1400,7 @@ end
 --- Returns:
 ---  * `true` if the language was changed successfully.
 function App:setCurrentLanguage(language)
-	local current = self:getCurrentLanguage()
-	if self:isSupportedLanguage(language) then
-		if current ~= language then
-			self:setPreference("AppleLanguages", {language})
-			self._currentLanguage = nil
-			if self:isRunning() then
-				self:restart(true)
-			end
-		end
-		return true
-	end
-	return false
+	return self.currentLanguage:set(language)
 end
 
 --- cp.apple.finalcutpro:getCurrentLanguage() -> string
@@ -1308,85 +1413,7 @@ end
 --- Returns:
 ---  * Returns the current language as string (or 'en' if unknown).
 function App:getCurrentLanguage()
-
-	--------------------------------------------------------------------------------
-	-- Caching:
-	--------------------------------------------------------------------------------
-	if self._currentLanguage ~= nil then
-		--log.df("Using Final Cut Pro Language from Cache")
-		return self._currentLanguage
-	end
-
-	--------------------------------------------------------------------------------
-	-- If FCPX is already running, we determine the language off the menu:
-	--------------------------------------------------------------------------------
-	if self:isRunning() then
-		local menuMap = self:menuBar():getMainMenu()
-		local menuUI = self:menuBar():UI()
-		if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
-			local fileMap = menuMap[2]
-			local fileUI = menuUI[2]
-			local title = fileUI:attributeValue("AXTitle")
-			for lang,name in pairs(fileMap) do
-				if name == title then
-					self._currentLanguage = lang
-					return lang
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If FCPX is not running, we next try to determine the language using
-	-- the Final Cut Pro Plist File:
-	--------------------------------------------------------------------------------
-	local appLanguages = self:getPreference("AppleLanguages", nil)
-	if appLanguages and #appLanguages > 0 then
-		local lang = appLanguages[1]
-		if self:isSupportedLanguage(lang) then
-			self._currentLanguage = lang
-			return lang
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If that fails, we try and use the user locale:
-	--------------------------------------------------------------------------------
-	local success, userLocale = osascript.applescript("return user locale of (get system info)")
-	if success and userLocale and self:isSupportedLanguage(userLocale) then
-		self._currentLanguage = userLocale
-		return userLocale
-	end
-
-	--------------------------------------------------------------------------------
-	-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
-	--------------------------------------------------------------------------------
-	local output, status, _, _ = hs.execute("defaults read NSGlobalDomain AppleLanguages")
-	if status then
-		local appleLanguages = tools.lines(output)
-		if next(appleLanguages) ~= nil then
-			if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
-				for i=2, #appleLanguages - 1 do
-					local line = appleLanguages[i]
-					-- match the main country code
-					local lang = line:match("^%s*\"?([%w%-]+)")
-					-- switch "-" to "_"
-					lang = lang:gsub("-", "_")
-
-					if self:isSupportedLanguage(lang) then
-						self.currentLanguage = lang
-						return lang
-					end
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If all else fails, assume it's English:
-	--------------------------------------------------------------------------------
-	return "en"
-
+	return self:currentLanguage()
 end
 
 --- cp.apple.finalcutpro:getSupportedLanguages() -> table
@@ -1412,13 +1439,39 @@ end
 --- Returns:
 ---  * `true` if the language is supported.
 function App:isSupportedLanguage(language)
-	local primary = language:match("(%w+)")
-	for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
-		if supported == language or supported == primary then
-			return true
+	if language then
+		local primary = language:match("(%w+)")
+		for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
+			if supported == language or supported == primary then
+				return true
+			end
 		end
 	end
 	return false
+end
+
+--- cp.apple.finalcutpro:getSupportedLanguage(language) -> boolean
+--- Method
+--- Checks if the provided `language` is supported by the app and returns the actual support code.
+---
+--- For example, 'en_AU' is supported because 'en' is supported, so this returns 'en'.
+--- However, while 'zh_CN' is supported, 'zh_TW' is not supported directly, so 'zh_CN' is returned for the former and `nil` for the latter.
+---
+--- Parameters:
+---  * `language`	- The language code to check. E.g. "en" or "zh_CN"
+---
+--- Returns:
+---  * `true` if the language is supported.
+function App:getSupportedLanguage(language)
+	if language then
+		local primary = language:match("(%w+)")
+		for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
+			if supported == language or supported == primary then
+				return supported
+			end
+		end
+	end
+	return nil
 end
 
 --- cp.apple.finalcutpro:getFlexoLanguages() -> table
