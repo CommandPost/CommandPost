@@ -100,18 +100,18 @@ function action.reset()
 end
 
 function mod.getShortcuts()
-	return config.get(fcp:getCurrentLanguage() .. ".titlesShortcuts", {})
+	return config.get(fcp:currentLanguage() .. ".titlesShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	config.set(fcp:getCurrentLanguage() .. ".titlesShortcuts", shortcuts)
+	config.set(fcp:currentLanguage() .. ".titlesShortcuts", shortcuts)
 end
 
 function mod.getTitles()
-	return config.get(fcp:getCurrentLanguage() .. ".allTitles")
+	return config.get(fcp:currentLanguage() .. ".allTitles")
 end
 
 --------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ function mod.assignTitlesShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage 			= fcp:getCurrentLanguage()
+	local currentLanguage 			= fcp:currentLanguage()
 	local listUpdated 	= mod.listUpdated()
 	local allTitles 			= mod.getTitles()
 
@@ -325,7 +325,7 @@ function mod.updateTitlesList()
 end
 
 mod.listUpdated = prop.new(function()
-	return config.get(fcp:getCurrentLanguage() .. ".titlesListUpdated", false)
+	return config.get(fcp:currentLanguage() .. ".titlesListUpdated", false)
 end)
 
 --------------------------------------------------------------------------------

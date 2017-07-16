@@ -147,22 +147,22 @@ end
 --------------------------------------------------------------------------------
 
 function mod.getShortcuts()
-	return config.get(fcp:getCurrentLanguage() .. ".effectsShortcuts", {})
+	return config.get(fcp:currentLanguage() .. ".effectsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	config.set(fcp:getCurrentLanguage() .. ".effectsShortcuts", shortcuts)
+	config.set(fcp:currentLanguage() .. ".effectsShortcuts", shortcuts)
 end
 
 function mod.getVideoEffects()
-	return config.get(fcp:getCurrentLanguage() .. ".allVideoEffects")
+	return config.get(fcp:currentLanguage() .. ".allVideoEffects")
 end
 
 function mod.getAudioEffects()
-	return config.get(fcp:getCurrentLanguage() .. ".allAudioEffects")
+	return config.get(fcp:currentLanguage() .. ".allAudioEffects")
 end
 
 --------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 
 	if type(shortcut) == "number" then
 		shortcut = mod.getShortcuts()[shortcut]
@@ -290,7 +290,7 @@ function mod.assignEffectsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage 		= fcp:getCurrentLanguage()
+	local currentLanguage 		= fcp:currentLanguage()
 	local listUpdated 	= mod.listUpdated()
 	local allVideoEffects 		= mod.getVideoEffects()
 	local allAudioEffects 		= mod.getAudioEffects()
@@ -477,7 +477,7 @@ function mod.updateEffectsList()
 		--------------------------------------------------------------------------------
 		-- Save Results to Settings:
 		--------------------------------------------------------------------------------
-		local currentLanguage = fcp:getCurrentLanguage()
+		local currentLanguage = fcp:currentLanguage()
 		config.set(currentLanguage .. ".allVideoEffects", allVideoEffects)
 		config.set(currentLanguage .. ".allAudioEffects", allAudioEffects)
 		config.set(currentLanguage .. ".effectsListUpdated", true)
@@ -489,7 +489,7 @@ function mod.updateEffectsList()
 end
 
 mod.listUpdated = prop.new(function()
-	return config.get(fcp:getCurrentLanguage() .. ".effectsListUpdated", false)
+	return config.get(fcp:currentLanguage() .. ".effectsListUpdated", false)
 end)
 
 --------------------------------------------------------------------------------

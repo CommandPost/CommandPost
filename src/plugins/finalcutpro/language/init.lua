@@ -47,23 +47,25 @@ function mod.changeFinalCutProLanguage(language)
 	-- If Final Cut Pro is running...
 	--------------------------------------------------------------------------------
 	if fcp:isRunning() and not dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-		return "Done"
+		return false
 	end
 
 	--------------------------------------------------------------------------------
 	-- Update Final Cut Pro's settings::
 	--------------------------------------------------------------------------------
-	if not fcp:setCurrentLanguage(language) then
+	if not fcp.currentLanguage:set(language) then
 		dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
+		return false
 	end
-
+	
+	return true
 end
 
 --------------------------------------------------------------------------------
 -- GET FINAL CUT PRO LANGUAGES MENU:
 --------------------------------------------------------------------------------
 local function getFinalCutProLanguagesMenu()
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	if mod._lastFCPXLanguage ~= nil and mod._lastFCPXLanguage == currentLanguage and mod._lastFCPXLanguageCache ~= nil then
 		--log.df("Using FCPX Language Menu Cache")
 		return mod._lastFCPXLanguageCache

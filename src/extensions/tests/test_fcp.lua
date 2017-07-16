@@ -327,7 +327,7 @@ function runAllLanguages(...)
 	local languages = args and #args > 0 and args or fcp:getSupportedLanguages()
 
 	-- Store the current language:
-	local originalLanguage = fcp:getCurrentLanguage()
+	local originalLanguage = fcp:currentLanguage()
 
 	-- Copy Test Library to Temporary Directory:
 	fs.rmdir(temporaryDirectory)
@@ -336,7 +336,7 @@ function runAllLanguages(...)
 
 	for _,lang in ipairs(languages) do
 		log.df("Testing FCPX in the '%s' language...", lang)
-		if fcp:setCurrentLanguage(lang) then
+		if fcp:currentLanguage(lang) then
 			just.wait(2)
 			fcp:launch()
 			just.doUntil(fcp.isRunning)
@@ -347,7 +347,7 @@ function runAllLanguages(...)
 	end
 
 	-- Reset to the current language
-	fcp:setCurrentLanguage(originalLanguage)
+	fcp:currentLanguage(originalLanguage)
 
 	-- Quit FCPX and remove Test Library from Temporary Directory:
 	fcp:quit()

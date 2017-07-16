@@ -362,7 +362,7 @@ hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 --- Returns:
 ---  * Button value
 function hud.getButton(index, defaultValue)
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	return config.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
 end
 
@@ -430,7 +430,7 @@ end
 --- Returns:
 ---  * None
 function hud.setButton(index, value)
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	config.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
 end
 

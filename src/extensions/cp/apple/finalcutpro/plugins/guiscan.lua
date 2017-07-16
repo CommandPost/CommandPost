@@ -395,9 +395,9 @@ end
 --  * `true` if all plugins match.
 function mod.check(language)
 
-	language = language or fcp:getCurrentLanguage()
+	language = language or fcp:currentLanguage()
 
-	fcp:setCurrentLanguage(language)
+	fcp.currentLanguage:set(language)
 	fcp:launch()
 	just.doUntil(function() return fcp:isFrontmost() end, 20, 0.1)
 

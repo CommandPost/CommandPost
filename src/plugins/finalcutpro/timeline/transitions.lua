@@ -94,18 +94,18 @@ function action.reset()
 end
 
 function mod.getShortcuts()
-	return config.get(fcp:getCurrentLanguage() .. ".transitionsShortcuts", {})
+	return config.get(fcp:currentLanguage() .. ".transitionsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	config.set(fcp:getCurrentLanguage() .. ".transitionsShortcuts", shortcuts)
+	config.set(fcp:currentLanguage() .. ".transitionsShortcuts", shortcuts)
 end
 
 function mod.getTransitions()
-	return config.get(fcp:getCurrentLanguage() .. ".allTransitions")
+	return config.get(fcp:currentLanguage() .. ".allTransitions")
 end
 
 --------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 
 	if type(shortcut) == "number" then
 		shortcut = mod.getShortcuts()[shortcut]
@@ -223,7 +223,7 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage 			= fcp:getCurrentLanguage()
+	local currentLanguage 			= fcp:currentLanguage()
 	local listUpdated 	= mod.listUpdated()
 	local allTransitions 			= mod.getTransitions()
 
@@ -371,7 +371,7 @@ function mod.updateTransitionsList()
 	--------------------------------------------------------------------------------
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	config.set(currentLanguage .. ".allTransitions", allTransitions)
 	config.set(currentLanguage .. ".transitionsListUpdated", true)
 	action.reset()
@@ -381,7 +381,7 @@ function mod.updateTransitionsList()
 end
 
 mod.listUpdated = prop.new(function()
-	return config.get(fcp:getCurrentLanguage() .. ".transitionsListUpdated", false)
+	return config.get(fcp:currentLanguage() .. ".transitionsListUpdated", false)
 end)
 
 --------------------------------------------------------------------------------

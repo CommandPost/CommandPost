@@ -100,18 +100,18 @@ end
 --------------------------------------------------------------------------------
 
 function mod.getShortcuts()
-	return config.get(fcp:getCurrentLanguage() .. ".generatorsShortcuts", {})
+	return config.get(fcp:currentLanguage() .. ".generatorsShortcuts", {})
 end
 
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
 	shortcuts[number] = value
-	config.set(fcp:getCurrentLanguage() .. ".generatorsShortcuts", shortcuts)
+	config.set(fcp:currentLanguage() .. ".generatorsShortcuts", shortcuts)
 end
 
 function mod.getGenerators()
-	return config.get(fcp:getCurrentLanguage() .. ".allGenerators")
+	return config.get(fcp:currentLanguage() .. ".allGenerators")
 end
 
 --------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage 			= fcp:getCurrentLanguage()
+	local currentLanguage 			= fcp:currentLanguage()
 	local listUpdated 	= mod.listUpdated()
 	local allGenerators 			= mod.getGenerators()
 
@@ -368,7 +368,7 @@ function mod.updateGeneratorsList()
 	--------------------------------------------------------------------------------
 	-- Save Results to Settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	config.set(currentLanguage .. ".allGenerators", allGenerators)
 	config.set(currentLanguage .. ".generatorsListUpdated", true)
 	action.reset()
@@ -378,7 +378,7 @@ function mod.updateGeneratorsList()
 end
 
 mod.listUpdated = prop.new(function()
-	return config.get(fcp:getCurrentLanguage() .. ".generatorsListUpdated", false)
+	return config.get(fcp:currentLanguage() .. ".generatorsListUpdated", false)
 end)
 
 --------------------------------------------------------------------------------

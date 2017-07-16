@@ -195,6 +195,9 @@ function App:init()
 	self:_initWatchers()
 	self:_initStrings()
 	self.application:watch(function() self:reset() end)
+	
+	-- set initial state
+	self.application:update()
 	return self
 end
 
@@ -229,7 +232,7 @@ end
 --- Returns:
 ---  * The requested string or `nil` if the application is not running.
 function App:string(key)
-	local lang = self:getCurrentLanguage()
+	local lang = self:currentLanguage()
 	return self._strings and self._strings:find(lang, key)
 end
 
@@ -247,7 +250,7 @@ end
 --- Notes:
 ---  * This method may be very inefficient, since it has to search through every possible key/value pair to find matches. It is not recommended that this is used in production.
 function App:keysWithString(string, lang)
-	local lang = lang or self:getCurrentLanguage()
+	local lang = lang or self:currentLanguage()
 	return self._strings and self._strings:findKeys(lang, string)
 end
 
@@ -260,8 +263,8 @@ end
 ---
 --- Returns:
 ---  * The hs.application, or `nil` if the application is not running.
-App.application = prop.new(function()
-	local app = App._application
+App.application = prop.new(function(self)
+	local app = self._application
 	if not app or app:bundleID() == nil or not app:isRunning() then
 		local result = application.applicationsForBundleID(App.BUNDLE_ID)
 		if result and #result > 0 then
@@ -269,7 +272,7 @@ App.application = prop.new(function()
 		else
 			app = nil
 		end
-		App._application = app
+		self._application = app
 	end
 	return app
 end):bind(App)
@@ -277,10 +280,10 @@ end):bind(App)
 --- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut Pro Running?
-App.isRunning = prop.new(function()
-	local app = App.application()
+App.isRunning = prop.new(function(self)
+	local app = self:application()
 	return app ~= nil and app:bundleID() ~= nil and app:isRunning()
-end):bind(App)
+end):bind(App):monitor(App.application)
 
 --- cp.apple.finalcutpro:getBundleID() -> string
 --- Method
@@ -308,9 +311,9 @@ function App:getPasteboardUTI()
 	return App.PASTEBOARD_UTI
 end
 
---- cp.apple.finalcutpro:getPasteboardUTI() -> axuielementObject
+--- cp.apple.finalcutpro:UI() -> axuielement
 --- Method
---- Returns the Final Cut Pro axuielementObject
+--- Returns the Final Cut Pro axuielement
 ---
 --- Parameters:
 ---  * None
@@ -373,6 +376,9 @@ function App:restart(waitUntilRestarted)
 
 		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 20 seconds):
 		just.doWhile(function() return self:isRunning() end, 20, 0.1)
+
+		-- force the application to update, otherwise it isn't closed long enough to prompt an event.
+		self.application:update()
 
 		-- Launch Final Cut Pro:
 		if appPath then
@@ -1142,7 +1148,7 @@ end
 --- Returns:
 ---  * The 'Default' Command Set path, or `nil` if an error occurred
 function App:getDefaultCommandSetPath(language)
-	language = language or self:getCurrentLanguage()
+	language = language or self:currentLanguage()
 	return self:getPath() .. "/Contents/Resources/" .. language .. ".lproj/Default.commandset"
 end
 
@@ -1374,13 +1380,11 @@ App.currentLanguage = prop(
 		if value == prop:get() then return end
 
 		if value == nil then
-			log.df("Value is nil")
+			if self:getPreference("AppleLanguages") == nil then return end
 			self:setPreference("AppleLanguages", nil)
 		elseif self:isSupportedLanguage(value) then
-			log.df("Value is supported: "..value)
 			self:setPreference("AppleLanguages", {value})
 		else
-			log.df("Value is unsupported: "..value)
 			error("Unsupported language: "..value)
 		end
 		self._currentLanguage = nil
@@ -1389,32 +1393,6 @@ App.currentLanguage = prop(
 		end
 	end
 ):bind(App):monitor(App.isRunning)
-
---- cp.apple.finalcutpro:setCurrentLanguage(language) -> boolean
---- Method
---- Sets the langauge to the specified `language` and restarts FCPX if necessary.
----
---- Properties:
----  * `language`	 - The language key (e.g. "en")
----
---- Returns:
----  * `true` if the language was changed successfully.
-function App:setCurrentLanguage(language)
-	return self.currentLanguage:set(language)
-end
-
---- cp.apple.finalcutpro:getCurrentLanguage() -> string
---- Method
---- Returns the language Final Cut Pro is currently using.
----
---- Parameters:
----  * none
----
---- Returns:
----  * Returns the current language as string (or 'en' if unknown).
-function App:getCurrentLanguage()
-	return self:currentLanguage()
-end
 
 --- cp.apple.finalcutpro:getSupportedLanguages() -> table
 --- Method

@@ -66,6 +66,7 @@ local config									= require("cp.config")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 local protect									= require("cp.protect")
+local watcher									= require("cp.watcher")
 
 local text										= require("cp.web.text")
 local localized									= require("cp.localized")
@@ -970,14 +971,6 @@ function mod.mt:app()
 	return self._app
 end
 
-function mod.mt:getSupportedLanguages()
-	return self._app:getSupportedLanguages()
-end
-
-function mod.mt:getCurrentLanguage()
-	return self._app:getCurrentLanguage()
-end
-
 function mod.mt:init()
 	--------------------------------------------------------------------------------
 	-- Define Soundtrack Pro EDEL Effects Paths:
@@ -1001,16 +994,16 @@ end
 --- * A table of the available pugins of the specified type.
 function mod.mt:ofType(type, language)
 	local plugins = self._plugins
-	if language and not contains(self:getSupportedLanguages(), language) then
+	local langCode = self:app():getSupportedLanguage(language or self:app():currentLanguage())
+	if not language then
 		log.wf("Unsupported language was requested: %s", language)
 		return nil
 	end
-	language = language or self:app():getCurrentLanguage()
 
-	if not plugins or not plugins[language] then
-		plugins = self:scan(language)
+	if not plugins or not plugins[langCode] then
+		plugins = self:scan(langCode)
 	else
-		plugins = plugins[language]
+		plugins = plugins[langCode]
 	end
 	return plugins and plugins[type]
 end
@@ -1277,7 +1270,7 @@ function mod.mt:scan(language)
 	--------------------------------------------------------------------------------
 	-- Reset Results Table:
 	--------------------------------------------------------------------------------
-	self._plugins = {}
+	self.reset()
 
 	--------------------------------------------------------------------------------
 	-- Scan app-bundled plugins:
@@ -1313,27 +1306,28 @@ function mod.mt:scanAll()
 	end
 end
 
---- cp.apple.finalcutpro.plugins:check([language]) -> boolean
+--- cp.apple.finalcutpro.plugins:watch(events) -> id
 --- Method
---- Performs a check comparing the scanned list of plugins to what is available in FCPX via GUI scripting.
---- A detailed report is output in the Error Log.
+--- Adds a watcher for the provided events table. The table can have the following functions:
 ---
---- NOTE: Running this function will start FCPX (if not already running) and manipulate the GUI.
---- It is not recommended to do this if FCPX is being used on an actual project.
----
---- Parameters:
---- * `language`	- The language code to check (e.g. "en"). Defaults to the current FCPX language.
----
---- Returns:
---- * `true` if all plugins were accounted for.
-function mod.mt:check(language)
-	return false
+--- ```lua
+--- {
+--- 	videoEvents
+--- }
+--- ```
+function mod.mt:watch(events)
+	return self._watcher:watch(events)
+end
+
+function mod.mt:unwatch(id)
+	return self._watcher:unwatch(id)
 end
 
 function mod.new(fcp)
 	local o = {
 		_app = fcp,
-		_plugins = {}
+		_plugins = {},
+		_watcher = watcher.new("videoEffects", "audioEffects", "transitions", "titles", "generators"),
 	}
 	return setmetatable(o, mod.mt):init()
 end

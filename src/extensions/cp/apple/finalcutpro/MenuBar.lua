@@ -186,7 +186,7 @@ function MenuBar:findMenuUI(path, language)
 	local menuMap = self:getMainMenu()
 	local menuUI = self:UI()
 	language = language or "en"
-	local appLang = self:app():getCurrentLanguage() or "en"
+	local appLang = self:app():currentLanguage() or "en"
 
 	if not menuUI then
 		return nil
