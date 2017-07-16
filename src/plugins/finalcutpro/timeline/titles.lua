@@ -73,6 +73,9 @@ action.choices = prop(function()
 				if plugin.category then
 					subText = subText..": "..plugin.category
 				end
+				if plugin.theme then
+					subText = subText.." ("..plugin.theme..")"
+				end
 				action._choices:add(plugin.name)
 					:subText(subText)
 					:params(params)
@@ -249,14 +252,12 @@ function mod.assignTitlesShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:currentLanguage()
-	local listUpdated 				= mod.listUpdated()
-
 	local choices 					= action.choices():getChoices()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not listUpdated or choices == nil or #choices == 0 then
+	if choices == nil or #choices == 0 then
 		dialog.displayMessage(i18n("assignTitlesShortcutError"))
 		return false
 	end
@@ -304,22 +305,9 @@ function mod.assignTitlesShortcut(whichShortcut)
 	-- Show Chooser:
 	--------------------------------------------------------------------------------
 	theChooser:show()
-end
 
---------------------------------------------------------------------------------
--- GET LIST OF TITLES:
---------------------------------------------------------------------------------
-function mod.updateTitlesList()
-
-	action.reset()
-
-	--- Success!
 	return true
 end
-
-mod.listUpdated = prop.new(function()
-	return config.get(fcp:currentLanguage() .. ".titlesListUpdated", false)
-end)
 
 --------------------------------------------------------------------------------
 --
@@ -360,14 +348,13 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}
 
 		for i = 1, MAX_SHORTCUTS do
 			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("titleShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTitlesShortcut(i) end,	disabled = not listUpdated }
+			items[i] = { title = i18n("titleShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTitlesShortcut(i) end }
 		end
 
 		return items

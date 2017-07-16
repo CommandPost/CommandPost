@@ -19,7 +19,6 @@ local chooser			= require("hs.chooser")
 local screen			= require("hs.screen")
 local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
-local inspect			= require("hs.inspect")
 
 local choices			= require("cp.choices")
 local fcp				= require("cp.apple.finalcutpro")
@@ -48,6 +47,11 @@ local action = {}
 function action.init(actionmanager)
 	action._manager = actionmanager
 	action._manager.addAction(action)
+
+	fcp.currentLanguage:watch(function(value)
+		action.reset()
+		timer.doAfter(0.01, function() action.choices:update() end)
+	end)
 end
 
 function action.id()
@@ -56,34 +60,38 @@ end
 
 action.enabled = config.prop(action.id().."ActionEnabled", true)
 
-function action.choices()
+action.choices = prop(function()
 	if not action._choices then
 		action._choices = choices.new(action.id())
-		--------------------------------------------------------------------------------
-		-- Generator List:
-		--------------------------------------------------------------------------------
 
-		local items = mod.getGenerators()
-		if items ~= nil and next(items) ~= nil then
-			for i,name in ipairs(items) do
-				local params = { name = name }
-				action._choices:add(name)
-					:subText(i18n("generator_group"))
+		local list = fcp:plugins():generators()
+		if list then
+			for i,plugin in ipairs(list) do
+				local params = { name = plugin.name, category = plugin.category }
+				local subText = i18n("generator_group")
+				if plugin.category then
+					subText = subText..": "..plugin.category
+				end
+				if plugin.theme then
+					subText = subText.." ("..plugin.theme..")"
+				end
+				action._choices:add(plugin.name)
+					:subText(subText)
 					:params(params)
 					:id(action.getId(params))
 			end
 		end
 	end
 	return action._choices
-end
+end)
 
 function action.getId(params)
-	return action.id() .. ":" .. params.name
+	return string.format("%s:%s:%s", action.id(), params.category, params.name)
 end
 
 function action.execute(params)
-	if params and params.name then
-		mod.apply(params.name)
+	if action.enabled() and params and params.name then
+		mod.apply(params.name, params.category)
 		return true
 	end
 	return false
@@ -103,6 +111,11 @@ function mod.getShortcuts()
 	return config.get(fcp:currentLanguage() .. ".generatorsShortcuts", {})
 end
 
+function mod.getShortcut(number)
+	local shortcuts = mod.getShortcuts()
+	return shortcuts and shortcuts[number]
+end
+
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
@@ -119,13 +132,19 @@ end
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
 -- or it may be the name of the generator to apply in the current FCPX language.
 --------------------------------------------------------------------------------
-function mod.apply(shortcut)
+function mod.apply(shortcut, category)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	if type(shortcut) == "number" then
-		shortcut = mod.getShortcuts()[shortcut]
+		local params = mod.getShortcut(shortcut)
+		if type(params) == "table" then
+			shortcut = params.name
+			category = params.category
+		else
+			shortcut = tostring(params)
+		end
 	end
 
 	if shortcut == nil then
@@ -170,8 +189,11 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	generators:showAllGenerators()
-
+	if category then
+		generators:showGeneratorsCategory(category)
+	else
+		generators:showAllGenerators()
+	end
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Generators" is selected:
 	--------------------------------------------------------------------------------
@@ -239,37 +261,22 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:currentLanguage()
-	local listUpdated 	= mod.listUpdated()
-	local allGenerators 			= mod.getGenerators()
+	local choices					= action.choices():getChoices()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not listUpdated
-	   or allGenerators == nil
-	   or next(allGenerators) == nil then
+	if choices == nil or #choices == 0 then
 		dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Generators List:
-	--------------------------------------------------------------------------------
-	local choices = {}
-	if allGenerators ~= nil and next(allGenerators) ~= nil then
-		for i=1, #allGenerators do
-			item = {
-				["text"] = allGenerators[i],
-				["subText"] = "Generator",
-			}
-			table.insert(choices, 1, item)
-		end
+		return false
 	end
 
 	--------------------------------------------------------------------------------
 	-- Sort everything:
 	--------------------------------------------------------------------------------
-	table.sort(choices, function(a, b) return a.text < b.text end)
+		table.sort(choices, function(a, b)
+		return a.text < b.text or a.text == b.text and a.subText < b.subText
+	end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
@@ -281,7 +288,7 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 			--------------------------------------------------------------------------------
 			-- Save the selection:
 			--------------------------------------------------------------------------------
-			mod.setShortcut(whichShortcut, result.text)
+			mod.setShortcut(whichShortcut, result.params)
 		end
 
 		--------------------------------------------------------------------------------
@@ -290,7 +297,7 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 		if wasFinalCutProOpen then fcp:launch() end
 	end)
 
-	theChooser:bgDark(true):choices(choices)
+	theChooser:bgDark(true):choices(choices):searchSubText(true)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -307,6 +314,8 @@ function mod.assignGeneratorsShortcut(whichShortcut)
 	-- Show Chooser:
 	--------------------------------------------------------------------------------
 	theChooser:show()
+
+	return true
 end
 
 --------------------------------------------------------------------------------
@@ -377,10 +386,6 @@ function mod.updateGeneratorsList()
 	return true
 end
 
-mod.listUpdated = prop.new(function()
-	return config.get(fcp:currentLanguage() .. ".generatorsListUpdated", false)
-end)
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -410,14 +415,13 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}
 
 		for i = 1, MAX_SHORTCUTS do
 			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("generatorShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignGeneratorsShortcut(i) end,	disabled = not listUpdated }
+			items[i] = { title = i18n("generatorShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignGeneratorsShortcut(i) end }
 		end
 
 		return items
