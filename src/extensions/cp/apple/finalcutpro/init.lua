@@ -1432,7 +1432,7 @@ end
 
 --- cp.apple.finalcutpro:getSupportedLanguage(language) -> boolean
 --- Method
---- Checks if the provided `language` is supported by the app and returns the actual support code.
+--- Checks if the provided `language` is supported by the app and returns the actual support code, or `nil` if there is no supported version of the language.
 ---
 --- For example, 'en_AU' is supported because 'en' is supported, so this returns 'en'.
 --- However, while 'zh_CN' is supported, 'zh_TW' is not supported directly, so 'zh_CN' is returned for the former and `nil` for the latter.
