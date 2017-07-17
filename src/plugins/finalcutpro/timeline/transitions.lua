@@ -63,12 +63,19 @@ function action.choices()
 		-- Transition List:
 		--------------------------------------------------------------------------------
 
-		local list = mod.getTransitions()
-		if list ~= nil and next(list) ~= nil then
-			for i,name in ipairs(list) do
-				local params = { name = name }
-				action._choices:add(name)
-					:subText(i18n("transition_group"))
+		local list = fcp:plugins():transitions()
+		if list then
+			for i,plugin in ipairs(list) do
+				local params = { name = plugin.name, category = plugin.category }
+				local subText = i18n("transition_group")
+				if plugin.category then
+					subText = subText..": "..plugin.category
+				end
+				if plugin.theme then
+					subText = subText.." ("..plugin.theme..")"
+				end
+				action._choices:add(plugin.name)
+					:subText(subText)
 					:params(params)
 					:id(action.getId(params))
 			end
@@ -78,12 +85,12 @@ function action.choices()
 end
 
 function action.getId(params)
-	return action.id() .. ":" .. params.name
+	return string.format("%s:%s:%s", action.id(), params.category, params.name)
 end
 
 function action.execute(params)
-	if params and params.name then
-		mod.apply(params.name)
+	if action.enabled() and params and params.name then
+		mod.apply(params.name, params.category)
 		return true
 	end
 	return false
@@ -97,6 +104,11 @@ function mod.getShortcuts()
 	return config.get(fcp:currentLanguage() .. ".transitionsShortcuts", {})
 end
 
+function mod.getShortcut(number)
+	local shortcuts = mod.getShortcuts()
+	return shortcuts and shortcuts[number]
+end
+
 function mod.setShortcut(number, value)
 	assert(number >= 1 and number <= MAX_SHORTCUTS)
 	local shortcuts = mod.getShortcuts()
@@ -104,16 +116,12 @@ function mod.setShortcut(number, value)
 	config.set(fcp:currentLanguage() .. ".transitionsShortcuts", shortcuts)
 end
 
-function mod.getTransitions()
-	return config.get(fcp:currentLanguage() .. ".allTransitions")
-end
-
 --------------------------------------------------------------------------------
 -- TRANSITIONS SHORTCUT PRESSED:
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
 -- or it may be the name of the transition to apply in the current FCPX language.
 --------------------------------------------------------------------------------
-function mod.apply(shortcut)
+function mod.apply(shortcut, category)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
@@ -121,7 +129,13 @@ function mod.apply(shortcut)
 	local currentLanguage = fcp:currentLanguage()
 
 	if type(shortcut) == "number" then
-		shortcut = mod.getShortcuts()[shortcut]
+		local params = mod.getShortcut(shortcut)
+		if type(params) == "table" then
+			shortcut = params.name
+			category = params.category
+		else
+			shortcut = tostring(params)
+		end
 	end
 
 	if shortcut == nil then
@@ -160,7 +174,11 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	transitions:showAllTransitions()
+	if category then
+		transitions:showTransitionsCategory(category)
+	else
+		transitions:showAllTransitions()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Perform Search:
@@ -224,37 +242,22 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage 			= fcp:currentLanguage()
-	local listUpdated 	= mod.listUpdated()
-	local allTransitions 			= mod.getTransitions()
+	local choices 					= action.choices():getChoices()
 
 	--------------------------------------------------------------------------------
 	-- Error Checking:
 	--------------------------------------------------------------------------------
-	if not listUpdated
-	   or allTransitions == nil
-	   or next(allTransitions) == nil then
+	if choices == nil or #choices == 0 then
 		dialog.displayMessage(i18n("assignTransitionsShortcutError"))
-		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Transitions List:
-	--------------------------------------------------------------------------------
-	local choices = {}
-	if allTransitions ~= nil and next(allTransitions) ~= nil then
-		for i=1, #allTransitions do
-			item = {
-				["text"] = allTransitions[i],
-				["subText"] = "Transition",
-			}
-			table.insert(choices, 1, item)
-		end
+		return false
 	end
 
 	--------------------------------------------------------------------------------
 	-- Sort everything:
 	--------------------------------------------------------------------------------
-	table.sort(choices, function(a, b) return a.text < b.text end)
+	table.sort(choices, function(a, b)
+		return a.text < b.text or a.text == b.text and a.subText < b.subText
+	end)
 
 	--------------------------------------------------------------------------------
 	-- Setup Chooser:
@@ -275,7 +278,7 @@ function mod.assignTransitionsShortcut(whichShortcut)
 		if wasFinalCutProOpen then fcp:launch() end
 	end)
 
-	theChooser:bgDark(true):choices(choices)
+	theChooser:bgDark(true):choices(choices):searchSubText(true)
 
 	--------------------------------------------------------------------------------
 	-- Allow for Reduce Transparency:
@@ -292,97 +295,9 @@ function mod.assignTransitionsShortcut(whichShortcut)
 	-- Show Chooser:
 	--------------------------------------------------------------------------------
 	theChooser:show()
-end
 
---------------------------------------------------------------------------------
--- GET LIST OF TRANSITIONS:
---------------------------------------------------------------------------------
-function mod.updateTransitionsList()
-
-	--------------------------------------------------------------------------------
-	-- Make sure Final Cut Pro is active:
-	--------------------------------------------------------------------------------
-	fcp:launch()
-
-	--------------------------------------------------------------------------------
-	-- Save the layout of the Effects panel, in case we switch away...
-	--------------------------------------------------------------------------------
-	local effects = fcp:effects()
-	local effectsLayout = nil
-	if effects:isShowing() then
-		effectsLayout = effects:saveLayout()
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure Transitions panel is open:
-	--------------------------------------------------------------------------------
-	local transitions = fcp:transitions()
-	local transitionsShowing = transitions:isShowing()
-	if not transitions:show():isShowing() then
-		dialog.displayErrorMessage("Unable to activate the Transitions panel.\n\nError occurred in updateTransitionsList().")
-		return false
-	end
-
-	local transitionsLayout = transitions:saveLayout()
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
-	--------------------------------------------------------------------------------
-	transitions:showInstalledTransitions()
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	transitions:search():clear()
-
-	--------------------------------------------------------------------------------
-	-- Make sure the sidebar is visible:
-	--------------------------------------------------------------------------------
-	local sidebar = transitions:sidebar()
-
-	transitions:showSidebar()
-
-	if not sidebar:isShowing() then
-		dialog.displayErrorMessage("Unable to activate the Transitions sidebar.\n\nError occurred in updateTransitionsList().")
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Click 'All' in the sidebar:
-	--------------------------------------------------------------------------------
-	transitions:showAllTransitions()
-
-	--------------------------------------------------------------------------------
-	-- Get list of All Transitions:
-	--------------------------------------------------------------------------------
-	local allTransitions = transitions:getCurrentTitles()
-	if allTransitions == nil then
-		dialog.displayErrorMessage("Unable to get list of all transitions.\n\nError occurred in updateTransitionsList().")
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restore Effects and Transitions Panels:
-	--------------------------------------------------------------------------------
-	transitions:loadLayout(transitionsLayout)
-	if effectsLayout then effects:loadLayout(effectsLayout) end
-	if not transitionsShowing then transitions:hide() end
-
-	--------------------------------------------------------------------------------
-	-- Save Results to Settings:
-	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:currentLanguage()
-	config.set(currentLanguage .. ".allTransitions", allTransitions)
-	config.set(currentLanguage .. ".transitionsListUpdated", true)
-	action.reset()
-	
-	-- Success!
 	return true
 end
-
-mod.listUpdated = prop.new(function()
-	return config.get(fcp:currentLanguage() .. ".transitionsListUpdated", false)
-end)
 
 --------------------------------------------------------------------------------
 --
@@ -417,14 +332,13 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Shortcuts:
 		--------------------------------------------------------------------------------
-		local listUpdated 	= mod.listUpdated()
 		local shortcuts		= mod.getShortcuts()
 
 		local items = {}
 
 		for i = 1, MAX_SHORTCUTS do
 			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("transitionShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTransitionsShortcut(i) end,	disabled = not listUpdated }
+			items[i] = { title = i18n("transitionShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignTransitionsShortcut(i) end }
 		end
 
 		return items

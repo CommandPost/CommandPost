@@ -158,23 +158,30 @@ function Browser:showAllTransitions()
 	return self:showAllEffects()
 end
 
+--- cp.apple.finalcutpro.main.EffectsBrowser:showTransitionsCategory(name) -> self
+--- Method
+--- Ensures the sidebar is showing and that the selected 'Video' category is selected, if available.
+---
+--- Parameters:
+--- * `name`		- The category name, in the current language.
+---
+--- Returns:
+--- * The browser.
+function Browser:showTransitionsCategory(name)
+	self:showSidebar()
+	Table.selectRow(self:sidebar():rowsUI(), {name})
+	return self
+end
+
 function Browser:_allRowsUI()
+	local all = self:app():string("FFEffectsAll")
 	--------------------------------------------------------------------------------
 	-- Find the two 'All' rows (Video/Audio)
 	--------------------------------------------------------------------------------
 	return self:sidebar():rowsUI(function(row)
 		local label = row[1][1]
 		local value = label and label:attributeValue("AXValue")
-		--------------------------------------------------------------------------------
-		-- ENGLISH:		All
-		-- GERMAN: 		Alle
-		-- SPANISH: 	Todo
-		-- FRENCH: 		Tous
-		-- JAPANESE:	すべて
-		-- CHINESE:		全部
-		--------------------------------------------------------------------------------
-		-- TODO: Use i18n to get the appropriate value for the current language
-		return (value == "All") or (value == "Alle") or (value == "Todo") or (value == "Tous") or (value == "すべて") or (value == "全部")
+		return value == all
 	end)
 end
 
