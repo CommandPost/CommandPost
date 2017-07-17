@@ -991,7 +991,7 @@ end
 --- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available pugins of the specified type.
+--- * A table of the available plugins of the specified type.
 function mod.mt:ofType(type, language)
 	local plugins = self._plugins
 	local langCode = self:app():getSupportedLanguage(language or self:app():currentLanguage())
@@ -1016,7 +1016,7 @@ end
 --- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available pugins.
+--- * A table of the available plugins.
 function mod.mt:videoEffects(language)
 	return self:ofType(mod.types.videoEffect, language)
 end
@@ -1029,7 +1029,7 @@ end
 --- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available pugins.
+--- * A table of the available plugins.
 function mod.mt:audioEffects(language)
 	return self:ofType(mod.types.audioEffect, language)
 end
@@ -1042,7 +1042,7 @@ end
 --- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available pugins.
+--- * A table of the available plugins.
 function mod.mt:titles(language)
 	return self:ofType(mod.types.title, language)
 end
@@ -1055,7 +1055,7 @@ end
 --- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available pugins.
+--- * A table of the available plugins.
 function mod.mt:transitions(language)
 	return self:ofType(mod.types.transition, language)
 end
@@ -1068,7 +1068,7 @@ end
 --- * `language`	- The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
---- * A table of the available pugins.
+--- * A table of the available plugins.
 function mod.mt:generators(language)
 	return self:ofType(mod.types.generator, language)
 end
