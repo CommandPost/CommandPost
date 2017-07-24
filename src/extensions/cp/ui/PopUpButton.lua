@@ -55,13 +55,17 @@ function PopUpButton:selectItem(index)
 	local ui = self:UI()
 	if ui then
 		local items = ui:doPress()[1]
-		local item = items[index]
-		if item then
-			-- select the menu item
-			item:doPress()
+		if items then
+			local item = items[index]
+			if item then
+				-- select the menu item
+				item:doPress()
+			else
+				-- close the menu again
+				items:doCancel()
+			end
 		else
-			-- close the menu again
-			items:doCancel()
+			return self
 		end
 	end
 	return self
