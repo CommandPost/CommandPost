@@ -47,7 +47,7 @@
 --- satisfied()     == false
 --- happy()         == false
 --- sleepy()        == false
---- 
+---
 --- -- Get fed
 --- fed(true)       == true
 --- satisfied()     == true
@@ -68,7 +68,7 @@
 --- You can also use non-boolean properties. Any non-`nil` value is considered to be `true`.
 ---
 --- ## 5. Immutable
---- If appropriate, a `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense. 
+--- If appropriate, a `prop` may be immutable. Any `prop` with no `set` function defined is immutable. Examples are the `prop.AND` and `prop.OR` instances, since modifying combinations of values doesn't really make sense.
 ---
 --- Additionally, an immutable wrapper can be made from any `prop` value via either `prop.IMMUTABLE(...)` or calling the `myValue:IMMUTABLE()` method.
 ---
@@ -105,7 +105,7 @@
 --- owner.isMethod()				-- also works - will still pass in the bound owner.
 --- owner.isMethod:owner() == owner	-- is true~
 --- ```
---- 
+---
 --- The bound `owner` is passed in as the last parameter of the `get` and `set` functions.
 ---
 --- ## 7. Extendable
@@ -158,8 +158,84 @@
 --- ```
 ---
 --- The `prop.extend` function will set the `source` table as a metatable of the `target`, as well as binding any bound props that are in the `source` to `target`.
+---
+--- # Tables
+---
+--- Because tables are copied by reference rather than by value, changes made inside a table will not necessarily trigger an update when setting a value with an updated table value. By default, tables are simply passed in and out without modification. You can nominate for a property to make copies of tables (not userdata) when getting or setting, which effectively isolates the value being stored from outside modification. This can be done with the [deepTable](#deepTable) and[shallowTable](#shallowTable) methods. Below is an example of them in action:
+---
+--- ```lua
+--- local value = { a = 1, b = { c = 1 } }
+--- local valueProp = prop.THIS(value)
+--- local deepProp = prop.THIS(value):deepTable()
+--- local shallowProp = prop.THIS(value):shallowTable()
+---
+--- -- print a message when the prop value is updated
+--- valueProp:watch(function(v) print("value: a = " .. v.a ..", b.c = ".. v.b.c ) end)
+--- deepProp:watch(function(v) print("deep: a = " .. v.a ..", b.c = ".. v.b.c ) end)
+--- shallowProp:watch(function(v) print("shallow: a = " .. v.a ..", b.c = ".. v.b.c ) end)
+---
+--- -- change the original table:
+--- value.a				= 2
+--- value.b.c			= 2
+---
+--- valueProp().a		== 2	-- modified
+--- valueProp().b.c		== 2	-- modified
+--- shallowProp().a		== 1	-- top level is copied
+--- shallowProp().b.c	== 2	-- child tables are referenced
+--- deepProp().a		== 1	-- top level is copied
+--- deepProp().b.c		== 1	-- child tables are copied as well
+---
+--- -- get the 'value' property
+--- value = valueProp()			-- returns the original value table
+---
+--- value.a				= 3		-- updates the original value table `a` value
+--- value.b.c			= 3		-- updates the original `b` table's `c` value
+---
+--- valueProp(value)			-- nothing is printed, since it's still the same table
+---
+--- valueProp().a		== 3	-- still referencing the original table
+--- valueProp().b.c		== 3	-- the child is still referenced too
+--- shallowProp().a		== 1	-- still unmodified after the initial copy
+--- shallowProp().b.c	== 3	-- still updated, since `b` was copied by reference
+--- deepProp().a		== 1	-- still unmodified after initial copy
+--- deepProp().b.c		== 1	-- still unmodified after initial copy
+---
+--- -- get the 'deep copy' property
+--- value = deepProp()			-- returns a new table, with all child tables also copied.
+---
+--- value.a				= 4		-- updates the new table's `a` value
+--- value.b.c			= 4		-- updates the new `b` table's `c` value
+---
+--- deepProp(value)				-- prints "deep: a = 4, b.c = 4"
+---
+--- valueProp().a		== 3	-- still referencing the original table
+--- valueProp().b.c		== 3	-- the child is still referenced too
+--- shallowProp().a		== 1	-- still unmodified after the initial copy
+--- shallowProp().b.c	== 3	-- still referencing the original `b` table.
+--- deepProp().a		== 4	-- updated to the new value
+--- deepProp().b.c		== 4	-- updated to the new value
+---
+--- -- get the 'shallow' property
+--- value = shallowProp()		-- returns a new table with top-level keys copied.
+---
+--- value.a				= 5		-- updates the new table's `a` value
+--- value.b.c			= 5		-- updates the original `b` table's `c` value.
+---
+--- shallowProp(value)   		-- prints "shallow: a = 5, b.c = 5"
+---
+--- valueProp().a		== 3	-- still referencing the original table
+--- valueProp().b.c		== 5	-- still referencing the original `b` table
+--- shallowProp().a		== 5	-- updated to the new value
+--- shallowProp().b.c	== 5	-- referencing the original `b` table, which was updated
+--- deepProp().a		== 4	-- unmodified after the last update
+--- deepProp().b.c		== 4	-- unmodified after the last update
+--- ```
+---
+--- So, a little bit tricky. The general rule of thumb is:
+--- 1. If working with immutable objects, use the default 'value' value copy, which preserves the original.
+--- 2. If working with an array of immutible objects, use the 'shallow' table copy.
+--- 3. In most other cases, use a 'deep' table copy.
 
-	
 local log				= require("hs.logger").new("prop")
 local inspect			= require("hs.inspect")
 local fnutils			= require("hs.fnutils")
@@ -173,6 +249,9 @@ prop.mt.__index = prop.mt
 
 local ids = 0
 
+local DEEP_TABLE = "deep"
+local SHALLOW_TABLE = "shallow"
+
 local function nextId()
 	ids = ids + 1
 	return ids
@@ -182,6 +261,37 @@ end
 local function isTruthy(value)
 	return value ~= nil and value ~= false
 end
+
+-- prepareValue(value[, tableCopy[, skipMetatable]]) -> table
+-- Function
+-- Clones a provided table
+--
+-- Parameters:
+-- * `value`			- The value to clone
+-- * `tableCopy`		- Either `nil`, `DEEP_TABLE` or `SHALLOW_TABLE`.
+-- * `skipMetatable`	- If `true`, any metatable on the original value will be skipped. Defaults to `false`.
+local function prepareValue(value, tableCopy, skipMetatable)
+	if tableCopy == nil or value == nil or type(value) ~= "table" then
+		return value
+	end
+
+	local result = {}
+	for k,v in pairs(value) do
+		if tableCopy == DEEP_TABLE and type(v) == "table" then
+			v = prepareValue(v, tableCopy, skipMetatable)
+		end
+		result[k] = v
+	end
+
+	if not skipMetatable then
+		result = setmetatable(result, getmetatable(value))
+	end
+
+	return result
+end
+
+-- private export for testing.
+prop._prepareValue = prepareValue
 
 --- cp.prop.is(value) -> boolean
 --- Function
@@ -200,7 +310,7 @@ function prop.is(value)
 	return false
 end
 
---- cp.prop:id(newId) -> string or cp.prop
+--- cp.prop:id(newId) -> string | cp.prop
 --- Method
 --- If `newId` is provided it is given a new ID and the `cp.prop` is returned.
 --- Otherwise, it returns the current ID.
@@ -219,6 +329,61 @@ function prop.mt:id(newId)
 	end
 end
 
+--- cp.prop:deepTable([skipMetatable]) -> prop
+--- Method
+--- This can be called once to enable deep copying of `table` values. By default,
+--- `table`s are simply passed in and out. If a sub-key of a table changes, no change
+--- will be registered when setting.
+---
+--- Parameters:
+--- * `skipMetatable`	- If set to `true`, copies will _not_ copy the metatable into the new tables.
+---
+--- Returns:
+--- * The `cp.prop` instance.
+---
+--- Notes:
+--- * See [shallowTable](#shallowTable).
+function prop.mt:deepTable(skipMetatable)
+	if not self:mutable() then
+		error("This property is immutable.")
+	end
+	if self._tableCopy then
+		error("Already set to "..self._tableCopy.." clone.")
+	end
+	local value = self:get()
+	self._tableCopy = DEEP_TABLE
+	self._skipMetatable = skipMetatable
+	self:set(value)
+	return self
+end
+
+--- cp.prop:shallowTable(skipMetatable) -> prop
+--- Method
+--- This can be called once to enable shallow cloning of `table` values. By default,
+--- `table`s are simply passed in and out. If a sub-key of a table changes, no change
+--- will be registered when setting.
+---
+--- Parameters:
+--- * `skipMetatable`	- If set to `true`, the metatable will _not_ be copied to the new table.
+---
+--- Returns:
+--- * The `cp.prop` instance.
+---
+--- Notes:
+--- * See [deepTable](#deepTable).
+function prop.mt:shallowTable(skipMetatable)
+	if not self:mutable() then
+		error("This property is immutable.")
+	end
+	if self._tableCopy then
+		error("Already set to "..self._tableCopy.." clone.")
+	end
+	local value = self:get()
+	self._tableCopy = SHALLOW_TABLE
+	self:set(value)
+	return self
+end
+
 --- cp.prop:value([newValue]) -> value
 --- Method
 --- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
@@ -229,7 +394,7 @@ end
 --- local foo = prop.TRUE()
 --- foo() == foo:value()
 --- ```
---- 
+---
 --- Parameters:
 --- * `newValue`	- The new value to set the instance to.
 ---
@@ -256,7 +421,7 @@ end
 --- Returns
 --- * The current value.
 function prop.mt:get()
-	return self._get(self._owner, self)
+	return prepareValue(self._get(self._owner, self), self._tableCopy, self._skipMetatable)
 end
 
 --- cp.prop:set(newValue) -> value
@@ -273,15 +438,16 @@ function prop.mt:set(newValue)
 		error("This property cannot be modified.")
 	end
 	-- if currently notifying, defer the update
+	newValue = prepareValue(newValue, self._tableCopy, self._skipMetatable)
 	if self._notifying then
 		self._doSet = true
 		self._newValue = newValue
-		return newValue
 	else
 		self._set(newValue, self._owner, self)
 		self:_notify(newValue)
 		return newValue
 	end
+	return newValue
 end
 
 --- cp.prop:clear() -> nil
@@ -416,12 +582,12 @@ function prop.mt:watch(watchFn, notifyNow, uncloned)
 		self._watchers = {}
 	end
 	local watchers = self._watchers
-	
+
 	watchers[#watchers + 1] = {fn = watchFn, uncloned = uncloned, lastValue = NOTHING}
-	
+
 	-- run any prewatch functions
 	self:_preWatch()
-	
+
 	if notifyNow then -- do an immediate update.
 		self:update()
 	end
@@ -448,10 +614,10 @@ end
 --- anything is actually watching this property value.
 ---
 --- If the prop already has watchers, this function will be called imediately.
---- 
+---
 --- Parameters:
 ---  * `preWatchFn`		- The function to call once when the prop is watched. Has the signature `function(owner, prop)`.
---- 
+---
 --- Returns:
 ---  * Nothing
 function prop.mt:preWatch(preWatchFn)
@@ -541,7 +707,7 @@ function prop.mt:_clone()
 	clone._owner = self:owner()
 	clone._mutated = self._mutated
 	clone._original = self._original
-	
+
 	-- copy the watchers, if present
 	if self._watchers then
 		clone._watchers = fnutils.ifilter(self._watchers, function(watcher) return not watcher.uncloned end)
@@ -550,7 +716,7 @@ function prop.mt:_clone()
 	if self._preWatchers then
 		clone._preWatchers = fnutils.copy(self._preWatchers)
 	end
-	
+
 	return clone
 end
 
@@ -644,7 +810,7 @@ function prop.mt:mutate(getFn, setFn)
 	if setFn then
 		mutantSetFn = function(newValue, owner, prop) setFn(prop._original:get(), newValue, owner) end
 	end
-	
+
 	local mutant = prop.new(mutantGetFn, mutantSetFn)
 	mutant._original = self
 	self._mutated = true
@@ -672,19 +838,19 @@ function prop.mt:wrap(owner)
 		clone._wrapped:watch(function(value) clone:_notify(value) end, false, true)
 		return clone
 	end
-	
+
 	-- Create the wrapper property
 	local wrapper = prop.new(wrapGetFn, wrapSetFn, wrapCloneFn)
 	wrapper._wrapped = self
-	
+
 	-- bind, if appropriate
 	if owner then
 		wrapper = wrapper:bind(owner)
 	end
-	
+
 	-- watch the original
 	self:watch(function(value) wrapper:_notify(value) end, false, true)
-	
+
 	return wrapper
 end
 
@@ -699,12 +865,12 @@ end
 --- * New, read-only `cp.prop` which will be `true` if this property is equal to `something`.
 function prop.mt:EQUALS(something)
 	local left = self
-	
+
 	-- create the property
 	local result = prop.new(function()
 		return evaluate(left) == evaluate(something)
 	end)
-	
+
 	-- add watchers
 	watchProps(result, left, something)
 
@@ -733,15 +899,15 @@ prop.mt.EQ = prop.mt.EQUALS
 --- * New, read-only `cp.prop` which will be `true` if this property is less than `something`.
 function prop.mt:BELOW(something)
 	local left = self
-	
+
 	-- create the property
 	local result = prop.new(function()
 		return evaluate(left) < evaluate(something)
 	end)
-	
+
 	-- add watchers
 	watchProps(result, left, something)
-	
+
 	return result
 end
 
@@ -767,7 +933,7 @@ function prop.mt:ABOVE(something)
 
 	return result
 end
-	
+
 --- cp.prop:ATMOST() -> cp.prop <boolean; read-only>
 --- Method
 --- Returns a new property comparing this property to `something`.
@@ -857,7 +1023,7 @@ function prop.mt:_notify(value)
 		self._doUpdate = true
 		return
 	end
-	
+
 	if self._watchers then
 		self._notifying = true
 		local owner = self:owner()
@@ -898,7 +1064,7 @@ end
 --- Parameters:
 --- * `getFn`		- The function that will get called to retrieve the current value.
 --- * `setFn`		- (optional) The function that will get called to set the new value.
---- * `cloneFn`		- (optional) The function that will get called when cloning the property. 
+--- * `cloneFn`		- (optional) The function that will get called when cloning the property.
 ---
 --- Returns:
 --- * The new `cp.prop` instance.
@@ -1002,6 +1168,19 @@ end
 --- * a `cp.prop` instance defaulting to `false`.
 function prop.FALSE()
 	return prop.THIS(false)
+end
+
+function prop.TABLE(initialValue, deepTable)
+	local get = function(owner, prop) return prop._value end
+	local set = function(newValue, owner, prop) prop._value = newValue end
+	local clone = function(self)
+		local clone = prop.mt._clone(self)
+		clone._value = self._value
+		return clone
+	end
+	local result = prop.new(get, set, clone)
+	result._value = initialValue
+	return result
 end
 
 --- cp.prop.NOT(propValue) -> cp.prop
@@ -1192,7 +1371,7 @@ prop.mt.OR = prop.OR
 -- ```
 --
 -- The original `prop` methods on the source will be rebound to the target.
--- 
+--
 -- Parameters:
 -- * `target`	- The target table to copy the methods into.
 -- * `source`	- The list of source tables to copy and bind methods from
