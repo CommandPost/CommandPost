@@ -178,7 +178,7 @@ local function completionFn(result)
 	-- Save last result to history:
 	--------------------------------------------------------------------------------
 	local selectedRow = mod.chooser:selectedRow()
-	local history = fnutils.copy(mod.history())
+	local history = mod.history()
 	if selectedRow == 1 then
 		table.insert(history, 1, result)
 	end
@@ -334,7 +334,7 @@ local function queryChangedCallback()
 	--------------------------------------------------------------------------------
 	-- Chooser Query Changed by User:
 	--------------------------------------------------------------------------------
-	local history = fnutils.copy(mod.history())
+	local history = mod.history()
 	local currentQuery = mod.chooser:query()
 	local currentQueryTable = {
 		{

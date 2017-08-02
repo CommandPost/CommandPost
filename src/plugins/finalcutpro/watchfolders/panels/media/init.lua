@@ -133,7 +133,7 @@ end
 ---  * None
 function mod.controllerCallback(id, params)
 	if params and params.action and params.action == "remove" then
-		mod.watchFolders(tools.removeFromTable(fnutils.copy(mod.watchFolders()), params.path))
+		mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
 		mod.removeWatcher(params.path)
 		mod.refreshTable()
 	elseif params and params.action and params.action == "refresh" then
@@ -153,7 +153,7 @@ end
 function mod.generateTable()
 
 	local watchFoldersHTML = ""
-	local watchFolders =  fnutils.copy(mod.watchFolders())
+	local watchFolders =  mod.watchFolders()
 
 	for i, v in ipairs(watchFolders) do
 		local uniqueUUID = string.gsub(uuid(), "-", "")
@@ -524,7 +524,7 @@ function mod.importFile(file, tag)
 	--------------------------------------------------------------------------------
 	-- Release the notification:
 	--------------------------------------------------------------------------------
-	local savedNotifications = fnutils.copy(mod.savedNotifications())
+	local savedNotifications = mod.savedNotifications()
 	if importAll then
 		for i, v in pairs(mod.notifications) do
 			mod.notifications[i]:withdraw()
@@ -565,7 +565,7 @@ function mod.createNotification(file)
 	-- Save Notifications to Settings:
 	--------------------------------------------------------------------------------
 	local notificationTag = mod.notifications[file]:getFunctionTag()
-	local savedNotifications = fnutils.copy(mod.savedNotifications())
+	local savedNotifications = mod.savedNotifications()
 	savedNotifications[file] = notificationTag
 	mod.savedNotifications(savedNotifications)
 end
@@ -593,7 +593,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				if mod.notifications[file] then
 					mod.notifications[file]:withdraw()
 					mod.notifications[file] = nil
-					local savedNotifications = fnutils.copy(mod.savedNotifications())
+					local savedNotifications = mod.savedNotifications()
 					savedNotifications[file] = nil
 					mod.savedNotifications(savedNotifications)
 				end
@@ -698,7 +698,7 @@ function mod.addWatchFolder()
 	local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
 	if path then
 
-		local watchFolders = fnutils.copy(mod.watchFolders())
+		local watchFolders = mod.watchFolders()
 
 		if tools.tableContains(watchFolders, path) then
 			dialog.displayMessage(i18n("alreadyWatched"))
@@ -738,7 +738,7 @@ function mod.setupWatchers()
 	--------------------------------------------------------------------------------
 	-- Setup Watchers:
 	--------------------------------------------------------------------------------
-	local watchFolders = fnutils.copy(mod.watchFolders())
+	local watchFolders = mod.watchFolders()
 	for i, v in ipairs(watchFolders) do
 		mod.newWatcher(v)
 	end
@@ -746,7 +746,7 @@ function mod.setupWatchers()
 	--------------------------------------------------------------------------------
 	-- Re-create any Un-clicked Notifications from Previous Session:
 	--------------------------------------------------------------------------------
-	local savedNotifications = fnutils.copy(mod.savedNotifications())
+	local savedNotifications = mod.savedNotifications()
 	for file,tag in pairs(savedNotifications) do
 		if tools.doesFileExist(file) then
 			mod.createNotification(file)

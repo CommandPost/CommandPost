@@ -228,7 +228,7 @@ function mod.prop(key, defaultValue)
 		propValue = prop.new(
 			function() return mod.get(key, defaultValue) end,
 			function(value) mod.set(key, value) end
-		)
+		):deepTable()
 		mod._isCache[key] = propValue
 	end
 
