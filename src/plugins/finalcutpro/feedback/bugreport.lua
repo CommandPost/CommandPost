@@ -35,7 +35,7 @@ local v					= require("semver")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 8888887
+local PRIORITY 			= 1
 local FEEDBACK_URL		= "https://www.apple.com/feedback/finalcutpro.html"
 local FEEDBACK_TYPE		= "Bug Report"
 
@@ -306,6 +306,10 @@ local function navigationCallback(a, b, c, d)
 
 		local defaultFeedback = "WHAT WENT WRONG?\n\n\nWHAT DID YOU EXPECT TO HAPPEN?\n\n\nWHAT ARE THE STEPS TO RECREATE THE PROBLEM?\n\n"
 
+		if FEEDBACK_TYPE == "Enhancement Request" then
+			defaultFeedback = "WHAT FEATURE WOULD YOU LIKE TO SEE IMPLEMENTED OR IMPROVED?\n\n"
+		end
+
 		--------------------------------------------------------------------------------
 		-- Time to inject some JavaScript!
 		--------------------------------------------------------------------------------
@@ -448,14 +452,23 @@ end
 
 --- plugins.finalcutpro.feedback.bugreport.open() -> none
 --- Function
---- Opens Final Cut Pro Bug Report
+--- Opens Final Cut Pro Feedback Screen
 ---
 --- Parameters:
----  * None
+---  * bugReport - Is it a bug report?
 ---
 --- Returns:
 ---  * None
-function mod.open()
+function mod.open(bugReport)
+
+	--------------------------------------------------------------------------------
+	-- Feedback Type:
+	--------------------------------------------------------------------------------
+	if bugReport then 
+		FEEDBACK_TYPE = "Bug Report"
+	else
+		FEEDBACK_TYPE = "Enhancement Request"
+	end	
 
 	--------------------------------------------------------------------------------
 	-- Gather Data:
@@ -573,7 +586,7 @@ local plugin = {
 	id				= "finalcutpro.feedback.bugreport",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.menu.bottom"]			= "menu",
+		["finalcutpro.menu.finalcutpro"] = "menu",
 		["core.commands.global"] 		= "global",
 	}
 }
@@ -588,14 +601,21 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.menu
 		:addItem(PRIORITY, function()
-			return { title = i18n("reportBugToApple"),	fn = function() mod.open() end }
+			return { title = i18n("suggestFeatureToApple"),	fn = function() mod.open(false) end }
 		end)
+		:addItem(PRIORITY + 0.1, function()
+			return { title = i18n("reportBugToApple"),	fn = function() mod.open(true) end }
+		end)
+		:addSeparator(PRIORITY + 0.2)
 
 	--------------------------------------------------------------------------------
 	-- Commands:
 	--------------------------------------------------------------------------------
 	deps.global:add("cpBugReport")
-		:whenActivated(mod.open)
+		:whenActivated(function() mod.open(true) end)
+
+	deps.global:add("cpFeatureRequest")
+		:whenActivated(function() mod.open(false) end)
 
 	return mod
 

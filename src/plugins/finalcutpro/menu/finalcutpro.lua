@@ -13,7 +13,7 @@
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 8888888
+local PRIORITY = 8888888.1
 
 --------------------------------------------------------------------------------
 --
@@ -21,8 +21,8 @@ local PRIORITY = 8888888
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.menu.helpandsupport",
-	group			= "core",
+	id				= "finalcutpro.menu.finalcutpro",
+	group			= "finalcutpro",
 	dependencies	= {
 		["core.menu.bottom"] = "bottom",
 	}
@@ -33,13 +33,9 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
 	local section = dependencies.bottom
-	
-		:addItem(PRIORITY, function()
-			return { title = string.upper(i18n("helpAndSupport")) .. ":", disabled = true }
-		end)
 
-		:addSection(PRIORITY + 0.2)
-			:addMenu(0, function() return i18n("appName") end)
+		:addSection(PRIORITY + 0.1)
+			:addMenu(0, function() return i18n("finalCutPro") end)
 		return section
 end
 

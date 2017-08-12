@@ -23,16 +23,22 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	deps.bottom:addItem(10, function()
-		return { title = i18n("preferences") .. "...", fn = deps.prefs.show }
-	end)
+	deps.bottom
+	
+		:addItem(10, function()
+			return { title = string.upper(i18n("settings")) .. ":", disabled = true }
+		end)
 
-	--------------------------------------------------------------------------------
-	-- Add separator:
-	--------------------------------------------------------------------------------
-	deps.bottom:addItem(11, function()
-		return { title = "-" }
-	end)
+		:addItem(10.1, function()
+			return { title = i18n("preferences") .. "...", fn = deps.prefs.show }
+		end)
+
+		--------------------------------------------------------------------------------
+		-- Add separator:
+		--------------------------------------------------------------------------------
+		:addItem(11, function()
+			return { title = "-" }
+		end)
 
 end
 
