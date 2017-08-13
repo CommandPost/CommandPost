@@ -105,7 +105,7 @@ local mod = {}
 
 mod.builder = builder
 
---- cp.choices.new(choiceType) -> choices
+--- cp.choices.new(type) -> choices
 --- Function
 --- Creates a new `cp.plugin.chooser.choices` instance for the specified type.
 ---
@@ -115,6 +115,9 @@ mod.builder = builder
 --- Returns:
 --- * The new `choices` instance.
 function mod.new(type)
+	if type == nil then
+		error(string.format("cp.choice instances require a type, but was provided `nil`."))
+	end
 	local o = {
 		_type 		= type,
 		_choices	= {},

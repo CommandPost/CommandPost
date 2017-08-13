@@ -127,7 +127,7 @@ end)
 handler.mt.choices = prop(function(self)
 	local result = self._choices
 	if not result then
-		result = choices.new()
+		result = choices.new(self:id())
 		-- populate the result
 		self._onChoices(result)
 
@@ -164,22 +164,6 @@ function handler.mt:actionId(action)
 	return self._onActionId(action)
 end
 
---- plugins.finalcutpro.action.handler:execute(action) -> boolean
---- Method
---- Executes the action, based on values in the table.
----
---- Parameters:
---- * `action`		- A table of details about the action.
----
---- Returns:
---- * `true` if the execution succeeded.
-function handler.mt:execute(action)
-	if action then
-		return self:_doExecute(action) ~= false
-	end
-	return false
-end
-
 -- plugins.finalcutpro.action.handler._onExecute(action) -> nil
 -- Method
 -- Default handler for executing. Throws an error message.
@@ -191,6 +175,22 @@ end
 -- * Nothing
 function handler.mt._onExecute(action)
 	error("unimplemented: handler:onExecute(executeFn)")
+end
+
+--- plugins.finalcutpro.action.handler:execute(action) -> boolean
+--- Method
+--- Executes the action, based on values in the table.
+---
+--- Parameters:
+--- * `action`		- A table of details about the action.
+---
+--- Returns:
+--- * `true` if the execution succeeded.
+function handler.mt:execute(action)
+	if action then
+		return self._onExecute(action) ~= false
+	end
+	return false
 end
 
 --- plugins.finalcutpro.action.handler:reset() -> nil

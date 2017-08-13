@@ -461,37 +461,39 @@ end
 --- Returns:
 --- * `true` if the action executed successfully.
 function activator.mt:sortChoices()
-	return sort(self._choices, function(a, b)
-		-- Favorites get first priority
-		local afav = self:isFavoriteChoice(a.id)
-		local bfav = self:isFavoriteChoice(b.id)
-		if afav and not bfav then
-			return true
-		elseif bfav and not afav then
-			return false
-		end
+	if self._choices then
+		return sort(self._choices, function(a, b)
+			-- Favorites get first priority
+			local afav = self:isFavoriteChoice(a.id)
+			local bfav = self:isFavoriteChoice(b.id)
+			if afav and not bfav then
+				return true
+			elseif bfav and not afav then
+				return false
+			end
 
-		-- Then popularity, if specified
-		local apop = self:getPopularity(a.id)
-		local bpop = self:getPopularity(b.id)
-		if apop > bpop then
-			return true
-		elseif bpop > apop then
-			return false
-		end
+			-- Then popularity, if specified
+			local apop = self:getPopularity(a.id)
+			local bpop = self:getPopularity(b.id)
+			if apop > bpop then
+				return true
+			elseif bpop > apop then
+				return false
+			end
 
-		-- Then text by alphabetical order
-		if a.text < b.text then
-			return true
-		elseif b.text < a.text then
-			return false
-		end
+			-- Then text by alphabetical order
+			if a.text < b.text then
+				return true
+			elseif b.text < a.text then
+				return false
+			end
 
-		-- Then subText by alphabetical order
-		local asub = a.subText or ""
-		local bsub = b.subText or ""
-		return asub < bsub
-	end)
+			-- Then subText by alphabetical order
+			local asub = a.subText or ""
+			local bsub = b.subText or ""
+			return asub < bsub
+		end)
+	end
 end
 
 --- plugins.finalcutpro.action.activator:allChoices() -> table
@@ -775,7 +777,6 @@ function activator.mt:activate(result)
 	-- If something was selected:
 	--------------------------------------------------------------------------------
 	if result then
-		log.df("activate: result = %s", hs.inspect(result))
 		local handler = self:getActiveHandler(result.type)
 		if handler and result.params then
 			self:_onActivate(handler, result.params)

@@ -53,6 +53,7 @@ function mod.init(actionmanager)
 	mod._handler = actionmanager.addHandler(ID)
 	:onChoices(mod.onChoices)
 	:onExecute(mod.onExecute)
+	:onActionId(mod.actionId)
 
 	-- watch for restarts
 	fcp.isRunning:watch(function(running)
