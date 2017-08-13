@@ -129,7 +129,7 @@ handler.mt.choices = prop(function(self)
 	if not result then
 		result = choices.new()
 		-- populate the result
-		self:_onChoices(result)
+		self._onChoices(result)
 
  		-- cache if appropriate
 		if self:cached() then
@@ -161,7 +161,7 @@ end
 --- Method
 --- Returns a string that can be used as a unique ID for the action details.
 function handler.mt:actionId(action)
-	return string.format("%s:%s:%s", self:id(), action.category, action.name)
+	return self._onActionId(action)
 end
 
 --- plugins.finalcutpro.action.handler:execute(action) -> boolean

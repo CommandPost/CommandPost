@@ -34,6 +34,7 @@ local mouse						= require("hs.mouse")
 local screen					= require("hs.screen")
 local timer						= require("hs.timer")
 local application				= require("hs.application")
+local fcp						= require("cp.apple.finalcutpro")
 
 local setmetatable				= setmetatable
 local sort, insert				= table.sort, table.insert
@@ -91,7 +92,7 @@ function activator.new(id, manager)
 	-- plugins.finalcutpro.action.activator._disabledHandlers <cp.prop: table of booleans>
 	-- Field
 	-- Table of disabled handlers. If the ID is present with a value of `true`, it's disabled.
-	o._disabledHandlers = config.prop(prefix .. "disabledHandlers", {}):bind(0)
+	o._disabledHandlers = config.prop(prefix .. "disabledHandlers", {}):bind(o)
 
 	--- plugins.finalcutpro.action.activator.activeHandlers <cp.prop: table of handlers>
 	--- Field
@@ -441,10 +442,10 @@ function activator.mt:execute(handlerId, action)
 			end
 			return true
 		else
-			log.wf("Action handler '%s' could not execute: %s", hs.inspect(handlerId), hs.inspect(action))
+			error(string.format("Action handler '%s' could not execute: %s", hs.inspect(handlerId), hs.inspect(action)))
 		end
 	else
-		log.wf("No action handler with an ID of '%s' is registered", hs.inspect(handlerId))
+		error(string.format("No action handler with an ID of '%s' is registered", hs.inspect(handlerId)))
 	end
 	return false
 end
@@ -536,7 +537,7 @@ function activator.mt:_findChoices()
 	self._watched = true
 
 	local result = {}
-	for id,handler in pairs(self._manager:handlers()) do
+	for id,handler in pairs(self._manager.handlers()) do
 		if not self:isDisabledHandler(id) then
 			local choices = handler:choices()
 			if choices then
@@ -586,43 +587,22 @@ activator.reducedTransparency = prop.new(function()
 	return screen.accessibilitySettings()["ReduceTransparency"]
 end)
 
+local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
+	local c = chooser.new(executeFn)
+	:bgDark(true)
+	:rightClickCallback(rightClickFn)
+	:choices(choicesFn)
+	:searchSubText(searchSubText)
+
+	local color = activator.reducedTransparency() and nil or drawing.color.x11.snow
+	c:fgColor(color):subTextColor(color)
+
+	return c
+end
+
 function activator.mt:init()
 	--------------------------------------------------------------------------------
-	-- Setup Chooser:
-	--------------------------------------------------------------------------------
-	self._mainChooser = chooser.new(function(result) self:activate(result) end)
-	:bgDark(true)
-	:rightClickCallback(self.rightClickMain)
-	:choices(self:choices())
-	:searchSubText(self:searchSubText())
-
-	--------------------------------------------------------------------------------
-	-- Setup Hidden Item Manager:
-	--------------------------------------------------------------------------------
-	self._configChooser = chooser.new(function(result) self:configure(result) end)
-	:bgDark(true)
-	:rightClickCallback(self.rightClickConfig)
-	:choices(self:allChoices())
-	:searchSubText(self:searchSubText())
-
-	--------------------------------------------------------------------------------
-	-- Allow for Reduce Transparency:
-	--------------------------------------------------------------------------------
-	self._lastReducedTransparency = activator.reducedTransparency()
-	if self._lastReducedTransparency then
-		self._mainChooser:fgColor(nil)
-			:subTextColor(nil)
-		self._configChooser:fgColor(nil)
-			:subTextColor(nil)
-	else
-		self._mainChooser:fgColor(drawing.color.x11.snow)
-			:subTextColor(drawing.color.x11.snow)
-		self._configChooser:fgColor(drawing.color.x11.snow)
-			:subTextColor(drawing.color.x11.snow)
-	end
-
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running, lets preemptively refresh the choices:
+	-- If Final Cut Pro is running, let's preemptively refresh the choices:
 	--------------------------------------------------------------------------------
 	if fcp:isRunning() then timer.doAfter(3, function() self:refresh() end) end
 end
@@ -635,12 +615,36 @@ function activator.mt:configure(result)
 	end
 end
 
+function activator.mt:mainChooser()
+	if not self._mainChooser then
+		self._mainChooser = initChooser(
+			function(result) self:activate(result) end,
+			function(index) self:rightClickMain(index) end,
+			function() return self:choices() end,
+			self:searchSubText()
+		)
+	end
+	return self._mainChooser
+end
+
+function activator.mt:configChooser()
+	if not self._configChooser then
+		self._configChooser = initChooser(
+			function(result) self:configure(result) end,
+			function(index) self:rightClickConfig(index) end,
+			function() return self:allChoices() end,
+			self:searchSubText()
+		)
+	end
+	return self._configChooser
+end
+
 --------------------------------------------------------------------------------
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function activator.mt:refreshChooser()
-	self._mainChooser:refreshChoicesCallback()
-	self._configChooser:refreshChoicesCallback()
+	self:mainChooser():refreshChoicesCallback()
+	self:configChooser():refreshChoicesCallback()
 end
 
 function activator.mt:checkReducedTransparency()
@@ -660,11 +664,11 @@ end
 --- Returns:
 --- * Nothing
 function activator.mt:show()
-	self:_showChooser(self._mainChooser)
+	self:_showChooser(self:mainChooser())
 end
 
 function activator.mt:showConfig()
-	self:_showChooser(self._configChooser)
+	self:_showChooser(self:configChooser())
 end
 
 function activator.mt:_showChooser(chooser)
@@ -771,11 +775,12 @@ function activator.mt:activate(result)
 	-- If something was selected:
 	--------------------------------------------------------------------------------
 	if result then
+		log.df("activate: result = %s", hs.inspect(result))
 		local handler = self:getActiveHandler(result.type)
 		if handler and result.params then
 			self:_onActivate(handler, result.params)
 		else
-			log.wf("No action handler with an ID of %s is registered.", hs.inspect(result.type))
+			error(string.format("No action handler with an ID of %s is registered.", hs.inspect(result.type)))
 		end
 	end
 end

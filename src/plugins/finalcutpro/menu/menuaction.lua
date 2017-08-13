@@ -73,7 +73,7 @@ function mod.id()
 	return ID
 end
 
-function mod.onChoices(result)
+function mod.onChoices(choices)
 	fcp:menuBar():visitMenuItems(function(path, menuItem)
 		local title = menuItem:title()
 
@@ -81,7 +81,7 @@ function mod.onChoices(result)
 			local params = {}
 			params.path	= fnutils.concat(fnutils.copy(path), { title })
 
-			result:add(title)
+			choices:add(title)
 				:subText(i18n("menuChoiceSubText", {path = concat(path, " > ")}))
 				:params(params)
 				:id(mod.actionId(params))

@@ -13,6 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log				= require("hs.logger").new("config")
+
 local application		= require("hs.application")
 local fs				= require("hs.fs")
 local settings			= require("hs.settings")
@@ -182,8 +184,8 @@ end
 --- Saves a setting with common datatypes
 ---
 --- Parameters:
----  * key - A string containing the name of the setting
----  * val - An optional value for the setting. Valid datatypes are:
+---  * `key`		- A string containing the name of the setting
+---  * `value`		- An optional value for the setting. Valid datatypes are:
 ---    * string
 ---    * number
 ---    * boolean
@@ -197,6 +199,9 @@ end
 --- Notes:
 ---  * This function cannot set dates or raw data types
 function mod.set(key, value)
+	if type(key) ~= "string" then
+		error("The key must be a string: %s", hs.inspect(key))
+	end
 	settings.set(mod.configPrefix .. "." .. key, value)
 	if mod._isCache then
 		local prop = mod._isCache[key]

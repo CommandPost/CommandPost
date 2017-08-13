@@ -45,6 +45,12 @@ end
 --- plugins.finalcutpro.commands.actionss.onChoices(choices) -> nothing
 --- Function
 --- Adds available choices to the  selection.
+---
+--- Parameters:
+--- * `choices`		- The `cp.choices` to add choices to.
+---
+--- Returns:
+--- * Nothing
 function mod.onChoices(choices)
 	for _,cmd in pairs(mod._cmds:getAll()) do
 		local title = cmd:getTitle()
@@ -56,7 +62,7 @@ function mod.onChoices(choices)
 			local action = {
 				id		= cmd:id(),
 			}
-			mod._choices:add(title)
+			choices:add(title)
 				:subText(subText)
 				:params(action)
 				:id(mod.getId(action))
