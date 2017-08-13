@@ -22,18 +22,11 @@ local timer				= require("hs.timer")
 
 local choices			= require("cp.choices")
 local fcp				= require("cp.apple.finalcutpro")
+local plugins			= require("cp.apple.finalcutpro.plugins")
 local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
 local config			= require("cp.config")
 local prop				= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY 			= 4000
-local MAX_SHORTCUTS 	= 5
 
 --------------------------------------------------------------------------------
 --
@@ -42,110 +35,34 @@ local MAX_SHORTCUTS 	= 5
 --------------------------------------------------------------------------------
 local mod = {}
 
-local action = {}
-
-function action.init(actionmanager)
-	action._manager = actionmanager
-	action._manager.addAction(action)
-
-	fcp.currentLanguage:watch(function(value)
-		action.reset()
-		timer.doAfter(0.01, function() action.choices:update() end)
-	end)
+function mod.init(touchbar)
+	mod.touchbar = touchbar
 end
 
-function action.id()
-	return "generator"
-end
+--- plugins.finalcutpro.timeline.generators.apply(action) -> boolean
+--- Function
+--- Applies the specified action as a generator. Expects action to be a table with the following structure:
+---
+--- ```lua
+--- { name = "XXX", category = "YYY", theme = "ZZZ" }
+--- ```
+---
+--- ...where `"XXX"`, `"YYY"` and `"ZZZ"` are in the current FCPX language. The `category` and `theme` are optional,
+--- but if they are known it's recommended to use them, or it will simply execute the first matching generator with that name.
+---
+--- Parameters:
+--- * `action`		- A table with the name/category/theme for the generator to apply.
+---
+--- Returns:
+--- * `true` if a matching generator was found and applied to the timeline.
+function mod.apply(action)
 
-action.enabled = config.prop(action.id().."ActionEnabled", true)
-
-action.choices = prop(function()
-	if not action._choices then
-		action._choices = choices.new(action.id())
-
-		local list = fcp:plugins():generators()
-		if list then
-			for i,plugin in ipairs(list) do
-				local params = { name = plugin.name, category = plugin.category }
-				local subText = i18n("generator_group")
-				if plugin.category then
-					subText = subText..": "..plugin.category
-				end
-				if plugin.theme then
-					subText = subText.." ("..plugin.theme..")"
-				end
-				action._choices:add(plugin.name)
-					:subText(subText)
-					:params(params)
-					:id(action.getId(params))
-			end
-		end
+	-- is it a simple string?
+	if type(action) == "string" then
+		action = { name = tostring(params) }
 	end
-	return action._choices
-end)
 
-function action.getId(params)
-	return string.format("%s:%s:%s", action.id(), params.category, params.name)
-end
-
-function action.execute(params)
-	if action.enabled() and params and params.name then
-		mod.apply(params.name, params.category)
-		return true
-	end
-	return false
-end
-
-function action.reset()
-	action._choices = nil
-end
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-
-function mod.getShortcuts()
-	return config.get(fcp:currentLanguage() .. ".generatorsShortcuts", {})
-end
-
-function mod.getShortcut(number)
-	local shortcuts = mod.getShortcuts()
-	return shortcuts and shortcuts[number]
-end
-
-function mod.setShortcut(number, value)
-	assert(number >= 1 and number <= MAX_SHORTCUTS)
-	local shortcuts = mod.getShortcuts()
-	shortcuts[number] = value
-	config.set(fcp:currentLanguage() .. ".generatorsShortcuts", shortcuts)
-end
-
-function mod.getGenerators()
-	return config.get(fcp:currentLanguage() .. ".allGenerators")
-end
-
---------------------------------------------------------------------------------
--- GENERATORS SHORTCUT PRESSED:
--- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the generator to apply in the current FCPX language.
---------------------------------------------------------------------------------
-function mod.apply(shortcut, category)
-
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	if type(shortcut) == "number" then
-		local params = mod.getShortcut(shortcut)
-		if type(params) == "table" then
-			shortcut = params.name
-			category = params.category
-		else
-			shortcut = tostring(params)
-		end
-	end
+	local shortcut, category = action.name, action.category
 
 	if shortcut == nil then
 		dialog.displayMessage(i18n("noGeneratorShortcut"))
@@ -248,145 +165,6 @@ function mod.apply(shortcut, category)
 end
 
 --------------------------------------------------------------------------------
--- ASSIGN GENERATORS SHORTCUT:
---------------------------------------------------------------------------------
-function mod.assignGeneratorsShortcut(whichShortcut)
-
-	--------------------------------------------------------------------------------
-	-- Was Final Cut Pro Open?
-	--------------------------------------------------------------------------------
-	local wasFinalCutProOpen = fcp:isFrontmost()
-
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	local currentLanguage 			= fcp:currentLanguage()
-	local choices					= action.choices():getChoices()
-
-	--------------------------------------------------------------------------------
-	-- Error Checking:
-	--------------------------------------------------------------------------------
-	if choices == nil or #choices == 0 then
-		dialog.displayMessage(i18n("assignGeneratorsShortcutError"))
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Sort everything:
-	--------------------------------------------------------------------------------
-		table.sort(choices, function(a, b)
-		return a.text < b.text or a.text == b.text and a.subText < b.subText
-	end)
-
-	--------------------------------------------------------------------------------
-	-- Setup Chooser:
-	--------------------------------------------------------------------------------
-	local theChooser = nil
-	theChooser = chooser.new(function(result)
-		theChooser:hide()
-		if result ~= nil then
-			--------------------------------------------------------------------------------
-			-- Save the selection:
-			--------------------------------------------------------------------------------
-			mod.setShortcut(whichShortcut, result.params)
-		end
-
-		--------------------------------------------------------------------------------
-		-- Put focus back in Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if wasFinalCutProOpen then fcp:launch() end
-	end)
-
-	theChooser:bgDark(true):choices(choices):searchSubText(true)
-
-	--------------------------------------------------------------------------------
-	-- Allow for Reduce Transparency:
-	--------------------------------------------------------------------------------
-	if screen.accessibilitySettings()["ReduceTransparency"] then
-		theChooser:fgColor(nil)
-		          :subTextColor(nil)
-	else
-		theChooser:fgColor(drawing.color.x11.snow)
- 		          :subTextColor(drawing.color.x11.snow)
-	end
-
-	--------------------------------------------------------------------------------
-	-- Show Chooser:
-	--------------------------------------------------------------------------------
-	theChooser:show()
-
-	return true
-end
-
---------------------------------------------------------------------------------
--- GET LIST OF GENERATORS:
---------------------------------------------------------------------------------
-function mod.updateGeneratorsList()
-
-	--------------------------------------------------------------------------------
-	-- Make sure Final Cut Pro is active:
-	--------------------------------------------------------------------------------
-	fcp:launch()
-
-	local generators = fcp:generators()
-
-	local browserLayout = fcp:browser():saveLayout()
-
-	--------------------------------------------------------------------------------
-	-- Make sure Generators and Generators panel is open:
-	--------------------------------------------------------------------------------
-	if not generators:show():isShowing() then
-		dialog.displayErrorMessage("Unable to activate the Generators and Generators panel.\n\nError occurred in updateGeneratorsList().")
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	generators:search():clear()
-
-	--------------------------------------------------------------------------------
-	-- Click 'Generators':
-	--------------------------------------------------------------------------------
-	generators:showAllGenerators()
-
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Generators" is selected:
-	--------------------------------------------------------------------------------
-	generators:group():selectItem(1)
-
-	--------------------------------------------------------------------------------
-	-- Get list of All Transitions:
-	--------------------------------------------------------------------------------
-	local effectsList = generators:contents():childrenUI()
-	local allGenerators = {}
-	if effectsList ~= nil then
-		for i=1, #effectsList do
-			allGenerators[i] = effectsList[i]:attributeValue("AXTitle")
-		end
-	else
-		dialog.displayErrorMessage("Unable to get list of all generators.\n\nError occurred in updateGeneratorsList().")
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restore Effects or Transitions Panel:
-	--------------------------------------------------------------------------------
-	fcp:browser():loadLayout(browserLayout)
-
-	--------------------------------------------------------------------------------
-	-- Save Results to Settings:
-	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:currentLanguage()
-	config.set(currentLanguage .. ".allGenerators", allGenerators)
-	config.set(currentLanguage .. ".generatorsListUpdated", true)
-	action.reset()
-	
-	-- Success!
-	return true
-end
-
---------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
 --
@@ -395,44 +173,17 @@ local plugin = {
 	id = "finalcutpro.timeline.generators",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.menu.timeline.assignshortcuts"]	= "automation",
-		["finalcutpro.commands"]						= "fcpxCmds",
 		["finalcutpro.os.touchbar"]						= "touchbar",
-		["finalcutpro.action.manager"]							= "actionmanager",
 	}
 }
 
 function plugin.init(deps)
-	local fcpxRunning = fcp:isRunning()
-	mod.touchbar = deps.touchbar
+	return mod
+end
 
+function plugin.postInit(deps)
 	-- Add the action
-	action.init(deps.actionmanager)
-
-	-- The 'Assign Shortcuts' menu
-	local menu = deps.automation:addMenu(PRIORITY, function() return i18n("assignGeneratorsShortcuts") end)
-	menu:addItems(1000, function()
-		--------------------------------------------------------------------------------
-		-- Shortcuts:
-		--------------------------------------------------------------------------------
-		local shortcuts		= mod.getShortcuts()
-
-		local items = {}
-
-		for i = 1, MAX_SHORTCUTS do
-			local shortcutName = shortcuts[i] or i18n("unassignedTitle")
-			items[i] = { title = i18n("generatorShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignGeneratorsShortcut(i) end }
-		end
-
-		return items
-	end)
-
-	-- Commands
-
-	for i = 1, MAX_SHORTCUTS do
-		deps.fcpxCmds:add("cpGenerators"..tools.numberToWord(i)):whenActivated(function() mod.apply(i) end)
-	end
-
+	mod.init(deps.touchbar)
 	return mod
 end
 

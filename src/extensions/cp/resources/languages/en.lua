@@ -188,10 +188,13 @@ return {
 			noKeywordPresetsError				=			"It doesn't look like you've saved any keyword presets yet?",
 			noKeywordPresetError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
 
-			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Transitions Shortcuts via the CommandPost menu bar.",
-			noEffectShortcut					=			"There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the CommandPost menu bar.",
-			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the CommandPost menu bar.",
-			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the CommandPost menu bar.",
+			noPluginFound						=			"Unable to find a ${plugin} called '${name}'.",
+			noPluginShortcut					=			"There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noVideoEffectShortcut				=			"There is no Video Effect assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noAudioEffectShortcut				=			"There is no Audio Effect assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
 			touchBarError						=			"Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
@@ -315,11 +318,7 @@ return {
 			-- Timeline:
 			--------------------------------------------------------------------------------
 			timeline							=			"Timeline",
-			assignShortcuts						=			"Assign Shortcuts",
-			assignEffectsShortcuts				=			"Effects Shortcuts",
-			assignTransitionsShortcuts			=			"Transitions Shortcuts",
-			assignTitlesShortcuts				=			"Titles Shortcuts",
-			assignGeneratorsShortcuts			=			"Generators Shortcuts",
+			pluginShortcuts						=			"Plugin Shortcuts",
 
 			highlightPlayhead					=			"Highlight Playhead",
 			highlightPlayheadColour				=			"Colour",
@@ -328,13 +327,23 @@ return {
 
 			unassignedTitle						=			"(Unassigned)",
 
+			pluginShortcutTitle					=			"%{number}: %{title}",
+
 				--------------------------------------------------------------------------------
 				-- Effects Shortcuts:
 				--------------------------------------------------------------------------------
-				updateEffectsList				=			"Update Effects List",
-				effectShortcut					=			"Effect Shortcut",
-				effectShortcutTitle				=			"%{number}: %{title}",
-				applyEffectsShortcut			=			"Apply Effects Shortcut %{count}",
+				updateVideoEffectsList			=			"Update Video Effects List",
+				videoEffectShortcut				=			"Video Effect Shortcut",
+				videoEffectShortcutTitle		=			"%{number}: %{title}",
+				applyVideoEffectsShortcut		=			"Apply Video Effect Shortcut %{count}",
+
+				--------------------------------------------------------------------------------
+				-- Effects Shortcuts:
+				--------------------------------------------------------------------------------
+				updateAudioEffectsList			=			"Update Audio Effects List",
+				audioEffectShortcut				=			"Audio Effect Shortcut",
+				audioEffectShortcutTitle		=			"%{number}: %{title}",
+				applyAudioEffectsShortcut		=			"Apply Audio Effect Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
 				-- Transitions Shortcuts:
@@ -706,23 +715,27 @@ return {
 	menuChoiceSubText					=			"Menu: %{path}",
 
 	--------------------------------------------------------------------------------
+	-- ACTIVATORS:
+	--------------------------------------------------------------------------------
+	activatorConfig						=			"Configure",
+	activatorUnfavoriteAction			=			"Unfavourite",
+	activatorFavoriteAction				=			"Favourite",
+	activatorHideAction					=			"Hide",
+	activatorUnhideAction				=			"Unhide",
+
+	--------------------------------------------------------------------------------
 	-- CONSOLE:
 	--------------------------------------------------------------------------------
 	console								=			"Console",
 	enableConsole						=			"Enable Console",
 	highlightedItem						=			"Highlighted Item",
-	consoleChoiceUnfavorite				=			"Unfavourite",
-	consoleChoiceFavorite				=			"Favourite",
-	consoleChoiceHide					=			"Hide",
-	consoleChoiceUnhide					=			"Unhide",
-	consoleHideUnhide					=			"Manage Hidden Items...",
 
 	actionHiddenText					=			"%{text} [Hidden]",
 
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	fcpx_action							=			"Commands",
+	command_action						=			"Commands",
 	menu_action							=			"Menu Items",
 	video_action						=			"Video Effects",
 	audio_action						=			"Audio Effects",

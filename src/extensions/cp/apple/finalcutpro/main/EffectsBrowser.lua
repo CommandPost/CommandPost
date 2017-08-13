@@ -13,6 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log								= require("hs.logger").new("EffectsBrowser")
+
 local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
 
@@ -160,7 +162,7 @@ end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:showTransitionsCategory(name) -> self
 --- Method
---- Ensures the sidebar is showing and that the selected 'Video' category is selected, if available.
+--- Ensures the sidebar is showing and that the selected 'Transitions' category is selected, if available.
 ---
 --- Parameters:
 --- * `name`		- The category name, in the current language.
@@ -185,6 +187,40 @@ function Browser:_allRowsUI()
 	end)
 end
 
+function Browser:videoCategoryRowsUI()
+	local video = self:app():string("FFVideo"):upper()
+	local audio = self:app():string("FFAudio"):upper()
+
+	return self:_startEndRowsUI(video, audio)
+end
+
+function Browser:audioCategoryRowsUI()
+	local audio = self:app():string("FFAudio"):upper()
+	return self:_startEndRowsUI(audio, nil)
+end
+
+function Browser:_startEndRowsUI(startLabel, endLabel)
+	local started, ended = false, false
+	--------------------------------------------------------------------------------
+	-- Find the two 'All' rows (Video/Audio)
+	--------------------------------------------------------------------------------
+	return self:sidebar():rowsUI(function(row)
+		local label = row[1][1]
+		local value = label and label:attributeValue("AXValue")
+		log.df("checking row value: %s", value)
+
+		local isStartLabel = value == startLabel
+		if not started and isStartLabel then
+			started = true
+		end
+		if started and value == endLabel then
+			ended = true
+		end
+		return started and not isStartLabel and not ended
+	end)
+
+end
+
 function Browser:showAllVideoEffects()
 	local allRows = self:_allRowsUI()
 	if allRows and #allRows == 3 then
@@ -199,6 +235,21 @@ function Browser:showAllVideoEffects()
 	return false
 end
 
+--- cp.apple.finalcutpro.main.EffectsBrowser:showVideoCategory(name) -> self
+--- Method
+--- Ensures the sidebar is showing and that the selected 'Video' category is selected, if available.
+---
+--- Parameters:
+--- * `name`		- The category name, in the current language.
+---
+--- Returns:
+--- * The browser.
+function Browser:showVideoCategory(name)
+	self:showSidebar()
+	Table.selectRow(self:videoCategoryRowsUI(), {name})
+	return self
+end
+
 function Browser:showAllAudioEffects()
 	local allRows = self:_allRowsUI()
 	if allRows and #allRows == 3 then
@@ -211,6 +262,21 @@ function Browser:showAllAudioEffects()
 		return true
 	end
 	return false
+end
+
+--- cp.apple.finalcutpro.main.EffectsBrowser:showAudioCategory(name) -> self
+--- Method
+--- Ensures the sidebar is showing and that the selected 'Audio' category is selected, if available.
+---
+--- Parameters:
+--- * `name`		- The category name, in the current language.
+---
+--- Returns:
+--- * The browser.
+function Browser:showAudioCategory(name)
+	self:showSidebar()
+	Table.selectRow(self:audioCategoryRowsUI(), {name})
+	return self
 end
 
 function Browser:currentItemsUI()

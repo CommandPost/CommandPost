@@ -677,6 +677,9 @@ end
 ---  * `cp.prop`	- This prop value.
 ---  * `function`	- The watch function. Can be used to [unwatch](#unwatch) the `otherProp` if needed.
 function prop.mt:monitor(otherProp)
+	if not otherProp then
+		error("Please provide the otherProp to monitor.")
+	end
 	local _, watch = otherProp:watch(function() self:update() end, false, true)
 	return self, watch
 end

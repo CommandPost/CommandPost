@@ -4,37 +4,29 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.timeline.transitions ===
+--- === plugins.finalcutpro.timeline.videoeffects ===
 ---
---- Controls Final Cut Pro's Transitions.
+--- Controls Final Cut Pro's Effects.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("transitions")
+local log				= require("hs.logger").new("effects")
 
 local chooser			= require("hs.chooser")
-local drawing			= require("hs.drawing")
-local inspect			= require("hs.inspect")
 local screen			= require("hs.screen")
+local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
+local inspect			= require("hs.inspect")
 
 local choices			= require("cp.choices")
-local config			= require("cp.config")
-local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
+local dialog			= require("cp.dialog")
 local tools				= require("cp.tools")
+local config			= require("cp.config")
 local prop				= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY 			= 2000
-local MAX_SHORTCUTS 	= 5
 
 --------------------------------------------------------------------------------
 --
@@ -45,15 +37,15 @@ local mod = {}
 
 function mod.init(touchbar)
 	mod.touchbar = touchbar
-	return mod
 end
 
+
 --------------------------------------------------------------------------------
--- TRANSITIONS SHORTCUT PRESSED:
+-- SHORTCUT PRESSED:
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the transition to apply in the current FCPX language.
+-- or it may be the name of the effect to apply in the current FCPX language.
 --------------------------------------------------------------------------------
-function mod.apply(shortcut, category)
+function mod.apply(shortcut)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
@@ -61,66 +53,58 @@ function mod.apply(shortcut, category)
 	local currentLanguage = fcp:currentLanguage()
 
 	if type(shortcut) == "number" then
-		local params = mod.getShortcut(shortcut)
-		if type(params) == "table" then
-			shortcut = params.name
-			category = params.category
-		else
-			shortcut = tostring(params)
-		end
+		shortcut = mod.getShortcuts()[shortcut]
 	end
 
 	if shortcut == nil then
-		dialog.displayMessage(i18n("noPluginShortcut", {plugin = i18n("transition_group")}))
+		dialog.displayMessage(i18n("noEffectShortcut"))
 		return false
 	end
 
 	--------------------------------------------------------------------------------
-	-- Save the Effects Browser layout:
-	--------------------------------------------------------------------------------
-	local effects = fcp:effects()
-	local effectsLayout = effects:saveLayout()
-
-	--------------------------------------------------------------------------------
-	-- Get Transitions Browser:
+	-- Save the Transitions Browser layout:
 	--------------------------------------------------------------------------------
 	local transitions = fcp:transitions()
-	local transitionsShowing = transitions:isShowing()
 	local transitionsLayout = transitions:saveLayout()
+
+	--------------------------------------------------------------------------------
+	-- Get Effects Browser:
+	--------------------------------------------------------------------------------
+	local effects = fcp:effects()
+	local effectsShowing = effects:isShowing()
+	local effectsLayout = effects:saveLayout()
+
+	fcp:launch()
 
 	--------------------------------------------------------------------------------
 	-- Make sure panel is open:
 	--------------------------------------------------------------------------------
-	transitions:show()
+	effects:show()
 
 	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
+	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	transitions:showInstalledTransitions()
+	effects:showInstalledEffects()
 
 	--------------------------------------------------------------------------------
 	-- Make sure there's nothing in the search box:
 	--------------------------------------------------------------------------------
-	transitions:search():clear()
+	effects:search():clear()
 
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	if category then
-		transitions:showTransitionsCategory(category)
-	else
-		transitions:showAllTransitions()
-	end
+	effects:showAllTransitions()
 
 	--------------------------------------------------------------------------------
 	-- Perform Search:
 	--------------------------------------------------------------------------------
-	transitions:search():setValue(shortcut)
+	effects:search():setValue(shortcut)
 
 	--------------------------------------------------------------------------------
-	-- Get the list of matching transitions
+	-- Get the list of matching effects
 	--------------------------------------------------------------------------------
-	local matches = transitions:currentItemsUI()
+	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
 		--------------------------------------------------------------------------------
 		-- If Needed, Search Again Without Text Before First Dash:
@@ -128,32 +112,32 @@ function mod.apply(shortcut, category)
 		local index = string.find(shortcut, "-")
 		if index ~= nil then
 			local trimmedShortcut = string.sub(shortcut, index + 2)
-			transitions:search():setValue(trimmedShortcut)
+			effects:search():setValue(trimmedShortcut)
 
-			matches = transitions:currentItemsUI()
+			matches = effects:currentItemsUI()
 			if not matches or #matches == 0 then
-				dialog.displayErrorMessage(i18n("noPluginFound", {plugin=i18n("transition_group"), name=shortcut}))
+				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.")
 				return false
 			end
 		end
 	end
 
-	local transition = matches[1]
+	local effect = matches[1]
 
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
 	mod.touchbar.hide()
 
-	transitions:applyItem(transition)
+	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
 		mod.touchbar.show()
 
-		transitions:loadLayout(transitionsLayout)
-		if effectsLayout then effects:loadLayout(effectsLayout) end
-		if not transitionsShowing then transitions:hide() end
+		effects:loadLayout(effectsLayout)
+		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+		if not effectsShowing then effects:hide() end
 	end)
 
 	-- Success!
@@ -166,16 +150,13 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.transitions",
+	id = "finalcutpro.timeline.videoeffects",
 	group = "finalcutpro",
 	dependencies = {
 		["finalcutpro.os.touchbar"]						= "touchbar",
 	}
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 	return mod.init(deps.touchbar)
 end
