@@ -58,32 +58,13 @@ mod.enabled = prop.new(
 		end
 
 		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local running = fcp:isRunning()
-		if running and not dialog.displayYesNoQuestion(i18n("togglingShowTimelineInPlayerRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-			return
-		end
-
-		--------------------------------------------------------------------------------
 		-- Update plist:
 		--------------------------------------------------------------------------------
 		if fcp:setPreference(PREFERENCES_KEY, value) == nil then
 			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
 			return
 		end
-
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if running and not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return
-		end
-
+		
 	end
 )
 
