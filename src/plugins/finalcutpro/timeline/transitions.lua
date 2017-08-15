@@ -15,26 +15,10 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("transitions")
 
-local chooser			= require("hs.chooser")
-local drawing			= require("hs.drawing")
-local inspect			= require("hs.inspect")
-local screen			= require("hs.screen")
 local timer				= require("hs.timer")
 
-local choices			= require("cp.choices")
-local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
-local tools				= require("cp.tools")
-local prop				= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY 			= 2000
-local MAX_SHORTCUTS 	= 5
 
 --------------------------------------------------------------------------------
 --

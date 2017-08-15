@@ -15,18 +15,10 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("generators")
 
-local chooser			= require("hs.chooser")
-local screen			= require("hs.screen")
-local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
 
-local choices			= require("cp.choices")
 local fcp				= require("cp.apple.finalcutpro")
-local plugins			= require("cp.apple.finalcutpro.plugins")
 local dialog			= require("cp.dialog")
-local tools				= require("cp.tools")
-local config			= require("cp.config")
-local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
