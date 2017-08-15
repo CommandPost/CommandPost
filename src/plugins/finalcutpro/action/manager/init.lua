@@ -132,8 +132,6 @@ function mod.addHandler(id)
 		error("Duplicate Action Handler ID: "..id)
 	end
 
-	log.df("Creating new handler for '%s'", id)
-
 	local h = handler.new(id)
 	mod._handlers[id] = h
 

@@ -16,6 +16,7 @@
 
 local plugins							= require("cp.apple.finalcutpro.plugins")
 local prop								= require("cp.prop")
+local tools								= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --

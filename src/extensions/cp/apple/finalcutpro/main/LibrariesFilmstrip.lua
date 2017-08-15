@@ -244,10 +244,12 @@ end
 
 -- TODO: Add documentation
 function Filmstrip:selectClip(clip)
-	local clipUI = clip:UI()
-	if axutils.isValid(clipUI) then
-		clipUI:parent():setSelectedChildren( { clipUI } )
-		return true
+	if clip then
+		local clipUI = clip:UI()
+		if axutils.isValid(clipUI) then
+			clipUI:parent():setSelectedChildren( { clipUI } )
+			return true
+		end
 	end
 	return false
 end

@@ -65,7 +65,6 @@ local archiver									= require("cp.plist.archiver")
 local config									= require("cp.config")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
-local protect									= require("cp.protect")
 local watcher									= require("cp.watcher")
 
 local text										= require("cp.web.text")
@@ -126,7 +125,7 @@ local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
 
-mod.types = protect {
+mod.types = {
 	videoEffect	= "videoEffect",
 	audioEffect	= "audioEffect",
 	title		= "title",

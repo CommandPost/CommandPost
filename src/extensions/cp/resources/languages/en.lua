@@ -868,7 +868,7 @@ return {
 	finalcutpro_clipboard_history_label						=	"Clipboard History",
 	finalcutpro_clipboard_manager_label						=	"Clipboard History Manager",
 	finalcutpro_clipboard_shared_label						=	"Shared Clipboard",
-	finalcutpro_commands_action_label						=	"Command Action",
+	finalcutpro_commands_actions_label						=	"Command Actions",
 	finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
 	finalcutpro_console_label								=	"Console",
 	finalcutpro_export_batch_label							=	"Batch Export",
@@ -919,10 +919,13 @@ return {
 	finalcutpro_timeline_multicam_label						=	"Timeline: Multicam",
 	finalcutpro_timeline_playback_label						=	"Timeline: Playback",
 	finalcutpro_timeline_playhead_label						=	"Timeline: Playhead",
+	finalcutpro_timeline_pluginactions_label				=	"Timeline: Plugin Actions",
+	finalcutpro_timeline_pluginshortcuts_label				=	"Timeline: Plugin Shortcuts",
 	finalcutpro_timeline_preferences_label					=	"Timeline: Preferences",
 	finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
+	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
 	finalcutpro_timeline_zoom_label							=	"Timeline Zoom",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
@@ -932,6 +935,7 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
+
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:

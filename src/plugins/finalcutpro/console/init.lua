@@ -30,6 +30,8 @@ local prop				= require("cp.prop")
 
 local log				= require("hs.logger").new("console")
 
+local format			= string.format
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -66,7 +68,7 @@ mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
 --------------------------------------------------------------------------------
 function mod.init(actionmanager)
 	mod.actionmanager = mod.actionmanager or actionmanager
-	mod.activator = actionmanager.getActivator("finalcut.console")
+	mod.activator = actionmanager.getActivator("finalcutpro.console")
 end
 
 --------------------------------------------------------------------------------
@@ -138,16 +140,18 @@ function plugin.init(deps)
 		local allEnabled = true
 		local allDisabled = true
 
-		for id,action in pairs(deps.activator:allowedHandlers()) do
-			local enabled = action.enabled()
+		for id,handler in pairs(mod.activator:allowedHandlers()) do
+			local enabled = not mod.activator:isDisabledHandler(id)
 			allEnabled = allEnabled and enabled
 			allDisabled = allDisabled and not enabled
-			actionItems[#actionItems + 1] = { title = i18n(string.format("%s_action", id)) or id,
+			actionItems[#actionItems + 1] = {
+				title = i18n(format("%s_action", id)) or id,
 				fn=function()
 					action.enabled:toggle()
 					deps.actionmanager.refresh()
 				end,
-				checked = enabled, }
+				checked = enabled,
+			}
 		end
 
 		table.sort(actionItems, function(a, b) return a.title < b.title end)

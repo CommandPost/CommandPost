@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("titles")
+local log				= require("hs.logger").new("plgnactns")
 
 local chooser			= require("hs.chooser")
 local drawing			= require("hs.drawing")
@@ -55,11 +55,10 @@ function mod.init(actionmanager, generators, titles, transitions)
 	mod._handlers = {}
 
 	for type,_ in pairs(plugins.types) do
-		local actionid = function(action)
+		local actionId = function(action)
 			return format("%s:%s:%s", type, action.name, action.category)
 		end
 
-		log.df("Adding handler for plugin type '%s'...", type)
 		mod._handlers[type] = actionmanager.addHandler(type)
 		:onChoices(function(choices)
 			-- get the effects of the specified type in the current language.
@@ -74,7 +73,7 @@ function mod.init(actionmanager, generators, titles, transitions)
 					if plugin.theme then
 						subText = subText.." ("..plugin.theme..")"
 					end
-					action._choices:add(plugin.name)
+					choices:add(plugin.name)
 						:subText(subText)
 						:params(action)
 						:id(actionId(action))
