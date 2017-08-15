@@ -89,45 +89,58 @@ function activator.new(id, manager)
 	-- The ID of a single handler to source
 	o._allowedHandlers = config.prop(prefix .. "allowedHandlers", nil):bind(o)
 
+
+--- plugins.finalcutpro.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
+--- Field
+--- Contains all handlers that are allowed in this activator.
+	o.allowedHandlers = o._manager.handlers:mutate(function(handlers)
+		local allowed = {}
+		local allowedIds = o._allowedHandlers()
+
+		for id,handler in pairs(handlers) do
+			if allowedIds == nil or #allowedIds == 0 or allowedIds[id] then
+				allowed[id] = handler
+			end
+		end
+
+		return allowed
+	end):bind(o)
+
 	-- plugins.finalcutpro.action.activator._disabledHandlers <cp.prop: table of booleans>
 	-- Field
 	-- Table of disabled handlers. If the ID is present with a value of `true`, it's disabled.
 	o._disabledHandlers = config.prop(prefix .. "disabledHandlers", {}):bind(o)
 
-	--- plugins.finalcutpro.action.activator.activeHandlers <cp.prop: table of handlers>
-	--- Field
-	--- Contains the table of active handlers. The handler ID is the key, so use `pairs` to
-	--- iterate the list. E.g.:
-	---
-	--- ```lua
-	--- for id,handler in pairs(activator:activeHandlers()) do
-	---     ...
-	--- end
-	--- ```
+--- plugins.finalcutpro.action.activator.activeHandlers <cp.prop: table of handlers>
+--- Field
+--- Contains the table of active handlers. A handler is active if it is both allowed and enabled.
+--- The handler ID is the key, so use `pairs` to iterate the list. E.g.:
+---
+--- ```lua
+--- for id,handler in pairs(activator:activeHandlers()) do
+---     ...
+--- end
+--- ```
 	o.activeHandlers = prop(function(self)
-		local handlers = self._manager.handlers()
+		local handlers = self:allowedHandlers()
 		local result = {}
 
-		local exclusive = self._allowedHandlers()
-		if exclusive then
-			result[exclusive] = handlers[exclusive]
-		else
-			local disabled = self._disabledHandlers()
-			for id,handler in pairs(handlers) do
-				if not disabled[id] then
-					result[id] = handler
-				end
+		local disabled = self._disabledHandlers()
+		for id,handler in pairs(handlers) do
+			if not disabled[id] then
+				result[id] = handler
 			end
 		end
+
 		return result
 	end):bind(o)
 	:monitor(o._disabledHandlers)
 	:monitor(manager.handlers)
 
-	--- plugins.finalcutpro.action.activator.hiddenChoices <cp.prop: table of booleans>
-	--- Field
-	--- Contains the set of choice IDs which are hidden in this activator, mapped to a boolean value.
-	--- If set to `true`, the choice is hidden.
+--- plugins.finalcutpro.action.activator.hiddenChoices <cp.prop: table of booleans>
+--- Field
+--- Contains the set of choice IDs which are hidden in this activator, mapped to a boolean value.
+--- If set to `true`, the choice is hidden.
 	o.hiddenChoices = config.prop(prefix .. "hiddenChoices", {}):bind(o)
 
 	--- plugins.finalcutpro.action.activator.favoriteChoices <cp.prop: table of booleans>
@@ -177,38 +190,17 @@ end
 --- * `true` if the handlers were found.
 function activator.mt:allowHandlers(...)
 	local allowed = {}
-	for _,id in ipairs(table.unpack(...)) do
+	for _,id in ipairs(table.pack(...)) do
+		log.df("allowHandlers: checking handler id: %s", id)
 		if self._manager.getHandler(id) then
 			allowed[id] = true
+			log.df("allowHandlers: allowing handler: %s", id)
 		else
 			error(string.format("Attempted to make action handler '%s' exclusive, but it could not be found.", id))
 		end
 	end
 	self._allowedHandlers(allowed)
 	return self
-end
-
---- plugins.finalcutpro.action.activator:allowedHandlers() -> table
---- Method
---- Specifies that only the handlers with the specified IDs will be active in
---- this activator. By default all handlers are allowed.
----
---- Parameters:
---- * `...`		- The list of Handler ID strings to allow.
----
---- Returns:
---- * `true` if the handlers were found.
-function activator.mt:allowedHandlers()
-	local handlers = {}
-	local allowed = self._allowedHandlers()
-
-	for id,handler in pairs(self._manager.handlers()) do
-		if allowed == nil or allowed[id] then
-			handlers[id] = handler
-		end
-	end
-
-	return handlers
 end
 
 --- plugins.finalcutpro.action.activator:disableHandler(id) -> boolean
@@ -420,6 +412,40 @@ function activator.mt:incPopularity(id)
 	end
 end
 
+--- plugins.finalcutpro.action.activator:onExecute(executeFn) -> handler
+--- Method
+--- Configures the function to call when a choice is executed. This will be passed
+--- the choice the `handler` and the `action` in a single table. Eg:
+---
+--- ```lua
+--- activator:onExecute(function(handler, action)
+--- 	print("handler: " .. handler:id() .. "; action: " .. handler.actionId(action))
+--- end)
+--- ```
+---
+--- Parameters:
+--- * `executeFn`		- The function to call when executing.
+---
+--- Returns:
+--- * This activator.
+function activator.mt:onExecute(executeFn)
+	self._onExecute = executeFn
+	return self
+end
+
+-- plugins.finalcutpro.action.handler._onExecute(action) -> nil
+-- Method
+-- Default handler for executing. Throws an error message.
+--
+-- Parameters:
+-- * `action`	- The table of parameters being executed.
+--
+-- Returns:
+-- * Nothing
+function activator.mt._onExecute(action)
+	error("unimplemented: handler:onExecute(executeFn)")
+end
+
 --- plugins.finalcutpro.action.activator:execute(handlerId, params) -> boolean
 --- Method
 --- Executes the `action` via the specified `handlerId`. If the action is executed, it returns `true`.
@@ -433,7 +459,9 @@ end
 function activator.mt:execute(handlerId, action)
 	local handler = self.getActiveHandler(handlerId)
 	if handler then
-		if handler:execute(action) then
+		if self._onExecute then
+			return self._onExecute(handler, action) ~= false
+		elseif handler:execute(action) then
 			if handler.actionId then
 				local actionId = handler:actionId(action)
 				if actionId then
@@ -539,16 +567,14 @@ function activator.mt:_findChoices()
 	self._watched = true
 
 	local result = {}
-	for id,handler in pairs(self._manager.handlers()) do
-		if not self:isDisabledHandler(id) then
-			local choices = handler:choices()
-			if choices then
-				concat(result, choices:getChoices())
-			end
-			-- check if we should watch the handler choices
-			if unwatched then
-				handler.choices:watch(function() self:refresh() end)
-			end
+	for id,handler in pairs(self:activeHandlers()) do
+		local choices = handler:choices()
+		if choices then
+			concat(result, choices:getChoices())
+		end
+		-- check if we should watch the handler choices
+		if unwatched then
+			handler.choices:watch(function() self:refresh() end)
 		end
 	end
 

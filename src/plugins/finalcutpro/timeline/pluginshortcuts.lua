@@ -13,8 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log								= require("hs.logger").new("plg_shrt")
 
+local fcp								= require("cp.apple.finalcutpro")
 local plugins							= require("cp.apple.finalcutpro.plugins")
+local config							= require("cp.config")
 local prop								= require("cp.prop")
 local tools								= require("cp.tools")
 
@@ -33,7 +36,7 @@ local MAX_SHORTCUTS = 5
 local mod = {}
 
 function mod.init(actionmanager)
-	mod._manager = actionmanager
+	mod._actionmanager = actionmanager
 end
 
 mod.shortcuts = prop(
@@ -63,20 +66,19 @@ end
 --- Returns:
 --- * Nothing
 function mod.assignShortcut(shortcutNumber, handlerId)
-	mod._shortcutNumber = shortcutNumber
-
 	local activator = mod._actionmanager.getActivator("finalcutpro.timeline.plugin.shortcuts")
 		:allowHandlers(handlerId)
-		:configurable(false)
 		:onExecute(function(handler, action)
 			activator:hide()
 			if action ~= nil then
 				--------------------------------------------------------------------------------
 				-- Save the selection:
 				--------------------------------------------------------------------------------
-				mod.setShortcut(handlerId, mod._shortcutNumber, action)
+				mod.setShortcut(handlerId, shortcutNumber, action)
 			end
 		end)
+	-- not configurable by the user.
+	activator:configurable(false)
 
 	activator:show()
 end
@@ -114,14 +116,13 @@ function plugin.init(deps)
 			--------------------------------------------------------------------------------
 			-- Effects Shortcuts:
 			--------------------------------------------------------------------------------
-			local listUpdated 		= mod.listUpdated()
-			local effectsShortcuts	= mod.getShortcuts()
+			local effectsShortcuts	= mod.shortcuts()
 
 			local items = {}
 
 			for i = 1,MAX_SHORTCUTS do
 				local shortcutName = effectsShortcuts[i] or i18n("unassignedTitle")
-				items[i] = { title = i18n("pluginShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignShortcut(i) end,	disabled = not listUpdated }
+				items[i] = { title = i18n("pluginShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignShortcut(i, type) end }
 			end
 
 			return items

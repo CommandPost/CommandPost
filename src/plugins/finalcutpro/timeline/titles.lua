@@ -52,22 +52,18 @@ end
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
 -- or it may be the name of the title to apply in the current FCPX language.
 --------------------------------------------------------------------------------
-function mod.apply(shortcut, category)
+function mod.apply(action)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	if type(shortcut) == "number" then
-		local params = mod.getShortcut(shortcut)
-		if type(params) == "table" then
-			shortcut = params.name
-			category = params.category
-		else
-			shortcut = tostring(params)
-		end
+	if type(action) == "string" then
+		action = { name = action }
 	end
 
-	if shortcut == nil then
+	local name, category = action.name, action.category
+
+	if name == nil then
 		dialog.displayMessage(i18n("noTitleShortcut"))
 		return false
 	end
@@ -122,27 +118,15 @@ function mod.apply(shortcut, category)
 	--------------------------------------------------------------------------------
 	-- Perform Search:
 	--------------------------------------------------------------------------------
-	generators:search():setValue(shortcut)
+	generators:search():setValue(name)
 
 	--------------------------------------------------------------------------------
 	-- Get the list of matching effects
 	--------------------------------------------------------------------------------
 	local matches = generators:currentItemsUI()
 	if not matches or #matches == 0 then
-		--------------------------------------------------------------------------------
-		-- If Needed, Search Again Without Text Before First Dash:
-		--------------------------------------------------------------------------------
-		local index = string.find(shortcut, "-")
-		if index ~= nil then
-			local trimmedShortcut = string.sub(shortcut, index + 2)
-			effects:search():setValue(trimmedShortcut)
-
-			matches = generators:currentItemsUI()
-			if not matches or #matches == 0 then
-				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in titles.apply(...).")
-				return false
-			end
-		end
+		dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.")
+		return false
 	end
 
 	local generator = matches[1]
@@ -184,6 +168,10 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+	return mod
+end
+
+function plugin.postInit(deps)
 	return mod.init(deps.touchbar)
 end
 

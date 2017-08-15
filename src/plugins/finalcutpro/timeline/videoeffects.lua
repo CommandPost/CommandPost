@@ -13,20 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("effects")
+local log				= require("hs.logger").new("videofx")
 
-local chooser			= require("hs.chooser")
-local screen			= require("hs.screen")
-local drawing			= require("hs.drawing")
 local timer				= require("hs.timer")
-local inspect			= require("hs.inspect")
 
-local choices			= require("cp.choices")
 local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
-local tools				= require("cp.tools")
-local config			= require("cp.config")
-local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -37,26 +29,28 @@ local mod = {}
 
 function mod.init(touchbar)
 	mod.touchbar = touchbar
+	return mod
 end
-
 
 --------------------------------------------------------------------------------
 -- SHORTCUT PRESSED:
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
 -- or it may be the name of the effect to apply in the current FCPX language.
 --------------------------------------------------------------------------------
-function mod.apply(shortcut)
+function mod.apply(action)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:currentLanguage()
 
-	if type(shortcut) == "number" then
-		shortcut = mod.getShortcuts()[shortcut]
+	if type(action) == "string" then
+		action = { name = action }
 	end
 
-	if shortcut == nil then
+	local name, category = action.name, action.category
+
+	if name == nil then
 		dialog.displayMessage(i18n("noEffectShortcut"))
 		return false
 	end
@@ -99,27 +93,15 @@ function mod.apply(shortcut)
 	--------------------------------------------------------------------------------
 	-- Perform Search:
 	--------------------------------------------------------------------------------
-	effects:search():setValue(shortcut)
+	effects:search():setValue(name)
 
 	--------------------------------------------------------------------------------
 	-- Get the list of matching effects
 	--------------------------------------------------------------------------------
 	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
-		--------------------------------------------------------------------------------
-		-- If Needed, Search Again Without Text Before First Dash:
-		--------------------------------------------------------------------------------
-		local index = string.find(shortcut, "-")
-		if index ~= nil then
-			local trimmedShortcut = string.sub(shortcut, index + 2)
-			effects:search():setValue(trimmedShortcut)
-
-			matches = effects:currentItemsUI()
-			if not matches or #matches == 0 then
-				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.")
-				return false
-			end
-		end
+		dialog.displayErrorMessage("Unable to find a transition called '"..name.."'.")
+		return false
 	end
 
 	local effect = matches[1]
@@ -158,6 +140,10 @@ local plugin = {
 }
 
 function plugin.init(deps)
+	return mod
+end
+
+function plugin.postInit(deps)
 	return mod.init(deps.touchbar)
 end
 

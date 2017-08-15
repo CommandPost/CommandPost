@@ -44,12 +44,14 @@ local MAX_SHORTCUTS 	= 5
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.init(actionmanager, generators, titles, transitions)
+function mod.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects)
 	mod._manager = actionmanager
 	mod._actors = {
-		[plugins.types.generator]	= generators,
-		[plugins.types.title]		= titles,
-		[plugins.types.transition]	= transitions,
+		[plugins.types.generator]		= generators,
+		[plugins.types.title]			= titles,
+		[plugins.types.transition]		= transitions,
+		[plugins.types.audioEffect]		= audioeffects,
+		[plugins.types.videoEffect]		= videoeffects,
 	}
 
 	mod._handlers = {}
@@ -115,6 +117,8 @@ local plugin = {
 		["finalcutpro.timeline.generators"]				= "generators",
 		["finalcutpro.timeline.titles"]					= "titles",
 		["finalcutpro.timeline.transitions"]			= "transitions",
+		["finalcutpro.timeline.audioeffects"]			= "audioeffects",
+		["finalcutpro.timeline.videoeffects"]			= "videoeffects",
 	}
 }
 
@@ -122,7 +126,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions)
+	return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 end
 
 return plugin

@@ -4,37 +4,21 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.timeline.transitions ===
+--- === plugins.finalcutpro.timeline.videoeffects ===
 ---
---- Controls Final Cut Pro's Transitions.
+--- Controls Final Cut Pro's Effects.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("transitions")
+local log				= require("hs.logger").new("audiofx")
 
-local chooser			= require("hs.chooser")
-local drawing			= require("hs.drawing")
-local inspect			= require("hs.inspect")
-local screen			= require("hs.screen")
 local timer				= require("hs.timer")
 
-local choices			= require("cp.choices")
-local config			= require("cp.config")
-local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
-local tools				= require("cp.tools")
-local prop				= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY 			= 2000
-local MAX_SHORTCUTS 	= 5
+local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
@@ -49,9 +33,9 @@ function mod.init(touchbar)
 end
 
 --------------------------------------------------------------------------------
--- TRANSITIONS SHORTCUT PRESSED:
+-- SHORTCUT PRESSED:
 -- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the transition to apply in the current FCPX language.
+-- or it may be the name of the effect to apply in the current FCPX language.
 --------------------------------------------------------------------------------
 function mod.apply(action)
 
@@ -60,84 +44,82 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:currentLanguage()
 
-	if type(shortcut) == "string" then
+	if type(action) == "string" then
 		action = { name = action }
 	end
 
 	local name, category = action.name, action.category
 
 	if name == nil then
-		dialog.displayMessage(i18n("noPluginShortcut", {plugin = i18n("transition_group")}))
+		dialog.displayMessage(i18n("noEffectShortcut"))
 		return false
 	end
 
 	--------------------------------------------------------------------------------
-	-- Save the Effects Browser layout:
-	--------------------------------------------------------------------------------
-	local effects = fcp:effects()
-	local effectsLayout = effects:saveLayout()
-
-	--------------------------------------------------------------------------------
-	-- Get Transitions Browser:
+	-- Save the Transitions Browser layout:
 	--------------------------------------------------------------------------------
 	local transitions = fcp:transitions()
-	local transitionsShowing = transitions:isShowing()
 	local transitionsLayout = transitions:saveLayout()
+
+	--------------------------------------------------------------------------------
+	-- Get Effects Browser:
+	--------------------------------------------------------------------------------
+	local effects = fcp:effects()
+	local effectsShowing = effects:isShowing()
+	local effectsLayout = effects:saveLayout()
+
+	fcp:launch()
 
 	--------------------------------------------------------------------------------
 	-- Make sure panel is open:
 	--------------------------------------------------------------------------------
-	transitions:show()
+	effects:show()
 
 	--------------------------------------------------------------------------------
-	-- Make sure "Installed Transitions" is selected:
+	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	transitions:showInstalledTransitions()
+	effects:showInstalledEffects()
 
 	--------------------------------------------------------------------------------
 	-- Make sure there's nothing in the search box:
 	--------------------------------------------------------------------------------
-	transitions:search():clear()
+	effects:search():clear()
 
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	if category then
-		transitions:showTransitionsCategory(category)
-	else
-		transitions:showAllTransitions()
-	end
+	effects:showAllTransitions()
 
 	--------------------------------------------------------------------------------
 	-- Perform Search:
 	--------------------------------------------------------------------------------
-	transitions:search():setValue(name)
+	effects:search():setValue(name)
 
 	--------------------------------------------------------------------------------
-	-- Get the list of matching transitions
+	-- Get the list of matching effects
 	--------------------------------------------------------------------------------
-	local matches = transitions:currentItemsUI()
+	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
-		dialog.displayErrorMessage(i18n("noPluginFound", {plugin=i18n("transition_group"), name=name}))
+		dialog.displayErrorMessage("Unable to find a transition called '"..name.."'.")
 		return false
 	end
 
-	local transition = matches[1]
+	local effect = matches[1]
 
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
 	mod.touchbar.hide()
 
-	transitions:applyItem(transition)
+	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
 		mod.touchbar.show()
 
-		transitions:loadLayout(transitionsLayout)
-		if effectsLayout then effects:loadLayout(effectsLayout) end
-		if not transitionsShowing then transitions:hide() end
+		effects:loadLayout(effectsLayout)
+		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+		if not effectsShowing then effects:hide() end
 	end)
 
 	-- Success!
@@ -150,16 +132,13 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.transitions",
+	id = "finalcutpro.timeline.audioeffects",
 	group = "finalcutpro",
 	dependencies = {
 		["finalcutpro.os.touchbar"]						= "touchbar",
 	}
 }
 
---------------------------------------------------------------------------------
--- INITIALISE PLUGIN:
---------------------------------------------------------------------------------
 function plugin.init(deps)
 	return mod
 end

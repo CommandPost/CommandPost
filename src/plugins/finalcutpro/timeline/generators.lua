@@ -37,6 +37,7 @@ local mod = {}
 
 function mod.init(touchbar)
 	mod.touchbar = touchbar
+	return mod
 end
 
 --- plugins.finalcutpro.timeline.generators.apply(action) -> boolean
