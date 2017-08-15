@@ -13,8 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local feedback			= require("cp.feedback")
 local config			= require("cp.config")
+local feedback			= require("cp.feedback")
 
 --------------------------------------------------------------------------------
 --
