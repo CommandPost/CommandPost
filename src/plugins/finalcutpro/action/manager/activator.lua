@@ -95,10 +95,10 @@ function activator.new(id, manager)
 --- Contains all handlers that are allowed in this activator.
 	o.allowedHandlers = o._manager.handlers:mutate(function(handlers)
 		local allowed = {}
-		local allowedIds = o._allowedHandlers()
+		local allowedIds = o:_allowedHandlers()
 
 		for id,handler in pairs(handlers) do
-			if allowedIds == nil or #allowedIds == 0 or allowedIds[id] then
+			if allowedIds == nil or allowedIds[id] then
 				allowed[id] = handler
 			end
 		end
@@ -191,10 +191,8 @@ end
 function activator.mt:allowHandlers(...)
 	local allowed = {}
 	for _,id in ipairs(table.pack(...)) do
-		log.df("allowHandlers: checking handler id: %s", id)
 		if self._manager.getHandler(id) then
 			allowed[id] = true
-			log.df("allowHandlers: allowing handler: %s", id)
 		else
 			error(string.format("Attempted to make action handler '%s' exclusive, but it could not be found.", id))
 		end
@@ -412,72 +410,6 @@ function activator.mt:incPopularity(id)
 	end
 end
 
---- plugins.finalcutpro.action.activator:onExecute(executeFn) -> handler
---- Method
---- Configures the function to call when a choice is executed. This will be passed
---- the choice the `handler` and the `action` in a single table. Eg:
----
---- ```lua
---- activator:onExecute(function(handler, action)
---- 	print("handler: " .. handler:id() .. "; action: " .. handler.actionId(action))
---- end)
---- ```
----
---- Parameters:
---- * `executeFn`		- The function to call when executing.
----
---- Returns:
---- * This activator.
-function activator.mt:onExecute(executeFn)
-	self._onExecute = executeFn
-	return self
-end
-
--- plugins.finalcutpro.action.handler._onExecute(action) -> nil
--- Method
--- Default handler for executing. Throws an error message.
---
--- Parameters:
--- * `action`	- The table of parameters being executed.
---
--- Returns:
--- * Nothing
-function activator.mt._onExecute(action)
-	error("unimplemented: handler:onExecute(executeFn)")
-end
-
---- plugins.finalcutpro.action.activator:execute(handlerId, params) -> boolean
---- Method
---- Executes the `action` via the specified `handlerId`. If the action is executed, it returns `true`.
----
---- Parameters:
---- * `handlerId`		- The ID of the action handler.
---- * `action`			- The details of the action to execute.
----
---- Returns:
---- * `true` if the action executed successfully.
-function activator.mt:execute(handlerId, action)
-	local handler = self.getActiveHandler(handlerId)
-	if handler then
-		if self._onExecute then
-			return self._onExecute(handler, action) ~= false
-		elseif handler:execute(action) then
-			if handler.actionId then
-				local actionId = handler:actionId(action)
-				if actionId then
-					self:incPopularity(actionId)
-				end
-			end
-			return true
-		else
-			error(string.format("Action handler '%s' could not execute: %s", hs.inspect(handlerId), hs.inspect(action)))
-		end
-	else
-		error(string.format("No action handler with an ID of '%s' is registered", hs.inspect(handlerId)))
-	end
-	return false
-end
-
 --- plugins.finalcutpro.action.activator:sortChoices() -> boolean
 --- Method
 --- Sorts the current set of choices in the activator. It takes into account
@@ -562,6 +494,7 @@ end
 -- Finds and sorts all choices from enabled handlers. They are available via
 -- the [choices](#choices) or [allChoices](#allChoices) properties.
 function activator.mt:_findChoices()
+	log.df("Finding choices...")
 	-- check if we are already watching the handlers.
 	local unwatched = not self._watched
 	self._watched = true
@@ -775,39 +708,45 @@ end
 --- ```lua
 --- activator:onActivate(function(handler, action))
 --- ```
+---
+--- Parameters:
+--- * `activateFn`		- The function to call when an item is activated.
+---
+--- Returns:
+--- * The activator.
 function activator.mt:onActivate(activateFn)
 	self._onActivate = activateFn
+	return self
 end
 
-function activator.mt:_onActivate(handler, action)
+function activator.mt._onActivate(handler, action)
 	if handler:execute(action) then
-		if handler.actionId then
-			local actionId = handler:actionId(action)
-			if actionId then
-				self:incPopularity(actionId)
-			end
-		end
+		return true
 	else
 		log.wf("Action handler '%s' could not execute: %s", hs.inspect(handlerId), hs.inspect(action))
 	end
+	return false
 end
 
 --------------------------------------------------------------------------------
 -- CONSOLE TRIGGER ACTION:
 --------------------------------------------------------------------------------
 function activator.mt:activate(result)
-
 	self:hide()
-
 	--------------------------------------------------------------------------------
 	-- If something was selected:
 	--------------------------------------------------------------------------------
 	if result then
-		local handler = self:getActiveHandler(result.type)
-		if handler and result.params then
-			self:_onActivate(handler, result.params)
+		local handlerId, action = result.type, result.params
+		local handler = self:getActiveHandler(handlerId)
+		if handler and action then
+			self._onActivate(handler, action)
+			local actionId = handler:actionId(action)
+			if actionId then
+				self:incPopularity(actionId)
+			end
 		else
-			error(string.format("No action handler with an ID of %s is registered.", hs.inspect(result.type)))
+			error(string.format("No action handler with an ID of %s is registered.", hs.inspect(handlerId)))
 		end
 	end
 end

@@ -21,12 +21,21 @@ local config							= require("cp.config")
 local prop								= require("cp.prop")
 local tools								= require("cp.tools")
 
+local insert, sort						= table.insert, table.sort
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
 local MAX_SHORTCUTS = 5
+local PRIORITY = 50000
+
+local pluginTypeDetails = {}
+for _,type in pairs(plugins.types) do
+	insert(pluginTypeDetails, { type = type, label = i18n(type.."_action") })
+end
+sort(pluginTypeDetails, function(a, b) return a.label < b.label end)
 
 --------------------------------------------------------------------------------
 --
@@ -35,24 +44,50 @@ local MAX_SHORTCUTS = 5
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.init(actionmanager)
+function mod.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects)
 	mod._actionmanager = actionmanager
+	mod._apply = {
+		[plugins.types.generator]		= generators.apply,
+		[plugins.types.title]			= titles.apply,
+		[plugins.types.transition]		= transitions.apply,
+		[plugins.types.audioEffect]		= audioeffects.apply,
+		[plugins.types.videoEffect]		= videoeffects.apply,
+	}
+
+	return mod
 end
 
 mod.shortcuts = prop(
 	function()
-		return config.get(fcp:currentLanguage() .. ".videoEffectShortcuts", {})
+		return config.get(fcp:currentLanguage() .. ".pluginShortcuts", {})
 	end,
 	function(value)
-		config.set(fcp:currentLanguage() .. ".videoEffectShortcuts", value)
+		config.set(fcp:currentLanguage() .. ".pluginShortcuts", value)
 	end
 )
 
-function mod.setShortcut(number, value)
-	assert(number >= 1 and number <= MAX_SHORTCUTS)
+function mod.setShortcut(handlerId, action, shortcutNumber)
+	assert(shortcutNumber >= 1 and shortcutNumber <= MAX_SHORTCUTS)
 	local shortcuts = mod.shortcuts()
-	shortcuts[number] = value
+	local handlerShortcuts = shortcuts[handlerId]
+	if not handlerShortcuts then
+		handlerShortcuts = {}
+		shortcuts[handlerId] = handlerShortcuts
+	end
+	handlerShortcuts[shortcutNumber] = action
 	mod.shortcuts(shortcuts)
+end
+
+function mod.getShortcut(handlerId, shortcutNumber)
+	local shortcuts = mod.shortcuts()
+	local handlerShortcuts = shortcuts[handlerId]
+	return handlerShortcuts and handlerShortcuts[shortcutNumber]
+end
+
+function mod.applyShortcut(handlerId, shortcutNumber)
+	local action = mod.getShortcut(handlerId, shortcutNumber)
+	local apply = self._apply[handlerId]
+	return apply and apply(action) or false
 end
 
 --- plugins.finalcutpro.timeline.pluginshortcuts.assignShortcut(shortcutNumber, handlerId) -> nothing
@@ -61,24 +96,26 @@ end
 --- A chooser will be displayed, and the selected item will become the shortcut.
 ---
 --- Parameters:
+--- * `handlerId`		- The action handler ID.
 --- * `shortcutNumber`	- The shortcut number, between 1 and 5, which is being assigned.
 ---
 --- Returns:
 --- * Nothing
-function mod.assignShortcut(shortcutNumber, handlerId)
-	local activator = mod._actionmanager.getActivator("finalcutpro.timeline.plugin.shortcuts")
+function mod.assignShortcut(handlerId, shortcutNumber)
+	local activator = mod._actionmanager.getActivator("finalcutpro.timeline.plugin.shortcuts."..handlerId)
 		:allowHandlers(handlerId)
-		:onExecute(function(handler, action)
-			activator:hide()
+		:onActivate(function(handler, action)
 			if action ~= nil then
 				--------------------------------------------------------------------------------
 				-- Save the selection:
 				--------------------------------------------------------------------------------
-				mod.setShortcut(handlerId, shortcutNumber, action)
+				mod.setShortcut(handlerId, action, shortcutNumber)
 			end
 		end)
 	-- not configurable by the user.
 	activator:configurable(false)
+	-- don't bother remembering the last query
+	activator:lastQueryRemembered(false)
 
 	activator:show()
 end
@@ -99,30 +136,35 @@ local plugin = {
 		["finalcutpro.timeline.generators"]				= "generators",
 		["finalcutpro.timeline.titles"]					= "titles",
 		["finalcutpro.timeline.transitions"]			= "transitions",
+		["finalcutpro.timeline.audioeffects"]			= "audioeffects",
+		["finalcutpro.timeline.videoeffects"]			= "videoeffects",
 	}
 }
 
 function plugin.init(deps)
-	mod.init(deps.actionmanager)
+	mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 
 	local menu = deps.menu:addMenu(PRIORITY, function() return i18n("pluginShortcuts") end)
 
 	-- loop through the plugin types
-	for _,type in pairs(plugins.types) do
+	for _,details in pairs(pluginTypeDetails) do
+		local type, label = details.type, details.label
 		-- The 'Assign Shortcuts' menu
-		local menu = menu:addMenu(PRIORITY, function() return i18n(type.."_action") end)
+		local menu = menu:addMenu(PRIORITY, function() return label end)
 
 		menu:addItems(1000, function()
 			--------------------------------------------------------------------------------
 			-- Effects Shortcuts:
 			--------------------------------------------------------------------------------
-			local effectsShortcuts	= mod.shortcuts()
+			local shortcuts = mod.shortcuts()
+			local handlerShortcuts	= shortcuts[type] or {}
 
 			local items = {}
 
 			for i = 1,MAX_SHORTCUTS do
-				local shortcutName = effectsShortcuts[i] or i18n("unassignedTitle")
-				items[i] = { title = i18n("pluginShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignShortcut(i, type) end }
+				local shortcut = handlerShortcuts[i]
+				local shortcutName = shortcut and shortcut.name or i18n("unassignedTitle")
+				items[i] = { title = i18n("pluginShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignShortcut(type, i) end }
 			end
 
 			return items
@@ -133,7 +175,7 @@ function plugin.init(deps)
 		for i = 1, MAX_SHORTCUTS do
 			fcpxCmds:add("cpEffects"..tools.numberToWord(i))
 				:activatedBy():ctrl():shift(tostring(i))
-				:whenPressed(function() mod.apply(i) end)
+				:whenPressed(function() mod.applyShortcut(type, i) end)
 		end
 	end
 
