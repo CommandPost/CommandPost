@@ -793,6 +793,8 @@ return {
 	generator_group						=			"Generator",
 	commandPost_group					=			"CommandPost",
 
+	commandChoiceSubText				=			"Command: %{group}",
+
 	--------------------------------------------------------------------------------
 	-- PLUGIN STATUSES:
 	--------------------------------------------------------------------------------

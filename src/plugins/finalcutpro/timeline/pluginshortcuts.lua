@@ -173,8 +173,8 @@ function plugin.init(deps)
 		-- Commands with default shortcuts
 		local fcpxCmds = deps.fcpxCmds
 		for i = 1, MAX_SHORTCUTS do
-			log.df("Adding command for '%s'", type..tostring(i))
 			fcpxCmds:add(type..tostring(i))
+				:groupedBy("timeline")
 				:activatedBy():ctrl():shift(tostring(i))
 				:whenPressed(function() mod.applyShortcut(type, i) end)
 		end
