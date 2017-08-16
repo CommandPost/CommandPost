@@ -173,7 +173,8 @@ function plugin.init(deps)
 		-- Commands with default shortcuts
 		local fcpxCmds = deps.fcpxCmds
 		for i = 1, MAX_SHORTCUTS do
-			fcpxCmds:add("cpEffects"..tools.numberToWord(i))
+			log.df("Adding command for '%s'", type..tostring(i))
+			fcpxCmds:add(type..tostring(i))
 				:activatedBy():ctrl():shift(tostring(i))
 				:whenPressed(function() mod.applyShortcut(type, i) end)
 		end
