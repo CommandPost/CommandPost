@@ -735,7 +735,7 @@ return {
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	command_action						=			"Commands",
+	cmds_action							=			"Commands",
 	menu_action							=			"Menu Items",
 	videoEffect_action					=			"Video Effects",
 	audioEffect_action					=			"Audio Effects",
