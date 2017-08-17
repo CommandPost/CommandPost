@@ -10,7 +10,7 @@ return {
 		--------------------------------------------------------------------------------
 		-- GENERIC:
 		--------------------------------------------------------------------------------
-			
+
 			--------------------------------------------------------------------------------
 			-- Apps:
 			--------------------------------------------------------------------------------
@@ -894,6 +894,7 @@ return {
 	finalcutpro_menu_administrator_advancedfeatures_label	=	"Menubar: Advanced Features",
 	finalcutpro_menu_administrator_label					=	"Menubar: Administrator",
 	finalcutpro_menu_clipboard_label						=	"Menubar: Clipboard",
+	finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
 	finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
 	finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
 	finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
@@ -915,6 +916,7 @@ return {
 	finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",
+	finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
 	finalcutpro_timeline_disablewaveforms_label				=	"Timeline: Waveform Drawing",
 	finalcutpro_timeline_effects_label						=	"Timeline: Effects",
@@ -1081,6 +1083,6 @@ return {
 
 		cpBugReport_title										=	"Report Final Cut Pro Bug to Apple",
 		cpFeatureRequest_title									=	"Suggest Final Cut Pro Feature to Apple",
-		
+
 	}
 }
