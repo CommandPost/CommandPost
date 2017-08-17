@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.feedback.bugreport ===
 ---
---- Send Apple a bug report for Final Cut Pro.
+--- Sends Apple a Bug Report or Feature Request for Final Cut Pro.
 
 --------------------------------------------------------------------------------
 --
@@ -35,7 +35,7 @@ local v					= require("semver")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 8888887
+local PRIORITY 			= 1
 local FEEDBACK_URL		= "https://www.apple.com/feedback/finalcutpro.html"
 local FEEDBACK_TYPE		= "Bug Report"
 
@@ -80,231 +80,16 @@ local function windowCallback(action, webview, frame)
 end
 
 --------------------------------------------------------------------------------
--- GET RAM SIZE:
---------------------------------------------------------------------------------
-local function getRAMSize()
-	local memSize = host.vmStat()["memSize"]
-	local rounded = tools.round(memSize/1073741824, 0)
-
-	if rounded <= 2 then
-		return "2 GB"
-	elseif rounded >= 3 and rounded <= 4 then
-		return "3-4 GB"
-	elseif rounded >= 5 and rounded <= 8 then
-		return "5-8 GB"
-	elseif rounded >= 9 and rounded <= 16 then
-		return "9-16 GB"
-	elseif rounded >= 17 and rounded <= 32 then
-		return "17-32 GB"
-	else
-		return "More than 32 GB"
-	end
-
-end
-
---------------------------------------------------------------------------------
--- SPLIT ON COLUMN:
---------------------------------------------------------------------------------
-local function splitOnColumn(input)
-    local space = input:find(': ') or (#input + 1)
-    return tools.trim(input:sub(space+1))
-end
-
---------------------------------------------------------------------------------
--- GET MODEL NAME:
---------------------------------------------------------------------------------
-function getModelName()
-	local output, status = hs.execute([[system_profiler SPHardwareDataType | grep "Model Name"]])
-	if status and output then
-		local modelName = splitOnColumn(output)
-		local output, status = hs.execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
-		if status and output then
-			local modelIdentifier = splitOnColumn(output)
-			if modelName == "MacBook Pro" then
-				local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
-				local minorVersion = tonumber(string.sub(modelIdentifier, 14, 15))
-				if minorVersion >= 2 and majorVersion >= 13 then
-					return "MacBook Pro (Touch Bar)"
-				else
-					return "MacBook Pro"
-				end
-			elseif modelName == "Mac Pro" then
-				local majorVersion = tonumber(string.sub(modelIdentifier, 7, 7))
-				if majorVersion >=6 then
-					return "Mac Pro (Late 2013)"
-				else
-					return "Mac Pro (Previous generation)"
-				end
-			elseif modelName == "MacBook Air" then
-				return "MacBook Air"
-			elseif modelName == "MacBook" then
-				return "MacBook"
-			elseif modelName == "iMac" then
-				return "iMac"
-			elseif modelName == "Mac mini" then
-				return "Mac mini"
-			end
-		end
-	end
-	return ""
-end
-
---------------------------------------------------------------------------------
--- GET VRAM SIZE:
---------------------------------------------------------------------------------
-local function getVRAMSize()
-	local output, status = hs.execute("system_profiler SPDisplaysDataType | grep VRAM")
-	if status and output then
-		local lines = tools.lines(output)
-		local vram = nil
-		if #lines == 1 then
-			vram = splitOnColumn(lines[1])
-		else
-			vram = splitOnColumn(lines[2])
-		end
-		local value = string.sub(vram, -2)
-		local result = tonumber(string.sub(vram, 1, -4))
-		if value == "MB" then
-			if result >= 256 and result <= 512 then
-				return "256 MB-512 MB"
-			elseif result >= 512 and result <= 1024 then
-				return "512 MB-1 GB"
-			elseif result >= 1024 and result <= 2048 then
-				return "1-2 GB"
-			elseif result > 2048 then
-				return "More than 2 GB"
-			else
-				return ""
-			end
-		else
-			return ""
-		end
-	else
-		return ""
-	end
-end
-
---------------------------------------------------------------------------------
--- GET MACOS VERSION:
---------------------------------------------------------------------------------
-local function getmacOSVersion()
-	local macOSVersion = tools.macOSVersion()
-	if macOSVersion then
-		local label = "OS X"
-		if v(macOSVersion) >= v("10.12") then
-			label = "macOS"
-		end
-		return label .. " " .. tostring(macOSVersion)
-	end
-end
-
---------------------------------------------------------------------------------
--- GET USB DEVICES:
---------------------------------------------------------------------------------
-function getUSBDevices()
-	-- "system_profiler SPUSBDataType"
-	local output, status = hs.execute("ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*'")
-	if output and status then
-		local lines = tools.lines(output)
-		local result = "USB DEVICES:\n"
-		local numberOfDevices = 0
-		for i, v in ipairs(lines) do
-			numberOfDevices = numberOfDevices + 1
-			result = result .. "- " .. v .. "\n"
-		end
-		if numberOfDevices == 0 then
-			result = result .. "- None"
-		end
-		return result
-	else
-		return ""
-	end
-end
-
---------------------------------------------------------------------------------
--- GET THUNDERBOLT DEVICES:
---------------------------------------------------------------------------------
-function getThunderboltDevices()
-	local output, status = hs.execute([[system_profiler SPThunderboltDataType | grep "Device Name" -B1]])
-	if output and status then
-		local lines = tools.lines(output)
-		local devices = {}
-		local currentDevice = 1
-		for i, v in ipairs(lines) do
-			if v ~= "--" and v ~= "" then
-				if devices[currentDevice] == nil then
-					devices[currentDevice] = ""
-				end
-				devices[currentDevice] = devices[currentDevice] .. v
-				if i ~= #lines then
-					devices[currentDevice] = devices[currentDevice] .. "\n"
-				end
-			else
-				currentDevice = currentDevice + 1
-			end
-		end
-		local result = "THUNDERBOLT DEVICES:\n"
-		local numberOfDevices = 0
-		for i, v in pairs(devices) do
-			if string.sub(v, 1, 23) ~= "Vendor Name: Apple Inc." then
-				numberOfDevices = numberOfDevices + 1
-				local newResult = string.gsub(v, "Vendor Name: ", "- ")
-				newResult = string.gsub(newResult, "\nDevice Name: ", ": ")
-				result = result .. newResult
-			end
-		end
-		if numberOfDevices == 0 then
-			result = result .. "- None"
-		end
-		return result
-	else
-		return ""
-	end
-end
-
---------------------------------------------------------------------------------
--- GET EXTERNAL DEVICES:
---------------------------------------------------------------------------------
-function getExternalDevices()
-	return getUSBDevices() .. "\n" .. getThunderboltDevices()
-end
-
---------------------------------------------------------------------------------
--- GET FULL NAME:
---------------------------------------------------------------------------------
-function getFullname()
-	local output, status = hs.execute("id -F")
-	if output and status then
-		return tools.trim(output)
-	else
-		return ""
-	end
-end
-
---------------------------------------------------------------------------------
--- GET EMAIL:
---------------------------------------------------------------------------------
-function getEmail(fullname)
-	local appleScript = [[
-		tell application "Contacts"
-			return value of first email of person "]] .. fullname .. [["
-		end tell
-	]]
-	local _,result = osascript.applescript(appleScript)
-	if result then
-		return result
-	else
-		return ""
-	end
-end
-
---------------------------------------------------------------------------------
 -- NAVIGATION CALLBACK:
 --------------------------------------------------------------------------------
 local function navigationCallback(a, b, c, d)
 	if a == "didFinishNavigation" and b and b:title() == "Feedback - Final Cut Pro - Apple" then
 
 		local defaultFeedback = "WHAT WENT WRONG?\n\n\nWHAT DID YOU EXPECT TO HAPPEN?\n\n\nWHAT ARE THE STEPS TO RECREATE THE PROBLEM?\n\n"
+
+		if FEEDBACK_TYPE == "Enhancement Request" then
+			defaultFeedback = "WHAT FEATURE WOULD YOU LIKE TO SEE IMPLEMENTED OR IMPROVED?\n\n"
+		end
 
 		--------------------------------------------------------------------------------
 		-- Time to inject some JavaScript!
@@ -448,26 +233,35 @@ end
 
 --- plugins.finalcutpro.feedback.bugreport.open() -> none
 --- Function
---- Opens Final Cut Pro Bug Report
+--- Opens Final Cut Pro Feedback Screen
 ---
 --- Parameters:
----  * None
+---  * bugReport - Is it a bug report?
 ---
 --- Returns:
 ---  * None
-function mod.open()
+function mod.open(bugReport)
+
+	--------------------------------------------------------------------------------
+	-- Feedback Type:
+	--------------------------------------------------------------------------------
+	if bugReport then 
+		FEEDBACK_TYPE = "Bug Report"
+	else
+		FEEDBACK_TYPE = "Enhancement Request"
+	end	
 
 	--------------------------------------------------------------------------------
 	-- Gather Data:
 	--------------------------------------------------------------------------------
 	mod.fullname = config.get("bugReportCustomerName", "")
 	if mod.fullname == "" then
-		mod.fullname = getFullname() or ""
+		mod.fullname = tools.getFullname() or ""
 	end
 
 	mod.email = config.get("bugReportCustomerEmail", "")
 	if mod.email == "" and mod.fullname ~= "" then
-		mod.email = getEmail(mod.fullname) or ""
+		mod.email = tools.getEmail(mod.fullname) or ""
 	end
 
 	mod.videoOutput = config.get("bugReportVideoOutput", "")
@@ -477,19 +271,19 @@ function mod.open()
 	mod.documentationContext = config.get("bugReportDocumentationContext", "")
 
 	if not mod.macOSVersion then
-		mod.macOSVersion = getmacOSVersion()
+		mod.macOSVersion = tools.getmacOSVersion()
 	end
 	if not mod.ramSize then
-		mod.ramSize = getRAMSize()
+		mod.ramSize = tools.getRAMSize()
 	end
 	if not mod.vramSize then
-		mod.vramSize = getVRAMSize()
+		mod.vramSize = tools.getVRAMSize()
 	end
 	if not mod.modelName then
-		mod.modelName = getModelName()
+		mod.modelName = tools.getModelName()
 	end
 	if not mod.externalDevices then
-		mod.externalDevices = getExternalDevices()
+		mod.externalDevices = tools.getExternalDevices()
 	end
 
 	mod.finalCutProVersion = fcp.getVersion()
@@ -573,7 +367,7 @@ local plugin = {
 	id				= "finalcutpro.feedback.bugreport",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.menu.bottom"]			= "menu",
+		["finalcutpro.menu.finalcutpro"] = "menu",
 		["core.commands.global"] 		= "global",
 	}
 }
@@ -588,14 +382,21 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.menu
 		:addItem(PRIORITY, function()
-			return { title = i18n("reportBugToApple"),	fn = function() mod.open() end }
+			return { title = i18n("suggestFeatureToApple"),	fn = function() mod.open(false) end }
 		end)
+		:addItem(PRIORITY + 0.1, function()
+			return { title = i18n("reportBugToApple"),	fn = function() mod.open(true) end }
+		end)
+		:addSeparator(PRIORITY + 0.2)
 
 	--------------------------------------------------------------------------------
 	-- Commands:
 	--------------------------------------------------------------------------------
 	deps.global:add("cpBugReport")
-		:whenActivated(mod.open)
+		:whenActivated(function() mod.open(true) end)
+
+	deps.global:add("cpFeatureRequest")
+		:whenActivated(function() mod.open(false) end)
 
 	return mod
 

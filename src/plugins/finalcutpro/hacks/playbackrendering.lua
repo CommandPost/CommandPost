@@ -46,13 +46,6 @@ mod.enabled = prop.new(
 	end,
 
 	function(value)
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local running = fcp:isRunning()
-		if running and not dialog.displayYesNoQuestion(i18n("togglingBackgroundTasksRestart") .. "\n\n" ..i18n("doYouWantToContinue")) then
-			return
-		end
 
 		--------------------------------------------------------------------------------
 		-- Update plist:
@@ -62,16 +55,6 @@ mod.enabled = prop.new(
 			return
 		end
 
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if running and not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return
-		end
 	end
 )
 

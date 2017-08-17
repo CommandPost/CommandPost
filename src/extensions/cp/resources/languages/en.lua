@@ -10,10 +10,11 @@ return {
 		--------------------------------------------------------------------------------
 		-- GENERIC:
 		--------------------------------------------------------------------------------
-
+			
 			--------------------------------------------------------------------------------
 			-- Apps:
 			--------------------------------------------------------------------------------
+			apple								=			"Apple",
 			finalCutPro							=			"Final Cut Pro",
 
 			--------------------------------------------------------------------------------
@@ -53,6 +54,8 @@ return {
 			show								=			"Show",
 			clearList							=			"Clear List",
 			feedback							=			"Feedback",
+			settings							=			"Settings",
+			launch								=			"Launch",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -630,6 +633,7 @@ return {
 	-- BUG REPORT
 	--------------------------------------------------------------------------------
 	reportBugToApple					=		"Report Final Cut Pro Bug to Apple",
+	suggestFeatureToApple				=		"Suggest Final Cut Pro Feature to Apple",
 
 	--------------------------------------------------------------------------------
 	-- FINAL CUT PRO MEDIA WATCH FOLDER PLUGIN:
@@ -949,7 +953,7 @@ return {
 		--------------------------------------------------------------------------------
 		-- Global:
 		--------------------------------------------------------------------------------
-		cpLaunchFinalCutPro_title								=	"Open Final Cut Pro",
+		cpLaunchFinalCutPro_title								=	"Launch Final Cut Pro",
 		cpSetupWatchFolders_title								= 	"Setup Watch Folders",
 		cpPreferences_title										=	"Preferences",
 		cpOpenErrorLog_title									=	"Open Error Log",
@@ -1076,6 +1080,7 @@ return {
 		cpDisableWaveforms_title								=	"Toggle Waveform Drawing",
 
 		cpBugReport_title										=	"Report Final Cut Pro Bug to Apple",
-
+		cpFeatureRequest_title									=	"Suggest Final Cut Pro Feature to Apple",
+		
 	}
 }

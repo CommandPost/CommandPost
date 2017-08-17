@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
+local log								= require("hs.logger").new("ScrollArea")
 
 --------------------------------------------------------------------------------
 --
@@ -79,7 +80,18 @@ end
 -- TODO: Add documentation
 function ScrollArea:contentsUI()
 	local ui = self:UI()
-	return ui and ui:contents()[1]
+	if ui then
+		local role = ui:attributeValue("AXRole")
+		if role and role == "AXScrollArea" then
+			return ui:contents()[1]
+		else
+			--log.ef("Expected AXScrollArea, but got %s. Returning 'nil'.", role)
+			return nil
+		end
+	else
+		--log.ef("Failed to get ScrollArea:contentsUI(). Returning 'nil'.")
+		return nil
+	end
 end
 
 -- TODO: Add documentation

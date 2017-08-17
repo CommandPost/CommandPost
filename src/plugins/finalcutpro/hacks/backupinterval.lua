@@ -58,18 +58,6 @@ function mod.changeBackupInterval()
 	local FFPeriodicBackupInterval = mod.getPeriodicBackupInterval()
 
 	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running...
-	--------------------------------------------------------------------------------
-	local restartStatus = false
-	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(i18n("changeBackupIntervalMessage") .. "\n\n" .. i18n("doYouWantToContinue")) then
-			restartStatus = true
-		else
-			return "Done"
-		end
-	end
-
-	--------------------------------------------------------------------------------
 	-- Ask user what to set the backup interval to:
 	--------------------------------------------------------------------------------
 	local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage(i18n("changeBackupIntervalTextbox"), i18n("changeBackupIntervalError"), FFPeriodicBackupInterval)
@@ -84,19 +72,6 @@ function mod.changeBackupInterval()
 	if result == nil then
 		dialog.displayErrorMessage(i18n("backupIntervalFail"))
 		return "Failed"
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if restartStatus then
-		if not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return "Failed"
-		end
 	end
 
 end
