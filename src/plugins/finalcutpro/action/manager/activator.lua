@@ -315,21 +315,6 @@ function activator.mt:isDisabledHandler(id)
 	return dh[id] == true
 end
 
-local function applyHiddenTo(choice, hidden)
-	if choice.oldText then
-		choice.text = choice.oldText
-	end
-
-	if hidden then
-		choice.oldText = choice.text
-		choice.text = i18n("actionHiddenText", {text = choice.text})
-		choice.hidden = true
-	else
-		choice.oldText = nil
-		choice.hidden = nil
-	end
-end
-
 --- plugins.finalcutpro.action.activator:hideChoice(id) -> boolean
 --- Method
 --- Hides the choice with the specified ID.
