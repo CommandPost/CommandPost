@@ -73,6 +73,8 @@ local strings									= require("cp.strings")
 
 local v											= require("semver")
 
+local copy										= fnutils.copy
+
 --------------------------------------------------------------------------------
 --
 -- HELPER FUNCTIONS:
@@ -324,6 +326,7 @@ end
 -- Returns:
 --  * The plugin name.
 --  * The plugin theme.
+--  * `true` if the plugin is obsolete
 local function getPluginName(path, pluginExt, language)
 	local localName, realName = getLocalizedName(path, language)
 	if realName then
@@ -331,7 +334,7 @@ local function getPluginName(path, pluginExt, language)
 		for file in fs.dir(path) do
 			if endsWith(file, targetExt) then
 				local name = file:sub(1, (targetExt:len()+1)*-1)
-				pluginPath = path .. "/" .. name .. targetExt
+				local pluginPath = path .. "/" .. name .. targetExt
 				if name == realName then
 					name = localName
 				end
@@ -339,7 +342,7 @@ local function getPluginName(path, pluginExt, language)
 			end
 		end
 	end
-	return nil
+	return nil, nil, nil
 end
 
 mod._getPluginName = getPluginName
@@ -443,12 +446,13 @@ function mod.mt:scanPluginTypeDirectory(language, path, plugin)
 
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
+			local p = copy(plugin)
 			local childPath = path .. "/" .. file
 			local attrs = fs.attributes(childPath)
 			if attrs and attrs.mode == "directory" then
-				if not self:handlePluginDirectory(language, childPath, plugin) then
-					plugin.categoryLocal, plugin.categoryReal = getLocalizedName(childPath, language)
-					failure = failure or not self:scanPluginCategoryDirectory(language, childPath, plugin)
+				if not self:handlePluginDirectory(language, childPath, p) then
+					p.categoryLocal, p.categoryReal = getLocalizedName(childPath, language)
+					failure = failure or not self:scanPluginCategoryDirectory(language, childPath, p)
 				end
 			end
 		end
@@ -473,12 +477,13 @@ function mod.mt:scanPluginCategoryDirectory(language, path, plugin)
 
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
+			local p = copy(plugin)
 			local childPath = path .. "/" .. file
 			local attrs = fs.attributes(childPath)
 			if attrs and attrs.mode == "directory" then
-				if not self:handlePluginDirectory(language, childPath, plugin) then
-					plugin.themeLocal, plugin.themeReal = getLocalizedName(childPath, language)
-					failure = failure or not self:scanPluginThemeDirectory(language, childPath, plugin)
+				if not self:handlePluginDirectory(language, childPath, p) then
+					p.themeLocal, p.themeReal = getLocalizedName(childPath, language)
+					failure = failure or not self:scanPluginThemeDirectory(language, childPath, p)
 				end
 			end
 		end
@@ -501,9 +506,10 @@ end
 function mod.mt:scanPluginThemeDirectory(language, path, plugin)
 	for file in fs.dir(path) do
 		if file:sub(1,1) ~= "." then
+			local p = copy(plugin)
 			local pluginPath = path .. "/" .. file
 			if fs.attributes(pluginPath).mode == "directory" then
-				self:handlePluginDirectory(language, pluginPath, plugin)
+				self:handlePluginDirectory(language, pluginPath, p)
 			end
 		end
 	end
