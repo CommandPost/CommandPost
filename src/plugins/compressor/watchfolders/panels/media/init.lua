@@ -118,7 +118,7 @@ end
 function mod.generateTable()
 
 	local watchFoldersHTML = ""
-	local watchFolders =  fnutils.copy(mod.watchFolders())
+	local watchFolders =  mod.watchFolders()
 
 	for i, v in pairs(watchFolders) do
 		local uniqueUUID = string.gsub(uuid(), "-", "")
@@ -235,7 +235,7 @@ end
 ---  * None
 function mod.controllerCallback(id, params)
 	if params and params.action and params.action == "remove" then
-		mod.watchFolders(removeFromTable(fnutils.copy(mod.watchFolders()), params.path))
+		mod.watchFolders(removeFromTable(mod.watchFolders(), params.path))
 		mod.removeWatcher(params.path)
 		mod.refreshTable()
 	elseif params and params.action and params.action == "refresh" then
@@ -523,7 +523,7 @@ function mod.addFilesToCompressor(files)
 			:send()
 
 		local selectedFile = nil
-		local watchFolders = fnutils.copy(mod.watchFolders())
+		local watchFolders = mod.watchFolders()
 		for i, v in pairs(watchFolders) do
 			if i == string.sub(file, 1, string.len(i)) then
 				selectedFile = v
@@ -598,7 +598,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				if mod.notifications[file] then
 					mod.notifications[file]:withdraw()
 					mod.notifications[file] = nil
-					local savedNotifications = fnutils.copy(mod.savedNotifications())
+					local savedNotifications = mod.savedNotifications()
 					savedNotifications[file] = nil
 					mod.savedNotifications(savedNotifications)
 				end
@@ -743,7 +743,7 @@ function mod.addWatchFolder()
 	--------------------------------------------------------------------------------
 	-- Update Settings:
 	--------------------------------------------------------------------------------
-	local watchFolders = fnutils.copy(mod.watchFolders())
+	local watchFolders = mod.watchFolders()
 	watchFolders[path] = {settingFile=settingFile, destinationPath=destinationPath }
 	mod.watchFolders(watchFolders)
 
@@ -769,7 +769,7 @@ end
 --- Returns:
 ---  * None
 function mod.setupWatchers()
-	local watchFolders = fnutils.copy(mod.watchFolders())
+	local watchFolders = mod.watchFolders()
 	for i, v in pairs(watchFolders) do
 		mod.newWatcher(i)
 	end

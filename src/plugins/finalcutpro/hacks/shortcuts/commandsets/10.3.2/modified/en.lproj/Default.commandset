@@ -69,105 +69,105 @@
 		<key>modifiers</key>
 		<string>control option command</string>
 	</dict>
-	<key>cpTitlesOne</key>
+	<key>title1</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTitlesTwo</key>
+	<key>title2</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTitlesThree</key>
+	<key>title3</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTitlesFour</key>
+	<key>title4</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTitlesFive</key>
+	<key>title5</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpGeneratorsOne</key>
+	<key>generator1</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpGeneratorsTwo</key>
+	<key>generator2</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpGeneratorsThree</key>
+	<key>generator3</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpGeneratorsFour</key>
+	<key>generator4</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpGeneratorsFive</key>
+	<key>generator5</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTransitionsOne</key>
+	<key>transition1</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTransitionsTwo</key>
+	<key>transition2</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTransitionsThree</key>
+	<key>transition3</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTransitionsFour</key>
+	<key>transition4</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpTransitionsFive</key>
+	<key>transition5</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
@@ -1240,35 +1240,70 @@
 		<key>modifiers</key>
 		<string>control option command</string>
 	</dict>
-	<key>cpEffectsOne</key>
+	<key>audioEffect1</key>
+	<dict>
+		<key>characterString</key>
+		<string>1</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
+	</dict>
+	<key>audioEffect2</key>
+	<dict>
+		<key>characterString</key>
+		<string>2</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
+	</dict>
+	<key>audioEffect3</key>
+	<dict>
+		<key>characterString</key>
+		<string>3</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
+	</dict>
+	<key>audioEffect4</key>
+	<dict>
+		<key>characterString</key>
+		<string>4</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
+	</dict>
+	<key>audioEffect5</key>
+	<dict>
+		<key>characterString</key>
+		<string>5</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
+	</dict>
+	<key>videoEffect1</key>
 	<dict>
 		<key>characterString</key>
 		<string>1</string>
 		<key>modifiers</key>
 		<string>control shift</string>
 	</dict>
-	<key>cpEffectsTwo</key>
+	<key>videoEffect2</key>
 	<dict>
 		<key>characterString</key>
 		<string>2</string>
 		<key>modifiers</key>
 		<string>control shift</string>
 	</dict>
-	<key>cpEffectsThree</key>
+	<key>videoEffect3</key>
 	<dict>
 		<key>characterString</key>
 		<string>3</string>
 		<key>modifiers</key>
 		<string>control shift</string>
 	</dict>
-	<key>cpEffectsFour</key>
+	<key>videoEffect4</key>
 	<dict>
 		<key>characterString</key>
 		<string>4</string>
 		<key>modifiers</key>
 		<string>control shift</string>
 	</dict>
-	<key>cpEffectsFive</key>
+	<key>videoEffect5</key>
 	<dict>
 		<key>characterString</key>
 		<string>5</string>

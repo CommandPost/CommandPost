@@ -103,7 +103,8 @@ end
 function TimelineToolbar:effectsToggle()
 	if not self._effectsToggle then
 		self._effectsToggle = RadioButton:new(self, function()
-			return self:effectsGroupUI()[1]
+			local effectsGroup = self:effectsGroupUI()
+			return effectsGroup and effectsGroup[1]
 		end)
 	end
 	return self._effectsToggle
@@ -113,7 +114,8 @@ end
 function TimelineToolbar:transitionsToggle()
 	if not self._transitionsToggle then
 		self._transitionsToggle = RadioButton:new(self, function()
-			return self:effectsGroupUI()[2]
+			local effectsGroup = self:effectsGroupUI()
+			return effectsGroup and effectsGroup[2]
 		end)
 	end
 	return self._transitionsToggle

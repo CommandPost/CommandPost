@@ -1,3 +1,5 @@
+local inspect		= require("hs.inspect")
+
 local function TERMINAL_HANDLER(e, test, msg)
 	if e == 'pass' then
 		print("[32m✔[0m "..test..': '..msg)
@@ -8,23 +10,27 @@ local function TERMINAL_HANDLER(e, test, msg)
 	end
 end
 
+local function notequal(a, b)
+	return false, string.format("%s ~= %s", inspect(a), inspect(b))
+end
+
 local function deepeq(a, b)
 	-- Different types: false
-	if type(a) ~= type(b) then return false end
+	if type(a) ~= type(b) then return notequal(type(a), type(b)) end
 	-- Functions
 	if type(a) == 'function' then
-		return string.dump(a) == string.dump(b)
+		return string.dump(a) == string.dump(b) or notequal(a, b)
 	end
 	-- Primitives and equal pointers
 	if a == b then return true end
 	-- Only equal tables could have passed previous tests
-	if type(a) ~= 'table' then return false end
+	if type(a) ~= 'table' then return notequal(a, b) end
 	-- Compare tables field by field
 	for k,v in pairs(a) do
-		if b[k] == nil or not deepeq(v, b[k]) then return false end
+		if b[k] == nil or not deepeq(v, b[k]) then return notequal(a, b) end
 	end
 	for k,v in pairs(b) do
-		if a[k] == nil or not deepeq(v, a[k]) then return false end
+		if a[k] == nil or not deepeq(v, a[k]) then return notequal(a, b) end
 	end
 	return true
 end
@@ -90,10 +96,15 @@ return function(name, f, async)
 
 		env.eq = deepeq
 		env.spy = spy
-		env.ok = function(cond, msg)
-			if not msg then
-				msg = debug.getinfo(2, 'S').short_src..":"..debug.getinfo(2, 'l').currentline
-			end
+		env.ok = function(cond, ...)
+			local msg = ""
+			for n=1,select('#',...) do
+				local m = select(n,...)
+				if m then
+					msg = msg .. (msg:len() > 0 and " " or "") .. tostring(m)
+				end
+		  	end
+			msg = "["..debug.getinfo(2, 'S').short_src..":"..debug.getinfo(2, 'l').currentline.."] " .. msg
 			if cond then
 				handler('pass', name, msg)
 			else

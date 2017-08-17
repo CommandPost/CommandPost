@@ -15,10 +15,9 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("scanfinalcutpro")
 
-local application		= require("hs.application")
-
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
+local guiscan			= require("cp.apple.finalcutpro.plugins.guiscan")
 local just				= require("cp.just")
 local config			= require("cp.config")
 local tools				= require("cp.tools")
@@ -66,28 +65,16 @@ function mod.scanFinalCutPro()
 	--------------------------------------------------------------------------------
 	dialog.displayMessage(i18n("scanFinalCutProWarning"))
 
-	--------------------------------------------------------------------------------
-	-- Show Effects Panel:
-	--------------------------------------------------------------------------------
-	fcp:effects():show()
-
-	--------------------------------------------------------------------------------
-	-- Show Generators Panel:
-	--------------------------------------------------------------------------------
-	fcp:generators():show()
-
-	--------------------------------------------------------------------------------
-	-- Update Effects, Transitions, Titles & Generator Lists:
-	--------------------------------------------------------------------------------
-	if not mod.effects.updateEffectsList() then return false end
-	if not mod.transitions.updateTransitionsList() then return false end
-	if not mod.titles.updateTitlesList() then return false end
-	if not mod.generators.updateGeneratorsList() then return false end
+	local result = guiscan.check()
 
 	--------------------------------------------------------------------------------
 	-- Competition Message:
 	--------------------------------------------------------------------------------
-	dialog.displayMessage(i18n("scanFinalCutProDone"))
+	if result then
+		dialog.displayMessage(i18n("scanFinalCutProDone"))
+	else
+		dialog.displayMessage(i18n("scanFinalCutProErrors"))
+	end
 
 	return true
 end
@@ -95,24 +82,7 @@ end
 --------------------------------------------------------------------------------
 -- INITIALISE MODULE:
 --------------------------------------------------------------------------------
-function mod.init(effects, generators, titles, transitions)
-	mod.effects = effects
-	mod.generators = generators
-	mod.titles = titles
-	mod.transitions = transitions
-
-	--------------------------------------------------------------------------------
-	-- HAS FINAL CUT PRO BEEN SCANNED?
-	--------------------------------------------------------------------------------
-	mod.scanned = prop.AND(
-		mod.effects.listUpdated,
-		mod.generators.listUpdated,
-		mod.titles.listUpdated,
-		mod.transitions.listUpdated
-	)
-
-
-
+function mod.init()
 end
 
 --------------------------------------------------------------------------------
@@ -124,12 +94,7 @@ local plugin = {
 	id = "finalcutpro.preferences.scanfinalcutpro",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.timeline.effects"]					= "effects",
-		["finalcutpro.timeline.generators"]					= "generators",
-		["finalcutpro.timeline.titles"]						= "titles",
-		["finalcutpro.timeline.transitions"]				= "transitions",
-		["finalcutpro.preferences.app"]		= "prefs",
-		["core.setup"]										= "setup",
+		["finalcutpro.preferences.app"]						= "prefs",
 	}
 }
 
@@ -138,7 +103,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	mod.init(deps.effects, deps.generators, deps.titles, deps.transitions)
+	mod.init()
 
 	if deps.prefs.panel then
 		deps.prefs.panel:addHeading(10, i18n("setupHeading"))
@@ -149,33 +114,8 @@ function plugin.init(deps, env)
 				onclick = mod.scanFinalCutPro,
 			}
 		)
-	end
 
-	-- Add a setup panel if the initial onboarding is not complete and a scan is required.
-	deps.setup.onboardingRequired:AND(mod.scanned:NOT()):watch(function(setupRequired)
-		if setupRequired then
-			local setup = deps.setup
-			setup.addPanel(
-				setup.panel.new("scanfinalcutpro", 60)
-					:addIcon(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")
-					:addParagraph(i18n("scanFinalCutProText"), true)
-					:addButton({
-						label		= i18n("scanFinalCutPro"),
-						onclick		= function()
-							if mod.scanFinalCutPro() then
-								setup.nextPanel()
-							else
-								setup.focus()
-							end
-						end
-					})
-					:addButton({
-						label		= i18n("skip"),
-						onclick		= setup.nextPanel
-					})
-			).show()
-		end
-	end, true)
+	end
 
 	return mod
 end

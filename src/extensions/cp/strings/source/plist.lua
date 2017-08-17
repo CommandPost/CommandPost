@@ -14,6 +14,10 @@ local log				= require("hs.logger").new("plistsrc")
 local plist				= require("cp.plist")
 local fs				= require("hs.fs")
 local timer				= require("hs.timer")
+local text				= require("cp.web.text")
+
+local escapeXML, unescapeXML = text.escapeXML, text.unescapeXML
+
 
 local aliases = {
 	de	= "German",
@@ -30,7 +34,7 @@ mod.mt = {}
 
 --- cp.strings.source.plist.defaultCacheSeconds
 --- Constant
---- The default number of seconds to cache results. 
+--- The default number of seconds to cache results.
 mod.defaultCacheSeconds = 60.0
 
 --- cp.strings.source.plist:pathToAbsolute(language) -> string
@@ -62,7 +66,7 @@ function mod.mt:loadFile(language)
 		-- try an alias
 		langFile = self:pathToAbsolute(aliases[language])
 	end
-	
+
 	self._cleanup:start()
 	if langFile then
 		return plist.fileToTable(langFile)
@@ -81,11 +85,10 @@ end
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
 function mod.mt:find(language, key)
-
 	self._cache = self._cache or {}
 	self._cache[language] = self._cache[language] or self:loadFile(language) or {}
-	
-	return self._cache[language][key]
+
+	return unescapeXML(self._cache[language][escapeXML(key)])
 end
 
 --- cp.strings.source.plist:findKeys(language, value) -> {string}
@@ -102,12 +105,13 @@ function mod.mt:findKeys(language, value)
 
 	self._cache = self._cache or {}
 	self._cache[language] = self._cache[language] or self:loadFile(language) or {}
-	
+
 	local keys = {}
 	local cache = self._cache[language]
+	local escapedValue = escapeXML(value)
 	for k,v in pairs(cache) do
-		if v == value then
-			table.insert(keys, k)
+		if v == escapedValue then
+			table.insert(keys, unescapeXML(k))
 		end
 	end
 	return keys

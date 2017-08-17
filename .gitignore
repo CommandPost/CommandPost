@@ -75,3 +75,4 @@ temp
 src/extensions/tests/fcp/Test Library.fcpbundle/.lock
 
 src/extensions/tests/fcp/Test Library.fcpbundle/.lock-info
+.vscode

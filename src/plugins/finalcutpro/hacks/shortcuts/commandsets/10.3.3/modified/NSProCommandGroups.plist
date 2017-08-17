@@ -18,21 +18,21 @@
 			<string>cpToggleVoiceCommands</string>
 			<string>cpLockPlayhead</string>
 			<string>cpHUD</string>
-			<string>cpTitlesOne</string>
-			<string>cpTitlesTwo</string>
-			<string>cpTitlesThree</string>
-			<string>cpTitlesFour</string>
-			<string>cpTitlesFive</string>
-			<string>cpGeneratorsOne</string>
-			<string>cpGeneratorsTwo</string>
-			<string>cpGeneratorsThree</string>
-			<string>cpGeneratorsFour</string>
-			<string>cpGeneratorsFive</string>
-			<string>cpTransitionsOne</string>
-			<string>cpTransitionsTwo</string>
-			<string>cpTransitionsThree</string>
-			<string>cpTransitionsFour</string>
-			<string>cpTransitionsFive</string>
+			<string>title1</string>
+			<string>title2</string>
+			<string>title3</string>
+			<string>title4</string>
+			<string>title5</string>
+			<string>generator1</string>
+			<string>generator2</string>
+			<string>generator3</string>
+			<string>generator4</string>
+			<string>generator5</string>
+			<string>transition1</string>
+			<string>transition2</string>
+			<string>transition3</string>
+			<string>transition4</string>
+			<string>transition5</string>
 			<string>cpToggleTouchBar</string>
 			<string>cpConsole</string>
 			<string>cpCutSwitchAngle01Video</string>
@@ -168,11 +168,16 @@
 			<string>cpExposurePuckThreeDown</string>
 			<string>cpExposurePuckFourDown</string>
 			<string>cpScrollingTimeline</string>
-			<string>cpEffectsOne</string>
-			<string>cpEffectsTwo</string>
-			<string>cpEffectsThree</string>
-			<string>cpEffectsFour</string>
-			<string>cpEffectsFive</string>
+			<string>audioEffect1</string>
+			<string>audioEffect2</string>
+			<string>audioEffect3</string>
+			<string>audioEffect4</string>
+			<string>audioEffect5</string>
+			<string>videoEffect1</string>
+			<string>videoEffect2</string>
+			<string>videoEffect3</string>
+			<string>videoEffect4</string>
+			<string>videoEffect5</string>
 			<string>cpHighlightBrowserPlayhead</string>
 			<string>cpRevealInBrowserAndHighlight</string>
 			<string>cpSingleMatchFrameAndHighlight</string>

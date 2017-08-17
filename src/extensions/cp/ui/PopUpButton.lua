@@ -64,8 +64,6 @@ function PopUpButton:selectItem(index)
 				-- close the menu again
 				items:doCancel()
 			end
-		else
-			return self
 		end
 	end
 	return self
