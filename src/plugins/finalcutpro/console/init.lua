@@ -85,10 +85,6 @@ function mod.show()
 	mod.activator:show()
 end
 
-function mod.showConfig()
-	mod.activator:showConfig()
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -119,51 +115,6 @@ function plugin.init(deps)
 
 	menu:addItem(1000, function()
 		return { title = i18n("enableConsole"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
-	end)
-
-	menu:addSeparator(2000)
-
-	menu:addItems(3000, function()
-		return {
-			{ title = i18n("rememberLastQuery"),	fn=function() mod.activator.lastQueryRemembered:toggle() end, checked = mod.activator:lastQueryRemembered(),  },
-			{ title = i18n("searchSubtext"),		fn=function() mod.activator.searchSubText:toggle() end, checked = mod.activator:searchSubText(),  },
-			{ title = "-" },
-			{ title = i18n("consoleHideUnhide"),	fn=mod.showConfig, },
-		}
-	end)
-
-	-- The 'Sections' menu
-	local sections = menu:addMenu(5000, function() return i18n("consoleSections") end)
-
-	sections:addItems(2000, function()
-		local actionItems = {}
-		local allEnabled = true
-		local allDisabled = true
-
-		for id,handler in pairs(mod.activator:allowedHandlers()) do
-			local enabled = not mod.activator:isDisabledHandler(id)
-			allEnabled = allEnabled and enabled
-			allDisabled = allDisabled and not enabled
-			actionItems[#actionItems + 1] = {
-				title = i18n(format("%s_action", id)) or id,
-				fn=function()
-					action.enabled:toggle()
-					deps.actionmanager.refresh()
-				end,
-				checked = enabled,
-			}
-		end
-
-		table.sort(actionItems, function(a, b) return a.title < b.title end)
-
-		local allItems = {
-			{ title = i18n("consoleSectionsShowAll"), fn = mod.actionmanager.enableAllActions, disabled = allEnabled },
-			{ title = i18n("consoleSectionsHideAll"), fn = mod.actionmanager.disableAllActions, disabled = allDisabled },
-			{ title = "-" }
-		}
-		fnutils.concat(allItems, actionItems)
-
-		return allItems
 	end)
 
 	return mod

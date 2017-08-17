@@ -75,6 +75,10 @@ function mod.id()
 end
 
 function mod.onChoices(choices)
+	if not fcp:menuBar():isShowing() then
+		return true
+	end
+
 	fcp:menuBar():visitMenuItems(function(path, menuItem)
 		local title = menuItem:title()
 

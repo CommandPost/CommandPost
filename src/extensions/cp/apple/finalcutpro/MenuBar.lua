@@ -64,6 +64,10 @@ function MenuBar:UI()
 	end)
 end
 
+function MenuBar:isShowing()
+	return self:UI() ~= nil
+end
+
 -- TODO: Add documentation
 function MenuBar:getMainMenu()
 	if not MenuBar._mainMenu then
@@ -131,7 +135,7 @@ end
 --- cp.apple.finalcutpro.MenuBar:addMenuFinder(finder) -> nothing
 --- Method
 --- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find' step and return either the matching child, or nil if it can't be found. It is used by the [addMenuFinder](#addMenuFinder) function. The `finder` should have the following signature:
---- 
+---
 --- ```lua
 --- function(parentItem, path, childName, language) -> childItem
 --- ```
@@ -177,8 +181,8 @@ end
 ---
 --- Parameters:
 ---  * `path`		- The path list to search for.
----  * `language`	- The language code the path is in. E.g. "en" or "fr". Defaults to the 
----  
+---  * `language`	- The language code the path is in. E.g. "en" or "fr". Defaults to the
+---
 --- Returns:
 ---  * The Menu UI, or `nil` if it could not be found.
 function MenuBar:findMenuUI(path, language)
@@ -220,7 +224,7 @@ function MenuBar:findMenuUI(path, language)
 					break
 				end
 			end
-			
+
 			if not menuItemUI and menuMap then
 				-- See if the menu is in the map.
 				for _,item in ipairs(menuMap) do
@@ -236,7 +240,7 @@ function MenuBar:findMenuUI(path, language)
 					end
 				end
 			end
-			
+
 			if not menuItemUI then
 				-- We don't have it in our list, so look it up manually. Hopefully they are in English!
 				log.wf("Searching manually for '%s' in '%s'.", step, table.concat(currentPath, ", "))

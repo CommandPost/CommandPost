@@ -722,6 +722,7 @@ return {
 	activatorFavoriteAction				=			"Favourite",
 	activatorHideAction					=			"Hide",
 	activatorUnhideAction				=			"Unhide",
+	activatorShowHidden					=			"Show Hidden",
 
 	--------------------------------------------------------------------------------
 	-- CONSOLE:

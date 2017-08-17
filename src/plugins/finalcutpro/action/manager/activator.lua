@@ -24,8 +24,10 @@
 --- will not affect the "yadayada" activator.
 local log						= require("hs.logger").new("activator")
 
+local _							= require("moses")
 local prop						= require("cp.prop")
 local config					= require("cp.config")
+local just						= require("cp.just")
 local chooser					= require("hs.chooser")
 local drawing 					= require("hs.drawing")
 local fnutils 					= require("hs.fnutils")
@@ -39,6 +41,7 @@ local fcp						= require("cp.apple.finalcutpro")
 local setmetatable				= setmetatable
 local sort, insert				= table.sort, table.insert
 local concat, filter			= fnutils.concat, fnutils.filter
+local format					= string.format
 
 local activator = {}
 activator.mt = {}
@@ -53,21 +56,12 @@ function activator.new(id, manager)
 	local o = {
 		_id				= id,
 		_manager		= manager,
-		_mainChooser	= nil, 		-- the actual hs.chooser
-		_configChooser	= nil,		-- the chooser for hiding/unhiding items.
-		_activeChooser	= nil,		-- the currently-visible chooser.
+		_chooser	= nil, 		-- the actual hs.chooser
 	}
 
 	prop.extend(o, activator.mt)
 
 	local prefix = PACKAGE .. id .. "."
-
-	--- plugins.finalcutpro.action.activator.activeChooser <cp.prop: hs.chooser; read-only>
-	--- Field
-	--- Returns the active `hs.chooser` for this activator, or `nil` if none.
-	o.activeChooser = prop(function(self)
-		return self._activeChooser
-	end):bind(o)
 
 	--- plugins.finalcutpro.action.activator.searchSubText <cp.prop: boolean>
 	--- Field
@@ -83,6 +77,13 @@ function activator.new(id, manager)
 	--- Field
 	--- The last query value.
 	o.lastQueryValue = config.prop(prefix .. "lastQueryValue", ""):bind(o)
+
+	--- plugins.finalcutpro.action.activator.showHidden <cp.prop: boolean>
+	--- Field
+	--- If `true`, hidden items are shown.
+	o.showHidden = config.prop(prefix .. "showHidden", false):bind(o)
+	-- refresh the chooser list if this status changes.
+	:watch(function() o:refreshChooser() end)
 
 	-- plugins.finalcutpro.action.activator._allowedHandlers <cp.prop: string>
 	-- Field
@@ -110,6 +111,7 @@ function activator.new(id, manager)
 	-- Field
 	-- Table of disabled handlers. If the ID is present with a value of `true`, it's disabled.
 	o._disabledHandlers = config.prop(prefix .. "disabledHandlers", {}):bind(o)
+	:watch(function() o:refreshChooser() end)
 
 --- plugins.finalcutpro.action.activator.activeHandlers <cp.prop: table of handlers>
 --- Field
@@ -249,9 +251,39 @@ function activator.mt:enableHandler(id)
 		return false
 	end
 	local dh = self:_disabledHandlers()
-	dh[id] = true
+	dh[id] = nil
 	self:_disabledHandlers(dh)
 	return true
+end
+
+--- plugins.finalcutpro.action.activator:enableAllHandlers() -> nothing
+--- Method
+--- Enables the all allowed handlers.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Nothing
+function activator.mt:enableAllHandlers()
+	self._disabledHandlers:set(nil)
+end
+
+--- plugins.finalcutpro.action.activator:disableAllHandlers() -> nothing
+--- Method
+--- Disables the all allowed handlers.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Nothing
+function activator.mt:disableAllHandlers()
+	local dh = {}
+	for id,_ in pairs(self:allowedHandlers()) do
+		dh[id] = true
+	end
+	self:_disabledHandlers(dh)
 end
 
 --- plugins.finalcutpro.action.activator:isDisabledHandler(id) -> boolean
@@ -279,9 +311,21 @@ end
 --- * `true` if successfully hidden.
 function activator.mt:hideChoice(id)
 	if id then
+		-- update the list of hidden choices
 		local hidden = self:hiddenChoices()
 		hidden[id] = true
 		self:hiddenChoices(hidden)
+
+		-- update the actual choice
+		for _,choice in ipairs(self:allChoices()) do
+			if choice.id == id then
+				applyHiddenTo(choice, true)
+				break
+			end
+		end
+
+		-- update the chooser list.
+		self:refreshChooser()
 		return true
 	end
 	return false
@@ -301,6 +345,7 @@ function activator.mt:unhideChoice(id)
 		local hidden = self:hiddenChoices()
 		hidden[id] = nil
 		self:hiddenChoices(hidden)
+		self:refreshChooser()
 		return true
 	end
 	return false
@@ -317,25 +362,6 @@ end
 --- * `true` if currently hidden.
 function activator.mt:isHiddenChoice(id)
 	return self:hiddenChoices()[id] == true
-end
-
---- plugins.finalcutpro.action.activator:configureChoice(id) -> boolean
---- Method
---- Toggles the hidden status of the choice with the specified ID.
----
---- Parameters:
---- * `id`			- The choice ID to toggle.
----
---- Returns:
---- * `true` if successfully toggled.
-function activator.mt:configureChoice(id)
-	if id then
-		local hidden = self:hiddenChoices()
-		hidden[id] = not hidden[id]
-		self:hiddenChoices(hidden)
-		return true
-	end
-	return false
 end
 
 --- plugins.finalcutpro.action.activator:isHiddenChoice(id) -> boolean
@@ -482,26 +508,55 @@ end
 --- Returns:
 --- * Table of choices that can be displayed by an `hs.chooser`.
 function activator.mt:allChoices()
-	if not self._allChoices then
+	if not self._choices then
 		self:_findChoices()
 	end
-	return self._allChoices
+	return self._choices
 end
 
---- plugins.finalcutpro.action.activator:choices() -> table
+--- plugins.finalcutpro.action.activator:unhiddenChoices() -> table
 --- Method
---- Returns a table of all active choices. It does not include hidden choices or those from disabled handlers.
+--- Returns a table with visible choices.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * Table of choices that can be displayed by an `hs.chooser`.
-function activator.mt:choices()
-	if not self._choices then
-		self:_findChoices()
+function activator.mt:unhiddenChoices()
+	return _.filter(self:allChoices(), function(i,choice) return not choice.hidden end)
+end
+
+--- plugins.finalcutpro.action.activator:activeChoices() -> table
+--- Method
+--- Returns a table with active choices. If [showHidden](#showHidden) is set to `true`  hidden
+--- items are returned, otherwise they are not.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Table of choices that can be displayed by an `hs.chooser`.
+function activator.mt:activeChoices()
+	local showHidden = self:showHidden()
+	local disabledHandlers = self:_disabledHandlers()
+
+	return _.filter(self:allChoices(), function(i,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
+end
+
+local function applyHiddenTo(choice, hidden)
+	if choice.oldText then
+		choice.text = choice.oldText
 	end
-	return self._choices
+
+	if hidden then
+		choice.oldText = choice.text
+		choice.text = i18n("actionHiddenText", {text = choice.text})
+		choice.hidden = true
+	else
+		choice.oldText = nil
+		choice.hidden = nil
+	end
 end
 
 -- plugins.finalcutpro.action.activator:_findChoices() -> nothing
@@ -514,7 +569,7 @@ function activator.mt:_findChoices()
 	self._watched = true
 
 	local result = {}
-	for id,handler in pairs(self:activeHandlers()) do
+	for id,handler in pairs(self:allowedHandlers()) do
 		local choices = handler:choices()
 		if choices then
 			concat(result, choices:getChoices())
@@ -526,26 +581,10 @@ function activator.mt:_findChoices()
 	end
 
 	local hidden = self:hiddenChoices()
-	local choices = {}
 	for _,choice in ipairs(result) do
-		if choice.oldText then
-			choice.text = choice.oldText
-		end
-
-		if hidden[choice.id] then
-			choice.oldText = choice.text
-			choice.text = i18n("actionHiddenText", {text = choice.text})
-			choice.hidden = true
-		else
-			choice.oldText = nil
-			choice.hidden = nil
-		end
-		if not choice.hidden then
-			insert(choices, choice)
-		end
+		applyHiddenTo(choice, hidden[choice.id])
 	end
-	self._allChoices = result
-	self._choices = choices
+	self._choices = result
 	self:sortChoices()
 end
 
@@ -554,7 +593,6 @@ end
 --- Clears the existing set of choices and requests new ones from enabled action handlers.
 function activator.mt:refresh()
 	self._choices = nil
-	self._allChoices = nil
 end
 
 -- A property which will be true if the 'reduce transparency' mode is enabled.
@@ -572,55 +610,37 @@ local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
 	local color = activator.reducedTransparency() and nil or drawing.color.x11.snow
 	c:fgColor(color):subTextColor(color)
 
+	c:refreshChoicesCallback()
+
 	return c
 end
 
-function activator.mt:configure(result)
-	if result and result.id then
-		self:configureChoice(result.id)
-		self:refreshChooser()
-		timer.doUntil(function() return self._configChooser:isVisible() end, function() self:showConfig() end)
-	end
-end
-
-function activator.mt:mainChooser()
-	if not self._mainChooser then
-		self._mainChooser = initChooser(
+function activator.mt:chooser()
+	if not self._chooser then
+		self._chooser = initChooser(
 			function(result) self:activate(result) end,
 			function(index) self:rightClickMain(index) end,
-			function() return self:choices() end,
+			function() return self:activeChoices() end,
 			self:searchSubText()
 		)
 	end
-	return self._mainChooser
-end
-
-function activator.mt:configChooser()
-	if not self._configChooser then
-		self._configChooser = initChooser(
-			function(result) self:configure(result) end,
-			function(index) self:rightClickConfig(index) end,
-			function() return self:allChoices() end,
-			self:searchSubText()
-		)
-	end
-	return self._configChooser
+	return self._chooser
 end
 
 --------------------------------------------------------------------------------
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function activator.mt:refreshChooser()
-	self:mainChooser():refreshChoicesCallback()
-	self:configChooser():refreshChoicesCallback()
+	if self._chooser then
+		self._chooser:refreshChoicesCallback()
+	end
 end
 
 function activator.mt:checkReducedTransparency()
 	local transparency = activator.reducedTransparency()
 	if self._lastReducedTransparency ~= transparency then
 		self._lastReducedTransparency = transparency
-		self._mainChooser = nil
-		self._configChooser = nil
+		self._chooser = nil
 	end
 end
 
@@ -635,15 +655,10 @@ end
 --- Returns:
 --- * Nothing
 function activator.mt:show()
-	self:_showChooser(self:mainChooser())
-end
-
-function activator.mt:showConfig()
-	self:_showChooser(self:configChooser())
-end
-
-function activator.mt:_showChooser(chooser)
-	self:hide()
+	local chooser = self:chooser()
+	if chooser and chooser:isVisible() then
+		return
+	end
 
 	self._frontApp = application.frontmostApplication()
 
@@ -669,11 +684,6 @@ function activator.mt:_showChooser(chooser)
 	--------------------------------------------------------------------------------
 	chooser:searchSubText(self:searchSubText())
 	chooser:show()
-	--------------------------------------------------------------------------------
-	-- Console is Active:
-	--------------------------------------------------------------------------------
-	self._activeChooser = chooser
-	self.activeChooser:update()
 
 	return true
 end
@@ -682,8 +692,8 @@ end
 -- HIDE CONSOLE:
 --------------------------------------------------------------------------------
 function activator.mt:hide()
-	if self._activeChooser then
-		local chooser = self._activeChooser
+	local chooser = self:chooser()
+	if chooser then
 
 		--------------------------------------------------------------------------------
 		-- Hide Chooser:
@@ -693,13 +703,9 @@ function activator.mt:hide()
 		--------------------------------------------------------------------------------
 		-- Save Last Query to Settings:
 		--------------------------------------------------------------------------------
-		self.lastQueryValue:set(chooser:query())
-
-		--------------------------------------------------------------------------------
-		-- No Longer Active:
-		--------------------------------------------------------------------------------
-		self._activeChooser = nil
-		self.activeChooser:update()
+		if self:lastQueryRemembered() then
+			self.lastQueryValue:set(chooser:query())
+		end
 
 		if self._frontApp then
 			self._frontApp:activate()
@@ -765,16 +771,12 @@ function activator.mt:rightClickMain(index)
 	self:rightClickAction(index, true)
 end
 
-function activator.mt:rightClickConfig(index)
-	self:rightClickAction(index, false)
-end
-
 --------------------------------------------------------------------------------
 -- CHOOSER RIGHT CLICK:
 --------------------------------------------------------------------------------
-function activator.mt:rightClickAction(index, showConfig)
+function activator.mt:rightClickAction(index)
 
-	local chooser = self:activeChooser()
+	local chooser = self:chooser()
 
 	--------------------------------------------------------------------------------
 	-- Settings:
@@ -788,7 +790,7 @@ function activator.mt:rightClickAction(index, showConfig)
 
 	local choiceMenu = {}
 
-	if choice then
+	if choice and choice.id then
 		local isFavorite = self:isFavoriteChoice(choice.id)
 
 		insert( choiceMenu, { title = string.upper(i18n("highlightedItem")) .. ":", disabled = true } )
@@ -846,19 +848,49 @@ function activator.mt:rightClickAction(index, showConfig)
 		end
 	end
 
-	if self:configurable() and showConfig then
+	if self:configurable() then
 		-- separator
 		insert(choiceMenu, { title = "-" })
-		-- config menu
-		insert(
-			choiceMenu,
-			{
-				title = i18n("activatorConfig"),
-				fn = function()
-					self:showConfig()
-				end
+		insert(choiceMenu, { title = i18n("rememberLastQuery"),		fn=function() self.lastQueryRemembered:toggle() end, checked = self:lastQueryRemembered() })
+		insert(choiceMenu, { title = i18n("searchSubtext"),			fn=function() self.searchSubText:toggle() end, checked = self:searchSubText() })
+		insert(choiceMenu, { title = i18n("activatorShowHidden"),	fn=function() self.showHidden:toggle() end, checked = self:showHidden() })
+
+		-- The 'Sections' menu
+		local sections = { title = i18n("consoleSections") }
+		local actionItems = {}
+		local allEnabled = true
+		local allDisabled = true
+
+		for id,handler in pairs(self:allowedHandlers()) do
+			local enabled = not self:isDisabledHandler(id)
+			allEnabled = allEnabled and enabled
+			allDisabled = allDisabled and not enabled
+			actionItems[#actionItems + 1] = {
+				title = i18n(format("%s_action", id)) or id,
+				fn=function()
+					if enabled then
+						self:disableHandler(id)
+					else
+						self:enableHandler(id)
+					end
+					self:refreshChooser()
+				end,
+				checked = enabled,
 			}
-		)
+		end
+
+		sort(actionItems, function(a, b) return a.title < b.title end)
+
+		local allItems = {
+			{ title = i18n("consoleSectionsShowAll"), fn = function() self:enableAllHandlers() end, disabled = allEnabled },
+			{ title = i18n("consoleSectionsHideAll"), fn = function() self:disableAllHandlers() end, disabled = allDisabled },
+			{ title = "-" }
+		}
+		fnutils.concat(allItems, actionItems)
+
+		sections.menu = allItems
+
+		insert(choiceMenu, sections)
 	end
 
 	self._rightClickMenubar:setMenu(choiceMenu)

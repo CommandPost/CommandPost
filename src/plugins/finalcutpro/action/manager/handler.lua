@@ -129,10 +129,10 @@ handler.mt.choices = prop(function(self)
 	if not result then
 		result = choices.new(self:id())
 		-- populate the result
-		self._onChoices(result)
+		local incomplete = self._onChoices(result) == true
 
  		-- cache if appropriate
-		if self:cached() then
+		if not incomplete and self:cached() then
 			self._choices = result
 		end
 	end
