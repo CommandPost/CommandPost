@@ -162,7 +162,22 @@ function activator.new(id, manager)
 	--- If `true` (the default), the activator can be configured by right-clicking on the main chooser.
 	o.configurable = config.prop(prefix .. "configurable", true):bind(o)
 
+	if fcp:isRunning() then timer.doAfter(3, function() o:_findChoices() end) end
+
 	return o
+end
+
+--- plugins.finalcutpro.action.activator:id() -> string
+--- Method
+--- Returns the activator's unique ID.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The activator ID.
+function activator.mt:id()
+	return self._id
 end
 
 --- plugins.finalcutpro.action.activator:getActiveHandler(id) -> handler
@@ -494,7 +509,6 @@ end
 -- Finds and sorts all choices from enabled handlers. They are available via
 -- the [choices](#choices) or [allChoices](#allChoices) properties.
 function activator.mt:_findChoices()
-	log.df("Finding choices...")
 	-- check if we are already watching the handlers.
 	local unwatched = not self._watched
 	self._watched = true
@@ -561,13 +575,6 @@ local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
 	return c
 end
 
-function activator.mt:init()
-	--------------------------------------------------------------------------------
-	-- If Final Cut Pro is running, let's preemptively refresh the choices:
-	--------------------------------------------------------------------------------
-	if fcp:isRunning() then timer.doAfter(3, function() self:refresh() end) end
-end
-
 function activator.mt:configure(result)
 	if result and result.id then
 		self:configureChoice(result.id)
@@ -609,8 +616,11 @@ function activator.mt:refreshChooser()
 end
 
 function activator.mt:checkReducedTransparency()
-	if self._lastReducedTransparency ~= activator.reducedTransparency() then
-		self:init()
+	local transparency = activator.reducedTransparency()
+	if self._lastReducedTransparency ~= transparency then
+		self._lastReducedTransparency = transparency
+		self._mainChooser = nil
+		self._configChooser = nil
 	end
 end
 
