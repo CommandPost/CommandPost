@@ -49,6 +49,21 @@ activator.mt.__index = activator.mt
 
 local PACKAGE = "finalcutpro.action.activator."
 
+local function applyHiddenTo(choice, hidden)
+	if choice.oldText then
+		choice.text = choice.oldText
+	end
+
+	if hidden then
+		choice.oldText = choice.text
+		choice.text = i18n("actionHiddenText", {text = choice.text})
+		choice.hidden = true
+	else
+		choice.oldText = nil
+		choice.hidden = nil
+	end
+end
+
 -- plugins.finalcutpro.action.activator.new(id, manager)
 -- Constructor
 -- Creates a new `activator` instance with the specified ID and action manager
@@ -361,6 +376,15 @@ function activator.mt:unhideChoice(id)
 		hidden[id] = nil
 		self:hiddenChoices(hidden)
 		self:refreshChooser()
+
+		-- update the actual choice
+		for _,choice in ipairs(self:allChoices()) do
+			if choice.id == id then
+				applyHiddenTo(choice, false)
+				break
+			end
+		end
+
 		return true
 	end
 	return false
