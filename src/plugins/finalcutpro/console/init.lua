@@ -111,11 +111,13 @@ function plugin.init(deps)
 		:activatedBy():ctrl("space")
 
 	-- Add the 'Console' menu items
+	--[[
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
 
 	menu:addItem(1000, function()
 		return { title = i18n("enableConsole"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
 	end)
+	--]]
 
 	return mod
 
