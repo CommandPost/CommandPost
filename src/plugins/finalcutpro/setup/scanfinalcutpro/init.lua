@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("scanfinalcutpro")
+local log				= require("hs.logger").new("scanfcpx")
 
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
@@ -65,12 +65,14 @@ function mod.scanFinalCutPro()
 	--------------------------------------------------------------------------------
 	dialog.displayMessage(i18n("scanFinalCutProWarning"))
 
-	local result = guiscan.check()
+	local ok, result = guiscan.check()
+
+	print(result)
 
 	--------------------------------------------------------------------------------
 	-- Competition Message:
 	--------------------------------------------------------------------------------
-	if result then
+	if ok then
 		dialog.displayMessage(i18n("scanFinalCutProDone"))
 	else
 		dialog.displayMessage(i18n("scanFinalCutProErrors"))
@@ -95,6 +97,7 @@ local plugin = {
 	group = "finalcutpro",
 	dependencies = {
 		["finalcutpro.preferences.app"]						= "prefs",
+		["finalcutpro.menu.finalcutpro"]					= "menu",
 	}
 }
 
@@ -105,17 +108,9 @@ function plugin.init(deps, env)
 
 	mod.init()
 
-	if deps.prefs.panel then
-		deps.prefs.panel:addHeading(10, i18n("setupHeading"))
-
-		:addButton(11,
-			{
-				label = i18n("scanFinalCutPro"),
-				onclick = mod.scanFinalCutPro,
-			}
-		)
-
-	end
+	deps.menu:addItem(3000, function()
+		return { title = i18n("scanFinalCutPro"), fn=mod.scanFinalCutPro }
+	end)
 
 	return mod
 end

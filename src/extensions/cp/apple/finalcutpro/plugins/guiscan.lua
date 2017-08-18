@@ -6,6 +6,7 @@ local plugins				= require("cp.apple.finalcutpro.plugins")
 local just					= require("cp.just")
 
 local insert, remove		= table.insert, table.remove
+local format				= string.format
 
 local mod = {}
 
@@ -383,7 +384,7 @@ local function scanTitles()
 	return allTitles
 end
 
--- cp.apple.finalcutpro.plugins.guiscan.check([language]) -> none
+-- cp.apple.finalcutpro.plugins.guiscan.check([language]) -> boolean, string
 -- Function
 -- Compares the list of plugins created via file scanning to that produced by GUI scanning.
 -- A detailed report is output in the Error Log.
@@ -393,9 +394,13 @@ end
 --
 -- Returns:
 --  * `true` if all plugins match.
+--  * The text value of the report.
 function mod.check(language)
 
 	language = language or fcp:currentLanguage()
+
+	local value = ""
+	function ln(str, ...) value = value .. format(str, ...) .. "\n" end
 
 	fcp.currentLanguage:set(language)
 	fcp:launch()
@@ -404,9 +409,9 @@ function mod.check(language)
 	--------------------------------------------------------------------------------
 	-- Debug Message:
 	--------------------------------------------------------------------------------
-	log.df("---------------------------------------------------------")
-	log.df(" COMPARING PLUGIN FILE SCAN RESULTS TO GUI SCAN RESULTS:")
-	log.df("---------------------------------------------------------\n")
+	ln("\n---------------------------------------------------------")
+	ln(" COMPARING PLUGIN FILE SCAN RESULTS TO GUI SCAN RESULTS:")
+	ln("---------------------------------------------------------\n")
 
 	--------------------------------------------------------------------------------
 	-- Plugin Types:
@@ -425,9 +430,9 @@ function mod.check(language)
 	--------------------------------------------------------------------------------
 	-- Debug Message:
 	--------------------------------------------------------------------------------
-	log.df("---------------------------------------------------------")
-	log.df(" CHECKING LANGUAGE: %s", language)
-	log.df("---------------------------------------------------------")
+	ln("---------------------------------------------------------")
+	ln(" CHECKING LANGUAGE: %s", language)
+	ln("---------------------------------------------------------")
 
 	local failed = false
 
@@ -442,7 +447,7 @@ function mod.check(language)
 			--------------------------------------------------------------------------------
 			-- Debug Message:
 			--------------------------------------------------------------------------------
-			log.df("  - Checking Plugin Type: %s", newType)
+			ln("  - Checking Plugin Type: %s", newType)
 
 			local newPlugins = fcp:plugins():ofType(newType, language)
 			local newPluginNames = {}
@@ -472,15 +477,15 @@ function mod.check(language)
 				oldName = oldName or oldFullName
 				local newPlugins = newPluginNames[oldFullName] or newPluginNames[oldName]
 				if not newPlugins then
-					log.df("  - ERROR: Missing %s: %s", oldType, oldFullName)
+					ln("  - ERROR: Missing %s: %s", oldType, oldFullName)
 					errorCount = errorCount + 1
 				else
 					local unmatched = newPlugins.unmatched
 					local found = false
 					for i,plugin in ipairs(unmatched) do
-						-- log.df("  - INFO:  Checking plugin: %s (%s)", plugin.name, plugin.theme)
+						-- ln("  - INFO:  Checking plugin: %s (%s)", plugin.name, plugin.theme)
 						if plugin.theme == oldTheme then
-							-- log.df("  - INFO:  Exact match for plugin: %s (%s)", oldName, oldTheme)
+							-- ln("  - INFO:  Exact match for plugin: %s (%s)", oldName, oldTheme)
 							insert(newPlugins.matched, plugin)
 							remove(unmatched, i)
 							found = true
@@ -488,7 +493,7 @@ function mod.check(language)
 						end
 					end
 					if not found then
-						-- log.df("  - INFO:  Partial for '%s' plugin.", oldFullName)
+						-- ln("  - INFO:  Partial for '%s' plugin.", oldFullName)
 						insert(newPlugins.partials, oldFullName)
 					end
 				end
@@ -497,7 +502,7 @@ function mod.check(language)
 			for newName, plugins in pairs(newPluginNames) do
 				if #plugins.partials ~= #plugins.unmatched then
 					for _,oldFullName in ipairs(plugins.partials) do
-						log.df("  - ERROR: GUI Scan %s plugin unmatched: %s", newType, oldFullName)
+						ln("  - ERROR: GUI Scan %s plugin unmatched: %s", newType, oldFullName)
 						errorCount = errorCount + 1
 					end
 
@@ -506,7 +511,7 @@ function mod.check(language)
 						if plugin.theme then
 							newFullName = plugin.theme .." - "..newFullName
 						end
-						log.df("  - ERROR: File Scan %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
+						ln("  - ERROR: File Scan %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
 						errorCount = errorCount + 1
 					end
 				end
@@ -516,25 +521,27 @@ function mod.check(language)
 			-- If all results matched:
 			--------------------------------------------------------------------------------
 			if errorCount == 0 then
-				log.df("  - SUCCESS: %s all matched!\n", newType)
+				ln("  - SUCCESS: %s all matched!\n", newType)
 			else
-				log.df("  - ERROR: %s had %d errors!\n", newType, errorCount)
+				ln("  - ERROR: %s had %d errors!\n", newType, errorCount)
 			end
 			failed = failed or (errorCount ~= 0)
 		else
-			log.df(" - SKIPPING: Could not find settings for: %s (%s)", newType, language)
+			ln(" - SKIPPING: Could not find settings for: %s (%s)", newType, language)
 		end
 	end
 
-	return not failed
+	return not failed, value
 end
 
 function mod.checkAll()
-	local failed = false
+	local failed, value = false, ""
 	for _,language in ipairs(fcp:getSupportedLanguages()) do
-		failed = failed or not mod.check(language)
+		local ok, result = mod.check(langauge)
+		failed = failed or not ok
+		value = value .. result .. "\n"
 	end
-	return not failed
+	return not failed, value
 end
 
 return mod
