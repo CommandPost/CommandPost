@@ -71,18 +71,31 @@ local function split(str, pat)
 	return t
 end
 
+local function deleteShortcuts()
+	-- Deletes the DEFAULT_SHORTCUTS, if present.
+	local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
+	if shortcutsFile then
+		local ok, err = os.remove(shortcutsFile)
+		if not ok then
+			log.ef("Unable to remove default shortcuts: %s", err)
+			return false
+		end
+	end
+	return true
+end
+
 local function resetShortcuts()
 	if dialog.displayYesNoQuestion(i18n("shortcutsResetConfirmation")) then
-		-- Deletes the DEFAULT_SHORTCUTS, if present.
-		local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
-		if shortcutsFile then
-			log.df("Removing shortcuts file: '%s'", shortcutsFile)
-			os.remove(shortcutsFile)
+		if deleteShortcuts() then
+			dialog.displayMessage(i18n("shortcutsResetComplete"), {"OK"})
+			hs.reload()
 		end
-		dialog.displayMessage(i18n("shortcutsResetComplete"), {"OK"})
-		hs.reload()
 	end
 end
+
+config.watch({
+	reset = deleteShortcuts,
+})
 
 --------------------------------------------------------------------------------
 -- CONTROLLER CALLBACK:
