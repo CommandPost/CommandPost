@@ -366,13 +366,13 @@ function mod.batchExport()
 	--------------------------------------------------------------------------------
 	-- Check if we have any currently-selected clips:
 	--------------------------------------------------------------------------------
-	local clips = libraries:selectedClipsUI()
+	local clips = libraries:selectedClips()
 
 	if libraries:sidebar():isFocused() then
 		--------------------------------------------------------------------------------
 		-- Use All Clips:
 		--------------------------------------------------------------------------------
-		clips = libraries:clipsUI()
+		clips = libraries:clips()
 	end
 
 	local batchExportSucceeded = false
