@@ -72,7 +72,6 @@ function mod.apply(action)
 	-- Get Generators Browser:
 	--------------------------------------------------------------------------------
 	local generators = fcp:generators()
-	local generatorsShowing = generators:isShowing()
 	local generatorsLayout = generators:saveLayout()
 
 
@@ -87,7 +86,7 @@ function mod.apply(action)
 	generators:show()
 
 	if not generators:isShowing() then
-		dialog.displayErrorMessage("Unable to display the Generators panel.\n\nError occurred in generators.apply(...)")
+		dialog.displayErrorMessage("Unable to display the Generators panel.")
 		return false
 	end
 
@@ -129,7 +128,7 @@ function mod.apply(action)
 
 			matches = generators:currentItemsUI()
 			if not matches or #matches == 0 then
-				dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.\n\nError occurred in generators.apply(...).")
+				dialog.displayErrorMessage("Unable to find a generator called '"..shortcut.."'")
 				return false
 			end
 		end
@@ -150,7 +149,6 @@ function mod.apply(action)
 
 		generators:loadLayout(generatorsLayout)
 		if browserLayout then browser:loadLayout(browserLayout) end
-		if not generatorsShowing then generators:hide() end
 	end)
 
 	-- Success!
