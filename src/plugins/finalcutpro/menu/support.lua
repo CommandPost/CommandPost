@@ -21,7 +21,7 @@ local PRIORITY = 8888888.1
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.finalcutpro",
+	id				= "finalcutpro.menu.support",
 	group			= "finalcutpro",
 	dependencies	= {
 		["core.menu.bottom"] = "bottom",
