@@ -14,8 +14,9 @@
 --
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("menupref")
-
 local image										= require("hs.image")
+
+local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -48,7 +49,7 @@ function plugin.init(deps)
 		priority 	= 2020,
 		id			= "menubar",
 		label		= i18n("menubarPanelLabel"),
-		image		= image.imageFromPath("/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns"),
+		image		= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")),
 		tooltip		= i18n("menubarPanelTooltip"),
 		height		= 320,
 	})

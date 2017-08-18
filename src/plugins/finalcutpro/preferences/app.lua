@@ -17,6 +17,7 @@ local log										= require("hs.logger").new("prefsGeneral")
 
 local image										= require("hs.image")
 local fcp										= require("cp.apple.finalcutpro")
+local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -42,7 +43,7 @@ function plugin.init(deps)
 			priority 	= 2040,
 			id			= "finalcutpro",
 			label		= i18n("finalCutProPanelLabel"),
-			image		= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
+			image		= image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
 			tooltip		= i18n("finalCutProPanelTooltip"),
 			height		= 320, --298,
 		})

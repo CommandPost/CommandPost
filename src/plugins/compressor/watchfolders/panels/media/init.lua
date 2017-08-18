@@ -807,7 +807,7 @@ function mod.init(deps, env)
 			priority 		= 2020,
 			id				= "compressor",
 			label			= i18n("compressor"),
-			image			= image.imageFromPath(compressor:getPath() .. "/Contents/Resources/compressor.icns"),
+			image			= image.imageFromPath(tools.iconFallback(compressor:getPath() .. "/Contents/Resources/compressor.icns")),
 			tooltip			= i18n("watchFolderCompressorTooltip"),
 			height			= 380,
 			loadFn			= mod.refreshTable,

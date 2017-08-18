@@ -210,7 +210,7 @@ function mod.init(deps, env)
 		priority 	= 2050,
 		id			= "plugins",
 		label		= i18n("pluginsPanelLabel"),
-		image		= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns"),
+		image		= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")),
 		tooltip		= i18n("pluginsPanelTooltip"),
 		height		= 492,
 	})

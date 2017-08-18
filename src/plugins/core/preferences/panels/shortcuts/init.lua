@@ -400,7 +400,7 @@ function mod.init(deps, env)
 		priority 		= 2030,
 		id				= "shortcuts",
 		label			= i18n("shortcutsPanelLabel"),
-		image			= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns"),
+		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
 		tooltip			= i18n("shortcutsPanelTooltip"),
 		height			= 490,
 	})
