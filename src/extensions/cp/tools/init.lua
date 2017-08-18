@@ -30,6 +30,7 @@ local timer										= require("hs.timer")
 local window									= require("hs.window")
 
 local just										= require("cp.just")
+local config									= require("cp.config")
 
 local v											= require("semver")
 
@@ -1035,6 +1036,25 @@ function tools.numberToWord(number)
 	if number == 9 then return "Nine" end
 	if number == 10 then return "Ten" end
 	return nil
+end
+
+--- cp.tools.iconFallback(paths) -> string
+--- Function
+--- Excepts one or more paths to an icon, checks to see if they exist (in the order that they're given), and if none exist, returns the CommandPost icon path.
+---
+--- Parameters:
+---  * paths - One or more paths to an icon
+---
+--- Returns:
+---  * A string
+function tools.iconFallback(...)
+	for _,path in ipairs(table.pack(...)) do
+		if tools.doesFileExist(path) then
+			return path
+		end		
+	end
+	log.ef("Failed to find icon(s): " .. inspect(table.pack(...)))
+	return config.iconPath
 end
 
 return tools

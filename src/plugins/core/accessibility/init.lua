@@ -17,6 +17,7 @@ local application			= require("hs.application")
 
 local config				= require("cp.config")
 local prop					= require("cp.prop")
+local tools					= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -95,7 +96,7 @@ end
 function mod.init(setup)
 	mod.setup = setup
 	mod.panel = setup.panel.new("accessibility", 10)
-		:addIcon("/System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns")
+		:addIcon(tools.iconFallback("/System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns"))
 		:addParagraph(i18n("accessibilityNote"), true)
 		:addButton({
 			label		= i18n("enableAccessibility"),

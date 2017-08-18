@@ -675,7 +675,7 @@ function mod.init(deps, env)
 			priority 		= 2020,
 			id				= "fcpxml",
 			label			= i18n("xml"),
-			image			= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
+			image			= image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
 			tooltip			= i18n("watchFolderFCPXMLTooltip"),
 			height			= 490,
 			loadFn			= mod.refreshTable,
