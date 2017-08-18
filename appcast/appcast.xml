@@ -4,7 +4,41 @@
 		<title>CommandPost Changelog</title>
 		<link>https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
-		<language>en</language>
+		<language>en</language>		
+		<item>
+			<title>Version 1.0.0-beta.10</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Scan Final Cut Pro Programatically instead of using GUI Scripting (issue #667)</li>
+				<li>Globally deactivate all audio waveforms (issue #625)</li>
+				<li>Report Final Cut Pro Bug to Apple (issue #700)</li>
+				<li>Added Touch Device Extension</li>
+				<li>Add an uninstall script that removes Preferences, Caches & Saved Keyboard Shortcuts (issue #733)</li></ul>
+
+				<h2>Bug Fixes:</h2>							
+				<ul><li>Final Cut Pro no longer requires a restart when toggling timecode overlays</li>
+				<li>Fixed bugs in Batch Export Tool (issue #694)</li>
+				<li>Prevent multiple CommandPost Feedback Forms from opening at once (issue #714)</li>
+				<li>Webview's don't centre properly on dual screens (issue #551)</li>
+				<li>Scan Final Cut Pro via GUI Scripting (issue #693)</li>
+				<li>Remove Console Menubar Item (issue #720)</li>
+				<li>Hide Function in Console Bug (issue #718)</li>
+				<li>Fixed HUD Assign Buttons (issue #725)</li>
+				<li>Pre-loading the Console action choices delays the 'welcome message' (issue #722)</li>
+				<li>Moved Scan Final Cut Pro Button in Preferences to Help & Support Menubar (issue #731)</li>
+				<li>Disappearing Browser when Triggering Actions (issue #734)</li>
+				<li>Email the results of the "Scan Final Cut Pro" checker (issue #732)</li>
+				<li>Bug accessing icons in High Sierra (issue #738)</li></ul>								
+			]]>
+			</description>
+			<pubDate>Sat, 19 Aug 2017 07:32:41 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.10/CommandPost_1.0.0-beta.10.dmg"
+				sparkle:version="1.0.0-beta.10"
+				sparkle:dsaSignature="MCwCFBDVTVKp7tqxWqbl4I6jo5QwDxM1AhRhQyLBHNbXCQ9Ga0PQYqOb5FHXSA=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>		
 		<item>
 			<title>Version 1.0.0-beta.9</title>
 			<description><![CDATA[
