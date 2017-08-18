@@ -351,7 +351,7 @@ hud.dropTargetsShown = config.prop("hudShowDropTargets", true):watch(hud.refresh
 --- Should Buttons in the HUD be shown?
 hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.getButton() -> string
+--- plugins.finalcutpro.hud.getButton() -> table
 --- Function
 --- Gets the button values from settings.
 ---
@@ -416,7 +416,12 @@ end
 --- Returns:
 ---  * Button URL
 function hud.getButtonURL(index)
-	return hud.actionmanager.getURL(hud.getButton(index))
+	local button = hud.getButton(index)
+	if button then
+		return hud.actionmanager.getURL(button.handlerId, button.action)
+	else
+		return ""
+	end
 end
 
 --- plugins.finalcutpro.hud.setButton() -> string
@@ -529,26 +534,21 @@ function hud.assignButton(button)
 	--------------------------------------------------------------------------------
 	local wasFinalCutProOpen = fcp:isFrontmost()
 	local whichButton = button
-	local hudButtonChooser = nil
+	local activator = nil
 
-	local chooserAction = function(result)
-
-		--------------------------------------------------------------------------------
-		-- Hide Chooser:
-		--------------------------------------------------------------------------------
-		hudButtonChooser:hide()
-
+	local chooserAction = function(handler, action, text)
 		--------------------------------------------------------------------------------
 		-- Perform Specific Function:
 		--------------------------------------------------------------------------------
-		if result ~= nil then
-			hud.setButton(whichButton, result)
+		if action ~= nil then
+			local button = { handlerId = handler:id(), action = action, text = text }
+			hud.setButton(whichButton, button)
 		end
 
 		--------------------------------------------------------------------------------
 		-- Put focus back in Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if hud.wasFinalCutProOpen then
+		if wasFinalCutProOpen then
 			fcp:launch()
 		end
 
@@ -560,11 +560,10 @@ function hud.assignButton(button)
 		end
 	end
 
-	hudButtonChooser = chooser.new(chooserAction):bgDark(true)
-												  :fgColor(drawing.color.x11.snow)
-												  :subTextColor(drawing.color.x11.snow)
-												  :choices(hud.choices)
-												  :show()
+	activator = hud.actionmanager.getActivator("finalcutpro.hud.buttons")
+	:onActivate(chooserAction)
+
+	activator:show()
 end
 
 --- plugins.finalcutpro.hud.choices() -> none
@@ -645,11 +644,11 @@ function hud.init(xmlSharing, actionmanager, env)
 	hud.xmlSharing		= xmlSharing
 	hud.actionmanager	= actionmanager
 	hud.renderTemplate	= env:compileTemplate("html/hud.html")
-	
+
 	-- Set up checking for XML Sharing
 	xmlSharing.enabled:watch(hud.refresh)
 	hud.isDropTargetsAvailable = hud.dropTargetsShown:AND(xmlSharing.enabled)
-	
+
 	hud.enabled:watch(hud.update)
 	return hud
 end
@@ -666,7 +665,7 @@ local plugin = {
 		["finalcutpro.sharing.xml"]			= "xmlSharing",
 		["finalcutpro.menu.tools"]			= "menu",
 		["finalcutpro.commands"]			= "fcpxCmds",
-		["finalcutpro.action.manager"]				= "actionmanager",
+		["finalcutpro.action.manager"]		= "actionmanager",
 	}
 }
 

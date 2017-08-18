@@ -744,11 +744,11 @@ function activator.mt:onActivate(activateFn)
 	return self
 end
 
-function activator.mt._onActivate(handler, action)
+function activator.mt._onActivate(handler, action, text)
 	if handler:execute(action) then
 		return true
 	else
-		log.wf("Action handler '%s' could not execute: %s", hs.inspect(handlerId), hs.inspect(action))
+		log.wf("Action '%s' handled by '%s' could not execute: %s", text, hs.inspect(handlerId), hs.inspect(action))
 	end
 	return false
 end
@@ -762,16 +762,16 @@ function activator.mt:activate(result)
 	-- If something was selected:
 	--------------------------------------------------------------------------------
 	if result then
-		local handlerId, action = result.type, result.params
+		local handlerId, action, text = result.type, result.params, result.text
 		local handler = self:getActiveHandler(handlerId)
 		if handler and action then
-			self._onActivate(handler, action)
+			self._onActivate(handler, action, text)
 			local actionId = handler:actionId(action)
 			if actionId then
 				self:incPopularity(actionId)
 			end
 		else
-			error(string.format("No action handler with an ID of %s is registered.", hs.inspect(handlerId)))
+			error(format("No action handler with an ID of %s is registered.", hs.inspect(handlerId)))
 		end
 	end
 end
