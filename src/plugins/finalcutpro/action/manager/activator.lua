@@ -37,6 +37,7 @@ local screen					= require("hs.screen")
 local timer						= require("hs.timer")
 local application				= require("hs.application")
 local fcp						= require("cp.apple.finalcutpro")
+local idle						= require("cp.idle")
 
 local setmetatable				= setmetatable
 local sort, insert				= table.sort, table.insert
@@ -179,9 +180,23 @@ function activator.new(id, manager)
 	--- If `true` (the default), the activator can be configured by right-clicking on the main chooser.
 	o.configurable = config.prop(prefix .. "configurable", true):bind(o)
 
-	if fcp:isRunning() then timer.doAfter(3, function() o:_findChoices() end) end
-
 	return o
+end
+
+--- plugins.finalcutpro.action.activator:preloadChoices([afterSeconds]) -> activator
+--- Method
+--- Indicates the activator should preload the choices after a number of seconds.
+--- Defaults to 10 seconds if no value is provided.
+---
+--- Parameters:
+--- * `afterSeconds`	- The number of seconds to wait before preloading.
+---
+--- Returns:
+--- * The activator.
+function activator.mt:preloadChoices(afterSeconds)
+	afterSeconds = afterSeconds or 10
+	idle.queue(10, function() self:_findChoices() end)
+	return self
 end
 
 --- plugins.finalcutpro.action.activator:id() -> string
