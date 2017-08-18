@@ -179,7 +179,7 @@ function List:clips(filterFn)
 		clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
 	end
 	return clips
-	
+
 end
 
 -- TODO: Add documentation
@@ -193,13 +193,23 @@ end
 
 -- TODO: Add documentation
 function List:showClip(clip)
-	self:contents():showRow(clip:UI())
+	if clip then
+		local clipUI = clip:UI()
+		if axutils.isValid(clipUI) then
+			self:contents():showRow(clipUI)
+		end
+	end
 	return self
 end
 
 -- TODO: Add documentation
 function List:selectClip(clip)
-	self:contents():selectRow(clip:UI())
+	if clip then
+		local clipUI = clip:UI()
+		if axutils.isValid(clipUI) then
+			self:contents():selectRow(clip:UI())
+		end
+	end
 	return self
 end
 
