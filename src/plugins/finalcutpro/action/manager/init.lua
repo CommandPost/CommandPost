@@ -29,6 +29,7 @@ local activator					= require("activator")
 
 local insert, remove			= table.insert, table.remove
 local copy						= fnutils.copy
+local format					= string.format
 
 --------------------------------------------------------------------------------
 --
@@ -108,13 +109,13 @@ function mod.init()
 end
 
 -- TODO: Add documentation
-function mod.getURL(choice)
-	if choice and choice.type then
-		-- log.df("getURL: command = %s", hs.inspect(command))
-		local params = freezeParams(choice.params)
-		return string.format("commandpost://%s?%s", choice.type, params)
+function mod.getURL(handlerId, action)
+	local handler = mod.getHandler(handlerId)
+	if handler and action then
+		local params = freezeParams(action)
+		return format("commandpost://%s?%s", handlerId, params)
 	else
-		return string.format("commandpost://"..UNDEFINED)
+		return format("commandpost://"..UNDEFINED)
 	end
 end
 
@@ -143,7 +144,7 @@ function mod.addHandler(id)
 			return
 		end
 		params = thawParams(params)
-		h.execute(params)
+		h:execute(params)
 	end)
 
 	mod.handlers:update()
