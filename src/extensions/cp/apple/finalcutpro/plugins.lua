@@ -1128,19 +1128,31 @@ end
 local USER_PLUGIN_CACHE	= "~/Library/Caches/org.latenitefilms.CommandPost/FinalCutPro"
 local CP_PLUGIN_CACHE	= config.scriptPath .. "/cp/apple/finalcutpro/plugins/cache"
 
-function mod.uninstall()
+--- cp.apple.finalcutpro.plugins.clearCaches() -> boolean
+--- Function
+--- Clears any local caches created for tracking the plugins.
+--- NOTE: Does not uninstall any of the actual plugins.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the caches have been cleared successfully.
+function mod.clearCaches()
 	local cachePath = fs.pathToAbsolute(USER_PLUGIN_CACHE)
 	if cachePath then
 	 	ok, err = tools.rmdir(cachePath, true)
 		if not ok then
 			log.ef("Unable to remove user plugin cache: %s", err)
+			return false
 		end
 	end
+	return true
 end
 
 -- ensures the cache is cleared if the config is reset
 config.watch({
-	reset = mod.uninstall,
+	reset = mod.clearCaches,
 })
 
 
