@@ -32,7 +32,7 @@ local SecondaryWindow = {}
 
 -- TODO: Add documentation
 function SecondaryWindow.matches(element)
-	if element and element:attributeValue("AXSubrole") == "AXUnknown" then
+	if element and element:attributeValue("AXModal") == false then
 		local children = element:attributeValue("AXChildren")
 		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
 	end
@@ -45,7 +45,7 @@ function SecondaryWindow:new(app)
 		_app = app
 	}
 	prop.extend(o, SecondaryWindow)
-	
+
 	o:watch({
 		show	= function() o.isShowing:update() end,
 		hide	= function() o.isShowing:update() end,
@@ -53,7 +53,7 @@ function SecondaryWindow:new(app)
 		close	= function() o.isShowing:update() end,
 		move	= function() o.frame:update() end,
 	})
-	
+
 	return o
 end
 
@@ -148,7 +148,7 @@ SecondaryWindow.frame = prop(
 	function(frame, self)
 		local ui = self:UI()
 		if ui then ui:setAttributeValue("AXFrame", frame) end
-	end	
+	end
 ):bind(SecondaryWindow)
 
 -----------------------------------------------------------------------
