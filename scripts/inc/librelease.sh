@@ -241,7 +241,7 @@ function build_dmgcanvas() {
 
   echo "Building DMG..."
   mkdir -p "../CommandPost-Releases/${VERSION}"
-  dmgcanvas "../CommandPost/scripts/inc/dmgcanvas/CommandPost.dmgCanvas" "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" -setFilePath CommandPost.app "${HAMMERSPOON_HOME}/build/CommandPost.app"
+  /Applications/DMG\ Canvas.app/Contents/Resources/dmgcanvas "../CommandPost/scripts/inc/dmgcanvas/CommandPost.dmgCanvas" "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" -setFilePath CommandPost.app "${HAMMERSPOON_HOME}/build/CommandPost.app"
 
   if [ ! -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" ]; then
   	fail "DMG Creation Failed"
