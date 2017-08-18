@@ -63,7 +63,6 @@ function mod.apply(action)
 	-- Get Titles Browser:
 	--------------------------------------------------------------------------------
 	local generators = fcp:generators()
-	local generatorsShowing = generators:isShowing()
 	local generatorsLayout = generators:saveLayout()
 
 	--------------------------------------------------------------------------------
@@ -77,7 +76,7 @@ function mod.apply(action)
 	generators:show()
 
 	if not generators:isShowing() then
-		dialog.displayErrorMessage("Unable to display the Titles panel.\n\nError occurred in titles.apply(...)")
+		dialog.displayErrorMessage("Unable to display the Titles panel.")
 		return false
 	end
 
@@ -127,9 +126,10 @@ function mod.apply(action)
 	timer.doAfter(0.1, function()
 		mod.touchbar.show()
 
+		log.df("generatorsLayout: %s", hs.inspect(generatorsLayout))
 		generators:loadLayout(generatorsLayout)
+		log.df("browserLayout: %s", hs.inspect(browserLayout))
 		if browserLayout then browser:loadLayout(browserLayout) end
-		if not generatorsShowing then generators:hide() end
 	end)
 
 	--- Success!

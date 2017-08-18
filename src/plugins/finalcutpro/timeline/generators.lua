@@ -150,7 +150,6 @@ function mod.apply(action)
 
 		generators:loadLayout(generatorsLayout)
 		if browserLayout then browser:loadLayout(browserLayout) end
-		if not generatorsShowing then generators:hide() end
 	end)
 
 	-- Success!
