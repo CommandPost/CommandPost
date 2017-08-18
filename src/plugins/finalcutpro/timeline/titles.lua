@@ -126,9 +126,7 @@ function mod.apply(action)
 	timer.doAfter(0.1, function()
 		mod.touchbar.show()
 
-		log.df("generatorsLayout: %s", hs.inspect(generatorsLayout))
 		generators:loadLayout(generatorsLayout)
-		log.df("browserLayout: %s", hs.inspect(browserLayout))
 		if browserLayout then browser:loadLayout(browserLayout) end
 	end)
 

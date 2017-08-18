@@ -197,9 +197,10 @@ function List:showClip(clip)
 		local clipUI = clip:UI()
 		if axutils.isValid(clipUI) then
 			self:contents():showRow(clipUI)
+			return true
 		end
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
@@ -208,9 +209,10 @@ function List:selectClip(clip)
 		local clipUI = clip:UI()
 		if axutils.isValid(clipUI) then
 			self:contents():selectRow(clip:UI())
+			return true
 		end
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
@@ -218,31 +220,39 @@ function List:selectClipAt(index)
 	local clips = self:clipsUI()
 	if clips and #clips <= index then
 		self:contents():selectRow(clips[index])
+		return true
 	end
-	return self
+	return false
 end
 
 function List:selectClipTitled(title)
 	local clips = self:clips()
 	for _,clip in ipairs(clips) do
 		if clip:getTitle() == title then
-			self:selectClip(clip)
-			return self
+			return self:selectClip(clip)
 		end
 	end
-	return self
+	return false
 end
 
 -- TODO: Add documentation
 function List:selectAll(clips)
-	self:contents():selectAll(self:_clipsToUI(clips))
-	return self
+	clips = clips or self:clips()
+	if clips then
+		self:contents():selectAll(self:_clipsToUI(clips))
+		return true
+	end
+	return false
 end
 
 -- TODO: Add documentation
 function List:deselectAll(clips)
-	self:contents():deselectAll(self:_clipsToUI(clips))
-	return self
+	clips = clips or self:clips()
+	if clips then
+		self:contents():deselectAll(self:_clipsToUI(clips))
+		return true
+	end
+	return false
 end
 
 return List
