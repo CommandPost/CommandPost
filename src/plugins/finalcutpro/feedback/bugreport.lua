@@ -245,11 +245,11 @@ function mod.open(bugReport)
 	--------------------------------------------------------------------------------
 	-- Feedback Type:
 	--------------------------------------------------------------------------------
-	if bugReport then 
+	if bugReport then
 		FEEDBACK_TYPE = "Bug Report"
 	else
 		FEEDBACK_TYPE = "Enhancement Request"
-	end	
+	end
 
 	--------------------------------------------------------------------------------
 	-- Gather Data:
@@ -367,7 +367,7 @@ local plugin = {
 	id				= "finalcutpro.feedback.bugreport",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.menu.finalcutpro"] = "menu",
+		["finalcutpro.menu.support"] 	= "menu",
 		["core.commands.global"] 		= "global",
 	}
 }

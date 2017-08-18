@@ -96,8 +96,7 @@ local plugin = {
 	id = "finalcutpro.preferences.scanfinalcutpro",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.preferences.app"]						= "prefs",
-		["finalcutpro.menu.finalcutpro"]					= "menu",
+		["finalcutpro.menu.support"]					= "menu",
 	}
 }
 
