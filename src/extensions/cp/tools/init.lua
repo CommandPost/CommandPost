@@ -978,6 +978,41 @@ function tools.dirFiles(path)
 	return files
 end
 
+--- cp.tools.rmdir(path[, recursive]) -> true | nil, err
+--- Function
+--- Attempts to remove the directory at the specified path, optionally removing
+--- any contents recursively.
+---
+--- Parameters:
+--- * `path`		- The absolute path to remove
+--- * `recursive`	- If `true`, the contents of the directory will be removed first.
+---
+--- Returns:
+--- * `true` if successful, or `nil, err` if there was a problem.
+function tools.rmdir(path, recursive)
+	if recursive then
+		-- remove the contents.
+		for name in fs.dir(path) do
+			if name ~= "." and name ~= ".." then
+				local filePath = path .. "/" .. name
+				local attrs = fs.attributes(filePath)
+				local ok, err
+				if attrs.mode == "directory" and recursive then
+					ok, err = tools.rmdir(filePath, true)
+				else
+					ok, err = os.remove(filePath)
+				end
+				if not ok then
+					return ok, err
+				end
+			end
+		end
+	end
+	-- remove the directory itself
+	fs.rmdir(path)
+	return true
+end
+
 --- cp.tools.numberToWord(number) -> string
 --- Function
 --- Converts a number to a string (i.e. 1 becomes "One").
