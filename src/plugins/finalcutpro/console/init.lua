@@ -69,7 +69,7 @@ mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
 function mod.init(actionmanager)
 	mod.actionmanager = mod.actionmanager or actionmanager
 	mod.activator = actionmanager.getActivator("finalcutpro.console")
-		:preloadChoices(20)
+		:preloadChoices()
 end
 
 --------------------------------------------------------------------------------
