@@ -22,6 +22,7 @@ local just				= require("cp.just")
 local config			= require("cp.config")
 local tools				= require("cp.tools")
 local prop				= require("cp.prop")
+local feedback			= require("cp.feedback")
 
 --------------------------------------------------------------------------------
 --
@@ -75,7 +76,7 @@ function mod.scanFinalCutPro()
 	if ok then
 		dialog.displayMessage(i18n("scanFinalCutProDone"))
 	else
-		dialog.displayMessage(i18n("scanFinalCutProErrors"))
+		feedback.showFeedback()
 	end
 
 	return true
