@@ -86,7 +86,7 @@ end
 
 function mod.applyShortcut(handlerId, shortcutNumber)
 	local action = mod.getShortcut(handlerId, shortcutNumber)
-	local apply = self._apply[handlerId]
+	local apply = mod._apply[handlerId]
 	return apply and apply(action) or false
 end
 
