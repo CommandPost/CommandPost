@@ -962,6 +962,7 @@ return {
 		cpTrashPreferences_title								=	"Trash Preferences",
 		cpOpenPluginsFolder_title								= 	"Open Plugins Folder",
 		cpUserGuide_title										=	"User Guide",
+		cpFeedback_title										=	"Provide Feedback",
 		cpDeveloperGuide_title									=	"Developer Guide",
 
 		--------------------------------------------------------------------------------

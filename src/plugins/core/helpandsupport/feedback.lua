@@ -53,6 +53,7 @@ local plugin = {
 	group			= "core",
 	dependencies	= {
 		["core.menu.helpandsupport"]	= "helpandsupport",
+		["core.commands.global"] 		= "global",
 	}
 }
 
@@ -60,6 +61,17 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpFeedback")
+		:whenActivated(mod.show)
+
+	--------------------------------------------------------------------------------
+	-- Menubar:
+	--------------------------------------------------------------------------------
 	deps.helpandsupport:addItem(PRIORITY, function()
 		return { title = i18n("provideFeedback") .. "...",	fn = mod.show }
 	end)
