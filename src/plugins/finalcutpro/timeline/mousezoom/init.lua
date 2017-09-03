@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("zoom")
+local log								= require("hs.logger").new("mousezoom")
 
 local eventtap							= require("hs.eventtap")
 local touchdevice						= require("hs._asm.undocumented.touchdevice")

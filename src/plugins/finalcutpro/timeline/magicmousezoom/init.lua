@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("zoom")
+local log								= require("hs.logger").new("magicmousezoom")
 
 local eventtap							= require("hs.eventtap")
 local touchdevice						= require("hs._asm.undocumented.touchdevice")
@@ -27,7 +27,7 @@ local fcp								= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 
-local ENABLED_DEFAULT 	= true
+local ENABLED_DEFAULT 	= false
 
 --------------------------------------------------------------------------------
 --
@@ -76,6 +76,8 @@ function mod.start()
 		local devices = touchdevice.devices()
 		local deviceID = devices[1]
 		
+		local lastValue = nil
+		
 		mod.touchdevice = touchdevice.forDeviceID(deviceID):frameCallback(function(self, touches, time, frame)
 			if #touches == 2 then -- Only trigger when two fingers are detected.
 				local mods = eventtap.checkKeyboardModifiers()
@@ -83,18 +85,21 @@ function mod.start()
 				if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
 				
 					-- TODO: Need to work out how best to work out the scrolling direction.
-						
-					--[[
-					local direction = e:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
-					if direction >= 1 then
-						log.df("Zoom In")
-						fcp:selectMenu({"View", "Zoom In"})
-					else
-						log.df("Zoom Out")
-						fcp:selectMenu({"View", "Zoom Out"})
-					end
-					--]]
 					
+					--print("Touch Data: " .. hs.inspect(touches))
+					
+					currentValue = touches[1].normalizedVector.position.x
+
+					if lastValue then 
+						if lastValue > currentValue then
+							log.df("Zoom In")
+							fcp:selectMenu({"View", "Zoom In"})
+						else
+							log.df("Zoom Out")
+							fcp:selectMenu({"View", "Zoom Out"})
+						end
+					end										
+					lastValue = currentValue					
 				end
 			end
 		end):start()
