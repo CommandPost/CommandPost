@@ -420,7 +420,7 @@ function hud.getButtonURL(index)
 	if button then
 		return hud.actionmanager.getURL(button.handlerId, button.action)
 	else
-		return ""
+		return "#"
 	end
 end
 
