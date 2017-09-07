@@ -229,6 +229,7 @@ function mod.init()
 		:attachedToolbar(mod.toolbar)
 		:deleteOnClose(true)
 		:windowCallback(windowCallback)
+		:darkMode(true)
 
 	return mod
 end

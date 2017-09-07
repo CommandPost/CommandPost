@@ -897,6 +897,7 @@ return {
 	finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
 	finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
 	finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
+	finalcutpro_menu_support_label							=	"Menubar: Support",
 	finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
 	finalcutpro_menu_timeline_assignshortcuts_label			=	"Menubar: Timeline Assign Shortcuts",
 	finalcutpro_menu_timeline_highlightplayhead_label		=	"Menubar: Highlight Playhead",
@@ -944,8 +945,7 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-
-
+	
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------

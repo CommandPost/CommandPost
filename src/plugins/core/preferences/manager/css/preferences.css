@@ -1,14 +1,9 @@
 body {
-	background-color: #ececec;
+	background-color: #1f1f1f;	
 	font-family: -apple-system;
 	font-size: 13px;
 	overflow:hidden;
-}
-body {
-	background-color: #ececec;
-	font-family: -apple-system;
-	font-size: 13px;
-	overflow:hidden;
+	color: #999999;
 }
 
 ::-webkit-scrollbar {
@@ -25,14 +20,33 @@ body {
     border-radius: 4px;
 }
 
-.button {
+checkbox {
+	background-color:#5760e7;
+}
+
+select {
+	-webkit-appearance: none;
+	background-color: #4a4a4a;
+	color: #bfbfbc;		
 	text-decoration: none;
-	color: black;
 	padding: 2px 18px;
-	border:1px solid #c7c7c7;
+	border:0.5px solid black;
 	margin: 2px 2px;
 	display: inline-block;
-	background-color: white;
+	border-radius: 3px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;	
+}
+
+.button {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
 	border-radius: 3px;
 	cursor: default;
 	text-align: center;
@@ -55,59 +69,7 @@ body {
 	-webkit-box-sizing: border-box;
 	padding: 4px 4px;
 	margin: 10px 0px;
-	background-color: white;
-	border:1px solid #c5c5c5;
-	width: 99%;
-	height: 200px;
-	outline: 0px solid transparent;
-	max-height: 200px;
-	overflow: auto;
-}
-.uiItem {
-	padding-left:20px;
-	padding-right:20px;
-	margin-top: 0px;
-	margin-bottom: 2px;
-	margin-right: 0px;
-	margin-left: 0px;
-}
-
-h3.uiItem {
-	padding-top: 12pt;
-	padding-bottom: 3pt;
-}
-
-.button {
-	text-decoration: none;
-	color: black;
-	padding: 2px 18px;
-	border:1px solid #c7c7c7;
-	margin: 2px 2px;
-	display: inline-block;
-	background-color: white;
-	border-radius: 3px;
-	cursor: default;
-	text-align: center;
-}
-.button:active {
-	color: white;
-	border-color:#1262fb;
-	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
-}
-.button.selected {
-	color: white;
-	border-color:#1262fb;
-	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
-}
-.button.disabled {
-	color: #999!important;
-	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
-}
-.textarea {
-	-webkit-box-sizing: border-box;
-	padding: 4px 4px;
-	margin: 10px 0px;
-	background-color: white;
+	background-color: #161616;
 	border:1px solid #c5c5c5;
 	width: 99%;
 	height: 200px;

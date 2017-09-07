@@ -118,7 +118,7 @@ mod.languagePath		= mod.scriptPath .. "/cp/resources/languages/"
 --- cp.config.sourceExtensions
 --- Constant
 --- Extensions for files which will trigger a reload when modified.
-mod.sourceExtensions	= { ".lua", ".html", ".htm" }
+mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css" }
 
 --- cp.config.sourceWatcher
 --- Constant
