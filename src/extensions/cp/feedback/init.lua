@@ -163,7 +163,9 @@ function mod.showFeedback(quitOnComplete)
 	if tools.isOffScreen(defaultRect) then
 		defaultRect = centredPosition()
 	end
-
+	defaultRect.w = mod.defaultWidth
+	defaultRect.h = mod.defaultHeight
+	
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
 	--------------------------------------------------------------------------------
@@ -199,6 +201,7 @@ function mod.showFeedback(quitOnComplete)
 		:windowTitle(mod.defaultTitle)
 		:html(generateHTML())
 		:windowCallback(windowCallback)
+		:darkMode(true)
 		:policyCallback(function(action, wv, details1, details2)
 			if action == "navigationResponse" then
 				local statusCode = details1.response.statusCode
