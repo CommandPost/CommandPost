@@ -219,7 +219,7 @@ function mod.styleSheet()
 				white-space: nowrap;
 				border: 1px solid #cccccc;
 				padding: 8px;
-				background-color: #ffffff;
+				background-color: #161616 !important;
 				text-align: left;
 			}
 
@@ -291,6 +291,8 @@ function mod.styleSheet()
 
 			.watchFolderTextBox input {
 				display: inline-block;
+				background-color: #161616 !important;
+				color: #999999 !important;
 			}
 
 			.deleteNote {

@@ -77,8 +77,8 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Console Colour Scheme:
 	--------------------------------------------------------------------------------
-	console.consoleCommandColor{ white = 1 }
-	console.outputBackgroundColor{ white = 0 }
+	console.consoleCommandColor{hex = "#999999", alpha = 1}
+	console.outputBackgroundColor{hex = "#161616", alpha = 1}
 
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
@@ -247,7 +247,7 @@ function mod.init()
 	-- Display Welcome Message In The Console:
 	--------------------------------------------------------------------------------
 	console.printStyledtext(styledtext.new(config.appName .. " v" .. config.appVersion, {
-		color = drawing.color.definedCollections.hammerspoon["white"],
+		color = {hex = "#999999", alpha = 1},
 		font = { name = "Helvetica", size = 18 },
 	}))
 
@@ -256,7 +256,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	local writeToConsoleDebug = function(value)
 		console.printStyledtext(styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["white"],
+			color = {hex = "#999999", alpha = 1},
 			font = { name = "Menlo", size = 12 },
 		}))
 	end

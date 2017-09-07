@@ -9,7 +9,7 @@
 	white-space: nowrap;
 	border: 1px solid #cccccc;
 	padding: 8px;
-	background-color: #ffffff;
+	background-color: #161616;
 	text-align: left;
 }
 
@@ -20,23 +20,27 @@
 }
 
 .rowLabel {
-	width: 57%;
+	width: 50%;
 }
 
 .rowModifier {
-	width: 18%;
+	width: 20%;	
 }
 
 .rowKeyCode {
-	width: 25%;
+	width: 30%;
 }
 
 .rowModifier select {
 	width: 100%;
+	font-size: 12px !important;
+	text-align-last: center;
 }
 
 .rowKeyCode select {
 	width: 100%;
+	font-size: 12px !important;
+	text-align-last: center;
 }
 
 .shortcuts thead {

@@ -343,6 +343,7 @@ function mod.open(bugReport)
 		:windowCallback(windowCallback)
 		:navigationCallback(navigationCallback)
 		:url(FEEDBACK_URL)
+		:darkMode(true)
 		:show()
 
 	--------------------------------------------------------------------------------

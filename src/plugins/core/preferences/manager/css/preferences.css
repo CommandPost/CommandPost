@@ -20,8 +20,12 @@ body {
     border-radius: 4px;
 }
 
+checkbox {
+	background-color:#5760e7;
+}
+
 select {
-	-webkit-appearance: button;
+	-webkit-appearance: none;
 	background-color: #4a4a4a;
 	color: #bfbfbc;		
 	text-decoration: none;
@@ -48,17 +52,13 @@ select {
 	text-align: center;
 }
 .button:active {
-	/*
 	color: white;
 	border-color:#1262fb;
-	*/
 	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
 }
 .button.selected {
-	/*
 	color: white;
 	border-color:#1262fb;
-	*/
 	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
 }
 .button.disabled {
@@ -69,7 +69,7 @@ select {
 	-webkit-box-sizing: border-box;
 	padding: 4px 4px;
 	margin: 10px 0px;
-	background-color: white;
+	background-color: #161616;
 	border:1px solid #c5c5c5;
 	width: 99%;
 	height: 200px;

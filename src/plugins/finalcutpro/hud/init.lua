@@ -67,7 +67,7 @@ local hud = {}
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
-hud.title										= config.appName
+hud.title										= "" --config.appName
 hud.width										= 350
 hud.heightInspector								= 90
 hud.heightDropTargets							= 85
@@ -171,7 +171,7 @@ function hud.new()
 		local options = {}
 		if config.developerMode() then options.developerExtrasEnabled = true end
 		hud.webview = webview.new(getHUDRect(), options, hud.webviewController)
-			:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable", "resizable"})
+			:windowStyle({"titled", "nonactivating", "closable"})
 			:shadow(true)
 			:closeOnEscape(true)
 			:html(hud.generateHTML())
@@ -181,6 +181,7 @@ function hud.new()
 			:level(drawing.windowLevels.floating)
 			:windowCallback(windowCallback)
 			:deleteOnClose(true)
+			:darkMode(true)
 	end
 
 end
