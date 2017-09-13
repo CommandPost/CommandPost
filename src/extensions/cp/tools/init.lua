@@ -143,7 +143,7 @@ end
 
 --- cp.tools.getVRAMSize() -> string
 --- Function
---- Returns VRAM Size.
+--- Returns the VRAM size in format suitable for Apple's Final Cut Pro feedback form or "" if unknown.
 ---
 --- Parameters:
 ---  * None
@@ -151,35 +151,29 @@ end
 --- Returns:
 ---  * String
 function tools.getVRAMSize()
-	local output, status = hs.execute("system_profiler SPDisplaysDataType | grep VRAM")
-	if status and output then
-		local lines = tools.lines(output)
-		local vram = nil
-		if #lines == 1 then
-			vram = tools.splitOnColumn(lines[1])
-		else
-			vram = tools.splitOnColumn(lines[2])
-		end
-		local value = string.sub(vram, -2)
-		local result = tonumber(string.sub(vram, 1, -4))
-		if value == "MB" then
-			if result >= 256 and result <= 512 then
-				return "256 MB-512 MB"
-			elseif result >= 512 and result <= 1024 then
-				return "512 MB-1 GB"
-			elseif result >= 1024 and result <= 2048 then
-				return "1-2 GB"
-			elseif result > 2048 then
-				return "More than 2 GB"
+	local vram = host.gpuVRAM()
+	if vram then
+		local result
+		for i, v in pairs(vram) do
+			if result then 
+				if v > result then 
+					result = v
+				end
 			else
-				return ""
+				result = v
 			end
-		else
-			return ""
-		end
-	else
-		return ""
+		end				
+		if result >= 256 and result <= 512 then
+			return "256 MB-512 MB"
+		elseif result >= 512 and result <= 1024 then
+			return "512 MB-1 GB"
+		elseif result >= 1024 and result <= 2048 then
+			return "1-2 GB"
+		elseif result > 2048 then
+			return "More than 2 GB"
+		end		
 	end
+	return ""
 end
 
 --- cp.tools.getmacOSVersion() -> string
