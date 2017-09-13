@@ -242,9 +242,13 @@ function completeProcess()
 	-- Add Finder Tag(s):
 	--------------------------------------------------------------------------------
 	if mod.createRoleForVoice() then
-		fs.tagsAdd(savePath, {mod.tag(), firstToUpper(mod.voice())})
+		if not fs.tagsAdd(savePath, {mod.tag(), firstToUpper(mod.voice())}) then		
+			log.ef("Failed to add Finder Tags (%s & %s) to: %s", mod.tag(), firstToUpper(mod.voice()), savePath)
+		end
 	else
-		fs.tagsAdd(savePath, {mod.tag()})
+		if not fs.tagsAdd(savePath, {mod.tag()}) then 
+			log.ef("Failed to add Finder Tag (%s) to: %s", mod.tag(), savePath)
+		end
 	end
 
 	--------------------------------------------------------------------------------
