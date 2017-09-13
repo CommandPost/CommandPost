@@ -74,12 +74,12 @@ function mod.start()
 		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
 			local direction = e:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
 			if direction >= 1 then
-				log.df("Zoom In")
+				--log.df("Zoom In")
 				fcp:selectMenu({"View", "Zoom In"})
 			else
-				log.df("Zoom Out")
+				--log.df("Zoom Out")
 				fcp:selectMenu({"View", "Zoom Out"})
-			end
+			end			
 		end
 	end):start()
 end

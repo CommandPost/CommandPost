@@ -15,7 +15,11 @@
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("magicmousezoom")
 
+local distributednotifications			= require("hs.distributednotifications")
 local eventtap							= require("hs.eventtap")
+local pathwatcher						= require("hs.pathwatcher")
+local timer								= require("hs.timer")
+
 local touchdevice						= require("hs._asm.undocumented.touchdevice")
 
 local config							= require("cp.config")
@@ -40,6 +44,11 @@ mod.touchDevices = {}
 mod.magicMouseIDs = {}	
 mod.numberOfTouchDevices = 0
 
+--- plugins.finalcutpro.timeline.magicmousezoom.timeInterval -> number
+--- Variable
+--- Time Interval between touch events.
+mod.timeInterval = 0.05
+
 --- plugins.finalcutpro.timeline.magicmousezoom.update() -> none
 --- Function
 --- Checks to see whether or not we should enable the timeline zoom watchers.
@@ -58,7 +67,7 @@ function mod.update()
 end
 
 --- plugins.finalcutpro.timeline.magicmousezoom.enabled <cp.prop: boolean>
---- Constant
+--- Variable
 --- Toggles the Enable Proxy Menu Icon
 mod.enabled = config.prop("enablemagicmousezoom", ENABLED_DEFAULT):watch(mod.update)
 
@@ -72,13 +81,34 @@ mod.enabled = config.prop("enablemagicmousezoom", ENABLED_DEFAULT):watch(mod.upd
 --- Returns:
 ---  * None
 function mod.stop()
+	--------------------------------------------------------------------------------
 	-- Clear any existing existing Touch Devices:
+	--------------------------------------------------------------------------------
 	if mod.touchDevices then		
 		for i=0, #mod.touchDevices do 
 			mod.touchDevices[i] = nil 
 		end
 		mod.touchDevices = nil
 	end
+	
+	--------------------------------------------------------------------------------
+	-- Destroy Mouse Watcher:
+	--------------------------------------------------------------------------------
+	if mod.distributedObserver then
+		log.df("Stopping Distributed Observer.")
+		mod.distributedObserver:stop()
+		mod.distributedObserver = nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Destroy Preferences Watcher:
+	--------------------------------------------------------------------------------	
+	if mod.preferencesWatcher then
+		log.df("Stopping Preferences Watcher.")
+		mod.preferencesWatcher:stop()
+		mod.preferencesWatcher = nil
+	end
+		
 end
 
 --- plugins.finalcutpro.timeline.magicmousezoom.findMagicMouses() -> none
@@ -114,38 +144,75 @@ function mod.findMagicMouses()
 	end
 end
 
-mod.timeInterval = 0.09
-
+-- touchCallback(self, touches, time, frame) -> none
+-- Function
+-- Touch Callback.
+--
+-- Parameters:
+--  * `self` - the touch device object for which the callback is being invoked for
+--  * `touch` - a table containing an array of touch tables as described in `hs._asm.undocumented.touchdevice.touchData` for each of the current touches detected by the touch device.
+--  * `timestamp` - a number specifying the timestamp for the frame.
+--  * `frame` - an integer specifying the frame ID
+--
+-- Returns:
+--  * None
 local function touchCallback(self, touches, time, frame)
+
+	if #touches == 1 and touches[1].stage == "makeTouch" then
+		--log.df("Magic Mouse Touched!")
+		mod.firstTouch = true		
+	end
+	
 	local currentTime = touchdevice.absoluteTime()
 	if not mod.absoluteTime then mod.absoluteTime = currentTime end
 	if #touches == 1 and touches[1].stage == "touching" and currentTime > mod.absoluteTime + mod.timeInterval then -- Only trigger when one finger is detected.
 		local mods = eventtap.checkKeyboardModifiers()
 		local mouseButtons = eventtap.checkMouseButtons()
 		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
-		
-			-- TODO: Need to work out how best to work out the scrolling direction.
-			
-			log.df("touchdevice.absoluteTime(): %s", touchdevice.absoluteTime())
-			
-			
-			
+	
+			--log.df("touchdevice.absoluteTime(): %s", touchdevice.absoluteTime())	
 			--print("Touch Data: " .. hs.inspect(touches))
-			
+		
 			currentValue = touches[1].absoluteVector.position.x
 
 			if lastValue then 
-				if lastValue > currentValue then
-					log.df("Zoom In")
-					fcp:selectMenu({"View", "Zoom In"})
+			
+				if mod.scrollDirection == "Natural" then 		
+					if lastValue > currentValue then
+						if not mod.firstTouch and mod.direction == "in" then					
+							--log.df("Zoom In")			
+							fcp:selectMenu({"View", "Zoom In"})
+						end
+						mod.direction = "in"
+					else
+						if not mod.firstTouch and mod.direction == "out" then
+							--log.df("Zoom Out")
+							fcp:selectMenu({"View", "Zoom Out"})
+						end
+						mod.direction = "out"
+					end
 				else
-					log.df("Zoom Out")
-					fcp:selectMenu({"View", "Zoom Out"})
-				end
+					if lastValue < currentValue then
+						if not mod.firstTouch and mod.direction == "in" then					
+							--log.df("Zoom In")			
+							fcp:selectMenu({"View", "Zoom In"})
+						end
+						mod.direction = "in"
+					else
+						if not mod.firstTouch and mod.direction == "out" then
+							--log.df("Zoom Out")
+							fcp:selectMenu({"View", "Zoom Out"})
+						end
+						mod.direction = "out"
+					end				
+				end				
+				
 			end										
 			lastValue = currentValue
+		
+			mod.absoluteTime = currentTime	
 			
-			mod.absoluteTime = currentTime					
+			mod.firstTouch = false				
 		end
 	end
 end			
@@ -165,8 +232,49 @@ function mod.start()
 	if mod.numberOfTouchDevices >= 1 then 	
 		for _, id in ipairs(mod.magicMouseIDs) do					
 			mod.touchDevices[id] = touchdevice.forDeviceID(id):frameCallback(touchCallback):start()		
-		end		
+		end								
 	end	
+		
+	--------------------------------------------------------------------------------
+	-- Setup Mouse Watcher:
+	--------------------------------------------------------------------------------
+	log.df("Starting Distributed Observer.")
+	mod.distributedObserver = distributednotifications.new(function(name)	
+	    if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
+	    	log.df("New Multi-touch Device Detected. Re-scanning...")
+	    	mod.stop()
+	    	mod.update()
+	    end	    
+	end):start()
+		
+	--------------------------------------------------------------------------------
+	-- Setup Preferences Watcher:
+	--------------------------------------------------------------------------------
+	mod.preferencesWatcher = pathwatcher.new("~/Library/Preferences/", function(files) 
+		local doReload = false
+		for _,file in pairs(files) do
+			if file:sub(-24) == ".GlobalPreferences.plist" then
+				doReload = true
+			end
+		end
+		if doReload then
+			log.df("Preferences Updated.")
+			getScrollDirection()
+		end
+	end):start()
+	
+end
+
+function getScrollDirection()
+	--------------------------------------------------------------------------------
+	-- Determine Scroll Direction:
+	--------------------------------------------------------------------------------
+	local result = hs.execute("defaults read ~/Library/Preferences/.GlobalPreferences com.apple.swipescrolldirection")
+	if result == "1" then 
+		mod.scrollDirection = "Natural"
+	else
+		mod.scrollDirection = "Normal"
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -186,7 +294,15 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)	
-	
+
+	--------------------------------------------------------------------------------
+	-- Get Scroll Direction:
+	--------------------------------------------------------------------------------
+	getScrollDirection()
+					
+	--------------------------------------------------------------------------------
+	-- Update:
+	--------------------------------------------------------------------------------				
 	mod.update()
 	
 	--------------------------------------------------------------------------------
