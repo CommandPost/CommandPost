@@ -376,17 +376,23 @@ function mod.insertFilesIntoFinalCutPro(files)
 		local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 		if mod.videoTag() ~= "" then
 			if (fnutils.contains(videoExtensions, file:sub(-3)) or fnutils.contains(videoExtensions, file:sub(-4))) and tools.doesFileExist(file) then
-				fs.tagsAdd(file, {mod.videoTag()})
+				if not fs.tagsAdd(file, {mod.videoTag()}) then
+					log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
+				end
 			end
 		end
 		if mod.audioTag() ~= "" then
 			if (fnutils.contains(audioExtensions, file:sub(-3)) or fnutils.contains(audioExtensions, file:sub(-4))) and tools.doesFileExist(file) then
-				fs.tagsAdd(file, {mod.audioTag()})
+				if not fs.tagsAdd(file, {mod.audioTag()}) then
+					log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
+				end
 			end
 		end
 		if mod.imageTag() ~= "" then
 			if (fnutils.contains(imageExtensions, file:sub(-3)) or fnutils.contains(imageExtensions, file:sub(-4))) and tools.doesFileExist(file) then
-				fs.tagsAdd(file, {mod.imageTag()})
+				if not fs.tagsAdd(file, {mod.imageTag()}) then
+					log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
+				end
 			end
 		end
 	end
