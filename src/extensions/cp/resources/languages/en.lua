@@ -523,6 +523,11 @@ return {
 			displayThisMenuAsIcon				=			"Display Menubar As Icon",
 
 			--------------------------------------------------------------------------------
+			-- Final Cut Pro:
+			--------------------------------------------------------------------------------
+			allowZoomingWithOptionKey			=			"Enable Timeline Zooming with Mouse Scroll & OPTION key",
+			
+			--------------------------------------------------------------------------------
 			-- HUD Options:
 			--------------------------------------------------------------------------------
 			showInspector						=			"Show Inspector",
@@ -597,6 +602,8 @@ return {
 
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
+			
+			modifierHeading						=			"Modifier Keys",
 
 			languageHeading						=			"Language",
 			commandPostLanguage					=			"CommandPost Language",
