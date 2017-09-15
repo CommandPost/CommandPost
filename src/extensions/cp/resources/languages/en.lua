@@ -525,8 +525,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Final Cut Pro:
 			--------------------------------------------------------------------------------
-			allowZoomingWithOptionKey			=			"Allow Timeline Zooming with Mouse Scrollwheel & OPTION key",
-			allowZoomingWithMagicMouse			= 			"Allow Timeline Zooming with Magic Mouse & OPTION key",
+			allowZoomingWithOptionKey			=			"Enable Timeline Zooming with Mouse Scroll & OPTION key",
 			
 			--------------------------------------------------------------------------------
 			-- HUD Options:
