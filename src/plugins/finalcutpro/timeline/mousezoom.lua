@@ -84,7 +84,7 @@ function mod.stop()
 	-- Clear any existing existing Touch Devices:
 	--------------------------------------------------------------------------------
 	if mod.touchDevices then	
-		log.df("Stopping Touch Device Watcher(s).")	
+		--log.df("Stopping Touch Device Watcher(s).")	
 		for i=0, #mod.touchDevices do 
 			mod.touchDevices[i] = nil 
 		end
@@ -95,7 +95,7 @@ function mod.stop()
 	-- Destroy Mouse Watcher:
 	--------------------------------------------------------------------------------
 	if mod.distributedObserver then
-		log.df("Stopping Distributed Observer.")
+		--log.df("Stopping Distributed Observer.")
 		mod.distributedObserver:stop()
 		mod.distributedObserver = nil
 	end
@@ -104,7 +104,7 @@ function mod.stop()
 	-- Destroy Preferences Watcher:
 	--------------------------------------------------------------------------------	
 	if mod.preferencesWatcher then
-		log.df("Stopping Preferences Watcher.")
+		--log.df("Stopping Preferences Watcher.")
 		mod.preferencesWatcher:stop()
 		mod.preferencesWatcher = nil
 	end
@@ -113,9 +113,17 @@ function mod.stop()
 	-- Destory Mouse Scroll Wheel Watcher:
 	--------------------------------------------------------------------------------
 	if mod.mousetap then
-		log.df("Stopping Mouse Scroll Wheel Watcher.")
+		--log.df("Stopping Mouse Scroll Wheel Watcher.")
 		mod.mousetap:stop()
 		mod.mousetap = nil
+	end
+	
+	--------------------------------------------------------------------------------
+	-- Destroy Keyboard Watcher:
+	--------------------------------------------------------------------------------
+	if mod.keytap then 
+		mod.keytap:stop()
+		mod.keytap = nil
 	end
 		
 end
@@ -145,7 +153,7 @@ function mod.findMagicMouses()
 				if selectedDevice then
 					local selectedProductName = selectedDevice:details().productName 				
 					if selectedProductName == "Magic Mouse" or selectedProductName == "Magic Mouse 2" then
-						log.df("Found a Magic Mouse! ID: %s", id)						
+						--log.df("Found a Magic Mouse! ID: %s", id)						
 						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
 						mod.foundMagicMouse = true
 					end
@@ -158,7 +166,7 @@ end
 --- plugins.finalcutpro.timeline.mousezoom.timeInterval -> number
 --- Variable
 --- Time Interval between touch events.
-mod.timeInterval = 0.005
+mod.timeInterval = 0.05
 
 -- touchCallback(self, touches, time, frame) -> none
 -- Function
@@ -190,26 +198,14 @@ local function touchCallback(self, touches, time, frame)
 	else
 		return
 	end
-	
-	--------------------------------------------------------------------------------
-	-- Touch has been broken/released:
-	--------------------------------------------------------------------------------
-	local stage = touches[1].stage
-	if stage == "breakTouch" then
-		log.df("Magic Mouse Released.")
-		mod.lastAbsoluteTime = nil
-		mod.startPosition = nil
-		fcp:timeline():toolbar():appearance():hide()
-		return 
-	end		
-	
+		
 	--------------------------------------------------------------------------------
 	-- Check Modifier Keys & Mouse Buttons:
 	--------------------------------------------------------------------------------
 	local mods = eventtap.checkKeyboardModifiers()
 	local mouseButtons = eventtap.checkMouseButtons()
 	if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) then
-		-- All good!
+		mod.altPressed = true
 	else
 		return
 	end	
@@ -217,58 +213,36 @@ local function touchCallback(self, touches, time, frame)
 	--------------------------------------------------------------------------------
 	-- Setup Current Position & Time: 
 	--------------------------------------------------------------------------------
-	local currentPosition = touches[1].normalizedVector.position.x
+	local currentPosition = touches[1].normalizedVector.position.y
 	local currentTime = touchdevice.absoluteTime()
 
 	--------------------------------------------------------------------------------
 	-- User has made contact with the Touch Device:
 	--------------------------------------------------------------------------------	
+	local stage = touches[1].stage
 	if stage == "makeTouch" then
-		log.df("Magic Mouse Touched.")		
+		--log.df("Magic Mouse Touched.")		
 		fcp:timeline():toolbar():appearance():show()	
-		
-		local horizontalScrollBarUI = fcp:timeline():contents():horizontalScrollBarUI()
-		if horizontalScrollBarUI then 		
-			mod.scrollBarValue = horizontalScrollBarUI:value()
-		else
-			mod.scrollBarValue = nil
-		end
-			
-		mod.startPosition = currentPosition							
-		mod.lastAbsoluteTime = currentTime
-	end
-		
-	--------------------------------------------------------------------------------
-	-- Prevent Horizontal Scrolling:
-	--------------------------------------------------------------------------------
-	local horizontalScrollBarUI = fcp:timeline():contents():horizontalScrollBarUI()	
-	if horizontalScrollBarUI and mod.scrollBarValue then 
-		horizontalScrollBarUI:setAttributeValue("AXValue", mod.scrollBarValue)
+
+		mod.lastPosition = currentPosition							
+		mod.lastAbsoluteTime = currentTime		
 	end
 		
 	--------------------------------------------------------------------------------
 	-- Only trigger when touching and time interval is valid:
 	--------------------------------------------------------------------------------
-	if stage == "touching" and ( currentTime > mod.lastAbsoluteTime + mod.timeInterval ) then	
-		if mod.scrollDirection == "normal" then 		
-		
-			--------------------------------------------------------------------------------
-			--------------------------------------------------------------------------------
-			-- THIS ISN'T WORKING. NEED TO RETHINK THE MATHS/LOGIC.
-			-- NEEDS TO BE MORE LIKE SCREENFLOW.
-			--------------------------------------------------------------------------------
-			--------------------------------------------------------------------------------
-				
-			local currentValue = fcp:timeline():toolbar():appearance():show():zoomAmount():getValue()			
-			local difference = currentPosition - mod.startPosition
-							
-			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue + (difference * 10))
-
-		else
-		
-			-- Do the opposite of the above, once we work out the above.
-		
-		end						
+	if stage == "touching" then --and ( currentTime > mod.lastAbsoluteTime + mod.timeInterval ) then	
+		local currentValue = fcp:timeline():toolbar():appearance():show():zoomAmount():getValue()			
+		local difference = currentPosition			
+		if mod.lastPosition then 			
+			difference = currentPosition - mod.lastPosition
+		end			
+		if mod.scrollDirection == "normal" then 													
+			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue + (difference * 10))									
+		else										
+			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue - (difference * 10))					
+		end				
+		mod.lastPosition = currentPosition		
 	end								
 	
 	--------------------------------------------------------------------------------
@@ -277,6 +251,12 @@ local function touchCallback(self, touches, time, frame)
 	mod.lastAbsoluteTime = currentTime
 		
 end			
+
+local function tableCount(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
 
 --- plugins.finalcutpro.timeline.mousezoom.start() -> none
 --- Function
@@ -303,19 +283,21 @@ function mod.start()
 	--------------------------------------------------------------------------------
 	-- Debugging:
 	--------------------------------------------------------------------------------
+	--[[
 	if mod.foundMagicMouse then
 		log.df("Magic Mouse Mode Enabled.")
 	else
 		log.df("Mechanical Mouse Mode Enabled.")
 	end
+	--]]
 	
 	--------------------------------------------------------------------------------
 	-- Setup Mouse Watcher:
 	--------------------------------------------------------------------------------
-	log.df("Starting Distributed Observer.")
+	--log.df("Starting Distributed Observer.")
 	mod.distributedObserver = distributednotifications.new(function(name)	
 	    if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-	    	log.df("New Multi-touch Device Detected. Re-scanning...")
+	    	--log.df("New Multi-touch Device Detected. Re-scanning...")
 	    	mod.stop()
 	    	mod.update()
 	    end	    
@@ -332,52 +314,74 @@ function mod.start()
 			end
 		end
 		if doReload then
-			log.df("Preferences Updated.")
+			--log.df("Preferences Updated.")
 			--------------------------------------------------------------------------------
 			-- Cache Scroll Direction:
 			--------------------------------------------------------------------------------
 			mod.scrollDirection = mouse.scrollDirection()
 		end
 	end):start()
-	
-	
+		
 	--------------------------------------------------------------------------------
 	-- Setup Mouse Scroll Wheel Watcher:
 	--------------------------------------------------------------------------------
-	mod.mousetap = eventtap.new({eventtap.event.types.scrollWheel}, function(e)		
+	mod.mousetap = eventtap.new({eventtap.event.types.scrollWheel}, function(event)		
+	
+		--------------------------------------------------------------------------------
+		-- Block Horizontal Scrolling:
+		--------------------------------------------------------------------------------
+		if event:getProperty(eventtap.event.properties.scrollWheelEventPointDeltaAxis2) == 0 then
+			-- All good
+		else  
+			if mod.altPressed then
+				-- Block:
+				return true
+			end
+		end
+
 		local mods = eventtap.checkKeyboardModifiers()
 		local mouseButtons = eventtap.checkMouseButtons()
 		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then		
 			if mod.foundMagicMouse then 			
-				--log.df("OVERRIDING MOUSE SCROLL!")
+				-- This prevents the Magic Mouse from scrolling.
 				return true
 			else
-				local direction = e:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)				
-				if mod.scrollDirection == "normal" then				
-					if direction >= 1 then
-						log.df("Zoom In")
-						fcp:selectMenu({"View", "Zoom In"})
-						return false
-					else
-						log.df("Zoom Out")
-						fcp:selectMenu({"View", "Zoom Out"})
-						return false
-					end			
-				else				
-					if direction >= 1 then
-						log.df("Zoom Out")
-						fcp:selectMenu({"View", "Zoom Out"})
-						return false
-					else
-						log.df("Zoom In")
-						fcp:selectMenu({"View", "Zoom In"})
-						return false						
-					end			
+				mod.altPressed = true
+				local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)								
+				if fcp:timeline():isShowing() then 
+					local zoomAmount = fcp:timeline():toolbar():appearance():show():zoomAmount()				
+					if mod.scrollDirection == "normal" then				
+						if direction >= 1 then						
+							zoomAmount:increment()
+						else
+							zoomAmount:decrement()
+						end			
+					else				
+						if direction >= 1 then
+							zoomAmount:decrement()
+						else
+							zoomAmount:increment()													
+						end			
+					end
+					return false
 				end
 			end
 		end
 	end):start()
 	
+	--------------------------------------------------------------------------------
+	-- Detect when OPTION key is released:
+	--------------------------------------------------------------------------------
+	mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)				
+		if tableCount(event:getFlags()) == 0 and mod.altPressed then
+			--log.df("OPTION Released.")
+			fcp:timeline():toolbar():appearance():hide()
+			mod.altPressed = false
+			mod.lastAbsoluteTime = nil
+			mod.lastPosition = nil
+		end	
+	end):start()
+		
 end
 
 --------------------------------------------------------------------------------
