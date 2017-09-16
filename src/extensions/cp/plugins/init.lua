@@ -449,7 +449,7 @@ function mod.disable(id)
 		config.set(mod.SETTINGS_DISABLED, disabled)
 		console.clearConsole()
 		-- reload CP after returning `true`
-		timer.doAfter(0.001, hs.reload)
+		timer.doAfter(0.001, function() hs.reload() end)
 		return true
 	end
 	return false
@@ -470,7 +470,7 @@ function mod.enable(id)
 		disabled[id] = false
 		config.set(mod.SETTINGS_DISABLED, disabled)
 		console.clearConsole()
-		timer.doAfter(0.001, hs.reload())
+		timer.doAfter(0.001, function() hs.reload() end)
 		return true
 	end
 	return false

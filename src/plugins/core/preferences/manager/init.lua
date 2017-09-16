@@ -69,6 +69,11 @@ mod.defaultTitle 		= i18n("preferences")
 --------------------------------------------------------------------------------
 -- GET LABEL:
 --------------------------------------------------------------------------------
+
+function mod.getWebview()
+	return mod.webview
+end
+
 function mod.getLabel()
 	return WEBVIEW_LABEL
 end

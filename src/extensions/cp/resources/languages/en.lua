@@ -594,8 +594,9 @@ return {
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
 
-			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.",
-			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.",
+			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?",
+			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?",
+			pluginsRestart						=			"If you continue, CommandPost will need to restart.",
 
 			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
 			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
