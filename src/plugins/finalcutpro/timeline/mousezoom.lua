@@ -7,6 +7,8 @@
 --- === plugins.finalcutpro.timeline.mousezoom ===
 ---
 --- Allows you to zoom in or out of a Final Cut Pro timeline using the mechanical scroll wheel on your mouse or the Touch Pad on the Magic Mouse when holding down the OPTION modifier key.
+---
+--- Special Thanks: Iain Anderson (@funwithstuff) for all his incredible testing!
 
 --------------------------------------------------------------------------------
 --
@@ -19,13 +21,12 @@ local distributednotifications			= require("hs.distributednotifications")
 local eventtap							= require("hs.eventtap")
 local mouse								= require("hs.mouse")
 local pathwatcher						= require("hs.pathwatcher")
-local settings							= require("hs.settings")
-local timer								= require("hs.timer")
 
 local touchdevice						= require("hs._asm.undocumented.touchdevice")
 
 local config							= require("cp.config")
 local fcp								= require("cp.apple.finalcutpro")
+local tools 							= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -33,7 +34,10 @@ local fcp								= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 
-local ENABLED_DEFAULT 	= false
+--------------------------------------------------------------------------------
+-- Should this plugin be enabled by default?
+--------------------------------------------------------------------------------
+local ENABLED_DEFAULT 	= true
 
 --------------------------------------------------------------------------------
 --
@@ -42,15 +46,35 @@ local ENABLED_DEFAULT 	= false
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.mousezoom.numberOfTouchDevices -> boolean
+--- Variable
+--- Returns `true` if a Magic Mouse has been detected otherwise `false`.
 mod.foundMagicMouse = false
+
+--- plugins.finalcutpro.timeline.mousezoom.numberOfTouchDevices -> table
+--- Variable
+--- Table of Touch Devices.
 mod.touchDevices = {}
+
+--- plugins.finalcutpro.timeline.mousezoom.numberOfTouchDevices -> table
+--- Variable
+--- Table of Magic Mouse ID's
 mod.magicMouseIDs = {}	
+
+--- plugins.finalcutpro.timeline.mousezoom.numberOfTouchDevices -> number
+--- Variable
+--- Number of Touch Devices Detected.
 mod.numberOfTouchDevices = 0
 
 --- plugins.finalcutpro.timeline.mousezoom.offset -> number
 --- Variable
 --- Offset Value used in difference calculations.
-mod.offset = 15
+mod.offset = 25
+
+--- plugins.finalcutpro.timeline.mousezoom.threshold -> number
+--- Variable
+--- Threshold Value used in difference calculations.
+mod.threshold = 0.001
 
 --- plugins.finalcutpro.timeline.mousezoom.update() -> none
 --- Function
@@ -89,7 +113,6 @@ function mod.stop()
 	-- Clear any existing existing Touch Devices:
 	--------------------------------------------------------------------------------
 	if mod.touchDevices then	
-		--log.df("Stopping Touch Device Watcher(s).")	
 		for i=0, #mod.touchDevices do 
 			mod.touchDevices[i] = nil 
 		end
@@ -100,7 +123,6 @@ function mod.stop()
 	-- Destroy Mouse Watcher:
 	--------------------------------------------------------------------------------
 	if mod.distributedObserver then
-		--log.df("Stopping Distributed Observer.")
 		mod.distributedObserver:stop()
 		mod.distributedObserver = nil
 	end
@@ -109,7 +131,6 @@ function mod.stop()
 	-- Destroy Preferences Watcher:
 	--------------------------------------------------------------------------------	
 	if mod.preferencesWatcher then
-		--log.df("Stopping Preferences Watcher.")
 		mod.preferencesWatcher:stop()
 		mod.preferencesWatcher = nil
 	end
@@ -118,7 +139,6 @@ function mod.stop()
 	-- Destory Mouse Scroll Wheel Watcher:
 	--------------------------------------------------------------------------------
 	if mod.mousetap then
-		--log.df("Stopping Mouse Scroll Wheel Watcher.")
 		mod.mousetap:stop()
 		mod.mousetap = nil
 	end
@@ -163,7 +183,7 @@ function mod.findMagicMouses()
 				if selectedDevice then
 					local selectedProductName = selectedDevice:details().productName 				
 					if selectedProductName == "Magic Mouse" or selectedProductName == "Magic Mouse 2" then
-						--log.df("Found a Magic Mouse! ID: %s", id)						
+						log.df("Found a Magic Mouse with ID: %s", id)						
 						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
 						mod.foundMagicMouse = true
 					end
@@ -188,32 +208,10 @@ end
 local function touchCallback(self, touches, time, frame)
 	
 	--------------------------------------------------------------------------------
-	-- Exit Callback if Mouse has been clicked:
-	--------------------------------------------------------------------------------	
-	local mouseButtons = eventtap.checkMouseButtons()
-	if next(mouseButtons) then
-		mod.altPressed = false
-		mod.lastPosition = nil
-		return
-	end
-
+	-- Exit Callback if Clicking has already taken place:
 	--------------------------------------------------------------------------------
-	-- Only do stuff if FCPX is active:
-	--------------------------------------------------------------------------------
- 	if not fcp.isFrontmost() or not fcp:timeline():isShowing() then
- 		return 
- 	end
-
-	--------------------------------------------------------------------------------
-	-- Only single touch allowed:
-	--------------------------------------------------------------------------------
-	local numberOfTouches = #touches 
-	if numberOfTouches == 1 then 
-		-- All good!
-	else
-		return
-	end
-		
+	if mod.clickingInProgress then return end	
+	
 	--------------------------------------------------------------------------------
 	-- Only allow when ONLY the OPTION modifier key is held down:
 	--------------------------------------------------------------------------------
@@ -225,51 +223,105 @@ local function touchCallback(self, touches, time, frame)
 	end	
 
 	--------------------------------------------------------------------------------
+	-- Exit Callback if Mouse has been clicked:
+	--------------------------------------------------------------------------------		
+	local mouseButtons = eventtap.checkMouseButtons()
+	if next(mouseButtons) then		
+		mod.clickingInProgress = true
+		mod.lastPosition = nil		
+		if fcp:timeline():toolbar():appearance():isShowing() then
+			fcp:timeline():toolbar():appearance():hide()
+		end				
+		return
+	end
+
+	--------------------------------------------------------------------------------
+	-- Only do stuff if FCPX is active:
+	--------------------------------------------------------------------------------
+ 	if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
+
+	--------------------------------------------------------------------------------
+	-- Only single touch allowed:
+	--------------------------------------------------------------------------------
+	local numberOfTouches = #touches 
+	if numberOfTouches == 1 then 
+		--------------------------------------------------------------------------------
+		-- All good!
+		--------------------------------------------------------------------------------
+	else
+		--------------------------------------------------------------------------------
+		-- Abort:
+		--------------------------------------------------------------------------------
+		return
+	end
+		
+	--------------------------------------------------------------------------------
 	-- Setup Current Position & Time: 
 	--------------------------------------------------------------------------------
 	local currentPosition = touches[1].normalizedVector.position.y
-	local currentTime = touchdevice.absoluteTime()
 
 	--------------------------------------------------------------------------------
 	-- User has made contact with the Touch Device:
 	--------------------------------------------------------------------------------	
 	local stage = touches[1].stage
-	if stage == "makeTouch" then
-		--log.df("Magic Mouse Touched.")		
+	if stage == "makeTouch" then		
 		fcp:timeline():toolbar():appearance():show()
 		mod.lastPosition = currentPosition
 	end
-		
+	
 	--------------------------------------------------------------------------------
 	-- Only trigger when touching and time interval is valid:
 	--------------------------------------------------------------------------------
 	if stage == "touching" then
 	
-		local currentValue = fcp:timeline():toolbar():appearance():show():zoomAmount():getValue()			
-		if not currentValue then
-			log.ef("Unable to get Zoom Value.")
-			return
-		end
+		--------------------------------------------------------------------------------
+		-- Define the appearance popup:
+		--------------------------------------------------------------------------------
+		local appearance = fcp:timeline():toolbar():appearance()
 		
+		--------------------------------------------------------------------------------
+		-- Get current value of the zoom slider:
+		--------------------------------------------------------------------------------
+		local currentValue = appearance:zoomAmount():getValue()	
+				
+		--------------------------------------------------------------------------------
+		-- If we can't get the zoom value, then we give up:
+		--------------------------------------------------------------------------------		
+		if not currentValue then return end
+		
+		--------------------------------------------------------------------------------
+		-- Work out the difference between the last position and the current position:
+		--------------------------------------------------------------------------------
 		local difference = currentPosition			
 		if mod.lastPosition then 			
 			difference = currentPosition - mod.lastPosition
 		end			
+		
+		--------------------------------------------------------------------------------
+		-- Only allow differences of a certain threshold:
+		--------------------------------------------------------------------------------
+		if math.abs(difference) < mod.threshold then
+			mod.lastPosition = currentPosition
+			return
+		end
+				
+		--------------------------------------------------------------------------------
+		-- Adjust the zoom slider:
+		--------------------------------------------------------------------------------
 		if mod.scrollDirection == "normal" then 													
-			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue + (difference * mod.offset))									
+			appearance:zoomAmount():setValue(currentValue + (difference * mod.offset))									
 		else										
-			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue - (difference * mod.offset))					
+			appearance:zoomAmount():setValue(currentValue - (difference * mod.offset))					
 		end				
-		mod.lastPosition = currentPosition		
+		
+		--------------------------------------------------------------------------------
+		-- Save the last position for next time:
+		--------------------------------------------------------------------------------
+		mod.lastPosition = currentPosition
+		
 	end								
 	
 end			
-
-local function tableCount(T)
-  local count = 0
-  for _ in pairs(T) do count = count + 1 end
-  return count
-end
 
 --- plugins.finalcutpro.timeline.mousezoom.start() -> none
 --- Function
@@ -296,10 +348,9 @@ function mod.start()
 	--------------------------------------------------------------------------------
 	-- Setup Mouse Watcher:
 	--------------------------------------------------------------------------------
-	--log.df("Starting Distributed Observer.")
 	mod.distributedObserver = distributednotifications.new(function(name)	
 	    if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-	    	--log.df("New Multi-touch Device Detected. Re-scanning...")
+	    	log.df("New Multi-touch Device Detected. Re-scanning...")
 	    	mod.stop()
 	    	mod.update()
 	    end	    
@@ -315,11 +366,11 @@ function mod.start()
 				doReload = true
 			end
 		end
-		if doReload then
-			--log.df("Preferences Updated.")
+		if doReload then			
 			--------------------------------------------------------------------------------
 			-- Cache Scroll Direction:
 			--------------------------------------------------------------------------------
+			log.df("Preferences Updated. Refreshing scroll direction cache.")
 			mod.scrollDirection = mouse.scrollDirection()
 		end
 	end):start()
@@ -384,8 +435,8 @@ function mod.start()
 	-- Detect when OPTION key is released:
 	--------------------------------------------------------------------------------
 	mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)				
-		if tableCount(event:getFlags()) == 0 and mod.altPressed then
-			--log.df("OPTION Released.")
+		if tools.tableCount(event:getFlags()) == 0 and mod.altPressed then
+			mod.clickingInProgress = false
 			fcp:timeline():toolbar():appearance():hide()
 			mod.altPressed = false
 			mod.lastPosition = nil
