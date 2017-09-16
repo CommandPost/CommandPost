@@ -943,7 +943,7 @@ return {
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
 	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
-	finalcutpro_timeline_zoom_label							=	"Timeline Zoom",
+	finalcutpro_timeline_mousezoom_label					=	"Timeline: Mouse Zoom",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
 	finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
