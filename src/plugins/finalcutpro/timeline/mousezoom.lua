@@ -222,16 +222,14 @@ local function touchCallback(self, touches, time, frame)
 	local stage = touches[1].stage
 	if stage == "makeTouch" then
 		--log.df("Magic Mouse Touched.")		
-		fcp:timeline():toolbar():appearance():show()	
-
-		mod.lastPosition = currentPosition							
-		mod.lastAbsoluteTime = currentTime		
+		fcp:timeline():toolbar():appearance():show()
+		mod.lastPosition = currentPosition
 	end
 		
 	--------------------------------------------------------------------------------
 	-- Only trigger when touching and time interval is valid:
 	--------------------------------------------------------------------------------
-	if stage == "touching" then --and ( currentTime > mod.lastAbsoluteTime + mod.timeInterval ) then	
+	if stage == "touching" then
 		local currentValue = fcp:timeline():toolbar():appearance():show():zoomAmount():getValue()			
 		local difference = currentPosition			
 		if mod.lastPosition then 			
@@ -245,11 +243,6 @@ local function touchCallback(self, touches, time, frame)
 		mod.lastPosition = currentPosition		
 	end								
 	
-	--------------------------------------------------------------------------------
-	-- Update Absolute Time:
-	--------------------------------------------------------------------------------			
-	mod.lastAbsoluteTime = currentTime
-		
 end			
 
 local function tableCount(T)
