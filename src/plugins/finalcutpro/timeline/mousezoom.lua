@@ -47,6 +47,11 @@ mod.touchDevices = {}
 mod.magicMouseIDs = {}	
 mod.numberOfTouchDevices = 0
 
+--- plugins.finalcutpro.timeline.mousezoom.offset -> number
+--- Variable
+--- Offset Value used in difference calculations.
+mod.offset = 15
+
 --- plugins.finalcutpro.timeline.mousezoom.update() -> none
 --- Function
 --- Checks to see whether or not we should enable the timeline zoom watchers.
@@ -139,10 +144,15 @@ end
 ---  * None
 function mod.findMagicMouses()
 
+	--------------------------------------------------------------------------------
 	-- Clear any existing existing Touch Devices:
+	--------------------------------------------------------------------------------
 	mod.stop()
 	mod.foundMagicMouse = false
 	
+	--------------------------------------------------------------------------------
+	-- Search for Magic Mouses:
+	--------------------------------------------------------------------------------
 	if touchdevice.available() then	
 		mod.magicMouseIDs = {}	
 		local devices = touchdevice.devices()
@@ -163,11 +173,6 @@ function mod.findMagicMouses()
 	end
 end
 
---- plugins.finalcutpro.timeline.mousezoom.timeInterval -> number
---- Variable
---- Time Interval between touch events.
-mod.timeInterval = 0.05
-
 -- touchCallback(self, touches, time, frame) -> none
 -- Function
 -- Touch Callback.
@@ -181,6 +186,16 @@ mod.timeInterval = 0.05
 -- Returns:
 --  * None
 local function touchCallback(self, touches, time, frame)
+	
+	--------------------------------------------------------------------------------
+	-- Exit Callback if Mouse has been clicked:
+	--------------------------------------------------------------------------------	
+	local mouseButtons = eventtap.checkMouseButtons()
+	if next(mouseButtons) then
+		mod.altPressed = false
+		mod.lastPosition = nil
+		return
+	end
 
 	--------------------------------------------------------------------------------
 	-- Only do stuff if FCPX is active:
@@ -200,11 +215,10 @@ local function touchCallback(self, touches, time, frame)
 	end
 		
 	--------------------------------------------------------------------------------
-	-- Check Modifier Keys & Mouse Buttons:
+	-- Only allow when ONLY the OPTION modifier key is held down:
 	--------------------------------------------------------------------------------
 	local mods = eventtap.checkKeyboardModifiers()
-	local mouseButtons = eventtap.checkMouseButtons()
-	if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) then
+	if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
 		mod.altPressed = true
 	else
 		return
@@ -230,15 +244,21 @@ local function touchCallback(self, touches, time, frame)
 	-- Only trigger when touching and time interval is valid:
 	--------------------------------------------------------------------------------
 	if stage == "touching" then
+	
 		local currentValue = fcp:timeline():toolbar():appearance():show():zoomAmount():getValue()			
+		if not currentValue then
+			log.ef("Unable to get Zoom Value.")
+			return
+		end
+		
 		local difference = currentPosition			
 		if mod.lastPosition then 			
 			difference = currentPosition - mod.lastPosition
 		end			
 		if mod.scrollDirection == "normal" then 													
-			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue + (difference * 10))									
+			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue + (difference * mod.offset))									
 		else										
-			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue - (difference * 10))					
+			fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(currentValue - (difference * mod.offset))					
 		end				
 		mod.lastPosition = currentPosition		
 	end								
@@ -272,17 +292,6 @@ function mod.start()
 			mod.touchDevices[id] = touchdevice.forDeviceID(id):frameCallback(touchCallback):start()		
 		end								
 	end	
-	
-	--------------------------------------------------------------------------------
-	-- Debugging:
-	--------------------------------------------------------------------------------
-	--[[
-	if mod.foundMagicMouse then
-		log.df("Magic Mouse Mode Enabled.")
-	else
-		log.df("Mechanical Mouse Mode Enabled.")
-	end
-	--]]
 	
 	--------------------------------------------------------------------------------
 	-- Setup Mouse Watcher:
@@ -324,10 +333,14 @@ function mod.start()
 		-- Block Horizontal Scrolling:
 		--------------------------------------------------------------------------------
 		if event:getProperty(eventtap.event.properties.scrollWheelEventPointDeltaAxis2) == 0 then
-			-- All good
+			--------------------------------------------------------------------------------
+			-- All good!
+			--------------------------------------------------------------------------------
 		else  
 			if mod.altPressed then
-				-- Block:
+				--------------------------------------------------------------------------------
+				-- Exit callback if OPTION is being held down:
+				--------------------------------------------------------------------------------
 				return true
 			end
 		end
@@ -336,9 +349,14 @@ function mod.start()
 		local mouseButtons = eventtap.checkMouseButtons()
 		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then		
 			if mod.foundMagicMouse then 			
-				-- This prevents the Magic Mouse from scrolling.
+				--------------------------------------------------------------------------------
+				-- This prevents the Magic Mouse from scrolling horizontally or vertically:
+				--------------------------------------------------------------------------------
 				return true
 			else
+				--------------------------------------------------------------------------------
+				-- Code to handle MECHANICAL MOUSES (i.e. not Magic Mouse):
+				--------------------------------------------------------------------------------
 				mod.altPressed = true
 				local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)								
 				if fcp:timeline():isShowing() then 
@@ -356,7 +374,7 @@ function mod.start()
 							zoomAmount:increment()													
 						end			
 					end
-					return false
+					return true
 				end
 			end
 		end
@@ -370,7 +388,6 @@ function mod.start()
 			--log.df("OPTION Released.")
 			fcp:timeline():toolbar():appearance():hide()
 			mod.altPressed = false
-			mod.lastAbsoluteTime = nil
 			mod.lastPosition = nil
 		end	
 	end):start()
