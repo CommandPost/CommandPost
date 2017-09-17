@@ -15,15 +15,29 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+---------------------------------
+-- LOGGER:
+---------------------------------
 local log								= require("hs.logger").new("mousezoom")
 
+---------------------------------
+-- HAMMERSPOON EXTENSIONS:
+---------------------------------
 local distributednotifications			= require("hs.distributednotifications")
 local eventtap							= require("hs.eventtap")
 local mouse								= require("hs.mouse")
 local pathwatcher						= require("hs.pathwatcher")
+local timer								= require("hs.timer")
 
+---------------------------------
+-- 3rd PARTY EXTENSIONS:
+---------------------------------
 local touchdevice						= require("hs._asm.undocumented.touchdevice")
 
+---------------------------------
+-- COMMANDPOST EXTENSIONS:
+---------------------------------
 local config							= require("cp.config")
 local fcp								= require("cp.apple.finalcutpro")
 local tools 							= require("cp.tools")
@@ -74,7 +88,7 @@ mod.offset = 25
 --- plugins.finalcutpro.timeline.mousezoom.threshold -> number
 --- Variable
 --- Threshold Value used in difference calculations.
-mod.threshold = 0.001
+mod.threshold = 0.003
 
 --- plugins.finalcutpro.timeline.mousezoom.update() -> none
 --- Function
@@ -208,9 +222,9 @@ end
 local function touchCallback(self, touches, time, frame)
 	
 	--------------------------------------------------------------------------------
-	-- Exit Callback if Clicking has already taken place:
+	-- Only do stuff if FCPX is active:
 	--------------------------------------------------------------------------------
-	if mod.clickingInProgress then return end	
+ 	if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 	
 	--------------------------------------------------------------------------------
 	-- Only allow when ONLY the OPTION modifier key is held down:
@@ -219,8 +233,14 @@ local function touchCallback(self, touches, time, frame)
 	if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
 		mod.altPressed = true
 	else
+		mod.altPressed = false
 		return
 	end	
+	
+	--------------------------------------------------------------------------------
+	-- Exit Callback if Clicking has already taken place:
+	--------------------------------------------------------------------------------
+	if mod.clickingInProgress then return end	
 
 	--------------------------------------------------------------------------------
 	-- Exit Callback if Mouse has been clicked:
@@ -234,11 +254,6 @@ local function touchCallback(self, touches, time, frame)
 		end				
 		return
 	end
-
-	--------------------------------------------------------------------------------
-	-- Only do stuff if FCPX is active:
-	--------------------------------------------------------------------------------
- 	if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 
 	--------------------------------------------------------------------------------
 	-- Only single touch allowed:
@@ -396,9 +411,13 @@ function mod.start()
 			end
 		end
 
+		--------------------------------------------------------------------------------
+		-- Setup Mouse & Keyword Checkers:
+		--------------------------------------------------------------------------------
 		local mods = eventtap.checkKeyboardModifiers()
 		local mouseButtons = eventtap.checkMouseButtons()
 		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then		
+			mod.altPressed = true
 			if mod.foundMagicMouse then 			
 				--------------------------------------------------------------------------------
 				-- This prevents the Magic Mouse from scrolling horizontally or vertically:
@@ -407,8 +426,7 @@ function mod.start()
 			else
 				--------------------------------------------------------------------------------
 				-- Code to handle MECHANICAL MOUSES (i.e. not Magic Mouse):
-				--------------------------------------------------------------------------------
-				mod.altPressed = true
+				--------------------------------------------------------------------------------				
 				local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)								
 				if fcp:timeline():isShowing() then 
 					local zoomAmount = fcp:timeline():toolbar():appearance():show():zoomAmount()				
@@ -428,6 +446,11 @@ function mod.start()
 					return true
 				end
 			end
+		else
+			--------------------------------------------------------------------------------
+			-- False alarm - OPTION isn't being pressed:
+			--------------------------------------------------------------------------------
+			mod.altPressed = false
 		end
 	end):start()
 	
@@ -435,11 +458,23 @@ function mod.start()
 	-- Detect when OPTION key is released:
 	--------------------------------------------------------------------------------
 	mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)				
-		if tools.tableCount(event:getFlags()) == 0 and mod.altPressed then
-			mod.clickingInProgress = false
-			fcp:timeline():toolbar():appearance():hide()
+		if mod.altPressed and tools.tableCount(event:getFlags()) == 0 then		
+
+			--------------------------------------------------------------------------------
+			-- Reset everything:
+			--------------------------------------------------------------------------------
+			mod.clickingInProgress = false			
 			mod.altPressed = false
 			mod.lastPosition = nil
+						
+			--------------------------------------------------------------------------------
+			-- Hide the Appearance Popup:
+			--------------------------------------------------------------------------------
+			local appearance = fcp:timeline():toolbar():appearance()
+			if appearance and appearance:isShowing() then 
+				appearance:hide()
+			end
+						
 		end	
 	end):start()
 		
@@ -478,7 +513,14 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	if deps.prefs.panel then
 		deps.prefs.panel
+			--------------------------------------------------------------------------------
+			-- Add Preferences Heading:
+			--------------------------------------------------------------------------------
 			:addHeading(100, i18n("modifierHeading"))
+			
+			--------------------------------------------------------------------------------
+			-- Add Preferences Checkbox:
+			--------------------------------------------------------------------------------
 			:addCheckbox(101,
 			{
 				label = i18n("allowZoomingWithOptionKey"),
