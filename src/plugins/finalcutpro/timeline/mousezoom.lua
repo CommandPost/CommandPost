@@ -99,7 +99,7 @@ mod.threshold = 0.005
 ---
 --- Returns:
 ---  * None
-function mod.update()
+function mod.update()	
 	if mod.enabled() then 
 		mod.start()
 	else
@@ -127,8 +127,9 @@ function mod.stop()
 	-- Clear any existing existing Touch Devices:
 	--------------------------------------------------------------------------------
 	if mod.touchDevices then	
-		for i=0, #mod.touchDevices do 
-			mod.touchDevices[i] = nil 
+		for _, id in ipairs(mod.magicMouseIDs) do
+			mod.touchDevices[id]:stop()
+			mod.touchDevices[id] = nil 
 		end
 		mod.touchDevices = nil
 	end
