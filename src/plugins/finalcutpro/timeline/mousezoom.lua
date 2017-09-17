@@ -88,7 +88,7 @@ mod.offset = 25
 --- plugins.finalcutpro.timeline.mousezoom.threshold -> number
 --- Variable
 --- Threshold Value used in difference calculations.
-mod.threshold = 0.003
+mod.threshold = 0.005
 
 --- plugins.finalcutpro.timeline.mousezoom.update() -> none
 --- Function
@@ -238,23 +238,17 @@ local function touchCallback(self, touches, time, frame)
 	end	
 	
 	--------------------------------------------------------------------------------
-	-- Exit Callback if Clicking has already taken place:
-	--------------------------------------------------------------------------------
-	if mod.clickingInProgress then return end	
-
-	--------------------------------------------------------------------------------
 	-- Exit Callback if Mouse has been clicked:
 	--------------------------------------------------------------------------------		
 	local mouseButtons = eventtap.checkMouseButtons()
 	if next(mouseButtons) then		
-		mod.clickingInProgress = true
 		mod.lastPosition = nil		
 		if fcp:timeline():toolbar():appearance():isShowing() then
 			fcp:timeline():toolbar():appearance():hide()
 		end				
 		return
 	end
-
+		
 	--------------------------------------------------------------------------------
 	-- Only single touch allowed:
 	--------------------------------------------------------------------------------
@@ -271,21 +265,29 @@ local function touchCallback(self, touches, time, frame)
 	end
 		
 	--------------------------------------------------------------------------------
-	-- Setup Current Position & Time: 
+	-- Get Stage & Current Position:
 	--------------------------------------------------------------------------------
-	local currentPosition = touches[1].normalizedVector.position.y
+	local stage = touches[1].stage
+	local currentPosition = touches[1].normalizedVector.position.y		
+
+	--------------------------------------------------------------------------------
+	-- User has broken contact with the Touch Device:
+	--------------------------------------------------------------------------------	
+	if stage == "breakTouch" then		
+		fcp:timeline():toolbar():appearance():hide()
+		return
+	end
 
 	--------------------------------------------------------------------------------
 	-- User has made contact with the Touch Device:
-	--------------------------------------------------------------------------------	
-	local stage = touches[1].stage
+	--------------------------------------------------------------------------------		
 	if stage == "makeTouch" then		
 		fcp:timeline():toolbar():appearance():show()
 		mod.lastPosition = currentPosition
 	end
 	
 	--------------------------------------------------------------------------------
-	-- Only trigger when touching and time interval is valid:
+	-- User is touching the Touch Device:
 	--------------------------------------------------------------------------------
 	if stage == "touching" then
 	
@@ -293,6 +295,11 @@ local function touchCallback(self, touches, time, frame)
 		-- Define the appearance popup:
 		--------------------------------------------------------------------------------
 		local appearance = fcp:timeline():toolbar():appearance()
+		
+		--------------------------------------------------------------------------------
+		-- If we can't get the appearance popup, then we give up:
+		--------------------------------------------------------------------------------
+		if not appearance then return end
 		
 		--------------------------------------------------------------------------------
 		-- Get current value of the zoom slider:
@@ -385,7 +392,7 @@ function mod.start()
 			--------------------------------------------------------------------------------
 			-- Cache Scroll Direction:
 			--------------------------------------------------------------------------------
-			log.df("Preferences Updated. Refreshing scroll direction cache.")
+			log.df("Global Preferences Updated. Refreshing scroll direction cache.")
 			mod.scrollDirection = mouse.scrollDirection()
 		end
 	end):start()
@@ -462,8 +469,7 @@ function mod.start()
 
 			--------------------------------------------------------------------------------
 			-- Reset everything:
-			--------------------------------------------------------------------------------
-			mod.clickingInProgress = false			
+			--------------------------------------------------------------------------------	
 			mod.altPressed = false
 			mod.lastPosition = nil
 						
