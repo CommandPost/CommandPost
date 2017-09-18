@@ -198,7 +198,7 @@ function mod.findMagicMouses()
 				if selectedDevice then
 					local selectedProductName = selectedDevice:details().productName 				
 					if selectedProductName == "Magic Mouse" or selectedProductName == "Magic Mouse 2" then
-						log.df("Found a Magic Mouse with ID: %s", id)						
+						--log.df("Found a Magic Mouse with ID: %s", id)						
 						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
 						mod.foundMagicMouse = true
 					end
@@ -373,7 +373,7 @@ function mod.start()
 	--------------------------------------------------------------------------------
 	mod.distributedObserver = distributednotifications.new(function(name)	
 	    if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-	    	log.df("New Multi-touch Device Detected. Re-scanning...")
+	    	--log.df("New Multi-touch Device Detected. Re-scanning...")
 	    	mod.stop()
 	    	mod.update()
 	    end	    
@@ -393,7 +393,7 @@ function mod.start()
 			--------------------------------------------------------------------------------
 			-- Cache Scroll Direction:
 			--------------------------------------------------------------------------------
-			log.df("Global Preferences Updated. Refreshing scroll direction cache.")
+			--log.df("Global Preferences Updated. Refreshing scroll direction cache.")
 			mod.scrollDirection = mouse.scrollDirection()
 		end
 	end):start()
