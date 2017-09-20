@@ -170,7 +170,9 @@ return {
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
-			--------------------------------------------------------------------------------
+			--------------------------------------------------------------------------------			
+			noSupportedVersionsOfFCPX			= 			"No supported versions of Final Cut Pro were detected.",
+			
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
