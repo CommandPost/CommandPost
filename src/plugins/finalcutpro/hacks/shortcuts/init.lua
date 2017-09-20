@@ -15,13 +15,13 @@
 --
 --------------------------------------------------------------------------------
 local log			= require("hs.logger").new("shortcuts")
-local inspect		= require("hs.inspect")
 
+local inspect		= require("hs.inspect")
 local fs			= require("hs.fs")
+local dialog		= require("hs.dialog")
 
 local commands		= require("cp.commands")
 local config		= require("cp.config")
-local dialog		= require("cp.dialog")
 local fcp			= require("cp.apple.finalcutpro")
 local tools			= require("cp.tools")
 local prop			= require("cp.prop")
@@ -33,13 +33,13 @@ local v				= require("semver")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 		= 5
-local CP_SHORTCUT   = "cpOpenCommandEditor"
+local PRIORITY 				= 5
+local CP_SHORTCUT   		= "cpOpenCommandEditor"
 
 local COMMANDS_FILE			= "NSProCommands.plist"
 local COMMAND_GROUPS_FILE	= "NSProCommandGroups.plist"
 
-local FCP_RESOURCES_PATH		= "/Contents/Resources/"
+local FCP_RESOURCES_PATH	= "/Contents/Resources/"
 
 --------------------------------------------------------------------------------
 --
@@ -62,11 +62,11 @@ end
 
 -- Returns the path to the most recent version of the specified file inside the plugin, or `nil` if it can't be found.
 function private.hacksPath(resourceName)
-	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
-	if mod.commandSetsPath and fcp:isInstalled() then
+	assert(type(resourceName) == "string", "Expected argument #1 to be a string")	
+	if mod.commandSetsPath and fcp:isInstalled() then	
 		local ver = v(fcp:getVersion())
 		local path = nil
-		local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)
+		local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)		
 		return fs.pathToAbsolute(target)
 	else
 		return nil
@@ -235,11 +235,10 @@ end
 -- ENABLE HACKS SHORTCUTS:
 --------------------------------------------------------------------------------
 function private.updateHacksShortcuts(install)
-
-	log.df("Updating Hacks Shortcuts...")
-
-	if not mod.supported() then
-		dialog.displayMessage("No supported versions of Final Cut Pro were detected.")
+	
+	if not mod.supported() then	
+		dialog.webviewAlert(mod._manger.webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
+		mod._manger.refresh()
 		return false
 	end
 
@@ -307,32 +306,40 @@ function private.updateFCPXCommands(enable, silently)
 		else
 			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
+			
+		dialog.webviewAlert(mod._manger.webview, function(result) 
+			if result == i18n("yes") then
+			
+				--------------------------------------------------------------------------------
+				-- Let's do it!
+				--------------------------------------------------------------------------------
+				if not private.updateHacksShortcuts(enable) then
+					return false
+				end
 
-		prompt = prompt .. " " .. i18n("doYouWantToContinue")
-
-		if not dialog.displayYesNoQuestion(prompt) then
-			return false
-		end
+				--------------------------------------------------------------------------------
+				-- Restart Final Cut Pro:
+				--------------------------------------------------------------------------------
+				if running and not fcp:restart() then
+					--------------------------------------------------------------------------------
+					-- Failed to restart Final Cut Pro:
+					--------------------------------------------------------------------------------					
+					dialog.webviewAlert(mod._manger.webview, function() end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")
+					--------------------------------------------------------------------------------					
+					-- Refresh the panel:
+					--------------------------------------------------------------------------------					
+					mod._manger.refresh()
+				end
+			else
+				--------------------------------------------------------------------------------					
+				-- Refresh the panel:
+				--------------------------------------------------------------------------------									
+				mod._manger.refresh()				
+			end
+		end, prompt, i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))	
+		
 	end
 
-	--------------------------------------------------------------------------------
-	-- Let's do it!
-	--------------------------------------------------------------------------------
-	if not private.updateHacksShortcuts(enable) then
-		return false
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restart Final Cut Pro:
-	--------------------------------------------------------------------------------
-	if running and not fcp:restart() then
-		--------------------------------------------------------------------------------
-		-- Failed to restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		dialog.displayErrorMessage(i18n("failedToRestart"))
-	end
-
-	return true
 end
 
 function private.applyShortcut(cmd)
@@ -574,6 +581,11 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
+	--------------------------------------------------------------------------------
+	-- Webview Manger:
+	--------------------------------------------------------------------------------
+	mod._manger = deps.shortcuts._manager
+	
 	--------------------------------------------------------------------------------
 	-- Add the menu item to the top section:
 	--------------------------------------------------------------------------------

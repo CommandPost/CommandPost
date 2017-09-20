@@ -6,7 +6,7 @@
 
 --- === plugins.core.preferences.manager ===
 ---
---- Manager for the CommandPost Preferences Panel.
+--- Manager for the CommandPost Preferences Window.
 
 --------------------------------------------------------------------------------
 --
@@ -45,7 +45,14 @@ local WEBVIEW_LABEL								= "preferences"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.manager._panels
+--- Variable
+--- Table containing panels.
 mod._panels				= {}
+
+--- plugins.core.preferences.manager._handlers
+--- Variable
+--- Table containing handlers.
 mod._handlers			= {}
 
 --- plugins.core.preferences.manager.position
@@ -58,34 +65,88 @@ mod.position = config.prop("preferencesPosition", nil)
 --- Returns the last tab saved in settings.
 mod.lastTab = config.prop("preferencesLastTab", nil)
 
---------------------------------------------------------------------------------
--- SETTINGS:
---------------------------------------------------------------------------------
+--- plugins.core.preferences.manager.defaultWindowStyle
+--- Variable
+--- Default Webview Window Style of Preferences Window
 mod.defaultWindowStyle	= {"titled", "closable", "nonactivating"}
+
+--- plugins.core.preferences.manager.defaultWidth
+--- Variable
+--- Default Width of Preferences Window
 mod.defaultWidth 		= 524
+
+--- plugins.core.preferences.manager.defaultHeight
+--- Variable
+--- Default Height of Preferences Window
 mod.defaultHeight 		= 338
+
+--- plugins.core.preferences.manager.defaultTitle
+--- Variable
+--- Default Title of Preferences Window
 mod.defaultTitle 		= i18n("preferences")
 
---------------------------------------------------------------------------------
--- GET LABEL:
---------------------------------------------------------------------------------
-
+--- plugins.core.preferences.manager.getWebview() -> hs.webview
+--- Function
+--- Returns the Webview of the Preferences Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs.webview`
 function mod.getWebview()
 	return mod.webview
 end
 
+--- plugins.core.preferences.manager.getLabel() -> string
+--- Function
+--- Returns the Webview label.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Webview label as a string.
 function mod.getLabel()
 	return WEBVIEW_LABEL
 end
 
+--- plugins.core.preferences.manager.addHandler(id, handlerFn) -> string
+--- Function
+--- Returns the Webview label.
+---
+--- Parameters:
+---  * id - The ID
+---  * handlerFn - the handler function
+---
+--- Returns:
+---  * Nothing
 function mod.addHandler(id, handlerFn)
 	mod._handlers[id] = handlerFn
 end
 
+--- plugins.core.preferences.manager.getHandler(id) -> string
+--- Function
+--- Returns the handler for a given ID.
+---
+--- Parameters:
+---  * id - The ID
+---
+--- Returns:
+---  * Table
 function mod.getHandler(id)
 	return mod._handlers[id]
 end
 
+--- plugins.core.preferences.manager.setPanelRenderer(renderer) -> none
+--- Function
+--- Sets a Panel Renderer
+---
+--- Parameters:
+---  * renderer - The renderer
+---
+--- Returns:
+---  * None
 function mod.setPanelRenderer(renderer)
 	mod._panelRenderer = renderer
 end
@@ -108,9 +169,15 @@ local function isPanelIDValid(whichID)
 	return false
 end
 
---------------------------------------------------------------------------------
--- HIGHEST PRIORITY ID:
---------------------------------------------------------------------------------
+-- currentPanelID() -> string
+-- Function
+-- Returns the panel ID with the highest priority.
+--
+-- Parameters:
+-- * None
+--
+-- Returns:
+-- * The panel ID as a string
 local function currentPanelID()
 	local id = mod.lastTab()
 	if id and isPanelIDValid(id) then
@@ -120,9 +187,15 @@ local function currentPanelID()
 	end
 end
 
---------------------------------------------------------------------------------
--- GENERATE HTML:
---------------------------------------------------------------------------------
+-- generateHTML() -> string
+-- Function
+-- Generates the HTML for the Webview.
+--
+-- Parameters:
+-- * None
+--
+-- Returns:
+-- * The HTML as a string.
 local function generateHTML()
 	local env = {}
 
@@ -139,9 +212,17 @@ local function generateHTML()
 	end
 end
 
---------------------------------------------------------------------------------
--- WEBVIEW WINDOW CALLBACK:
---------------------------------------------------------------------------------
+-- windowCallback(action, webview, frame) -> none
+-- Function
+-- Window Callback.
+--
+-- Parameters:
+-- * action - accepts `closing`, `focusChange` or `frameChange`
+-- * webview - the `hs.webview`
+-- * frame - the frame of the `hs.webview`
+--
+-- Returns:
+-- * Nothing
 local function windowCallback(action, webview, frame)
 	if action == "closing" then
 		if not hs.shuttingDown then
@@ -160,10 +241,10 @@ end
 --- Initialises the preferences panel.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function mod.init(env)
 	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
 
@@ -187,11 +268,29 @@ function mod.maxPanelHeight()
 	return max
 end
 
+-- centredPosition() -> none
+-- Function
+-- Gets the Centred Position.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
 local function centredPosition()
 	local sf = screen.mainScreen():frame()
 	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.defaultWidth, h = mod.defaultHeight}
 end
 
+--- plugins.core.preferences.manager.new() -> none
+--- Function
+--- Creates a new Preferences Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.new()
 
 	--------------------------------------------------------------------------------
@@ -288,6 +387,15 @@ function mod.show()
 	return true
 end
 
+--- plugins.core.preferences.manager.focus() -> boolean
+--- Function
+--- Puts focus on the Preferences Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful or otherwise `false`.
 function mod.focus()
 	just.doUntil(function()
 		if mod.webview and mod.webview:hswindow() and mod.webview:hswindow():raise():focus() then
@@ -298,6 +406,15 @@ function mod.focus()
 	end)
 end
 
+--- plugins.core.preferences.manager.hide() -> none
+--- Function
+--- Hides the Preferences Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.hide()
 	if mod.webview then
 		mod.webview:delete()
@@ -305,18 +422,46 @@ function mod.hide()
 	end
 end
 
---------------------------------------------------------------------------------
--- INJECT SCRIPT
---------------------------------------------------------------------------------
+--- plugins.core.preferences.manager.refresh() -> none
+--- Function
+--- Refreshes the Preferences Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.refresh()
+	if mod.webview then
+		mod.selectPanel(currentPanelID())
+		mod.webview:html(generateHTML())
+	end
+end
+
+--- plugins.core.preferences.manager.injectScript(script) -> none
+--- Function
+--- Injects JavaScript into the Preferences Webview.
+---
+--- Parameters:
+---  * script - The JavaScript code you want to inject in the form of a string.
+---
+--- Returns:
+---  * None
 function mod.injectScript(script)
 	if mod.webview then
 		mod.webview:evaluateJavaScript(script)
 	end
 end
 
---------------------------------------------------------------------------------
--- SELECT PANEL:
---------------------------------------------------------------------------------
+--- plugins.core.preferences.manager.selectPanel(id) -> none
+--- Function
+--- Selects a Preferences Panel.
+---
+--- Parameters:
+---  * id - the ID of the panel you want to select.
+---
+--- Returns:
+---  * None
 function mod.selectPanel(id)
 
 	if not mod.webview then
@@ -349,6 +494,16 @@ function mod.selectPanel(id)
 
 end
 
+-- comparePriorities(a, b) -> none
+-- Function
+-- Compares priorities
+--
+-- Parameters:
+--  * a - Priority A
+--  * b - Priority B
+--
+-- Returns:
+--  * The priority of the highest values between A and B.
 local function comparePriorities(a, b)
 	return a.priority < b.priority
 end
