@@ -834,6 +834,7 @@ return {
 	shortcutsModifier					=			"Modifier",
 	shortcutsKey						=			"Key",
 	resetShortcuts						=			"Reset to Default Shortcuts",
+	resetShortcutsAllToNone				=			"Set All Shortcuts to None",
 	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values. Continue?",
 	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
 
