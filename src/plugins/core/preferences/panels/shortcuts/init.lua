@@ -15,8 +15,10 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
-local dialog									= require("cp.dialog")
+local dialog									= require("hs.dialog")
+local fnutils									= require("hs.fnutils")
 local fs										= require("hs.fs")
+local hotkey									= require("hs.hotkey")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
@@ -81,26 +83,26 @@ end
 -- Returns:
 --  * None
 local function resetShortcutsToNone()
+	
+	dialog.webviewAlert(mod._manager.getWebview(), function(result)
+		if result == i18n("yes") then		
+			local groupIDs = commands.groupIds()
+			for _, groupID in ipairs(groupIDs) do
+	  
+				local group = commands.group(groupID)
+				local cmds = group:getAll()
 
-	-- TODO: I'll finish this in another issue:
-	--hs.dialog.webviewAlert(webview, callbackFn, message, [informativeText], [buttonOne], [buttonTwo], [style])
-	--dialog.webviewAlert
+				for id,cmd in pairs(cmds) do
+					cmd:deleteShortcuts()
+				end
+			end
+	
+			commands.saveToFile(DEFAULT_SHORTCUTS)
+	
+			mod._manager.refresh()		
+		end 
+	end, i18n("shortcutsSetNoneConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
-	local groupIDs = commands.groupIds()
-    for _, groupID in ipairs(groupIDs) do
-      
-    	local group = commands.group(groupID)
-		local cmds = group:getAll()
-
-		for id,cmd in pairs(cmds) do
-			cmd:deleteShortcuts()
-		end
-    end
-    
-    commands.saveToFile(DEFAULT_SHORTCUTS)
-    
-    mod._manager.refresh()
-    
 end
 
 -- resetShortcuts() -> none
@@ -114,78 +116,80 @@ end
 --  * None
 local function resetShortcuts()
 
-	-- TODO: This should be reworked so that you don't have to restart CommandPost:
+	-- TODO: @randomeizer - This should be reworked so that you don't have to restart CommandPost:
 
-	if dialog.displayYesNoQuestion(i18n("shortcutsResetConfirmation")) then
-		if deleteShortcuts() then
-			dialog.displayMessage(i18n("shortcutsResetComplete"), {"OK"})
-			hs.reload()
+	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
+		if result == i18n("yes") then
+			if deleteShortcuts() then
+				dialog.webviewAlert(mod._manager.getWebview(), function() 
+					hs.reload()
+				end, i18n("shortcutsResetComplete"), "", "OK", nil, "informational")
+			end
 		end
-	end
+	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+
 end
 
 config.watch({
 	reset = deleteShortcuts,
 })
 
--- controllerCallback(message) -> none
+local function shortcutAlreadyInUse(modifiers, keycode)
+	log.df("modifiers: %s", hs.inspect(modifiers))
+	log.df("keyCode: %s", keycode)
+	
+	local groupIDs = commands.groupIds()
+	for _, groupID in ipairs(groupIDs) do
+
+		local group = commands.group(groupID)
+		local cmds = group:getAll()
+
+		for id,cmd in pairs(cmds) do
+		
+			local shortcuts = cmd:getShortcuts()
+			
+			for _,shortcut in pairs(shortcuts) do
+				local tempModifiers = shortcut:getModifiers()
+				local tempKeycode = shortcut:getKeyCode()
+				
+				local modifierMatch = true
+				if #modifiers ~= #tempModifiers then
+					modifierMatch = false
+				else
+					for _, mod in pairs(tempModifiers) do
+						if not fnutils.contains(modifiers, mod) then
+							modifierMatch = false
+						end
+					end
+				end
+				
+				if keycode == tempKeycode and modifierMatch then
+					log.df("KEYCODE MATCH!")
+					
+					log.df("tempModifiers: %s", hs.inspect(tempModifiers))
+					log.df("tempKeycode: %s", tempKeycode)				
+					
+					return true
+				end								
+			end			
+		end
+	end
+	return false
+	
+end
+
+-- updateShortcut(id, params) -> none
 -- Function
--- Webview Controller Callback.
+-- Updates a Shortcut.
 --
 -- Parameters:
---  * message - the message coming from the controller.
+--  * id - The ID of the shortcut
+--  * params - The params of the shortcut
 --
 -- Returns:
 --  * None
-local function controllerCallback(message)
-
-	local body = message.body
-	local action = body.action
-
-	-- log.df("Callback message: %s", hs.inspect(message))
-
-	-- TODO: Can this whole updateShortcut action be removed??
-
-	if action == "updateShortcut" then
-		--------------------------------------------------------------------------------
-		-- Values from Callback:
-		--------------------------------------------------------------------------------
-		local modifiers = tools.split(body.modifiers, ":")
-
-		--------------------------------------------------------------------------------
-		-- Setup Controller:
-		--------------------------------------------------------------------------------
-		local group = commands.group(body.group)
-
-		--------------------------------------------------------------------------------
-		-- Get the correct Command:
-		--------------------------------------------------------------------------------
-		local theCommand = group:get(body.command)
-
-		if theCommand then
-			--------------------------------------------------------------------------------
-			-- Clear Previous Shortcuts:
-			--------------------------------------------------------------------------------
-			theCommand:deleteShortcuts()
-
-			--------------------------------------------------------------------------------
-			-- Setup New Shortcut:
-			--------------------------------------------------------------------------------
-			if body.keyCode and body.keyCode ~= "" then
-				theCommand:activatedBy(modifiers, body.keyCode)
-			end
-
-			commands.saveToFile(DEFAULT_SHORTCUTS)
-		else
-			log.wf("Unable to find command to update: %s:%s", group, command)
-		end
-	elseif body[1] == "resetShortcuts" then
-		resetShortcuts()
-	end
-end
-
 local function updateShortcut(id, params)
-
+	
 	--------------------------------------------------------------------------------
 	-- Values from Callback:
 	--------------------------------------------------------------------------------
@@ -202,6 +206,7 @@ local function updateShortcut(id, params)
 	local theCommand = group:get(params.command)
 
 	if theCommand then
+	
 		--------------------------------------------------------------------------------
 		-- Clear Previous Shortcuts:
 		--------------------------------------------------------------------------------
@@ -210,16 +215,31 @@ local function updateShortcut(id, params)
 		--------------------------------------------------------------------------------
 		-- Setup New Shortcut:
 		--------------------------------------------------------------------------------
-		if params.keyCode and params.keyCode ~= "" then
-			theCommand:activatedBy(modifiers, params.keyCode)
+		if params.keyCode and params.keyCode ~= "" and params.modifiers and params.modifiers ~= "none" then
+									
+			--------------------------------------------------------------------------------
+			-- Check to see that the shortcut isn't already being used already by macOS:
+			--------------------------------------------------------------------------------
+			local assignable = hotkey.assignable(modifiers, params.keyCode)
+			local systemAssigned = hotkey.systemAssigned(modifiers, params.keyCode)
+			if assignable and not systemAssigned then 			
+				--------------------------------------------------------------------------------
+				-- Check to see that the shortcut isn't already being used by CommandPost:
+				--------------------------------------------------------------------------------
+				if shortcutAlreadyInUse(modifiers, params.keyCode) then 	
+					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUse"), i18n("shortcutDuplicateError") .. "\n\n" .. i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")					
+				else
+					theCommand:activatedBy(modifiers, params.keyCode)
+				end
+			else
+				dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUseByMacOS"), i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")
+			end
+						
 		end
 
 		--------------------------------------------------------------------------------
-		--
-		-- TODO: Check that the shortcut was actually added and alert user if not.
-		--
+		-- Save to file:
 		--------------------------------------------------------------------------------
-
 		commands.saveToFile(DEFAULT_SHORTCUTS)
 	else
 		log.wf("Unable to find command to update: %s:%s", params.group, params.command)
@@ -227,9 +247,15 @@ local function updateShortcut(id, params)
 
 end
 
---------------------------------------------------------------------------------
--- GENERATE LIST OF SHORTCUTS:
---------------------------------------------------------------------------------
+-- getAllKeyCodes() -> none
+-- Function
+-- Generate a table of all shortcut keys available.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
 function getAllKeyCodes()
 
 	--------------------------------------------------------------------------------

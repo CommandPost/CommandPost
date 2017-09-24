@@ -835,9 +835,14 @@ return {
 	shortcutsModifier					=			"Modifier",
 	shortcutsKey						=			"Key",
 	resetShortcuts						=			"Reset to Default Shortcuts",
+	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values.",
+	shortcutsResetComplete				=			"All shortcuts have been successfully reset to their default values. CommandPost will now restart.",
 	resetShortcutsAllToNone				=			"Set All Shortcuts to None",
-	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values. Continue?",
-	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
+	shortcutsSetNoneConfirmation		=			"This will reset all of the shortcuts to None.",
+	shortcutAlreadyInUse				= 			"This shortcut is already in use.",
+	shortcutDuplicateError				=			"You cannot use the same shortcut for multiple commands.",
+	shortcutAlreadyInUseByMacOS			=			"This shortcut is reserved by macOS.",
+	shortcutPleaseTryAgain				=			"Please select a new key and/or modifier combination and try again.",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
