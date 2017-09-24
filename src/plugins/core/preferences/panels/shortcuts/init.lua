@@ -134,9 +134,17 @@ config.watch({
 	reset = deleteShortcuts,
 })
 
+-- shortcutAlreadyInUse(modifiers, keycode) -> none
+-- Function
+-- Checks to see if a keyboard shortcut is already being used by CommandPost.
+--
+-- Parameters:
+--  * modifiers - Modifier keys in a table
+--  * keycode - Keycode
+--
+-- Returns:
+--  * `true` if already in use, otherwise `false`.
 local function shortcutAlreadyInUse(modifiers, keycode)
-	log.df("modifiers: %s", hs.inspect(modifiers))
-	log.df("keyCode: %s", keycode)
 	
 	local groupIDs = commands.groupIds()
 	for _, groupID in ipairs(groupIDs) do
@@ -163,12 +171,7 @@ local function shortcutAlreadyInUse(modifiers, keycode)
 					end
 				end
 				
-				if keycode == tempKeycode and modifierMatch then
-					log.df("KEYCODE MATCH!")
-					
-					log.df("tempModifiers: %s", hs.inspect(tempModifiers))
-					log.df("tempKeycode: %s", tempKeycode)				
-					
+				if keycode == tempKeycode and modifierMatch then		
 					return true
 				end								
 			end			

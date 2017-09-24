@@ -841,7 +841,7 @@ return {
 	shortcutsSetNoneConfirmation		=			"This will reset all of the shortcuts to None.",
 	shortcutAlreadyInUse				= 			"This shortcut is already in use.",
 	shortcutDuplicateError				=			"You cannot use the same shortcut for multiple commands.",
-	shortcutAlreadyInUseByMacOS			=			"This shortcut is reserved by macOS.",
+	shortcutAlreadyInUseByMacOS			=			"This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
 	shortcutPleaseTryAgain				=			"Please select a new key and/or modifier combination and try again.",
 
 	--------------------------------------------------------------------------------
