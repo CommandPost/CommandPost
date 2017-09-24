@@ -81,7 +81,14 @@
 
 .resetShortcuts {
 	margin: 10px 0px;
+	text-align: left;
+	float: left;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
 	text-align: right;
+	float: right;
 }
 
 .buttonDisabled {
