@@ -218,7 +218,7 @@ local function updateShortcut(id, params)
 		--------------------------------------------------------------------------------
 		-- Setup New Shortcut:
 		--------------------------------------------------------------------------------
-		if params.keyCode and params.keyCode ~= "" and params.modifiers and params.modifiers ~= "none" then
+		if params.keyCode and params.keyCode ~= "" and params.keyCode ~= "none" and params.modifiers and params.modifiers ~= "none" then
 									
 			--------------------------------------------------------------------------------
 			-- Check to see that the shortcut isn't already being used already by macOS:
@@ -274,7 +274,7 @@ function getAllKeyCodes()
 			shortcuts[#shortcuts + 1] = k
 		end
 	end
-
+	
 	table.sort(shortcuts, function(a, b) return a < b end)
 
 	return shortcuts
