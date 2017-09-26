@@ -15,12 +15,12 @@
 --------------------------------------------------------------------------------
 local log							= require("hs.logger").new("playhead")
 
+local dialog						= require("hs.dialog")
 local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 local timer							= require("hs.timer")
 
 local fcp							= require("cp.apple.finalcutpro")
-local dialog						= require("cp.dialog")
 local config						= require("cp.config")
 
 --------------------------------------------------------------------------------
@@ -66,13 +66,17 @@ end
 -- CHANGE HIGHLIGHT COLOUR:
 --------------------------------------------------------------------------------
 function mod.changeHighlightColor(value)
-	if value=="Custom" then
-		local customColor = mod.getHighlightCustomColor()
-		local result = dialog.displayColorPicker(customColor)
-		if result == nil then return nil end
-		mod.setHighlightCustomColor(result)
-	end
 	mod.setHighlightColor(value)
+	if value=="Custom" then
+		local currentColor = mod.getHighlightCustomColor()
+		if currentColor then 
+			dialog.color.color(currentColor)
+		end
+		dialog.color.callback(function(color, closed)
+			mod.setHighlightCustomColor(color)
+		end)
+		dialog.color.show()		
+	end	
 end
 
 function mod.getHighlightShape()
