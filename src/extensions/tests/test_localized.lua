@@ -40,6 +40,12 @@ function run()
 		ok(eq(l, "Versioned Effect EN"))
 		ok(eq(o, "Versioned Effect.v2"))
 	end)
+
+	test("Get Quoted Name", function()
+		local l, o = localized.getLocalizedName(PLUGINS_PATH.."/DoubleQuoted.localized", "en")
+		ok(eq(l, 'Double "Quoted"'))
+		ok(eq(o, "DoubleQuoted"))
+	end)
 end
 
 return run

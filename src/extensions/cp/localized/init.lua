@@ -72,14 +72,21 @@ local function readLocalizedStrings(stringsFile, name)
 		else
 			local content = text.fromFile(stringsFile)
 			local key, value = KEY_VALUE:match(content)
+			log.df("pre unescaping: '%s' = '%s'", key, value)
 			if key and value then
+				local x
 				-- unescape the key.
-				key = UNICODE_ESCAPE:gsub(key, uParser)
-				key = CHAR_ESCAPE:gsub(key, '%1')
+				key, x = UNICODE_ESCAPE:gsub(key, uParser)
+				log.df("key unicode escaped %s times: '%s'", x, key)
+				key, x = CHAR_ESCAPE:gsub(key, '%1')
+				log.df("key char escaped %s times: '%s'", x, key)
 				if key == text(name) then
 					-- unescape the value.
-					value = UNICODE_ESCAPE:gsub(value, uParser)
-					value = CHAR_ESCAPE:gsub(value, '%1')
+					value, x = UNICODE_ESCAPE:gsub(value, uParser)
+					log.df("value unicode escaped %s times: '%s'", x, value)
+					log.df("value: %s", hs.inspect(value))
+					value, x = CHAR_ESCAPE:gsub(value, '%1')
+					log.df("value char escaped %s times: '%s'", x, value)
 					return tostring(value)
 				end
 			end
