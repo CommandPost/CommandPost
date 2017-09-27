@@ -324,12 +324,14 @@ function private.updateFCPXCommands(enable, silently)
 					--------------------------------------------------------------------------------
 					-- Failed to restart Final Cut Pro:
 					--------------------------------------------------------------------------------					
-					dialog.webviewAlert(mod._manger.webview, function() end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")
-					--------------------------------------------------------------------------------					
-					-- Refresh the panel:
-					--------------------------------------------------------------------------------					
-					mod._manger.refresh()
+					dialog.webviewAlert(mod._manger.webview, function() end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")				
 				end
+				
+				--------------------------------------------------------------------------------					
+				-- Refresh the panel:
+				--------------------------------------------------------------------------------					
+				mod._manger.refresh()
+				
 			else
 				--------------------------------------------------------------------------------					
 				-- Refresh the panel:

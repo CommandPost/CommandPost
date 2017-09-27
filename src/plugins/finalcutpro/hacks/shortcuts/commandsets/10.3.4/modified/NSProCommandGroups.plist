@@ -18,21 +18,21 @@
 			<string>cpToggleVoiceCommands</string>
 			<string>cpLockPlayhead</string>
 			<string>cpHUD</string>
-			<string>title1</string>
-			<string>title2</string>
-			<string>title3</string>
-			<string>title4</string>
-			<string>title5</string>
-			<string>generator1</string>
-			<string>generator2</string>
-			<string>generator3</string>
-			<string>generator4</string>
-			<string>generator5</string>
-			<string>transition1</string>
-			<string>transition2</string>
-			<string>transition3</string>
-			<string>transition4</string>
-			<string>transition5</string>
+			<string>cpTitle1</string>
+			<string>cpTitle2</string>
+			<string>cpTitle3</string>
+			<string>cpTitle4</string>
+			<string>cpTitle5</string>
+			<string>cpGenerator1</string>
+			<string>cpGenerator2</string>
+			<string>cpGenerator3</string>
+			<string>cpGenerator4</string>
+			<string>cpGenerator5</string>
+			<string>cpTransition1</string>
+			<string>cpTransition2</string>
+			<string>cpTransition3</string>
+			<string>cpTransition4</string>
+			<string>cpTransition5</string>
 			<string>cpToggleTouchBar</string>
 			<string>cpConsole</string>
 			<string>cpCutSwitchAngle01Video</string>
@@ -168,16 +168,16 @@
 			<string>cpExposurePuckThreeDown</string>
 			<string>cpExposurePuckFourDown</string>
 			<string>cpScrollingTimeline</string>
-			<string>audioEffect1</string>
-			<string>audioEffect2</string>
-			<string>audioEffect3</string>
-			<string>audioEffect4</string>
-			<string>audioEffect5</string>
-			<string>videoEffect1</string>
-			<string>videoEffect2</string>
-			<string>videoEffect3</string>
-			<string>videoEffect4</string>
-			<string>videoEffect5</string>
+			<string>cpAudioEffect1</string>
+			<string>cpAudioEffect2</string>
+			<string>cpAudioEffect3</string>
+			<string>cpAudioEffect4</string>
+			<string>cpAudioEffect5</string>
+			<string>cpVideoEffect1</string>
+			<string>cpVideoEffect2</string>
+			<string>cpVideoEffect3</string>
+			<string>cpVideoEffect4</string>
+			<string>cpVideoEffect5</string>
 			<string>cpHighlightBrowserPlayhead</string>
 			<string>cpRevealInBrowserAndHighlight</string>
 			<string>cpSingleMatchFrameAndHighlight</string>
