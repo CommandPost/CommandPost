@@ -194,7 +194,7 @@ function run()
 		x = text("A\\U1234B"):gsub('%\\[Uu]%d%d%d%d', function(s)
 			return utf8.char(tonumber(s:sub(3):encode()))
 		end)
-		ok(eq(x, text "AXB"))
+		ok(eq(x, text "AӒB"))
 	end)
 
 	test("quotes matcher", function()
@@ -205,7 +205,7 @@ function run()
 
 		key, value = keyValue:match('"key" = "\\"quoted\\"";')
 		ok(eq(key, text "key"))
-		ok(eq(value, text '"quoted"'))
+		ok(eq(value, text '\\"quoted\\"'))
 
 		local CHAR_ESCAPE = matcher('%\\(.)')
 		local escaped = text 'Is \\"Escaped\\"'
