@@ -31,7 +31,7 @@
 --- local utf8String		= tostring(unicodeText) -- `tostring` will default to UTF-8 encoding
 --- local utf16leString		= unicodeText:encode(text.encoding.utf16le) -- or you can be more specific
 --- ```
---- 
+---
 --- Note that `text` values are not in any specific encoding, since they are stored as 64-bit integer `code-points` rather than 8-bit characers.
 
 --- === cp.text.matcher ===
@@ -94,7 +94,7 @@ local boms = {
 
 local function startsWith(self, otherString)
 	local len = otherString:len()
-	
+
 	if self:len() >= len then
 		for i = 1,len do
 			if self:byte(i) ~= otherString:byte(i) then return false end
@@ -121,7 +121,7 @@ end
 
 -- sets the 'codes' value for a text value.
 local function setCodes(text, value)
-	rawset(text, "codes", protect(value))
+	rawset(text, "codes", value)
 end
 
 --- cp.text.fromString(value[, encoding]) -> text
@@ -152,7 +152,7 @@ function text.fromString(value, encoding)
 		end
 		encoding = encoding or text.encoding.utf8
 	end
-	
+
 	local decoder = decoders[encoding]
 	if not decoder then
 		error(string.format("unsupported encoding: %s", encoding))
@@ -179,7 +179,7 @@ end
 function text.fromCodepoints(codepoints, i, j)
 	local result = {}
 	local len = #codepoints
-	
+
 	if len > 0 then
 		i = i or 1
 		j = j or -1
@@ -195,17 +195,17 @@ function text.fromCodepoints(codepoints, i, j)
 		if not isint(j) then
 			error(string.format("bad argument #3 (number has no integer representation: %s)", j))
 		end
-	
+
 		if i < 0 then i = len + 1 + i end
 		if j < 0 then j = len + 1 + j end
 
-		i = constrain(i, 1, len)
-		j = constrain(j, 1, len)
-		
+		i = constrain(i, 1, len+1)
+		j = constrain(j, 0, len)
+
 		if codepoints[i] == BOM then
 			i = i+1
 		end
-	
+
 		for x = i,j do
 			local cp = codepoints[x]
 			if type(cp) ~= "number" then
@@ -214,7 +214,7 @@ function text.fromCodepoints(codepoints, i, j)
 			result[x-i+1] = cp
 		end
 	end
-	
+
 	local o = {}
 	setmetatable(o, text.mt)
 	setCodes(o, result)
@@ -239,7 +239,7 @@ function text.fromFile(path, encoding)
 	end
     local content = file:read "*a" 					-- *a or *all reads the whole file
     file:close()
-	
+
 	return text.fromString(content, encoding)
 end
 
@@ -369,7 +369,7 @@ end
 --- cp.text:len() -> number
 --- Method
 --- Returns the number of codepoints in the text.
---- 
+---
 --- Parameters:
 ---  * None
 ---
@@ -428,7 +428,7 @@ function text.mt:__eq(other)
 		local len = #localCodes
 		if len == #otherCodes then
 			for i = 1,len do
-				if not localCodes[i] == otherCodes[i] then
+				if localCodes[i] ~= otherCodes[i] then
 					return false
 				end
 			end

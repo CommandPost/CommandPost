@@ -46,6 +46,29 @@ local function uc(value)
 	return type(value) == "number" and value or utf8codepoint(value)
 end
 
+-- tail(source[, index]) -> table
+-- Function
+-- Returns a table containing just the tail elements after the specified index.
+-- The `index` may be negative, in which case it counts back from the end of the table.
+--
+-- Parameters:
+-- * `source`	- The source table
+-- * `index`	- The number of elements in the head. Defaults to `1`.
+--
+-- Returns:
+-- * A new table containing the tail elements.
+local function tail(source, index)
+	index = index or 1
+	if index < 0 then
+		index = #source + index
+	end
+	local result = {}
+	for i = index+1,#source do
+		insert(result, source[i])
+	end
+	return result
+end
+
 -- appendAll(target, source) -> table
 -- Function
 -- Appends all items in `source` to the end of `target`.
@@ -69,7 +92,7 @@ end
 
 local function ranges(...)
 	local result = {}
-	
+
 	local value
 	for _,v in ipairs(pack(...)) do
 		if type(v) == "table" then
@@ -84,7 +107,7 @@ local function ranges(...)
 		end
 		insert(result, value)
 	end
-	
+
 	return result
 end
 
@@ -208,7 +231,16 @@ local function inRanges(ranges, charCode)
 	return false
 end
 
-local function replace(repl, args)
+-- replace(repl, captures) -> text
+-- Replaces the content of `args` with the `repl` value.
+--
+-- Parameters:
+-- * `repl`		- A string, table or function that acts as the replacement value.
+-- * `captures`	- The captures for the replacement.
+--
+-- Returns:
+-- A `cp.text` value with the replacement.
+local function replace(repl, captures)
 	local ret = text ''
 	if text.is(repl) or type(repl) == 'string' then
 		repl = text.is(repl) and repl or text(tostring(repl))
@@ -224,7 +256,7 @@ local function replace(repl, args)
 			else
 				if ZERO <= c and c <= NINE then
 					local num = c - ZERO -- shifts 'c' to an index from 0 to 9
-					local value = args[num]
+					local value = captures[num]
 					if value then
 						appendAll(chars, text.fromString(value))
 					end
@@ -234,14 +266,17 @@ local function replace(repl, args)
 				ignore = false
 			end
 		end
-		ret = ret .. text.fromCodepoints(chars)
+		local replaced = text.fromCodepoints(chars)
+		ret = ret .. replaced
 	elseif type(repl) == 'table' then
-		ret = ret .. (repl[args[1] or args[0]] or '')
+		local key = captures[1] or captures[0]
+		local value = repl[key] or repl[tostring(key)] or ''
+		ret = ret .. value
 	elseif type(repl) == 'function' then
-		if #args > 0 then
-			ret = ret .. (repl(unpack(args, 1)) or '')
+		if #captures > 0 then
+			ret = ret .. (repl(unpack(captures, 1)) or '')
 		else
-			ret = ret .. (repl(args[0]) or '')
+			ret = ret .. (repl(captures[0]) or '')
 		end
 	end
 	return ret
@@ -307,7 +342,7 @@ local function classMatchGenerator(pattern, pos, len, plain)
 			end
 			ignore = false
 		end
-		
+
 		firstletter = false
 		pos = pos + 1
 	end
@@ -485,7 +520,7 @@ end
 --  * `number`	- The number of matches that occurred.
 --
 -- Notes:
---  * If repl is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in repl of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
+--  * If `repl` is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in `repl` of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
 --  * If `repl` is a table, then the table is queried for every match, using the first capture as the key; if the pattern specifies no captures, then the whole match is used as the key.
 --  * If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
 --  * If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
@@ -493,22 +528,29 @@ matcher.mt.gsub = function(self, value, repl, limit)
 	value = text.is(value) and value or text(tostring(value))
 	limit = limit or -1
 	local ret = ''
-	local prevEnd = 1
-	local it = self:gmatch(value, true)
-	local found = {it()}
+	local found, first, last, captures
+	local next = 1
 	local n = 0
-	while #found > 0 and limit ~= n do
-		local args = {[0] = value:sub(found[1], found[2]), unpack(found, 3)}
-		ret = ret .. value:sub(prevEnd, found[1] - 1) .. replace(repl, args)
-		prevEnd = found[2] + 1
-		n = n + 1
-		found = {it()}
-	end
-	return ret .. value:sub(prevEnd), n
+	repeat
+		found = {self:find(value, next)}
+		first, last = found[1], found[2]
+		if first ~= nil then
+			local matched = value:sub(first, last)
+			captures = tail(found, 2)
+			captures[0] = matched
+			local replaced = replace(repl, captures)
+			ret = ret .. value:sub(next, first - 1) .. replaced
+			next = last + 1
+			n = n + 1
+		else
+			break
+		end
+	until first == nil or limit == n
+
+	return ret .. value:sub(next), n
 end
 
-
--- cp.text.matcher.matcherGenerator(pattern, plain)
+-- cp.text.matcher.matcherGenerator(pattern, plain) -> cp.text.matcher
 -- Constructor
 -- Creates a new `matcher` instance.
 --
@@ -525,13 +567,13 @@ local function matcherGenerator(pattern, plain)
 		pattern = pattern,
 	}
 	setmetatable(m, matcher.mt)
-	
+
 	if not plain then
 		cache[pattern] = m
 	else
 		cachePlain[pattern] = m
 	end
-	
+
 	local function simple(func)
 		return function(cC)
 			-- log.df("simple: %s", utf8char(cC))
@@ -779,6 +821,8 @@ end
 --- Parameters:
 ---  * `pattern`	- The pattern to parse
 ---  * `plain`		- If `true`, the pattern is not parsed and the provided text must match exactly.
+--- Returns:
+--- * New `cp.text.matcher` for the pattern.
 local function newMatcher(pattern, plain)
 	pattern = text.is(pattern) and pattern or text(tostring(pattern))
 	local m = plain and cachePlain[pattern] or cache[pattern]
