@@ -43,28 +43,67 @@ local SHAPE_DIAMOND					= "Diamond"
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- Get Highlight Colour Preferences:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.browser.playhead.getHighlightColor() -> table
+--- Function
+--- Returns the current highlight colour.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An RGB table with the selected colour (see `hs.drawing.color`) or `nil`
 function mod.getHighlightColor()
 	return config.get("displayHighlightColour", DEFAULT_COLOR)
 end
 
+--- plugins.finalcutpro.browser.playhead.setHighlightColor([value]) -> none
+--- Function
+--- Sets the Playhead Highlight Colour.
+---
+--- Parameters:
+---  * value - An RGB table with the selected colour (see `hs.drawing.color`)
+---
+--- Returns:
+---  * None
 function mod.setHighlightColor(value)
 	config.set("displayHighlightColour", value)
 end
 
+--- plugins.finalcutpro.browser.playhead.getHighlightCustomColor() -> table
+--- Function
+--- Returns the current custom highlight colour.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An RGB table with the selected colour (see `hs.drawing.color`) or `nil`
 function mod.getHighlightCustomColor()
 	return config.get("displayHighlightCustomColour")
 end
 
+--- plugins.finalcutpro.browser.playhead.setHighlightCustomColor([value]) -> none
+--- Function
+--- Sets the Custom Playhead Highlight Colour.
+---
+--- Parameters:
+---  * value - An RGB table with the selected colour (see `hs.drawing.color`)
+---
+--- Returns:
+---  * None
 function mod.setHighlightCustomColor(value)
 	config.set("displayHighlightCustomColour", value)
 end
 
---------------------------------------------------------------------------------
--- CHANGE HIGHLIGHT COLOUR:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.browser.playhead.changeHighlightColor([value]) -> none
+--- Function
+--- Prompts the user to change the Playhead Highlight Colour.
+---
+--- Parameters:
+---  * value - An RGB table with the selected colour (see `hs.drawing.color`)
+---
+--- Returns:
+---  * None
 function mod.changeHighlightColor(value)
 	mod.setHighlightColor(value)
 	if value=="Custom" then
@@ -79,31 +118,68 @@ function mod.changeHighlightColor(value)
 	end	
 end
 
+--- plugins.finalcutpro.browser.playhead.getHighlightShape() -> string
+--- Function
+--- Returns the current highlight shape.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * "Rectangle", "Circle" or "Diamond" or `nil`.
 function mod.getHighlightShape()
 	return config.get("displayHighlightShape", SHAPE_RECTANGLE)
 end
 
---------------------------------------------------------------------------------
--- CHANGE HIGHLIGHT SHAPE:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.browser.playhead.setHighlightShape([value]) -> none
+--- Function
+--- Sets the Custom Playhead Highlight Shape.
+---
+--- Parameters:
+---  * value - A string which can be "Rectangle", "Circle" or "Diamond".
+---
+--- Returns:
+---  * None
 function mod.setHighlightShape(value)
 	config.set("displayHighlightShape", value)
 end
 
---------------------------------------------------------------------------------
--- Get Highlight Playhead Time in seconds:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.browser.playhead.getHighlightTime() -> number
+--- Function
+--- Returns the current highlight playhead time.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A number or `nil`
 function mod.getHighlightTime()
 	return config.get("highlightPlayheadTime", DEFAULT_TIME)
 end
 
+--- plugins.finalcutpro.browser.playhead.setHighlightTime([value]) -> none
+--- Function
+--- Sets the Custom Playhead Highlight Time.
+---
+--- Parameters:
+---  * value - A number
+---
+--- Returns:
+---  * None
 function mod.setHighlightTime(value)
 	config.set("highlightPlayheadTime", value)
 end
 
---------------------------------------------------------------------------------
--- HIGHLIGHT FINAL CUT PRO BROWSER PLAYHEAD:
---------------------------------------------------------------------------------
+
+--- plugins.finalcutpro.browser.playhead.highlight() -> none
+--- Function
+--- Highlight's the Final Cut Pro Browser Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.highlight()
 
 	--------------------------------------------------------------------------------
@@ -120,9 +196,15 @@ function mod.highlight()
 	end
 end
 
---------------------------------------------------------------------------------
--- HIGHLIGHT MOUSE IN FCPX:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.browser.playhead.highlightFrame([frame]) -> none
+--- Function
+--- Highlights a specific frame.
+---
+--- Parameters:
+---  * frame - Frame as per `hs.geometry.rect`
+---
+--- Returns:
+---  * None
 function mod.highlightFrame(frame)
 
 	--------------------------------------------------------------------------------
@@ -148,7 +230,7 @@ function mod.highlightFrame(frame)
 	if displayHighlightColour == "Custom" then
 		local displayHighlightCustomColour = config.get("displayHighlightCustomColour")
 		displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
-	end
+	end	
 
 	--------------------------------------------------------------------------------
 	-- Highlight the FCPX Browser Playhead:
@@ -175,9 +257,15 @@ function mod.highlightFrame(frame)
 
 end
 
---------------------------------------------------------------------------------
--- DELETE ALL HIGHLIGHTS:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.browser.playhead.deleteHighlight() -> none
+--- Function
+--- Delete's the highlight if it's currently visible on the screen.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.deleteHighlight()
 	if mod.browserHighlight ~= nil then
 		mod.browserHighlight:delete()
