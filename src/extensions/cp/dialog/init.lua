@@ -7,6 +7,8 @@
 --- === cp.dialog ===
 ---
 --- A collection of handy Dialog tools for CommandPost.
+--- 
+--- This extension should no longer be used in favour of `hs.dialog`.
 
 --------------------------------------------------------------------------------
 --
@@ -97,6 +99,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the text entered in the dialog box
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.textPrompt`
 function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["
@@ -136,6 +141,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the text entered in the dialog box
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.textPrompt`
 function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer, validationFn)
 	defaultAnswer = defaultAnswer and tostring(defaultAnswer) or ""
 	::retryDisplayTextBoxMessage::
@@ -178,6 +186,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the file as a string
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.chooseFileOrFolder`
 function dialog.displayChooseFile(whatMessage, fileType, defaultLocation)
 	if not defaultLocation then
 		defaultLocation = os.getenv("HOME") .. "/Desktop"
@@ -205,6 +216,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the folder as a string
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.chooseFileOrFolder`
 function dialog.displayChooseFolder(whatMessage, defaultLocation)
 	if not defaultLocation then
 		defaultLocation = os.getenv("HOME") .. "/Desktop"
@@ -232,12 +246,16 @@ end
 ---
 --- Returns:
 ---  * None
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
 function dialog.displayAlertMessage(message, informativeText)
 
 	if not message then message = "" end
 	if not informativeText then informativeText = "" end
 		
 	local originalFocusedWindow = window.focusedWindow()
+	config.application():activate()
 	hsDialog.blockAlert(message, informativeText, i18n("ok"), "", "informational")
 	if originalFocusedWindow then originalFocusedWindow:focus() end
 
@@ -252,6 +270,9 @@ end
 ---
 --- Returns:
 ---  * None
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
 function dialog.displayErrorMessage(message, informativeText)
 
 	--------------------------------------------------------------------------------
@@ -266,6 +287,7 @@ function dialog.displayErrorMessage(message, informativeText)
 	if not informativeText then informativeText = "" end
 	local errorMessage = message .. "\n\n" .. i18n("commonErrorMessageEnd")
 	local originalFocusedWindow = window.focusedWindow()
+	config.application():activate()
 	local result = hsDialog.blockAlert(i18n("commonErrorMessageStart"), errorMessage, i18n("yes"), i18n("no"), "critical")
 	if originalFocusedWindow then originalFocusedWindow:focus() end
 	if result == i18n("yes") then
@@ -284,6 +306,9 @@ end
 ---
 --- Returns:
 ---  * None
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
 function dialog.displayMessage(whatMessage, optionalButtons)
 
 	if optionalButtons == nil or type(optionalButtons) ~= "table" then
@@ -315,12 +340,16 @@ end
 ---
 --- Returns:
 ---  * `true` if yes is clicked otherwise `false`
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
 function dialog.displayYesNoQuestion(message, informativeText) -- returns true or false
 
 	if not message then message = "" end
 	if not informativeText then informativeText = "" end
 		
 	local originalFocusedWindow = window.focusedWindow()
+	config.application():activate()
 	local result = hsDialog.blockAlert(message, informativeText, i18n("yes"), i18n("no"), "informational")
 	if originalFocusedWindow then originalFocusedWindow:focus() end
 	
