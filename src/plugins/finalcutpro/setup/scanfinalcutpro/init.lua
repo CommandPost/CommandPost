@@ -83,12 +83,6 @@ function mod.scanFinalCutPro()
 end
 
 --------------------------------------------------------------------------------
--- INITIALISE MODULE:
---------------------------------------------------------------------------------
-function mod.init()
-end
-
---------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
 --
@@ -97,7 +91,7 @@ local plugin = {
 	id = "finalcutpro.preferences.scanfinalcutpro",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.menu.support"]					= "menu",
+		["core.preferences.panels.advanced"]			= "advanced",
 	}
 }
 
@@ -105,12 +99,16 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
-	mod.init()
-
-	deps.menu:addItem(3000, function()
-		return { title = i18n("scanFinalCutPro"), fn=mod.scanFinalCutPro }
-	end)
+	
+	deps.advanced	
+		:addParagraph(61.1, i18n("scanFinalCutProDescription"), true)
+		:addButton(61.2,
+			{
+				label = i18n("scanFinalCutPro"),
+				width = 150,
+				onclick = mod.scanFinalCutPro,
+			}
+		)
 
 	return mod
 end

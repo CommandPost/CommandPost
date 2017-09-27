@@ -85,6 +85,19 @@ mod.defaultHeight 		= 338
 --- Default Title of Preferences Window
 mod.defaultTitle 		= i18n("preferences")
 
+--- plugins.core.preferences.manager.getWebview() -> hs.webview
+--- Function
+--- Returns the Webview of the Preferences Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs.webview`
+function mod.getWebview()
+	return mod.webview
+end
+
 --- plugins.core.preferences.manager.getLabel() -> string
 --- Function
 --- Returns the Webview label.

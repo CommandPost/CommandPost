@@ -54,7 +54,7 @@ function mod.changeSmartCollectionsLabel()
 	--------------------------------------------------------------------------------
 	local restartStatus = false
 	if fcp:isRunning() then
-		if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel") .. "\n\n" .. i18n("doYouWantToContinue")) then
+		if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel"), i18n("doYouWantToContinue")) then
 			restartStatus = true
 		else
 			return "Done"

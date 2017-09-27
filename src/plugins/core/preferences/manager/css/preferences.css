@@ -24,19 +24,22 @@ checkbox {
 	background-color:#5760e7;
 }
 
-select {
-	-webkit-appearance: none;
-	background-color: #4a4a4a;
+select {	
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAALCAAAAACW+8h0AAAAOUlEQVQI12NwdExaFOvoyOAYNG/hnABHhqB5nZ69cwIY5na5Orr2zmJwhAAMGiYPUw/T7+iYDDIPAPKdHMdxG+BNAAAAAElFTkSuQmCC) no-repeat 95% 50%;
+	-webkit-appearance: none; 	
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
 	color: #bfbfbc;		
 	text-decoration: none;
-	padding: 2px 18px;
+	padding: 2px 18px 2px 5px;
 	border:0.5px solid black;
 	margin: 2px 2px;
 	display: inline-block;
 	border-radius: 3px;
+	border-radius: 0px;
 	cursor: default;
 	font-family: -apple-system;
-	font-size: 13px;	
+	font-size: 13px;
 }
 
 .button {

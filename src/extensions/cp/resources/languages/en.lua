@@ -80,7 +80,7 @@ return {
 			-- Common Error Messages:
 			--------------------------------------------------------------------------------
 			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-			commonErrorMessageStart				=			"I'm sorry, but the following error has occurred:",
+			commonErrorMessageStart				=			"The following error has occurred:",
 			commonErrorMessageEnd				=			"Would you like to submit a bug report?",
 			sendBugReport						=			"Send Bug Report",
 
@@ -451,7 +451,6 @@ return {
 		--------------------------------------------------------------------------------
     	-- PREFERENCES:
     	--------------------------------------------------------------------------------
-    	scanFinalCutPro							=			"Scan Final Cut Pro",
     	helpAndSupport							=			"Help & Support",
     	preferences								=			"Preferences",
     	credits									=			"Credits",
@@ -462,14 +461,16 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
+			scanFinalCutPro						=			"Scan Final Cut Pro",
+	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes:",
 			advanced							=			"Advanced",
 			install								=			"Install",
 			uninstall							=			"Uninstall",
-			developer							=			"Developer",
+			developer							=			"Developer Tools",
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
 			openErrorLogOnDockClick				=			"Open Error Log on Dock Icon Click",
-			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.\n\nDo you want to continue?",
+			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",
@@ -596,8 +597,9 @@ return {
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
 
-			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.",
-			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.",
+			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?",
+			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?",
+			pluginsRestart						=			"If you continue, CommandPost will need to restart.",
 
 			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
 			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
@@ -632,6 +634,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------
+			errorLog							=			"Error Log",
 			openErrorLog						=			"Open Error Log",
 			showDockIcon						=			"Show Dock Icon",
 			showMenuIcon						=			"Show Menu Icon",
@@ -834,9 +837,14 @@ return {
 	shortcutsModifier					=			"Modifier",
 	shortcutsKey						=			"Key",
 	resetShortcuts						=			"Reset to Default Shortcuts",
+	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values.",
+	shortcutsResetComplete				=			"All shortcuts have been successfully reset to their default values. CommandPost will now restart.",
 	resetShortcutsAllToNone				=			"Set All Shortcuts to None",
-	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values. Continue?",
-	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
+	shortcutsSetNoneConfirmation		=			"This will reset all of the shortcuts to None.",
+	shortcutAlreadyInUse				= 			"This shortcut is already in use.",
+	shortcutDuplicateError				=			"You cannot use the same shortcut for multiple commands.",
+	shortcutAlreadyInUseByMacOS			=			"This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
+	shortcutPleaseTryAgain				=			"Please select a new key and/or modifier combination and try again.",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:

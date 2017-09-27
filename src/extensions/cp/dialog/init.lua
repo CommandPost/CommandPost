@@ -7,6 +7,8 @@
 --- === cp.dialog ===
 ---
 --- A collection of handy Dialog tools for CommandPost.
+--- 
+--- This extension should no longer be used in favour of `hs.dialog`.
 
 --------------------------------------------------------------------------------
 --
@@ -23,6 +25,7 @@ local osascript									= require("hs.osascript")
 local screen									= require("hs.screen")
 local sharing									= require("hs.sharing")
 local window									= require("hs.window")
+local hsDialog									= require("hs.dialog")
 
 local config									= require("cp.config")
 local fcp										= require("cp.apple.finalcutpro")
@@ -96,6 +99,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the text entered in the dialog box
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.textPrompt`
 function dialog.displaySmallNumberTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer)
 	local appleScript = [[
 		set whatMessage to "]] .. whatMessage .. [["
@@ -135,6 +141,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the text entered in the dialog box
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.textPrompt`
 function dialog.displayTextBoxMessage(whatMessage, whatErrorMessage, defaultAnswer, validationFn)
 	defaultAnswer = defaultAnswer and tostring(defaultAnswer) or ""
 	::retryDisplayTextBoxMessage::
@@ -177,6 +186,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the file as a string
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.chooseFileOrFolder`
 function dialog.displayChooseFile(whatMessage, fileType, defaultLocation)
 	if not defaultLocation then
 		defaultLocation = os.getenv("HOME") .. "/Desktop"
@@ -204,6 +216,9 @@ end
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the folder as a string
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.chooseFileOrFolder`
 function dialog.displayChooseFolder(whatMessage, defaultLocation)
 	if not defaultLocation then
 		defaultLocation = os.getenv("HOME") .. "/Desktop"
@@ -222,22 +237,28 @@ function dialog.displayChooseFolder(whatMessage, defaultLocation)
 	return as(appleScript)
 end
 
---- cp.dialog.displayAlertMessage(whatMessage) -> none
+--- cp.dialog.displayAlertMessage(message) -> none
 --- Function
 --- Display an Alert Dialog (with stop icon).
 ---
 --- Parameters:
----  * whatMessage - The message you want to display as a string
+---  * message - The message you want to display as a string
 ---
 --- Returns:
 ---  * None
-function dialog.displayAlertMessage(whatMessage)
-	local appleScript = [[
-		set whatMessage to "]] .. whatMessage .. [["
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
+function dialog.displayAlertMessage(message, informativeText)
 
-		display dialog whatMessage buttons {okButton} with icon stop
-	]]
-	return as(appleScript)
+	if not message then message = "" end
+	if not informativeText then informativeText = "" end
+		
+	local originalFocusedWindow = window.focusedWindow()
+	config.application():activate()
+	hsDialog.blockAlert(message, informativeText, i18n("ok"), "", "informational")
+	if originalFocusedWindow then originalFocusedWindow:focus() end
+
 end
 
 --- cp.dialog.displayErrorMessage(whatError) -> none
@@ -249,36 +270,31 @@ end
 ---
 --- Returns:
 ---  * None
-function dialog.displayErrorMessage(whatError)
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
+function dialog.displayErrorMessage(message, informativeText)
 
 	--------------------------------------------------------------------------------
 	-- Write error message to console:
 	--------------------------------------------------------------------------------
-	log.ef(whatError)
+	log.ef(message)
 
 	--------------------------------------------------------------------------------
 	-- Display Dialog Box:
-	--------------------------------------------------------------------------------
-	local appleScript = [[
-		set whatError to "]] .. whatError .. [["
-
-		display dialog errorMessageStart & whatError & errorMessageEnd buttons {yesButton, noButton} with icon iconPath
-		if the button returned of the result is equal to yesButton then
-			return true
-		else
-			return false
-		end if
-	]]
-	local result = as(appleScript)
-
-	--------------------------------------------------------------------------------
-	-- Send bug report:
-	--------------------------------------------------------------------------------
-	if result then
-		local feedback = require("cp.feedback")
+	--------------------------------------------------------------------------------	
+	if not message then message = "" end
+	if not informativeText then informativeText = "" end
+	local errorMessage = message .. "\n\n" .. i18n("commonErrorMessageEnd")
+	local originalFocusedWindow = window.focusedWindow()
+	config.application():activate()
+	local result = hsDialog.blockAlert(i18n("commonErrorMessageStart"), errorMessage, i18n("yes"), i18n("no"), "critical")
+	if originalFocusedWindow then originalFocusedWindow:focus() end
+	if result == i18n("yes") then
+		local feedback = require("cp.feedback") -- This is defined here, otherwise it will cause an error.
 		feedback.showFeedback(false)
 	end
-
+	
 end
 
 --- cp.dialog.displayMessage(whatMessage, optionalButtons) -> object
@@ -290,6 +306,9 @@ end
 ---
 --- Returns:
 ---  * None
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
 function dialog.displayMessage(whatMessage, optionalButtons)
 
 	if optionalButtons == nil or type(optionalButtons) ~= "table" then
@@ -312,7 +331,7 @@ function dialog.displayMessage(whatMessage, optionalButtons)
 
 end
 
---- cp.dialog.displayYesNoQuestion(whatMessage) -> boolean
+--- cp.dialog.displayYesNoQuestion(message) -> boolean
 --- Function
 --- Displays a "Yes" or "No" question.
 ---
@@ -320,21 +339,26 @@ end
 ---  * whatMessage - The message you want to display as a string
 ---
 --- Returns:
----  * A boolean with the result.
-function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
+---  * `true` if yes is clicked otherwise `false`
+--- 
+--- Notes:
+---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
+function dialog.displayYesNoQuestion(message, informativeText) -- returns true or false
 
-	local appleScript = [[
-		set whatMessage to "]] .. whatMessage .. [["
-
-		display dialog whatMessage buttons {yesButton, noButton} default button 1 with icon iconPath
-		if the button returned of the result is equal to yesButton then
-			return true
-		else
-			return false
-		end if
-	]]
-	return as(appleScript)
-
+	if not message then message = "" end
+	if not informativeText then informativeText = "" end
+		
+	local originalFocusedWindow = window.focusedWindow()
+	config.application():activate()
+	local result = hsDialog.blockAlert(message, informativeText, i18n("yes"), i18n("no"), "informational")
+	if originalFocusedWindow then originalFocusedWindow:focus() end
+	
+	if result == i18n("yes") then
+		return true
+	else
+		return false
+	end
+	
 end
 
 --- cp.dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems) -> table
@@ -365,44 +389,6 @@ function dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems)
 	]]
 
 	return as(appleScript)
-
-end
-
---- cp.dialog.displayColorPicker(customColor) -> table or nil
---- Function
---- Displays a System Colour Picker.
----
---- Parameters:
----  * customColor - An RGB Table to use as the default value
----
---- Returns:
----  * An RGB table with the selected colour or `nil`
-function dialog.displayColorPicker(customColor) -- Accepts RGB Table
-
-	local defaultColor = {65535, 65535, 65535}
-	if type(customColor) == "table" then
-		local validColor = true
-		if customColor["red"] == nil then validColor = false end
-		if customColor["green"] == nil then validColor = false end
-		if customColor["blue"] == nil then validColor = false end
-		if validColor then
-			defaultColor = { customColor["red"] * 257 * 255, customColor["green"] * 257 * 255, customColor["blue"] * 257 * 255 }
-		end
-	end
-	local appleScript = [[
-		set defaultColor to ]] .. inspect(defaultColor) .. "\n\n" .. [[
-		return choose color default color defaultColor
-	]]
-	local result = as(appleScript)
-	if type(result) == "table" then
-		local red = result[1] / 257 / 255
-		local green = result[2] / 257 / 255
-		local blue = result[3] / 257 / 255
-		if red ~= nil and green ~= nil and blue ~= nil then
-			return {red=red, green=green, blue=blue, alpha=1}
-		end
-	end
-	return nil
 
 end
 

@@ -52,9 +52,11 @@ function mod.start()
 end
 
 function mod.stop()
-	mod._server:stop()
-	mod._server = nil
-	log.df("Stopped CommandPost WebApp")
+	if mod._server then
+		mod._server:stop()
+		mod._server = nil
+		log.df("Stopped CommandPost WebApp")
+	end
 end
 
 function mod.copyLinkToClipboard()
@@ -63,9 +65,9 @@ end
 
 function mod.update()
 	if mod.enabled() then
-		mod.stop()
-	else
 		mod.start()
+	else
+		mod.stop()
 	end
 end
 

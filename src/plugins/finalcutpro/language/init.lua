@@ -46,7 +46,7 @@ function mod.changeFinalCutProLanguage(language)
 	--------------------------------------------------------------------------------
 	-- If Final Cut Pro is running...
 	--------------------------------------------------------------------------------
-	if fcp:isRunning() and not dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage") .. "\n\n" .. i18n("doYouWantToContinue")) then
+	if fcp:isRunning() and not dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage"), i18n("doYouWantToContinue")) then
 		return false
 	end
 
