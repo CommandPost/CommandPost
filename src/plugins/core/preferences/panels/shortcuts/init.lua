@@ -51,26 +51,99 @@ local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 --------------------------------------------------------------------------------
 local mod = {}
 
--- deleteShortcuts() -> boolean
+local function shallowCopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
+
+
+-- restoreDefaultShortcuts() -> boolean
 -- Function
--- Deletes the Default Shortcuts file.
+-- Restores the Default Shortcuts from the Cache.
 --
 -- Parameters:
 --  * None
 --
 -- Returns:
---  * `true` if successful, otherwise `false`.
-local function deleteShortcuts()
-	-- Deletes the DEFAULT_SHORTCUTS, if present.
-	local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
-	if shortcutsFile then
-		local ok, err = os.remove(shortcutsFile)
-		if not ok then
-			log.ef("Unable to remove default shortcuts: %s", err)
-			return false
-		end
+--  * None
+local function restoreDefaultShortcuts()
+
+	for groupID, group in pairs(mod.defaultShortcuts) do	
+		for cmdID,cmd in pairs(group) do			
+			for shortcutID,shortcut in pairs(cmd) do
+				local tempGroup = commands.group(groupID)
+				local tempCommand = tempGroup:get(cmdID)				
+				if tempCommand then
+					tempCommand:deleteShortcuts()
+					tempCommand:activatedBy(shortcut["modifiers"], shortcut["keycode"])
+				end		
+			end
+		end 
+	
 	end
-	return true
+
+end
+
+-- cacheShortcuts() -> boolean
+-- Function
+-- Caches the Default Shortcuts for use later.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function cacheShortcuts()
+	
+	log.df("Caching Default Shortcuts.")
+
+	mod.defaultShortcuts = {}
+
+	local groupIDs = commands.groupIds()
+	for _, groupID in ipairs(groupIDs) do
+
+		local group = commands.group(groupID)
+		
+		if not mod.defaultShortcuts[groupID] then
+			mod.defaultShortcuts[groupID] = {}
+		end
+					
+		local cmds = group:getAll()
+
+		for cmdID,cmd in pairs(cmds) do
+		
+			if not mod.defaultShortcuts[groupID][cmdID] then
+				mod.defaultShortcuts[groupID][cmdID] = {}
+			end
+			
+			local shortcuts = cmd:getShortcuts()
+			
+			for shortcutID,shortcut in pairs(shortcuts) do
+			
+				local tempShortcuts = {}							
+				local tempModifiers = shortcut:getModifiers()
+				local tempKeycode = shortcut:getKeyCode()
+				
+				tempShortcuts = { 
+					["modifiers"] = tempModifiers,
+					["keycode"] = tempKeycode
+				}
+				
+				mod.defaultShortcuts[groupID][cmdID][shortcutID] = tempShortcuts
+			
+			end			
+		end
+	end	
+	
 end
 
 -- resetShortcutsToNone() -> none
@@ -116,15 +189,11 @@ end
 --  * None
 local function resetShortcuts()
 
-	-- TODO: @randomeizer - This should be reworked so that you don't have to restart CommandPost:
-
 	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
-		if result == i18n("yes") then
-			if deleteShortcuts() then
-				dialog.webviewAlert(mod._manager.getWebview(), function() 
-					hs.reload()
-				end, i18n("shortcutsResetComplete"), "", "OK", nil, "informational")
-			end
+		if result == i18n("yes") then		
+			restoreDefaultShortcuts()
+			commands.saveToFile(DEFAULT_SHORTCUTS)
+			mod._manager.refresh()					
 		end
 	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
@@ -449,9 +518,16 @@ local function generateContent()
 
 end
 
---------------------------------------------------------------------------------
--- INITIALISE MODULE:
---------------------------------------------------------------------------------
+--- plugins.core.preferences.panels.shortcuts.init(deps, env) -> module
+--- Function
+--- Initialise the Module.
+---
+--- Parameters:
+---  * deps - Dependancies Table
+---  * env - Environment Table
+---
+--- Returns:
+---  * The Module
 function mod.init(deps, env)
 
 	mod.allKeyCodes		= getAllKeyCodes()
@@ -498,6 +574,16 @@ function mod.init(deps, env)
 
 end
 
+--- plugins.core.preferences.panels.shortcuts.setGroupEditor(groupId, editorFn) -> none
+--- Function
+--- Sets the Group Editor
+---
+--- Parameters:
+---  * groupId - Group ID
+---  * editorFn - Editor Function
+---
+--- Returns:
+---  * None
 function mod.setGroupEditor(groupId, editorFn)
 	if not mod._groupEditors then
 		mod._groupEditors = {}
@@ -505,6 +591,15 @@ function mod.setGroupEditor(groupId, editorFn)
 	mod._groupEditors[groupId] = editorFn
 end
 
+--- plugins.core.preferences.panels.shortcuts.getGroupEditor(groupId) -> none
+--- Function
+--- Gets the Group Editor
+---
+--- Parameters:
+---  * groupId - Group ID
+---
+--- Returns:
+---  * Group Editor
 function mod.getGroupEditor(groupId)
 	return mod._groupEditors and mod._groupEditors[groupId]
 end
@@ -531,6 +626,11 @@ end
 
 function plugin.postInit(deps)
 
+	--------------------------------------------------------------------------------
+	-- Cache all the default shortcuts:
+	--------------------------------------------------------------------------------	
+	cacheShortcuts()
+	
 	--------------------------------------------------------------------------------
 	-- Load Shortcuts From File:
 	--------------------------------------------------------------------------------
