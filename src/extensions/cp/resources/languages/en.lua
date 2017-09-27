@@ -80,7 +80,7 @@ return {
 			-- Common Error Messages:
 			--------------------------------------------------------------------------------
 			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-			commonErrorMessageStart				=			"I'm sorry, but the following error has occurred:",
+			commonErrorMessageStart				=			"The following error has occurred:",
 			commonErrorMessageEnd				=			"Would you like to submit a bug report?",
 			sendBugReport						=			"Send Bug Report",
 
@@ -451,7 +451,6 @@ return {
 		--------------------------------------------------------------------------------
     	-- PREFERENCES:
     	--------------------------------------------------------------------------------
-    	scanFinalCutPro							=			"Scan Final Cut Pro",
     	helpAndSupport							=			"Help & Support",
     	preferences								=			"Preferences",
     	credits									=			"Credits",
@@ -462,14 +461,16 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
+			scanFinalCutPro						=			"Scan Final Cut Pro",
+	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes:",
 			advanced							=			"Advanced",
 			install								=			"Install",
 			uninstall							=			"Uninstall",
-			developer							=			"Developer",
+			developer							=			"Developer Tools",
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
 			openErrorLogOnDockClick				=			"Open Error Log on Dock Icon Click",
-			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.\n\nDo you want to continue?",
+			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",
@@ -633,6 +634,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------
+			errorLog							=			"Error Log",
 			openErrorLog						=			"Open Error Log",
 			showDockIcon						=			"Show Dock Icon",
 			showMenuIcon						=			"Show Menu Icon",
