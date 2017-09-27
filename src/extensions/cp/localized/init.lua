@@ -73,13 +73,14 @@ local function readLocalizedStrings(stringsFile, name)
 			local content = text.fromFile(stringsFile)
 			local key, value = KEY_VALUE:match(content)
 			if key and value then
+				local x
 				-- unescape the key.
-				key = UNICODE_ESCAPE:gsub(key, uParser)
-				key = CHAR_ESCAPE:gsub(key, '%1')
+				key, x = UNICODE_ESCAPE:gsub(key, uParser)
+				key, x = CHAR_ESCAPE:gsub(key, '%1')
 				if key == text(name) then
 					-- unescape the value.
-					value = UNICODE_ESCAPE:gsub(value, uParser)
-					value = CHAR_ESCAPE:gsub(value, '%1')
+					value, x = UNICODE_ESCAPE:gsub(value, uParser)
+					value, x = CHAR_ESCAPE:gsub(value, '%1')
 					return tostring(value)
 				end
 			end
