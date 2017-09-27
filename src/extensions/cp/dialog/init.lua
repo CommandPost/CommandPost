@@ -306,7 +306,7 @@ function dialog.displayMessage(whatMessage, optionalButtons)
 
 end
 
---- cp.dialog.displayYesNoQuestion(whatMessage) -> boolean
+--- cp.dialog.displayYesNoQuestion(message) -> boolean
 --- Function
 --- Displays a "Yes" or "No" question.
 ---
@@ -314,21 +314,22 @@ end
 ---  * whatMessage - The message you want to display as a string
 ---
 --- Returns:
----  * A boolean with the result.
-function dialog.displayYesNoQuestion(whatMessage) -- returns true or false
+---  * `true` if yes is clicked otherwise `false`
+function dialog.displayYesNoQuestion(message, informativeText) -- returns true or false
 
-	local appleScript = [[
-		set whatMessage to "]] .. whatMessage .. [["
-
-		display dialog whatMessage buttons {yesButton, noButton} default button 1 with icon iconPath
-		if the button returned of the result is equal to yesButton then
-			return true
-		else
-			return false
-		end if
-	]]
-	return as(appleScript)
-
+	if not message then message = "" end
+	if not informativeText then informativeText = "" end
+		
+	local originalFocusedWindow = window.focusedWindow()
+	local result = hsDialog.blockAlert(message, informativeText, i18n("yes"), i18n("no"), "informational")
+	if originalFocusedWindow then originalFocusedWindow:focus() end
+	
+	if result == i18n("yes") then
+		return true
+	else
+		return false
+	end
+	
 end
 
 --- cp.dialog.displayChooseFromList(dialogPrompt, listOptions, defaultItems) -> table
