@@ -507,25 +507,23 @@ matcher.mt.gmatch = function(self, value, all)
 	end
 end
 
---- cp.text.match:gsub (value, repl [, n]) -> text, number
---- Returns a copy of `value` in which all (or the first `n`, if given) occurrences of the pattern have been replaced by a replacement string specified by `repl`, which can be text, a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred.
----
---- If `repl` is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in `repl` of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
----
---- If `repl` is a table, then the table is queried for every match, using the first capture as the key; if the pattern specifies no captures, then the whole match is used as the key.
----
---- If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
----
---- If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
----
---- Parameters:
---- * `value`	- The text or string value to process.
---- * `repl`	- The replacement text/string/table/function
---- * `limit`	- The maximum number of times to do the replacement. Defaults to unlimited.
----
---- Returns:
---- * `text`	- The text value with replacements.
---- * `number`	- The number of matches that occurred.
+-- cp.text.matcher:gsub(value, repl, limit) -> text, number
+-- Returns a copy of `value` in which all (or the first `n`, if given) occurrences of the pattern have been replaced by a replacement string specified by `repl`, which can be text, a string, a table, or a function. gsub also returns, as its second value, the total number of matches that occurred.
+--
+-- Parameters:
+--  * `value`	- The text or string value to process.
+--  * `repl`	- The replacement text/string/table/function
+--  * `limit`	- The maximum number of times to do the replacement. Defaults to unlimited.
+--
+-- Returns:
+--  * `text`	- The text value with replacements.
+--  * `number`	- The number of matches that occurred.
+--
+-- Notes:
+--  * If `repl` is text or a string, then its value is used for replacement. The character `%` works as an escape character: any sequence in `repl` of the form `%n`, with `n` between `1` and `9`, stands for the value of the `n`-th captured substring (see below). The sequence `%0` stands for the whole match. The sequence `%%` stands for a single `%`.
+--  * If `repl` is a table, then the table is queried for every match, using the first capture as the key; if the pattern specifies no captures, then the whole match is used as the key.
+--  * If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
+--  * If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
 matcher.mt.gsub = function(self, value, repl, limit)
 	value = text.is(value) and value or text(tostring(value))
 	limit = limit or -1

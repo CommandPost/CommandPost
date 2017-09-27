@@ -170,7 +170,9 @@ return {
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
-			--------------------------------------------------------------------------------
+			--------------------------------------------------------------------------------			
+			noSupportedVersionsOfFCPX			= 			"No supported versions of Final Cut Pro were detected.",
+			
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
@@ -523,6 +525,11 @@ return {
 			displayThisMenuAsIcon				=			"Display Menubar As Icon",
 
 			--------------------------------------------------------------------------------
+			-- Final Cut Pro:
+			--------------------------------------------------------------------------------
+			allowZoomingWithOptionKey			=			"Enable Timeline Zooming with Mouse Scroll & OPTION key",
+			
+			--------------------------------------------------------------------------------
 			-- HUD Options:
 			--------------------------------------------------------------------------------
 			showInspector						=			"Show Inspector",
@@ -597,6 +604,8 @@ return {
 
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
+			
+			modifierHeading						=			"Modifier Keys",
 
 			languageHeading						=			"Language",
 			commandPostLanguage					=			"CommandPost Language",
@@ -825,6 +834,7 @@ return {
 	shortcutsModifier					=			"Modifier",
 	shortcutsKey						=			"Key",
 	resetShortcuts						=			"Reset to Default Shortcuts",
+	resetShortcutsAllToNone				=			"Set All Shortcuts to None",
 	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values. Continue?",
 	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
 
@@ -897,6 +907,7 @@ return {
 	finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
 	finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
 	finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
+	finalcutpro_menu_support_label							=	"Menubar: Support",
 	finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
 	finalcutpro_menu_timeline_assignshortcuts_label			=	"Menubar: Timeline Assign Shortcuts",
 	finalcutpro_menu_timeline_highlightplayhead_label		=	"Menubar: Highlight Playhead",
@@ -935,7 +946,7 @@ return {
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
 	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
-	finalcutpro_timeline_zoom_label							=	"Timeline Zoom",
+	finalcutpro_timeline_mousezoom_label					=	"Timeline: Mouse Zoom",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
 	finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
@@ -944,8 +955,7 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-
-
+	
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
@@ -962,6 +972,7 @@ return {
 		cpTrashPreferences_title								=	"Trash Preferences",
 		cpOpenPluginsFolder_title								= 	"Open Plugins Folder",
 		cpUserGuide_title										=	"User Guide",
+		cpFeedback_title										=	"Provide Feedback",
 		cpDeveloperGuide_title									=	"Developer Guide",
 
 		--------------------------------------------------------------------------------

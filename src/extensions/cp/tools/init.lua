@@ -53,6 +53,35 @@ local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
 
+--- cp.tools.split(str, pat) -> table
+--- Function
+--- Splits a string with a pattern.
+---
+--- Parameters:
+---  * str - The string to split
+---  * pat - The pattern
+---
+--- Returns:
+---  * Table
+function tools.split(str, pat)
+	local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+	local fpat = "(.-)" .. pat
+	local last_end = 1
+	local s, e, cap = str:find(fpat, 1)
+	while s do
+	  if s ~= 1 or cap ~= "" then
+		 table.insert(t,cap)
+	  end
+	  last_end = e+1
+	  s, e, cap = str:find(fpat, last_end)
+	end
+	if last_end <= #str then
+	  cap = str:sub(last_end)
+	  table.insert(t, cap)
+	end
+	return t
+end
+
 --- cp.tools.splitOnColumn() -> string
 --- Function
 --- Splits a string on a column.
@@ -143,7 +172,7 @@ end
 
 --- cp.tools.getVRAMSize() -> string
 --- Function
---- Returns VRAM Size.
+--- Returns the VRAM size in format suitable for Apple's Final Cut Pro feedback form or "" if unknown.
 ---
 --- Parameters:
 ---  * None
@@ -151,35 +180,29 @@ end
 --- Returns:
 ---  * String
 function tools.getVRAMSize()
-	local output, status = hs.execute("system_profiler SPDisplaysDataType | grep VRAM")
-	if status and output then
-		local lines = tools.lines(output)
-		local vram = nil
-		if #lines == 1 then
-			vram = tools.splitOnColumn(lines[1])
-		else
-			vram = tools.splitOnColumn(lines[2])
-		end
-		local value = string.sub(vram, -2)
-		local result = tonumber(string.sub(vram, 1, -4))
-		if value == "MB" then
-			if result >= 256 and result <= 512 then
-				return "256 MB-512 MB"
-			elseif result >= 512 and result <= 1024 then
-				return "512 MB-1 GB"
-			elseif result >= 1024 and result <= 2048 then
-				return "1-2 GB"
-			elseif result > 2048 then
-				return "More than 2 GB"
+	local vram = host.gpuVRAM()
+	if vram then
+		local result
+		for i, v in pairs(vram) do
+			if result then 
+				if v > result then 
+					result = v
+				end
 			else
-				return ""
+				result = v
 			end
-		else
-			return ""
-		end
-	else
-		return ""
+		end				
+		if result >= 256 and result <= 512 then
+			return "256 MB-512 MB"
+		elseif result >= 512 and result <= 1024 then
+			return "512 MB-1 GB"
+		elseif result >= 1024 and result <= 2048 then
+			return "1-2 GB"
+		elseif result > 2048 then
+			return "More than 2 GB"
+		end		
 	end
+	return ""
 end
 
 --- cp.tools.getmacOSVersion() -> string

@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
+local dialog									= require("cp.dialog")
 local fs										= require("hs.fs")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
@@ -25,12 +26,11 @@ local webview									= require("hs.webview")
 
 local commands									= require("cp.commands")
 local config									= require("cp.config")
-local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local html										= require("cp.web.html")
-local ui										= require("cp.web.ui")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
+local ui										= require("cp.web.ui")
 
 local _											= require("moses")
 
@@ -49,28 +49,15 @@ local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- SPLIT STRING:
---------------------------------------------------------------------------------
-local function split(str, pat)
-	local t = {}  -- NOTE: use {n = 0} in Lua-5.0
-	local fpat = "(.-)" .. pat
-	local last_end = 1
-	local s, e, cap = str:find(fpat, 1)
-	while s do
-	  if s ~= 1 or cap ~= "" then
-		 table.insert(t,cap)
-	  end
-	  last_end = e+1
-	  s, e, cap = str:find(fpat, last_end)
-	end
-	if last_end <= #str then
-	  cap = str:sub(last_end)
-	  table.insert(t, cap)
-	end
-	return t
-end
-
+-- deleteShortcuts() -> boolean
+-- Function
+-- Deletes the Default Shortcuts file.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if successful, otherwise `false`.
 local function deleteShortcuts()
 	-- Deletes the DEFAULT_SHORTCUTS, if present.
 	local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
@@ -84,7 +71,51 @@ local function deleteShortcuts()
 	return true
 end
 
+-- resetShortcutsToNone() -> none
+-- Function
+-- Resets all Shortcuts to None.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetShortcutsToNone()
+
+	-- TODO: I'll finish this in another issue:
+	--hs.dialog.webviewAlert(webview, callbackFn, message, [informativeText], [buttonOne], [buttonTwo], [style])
+	--dialog.webviewAlert
+
+	local groupIDs = commands.groupIds()
+    for _, groupID in ipairs(groupIDs) do
+      
+    	local group = commands.group(groupID)
+		local cmds = group:getAll()
+
+		for id,cmd in pairs(cmds) do
+			cmd:deleteShortcuts()
+		end
+    end
+    
+    commands.saveToFile(DEFAULT_SHORTCUTS)
+    
+    mod._manager.refresh()
+    
+end
+
+-- resetShortcuts() -> none
+-- Function
+-- Prompts to reset shortcuts to default.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function resetShortcuts()
+
+	-- TODO: This should be reworked so that you don't have to restart CommandPost:
+
 	if dialog.displayYesNoQuestion(i18n("shortcutsResetConfirmation")) then
 		if deleteShortcuts() then
 			dialog.displayMessage(i18n("shortcutsResetComplete"), {"OK"})
@@ -97,9 +128,15 @@ config.watch({
 	reset = deleteShortcuts,
 })
 
---------------------------------------------------------------------------------
--- CONTROLLER CALLBACK:
---------------------------------------------------------------------------------
+-- controllerCallback(message) -> none
+-- Function
+-- Webview Controller Callback.
+--
+-- Parameters:
+--  * message - the message coming from the controller.
+--
+-- Returns:
+--  * None
 local function controllerCallback(message)
 
 	local body = message.body
@@ -113,7 +150,7 @@ local function controllerCallback(message)
 		--------------------------------------------------------------------------------
 		-- Values from Callback:
 		--------------------------------------------------------------------------------
-		local modifiers = split(body.modifiers, ":")
+		local modifiers = tools.split(body.modifiers, ":")
 
 		--------------------------------------------------------------------------------
 		-- Setup Controller:
@@ -152,7 +189,7 @@ local function updateShortcut(id, params)
 	--------------------------------------------------------------------------------
 	-- Values from Callback:
 	--------------------------------------------------------------------------------
-	local modifiers = split(params.modifiers, ":")
+	local modifiers = tools.split(params.modifiers, ":")
 
 	--------------------------------------------------------------------------------
 	-- Setup Controller:
@@ -255,7 +292,7 @@ local allModifiers = iterateModifiers(baseModifiers)
 local function modifierOptions(shortcut)
 	local out = ""
 	for i,modifiers in ipairs(allModifiers) do
-		local selected = shortcut and _.same(shortcut:getModifiers(), split(modifiers.value, ":")) and " selected" or ""
+		local selected = shortcut and _.same(shortcut:getModifiers(), tools.split(modifiers.value, ":")) and " selected" or ""
 		out = out .. ([[<option value="%s"%s>%s</option>]]):format(modifiers.value, selected, modifiers.label)
 	end
 	return out
@@ -418,6 +455,14 @@ function mod.init(deps, env)
 		}
 	)
 
+	mod._panel:addButton(21,
+		{
+			label		= i18n("resetShortcutsAllToNone"),
+			onclick		= resetShortcutsToNone,
+			class		= "resetShortcutsToNone" .. shortcutsEnabledClass,
+		}
+	)
+
 	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
 
 	return mod
@@ -456,7 +501,21 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps)
-	commands.loadFromFile(DEFAULT_SHORTCUTS)
+
+	--------------------------------------------------------------------------------
+	-- Load Shortcuts From File:
+	--------------------------------------------------------------------------------
+	local result = commands.loadFromFile(DEFAULT_SHORTCUTS)
+	
+	--------------------------------------------------------------------------------
+	-- If no Default Shortcut File Exists, lets create one:
+	--------------------------------------------------------------------------------
+	if not result then
+		local filePath = commands.getShortcutsPath(DEFAULT_SHORTCUTS)
+		log.df("Creating new shortcut file: '%s'", filePath)
+		commands.saveToFile(DEFAULT_SHORTCUTS)
+	end
+	
 end
 
 return plugin
