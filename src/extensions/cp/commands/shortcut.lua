@@ -193,9 +193,15 @@ end
 --- Notes:
 ---  * If the shortcut is enabled, the hotkey will also be enabled at this point.
 function shortcut:bind(pressedFn, releasedFn, repeatedFn)
-	-- Unbind any existing hotkey
+
+	--------------------------------------------------------------------------------
+	-- Unbind any existing hotkey:
+	--------------------------------------------------------------------------------
 	self:unbind()
-	-- Bind a new one with the specified calleback functions.
+	
+	--------------------------------------------------------------------------------
+	-- Bind a new one with the specified callback functions:
+	--------------------------------------------------------------------------------
 	local keycode = shortcut.textToKeyCode(self:getKeyCode())
 	local modifiers = self:getModifiers()
 
@@ -207,13 +213,21 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 		end
 	else
 		-- TODO: Why it this happening?
-		log.wf("Unable to find key code for '%s'.", self:getKeyCode())
+		log.ef("Unable to find key code for '%s'.", self:getKeyCode())
 	end
 
 	return self
 end
 
--- TODO: Add documentation
+--- cp.commands.shortcut:unbind() -> shortcut
+--- Method
+--- Unbinds a shortcut.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `self`
 function shortcut:unbind()
 	local hotkey = self._hotkey
 	if hotkey then
@@ -224,7 +238,15 @@ function shortcut:unbind()
 	return self
 end
 
--- TODO: Add documentation
+--- cp.commands.shortcut:delete() -> shortcut
+--- Method
+--- Delete's a shortcut.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `self`
 function shortcut:delete()
 	return self:unbind()
 end
@@ -234,7 +256,7 @@ end
 --- This will trigger the keystroke specified in the shortcut.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * `self`
