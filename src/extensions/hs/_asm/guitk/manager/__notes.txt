@@ -1,0 +1,18 @@
+// add fittingSize to canvas
+//   modify canvas methods that disable themselves when canvas not in hs.canvas window? can they be made to work here/touchbar as well?
+//
+// check for need in webview
+//   webview needs detachment from window (primary object); what problems will this cause or does it need to be rewritten to be more like
+//   canvas in this respect first?
+
+-- # must be [1, #mgr + 1]
+mgr[#] = hs._asm.guitk.element.type.new...(...)
+mgr[#] = {
+    _element = hs.asm.guitk.element.type.new...(...), -- required else error
+    ... additional properties set after constructor returns ...
+}
+
+mgr[#] = nil -- removes, # must be [1, #mgr]
+
+mgr[#] --> returns table, allows properties to be modified; properties with _ prefix are read-only
+mgr(#) === mgr[#]._element --> the element userdata
