@@ -29,9 +29,17 @@ local log								= require("hs.logger").new("colorboard")
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- COLOR BOARD - PUCK SELECTION:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.colorboard.selectPuck(aspect, property, whichDirection) -> none
+--- Function
+--- Color Board - Select Puck
+---
+--- Parameters:
+---  * aspect - "global", "shadows", "midtones" or "highlights"
+---  * property - "Color", "Saturation" or "Exposure"
+---  * whichDirection - "up" or "down"
+---
+--- Returns:
+---  * None
 function mod.selectPuck(aspect, property, whichDirection)
 
 	--------------------------------------------------------------------------------
@@ -69,21 +77,37 @@ function mod.selectPuck(aspect, property, whichDirection)
 				colorBoard:shiftAngle(aspect, property, 1)
 			end
 		end, eventtap.keyRepeatInterval())
-	else -- just select the puck
+	else 
+		--------------------------------------------------------------------------------
+		-- Just select the puck:
+		--------------------------------------------------------------------------------
 		colorBoard:selectPuck(aspect, property)
 	end
 end
 
---------------------------------------------------------------------------------
--- COLOR BOARD - RELEASE KEYPRESS:
---------------------------------------------------------------------------------
-local function colorBoardSelectPuckRelease()
+--- plugins.finalcutpro.timeline.colorboard.colorBoardSelectPuckRelease() -> none
+--- Function
+--- Color Board Release Keypress
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.colorBoardSelectPuckRelease()
 	mod.releaseColorBoardDown = true
 end
 
---------------------------------------------------------------------------------
--- COLOR BOARD - PUCK CONTROL VIA MOUSE:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.colorboard.mousePuck(aspect, property) -> none
+--- Function
+--- Color Board - Puck Control Via Mouse
+---
+--- Parameters:
+---  * aspect - "global", "shadows", "midtones" or "highlights"
+---  * property - "Color", "Saturation" or "Exposure"
+---
+--- Returns:
+---  * None
 function mod.mousePuck(aspect, property)
 	--------------------------------------------------------------------------------
 	-- Stop Existing Color Pucker:
@@ -112,18 +136,20 @@ function mod.mousePuck(aspect, property)
 	mod.colorPucker = colorBoard:startPucker(aspect, property)
 end
 
---------------------------------------------------------------------------------
--- COLOR BOARD - RELEASE MOUSE KEYPRESS:
---------------------------------------------------------------------------------
-local function colorBoardMousePuckRelease()
+--- plugins.finalcutpro.timeline.colorboard.colorBoardMousePuckRelease() -> none
+--- Function
+--- Color Board Mouse Puck Release
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.colorBoardMousePuckRelease()
 	if mod.colorPucker then
 		mod.colorPucker:stop()
 		mod.colorPicker = nil
 	end
-end
-
-function mod.init(playhead)
-	mod.playhead = playhead
 end
 
 --------------------------------------------------------------------------------
@@ -144,8 +170,8 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-
-	mod.init(deps.playhead)
+	
+	mod.playhead = deps.playhead
 
 	local colorFunction = {
 		[1] = "global",
@@ -174,6 +200,7 @@ function plugin.init(deps)
 			:titled(i18n("cpPuckMouse_customTitle", {count = i}))
 			:groupedBy("colorboard")
 			:whenActivated(function() mod.mousePuck("*", colorFunction[i]) end)
+			:whenReleased(function() mod.colorBoardMousePuckRelease() end)
 
 		for _, whichPanel in ipairs(colorBoardPanel) do
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i))
@@ -185,33 +212,33 @@ function plugin.init(deps)
 				:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Up"}))
 				:groupedBy("colorboard")
 				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "up") end)
-				:whenReleased(function() colorBoardSelectPuckRelease() end)
+				:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Down")
 				:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Down"}))
 				:groupedBy("colorboard")
 				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "down") end)
-				:whenReleased(function() colorBoardSelectPuckRelease() end)
+				:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 
 			if whichPanel == "Color" then
 				deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Left")
 					:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Left"}))
 					:groupedBy("colorboard")
 					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "left") end)
-					:whenReleased(function() colorBoardSelectPuckRelease() end)
+					:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 
 				deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Right")
 					:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Right"}))
 					:groupedBy("colorboard")
 					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "right") end)
-					:whenReleased(function() colorBoardSelectPuckRelease() end)
+					:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 			end
 
 			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Mouse")
 				:titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = whichPanel}))
 				:groupedBy("colorboard")
 				:whenActivated(function() mod.mousePuck(string.lower(whichPanel), colorFunction[i]) end)
-				:whenReleased(function() colorBoardMousePuckRelease() end)
+				:whenReleased(function() mod.colorBoardMousePuckRelease() end)
 		end
 	end
 
