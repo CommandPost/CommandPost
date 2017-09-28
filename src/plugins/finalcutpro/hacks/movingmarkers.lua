@@ -90,7 +90,7 @@ mod.enabled = prop.new(
 		-- If Final Cut Pro is running...
 		--------------------------------------------------------------------------------
 		local running = fcp:isRunning()
-		if running and not dialog.displayYesNoQuestion(i18n("togglingMovingMarkersRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+		if running and not dialog.displayYesNoQuestion(i18n("togglingMovingMarkersRestart"), i18n("doYouWantToContinue")) then
 			return
 		end
 

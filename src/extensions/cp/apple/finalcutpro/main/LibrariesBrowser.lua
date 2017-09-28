@@ -266,7 +266,7 @@ function Libraries:openClipTitled(name)
 	if self:selectClipTitled(name) then
 		self:app():launch()
 		local menuBar = self:app():menuBar()
-		
+
 		-- ensure the Libraries browser is focused
 		menuBar:selectMenu({"Window", "Go To", "Libraries"})
 		-- open the clip.
@@ -388,7 +388,7 @@ function Libraries:saveLayout()
 	if self:isShowing() then
 		layout.showing = true
 		layout.sidebar = self:sidebar():saveLayout()
-		layout.selectedClips = self:selectedClipsUI()
+		layout.selectedClips = self:selectedClips()
 	end
 	return layout
 end

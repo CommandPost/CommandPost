@@ -182,7 +182,7 @@ end
 --- Returns:
 ---  * None
 function mod.hide()
-	if mod.supported() and mod.enabled() then
+	if mod.supported() and mod.enabled() and mod.touchBar then
 		mod.touchBar:hide()
 	end
 end
@@ -274,11 +274,15 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-	mod.touchBar:hide()
-	mod.touchBar = nil
-	collectgarbage() -- See: https://github.com/asmagill/hammerspoon_asm/issues/10#issuecomment-303290853
-	mod.keyboardWatcher:stop()
-	mod.keyboardWatcher = nil
+	if mod.touchBar then 
+		mod.touchBar:hide()
+		mod.touchBar = nil
+		collectgarbage() -- See: https://github.com/asmagill/hammerspoon_asm/issues/10#issuecomment-303290853
+	end		
+	if mod.keyboardWatcher then 
+		mod.keyboardWatcher:stop()
+		mod.keyboardWatcher = nil
+	end
 end
 
 --------------------------------------------------------------------------------

@@ -24,8 +24,9 @@ local timer										= require("hs.timer")
 local urlevent									= require("hs.urlevent")
 local webview									= require("hs.webview")
 
-local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+local dialog									= require("cp.dialog")
+local tools										= require("cp.tools")
 
 local template									= require("resty.template")
 
@@ -43,31 +44,8 @@ mod.defaultWidth 		= 365
 mod.defaultHeight 		= 438
 mod.defaultTitle 		= config.appName .. " " .. i18n("feedback")
 mod.quitOnComplete		= false
-
--- getScreenshotsAsBase64() -> table
--- Function
--- Captures all available screens and saves them as base64 encodes in a table.
---
--- Parameters:
---  * None
---
--- Returns:
---  * table containing base64 images of all available screens.
-local function getScreenshotsAsBase64()
-	local screenshots = {}
-	local allScreens = screen.allScreens()
-	for i, v in ipairs(allScreens) do
-		local temporaryFileName = os.tmpname()
-		v:shotAsJPG(temporaryFileName)
-		hs.execute("sips -Z 1920 " .. temporaryFileName)
-		local screenshotFile = io.open(temporaryFileName, "r")
-		local screenshotFileContents = screenshotFile:read("*all")
-		screenshotFile:close()
-		os.remove(temporaryFileName)
-		screenshots[#screenshots + 1] = base64.encode(screenshotFileContents)
-	end
-	return screenshots
-end
+mod.position 			= config.prop("feedbackPosition", nil)
+mod.isOpen				= false
 
 -- generateHTML() -> string
 -- Function
@@ -84,11 +62,24 @@ local function generateHTML()
 
 	env.appVersion = config.appVersion
 
+	--------------------------------------------------------------------------------
+	-- Default Values:
+	--------------------------------------------------------------------------------
 	env.defaultUserFullName = i18n("fullName")
 	env.defaultUserEmail = i18n("emailAddress")
 
-	env.userFullName = config.get("userFullName", env.defaultUserFullName)
-	env.userEmail = config.get("userEmail", env.defaultUserEmail)
+	--------------------------------------------------------------------------------
+	-- Attempt to get Full Name & Email from the Contacts App:
+	--------------------------------------------------------------------------------
+	local fullname = tools.getFullname()
+	local email = ""
+	if fullname then email = tools.getEmail(fullname) end		
+		
+	if fullname == "" then fullname = i18n("fullName") end
+	if email == "" then email = i18n("emailAddress") end	
+	
+	env.userFullName = config.get("userFullName", fullname)
+	env.userEmail = config.get("userEmail", email)
 
 	--------------------------------------------------------------------------------
 	-- Get Console output:
@@ -98,7 +89,7 @@ local function generateHTML()
 	--------------------------------------------------------------------------------
 	-- Get screenshots of all screens:
 	--------------------------------------------------------------------------------
-	env.screenshots = getScreenshotsAsBase64()
+	env.screenshots = tools.getScreenshotsAsBase64()
 
 	local renderTemplate = template.compile(config.scriptPath .. "/cp/feedback/html/feedback.htm")
 
@@ -112,19 +103,29 @@ local function generateHTML()
 
 end
 
--- urlQueryStringDecode() -> string
--- Function
--- Decodes a URL Query String
---
--- Parameters:
---  * None
---
--- Returns:
---  * Decoded URL Query String as string
-local function urlQueryStringDecode(s)
-	s = s:gsub('+', ' ')
-	s = s:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
-	return string.sub(s, 2, -2)
+--------------------------------------------------------------------------------
+-- CENTRED POSITION:
+--------------------------------------------------------------------------------
+local function centredPosition()
+	local sf = screen.mainScreen():frame()
+	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+end
+
+--------------------------------------------------------------------------------
+-- WEBVIEW WINDOW CALLBACK:
+--------------------------------------------------------------------------------
+local function windowCallback(action, webview, frame)
+	if action == "closing" then
+		if not hs.shuttingDown then
+			mod.webview = nil
+			mod.isOpen = false
+		end
+	elseif action == "focusChange" then
+	elseif action == "frameChange" then
+		if frame then
+			mod.position(frame)
+		end
+	end
 end
 
 --- cp.feedback.showFeedback(quitOnComplete) -> nil
@@ -137,6 +138,14 @@ end
 --- Returns:
 ---  * None
 function mod.showFeedback(quitOnComplete)
+	
+	--------------------------------------------------------------------------------
+	-- Feedback window already open:
+	--------------------------------------------------------------------------------
+	if mod.isOpen then
+		mod.feedbackWebView:show()
+		return
+	end
 
 	--------------------------------------------------------------------------------
 	-- Quit on Complete?
@@ -148,11 +157,15 @@ function mod.showFeedback(quitOnComplete)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Centre on Screen:
+	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
-	local screenFrame = screen.mainScreen():frame()
-	local defaultRect = {x = (screenFrame['w']/2) - (mod.defaultWidth/2), y = (screenFrame['h']/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
-
+	local defaultRect = mod.position()
+	if tools.isOffScreen(defaultRect) then
+		defaultRect = centredPosition()
+	end
+	defaultRect.w = mod.defaultWidth
+	defaultRect.h = mod.defaultHeight
+	
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
 	--------------------------------------------------------------------------------
@@ -187,6 +200,8 @@ function mod.showFeedback(quitOnComplete)
 		:allowTextEntry(true)
 		:windowTitle(mod.defaultTitle)
 		:html(generateHTML())
+		:windowCallback(windowCallback)
+		:darkMode(true)
 		:policyCallback(function(action, wv, details1, details2)
 			if action == "navigationResponse" then
 				local statusCode = details1.response.statusCode
@@ -224,7 +239,7 @@ function mod.showFeedback(quitOnComplete)
 			local errorMessage = "Unknown"
 			if params["message"] then errorMessage = params["message"] end
 
-			log.df("Server Side Error Message: %s", urlQueryStringDecode(errorMessage))
+			log.df("Server Side Error Message: %s", tools.urlQueryStringDecode(errorMessage))
 
 			dialog.displayMessage(i18n("feedbackError"))
 		end
@@ -234,6 +249,7 @@ function mod.showFeedback(quitOnComplete)
 	-- Show Welcome Screen:
 	--------------------------------------------------------------------------------
 	mod.feedbackWebView:show()
+	mod.isOpen = true
 	timer.doAfter(0.1, function() mod.feedbackWebView:hswindow():focus() end)
 
 end

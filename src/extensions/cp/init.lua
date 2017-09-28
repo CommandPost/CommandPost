@@ -16,6 +16,7 @@
 local logger					= require("hs.logger"); logger.defaultLogLevel = 'debug'
 local log						= logger.new("cp")
 
+local application				= require("hs.application") 
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
@@ -73,6 +74,17 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
+
+	--------------------------------------------------------------------------------
+	-- Disable Spotlight for Name Searches:
+	--------------------------------------------------------------------------------
+	application.enableSpotlightForNameSearches(false)
+
+	--------------------------------------------------------------------------------
+	-- Console Colour Scheme:
+	--------------------------------------------------------------------------------
+	console.consoleCommandColor{hex = "#999999", alpha = 1}
+	console.outputBackgroundColor{hex = "#161616", alpha = 1}
 
 	--------------------------------------------------------------------------------
 	-- Debug Mode:
@@ -229,7 +241,7 @@ function mod.init()
 	local fcpVersion    		= fcp:getVersion() or "Unknown"
 	local fcpPath				= fcp:getPath() or "Unknown"
 	local osVersion    			= tools.macOSVersion() or "Unknown"
-	local fcpLanguage   		= fcp:getCurrentLanguage() or "Unknown"
+	local fcpLanguage   		= fcp:currentLanguage() or "Unknown"
 
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
@@ -241,7 +253,7 @@ function mod.init()
 	-- Display Welcome Message In The Console:
 	--------------------------------------------------------------------------------
 	console.printStyledtext(styledtext.new(config.appName .. " v" .. config.appVersion, {
-		color = drawing.color.definedCollections.hammerspoon["black"],
+		color = {hex = "#999999", alpha = 1},
 		font = { name = "Helvetica", size = 18 },
 	}))
 
@@ -250,7 +262,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	local writeToConsoleDebug = function(value)
 		console.printStyledtext(styledtext.new(value, {
-			color = drawing.color.definedCollections.hammerspoon["black"],
+			color = {hex = "#999999", alpha = 1},
 			font = { name = "Menlo", size = 12 },
 		}))
 	end

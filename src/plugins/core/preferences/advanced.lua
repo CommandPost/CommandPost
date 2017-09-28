@@ -16,12 +16,11 @@
 local log				= require("hs.logger").new("prefadv")
 
 local console			= require("hs.console")
+local dialog			= require("hs.dialog")
 local ipc				= require("hs.ipc")
 
 local config			= require("cp.config")
 local fcp				= require("cp.apple.finalcutpro")
-local dialog			= require("cp.dialog")
-
 local html				= require("cp.web.html")
 
 --------------------------------------------------------------------------------
@@ -42,16 +41,12 @@ local mod = {}
 ---  * None
 function mod.trashPreferences()
 
-	if not dialog.displayYesNoQuestion(i18n("trashPreferencesConfirmation")) then
-		return false
-	end
+	dialog.webviewAlert(mod.manager.getWebview(), function(result)
+		if result == i18n("yes") then
+			config.reset()
+		end
+	end, i18n("trashPreferencesConfirmation"), "", i18n("yes"), i18n("no"), "informational")
 
-	--------------------------------------------------------------------------------
-	-- Trash all Script Settings:
-	--------------------------------------------------------------------------------
-	config.reset()
-
-	return true
 end
 
 --- plugins.core.preferences.advanced.developerMode <cp.prop: boolean>
@@ -71,10 +66,14 @@ end)
 --- Returns:
 ---  * None
 function mod.toggleDeveloperMode()
-	local result = dialog.displayMessage(i18n("togglingDeveloperMode"), {"Yes", "No"})
-	if result == "Yes" then
-		mod.developerMode:toggle()
-	end
+
+	dialog.webviewAlert(mod.manager.getWebview(), function(result)
+		if result == i18n("yes") then
+			mod.developerMode:toggle()
+		end
+		mod.manager.refresh()	
+	end, i18n("togglingDeveloperMode"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+
 end
 
 --- plugins.core.preferences.advanced.openErrorLog() -> none
@@ -125,14 +124,16 @@ function mod.toggleCommandLineTool()
 	local newCliStatus = ipc.cliStatus()
 	if cliStatus == newCliStatus then
 		if cliStatus then
-			dialog.displayMessage(i18n("cliUninstallError"))
+			dialog.webviewAlert(mod.manager.getWebview(), function() 
+				mod.manager.refresh()
+			end, i18n("cliUninstallError"), "", i18n("ok"), nil, "informational")
 		else
-			dialog.displayMessage(i18n("cliInstallError"))
+			dialog.webviewAlert(mod.manager.getWebview(), function()
+				mod.manager.refresh()
+			end, i18n("cliInstallError"), "", i18n("ok"), nil, "informational")
 		end
 	else
-		mod.manager.injectScript([[
-			document.getElementById("commandLineTool").innerHTML = "]] .. getCommandLineToolTitle() .. [["
-		]])
+		mod.manager.refresh()
 	end
 
 end
@@ -180,54 +181,58 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Setup General Preferences Panel:
 	--------------------------------------------------------------------------------
-	deps.advanced:addHeading(60, i18n("developer"))
+	deps.advanced
+	
+		:addHeading(60, i18n("developer"))
 
-	:addCheckbox(61,
-		{
-			label = i18n("enableDeveloperMode"),
-			onchange = mod.toggleDeveloperMode,
-			checked = mod.developerMode,
-		}
-	)
+		:addCheckbox(61,
+			{
+				label = i18n("enableDeveloperMode"),
+				onchange = mod.toggleDeveloperMode,
+				checked = mod.developerMode,
+			}
+		)
 
-	:addCheckbox(62,
-		{
-			label = i18n("openErrorLogOnDockClick"),
-			onchange = function() mod.openErrorLogOnDockClick:toggle() end,
-			checked = mod.openErrorLogOnDockClick
-		}
-	)
+		:addHeading(62, i18n("errorLog"))
+	
+		:addCheckbox(63,
+			{
+				label = i18n("openErrorLogOnDockClick"),
+				onchange = function() mod.openErrorLogOnDockClick:toggle() end,
+				checked = mod.openErrorLogOnDockClick
+			}
+		)
 
-	:addButton(63,
-		{
-			label = i18n("openErrorLog"),
-			width = 150,
-			onclick = mod.openErrorLog,
-		}
-	)
+		:addButton(64,
+			{
+				label = i18n("openErrorLog"),
+				width = 150,
+				onclick = mod.openErrorLog,
+			}
+		)
 
-	:addHeading(70, i18n("commandLineTool"))
-	:addParagraph(71, i18n("commandLineToolDescription"), true)
+		:addHeading(70, i18n("commandLineTool"))
+		:addParagraph(71, i18n("commandLineToolDescription"), true)
 
-	:addButton(75,
-		{
-			label	= getCommandLineToolTitle(),
-			width	= 150,
-			onclick	= mod.toggleCommandLineTool,
-			id		= "commandLineTool",
-		}
-	)
+		:addButton(75,
+			{
+				label	= getCommandLineToolTitle(),
+				width	= 150,
+				onclick	= mod.toggleCommandLineTool,
+				id		= "commandLineTool",
+			}
+		)
 
-	:addHeading(80, i18n("advanced"))
-	:addParagraph(81, i18n("trashPreferencesDescription"), true)
+		:addHeading(80, i18n("advanced"))
+		:addParagraph(81, i18n("trashPreferencesDescription"), true)
 
-	:addButton(85,
-		{
-			label	= i18n("trashPreferences"),
-			width	= 150,
-			onclick	= mod.trashPreferences,
-		}
-	)
+		:addButton(85,
+			{
+				label	= i18n("trashPreferences"),
+				width	= 150,
+				onclick	= mod.trashPreferences,
+			}
+		)
 
 end
 

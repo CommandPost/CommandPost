@@ -13,6 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log									= require("hs.logger").new("colorPucker")
+
 local mouse									= require("hs.mouse")
 local geometry								= require("hs.geometry")
 local drawing								= require("hs.drawing")
@@ -42,7 +44,13 @@ function Pucker:new(colorBoard, aspect, property)
 	return prop.extend(o, Pucker)
 end
 
-Pucker.skimming = prop(function(self) return not self:app():getPreference("FFDisableSkimming", false) end):bind(Pucker)
+function Pucker:app()
+	return self.colorBoard:app()
+end
+
+Pucker.skimming = prop(function(self) 
+	return not self:app():getPreference("FFDisableSkimming", false) 
+end):bind(Pucker)
 
 -- TODO: Add documentation
 function Pucker:start()

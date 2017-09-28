@@ -18,7 +18,7 @@ local log										= require("hs.logger").new("prefsPlugin")
 local fs										= require("hs.fs")
 local image										= require("hs.image")
 
-local dialog									= require("cp.dialog")
+local dialog									= require("hs.dialog")
 local config									= require("cp.config")
 local tools										= require("cp.tools")
 local plugins									= require("cp.plugins")
@@ -67,24 +67,26 @@ end
 -- DISABLE PLUGIN:
 --------------------------------------------------------------------------------
 local function disablePlugin(id)
-	local result = dialog.displayMessage(i18n("pluginsDisableCheck"), {i18n "yes", i18n "no"})
-	if result == i18n "yes" then
-		if not plugins.disable(id) then
-			dialog.displayMessage(i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))
+	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
+		if result == i18n("yes") then
+			if not plugins.disable(id) then
+				dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))								
+			end
 		end
-	end
+	end, i18n("pluginsDisableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")
 end
 
 --------------------------------------------------------------------------------
 -- ENABLE PLUGIN:
 --------------------------------------------------------------------------------
 local function enablePlugin(id)
-	local result = dialog.displayMessage(i18n("pluginsEnableCheck"), {i18n "yes", i18n "no"})
-	if result == i18n "yes" then
-		if not plugins.enable(id) then
-			dialog.displayMessage(i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))
+	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
+		if result == i18n("yes") then
+			if not plugins.enable(id) then			
+				dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))								
+			end
 		end
-	end
+	end, i18n("pluginsEnableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")		
 end
 
 --------------------------------------------------------------------------------
@@ -203,6 +205,7 @@ end
 function mod.init(deps, env)
 
 	mod._webviewLabel = deps.manager.getLabel()
+	mod._manager = deps.manager
 
 	mod.renderPanel = env:compileTemplate("html/panel.html")
 
@@ -210,7 +213,7 @@ function mod.init(deps, env)
 		priority 	= 2050,
 		id			= "plugins",
 		label		= i18n("pluginsPanelLabel"),
-		image		= image.imageFromPath("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns"),
+		image		= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Extensions.prefPane/Contents/Resources/Extensions.icns")),
 		tooltip		= i18n("pluginsPanelTooltip"),
 		height		= 492,
 	})

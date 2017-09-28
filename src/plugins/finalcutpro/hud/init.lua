@@ -67,7 +67,7 @@ local hud = {}
 --------------------------------------------------------------------------------
 -- VARIABLES:
 --------------------------------------------------------------------------------
-hud.title										= config.appName
+hud.title										= "" --config.appName
 hud.width										= 350
 hud.heightInspector								= 90
 hud.heightDropTargets							= 85
@@ -171,7 +171,7 @@ function hud.new()
 		local options = {}
 		if config.developerMode() then options.developerExtrasEnabled = true end
 		hud.webview = webview.new(getHUDRect(), options, hud.webviewController)
-			:windowStyle({"HUD", "utility", "titled", "nonactivating", "closable", "resizable"})
+			:windowStyle({"titled", "nonactivating", "closable"})
 			:shadow(true)
 			:closeOnEscape(true)
 			:html(hud.generateHTML())
@@ -181,6 +181,7 @@ function hud.new()
 			:level(drawing.windowLevels.floating)
 			:windowCallback(windowCallback)
 			:deleteOnClose(true)
+			:darkMode(true)
 	end
 
 end
@@ -351,7 +352,7 @@ hud.dropTargetsShown = config.prop("hudShowDropTargets", true):watch(hud.refresh
 --- Should Buttons in the HUD be shown?
 hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 
---- plugins.finalcutpro.hud.getButton() -> string
+--- plugins.finalcutpro.hud.getButton() -> table
 --- Function
 --- Gets the button values from settings.
 ---
@@ -362,7 +363,7 @@ hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 --- Returns:
 ---  * Button value
 function hud.getButton(index, defaultValue)
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	return config.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
 end
 
@@ -416,7 +417,12 @@ end
 --- Returns:
 ---  * Button URL
 function hud.getButtonURL(index)
-	return hud.actionmanager.getURL(hud.getButton(index))
+	local button = hud.getButton(index)
+	if button then
+		return hud.actionmanager.getURL(button.handlerId, button.action)
+	else
+		return "#"
+	end
 end
 
 --- plugins.finalcutpro.hud.setButton() -> string
@@ -430,7 +436,7 @@ end
 --- Returns:
 ---  * None
 function hud.setButton(index, value)
-	local currentLanguage = fcp:getCurrentLanguage()
+	local currentLanguage = fcp:currentLanguage()
 	config.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
 end
 
@@ -448,20 +454,33 @@ function hud.updateVisibility()
 
 		local fcpRunning 	= fcp:isRunning()
 		local fcpFrontmost 	= fcp:isFrontmost()
+		
+		if not fcpRunning and not fcpFrontmost then
+			hud.hide()
+			return
+		end
 
 		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
 		local commandEditorShowing = fcp:commandEditor():isShowing()
 
-		if (fcpRunning and fcpFrontmost and not fullscreenWindowShowing and not commandEditorShowing) then
+		if fullscreenWindowShowing or commandEditorShowing then
+			hud.hide()
+			return
+		end
+		
+		if fcpRunning and fcpFrontmost then
 			hud.show()
-		else
-			local frontmostWindow = window.frontmostWindow()
-			if frontmostWindow then
-				local frontmostWindowTitle = frontmostWindow:application():title()
-				if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "Error Log" then
-					hud.hide()
-				end
-			end
+		else		
+			
+			local focusedWindow = window.focusedWindow()		
+			local mouseButtons = mouse.getButtons()
+			
+			if mouseButtons and mouseButtons["left"] and mouseButtons["left"] == true and focusedWindow and focusedWindow:application():pid() == config.processID then
+				hud.show()
+			else
+				hud.hide()
+			end				
+
 		end
 	end
 end
@@ -529,26 +548,21 @@ function hud.assignButton(button)
 	--------------------------------------------------------------------------------
 	local wasFinalCutProOpen = fcp:isFrontmost()
 	local whichButton = button
-	local hudButtonChooser = nil
+	local activator = nil
 
-	local chooserAction = function(result)
-
-		--------------------------------------------------------------------------------
-		-- Hide Chooser:
-		--------------------------------------------------------------------------------
-		hudButtonChooser:hide()
-
+	local chooserAction = function(handler, action, text)
 		--------------------------------------------------------------------------------
 		-- Perform Specific Function:
 		--------------------------------------------------------------------------------
-		if result ~= nil then
-			hud.setButton(whichButton, result)
+		if action ~= nil then
+			local button = { handlerId = handler:id(), action = action, text = text }
+			hud.setButton(whichButton, button)
 		end
 
 		--------------------------------------------------------------------------------
 		-- Put focus back in Final Cut Pro:
 		--------------------------------------------------------------------------------
-		if hud.wasFinalCutProOpen then
+		if wasFinalCutProOpen then
 			fcp:launch()
 		end
 
@@ -560,11 +574,10 @@ function hud.assignButton(button)
 		end
 	end
 
-	hudButtonChooser = chooser.new(chooserAction):bgDark(true)
-												  :fgColor(drawing.color.x11.snow)
-												  :subTextColor(drawing.color.x11.snow)
-												  :choices(hud.choices)
-												  :show()
+	activator = hud.actionmanager.getActivator("finalcutpro.hud.buttons")
+	:onActivate(chooserAction)
+
+	activator:show()
 end
 
 --- plugins.finalcutpro.hud.choices() -> none
@@ -645,11 +658,11 @@ function hud.init(xmlSharing, actionmanager, env)
 	hud.xmlSharing		= xmlSharing
 	hud.actionmanager	= actionmanager
 	hud.renderTemplate	= env:compileTemplate("html/hud.html")
-	
+
 	-- Set up checking for XML Sharing
 	xmlSharing.enabled:watch(hud.refresh)
 	hud.isDropTargetsAvailable = hud.dropTargetsShown:AND(xmlSharing.enabled)
-	
+
 	hud.enabled:watch(hud.update)
 	return hud
 end
@@ -666,7 +679,7 @@ local plugin = {
 		["finalcutpro.sharing.xml"]			= "xmlSharing",
 		["finalcutpro.menu.tools"]			= "menu",
 		["finalcutpro.commands"]			= "fcpxCmds",
-		["finalcutpro.action.manager"]				= "actionmanager",
+		["finalcutpro.action.manager"]		= "actionmanager",
 	}
 }
 
@@ -695,8 +708,8 @@ function plugin.init(deps, env)
 	})
 
 	fcp:commandEditor():watch({
-		show		= hud.updateVisibility,
-		hide		= hud.updateVisibility,
+		open		= hud.updateVisibility,
+		close		= hud.updateVisibility,
 	})
 
 	--------------------------------------------------------------------------------

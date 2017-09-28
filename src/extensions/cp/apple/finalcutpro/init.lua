@@ -101,6 +101,7 @@ local watcher									= require("cp.watcher")
 local axutils									= require("cp.ui.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local destinations								= require("cp.apple.finalcutpro.export.destinations")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
 local kc										= require("cp.apple.finalcutpro.keycodes")
@@ -112,7 +113,8 @@ local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
-local destinations								= require("cp.apple.finalcutpro.export.destinations")
+
+local plugins									= require("cp.apple.finalcutpro.plugins")
 
 --------------------------------------------------------------------------------
 --
@@ -193,6 +195,9 @@ function App:init()
 	self:_initWatchers()
 	self:_initStrings()
 	self.application:watch(function() self:reset() end)
+	
+	-- set initial state
+	self.application:update()
 	return self
 end
 
@@ -217,17 +222,19 @@ function App:_resetStrings()
 	end
 end
 
---- cp.apple.finalcutpro:string(key) -> string
+--- cp.apple.finalcutpro:string(key[, lang]) -> string
 --- Method
---- Looks up an application string with the specified `key`. It will take into account current language the app is running in.
+--- Looks up an application string with the specified `key`.
+--- If no `lang` value is provided, the [current language](#currentLanguage) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
+---  * `lang`	- The language code to use. Defaults to the current language.
 ---
 --- Returns:
 ---  * The requested string or `nil` if the application is not running.
-function App:string(key)
-	local lang = self:getCurrentLanguage()
+function App:string(key, lang)
+	lang = lang or self:currentLanguage()
 	return self._strings and self._strings:find(lang, key)
 end
 
@@ -245,7 +252,7 @@ end
 --- Notes:
 ---  * This method may be very inefficient, since it has to search through every possible key/value pair to find matches. It is not recommended that this is used in production.
 function App:keysWithString(string, lang)
-	local lang = lang or self:getCurrentLanguage()
+	local lang = lang or self:currentLanguage()
 	return self._strings and self._strings:findKeys(lang, string)
 end
 
@@ -258,15 +265,27 @@ end
 ---
 --- Returns:
 ---  * The hs.application, or `nil` if the application is not running.
-App.application = prop.new(function()
-	if not App._application or not App._application:isRunning() then
+App.application = prop.new(function(self)
+	local app = self._application
+	if not app or app:bundleID() == nil or not app:isRunning() then
 		local result = application.applicationsForBundleID(App.BUNDLE_ID)
 		if result and #result > 0 then
-			App._application = result[1] -- If there is at least one copy running, return the first one
+			app = result[1] -- If there is at least one copy running, return the first one
+		else
+			app = nil
 		end
+		self._application = app
 	end
-	return App._application
+	return app
 end):bind(App)
+
+--- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
+--- Field
+--- Is Final Cut Pro Running?
+App.isRunning = prop.new(function(self)
+	local app = self:application()
+	return app ~= nil and app:bundleID() ~= nil and app:isRunning()
+end):bind(App):monitor(App.application)
 
 --- cp.apple.finalcutpro:getBundleID() -> string
 --- Method
@@ -294,9 +313,9 @@ function App:getPasteboardUTI()
 	return App.PASTEBOARD_UTI
 end
 
---- cp.apple.finalcutpro:getPasteboardUTI() -> axuielementObject
+--- cp.apple.finalcutpro:UI() -> axuielement
 --- Method
---- Returns the Final Cut Pro axuielementObject
+--- Returns the Final Cut Pro axuielement
 ---
 --- Parameters:
 ---  * None
@@ -309,13 +328,6 @@ function App:UI()
 		return fcp and ax.applicationElement(fcp)
 	end)
 end
-
---- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
---- Field
---- Is Final Cut Pro Running?
-App.isRunning = App.application:mutate(function(application)
-	return application and application:isRunning()
-end):bind(App)
 
 --- cp.apple.finalcutpro:launch() -> boolean
 --- Method
@@ -348,16 +360,16 @@ function App:launch()
 	return result
 end
 
---- cp.apple.finalcutpro:restart() -> boolean
+--- cp.apple.finalcutpro:restart(waitUntilRestarted) -> boolean
 --- Method
 --- Restart Final Cut Pro
 ---
 --- Parameters:
----  * None
+---  * `waitUntilRestarted`	- If `true`, the function will not return until the app has restarted.
 ---
 --- Returns:
 ---  * `true` if Final Cut Pro was running and restarted successfully.
-function App:restart()
+function App:restart(waitUntilRestarted)
 	local app = self:application()
 	if app then
 		local appPath = app:path()
@@ -367,10 +379,17 @@ function App:restart()
 		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 20 seconds):
 		just.doWhile(function() return self:isRunning() end, 20, 0.1)
 
+		-- force the application to update, otherwise it isn't closed long enough to prompt an event.
+		self.application:update()
+
 		-- Launch Final Cut Pro:
 		if appPath then
 			local _, result = hs.execute([[open "]] .. tostring(appPath) .. [["]])
 			return result
+		end
+
+		if waitUntilRestarted then
+			just.doUntil(function() return self:isRunning() end, 20, 0.1)
 		end
 
 	end
@@ -559,6 +578,44 @@ App.isModalDialogOpen = prop.new(function(self)
 	end
 	return false
 end):bind(App)
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- SCAN PLUGINS
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:plugins() -> cp.apple.finalcutpro.plugins
+--- Method
+--- Returns the plugins manager for the app.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The plugins manager.
+function App:plugins()
+	if not self._plugins then
+		self._plugins = plugins.new(self)
+	end
+	return self._plugins
+end
+
+--- cp.apple.finalcutpro:scanPlugins() -> table
+--- Method
+--- Scan Final Cut Pro Plugins
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A MenuBar object
+function App:scanPlugins()
+	return self:plugins():scan()
+end
+
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
@@ -997,6 +1054,12 @@ function App:setPreference(key, value)
 	local executeStatus
 	local preferenceType = nil
 
+	if value == nil then
+		local executeString = "defaults delete " .. App.PREFS_PLIST_PATH .. " '" .. key .. "'"
+		local _, executeStatus = hs.execute(executeString)
+		return executeStatus ~= nil
+	end
+
 	if type(value) == "boolean" then
 		value = tostring(value)
 		preferenceType = "bool"
@@ -1087,7 +1150,7 @@ end
 --- Returns:
 ---  * The 'Default' Command Set path, or `nil` if an error occurred
 function App:getDefaultCommandSetPath(language)
-	language = language or self:getCurrentLanguage()
+	language = language or self:currentLanguage()
 	return self:getPath() .. "/Contents/Resources/" .. language .. ".lproj/Default.commandset"
 end
 
@@ -1169,14 +1232,21 @@ function App:getCommandShortcuts(id)
 			local keypadModifier = false
 
 			if fcpxCmd["modifiers"] ~= nil then
-				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
+				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end				
 				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
 			elseif fcpxCmd["modifierMask"] ~= nil then
 				modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
+				if tools.tableContains(modifiers, "numericpad") then
+					keypadModifier = true
+				end
 			end
 
 			if fcpxCmd["characterString"] ~= nil then
-				keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
+				if keypadModifier then
+					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["characterString"])
+				else
+					keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
+				end
 			elseif fcpxHacks["character"] ~= nil then
 				if keypadModifier then
 					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])
@@ -1225,120 +1295,113 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:setCurrentLanguage(language) -> boolean
---- Method
---- Sets the langauge to the specified `language` and restarts FCPX if necessary.
----
---- Properties:
----  * `language`	 - The language key (e.g. "en")
----
---- Returns:
----  * `true` if the language was changed successfully.
-function App:setCurrentLanguage(language)
-	local current = self:getCurrentLanguage()
-	if self:isSupportedLanguage(language) then
-		if current ~= language then
-			self:setPreference("AppleLanguages", {language})
-			self._currentLanguage = nil
-			if self:isRunning() then
-				self:restart()
-			end
+--- cp.apple.finalcutpro.currentLanguage <cp.prop:string>
+--- Constant
+--- The current language the FCPX is displayed in.
+App.currentLanguage = prop(
+	-- getter
+	function(self)
+		--------------------------------------------------------------------------------
+		-- Caching:
+		--------------------------------------------------------------------------------
+		if self._currentLanguage ~= nil then
+			--log.df("Using Final Cut Pro Language from Cache")
+			return self._currentLanguage
 		end
-		return true
-	end
-	return false
-end
 
---- cp.apple.finalcutpro:getCurrentLanguage() -> string
---- Method
---- Returns the language Final Cut Pro is currently using.
----
---- Parameters:
----  * none
----
---- Returns:
----  * Returns the current language as string (or 'en' if unknown).
-function App:getCurrentLanguage()
-
-	--------------------------------------------------------------------------------
-	-- Caching:
-	--------------------------------------------------------------------------------
-	if self._currentLanguage ~= nil then
-		--log.df("Using Final Cut Pro Language from Cache")
-		return self._currentLanguage
-	end
-
-	--------------------------------------------------------------------------------
-	-- If FCPX is already running, we determine the language off the menu:
-	--------------------------------------------------------------------------------
-	if self:isRunning() then
-		local menuMap = self:menuBar():getMainMenu()
-		local menuUI = self:menuBar():UI()
-		if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
-			local fileMap = menuMap[2]
-			local fileUI = menuUI[2]
-			local title = fileUI:attributeValue("AXTitle")
-			for lang,name in pairs(fileMap) do
-				if name == title then
-					self._currentLanguage = lang
-					return lang
-				end
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If FCPX is not running, we next try to determine the language using
-	-- the Final Cut Pro Plist File:
-	--------------------------------------------------------------------------------
-	local appLanguages = self:getPreference("AppleLanguages", nil)
-	if appLanguages and #appLanguages > 0 then
-		local lang = appLanguages[1]
-		if self:isSupportedLanguage(lang) then
-			self._currentLanguage = lang
-			return lang
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- If that fails, we try and use the user locale:
-	--------------------------------------------------------------------------------
-	local success, userLocale = osascript.applescript("return user locale of (get system info)")
-	if success and userLocale and self:isSupportedLanguage(userLocale) then
-		self._currentLanguage = userLocale
-		return userLocale
-	end
-
-	--------------------------------------------------------------------------------
-	-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
-	--------------------------------------------------------------------------------
-	local output, status, _, _ = hs.execute("defaults read NSGlobalDomain AppleLanguages")
-	if status then
-		local appleLanguages = tools.lines(output)
-		if next(appleLanguages) ~= nil then
-			if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
-				for i=2, #appleLanguages - 1 do
-					local line = appleLanguages[i]
-					-- match the main country code
-					local lang = line:match("^%s*\"?([%w%-]+)")
-					-- switch "-" to "_"
-					lang = lang:gsub("-", "_")
-
-					if self:isSupportedLanguage(lang) then
-						self.currentLanguage = lang
+		--------------------------------------------------------------------------------
+		-- If FCPX is already running, we determine the language off the menu:
+		--------------------------------------------------------------------------------
+		if self:isRunning() then
+			local menuMap = self:menuBar():getMainMenu()
+			local menuUI = self:menuBar():UI()
+			if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
+				local fileMap = menuMap[2]
+				local fileUI = menuUI[2]
+				local title = fileUI:attributeValue("AXTitle")
+				for lang,name in pairs(fileMap) do
+					if name == title then
+						self._currentLanguage = lang
 						return lang
 					end
 				end
 			end
 		end
+
+		--------------------------------------------------------------------------------
+		-- If FCPX is not running, we next try to determine the language using
+		-- the Final Cut Pro Plist File:
+		--------------------------------------------------------------------------------
+		local appLanguages = self:getPreference("AppleLanguages", nil)
+		if appLanguages and #appLanguages > 0 then
+			local lang = appLanguages[1]
+			if self:isSupportedLanguage(lang) then
+				self._currentLanguage = lang
+				return lang
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If that fails, we try and use the user locale:
+		--------------------------------------------------------------------------------
+		local success, userLocale = osascript.applescript("return user locale of (get system info)")
+		if success and userLocale then
+			userLocale = self:getSupportedLanguage(userLocale)
+			if userLocale then
+				self._currentLanguage = userLocale
+				return userLocale
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
+		--------------------------------------------------------------------------------
+		local output, status, _, _ = hs.execute("defaults read NSGlobalDomain AppleLanguages")
+		if status then
+			local appleLanguages = tools.lines(output)
+			if next(appleLanguages) ~= nil then
+				if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
+					for i=2, #appleLanguages - 1 do
+						local line = appleLanguages[i]
+						-- match the main country code
+						local lang = line:match("^%s*\"?([%w%-]+)")
+						-- switch "-" to "_"
+						lang = self:getSupportedLanguage(lang:gsub("-", "_"))
+
+						if lang then
+							self._currentLanguage = lang
+							return lang
+						end
+					end
+				end
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- If all else fails, assume it's English:
+		--------------------------------------------------------------------------------
+		self._currentLanguage = "en"
+		return self._currentLanguage
+	end,
+
+	-- setter
+	function(value, self, prop)
+		if value == prop:get() then return end
+
+		if value == nil then
+			if self:getPreference("AppleLanguages") == nil then return end
+			self:setPreference("AppleLanguages", nil)
+		elseif self:isSupportedLanguage(value) then
+			self:setPreference("AppleLanguages", {value})
+		else
+			error("Unsupported language: "..value)
+		end
+		self._currentLanguage = nil
+		if self:isRunning() then
+			self:restart(true)
+		end
 	end
-
-	--------------------------------------------------------------------------------
-	-- If all else fails, assume it's English:
-	--------------------------------------------------------------------------------
-	return "en"
-
-end
+):bind(App):monitor(App.isRunning)
 
 --- cp.apple.finalcutpro:getSupportedLanguages() -> table
 --- Method
@@ -1363,13 +1426,39 @@ end
 --- Returns:
 ---  * `true` if the language is supported.
 function App:isSupportedLanguage(language)
-	local primary = language:match("(%w+)")
-	for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
-		if supported == language or supported == primary then
-			return true
+	if language then
+		local primary = language:match("(%w+)")
+		for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
+			if supported == language or supported == primary then
+				return true
+			end
 		end
 	end
 	return false
+end
+
+--- cp.apple.finalcutpro:getSupportedLanguage(language) -> boolean
+--- Method
+--- Checks if the provided `language` is supported by the app and returns the actual support code, or `nil` if there is no supported version of the language.
+---
+--- For example, 'en_AU' is supported because 'en' is supported, so this returns 'en'.
+--- However, while 'zh_CN' is supported, 'zh_TW' is not supported directly, so 'zh_CN' is returned for the former and `nil` for the latter.
+---
+--- Parameters:
+---  * `language`	- The language code to check. E.g. "en" or "zh_CN"
+---
+--- Returns:
+---  * `true` if the language is supported.
+function App:getSupportedLanguage(language)
+	if language then
+		local primary = language:match("(%w+)")
+		for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
+			if supported == language or supported == primary then
+				return supported
+			end
+		end
+	end
+	return nil
 end
 
 --- cp.apple.finalcutpro:getFlexoLanguages() -> table
@@ -1445,7 +1534,8 @@ function App:_initWatchers()
 	--log.df("Setting up Application Watcher...")
 	self._appWatcher = applicationwatcher.new(
 		function(appName, eventType, application)
-			if (application:bundleID() == App.BUNDLE_ID) then
+			local bundleID = application:bundleID()
+			if (bundleID == App.BUNDLE_ID or bundleID == nil and appName == "Final Cut Pro") then
 				if eventType == applicationwatcher.activated then
 					timer.doAfter(0.01, function()
 						self.isShowing:update()
@@ -1463,12 +1553,14 @@ function App:_initWatchers()
 				elseif eventType == applicationwatcher.launched then
 					timer.doAfter(0.01, function()
 						self.application:update()
+						self.isRunning:update()
 					end)
 					self._watchers:notify("launched")
 					return
 				elseif eventType == applicationwatcher.terminated then
 					timer.doAfter(0.01, function()
 						self.application:update()
+						self.isRunning:update()
 					end)
 					self._watchers:notify("terminated")
 					return

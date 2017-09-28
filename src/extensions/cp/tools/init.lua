@@ -6,7 +6,7 @@
 
 --- === cp.tools ===
 ---
---- A collection of handy Lua tools for CommandPost.
+--- A collection of handy miscellaneous tools for Lua development.
 
 --------------------------------------------------------------------------------
 --
@@ -15,18 +15,24 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("tools")
 
+local base64									= require("hs.base64")
 local eventtap									= require("hs.eventtap")
 local fnutils									= require("hs.fnutils")
 local fs										= require("hs.fs")
+local geometry									= require("hs.geometry")
 local host										= require("hs.host")
 local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
 local mouse										= require("hs.mouse")
 local osascript									= require("hs.osascript")
+local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local window									= require("hs.window")
 
 local just										= require("cp.just")
+local config									= require("cp.config")
+
+local v											= require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -46,6 +52,388 @@ tools.DEFAULT_DELAY 	= 0
 local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
+
+--- cp.tools.split(str, pat) -> table
+--- Function
+--- Splits a string with a pattern.
+---
+--- Parameters:
+---  * str - The string to split
+---  * pat - The pattern
+---
+--- Returns:
+---  * Table
+function tools.split(str, pat)
+	local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+	local fpat = "(.-)" .. pat
+	local last_end = 1
+	local s, e, cap = str:find(fpat, 1)
+	while s do
+	  if s ~= 1 or cap ~= "" then
+		 table.insert(t,cap)
+	  end
+	  last_end = e+1
+	  s, e, cap = str:find(fpat, last_end)
+	end
+	if last_end <= #str then
+	  cap = str:sub(last_end)
+	  table.insert(t, cap)
+	end
+	return t
+end
+
+--- cp.tools.splitOnColumn() -> string
+--- Function
+--- Splits a string on a column.
+---
+--- Parameters:
+---  * Input
+---
+--- Returns:
+---  * String
+function tools.splitOnColumn(input)
+    local space = input:find(': ') or (#input + 1)
+    return tools.trim(input:sub(space+1))
+end
+
+--- cp.tools.getRAMSize() -> string
+--- Function
+--- Returns RAM Size.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getRAMSize()
+	local memSize = host.vmStat()["memSize"]
+	local rounded = tools.round(memSize/1073741824, 0)
+
+	if rounded <= 2 then
+		return "2 GB"
+	elseif rounded >= 3 and rounded <= 4 then
+		return "3-4 GB"
+	elseif rounded >= 5 and rounded <= 8 then
+		return "5-8 GB"
+	elseif rounded >= 9 and rounded <= 16 then
+		return "9-16 GB"
+	elseif rounded >= 17 and rounded <= 32 then
+		return "17-32 GB"
+	else
+		return "More than 32 GB"
+	end
+
+end
+
+--- cp.tools.getModelName() -> string
+--- Function
+--- Returns Model Name of Hardware.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getModelName()
+	local output, status = hs.execute([[system_profiler SPHardwareDataType | grep "Model Name"]])
+	if status and output then
+		local modelName = tools.splitOnColumn(output)
+		local output, status = hs.execute([[system_profiler SPHardwareDataType | grep "Model Identifier"]])
+		if status and output then
+			local modelIdentifier = tools.splitOnColumn(output)
+			if modelName == "MacBook Pro" then
+				local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
+				local minorVersion = tonumber(string.sub(modelIdentifier, 14, 15))
+				if minorVersion >= 2 and majorVersion >= 13 then
+					return "MacBook Pro (Touch Bar)"
+				else
+					return "MacBook Pro"
+				end
+			elseif modelName == "Mac Pro" then
+				local majorVersion = tonumber(string.sub(modelIdentifier, 7, 7))
+				if majorVersion >=6 then
+					return "Mac Pro (Late 2013)"
+				else
+					return "Mac Pro (Previous generation)"
+				end
+			elseif modelName == "MacBook Air" then
+				return "MacBook Air"
+			elseif modelName == "MacBook" then
+				return "MacBook"
+			elseif modelName == "iMac" then
+				return "iMac"
+			elseif modelName == "Mac mini" then
+				return "Mac mini"
+			end
+		end
+	end
+	return ""
+end
+
+--- cp.tools.getVRAMSize() -> string
+--- Function
+--- Returns the VRAM size in format suitable for Apple's Final Cut Pro feedback form or "" if unknown.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getVRAMSize()
+	local vram = host.gpuVRAM()
+	if vram then
+		local result
+		for i, v in pairs(vram) do
+			if result then 
+				if v > result then 
+					result = v
+				end
+			else
+				result = v
+			end
+		end				
+		if result >= 256 and result <= 512 then
+			return "256 MB-512 MB"
+		elseif result >= 512 and result <= 1024 then
+			return "512 MB-1 GB"
+		elseif result >= 1024 and result <= 2048 then
+			return "1-2 GB"
+		elseif result > 2048 then
+			return "More than 2 GB"
+		end		
+	end
+	return ""
+end
+
+--- cp.tools.getmacOSVersion() -> string
+--- Function
+--- Returns macOS Version.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getmacOSVersion()
+	local macOSVersion = tools.macOSVersion()
+	if macOSVersion then
+		local label = "OS X"
+		if v(macOSVersion) >= v("10.12") then
+			label = "macOS"
+		end
+		return label .. " " .. tostring(macOSVersion)
+	end
+end
+
+--- cp.tools.getUSBDevices() -> string
+--- Function
+--- Returns a string of USB Devices.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getUSBDevices()
+	-- "system_profiler SPUSBDataType"
+	local output, status = hs.execute("ioreg -p IOUSB -w0 | sed 's/[^o]*o //; s/@.*$//' | grep -v '^Root.*'")
+	if output and status then
+		local lines = tools.lines(output)
+		local result = "USB DEVICES:\n"
+		local numberOfDevices = 0
+		for i, v in ipairs(lines) do
+			numberOfDevices = numberOfDevices + 1
+			result = result .. "- " .. v .. "\n"
+		end
+		if numberOfDevices == 0 then
+			result = result .. "- None"
+		end
+		return result
+	else
+		return ""
+	end
+end
+
+--- cp.tools.getThunderboltDevices() -> string
+--- Function
+--- Returns a string of Thunderbolt Devices.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getThunderboltDevices()
+	local output, status = hs.execute([[system_profiler SPThunderboltDataType | grep "Device Name" -B1]])
+	if output and status then
+		local lines = tools.lines(output)
+		local devices = {}
+		local currentDevice = 1
+		for i, v in ipairs(lines) do
+			if v ~= "--" and v ~= "" then
+				if devices[currentDevice] == nil then
+					devices[currentDevice] = ""
+				end
+				devices[currentDevice] = devices[currentDevice] .. v
+				if i ~= #lines then
+					devices[currentDevice] = devices[currentDevice] .. "\n"
+				end
+			else
+				currentDevice = currentDevice + 1
+			end
+		end
+		local result = "THUNDERBOLT DEVICES:\n"
+		local numberOfDevices = 0
+		for i, v in pairs(devices) do
+			if string.sub(v, 1, 23) ~= "Vendor Name: Apple Inc." then
+				numberOfDevices = numberOfDevices + 1
+				local newResult = string.gsub(v, "Vendor Name: ", "- ")
+				newResult = string.gsub(newResult, "\nDevice Name: ", ": ")
+				result = result .. newResult
+			end
+		end
+		if numberOfDevices == 0 then
+			result = result .. "- None"
+		end
+		return result
+	else
+		return ""
+	end
+end
+
+--- cp.tools.getExternalDevices() -> string
+--- Function
+--- Returns a string of USB & Thunderbolt Devices.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getExternalDevices()
+	return tools.getUSBDevices() .. "\n" .. tools.getThunderboltDevices()
+end
+
+--- cp.tools.getFullname() -> string
+--- Function
+--- Returns the current users Full Name, otherwise an empty string.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getFullname()
+	local output, status = hs.execute("id -F")
+	if output and status then
+		return tools.trim(output)
+	else
+		return ""
+	end
+end
+
+--- cp.tools.getEmail() -> string
+--- Function
+--- Returns the current users Email, otherwise an empty string.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * String
+function tools.getEmail(fullname)
+	if not fullname then return "" end
+	local appleScript = [[
+		tell application "Contacts"
+			return value of first email of person "]] .. fullname .. [["
+		end tell
+	]]
+	local _,result = osascript.applescript(appleScript)
+	if result then
+		return result
+	else
+		return ""
+	end
+end
+
+--- cp.tools.urlQueryStringDecode() -> string
+--- Function
+--- Decodes a URL Query String
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Decoded URL Query String as string
+function tools.urlQueryStringDecode(s)
+	s = s:gsub('+', ' ')
+	s = s:gsub('%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+	return string.sub(s, 2, -2)
+end
+
+--- cp.tools.getScreenshotsAsBase64() -> table
+--- Function
+--- Captures all available screens and saves them as base64 encodes in a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing base64 images of all available screens.
+function tools.getScreenshotsAsBase64()
+	local screenshots = {}
+	local allScreens = screen.allScreens()
+	for i, v in ipairs(allScreens) do
+		local temporaryFileName = os.tmpname()
+		v:shotAsJPG(temporaryFileName)
+		hs.execute("sips -Z 1920 " .. temporaryFileName)
+		local screenshotFile = io.open(temporaryFileName, "r")
+		local screenshotFileContents = screenshotFile:read("*all")
+		screenshotFile:close()
+		os.remove(temporaryFileName)
+		screenshots[#screenshots + 1] = base64.encode(screenshotFileContents)
+	end
+	return screenshots
+end
+
+--- cp.tools.round(num, numDecimalPlaces) -> number
+--- Function
+--- Rounds a number to a set number of decimal places
+---
+--- Parameters:
+---  * num - The number you want to round
+---  * numDecimalPlaces - How many numbers of decimal places (defaults to 0)
+---
+--- Returns:
+---  * A rounded number
+function tools.round(num, numDecimalPlaces)
+  local mult = 10^(numDecimalPlaces or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
+--- cp.tools.isOffScreen(rect) -> boolean
+--- Function
+--- Determines if the given rect is off screen or not.
+---
+--- Parameters:
+---  * rect - the rect you want to check
+---
+--- Returns:
+---  * `true` if offscreen otherwise `false`
+function tools.isOffScreen(rect)
+	if rect then
+		-- check all the screens
+		rect = geometry.new(rect)
+		for _,screen in ipairs(screen.allScreens()) do
+			if rect:inside(screen:frame()) then
+				return false
+			end
+		end
+		return true
+	else
+		return true
+	end
+end
 
 --- cp.tools.safeFilename(value[, defaultValue]) -> string
 --- Function
@@ -614,6 +1002,41 @@ function tools.dirFiles(path)
 	return files
 end
 
+--- cp.tools.rmdir(path[, recursive]) -> true | nil, err
+--- Function
+--- Attempts to remove the directory at the specified path, optionally removing
+--- any contents recursively.
+---
+--- Parameters:
+--- * `path`		- The absolute path to remove
+--- * `recursive`	- If `true`, the contents of the directory will be removed first.
+---
+--- Returns:
+--- * `true` if successful, or `nil, err` if there was a problem.
+function tools.rmdir(path, recursive)
+	if recursive then
+		-- remove the contents.
+		for name in fs.dir(path) do
+			if name ~= "." and name ~= ".." then
+				local filePath = path .. "/" .. name
+				local attrs = fs.attributes(filePath)
+				local ok, err
+				if attrs.mode == "directory" and recursive then
+					ok, err = tools.rmdir(filePath, true)
+				else
+					ok, err = os.remove(filePath)
+				end
+				if not ok then
+					return ok, err
+				end
+			end
+		end
+	end
+	-- remove the directory itself
+	fs.rmdir(path)
+	return true
+end
+
 --- cp.tools.numberToWord(number) -> string
 --- Function
 --- Converts a number to a string (i.e. 1 becomes "One").
@@ -636,6 +1059,38 @@ function tools.numberToWord(number)
 	if number == 9 then return "Nine" end
 	if number == 10 then return "Ten" end
 	return nil
+end
+
+--- cp.tools.numberToWord(str) -> string
+--- Function
+--- Makes the first letter of a string uppercase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
+end
+
+--- cp.tools.iconFallback(paths) -> string
+--- Function
+--- Excepts one or more paths to an icon, checks to see if they exist (in the order that they're given), and if none exist, returns the CommandPost icon path.
+---
+--- Parameters:
+---  * paths - One or more paths to an icon
+---
+--- Returns:
+---  * A string
+function tools.iconFallback(...)
+	for _,path in ipairs(table.pack(...)) do
+		if tools.doesFileExist(path) then
+			return path
+		end		
+	end
+	log.ef("Failed to find icon(s): " .. inspect(table.pack(...)))
+	return config.iconPath
 end
 
 return tools

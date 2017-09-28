@@ -202,7 +202,10 @@ function command:addShortcut(newShortcut)
 		function() return self:released() end,
 		function() return self:repeated() end
 	)
-	-- mark it as a 'command' hotkey
+	
+	--------------------------------------------------------------------------------
+	-- Mark it as a 'command' hotkey:
+	--------------------------------------------------------------------------------
 	local shortcuts = self._shortcuts
 	shortcuts[#shortcuts + 1] = newShortcut
 	newShortcut:isEnabled(self:isEnabled())

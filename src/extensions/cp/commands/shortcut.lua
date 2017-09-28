@@ -21,7 +21,6 @@ local hotkey									= require("hs.hotkey")
 local keycodes									= require("hs.keycodes")
 
 local englishKeyCodes							= require("cp.commands.englishKeyCodes")
-local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 
 local prop										= require("cp.prop")
@@ -179,58 +178,6 @@ function shortcut:disable()
 	return self
 end
 
--- getListOfUnavailableShortcuts() -> table
--- Function
--- Returns a table of shortcuts already in use by macOS
---
--- Parameters:
---  * None
---
--- Returns:
---  * A table of shortcuts that are already in use by macOS.
-function getListOfUnavailableShortcuts()
-	local unavailibleShortcuts = {}
-	local symbolichotkeys = plist.binaryFileToTable("~/Library/Preferences/com.apple.symbolichotkeys.plist")
-	if symbolichotkeys and symbolichotkeys["AppleSymbolicHotKeys"] then
-		for i, v in pairs(symbolichotkeys["AppleSymbolicHotKeys"]) do
-			if v["enabled"] and v["value"] and v["value"]["parameters"] and v["value"]["parameters"][2] and v["value"]["parameters"][3] and type(v["value"]["parameters"][3]) == "table" and next(tools.modifierMaskToModifiers(v["value"]["parameters"][3])) ~= nil then
-				unavailibleShortcuts[#unavailibleShortcuts + 1] = { keycode = v["value"]["parameters"][2], modifiers = tools.modifierMaskToModifiers(v["value"]["parameters"][3]) }
-			end
-		end
-	end
-	return unavailibleShortcuts
-end
-
--- isShortcutAvailable() -> boolean
--- Function
--- Returns whether or not a shortcut is already used by macOS
---
--- Parameters:
---  * modifiers - a table of modifiers
---  * keycode - keycode as string
---
--- Returns:
---  * `true` if the shortcut is available and not already used by macOS otherwise `false`
-function isShortcutAvailable(modifiers, keycode)
-	local listOfUnavailableShortcuts = getListOfUnavailableShortcuts()
-	for i, v in pairs(listOfUnavailableShortcuts) do
-		local modifierMatch = true
-		if #modifiers ~= #v.modifiers then
-			modifierMatch = false
-		else
-			for ii, vv in pairs(v.modifiers) do
-				if not fnutils.contains(modifiers, vv) then
-					modifierMatch = false
-				end
-			end
-		end
-		if modifierMatch and keycode == v.keycode then
-			return false
-		end
-	end
-	return true
-end
-
 --- cp.commands.shortcut:bind(pressedFn, releasedFn, repeatedFn) -> shortcut
 --- Method
 --- This function binds the shortcut to a hotkey, with the specified callback functions for `pressedFn`, `releasedFn` and `repeatedFn`.
@@ -246,38 +193,41 @@ end
 --- Notes:
 ---  * If the shortcut is enabled, the hotkey will also be enabled at this point.
 function shortcut:bind(pressedFn, releasedFn, repeatedFn)
-	-- Unbind any existing hotkey
+
+	--------------------------------------------------------------------------------
+	-- Unbind any existing hotkey:
+	--------------------------------------------------------------------------------
 	self:unbind()
-	-- Bind a new one with the specified calleback functions.
+	
+	--------------------------------------------------------------------------------
+	-- Bind a new one with the specified callback functions:
+	--------------------------------------------------------------------------------
 	local keycode = shortcut.textToKeyCode(self:getKeyCode())
 	local modifiers = self:getModifiers()
 
-	if not isShortcutAvailable(modifiers, keycode) then
-
-		--------------------------------------------------------------------------------
-		--
-		-- TODO: Should this do something else? Disable the command/shortcut?
-		--
-		--------------------------------------------------------------------------------
-
-		log.wf("This shortcut is currently used by macOS, so skipping: %s %s", keycode, hs.inspect(modifiers))
-
-	else
-		if keycode ~= nil and keycode ~= "" then
-			self._hotkey = hotkey.new(modifiers, keycode, pressedFn, releasedFn, repeatedFn)
-			self._hotkey.shortcut = self
-			if self:isEnabled() then
-				self._hotkey:enable()
-			end
-		else
-			-- TODO: Why it this happening?
-			log.wf("Unable to find key code for '%s'.", self:getKeyCode())
+	if keycode ~= nil and keycode ~= "" then
+		self._hotkey = hotkey.new(modifiers, keycode, pressedFn, releasedFn, repeatedFn)
+		self._hotkey.shortcut = self
+		if self:isEnabled() then
+			self._hotkey:enable()
 		end
+	else
+		-- TODO: Why it this happening?
+		log.ef("Unable to find key code for '%s'.", self:getKeyCode())
 	end
+
 	return self
 end
 
--- TODO: Add documentation
+--- cp.commands.shortcut:unbind() -> shortcut
+--- Method
+--- Unbinds a shortcut.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `self`
 function shortcut:unbind()
 	local hotkey = self._hotkey
 	if hotkey then
@@ -288,7 +238,15 @@ function shortcut:unbind()
 	return self
 end
 
--- TODO: Add documentation
+--- cp.commands.shortcut:delete() -> shortcut
+--- Method
+--- Delete's a shortcut.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `self`
 function shortcut:delete()
 	return self:unbind()
 end
@@ -298,7 +256,7 @@ end
 --- This will trigger the keystroke specified in the shortcut.
 ---
 --- Parameters:
----  * N/A
+---  * None
 ---
 --- Returns:
 ---  * `self`

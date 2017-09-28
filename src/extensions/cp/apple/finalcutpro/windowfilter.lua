@@ -28,7 +28,7 @@ local mod = {}
 
 --log.df("Setting up Final Cut Pro Window Filter...")
 
-windowfilter.setLogLevel("error") -- The wfilter errors are too annoying.
+windowfilter.setLogLevel("nothing") -- The wfilter errors are too annoying.
 
 mod.windowfilter = windowfilter.new(function(window)
 	return window and window:application():bundleID() == "com.apple.FinalCut" -- TODO: This should be taken from cp.apple.finalcutpro.BUNDLE_ID somehow?

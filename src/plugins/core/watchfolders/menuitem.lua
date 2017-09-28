@@ -23,15 +23,8 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	deps.bottom:addItem(5, function()
+	deps.bottom:addItem(10.2, function()
 		return { title = i18n("setupWatchFolders"), fn = deps.watchfolders.show }
-	end)
-
-	--------------------------------------------------------------------------------
-	-- Add separator:
-	--------------------------------------------------------------------------------
-	deps.bottom:addItem(6, function()
-		return { title = "-" }
 	end)
 
 end

@@ -20,8 +20,9 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
-local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+local dialog									= require("cp.dialog")
+local tools										= require("cp.tools")
 
 local panel										= require("panel")
 
@@ -48,7 +49,7 @@ mod._handlers			= {}
 --- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
 --- Returns the last frame saved in settings.
-mod.position = config.prop("watchFoldersPosition", {})
+mod.position = config.prop("watchFoldersPosition", nil)
 
 --- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
@@ -156,6 +157,19 @@ local function windowCallback(action, webview, frame)
 	end
 end
 
+function mod.maxPanelHeight()
+	local max = mod.defaultHeight
+	for _,panel in ipairs(mod._panels) do
+		max = panel.height ~= nil and panel.height < max and max or panel.height
+	end
+	return max
+end
+
+local function centredPosition()
+	local sf = screen.mainScreen():frame()
+	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.defaultWidth, h = mod.defaultHeight}
+end
+
 --- plugins.core.watchfolders.manager.init() -> nothing
 --- Function
 --- Initialises the preferences panel.
@@ -170,13 +184,10 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Use last Position or Centre on Screen:
 	--------------------------------------------------------------------------------
-	local screenFrame = screen.mainScreen():frame()
-	local defaultRect = {x = (screenFrame.w/2) - (mod.defaultWidth/2), y = (screenFrame.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
-	local position = mod.position()
-	if position and next(position) ~= nil then
-		defaultRect = mod.position()
+	local defaultRect = mod.position()
+	if tools.isOffScreen(defaultRect) then
+		defaultRect = centredPosition()
 	end
-
 	--------------------------------------------------------------------------------
 	-- Setup Web View Controller:
 	--------------------------------------------------------------------------------
@@ -218,6 +229,7 @@ function mod.init()
 		:attachedToolbar(mod.toolbar)
 		:deleteOnClose(true)
 		:windowCallback(windowCallback)
+		:darkMode(true)
 
 	return mod
 end

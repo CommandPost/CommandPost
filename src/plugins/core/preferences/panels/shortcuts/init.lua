@@ -15,7 +15,10 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
+local dialog									= require("hs.dialog")
+local fnutils									= require("hs.fnutils")
 local fs										= require("hs.fs")
+local hotkey									= require("hs.hotkey")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local keycodes									= require("hs.keycodes")
@@ -25,12 +28,11 @@ local webview									= require("hs.webview")
 
 local commands									= require("cp.commands")
 local config									= require("cp.config")
-local dialog									= require("cp.dialog")
 local fcp										= require("cp.apple.finalcutpro")
 local html										= require("cp.web.html")
-local ui										= require("cp.web.ui")
 local plist										= require("cp.plist")
 local tools										= require("cp.tools")
+local ui										= require("cp.web.ui")
 
 local _											= require("moses")
 
@@ -40,7 +42,6 @@ local _											= require("moses")
 --
 --------------------------------------------------------------------------------
 local DEFAULT_PRIORITY 							= 0
-local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
 --------------------------------------------------------------------------------
 --
@@ -49,97 +50,223 @@ local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- SPLIT STRING:
---------------------------------------------------------------------------------
-local function split(str, pat)
-	local t = {}  -- NOTE: use {n = 0} in Lua-5.0
-	local fpat = "(.-)" .. pat
-	local last_end = 1
-	local s, e, cap = str:find(fpat, 1)
-	while s do
-	  if s ~= 1 or cap ~= "" then
-		 table.insert(t,cap)
-	  end
-	  last_end = e+1
-	  s, e, cap = str:find(fpat, last_end)
-	end
-	if last_end <= #str then
-	  cap = str:sub(last_end)
-	  table.insert(t, cap)
-	end
-	return t
+mod.DEFAULT_SHORTCUTS							= "Default Shortcuts"
+
+local function shallowCopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in pairs(orig) do
+            copy[orig_key] = orig_value
+        end
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
 end
 
-local function resetShortcuts()
-	if dialog.displayYesNoQuestion(i18n("shortcutsResetConfirmation")) then
-		-- Deletes the DEFAULT_SHORTCUTS, if present.
-		local shortcutsFile = fs.pathToAbsolute(commands.getShortcutsPath(DEFAULT_SHORTCUTS))
-		if shortcutsFile then
-			log.df("Removing shortcuts file: '%s'", shortcutsFile)
-			os.remove(shortcutsFile)
-		end
-		dialog.displayMessage(i18n("shortcutsResetComplete"), {"OK"})
-		hs.reload()
-	end
-end
 
---------------------------------------------------------------------------------
--- CONTROLLER CALLBACK:
---------------------------------------------------------------------------------
-local function controllerCallback(message)
+-- restoreDefaultShortcuts() -> boolean
+-- Function
+-- Restores the Default Shortcuts from the Cache.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function restoreDefaultShortcuts()
 
-	local body = message.body
-	local action = body.action
-
-	-- log.df("Callback message: %s", hs.inspect(message))
-
-	-- TODO: Can this whole updateShortcut action be removed??
-
-	if action == "updateShortcut" then
-		--------------------------------------------------------------------------------
-		-- Values from Callback:
-		--------------------------------------------------------------------------------
-		local modifiers = split(body.modifiers, ":")
-
-		--------------------------------------------------------------------------------
-		-- Setup Controller:
-		--------------------------------------------------------------------------------
-		local group = commands.group(body.group)
-
-		--------------------------------------------------------------------------------
-		-- Get the correct Command:
-		--------------------------------------------------------------------------------
-		local theCommand = group:get(body.command)
-
-		if theCommand then
-			--------------------------------------------------------------------------------
-			-- Clear Previous Shortcuts:
-			--------------------------------------------------------------------------------
-			theCommand:deleteShortcuts()
-
-			--------------------------------------------------------------------------------
-			-- Setup New Shortcut:
-			--------------------------------------------------------------------------------
-			if body.keyCode and body.keyCode ~= "" then
-				theCommand:activatedBy(modifiers, body.keyCode)
+	for groupID, group in pairs(mod.defaultShortcuts) do	
+		for cmdID,cmd in pairs(group) do			
+			for shortcutID,shortcut in pairs(cmd) do
+				local tempGroup = commands.group(groupID)
+				local tempCommand = tempGroup:get(cmdID)				
+				if tempCommand then
+					tempCommand:deleteShortcuts()
+					tempCommand:activatedBy(shortcut["modifiers"], shortcut["keycode"])
+				end		
 			end
-
-			commands.saveToFile(DEFAULT_SHORTCUTS)
-		else
-			log.wf("Unable to find command to update: %s:%s", group, command)
-		end
-	elseif body[1] == "resetShortcuts" then
-		resetShortcuts()
+		end 
+	
 	end
+
 end
 
-local function updateShortcut(id, params)
+-- cacheShortcuts() -> boolean
+-- Function
+-- Caches the Default Shortcuts for use later.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function cacheShortcuts()
+	
+	log.df("Caching Default Shortcuts.")
 
+	mod.defaultShortcuts = {}
+
+	local groupIDs = commands.groupIds()
+	for _, groupID in ipairs(groupIDs) do
+
+		local group = commands.group(groupID)
+		
+		if not mod.defaultShortcuts[groupID] then
+			mod.defaultShortcuts[groupID] = {}
+		end
+					
+		local cmds = group:getAll()
+
+		for cmdID,cmd in pairs(cmds) do
+		
+			if not mod.defaultShortcuts[groupID][cmdID] then
+				mod.defaultShortcuts[groupID][cmdID] = {}
+			end
+			
+			local shortcuts = cmd:getShortcuts()
+			
+			for shortcutID,shortcut in pairs(shortcuts) do
+			
+				local tempShortcuts = {}							
+				local tempModifiers = shortcut:getModifiers()
+				local tempKeycode = shortcut:getKeyCode()
+				
+				tempShortcuts = { 
+					["modifiers"] = tempModifiers,
+					["keycode"] = tempKeycode
+				}
+				
+				mod.defaultShortcuts[groupID][cmdID][shortcutID] = tempShortcuts
+			
+			end			
+		end
+	end	
+	
+end
+
+-- resetShortcutsToNone() -> none
+-- Function
+-- Resets all Shortcuts to None.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetShortcutsToNone()
+	
+	dialog.webviewAlert(mod._manager.getWebview(), function(result)
+		if result == i18n("yes") then		
+			local groupIDs = commands.groupIds()
+			for _, groupID in ipairs(groupIDs) do
+	  
+				local group = commands.group(groupID)
+				local cmds = group:getAll()
+
+				for id,cmd in pairs(cmds) do
+					cmd:deleteShortcuts()
+				end
+			end
+	
+			commands.saveToFile(mod.DEFAULT_SHORTCUTS)
+	
+			mod._manager.refresh()		
+		end 
+	end, i18n("shortcutsSetNoneConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+
+end
+
+-- resetShortcuts() -> none
+-- Function
+-- Prompts to reset shortcuts to default.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetShortcuts()
+
+	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
+		if result == i18n("yes") then		
+			restoreDefaultShortcuts()
+			commands.saveToFile(mod.DEFAULT_SHORTCUTS)
+			mod._manager.refresh()					
+		end
+	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+
+end
+
+config.watch({
+	reset = deleteShortcuts,
+})
+
+-- shortcutAlreadyInUse(modifiers, keycode) -> none
+-- Function
+-- Checks to see if a keyboard shortcut is already being used by CommandPost.
+--
+-- Parameters:
+--  * modifiers - Modifier keys in a table
+--  * keycode - Keycode
+--
+-- Returns:
+--  * `true` if already in use, otherwise `false`.
+local function shortcutAlreadyInUse(modifiers, keycode)
+	
+	local groupIDs = commands.groupIds()
+	for _, groupID in ipairs(groupIDs) do
+
+		local group = commands.group(groupID)
+		local cmds = group:getAll()
+
+		for id,cmd in pairs(cmds) do
+		
+			local shortcuts = cmd:getShortcuts()
+			
+			for _,shortcut in pairs(shortcuts) do
+				local tempModifiers = shortcut:getModifiers()
+				local tempKeycode = shortcut:getKeyCode()
+				
+				local modifierMatch = true
+				if #modifiers ~= #tempModifiers then
+					modifierMatch = false
+				else
+					for _, mod in pairs(tempModifiers) do
+						if not fnutils.contains(modifiers, mod) then
+							modifierMatch = false
+						end
+					end
+				end
+				
+				if keycode == tempKeycode and modifierMatch then		
+					return true
+				end								
+			end			
+		end
+	end
+	return false
+	
+end
+
+-- updateShortcut(id, params) -> none
+-- Function
+-- Updates a Shortcut.
+--
+-- Parameters:
+--  * id - The ID of the shortcut
+--  * params - The params of the shortcut
+--
+-- Returns:
+--  * None
+local function updateShortcut(id, params)
+	
 	--------------------------------------------------------------------------------
 	-- Values from Callback:
 	--------------------------------------------------------------------------------
-	local modifiers = split(params.modifiers, ":")
+	local modifiers = tools.split(params.modifiers, ":")
 
 	--------------------------------------------------------------------------------
 	-- Setup Controller:
@@ -152,6 +279,7 @@ local function updateShortcut(id, params)
 	local theCommand = group:get(params.command)
 
 	if theCommand then
+	
 		--------------------------------------------------------------------------------
 		-- Clear Previous Shortcuts:
 		--------------------------------------------------------------------------------
@@ -160,26 +288,47 @@ local function updateShortcut(id, params)
 		--------------------------------------------------------------------------------
 		-- Setup New Shortcut:
 		--------------------------------------------------------------------------------
-		if params.keyCode and params.keyCode ~= "" then
-			theCommand:activatedBy(modifiers, params.keyCode)
+		if params.keyCode and params.keyCode ~= "" and params.keyCode ~= "none" and params.modifiers and params.modifiers ~= "none" then
+									
+			--------------------------------------------------------------------------------
+			-- Check to see that the shortcut isn't already being used already by macOS:
+			--------------------------------------------------------------------------------
+			local assignable = hotkey.assignable(modifiers, params.keyCode)
+			local systemAssigned = hotkey.systemAssigned(modifiers, params.keyCode)
+			if assignable and not systemAssigned then 			
+				--------------------------------------------------------------------------------
+				-- Check to see that the shortcut isn't already being used by CommandPost:
+				--------------------------------------------------------------------------------
+				if shortcutAlreadyInUse(modifiers, params.keyCode) then 	
+					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUse"), i18n("shortcutDuplicateError") .. "\n\n" .. i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")					
+				else
+					theCommand:activatedBy(modifiers, params.keyCode)
+				end
+			else
+				dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUseByMacOS"), i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")
+			end
+						
 		end
 
 		--------------------------------------------------------------------------------
-		--
-		-- TODO: Check that the shortcut was actually added and alert user if not.
-		--
+		-- Save to file:
 		--------------------------------------------------------------------------------
-
-		commands.saveToFile(DEFAULT_SHORTCUTS)
+		commands.saveToFile(mod.DEFAULT_SHORTCUTS)
 	else
 		log.wf("Unable to find command to update: %s:%s", params.group, params.command)
 	end
 
 end
 
---------------------------------------------------------------------------------
--- GENERATE LIST OF SHORTCUTS:
---------------------------------------------------------------------------------
+-- getAllKeyCodes() -> none
+-- Function
+-- Generate a table of all shortcut keys available.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
 function getAllKeyCodes()
 
 	--------------------------------------------------------------------------------
@@ -195,7 +344,7 @@ function getAllKeyCodes()
 			shortcuts[#shortcuts + 1] = k
 		end
 	end
-
+	
 	table.sort(shortcuts, function(a, b) return a < b end)
 
 	return shortcuts
@@ -242,7 +391,7 @@ local allModifiers = iterateModifiers(baseModifiers)
 local function modifierOptions(shortcut)
 	local out = ""
 	for i,modifiers in ipairs(allModifiers) do
-		local selected = shortcut and _.same(shortcut:getModifiers(), split(modifiers.value, ":")) and " selected" or ""
+		local selected = shortcut and _.same(shortcut:getModifiers(), tools.split(modifiers.value, ":")) and " selected" or ""
 		out = out .. ([[<option value="%s"%s>%s</option>]]):format(modifiers.value, selected, modifiers.label)
 	end
 	return out
@@ -320,7 +469,9 @@ end
 --------------------------------------------------------------------------------
 local function generateContent()
 
-	-- the group select
+	--------------------------------------------------------------------------------	
+	-- The Group Select:
+	--------------------------------------------------------------------------------
 	local groupOptions = {}
 	local defaultGroup = nil
 	for _,id in ipairs(commands.groupIds()) do
@@ -370,9 +521,16 @@ local function generateContent()
 
 end
 
---------------------------------------------------------------------------------
--- INITIALISE MODULE:
---------------------------------------------------------------------------------
+--- plugins.core.preferences.panels.shortcuts.init(deps, env) -> module
+--- Function
+--- Initialise the Module.
+---
+--- Parameters:
+---  * deps - Dependancies Table
+---  * env - Environment Table
+---
+--- Returns:
+---  * The Module
 function mod.init(deps, env)
 
 	mod.allKeyCodes		= getAllKeyCodes()
@@ -387,7 +545,7 @@ function mod.init(deps, env)
 		priority 		= 2030,
 		id				= "shortcuts",
 		label			= i18n("shortcutsPanelLabel"),
-		image			= image.imageFromPath("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns"),
+		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Keyboard.prefPane/Contents/Resources/Keyboard.icns")),
 		tooltip			= i18n("shortcutsPanelTooltip"),
 		height			= 490,
 	})
@@ -405,12 +563,30 @@ function mod.init(deps, env)
 		}
 	)
 
+	mod._panel:addButton(21,
+		{
+			label		= i18n("resetShortcutsAllToNone"),
+			onclick		= resetShortcutsToNone,
+			class		= "resetShortcutsToNone" .. shortcutsEnabledClass,
+		}
+	)
+
 	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
 
 	return mod
 
 end
 
+--- plugins.core.preferences.panels.shortcuts.setGroupEditor(groupId, editorFn) -> none
+--- Function
+--- Sets the Group Editor
+---
+--- Parameters:
+---  * groupId - Group ID
+---  * editorFn - Editor Function
+---
+--- Returns:
+---  * None
 function mod.setGroupEditor(groupId, editorFn)
 	if not mod._groupEditors then
 		mod._groupEditors = {}
@@ -418,6 +594,15 @@ function mod.setGroupEditor(groupId, editorFn)
 	mod._groupEditors[groupId] = editorFn
 end
 
+--- plugins.core.preferences.panels.shortcuts.getGroupEditor(groupId) -> none
+--- Function
+--- Gets the Group Editor
+---
+--- Parameters:
+---  * groupId - Group ID
+---
+--- Returns:
+---  * Group Editor
 function mod.getGroupEditor(groupId)
 	return mod._groupEditors and mod._groupEditors[groupId]
 end
@@ -443,7 +628,26 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps)
-	commands.loadFromFile(DEFAULT_SHORTCUTS)
+
+	--------------------------------------------------------------------------------
+	-- Cache all the default shortcuts:
+	--------------------------------------------------------------------------------	
+	cacheShortcuts()
+	
+	--------------------------------------------------------------------------------
+	-- Load Shortcuts From File:
+	--------------------------------------------------------------------------------
+	local result = commands.loadFromFile(mod.DEFAULT_SHORTCUTS)
+	
+	--------------------------------------------------------------------------------
+	-- If no Default Shortcut File Exists, lets create one:
+	--------------------------------------------------------------------------------
+	if not result then
+		local filePath = commands.getShortcutsPath(mod.DEFAULT_SHORTCUTS)
+		log.df("Creating new shortcut file: '%s'", filePath)
+		commands.saveToFile(mod.DEFAULT_SHORTCUTS)
+	end
+	
 end
 
 return plugin

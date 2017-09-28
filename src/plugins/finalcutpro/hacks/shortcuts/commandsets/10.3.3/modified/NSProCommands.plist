@@ -72,110 +72,110 @@
 		<key>downSelector</key>
 		<string>cpHUD:</string>
 	</dict>
-	<key>cpGeneratorsOne</key>
+	<key>cpGenerator1</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpGeneratorsOne:</string>
+		<string>generator1:</string>
 	</dict>
-	<key>cpGeneratorsTwo</key>
+	<key>cpGenerator2</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpGeneratorsTwo:</string>
+		<string>generator2:</string>
 	</dict>
-	<key>cpGeneratorsThree</key>
+	<key>cpGenerator3</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpGeneratorsThree:</string>
+		<string>generator3:</string>
 	</dict>
-	<key>cpGeneratorsFour</key>
+	<key>cpGenerator4</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpGeneratorsFour:</string>
+		<string>generator4:</string>
 	</dict>
-	<key>cpGeneratorsFive</key>
+	<key>cpGenerator5</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpGeneratorsFive:</string>
+		<string>generator5:</string>
 	</dict>
-	<key>cpTitlesOne</key>
+	<key>cpTitle1</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTitlesOne:</string>
+		<string>title1:</string>
 	</dict>
-	<key>cpTitlesTwo</key>
+	<key>cpTitle2</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTitlesTwo:</string>
+		<string>title2:</string>
 	</dict>
-	<key>cpTitlesThree</key>
+	<key>cpTitle3</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTitlesThree:</string>
+		<string>title3:</string>
 	</dict>
-	<key>cpTitlesFour</key>
+	<key>cpTitle4</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTitlesFour:</string>
+		<string>title4:</string>
 	</dict>
-	<key>cpTitlesFive</key>
+	<key>cpTitle5</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTitlesFive:</string>
+		<string>title5:</string>
 	</dict>
-	<key>cpTransitionsOne</key>
+	<key>cpTransition1</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTransitionsOne:</string>
+		<string>transition1:</string>
 	</dict>
-	<key>cpTransitionsTwo</key>
+	<key>cpTransition2</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTransitionsTwo:</string>
+		<string>transition2:</string>
 	</dict>
-	<key>cpTransitionsThree</key>
+	<key>cpTransition3</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTransitionsThree:</string>
+		<string>transition3:</string>
 	</dict>
-	<key>cpTransitionsFour</key>
+	<key>cpTransition4</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTransitionsFour:</string>
+		<string>transition4:</string>
 	</dict>
-	<key>cpTransitionsFive</key>
+	<key>cpTransition5</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpTransitionsFive:</string>
+		<string>transition5:</string>
 	</dict>
 	<key>cpToggleTouchBar</key>
 	<dict>
@@ -1132,40 +1132,75 @@
 		<key>downSelector</key>
 		<string>cpScrollingTimeline:</string>
 	</dict>
-	<key>cpEffectsOne</key>
+	<key>cpAudioEffect1</key>
 	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpEffectsOne:</string>
+		<key>characterString</key>
+		<string>1</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
 	</dict>
-	<key>cpEffectsTwo</key>
+	<key>cpAudioEffect2</key>
 	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpEffectsTwo:</string>
+		<key>characterString</key>
+		<string>2</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
 	</dict>
-	<key>cpEffectsThree</key>
+	<key>cpAudioEffect3</key>
 	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpEffectsThree:</string>
+		<key>characterString</key>
+		<string>3</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
 	</dict>
-	<key>cpEffectsFour</key>
+	<key>cpAudioEffect4</key>
 	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpEffectsFour:</string>
+		<key>characterString</key>
+		<string>4</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
 	</dict>
-	<key>cpEffectsFive</key>
+	<key>cpAudioEffect5</key>
+	<dict>
+		<key>characterString</key>
+		<string>5</string>
+		<key>modifiers</key>
+		<string>control shift alt</string>
+	</dict>
+	<key>cpVideoEffect1</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
-		<string>cpEffectsFive:</string>
+		<string>videoEffect1:</string>
+	</dict>
+	<key>cpVideoEffect2</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>videoEffect2:</string>
+	</dict>
+	<key>cpVideoEffect3</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>videoEffect3:</string>
+	</dict>
+	<key>cpVideoEffect4</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>videoEffect4:</string>
+	</dict>
+	<key>cpVideoEffect5</key>
+	<dict>
+		<key>downRepeats</key>
+		<integer>0</integer>
+		<key>downSelector</key>
+		<string>videoEffect5:</string>
 	</dict>
 	<key>cpHighlightBrowserPlayhead</key>
 	<dict>

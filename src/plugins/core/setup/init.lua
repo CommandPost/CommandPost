@@ -19,9 +19,10 @@ local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local webview									= require("hs.webview")
 
-local dialog									= require("cp.dialog")
 local config									= require("cp.config")
+local dialog									= require("cp.dialog")
 local prop										= require("cp.prop")
+local tools										= require("cp.tools")
 
 local _											= require("moses")
 
@@ -54,11 +55,11 @@ mod._processedPanels						= 0
 mod._currentPanel							= nil
 mod._panelQueue								= {}
 
+mod.FIRST_PRIORITY							= 0
+mod.LAST_PRIORITY							= 1000
 
-mod.FIRST_PRIORITY	= 0
-mod.LAST_PRIORITY	= 1000
-
-mod.onboardingRequired = config.prop("setupOnboardingRequired", true)
+mod.position 								= config.prop("setupPosition", nil)
+mod.onboardingRequired 						= config.prop("setupOnboardingRequired", true)
 
 --- plugins.core.setup.visible <cp.prop: boolean; read-only>
 --- Constant
@@ -165,20 +166,39 @@ function mod.init(env)
 end
 
 --------------------------------------------------------------------------------
+-- WEBVIEW WINDOW CALLBACK:
+--------------------------------------------------------------------------------
+local function windowCallback(action, webview, frame)
+	if action == "closing" then
+		if not hs.shuttingDown then
+			mod.webview = nil
+		end
+	elseif action == "focusChange" then
+	elseif action == "frameChange" then
+		if frame then
+			mod.position(frame)
+		end
+	end
+end
+
+local function centredPosition()
+	local sf = screen.mainScreen():frame()
+	return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.defaultHeight/2), w = mod.defaultWidth, h = mod.defaultHeight}
+end
+
+--------------------------------------------------------------------------------
 -- CREATE THE WELCOME SCREEN:
 --------------------------------------------------------------------------------
 function mod.new()
 	if mod.nextPanel() then
+
 		--------------------------------------------------------------------------------
-		-- Centre on Screen:
+		-- Use last Position or Centre on Screen:
 		--------------------------------------------------------------------------------
-		local screenFrame = screen.mainScreen():frame()
-		local defaultRect = {
-			x = (screenFrame.w/2) - (mod.defaultWidth/2),
-			y = (screenFrame.h/2) - (mod.defaultHeight/2),
-			w = mod.defaultWidth,
-			h = mod.defaultHeight
-		}
+		local defaultRect = mod.position()
+		if tools.isOffScreen(defaultRect) then
+			defaultRect = centredPosition()
+		end
 
 		--------------------------------------------------------------------------------
 		-- Setup Web View Controller:
@@ -205,12 +225,14 @@ function mod.new()
 		}
 
 		mod.webview = webview.new(defaultRect, options, mod.controller)
-			:windowStyle({"titled", "closable", "nonactivating"})
+			:windowStyle({"titled"})
 			:shadow(true)
 			:allowNewWindows(false)
 			:allowTextEntry(true)
 			:windowTitle(mod.defaultTitle)
 			:html(generateHTML())
+			:darkMode(true)
+			:windowCallback(windowCallback)
 
 		--------------------------------------------------------------------------------
 		-- Show Setup Screen:
@@ -342,12 +364,12 @@ function plugin.postInit(deps, env)
 	mod.onboardingRequired:watch(function(required)
 		if required then
 
-			local iconPath = config.application():path() .. "/Contents/Resources/AppIcon.icns"
-
-			-- The intro panel
+			--------------------------------------------------------------------------------
+			-- The Intro Panel:
+			--------------------------------------------------------------------------------
 			mod.addPanel(
 				panel.new("intro", mod.FIRST_PRIORITY)
-					:addIcon(iconPath)
+					:addIcon(config.iconPath)
 					:addHeading(config.appName)
 					:addSubHeading(i18n("introTagLine"))
 					:addParagraph(i18n("introText"), true)
@@ -360,11 +382,13 @@ function plugin.postInit(deps, env)
 						onclick	= function() config.application():kill() end,
 					})
 			)
-
-			-- The outro panel
+			
+			--------------------------------------------------------------------------------
+			-- The Outro Panel:
+			--------------------------------------------------------------------------------
 			mod.addPanel(
 				panel.new("outro", mod.LAST_PRIORITY)
-					:addIcon(iconPath)
+					:addIcon(config.iconPath)
 					:addSubHeading(i18n("outroTitle"))
 					:addParagraph(i18n("outroText"), true)
 					:addButton({

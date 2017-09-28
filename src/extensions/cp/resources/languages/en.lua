@@ -14,6 +14,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Apps:
 			--------------------------------------------------------------------------------
+			apple								=			"Apple",
 			finalCutPro							=			"Final Cut Pro",
 
 			--------------------------------------------------------------------------------
@@ -53,6 +54,8 @@ return {
 			show								=			"Show",
 			clearList							=			"Clear List",
 			feedback							=			"Feedback",
+			settings							=			"Settings",
+			launch								=			"Launch",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -77,7 +80,7 @@ return {
 			-- Common Error Messages:
 			--------------------------------------------------------------------------------
 			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-			commonErrorMessageStart				=			"I'm sorry, but the following error has occurred:",
+			commonErrorMessageStart				=			"The following error has occurred:",
 			commonErrorMessageEnd				=			"Would you like to submit a bug report?",
 			sendBugReport						=			"Send Bug Report",
 
@@ -150,6 +153,7 @@ return {
 			--------------------------------------------------------------------------------
 			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			scanFinalCutProDone					=			"Final Cut Pro was scanned successfully.",
+			scanFinalCutProErrors				=			"The scan completed with errors. Please check the Error Log for details.",
 
 			updateEffectsListFailed				=			"Unfortunately the Effects List was not successfully updated.",
 			updateTransitionsListFailed			=			"Unfortunately the Transitions List was not successfully updated.",
@@ -166,7 +170,9 @@ return {
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
-			--------------------------------------------------------------------------------
+			--------------------------------------------------------------------------------			
+			noSupportedVersionsOfFCPX			= 			"No supported versions of Final Cut Pro were detected.",
+			
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
@@ -187,10 +193,13 @@ return {
 			noKeywordPresetsError				=			"It doesn't look like you've saved any keyword presets yet?",
 			noKeywordPresetError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
 
-			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Transitions Shortcuts via the CommandPost menu bar.",
-			noEffectShortcut					=			"There is no Effect assigned to this shortcut.\n\nYou can assign Effects Shortcuts via the CommandPost menu bar.",
-			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Titles Shortcuts via the CommandPost menu bar.",
-			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Generator Shortcuts via the CommandPost menu bar.",
+			noPluginFound						=			"Unable to find a ${plugin} called '${name}'.",
+			noPluginShortcut					=			"There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noVideoEffectShortcut				=			"There is no Video Effect assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noAudioEffectShortcut				=			"There is no Audio Effect assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
 			touchBarError						=			"Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
@@ -314,33 +323,39 @@ return {
 			-- Timeline:
 			--------------------------------------------------------------------------------
 			timeline							=			"Timeline",
-			assignShortcuts						=			"Assign Shortcuts",
-			assignEffectsShortcuts				=			"Effects Shortcuts",
-			assignTransitionsShortcuts			=			"Transitions Shortcuts",
-			assignTitlesShortcuts				=			"Titles Shortcuts",
-			assignGeneratorsShortcuts			=			"Generators Shortcuts",
+			pluginShortcuts						=			"Plugin Shortcuts",
 
 			highlightPlayhead					=			"Highlight Playhead",
 			highlightPlayheadColour				=			"Colour",
 			highlightPlayheadShape				=			"Shape",
 			highlightPlayheadTime				=			"Time",
 
-			unassignedTitle						=			"Unassigned",
+			unassignedTitle						=			"(Unassigned)",
+
+			pluginShortcutTitle					=			"%{number}: %{title}",
 
 				--------------------------------------------------------------------------------
 				-- Effects Shortcuts:
 				--------------------------------------------------------------------------------
-				updateEffectsList				=			"Update Effects List",
-				effectShortcut					=			"Effect Shortcut",
-				effectShortcutTitle				=			"Effect Shortcut %{number} (%{title})",
-				applyEffectsShortcut			=			"Apply Effects Shortcut %{count}",
+				updateVideoEffectsList			=			"Update Video Effects List",
+				videoEffectShortcut				=			"Video Effect Shortcut",
+				videoEffectShortcutTitle		=			"%{number}: %{title}",
+				applyVideoEffectsShortcut		=			"Apply Video Effect Shortcut %{count}",
+
+				--------------------------------------------------------------------------------
+				-- Effects Shortcuts:
+				--------------------------------------------------------------------------------
+				updateAudioEffectsList			=			"Update Audio Effects List",
+				audioEffectShortcut				=			"Audio Effect Shortcut",
+				audioEffectShortcutTitle		=			"%{number}: %{title}",
+				applyAudioEffectsShortcut		=			"Apply Audio Effect Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
 				-- Transitions Shortcuts:
 				--------------------------------------------------------------------------------
 				updateTransitionsList			=			"Update Transitions List",
 				transitionShortcut				=			"Transition Shortcut",
-				transitionShortcutTitle			=			"Transition Shortcut %{number} (%{title})",
+				transitionShortcutTitle			=			"%{number}: %{title}",
 				applyTransitionsShortcut		=			"Apply Transitions Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
@@ -348,7 +363,7 @@ return {
 				--------------------------------------------------------------------------------
 				updateTitlesList				=			"Update Titles List",
 				titleShortcut					=			"Title Shortcut",
-				titleShortcutTitle				=			"Title Shortcut %{number} (%{title})",
+				titleShortcutTitle				=			"%{number}: %{title}",
 				applyTitlesShortcut				=			"Apply Titles Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
@@ -356,7 +371,7 @@ return {
 				--------------------------------------------------------------------------------
 				updateGeneratorsList			=			"Update Generators List",
 				generatorShortcut				=			"Generator Shortcut",
-				generatorShortcutTitle			=			"Generator Shortcut %{number} (%{title})",
+				generatorShortcutTitle			=			"%{number}: %{title}",
 				applyGeneratorsShortcut			=			"Apply Generators Shortcut %{count}",
 
 				--------------------------------------------------------------------------------
@@ -436,7 +451,6 @@ return {
 		--------------------------------------------------------------------------------
     	-- PREFERENCES:
     	--------------------------------------------------------------------------------
-    	scanFinalCutPro							=			"Scan Final Cut Pro",
     	helpAndSupport							=			"Help & Support",
     	preferences								=			"Preferences",
     	credits									=			"Credits",
@@ -447,14 +461,16 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
+			scanFinalCutPro						=			"Scan Final Cut Pro",
+	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes:",
 			advanced							=			"Advanced",
 			install								=			"Install",
 			uninstall							=			"Uninstall",
-			developer							=			"Developer",
+			developer							=			"Developer Tools",
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
 			openErrorLogOnDockClick				=			"Open Error Log on Dock Icon Click",
-			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.\n\nDo you want to continue?",
+			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",
@@ -509,6 +525,11 @@ return {
 			displayProxyOriginalIcon			=			"Display Proxy/Original Icon in Menubar",
 			displayThisMenuAsIcon				=			"Display Menubar As Icon",
 
+			--------------------------------------------------------------------------------
+			-- Final Cut Pro:
+			--------------------------------------------------------------------------------
+			allowZoomingWithOptionKey			=			"Enable Timeline Zooming with Mouse Scroll & OPTION key",
+			
 			--------------------------------------------------------------------------------
 			-- HUD Options:
 			--------------------------------------------------------------------------------
@@ -576,14 +597,17 @@ return {
 			pluginsCustomFolderDetails			=			[[<strong>Custom Plugins</strong> can also be saved in the Plugins Folder.]],
 			pluginsOpenPluginsFolder			=			"Open Plugins Folder",
 
-			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?\n\nIf you continue, CommandPost will need to restart.",
-			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?\n\nIf you continue, CommandPost will need to restart.",
+			pluginsDisableCheck					=			"Are you sure you want to disable this plugin?",
+			pluginsEnableCheck					=			"Are you sure you want to enable this plugin?",
+			pluginsRestart						=			"If you continue, CommandPost will need to restart.",
 
 			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
 			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
 
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
+			
+			modifierHeading						=			"Modifier Keys",
 
 			languageHeading						=			"Language",
 			commandPostLanguage					=			"CommandPost Language",
@@ -610,11 +634,18 @@ return {
 			--------------------------------------------------------------------------------
 			-- Hammerspoon Settings:
 			--------------------------------------------------------------------------------
+			errorLog							=			"Error Log",
 			openErrorLog						=			"Open Error Log",
 			showDockIcon						=			"Show Dock Icon",
 			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
 			checkForUpdates						=			"Check for Updates",
+
+	--------------------------------------------------------------------------------
+	-- BUG REPORT
+	--------------------------------------------------------------------------------
+	reportBugToApple					=		"Report Final Cut Pro Bug to Apple",
+	suggestFeatureToApple				=		"Suggest Final Cut Pro Feature to Apple",
 
 	--------------------------------------------------------------------------------
 	-- FINAL CUT PRO MEDIA WATCH FOLDER PLUGIN:
@@ -700,26 +731,31 @@ return {
 	menuChoiceSubText					=			"Menu: %{path}",
 
 	--------------------------------------------------------------------------------
+	-- ACTIVATORS:
+	--------------------------------------------------------------------------------
+	activatorConfig						=			"Configure",
+	activatorUnfavoriteAction			=			"Unfavourite",
+	activatorFavoriteAction				=			"Favourite",
+	activatorHideAction					=			"Hide",
+	activatorUnhideAction				=			"Unhide",
+	activatorShowHidden					=			"Show Hidden",
+
+	--------------------------------------------------------------------------------
 	-- CONSOLE:
 	--------------------------------------------------------------------------------
 	console								=			"Console",
 	enableConsole						=			"Enable Console",
 	highlightedItem						=			"Highlighted Item",
-	consoleChoiceUnfavorite				=			"Unfavourite",
-	consoleChoiceFavorite				=			"Favourite",
-	consoleChoiceHide					=			"Hide",
-	consoleChoiceUnhide					=			"Unhide",
-	consoleHideUnhide					=			"Manage Hidden Items...",
 
 	actionHiddenText					=			"%{text} [Hidden]",
 
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	fcpx_action							=			"Commands",
+	cmds_action							=			"Commands",
 	menu_action							=			"Menu Items",
-	video_action						=			"Video Effects",
-	audio_action						=			"Audio Effects",
+	videoEffect_action					=			"Video Effects",
+	audioEffect_action					=			"Audio Effects",
 	generator_action					=			"Generators",
 	title_action						=			"Titles",
 	transition_action					=			"Transitions",
@@ -774,6 +810,8 @@ return {
 	generator_group						=			"Generator",
 	commandPost_group					=			"CommandPost",
 
+	commandChoiceSubText				=			"Command: %{group}",
+
 	--------------------------------------------------------------------------------
 	-- PLUGIN STATUSES:
 	--------------------------------------------------------------------------------
@@ -799,8 +837,14 @@ return {
 	shortcutsModifier					=			"Modifier",
 	shortcutsKey						=			"Key",
 	resetShortcuts						=			"Reset to Default Shortcuts",
-	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values. Continue?",
-	shortcutsResetComplete				=			"Shortcuts reset. Restarting CommandPost.",
+	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values.",
+	shortcutsResetComplete				=			"All shortcuts have been successfully reset to their default values. CommandPost will now restart.",
+	resetShortcutsAllToNone				=			"Set All Shortcuts to None",
+	shortcutsSetNoneConfirmation		=			"This will reset all of the shortcuts to None.",
+	shortcutAlreadyInUse				= 			"This shortcut is already in use.",
+	shortcutDuplicateError				=			"You cannot use the same shortcut for multiple commands.",
+	shortcutAlreadyInUseByMacOS			=			"This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
+	shortcutPleaseTryAgain				=			"Please select a new key and/or modifier combination and try again.",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
@@ -849,10 +893,11 @@ return {
 	finalcutpro_clipboard_history_label						=	"Clipboard History",
 	finalcutpro_clipboard_manager_label						=	"Clipboard History Manager",
 	finalcutpro_clipboard_shared_label						=	"Shared Clipboard",
-	finalcutpro_commands_action_label						=	"Command Action",
+	finalcutpro_commands_actions_label						=	"Command Actions",
 	finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
 	finalcutpro_console_label								=	"Console",
 	finalcutpro_export_batch_label							=	"Batch Export",
+	finalcutpro_feedback_bugreport_label					=	"Help & Support: Report Bug to Apple",
 	finalcutpro_fullscreen_shortcuts_label					=	"Fullscreen Shortcuts",
 	finalcutpro_hacks_backupinterval_label					=	"Backup Interval",
 	finalcutpro_hacks_movingmarkers_label					=	"Moving Makers",
@@ -867,8 +912,10 @@ return {
 	finalcutpro_menu_administrator_advancedfeatures_label	=	"Menubar: Advanced Features",
 	finalcutpro_menu_administrator_label					=	"Menubar: Administrator",
 	finalcutpro_menu_clipboard_label						=	"Menubar: Clipboard",
+	finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
 	finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
 	finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
+	finalcutpro_menu_support_label							=	"Menubar: Support",
 	finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
 	finalcutpro_menu_timeline_assignshortcuts_label			=	"Menubar: Timeline Assign Shortcuts",
 	finalcutpro_menu_timeline_highlightplayhead_label		=	"Menubar: Highlight Playhead",
@@ -888,6 +935,7 @@ return {
 	finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
 	finalcutpro_text2speech_label							=	"Text to Speech",
+	finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
 	finalcutpro_timeline_disablewaveforms_label				=	"Timeline: Waveform Drawing",
 	finalcutpro_timeline_effects_label						=	"Timeline: Effects",
@@ -899,11 +947,14 @@ return {
 	finalcutpro_timeline_multicam_label						=	"Timeline: Multicam",
 	finalcutpro_timeline_playback_label						=	"Timeline: Playback",
 	finalcutpro_timeline_playhead_label						=	"Timeline: Playhead",
+	finalcutpro_timeline_pluginactions_label				=	"Timeline: Plugin Actions",
+	finalcutpro_timeline_pluginshortcuts_label				=	"Timeline: Plugin Shortcuts",
 	finalcutpro_timeline_preferences_label					=	"Timeline: Preferences",
 	finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
-	finalcutpro_timeline_zoom_label							=	"Timeline Zoom",
+	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
+	finalcutpro_timeline_mousezoom_label					=	"Timeline: Mouse Zoom",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
 	finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
@@ -912,7 +963,7 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-
+	
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
@@ -922,13 +973,14 @@ return {
 		--------------------------------------------------------------------------------
 		-- Global:
 		--------------------------------------------------------------------------------
-		cpLaunchFinalCutPro_title								=	"Open Final Cut Pro",
+		cpLaunchFinalCutPro_title								=	"Launch Final Cut Pro",
 		cpSetupWatchFolders_title								= 	"Setup Watch Folders",
 		cpPreferences_title										=	"Preferences",
 		cpOpenErrorLog_title									=	"Open Error Log",
 		cpTrashPreferences_title								=	"Trash Preferences",
 		cpOpenPluginsFolder_title								= 	"Open Plugins Folder",
 		cpUserGuide_title										=	"User Guide",
+		cpFeedback_title										=	"Provide Feedback",
 		cpDeveloperGuide_title									=	"Developer Guide",
 
 		--------------------------------------------------------------------------------
@@ -939,29 +991,35 @@ return {
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 		cpLockPlayhead_title									=	"Toggle Playhead Lock",
 
-		cpEffectsOne_title										=	"Apply Effects Shortcut 1",
-		cpEffectsTwo_title										=	"Apply Effects Shortcut 2",
-		cpEffectsThree_title									=	"Apply Effects Shortcut 3",
-		cpEffectsFour_title										=	"Apply Effects Shortcut 4",
-		cpEffectsFive_title										=	"Apply Effects Shortcut 5",
+		audioEffect1_title										=	"Apply Audio Effect 1",
+		audioEffect2_title										=	"Apply Audio Effect 2",
+		audioEffect3_title										=	"Apply Audio Effect 3",
+		audioEffect4_title										=	"Apply Audio Effect 4",
+		audioEffect5_title										=	"Apply Audio Effect 5",
 
-		cpTransitionsOne_title									=	"Apply Transitions Shortcut 1",
-		cpTransitionsTwo_title									=	"Apply Transitions Shortcut 2",
-		cpTransitionsThree_title								=	"Apply Transitions Shortcut 3",
-		cpTransitionsFour_title									=	"Apply Transitions Shortcut 4",
-		cpTransitionsFive_title									=	"Apply Transitions Shortcut 5",
+		videoEffect1_title										=	"Apply Video Effect 1",
+		videoEffect2_title										=	"Apply Video Effect 2",
+		videoEffect3_title										=	"Apply Video Effect 3",
+		videoEffect4_title										=	"Apply Video Effect 4",
+		videoEffect5_title										=	"Apply Video Effect 5",
 
-		cpGeneratorsOne_title									=	"Apply Generators Shortcut 1",
-		cpGeneratorsTwo_title									=	"Apply Generators Shortcut 2",
-		cpGeneratorsThree_title									=	"Apply Generators Shortcut 3",
-		cpGeneratorsFour_title									=	"Apply Generators Shortcut 4",
-		cpGeneratorsFive_title									=	"Apply Generators Shortcut 5",
+		transition1_title										=	"Apply Transition 1",
+		transition2_title										=	"Apply Transition 2",
+		transition3_title										=	"Apply Transition 3",
+		transition4_title										=	"Apply Transition 4",
+		transition5_title										=	"Apply Transition 5",
 
-		cpTitlesOne_title										=	"Apply Titles Shortcut 1",
-		cpTitlesTwo_title										=	"Apply Titles Shortcut 2",
-		cpTitlesThree_title										=	"Apply Titles Shortcut 3",
-		cpTitlesFour_title										=	"Apply Titles Shortcut 4",
-		cpTitlesFive_title										=	"Apply Titles Shortcut 5",
+		generator1_title										=	"Apply Generator 1",
+		generator2_title										=	"Apply Generator 2",
+		generator3_title										=	"Apply Generator 3",
+		generator4_title										=	"Apply Generator 4",
+		generator5_title										=	"Apply Generator 5",
+
+		title1_title											=	"Apply Title 1",
+		title2_title											=	"Apply Title 2",
+		title3_title											=	"Apply Title 3",
+		title4_title											=	"Apply Title 4",
+		title5_title											=	"Apply Title 5",
 
 		cpHighlightBrowserPlayhead_title						=	"Highlight Playhead",
 		cpRevealMulticamClipInBrowserAndHighlight_title			=	"Reveal Multicam Clip in Browser",
@@ -1041,6 +1099,9 @@ return {
 		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
 
 		cpDisableWaveforms_title								=	"Toggle Waveform Drawing",
+
+		cpBugReport_title										=	"Report Final Cut Pro Bug to Apple",
+		cpFeatureRequest_title									=	"Suggest Final Cut Pro Feature to Apple",
 
 	}
 }

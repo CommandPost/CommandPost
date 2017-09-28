@@ -154,33 +154,86 @@ function GeneratorsBrowser:search()
 	return self._search
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:showSidebar() -> self
+--- Method
+--- Ensures the sidebar is showing in the Generators & Titles panel.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The Generators Browser.
 function GeneratorsBrowser:showSidebar()
 	if not self:sidebar():isShowing() then
 		self:app():menuBar():checkMenu({"Window", "Show in Workspace", 1})
 	end
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:topCategoriesUI() -> table of axuielements
+--- Method
+--- Returns an array of the top-level categories in the sidebar.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The array of category rows.
 function GeneratorsBrowser:topCategoriesUI()
 	return self:sidebar():rowsUI(function(row)
 		return row:attributeValue("AXDisclosureLevel") == 0
 	end)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:showInstalledTitles() -> self
+--- Method
+--- Ensures that the browser is showing 'Installed Titles'.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The Generators Browser.
 function GeneratorsBrowser:showInstalledTitles()
 	self:group():selectItem(1)
 	return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:showInstalledGenerators() -> self
+--- Method
+--- Ensures that the browser is showing 'Installed Generators'.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The Generators Browser.
 function GeneratorsBrowser:showInstalledGenerators()
 	self:showInstalledTitles()
 	return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:getTitlesRowLabel() -> string
+--- Method
+--- Returns the label of the 'Titles' row in the current language.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The 'Titles' label.
+function GeneratorsBrowser:getTitlesRowLabel()
+	return self:app():string("project media sidebar titles row")
+end
+
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:showAllTitles() -> self
+--- Method
+--- Ensures the sidebar is showing in the Generators & Titles panel, focused on all 'Titles'.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The Generators Browser.
 function GeneratorsBrowser:showAllTitles()
 	self:showSidebar()
 	local topCategories = self:topCategoriesUI()
@@ -190,6 +243,25 @@ function GeneratorsBrowser:showAllTitles()
 	return self
 end
 
+--- cp.apple.finalcutpro.main.GeneratorsBrowser:showTitlesCategory(name) -> self
+--- Method
+--- Ensures the sidebar is showing and that the selected 'Titles' category is selected, if available.
+---
+--- Parameters:
+--- * `name`		- The category name, in the current language.
+---
+--- Returns:
+--- * The Generators Browser.
+function GeneratorsBrowser:showTitlesCategory(name)
+	self:showSidebar()
+	Table.selectRow(self:sidebar():rowsUI(), {self:getTitlesRowLabel(), name})
+	return self
+end
+
+function GeneratorsBrowser:getGeneratorsRowLabel()
+	return self:app():string("project media sidebar generators row")
+end
+
 -- TODO: Add documentation
 function GeneratorsBrowser:showAllGenerators()
 	self:showSidebar()
@@ -197,6 +269,12 @@ function GeneratorsBrowser:showAllGenerators()
 	if topCategories and #topCategories == 2 then
 		self:sidebar():selectRow(topCategories[2])
 	end
+	return self
+end
+
+function GeneratorsBrowser:showGeneratorsCategory(name)
+	self:showSidebar()
+	Table.selectRow(self:sidebar():rowsUI(), {self:getGeneratorsRowLabel(), name})
 	return self
 end
 

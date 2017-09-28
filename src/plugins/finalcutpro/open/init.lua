@@ -64,12 +64,18 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
-	local top = deps.top
-	top:addItem(PRIORITY + 1, function()
-		if fcp:isInstalled() then
-			return { title = i18n("open") .. " Final Cut Pro",	fn = mod.openFinalCutPro }
-		end
-	end)
+	deps.top
+		:addItem(PRIORITY + 0.1, function()
+			if fcp:isInstalled() then
+				return { title = string.upper(i18n("finalCutPro")) .. ":", disabled = true }
+			end
+		end)
+
+		:addItem(PRIORITY + 1, function()
+			if fcp:isInstalled() then
+				return { title = i18n("launch") .. " " .. i18n("finalCutPro"), fn = mod.openFinalCutPro }
+			end
+		end)
 
 	--------------------------------------------------------------------------------
 	-- Commands:

@@ -32,9 +32,15 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	local section = dependencies.bottom:addSection(PRIORITY)
-		:addMenu(0, function() return i18n("helpAndSupport") end)
-	return section
+	local section = dependencies.bottom
+	
+		:addItem(PRIORITY, function()
+			return { title = string.upper(i18n("helpAndSupport")) .. ":", disabled = true }
+		end)
+
+		:addSection(PRIORITY + 0.2)
+			:addMenu(0, function() return i18n("appName") end)
+		return section
 end
 
 return plugin
