@@ -454,20 +454,33 @@ function hud.updateVisibility()
 
 		local fcpRunning 	= fcp:isRunning()
 		local fcpFrontmost 	= fcp:isFrontmost()
+		
+		if not fcpRunning and not fcpFrontmost then
+			hud.hide()
+			return
+		end
 
 		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
 		local commandEditorShowing = fcp:commandEditor():isShowing()
 
-		if (fcpRunning and fcpFrontmost and not fullscreenWindowShowing and not commandEditorShowing) then
+		if fullscreenWindowShowing or commandEditorShowing then
+			hud.hide()
+			return
+		end
+		
+		if fcpRunning and fcpFrontmost then
 			hud.show()
-		else
-			local frontmostWindow = window.frontmostWindow()
-			if frontmostWindow then
-				local frontmostWindowTitle = frontmostWindow:application():title()
-				if frontmostWindowTitle and frontmostWindowTitle ~= "Final Cut Pro" and frontmostWindowTitle ~= "Error Log" then
-					hud.hide()
-				end
-			end
+		else		
+			
+			local focusedWindow = window.focusedWindow()		
+			local mouseButtons = mouse.getButtons()
+			
+			if mouseButtons and mouseButtons["left"] and mouseButtons["left"] == true and focusedWindow and focusedWindow:application():pid() == config.processID then
+				hud.show()
+			else
+				hud.hide()
+			end				
+
 		end
 	end
 end
@@ -695,8 +708,8 @@ function plugin.init(deps, env)
 	})
 
 	fcp:commandEditor():watch({
-		show		= hud.updateVisibility,
-		hide		= hud.updateVisibility,
+		open		= hud.updateVisibility,
+		close		= hud.updateVisibility,
 	})
 
 	--------------------------------------------------------------------------------

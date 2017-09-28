@@ -1232,14 +1232,21 @@ function App:getCommandShortcuts(id)
 			local keypadModifier = false
 
 			if fcpxCmd["modifiers"] ~= nil then
-				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
+				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end				
 				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
 			elseif fcpxCmd["modifierMask"] ~= nil then
 				modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
+				if tools.tableContains(modifiers, "numericpad") then
+					keypadModifier = true
+				end
 			end
 
 			if fcpxCmd["characterString"] ~= nil then
-				keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
+				if keypadModifier then
+					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["characterString"])
+				else
+					keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
+				end
 			elseif fcpxHacks["character"] ~= nil then
 				if keypadModifier then
 					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])

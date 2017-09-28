@@ -1061,6 +1061,19 @@ function tools.numberToWord(number)
 	return nil
 end
 
+--- cp.tools.numberToWord(str) -> string
+--- Function
+--- Makes the first letter of a string uppercase.
+---
+--- Parameters:
+---  * str - The string you want to manipulate
+---
+--- Returns:
+---  * A string
+function tools.firstToUpper(str)
+    return (str:gsub("^%l", string.upper))
+end
+
 --- cp.tools.iconFallback(paths) -> string
 --- Function
 --- Excepts one or more paths to an icon, checks to see if they exist (in the order that they're given), and if none exist, returns the CommandPost icon path.

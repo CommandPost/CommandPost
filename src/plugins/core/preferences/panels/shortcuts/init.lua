@@ -42,7 +42,6 @@ local _											= require("moses")
 --
 --------------------------------------------------------------------------------
 local DEFAULT_PRIORITY 							= 0
-local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
 --------------------------------------------------------------------------------
 --
@@ -50,6 +49,8 @@ local DEFAULT_SHORTCUTS							= "Default Shortcuts"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+mod.DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
 local function shallowCopy(orig)
     local orig_type = type(orig)
@@ -170,7 +171,7 @@ local function resetShortcutsToNone()
 				end
 			end
 	
-			commands.saveToFile(DEFAULT_SHORTCUTS)
+			commands.saveToFile(mod.DEFAULT_SHORTCUTS)
 	
 			mod._manager.refresh()		
 		end 
@@ -192,7 +193,7 @@ local function resetShortcuts()
 	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
 		if result == i18n("yes") then		
 			restoreDefaultShortcuts()
-			commands.saveToFile(DEFAULT_SHORTCUTS)
+			commands.saveToFile(mod.DEFAULT_SHORTCUTS)
 			mod._manager.refresh()					
 		end
 	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
@@ -312,7 +313,7 @@ local function updateShortcut(id, params)
 		--------------------------------------------------------------------------------
 		-- Save to file:
 		--------------------------------------------------------------------------------
-		commands.saveToFile(DEFAULT_SHORTCUTS)
+		commands.saveToFile(mod.DEFAULT_SHORTCUTS)
 	else
 		log.wf("Unable to find command to update: %s:%s", params.group, params.command)
 	end
@@ -634,15 +635,15 @@ function plugin.postInit(deps)
 	--------------------------------------------------------------------------------
 	-- Load Shortcuts From File:
 	--------------------------------------------------------------------------------
-	local result = commands.loadFromFile(DEFAULT_SHORTCUTS)
+	local result = commands.loadFromFile(mod.DEFAULT_SHORTCUTS)
 	
 	--------------------------------------------------------------------------------
 	-- If no Default Shortcut File Exists, lets create one:
 	--------------------------------------------------------------------------------
 	if not result then
-		local filePath = commands.getShortcutsPath(DEFAULT_SHORTCUTS)
+		local filePath = commands.getShortcutsPath(mod.DEFAULT_SHORTCUTS)
 		log.df("Creating new shortcut file: '%s'", filePath)
-		commands.saveToFile(DEFAULT_SHORTCUTS)
+		commands.saveToFile(mod.DEFAULT_SHORTCUTS)
 	end
 	
 end

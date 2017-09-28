@@ -136,8 +136,8 @@ end
 ---
 --- Parameters:
 ---  * `events` - A table of functions with to watch. These may be:
----    * `show(window)` - Triggered when the window is shown.
----    * `hide(window)` - Triggered when the window is hidden.
+---    * `open(window)` - Triggered when the window is shown.
+---    * `close(window)` - Triggered when the window is hidden.
 ---    * `move(window)` - Triggered when the window is moved.
 ---
 --- Returns:
