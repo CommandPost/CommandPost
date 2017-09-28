@@ -370,8 +370,13 @@ function private.updateFCPXCommands(enable, silently)
 		else
 			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
+		
+		local whichWebview = mod._manger.webview
+		if whichWebview == nil then
+			whichWebview = mod._setup.webview
+		end
 			
-		dialog.webviewAlert(mod._manger.webview, function(result) 
+		dialog.webviewAlert(whichWebview, function(result) 
 			if result == i18n("yes") then
 			
 				--------------------------------------------------------------------------------
@@ -388,19 +393,29 @@ function private.updateFCPXCommands(enable, silently)
 					--------------------------------------------------------------------------------
 					-- Failed to restart Final Cut Pro:
 					--------------------------------------------------------------------------------					
-					dialog.webviewAlert(mod._manger.webview, function() 
+					dialog.webviewAlert(whichWebview, function() 
 						--------------------------------------------------------------------------------					
-						-- Refresh the panel:
+						-- Refresh the Preferences Panel and/or Move to next Setup Screen:
 						--------------------------------------------------------------------------------									
-						mod._manger.refresh()		
+						if mod._manger then 
+							mod._manger.refresh()
+						end		
+						if mod.setup then
+							mod.setup.nextPanel()
+						end
 					end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")				
 				end
 				
 			end
 			--------------------------------------------------------------------------------					
-			-- Refresh the panel:
+			-- Refresh the Preferences Panel and/or Move to next Setup Screen:
 			--------------------------------------------------------------------------------									
-			mod._manger.refresh()	
+			if mod._manger then 
+				mod._manger.refresh()	
+			end
+			if mod.setup then
+				mod.setup.nextPanel()
+			end
 		end, prompt, i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))	
 		
 	end
@@ -597,7 +612,7 @@ mod.onboardingRequired	= config.prop("hacksShortcutsOnboardingRequired", true)
 --- If `true`, the user needs to configure Hacks Shortcuts.
 mod.setupRequired	= mod.supported:AND(mod.onboardingRequired:OR(mod.outdated)):watch(function(required)
 	if required then
-		mod._setup.addPanel(setupPanel).show()
+		mod.setup.addPanel(setupPanel).show()
 	end
 end, true)
 
@@ -647,7 +662,7 @@ function mod.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Setup:
 	--------------------------------------------------------------------------------
-	mod._setup = deps.setup
+	mod.setup = deps.setup
 	mod._shortcuts = deps.shortcuts
 	mod.fcpxCmds	= deps.fcpxCmds
 	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
@@ -698,9 +713,8 @@ function mod.init(deps, env)
 
 	--------------------------------------------------------------------------------
 	-- Create the Setup Panel:
-	--------------------------------------------------------------------------------
-	local setup = deps.setup
-	local setupPanel = setup.panel.new("hacksShortcuts", 50)
+	--------------------------------------------------------------------------------	
+	mod.panel = mod.setup.panel.new("hacksShortcuts", 50)
 		:addIcon(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"))
 		:addParagraph(i18n("commandSetText"), true)
 		:addButton({
@@ -708,7 +722,7 @@ function mod.init(deps, env)
 			onclick		= function()
 				mod.install()
 				mod.onboardingRequired(false)
-				setup.nextPanel()
+				--mod.setup.nextPanel()
 			end,
 		})
 		:addButton({
@@ -716,10 +730,13 @@ function mod.init(deps, env)
 			onclick		= function()
 				mod.uninstall()
 				mod.onboardingRequired(false)
-				setup.nextPanel()
+				--mod.setup.nextPanel()
 			end,
 		})	
-
+	if mod.onboardingRequired() then 
+		mod.setup.addPanel(mod.panel)
+	end
+	
 	return mod
 end
 
@@ -748,6 +765,7 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Webview Manger:
 	--------------------------------------------------------------------------------
+	mod._setup = deps.setup
 	mod._shortcuts = deps.shortcuts
 	mod._manger = deps.shortcuts._manager
 		

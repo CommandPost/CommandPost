@@ -17,10 +17,9 @@ body {
 	font-family: -apple-system;
 	font-size: 16px;
 	line-height: 1.5;
-	color: #606c71;
-	background-color: #159957;
-	background-image: linear-gradient(120deg, #ba1d22, #7164e0);
+	color: #999999;
 	overflow:hidden;
+	background-color: #1f1f1f;	
 }
 
 a { color: #1e6bb8; text-decoration: none; }

@@ -469,7 +469,9 @@ end
 --------------------------------------------------------------------------------
 local function generateContent()
 
-	-- the group select
+	--------------------------------------------------------------------------------	
+	-- The Group Select:
+	--------------------------------------------------------------------------------
 	local groupOptions = {}
 	local defaultGroup = nil
 	for _,id in ipairs(commands.groupIds()) do

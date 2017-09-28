@@ -16,6 +16,7 @@
 local logger					= require("hs.logger"); logger.defaultLogLevel = 'debug'
 local log						= logger.new("cp")
 
+local application				= require("hs.application") 
 local console                   = require("hs.console")
 local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
@@ -73,6 +74,11 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
+
+	--------------------------------------------------------------------------------
+	-- Disable Spotlight for Name Searches:
+	--------------------------------------------------------------------------------
+	application.enableSpotlightForNameSearches(false)
 
 	--------------------------------------------------------------------------------
 	-- Console Colour Scheme:

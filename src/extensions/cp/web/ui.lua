@@ -7,14 +7,17 @@
 
 local log										= require("hs.logger").new("webui")
 
-local mimetypes									= require("mimetypes")
 local base64									= require("hs.base64")
 local fs										= require("hs.fs")
+local image										= require("hs.image")
 
 local html										= require("cp.web.html")
-local _											= require("moses")
+local tools										= require("cp.tools")
 
+local _											= require("moses")
+local mimetypes									= require("mimetypes")
 local template									= require("resty.template")
+
 local compile									= template.compile
 
 
@@ -268,18 +271,19 @@ end
 
 -- Reads the file at the specified path as binary and returns it as a BASE64 stream of text.
 local function imageToBase64(pathToImage)
-	local type = mimetypes.guess(pathToImage)
-	if type and type:sub(1,6) == "image/" then
-		local f, err = io.open(fs.pathToAbsolute(pathToImage), "rb")
-		if not f then
-		    return nil, err
-		end
-		local data = f:read("*all")
-		f:close()
-
-		return "data:"..type..";base64, "..base64.encode(data)
+	
+	if not tools.doesFileExist(pathToImage) then
+		log.ef("imageToBase64 failed - could not find file: %s", pathToImage)
+		return ""				
 	end
+
+	local tempImage = image.imageFromPath(pathToImage)
+	if tempImage then
+		return tempImage:encodeAsURLString(false, "PNG")
+	end
+	
 	return ""
+	
 end
 
 --- cp.web.ui.img(params) -> cp.web.html

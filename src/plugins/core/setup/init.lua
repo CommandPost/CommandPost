@@ -225,12 +225,13 @@ function mod.new()
 		}
 
 		mod.webview = webview.new(defaultRect, options, mod.controller)
-			:windowStyle({"titled", "closable", "nonactivating"})
+			:windowStyle({"titled"})
 			:shadow(true)
 			:allowNewWindows(false)
 			:allowTextEntry(true)
 			:windowTitle(mod.defaultTitle)
 			:html(generateHTML())
+			:darkMode(true)
 			:windowCallback(windowCallback)
 
 		--------------------------------------------------------------------------------
