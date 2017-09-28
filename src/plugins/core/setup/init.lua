@@ -363,12 +363,12 @@ function plugin.postInit(deps, env)
 	mod.onboardingRequired:watch(function(required)
 		if required then
 
-			local iconPath = config.application():path() .. "/Contents/Resources/AppIcon.icns"
-
-			-- The intro panel
+			--------------------------------------------------------------------------------
+			-- The Intro Panel:
+			--------------------------------------------------------------------------------
 			mod.addPanel(
 				panel.new("intro", mod.FIRST_PRIORITY)
-					:addIcon(iconPath)
+					:addIcon(config.iconPath)
 					:addHeading(config.appName)
 					:addSubHeading(i18n("introTagLine"))
 					:addParagraph(i18n("introText"), true)
@@ -381,11 +381,13 @@ function plugin.postInit(deps, env)
 						onclick	= function() config.application():kill() end,
 					})
 			)
-
-			-- The outro panel
+			
+			--------------------------------------------------------------------------------
+			-- The Outro Panel:
+			--------------------------------------------------------------------------------
 			mod.addPanel(
 				panel.new("outro", mod.LAST_PRIORITY)
-					:addIcon(iconPath)
+					:addIcon(config.iconPath)
 					:addSubHeading(i18n("outroTitle"))
 					:addParagraph(i18n("outroText"), true)
 					:addButton({

@@ -598,7 +598,7 @@ mod.onboardingRequired	= config.prop("hacksShortcutsOnboardingRequired", true)
 --- If `true`, the user needs to configure Hacks Shortcuts.
 mod.setupRequired	= mod.supported:AND(mod.onboardingRequired:OR(mod.outdated)):watch(function(required)
 	if required then
-		setup.addPanel(setupPanel).show()
+		mod._setup.addPanel(setupPanel).show()
 	end
 end, true)
 
@@ -645,8 +645,11 @@ end
 ---  * None
 function mod.init(deps, env)
 
+	--------------------------------------------------------------------------------
+	-- Setup:
+	--------------------------------------------------------------------------------
+	mod._setup = deps.setup
 	mod._shortcuts = deps.shortcuts
-
 	mod.fcpxCmds	= deps.fcpxCmds
 	mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
 
