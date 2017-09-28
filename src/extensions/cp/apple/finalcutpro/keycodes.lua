@@ -87,9 +87,9 @@ mod.padKeys = { "*", "+", "/", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7",
 ---  * string or nil
 function mod.keypadCharacterToKeyCode(input)
 
-	local result = nil
-	for i=1, #padKeys do
-		if input == padKeys[i] then result = "pad" .. input end
+	local result = input
+	for i=1, #mod.padKeys do
+		if input == mod.padKeys[i] then result = "pad" .. input end
 	end
 
 	return mod.characterStringToKeyCode(result)

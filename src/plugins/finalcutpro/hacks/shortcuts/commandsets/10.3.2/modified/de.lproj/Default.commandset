@@ -97,105 +97,105 @@
 		<key>modifiers</key>
 		<string>control option command</string>
 	</dict>
-	<key>title1</key>
+	<key>cpTitle1</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>title2</key>
+	<key>cpTitle2</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>title3</key>
+	<key>cpTitle3</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>title4</key>
+	<key>cpTitle4</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>title5</key>
+	<key>cpTitle5</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>generator1</key>
+	<key>cpGenerator1</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>generator2</key>
+	<key>cpGenerator2</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>generator3</key>
+	<key>cpGenerator3</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>generator4</key>
+	<key>cpGenerator4</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>generator5</key>
+	<key>cpGenerator5</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>transition1</key>
+	<key>cpTransition1</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>transition2</key>
+	<key>cpTransition2</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>transition3</key>
+	<key>cpTransition3</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>transition4</key>
+	<key>cpTransition4</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>transition5</key>
+	<key>cpTransition5</key>
 	<dict>
 		<key>characterString</key>
 		<string></string>
@@ -1240,75 +1240,75 @@
 		<key>modifiers</key>
 		<string>control option command</string>
 	</dict>
-	<key>audioEffect1</key>
+	<key>cpAudioEffect1</key>
 	<dict>
 		<key>characterString</key>
-		<string>1</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift alt</string>
+		<string></string>
 	</dict>
-	<key>audioEffect2</key>
+	<key>cpAudioEffect2</key>
 	<dict>
 		<key>characterString</key>
-		<string>2</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift alt</string>
+		<string></string>
 	</dict>
-	<key>audioEffect3</key>
+	<key>cpAudioEffect3</key>
 	<dict>
 		<key>characterString</key>
-		<string>3</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift alt</string>
+		<string></string>
 	</dict>
-	<key>audioEffect4</key>
+	<key>cpAudioEffect4</key>
 	<dict>
 		<key>characterString</key>
-		<string>4</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift alt</string>
+		<string></string>
 	</dict>
-	<key>audioEffect5</key>
+	<key>cpAudioEffect5</key>
 	<dict>
 		<key>characterString</key>
-		<string>5</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift alt</string>
+		<string></string>
 	</dict>
-	<key>videoEffect1</key>
+	<key>cpVideoEffect1</key>
 	<dict>
 		<key>characterString</key>
-		<string>1</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift</string>
+		<string></string>
 	</dict>
-	<key>videoEffect2</key>
+	<key>cpVideoEffect2</key>
 	<dict>
 		<key>characterString</key>
-		<string>2</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift</string>
+		<string></string>
 	</dict>
-	<key>videoEffect3</key>
+	<key>cpVideoEffect3</key>
 	<dict>
 		<key>characterString</key>
-		<string>3</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift</string>
+		<string></string>
 	</dict>
-	<key>videoEffect4</key>
+	<key>cpVideoEffect4</key>
 	<dict>
 		<key>characterString</key>
-		<string>4</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift</string>
+		<string></string>
 	</dict>
-	<key>videoEffect5</key>
+	<key>cpVideoEffect5</key>
 	<dict>
 		<key>characterString</key>
-		<string>5</string>
+		<string></string>
 		<key>modifiers</key>
-		<string>control shift</string>
+		<string></string>
 	</dict>
 	<key>cpText2Speech</key>
 	<dict>
@@ -1926,7 +1926,7 @@
 			<key>modifiers</key>
 			<string>shift</string>
 		</dict>
-	</array>
+	</array>	
 	<key>AppendWithSelectedMedia</key>
 	<array>
 		<dict>
@@ -2114,7 +2114,7 @@
 		<string></string>
 	</dict>
 	<key>ReplaceWithGap</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>NSDeleteCharacter</string>
@@ -2141,7 +2141,7 @@
 		<string>r</string>
 		<key>modifiers</key>
 		<string>option</string>
-	</dict>
+	</dict>	
 	<key>DeleteMarker</key>
 	<dict>
 		<key>characterString</key>
@@ -2227,7 +2227,7 @@
 		<string>command</string>
 	</dict>
 	<key>GoToBackgroundTasks</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>9</string>
@@ -2249,7 +2249,7 @@
 		<string>shift</string>
 	</dict>
 	<key>GoToInspector</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>4</string>
@@ -2264,7 +2264,7 @@
 		</dict>
 	</array>
 	<key>ToggleEventLibraryBrowser</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>1</string>
@@ -2316,7 +2316,7 @@
 		<string>shift</string>
 	</dict>
 	<key>GoToTimeline</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>2</string>
@@ -2328,10 +2328,10 @@
 			<string>2</string>
 			<key>modifiers</key>
 			<string>command keypad</string>
-		</dict>
+		</dict>	
 	</array>
 	<key>GoToViewer</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -2346,7 +2346,7 @@
 		</dict>
 	</array>
     <key>GoToEventViewer</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -2361,7 +2361,7 @@
 		</dict>
 	</array>
 	<key>ToggleEventViewer</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -2397,7 +2397,7 @@
 		<string>command</string>
 	</dict>
 	<key>IncreaseThumbnailSize</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>+</string>
@@ -2410,7 +2410,7 @@
 			<key>modifiers</key>
 			<string>control shift keypad</string>
 		</dict>
-	</array>
+	</array>	
 	<key>InsertMedia</key>
 	<dict>
 		<key>characterString</key>
@@ -2885,7 +2885,7 @@
 		<string>v</string>
 		<key>modifiers</key>
 		<string>option</string>
-	</dict>
+	</dict>	
 	<key>PlayAroundCurrentFrame</key>
 	<dict>
 		<key>characterString</key>
@@ -3699,7 +3699,7 @@
 		<string>p</string>
 		<key>modifiers</key>
 		<string>control</string>
-	</dict>
+	</dict>		
 	<key>ShowTimecodeEntryMinusDelta</key>
 	<array>
 		<dict>
@@ -3707,14 +3707,14 @@
 			<string>-</string>
 			<key>modifiers</key>
 			<string></string>
-		</dict>
+		</dict>	
 		<dict>
 			<key>characterString</key>
 			<string>-</string>
 			<key>modifiers</key>
 			<string>keypad</string>
 		</dict>
-	</array>
+	</array>	
 	<key>ShowTimecodeEntryPlusDelta</key>
 	<array>
 		<dict>
@@ -3738,7 +3738,7 @@
 		<string>control</string>
 	</dict>
 	<key>AVEditModeBoth</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>1</string>
@@ -3753,7 +3753,7 @@
 		</dict>
 	</array>
 	<key>AVEditModeVideo</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>2</string>
@@ -3768,7 +3768,7 @@
 		</dict>
 	</array>
 	<key>AVEditModeAudio</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>3</string>
@@ -3925,7 +3925,7 @@
 		<string>control option</string>
 	</dict>
 	<key>GoToColorBoard</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>6</string>
@@ -3954,7 +3954,7 @@
 		<string>command option</string>
 	</dict>
 	<key>ToggleInspector</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>4</string>
@@ -3969,7 +3969,7 @@
 		</dict>
 	</array>
 	<key>ToggleMediaEffectsBrowser</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>5</string>
@@ -4017,10 +4017,10 @@
 		<key>characterString</key>
 		<string>^</string>
 		<key>modifiers</key>
-		<string>command</string>
+		<string></string>
 	</dict>
 	<key>ToggleVideoScopes</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>7</string>
@@ -4035,7 +4035,7 @@
 		</dict>
 	</array>
 	<key>ShowMultiangleViewer</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>7</string>
@@ -4050,21 +4050,21 @@
 		</dict>
 	</array>
 	<key>ToggleHistogram</key>
-	<dict>
+	<dict>	
 		<key>characterString</key>
 		<string>h</string>
 		<key>modifiers</key>
 		<string>command control</string>
 	</dict>
 	<key>ToggleWaveform</key>
-	<dict>
+	<dict>	
 		<key>characterString</key>
 		<string>w</string>
 		<key>modifiers</key>
 		<string>command control</string>
 	</dict>
 	<key>ToggleVectorscope</key>
-	<dict>
+	<dict>	
 		<key>characterString</key>
 		<string>v</string>
 		<key>modifiers</key>
@@ -4120,7 +4120,7 @@
         <string></string>
     </dict>
 	<key>VolumeDown</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>-</string>
@@ -4135,7 +4135,7 @@
 		</dict>
 	</array>
 	<key>VolumeUp</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>+</string>
@@ -4148,7 +4148,7 @@
 			<key>modifiers</key>
 			<string>control keypad</string>
 		</dict>
-	</array>
+	</array>	
 	<key>AdjustVolumeRelative</key>
     <dict>
         <key>characterString</key>
@@ -4164,7 +4164,7 @@
         <string>control option</string>
     </dict>
 	<key>ZoomIn</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>+</string>
@@ -4183,9 +4183,9 @@
 			<key>modifiers</key>
 			<string>command keypad</string>
 		</dict>
-	</array>
+	</array>	
 	<key>ZoomOut</key>
-	<array>
+	<array>	
 		<dict>
 			<key>characterString</key>
 			<string>-</string>

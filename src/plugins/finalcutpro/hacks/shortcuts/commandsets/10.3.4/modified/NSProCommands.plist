@@ -3094,14 +3094,14 @@
 		<key>downSelector</key>
 		<string>createMultiAngleClip:</string>
 	</dict>
-	<key>cpAudioFineSyncMultiAngleAngle</key>
+	<key>AudioFineSyncMultiAngleAngle</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>
 		<key>downSelector</key>
 		<string>audioFineSyncMultiAngleAngle:</string>
 	</dict>
-	<key>cpAudioSyncMultiAngleItems</key>
+	<key>AudioSyncMultiAngleItems</key>
 	<dict>
 		<key>downRepeats</key>
 		<integer>0</integer>

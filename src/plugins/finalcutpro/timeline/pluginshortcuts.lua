@@ -85,6 +85,7 @@ function mod.getShortcut(handlerId, shortcutNumber)
 end
 
 function mod.applyShortcut(handlerId, shortcutNumber)
+	log.df("Apply Shortcut!")
 	local action = mod.getShortcut(handlerId, shortcutNumber)
 	local apply = mod._apply[handlerId]
 	return apply and apply(action) or false

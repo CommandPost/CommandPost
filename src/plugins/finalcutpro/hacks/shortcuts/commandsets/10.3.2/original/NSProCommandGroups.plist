@@ -151,8 +151,6 @@
 			<string>Solo</string>
 			<string>AddToSoloed</string>
 			<string>ShowAVSplit</string>
-			<string>ShowAVSplitsEdited</string>
-			<string>HideAVSplitsAll</string>
 			<string>ToggleAudioComponents</string>
 			<string>AlignAudioToVideo</string>
 			<string>SelectLeftEdge</string>
