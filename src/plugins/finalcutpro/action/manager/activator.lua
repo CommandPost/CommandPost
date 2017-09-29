@@ -186,7 +186,7 @@ end
 --- plugins.finalcutpro.action.activator:preloadChoices([afterSeconds]) -> activator
 --- Method
 --- Indicates the activator should preload the choices after a number of seconds.
---- Defaults to 10 seconds if no value is provided.
+--- Defaults to 6 seconds if no value is provided.
 ---
 --- Parameters:
 --- * `afterSeconds`	- The number of seconds to wait before preloading.
@@ -194,8 +194,11 @@ end
 --- Returns:
 --- * The activator.
 function activator.mt:preloadChoices(afterSeconds)
-	afterSeconds = afterSeconds or 10
-	idle.queue(10, function() self:_findChoices() end)
+	afterSeconds = afterSeconds or 6
+	idle.queue(afterSeconds, function()
+		log.df("Preloading Choices for Chooser...")
+		self:_findChoices() 
+	end)
 	return self
 end
 
@@ -625,17 +628,14 @@ activator.reducedTransparency = prop.new(function()
 end)
 
 local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
-	local c = chooser.new(executeFn)
-	:bgDark(true)
-	:rightClickCallback(rightClickFn)
-	:choices(choicesFn)
-	:searchSubText(searchSubText)
-
 	local color = activator.reducedTransparency() and nil or drawing.color.x11.snow
-	c:fgColor(color):subTextColor(color)
-
-	c:refreshChoicesCallback()
-
+	local c = chooser.new(executeFn)
+		:bgDark(true)
+		:rightClickCallback(rightClickFn)
+		:choices(choicesFn)
+		:searchSubText(searchSubText)
+		:fgColor(color):subTextColor(color)
+		:refreshChoicesCallback()
 	return c
 end
 
@@ -691,6 +691,9 @@ function activator.mt:show()
 	--------------------------------------------------------------------------------
 	self:checkReducedTransparency()
 
+	--------------------------------------------------------------------------------
+	-- Refresh Chooser:
+	--------------------------------------------------------------------------------
 	self:refreshChooser()
 
 	--------------------------------------------------------------------------------
