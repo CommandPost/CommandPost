@@ -19,6 +19,7 @@ local timer				= require("hs.timer")
 
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
+local just				= require("cp.just")
 
 --------------------------------------------------------------------------------
 --
@@ -27,16 +28,29 @@ local fcp				= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.init(touchbar)
-	mod.touchbar = touchbar
-	return mod
-end
+mod.cache = {}
 
---------------------------------------------------------------------------------
--- TITLES SHORTCUT PRESSED:
--- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the title to apply in the current FCPX language.
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.titles.apply(action) -> boolean
+--- Function
+--- Applies the specified action as a title. Expects action to be a table with the following structure:
+---
+--- ```lua
+--- { name = "XXX", category = "YYY", theme = "ZZZ" }
+--- ```
+---
+--- ...where `"XXX"`, `"YYY"` and `"ZZZ"` are in the current FCPX language. The `category` and `theme` are optional,
+--- but if they are known it's recommended to use them, or it will simply execute the first matching title with that name.
+---
+--- Alternatively, you can also supply a string with just the name.
+---
+--- Actions will be cached each session, so that if the user applies the effect multiple times, only the first time will require
+--- GUI scripting - subsequent uses will just use the Pasteboard.
+---
+--- Parameters:
+--- * `action`		- A table with the name/category/theme for the title to apply, or a string with just the name.
+---
+--- Returns:
+--- * `true` if a matching title was found and applied to the timeline.
 function mod.apply(action)
 
 	--------------------------------------------------------------------------------
@@ -52,6 +66,94 @@ function mod.apply(action)
 		dialog.displayMessage(i18n("noTitleShortcut"))
 		return false
 	end
+	
+	--------------------------------------------------------------------------------
+	-- Make sure FCPX is at the front.
+	--------------------------------------------------------------------------------
+	fcp:launch()
+
+	--------------------------------------------------------------------------------
+	-- Restore from Cache:
+	--------------------------------------------------------------------------------
+	local cacheID = name
+	if category then cacheID = category .. name end
+	if mod.cache[cacheID] then	
+		
+		--------------------------------------------------------------------------------
+		-- Stop Watching Clipboard:
+		--------------------------------------------------------------------------------		
+		local clipboard = mod.clipboardManager
+		clipboard.stopWatching()
+
+		--------------------------------------------------------------------------------
+		-- Save Current Clipboard Contents for later:
+		--------------------------------------------------------------------------------		
+		local originalClipboard = clipboard.readFCPXData()
+
+		--------------------------------------------------------------------------------
+		-- Add Cached Item to Clipboard:
+		--------------------------------------------------------------------------------
+		local cachedItem = mod.cache[cacheID]
+		local result = clipboard.writeFCPXData(cachedItem)
+		if not result then
+			dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
+			clipboard.startWatching()
+			return false
+		end
+
+		--------------------------------------------------------------------------------
+		-- Make sure Timeline has focus:
+		--------------------------------------------------------------------------------		
+		local timeline = fcp:timeline()
+		timeline:show()
+		if not timeline:isShowing() then
+			dialog.displayErrorMessage("Unable to display the Timeline.")
+			clipboard.startWatching()
+			return false
+		end
+
+		--------------------------------------------------------------------------------
+		-- Trigger 'Paste' from Menubar:
+		--------------------------------------------------------------------------------	
+		local menuBar = fcp:menuBar()
+		if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
+			menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
+		else
+			dialog.displayErrorMessage("Unable to paste Generator.")
+			clipboard.startWatching()
+			return false
+		end
+
+		--------------------------------------------------------------------------------
+		-- Restore Clipboard:
+		--------------------------------------------------------------------------------
+		timer.doAfter(1, function()	
+
+			--------------------------------------------------------------------------------
+			-- Restore Original Clipboard Contents:
+			--------------------------------------------------------------------------------
+			if originalClipboard ~= nil then
+				local result = clipboard.writeFCPXData(originalClipboard)
+				if not result then
+					dialog.displayErrorMessage("Failed to restore original Clipboard item.")
+					clipboard.startWatching()
+					return false
+				end
+			end
+
+			--------------------------------------------------------------------------------
+			-- Start watching the Clipboard again:
+			--------------------------------------------------------------------------------
+			clipboard.startWatching()
+			
+		end)
+		
+		--------------------------------------------------------------------------------
+		-- All done:
+		--------------------------------------------------------------------------------
+		return true
+		
+	end
 
 	--------------------------------------------------------------------------------
 	-- Save the main Browser layout:
@@ -66,15 +168,9 @@ function mod.apply(action)
 	local generatorsLayout = generators:saveLayout()
 
 	--------------------------------------------------------------------------------
-	-- Make sure FCPX is at the front.
-	--------------------------------------------------------------------------------
-	fcp:launch()
-
-	--------------------------------------------------------------------------------
 	-- Make sure the panel is open:
 	--------------------------------------------------------------------------------
 	generators:show()
-
 	if not generators:isShowing() then
 		dialog.displayErrorMessage("Unable to display the Titles panel.")
 		return false
@@ -86,7 +182,7 @@ function mod.apply(action)
 	generators:search():clear()
 
 	--------------------------------------------------------------------------------
-	-- Click 'All':
+	-- Select the Category if provided otherwise just show all:
 	--------------------------------------------------------------------------------
 	if category then
 		generators:showTitlesCategory(category)
@@ -97,41 +193,140 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Titles" is selected:
 	--------------------------------------------------------------------------------
-	generators:showInstalledTitles()
+	local group = generators:group():UI()		
+	local groupValue = group:attributeValue("AXValue")	
+	if groupValue ~= fcp:string("PEMediaBrowserInstalledTitlesMenuItem") then
+		generators:showInstalledTitles()
+	end
+	
+	--------------------------------------------------------------------------------
+	-- Find the requested Generator:
+	--------------------------------------------------------------------------------	
+	local currentItemsUI = generators:currentItemsUI()
+	local whichItem = nil
+	for i, v in ipairs(currentItemsUI) do		
+		if v:attributeValue("AXTitle") == name then
+			whichItem = v
+		end		
+    end
+    local grid = currentItemsUI[1]:attributeValue("AXParent")
+    
+  	--------------------------------------------------------------------------------
+	-- Select the chosen Generator:
+	--------------------------------------------------------------------------------
+	grid:setAttributeValue("AXSelectedChildren", {whichItem})	
+	whichItem:setAttributeValue("AXFocused", true)
+	
+	--------------------------------------------------------------------------------
+	-- Stop Watching Clipboard:
+	--------------------------------------------------------------------------------
+	local clipboard = mod.clipboardManager
+	clipboard.stopWatching()
 
 	--------------------------------------------------------------------------------
-	-- Perform Search:
+	-- Save Current Clipboard Contents for later:
 	--------------------------------------------------------------------------------
-	generators:search():setValue(name)
+	local originalClipboard = clipboard.readFCPXData()
 
 	--------------------------------------------------------------------------------
-	-- Get the list of matching effects
-	--------------------------------------------------------------------------------
-	local matches = generators:currentItemsUI()
-	if not matches or #matches == 0 then
-		dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.")
+	-- Trigger 'Copy' from Menubar:
+	--------------------------------------------------------------------------------		
+	local menuBar = fcp:menuBar()
+	menuBar:selectMenu({"Edit", "Copy"})
+	local newClipboard = nil	
+	just.doUntil(function()		
+				
+		newClipboard = clipboard.readFCPXData()
+		
+		if newClipboard == nil then
+			menuBar:selectMenu({"Edit", "Copy"})
+			return false
+		end		
+				
+		if originalClipboard == nil and newClipboard ~= nil then
+			return true
+		end	
+				
+		if newClipboard ~= originalClipboard then
+			return true
+		end
+		
+		--------------------------------------------------------------------------------
+		-- Let's try again:
+		--------------------------------------------------------------------------------
+		menuBar:selectMenu({"Edit", "Copy"})			
+		return false
+		
+	end, 5)
+		
+	if newClipboard == nil then
+		dialog.displayErrorMessage("Failed to copy Generator.")
+		clipboard.startWatching()
 		return false
 	end
 
-	local generator = matches[1]
+	--------------------------------------------------------------------------------
+	-- Cache the item for faster recall next time:
+	--------------------------------------------------------------------------------
+	mod.cache[cacheID] = newClipboard
+	
+	--------------------------------------------------------------------------------
+	-- Make sure Timeline has focus:
+	--------------------------------------------------------------------------------		
+	local timeline = fcp:timeline()
+	timeline:show()
+	if not timeline:isShowing() then
+		dialog.displayErrorMessage("Unable to display the Timeline.")
+		return false
+	end
 
 	--------------------------------------------------------------------------------
-	-- Apply the selected Transition:
+	-- Trigger 'Paste' from Menubar:
+	--------------------------------------------------------------------------------	
+	if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
+		menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
+	else
+		dialog.displayErrorMessage("Unable to paste Generator.")
+		clipboard.startWatching()
+		return false
+	end
+	
 	--------------------------------------------------------------------------------
-	mod.touchbar.hide()
-
-	generators:applyItem(generator)
-
-	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.1, function()
-		mod.touchbar.show()
-
+	-- Restore Layout:
+	--------------------------------------------------------------------------------
+	timer.doAfter(0.1, function()		
 		generators:loadLayout(generatorsLayout)
 		if browserLayout then browser:loadLayout(browserLayout) end
 	end)
 
-	--- Success!
-	return true
+	--------------------------------------------------------------------------------
+	-- Restore Clipboard:
+	--------------------------------------------------------------------------------
+	timer.doAfter(1, function()	
+	
+		--------------------------------------------------------------------------------
+		-- Restore Original Clipboard Contents:
+		--------------------------------------------------------------------------------
+		if originalClipboard ~= nil then
+			local result = clipboard.writeFCPXData(originalClipboard)
+			if not result then
+				dialog.displayErrorMessage("Failed to restore original Clipboard item.")
+				clipboard.startWatching()
+				return false
+			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Start watching Clipboard again:
+		--------------------------------------------------------------------------------
+		clipboard.startWatching()
+	end)
+
+	--------------------------------------------------------------------------------
+	-- Success:
+	--------------------------------------------------------------------------------
+	return true  
+
 end
 
 --------------------------------------------------------------------------------
@@ -143,7 +338,7 @@ local plugin = {
 	id = "finalcutpro.timeline.titles",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.os.touchbar"]						= "touchbar",
+		["finalcutpro.clipboard.manager"]				= "clipboardManager",
 	}
 }
 
@@ -151,11 +346,8 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+	mod.clipboardManager = deps.clipboardManager
 	return mod
-end
-
-function plugin.postInit(deps)
-	return mod.init(deps.touchbar)
 end
 
 return plugin

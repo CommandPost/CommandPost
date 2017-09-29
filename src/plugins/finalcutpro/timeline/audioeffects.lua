@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.timeline.videoeffects ===
+--- === plugins.finalcutpro.timeline.audioeffects ===
 ---
---- Controls Final Cut Pro's Effects.
+--- Controls Final Cut Pro's Audio Effects.
 
 --------------------------------------------------------------------------------
 --
@@ -27,16 +27,38 @@ local dialog			= require("cp.dialog")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.audioeffects.init() -> none
+--- Function
+--- Initialise the Module
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Module
 function mod.init(touchbar)
 	mod.touchbar = touchbar
 	return mod
 end
 
---------------------------------------------------------------------------------
--- SHORTCUT PRESSED:
--- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the effect to apply in the current FCPX language.
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.audioeffects(action) -> boolean
+--- Function
+--- Applies the specified action as a audio effect. Expects action to be a table with the following structure:
+---
+--- ```lua
+--- { name = "XXX", category = "YYY", theme = "ZZZ" }
+--- ```
+---
+--- ...where `"XXX"`, `"YYY"` and `"ZZZ"` are in the current FCPX language. The `category` and `theme` are optional,
+--- but if they are known it's recommended to use them, or it will simply execute the first matching audio effect with that name.
+---
+--- Alternatively, you can also supply a string with just the name.
+---
+--- Parameters:
+--- * `action`		- A table with the name/category/theme for the audio effect to apply, or a string with just the name.
+---
+--- Returns:
+--- * `true` if a matching audio effect was found and applied to the timeline.
 function mod.apply(action)
 
 	--------------------------------------------------------------------------------
@@ -68,6 +90,9 @@ function mod.apply(action)
 	local effectsShowing = effects:isShowing()
 	local effectsLayout = effects:saveLayout()
 
+	--------------------------------------------------------------------------------
+	-- Make sure FCPX is at the front.
+	--------------------------------------------------------------------------------
 	fcp:launch()
 
 	--------------------------------------------------------------------------------
@@ -78,7 +103,11 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	effects:showInstalledEffects()
+	local group = effects:group():UI()		
+	local groupValue = group:attributeValue("AXValue")	
+	if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
+		effects:showInstalledEffects()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Make sure there's nothing in the search box:
@@ -88,7 +117,11 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Click 'All':
 	--------------------------------------------------------------------------------
-	effects:showAllTransitions()
+	if category then
+		transitions:showTransitionsCategory(category)
+	else
+		transitions:showAllTransitions()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Perform Search:

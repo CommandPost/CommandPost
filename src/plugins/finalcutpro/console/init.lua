@@ -46,28 +46,13 @@ local PRIORITY = 11000
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.mainChooser			= nil 		-- the actual hs.chooser
-mod.hiderChooser		= nil		-- the chooser for hiding/unhiding items.
-mod.activeChooser		= nil		-- the currently-visible chooser.
-mod.active 				= false		-- is the Hacks Console Active?
-
 mod.enabled = config.prop("consoleEnabled", true)
-
-mod.reducedTransparency = prop.new(function()
-	return screen.accessibilitySettings()["ReduceTransparency"]
-end)
-
-mod.searchSubtext = config.prop("searchSubtext", true)
-
-mod.lastQueryRemembered = config.prop("consoleLastQueryRemembered", true)
-
-mod.lastQueryValue = config.prop("consoleLastQueryValue", "")
 
 --------------------------------------------------------------------------------
 -- LOAD CONSOLE:
 --------------------------------------------------------------------------------
 function mod.init(actionmanager)
-	mod.actionmanager = mod.actionmanager or actionmanager
+	mod.actionmanager = actionmanager
 	mod.activator = actionmanager.getActivator("finalcutpro.console")
 		:preloadChoices()
 end
@@ -76,14 +61,18 @@ end
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function mod.refresh()
-	mod.activator:refresh()
+	if mod.activator and mod.enabled() then 
+		mod.activator:refresh()
+	end
 end
 
 --------------------------------------------------------------------------------
 -- SHOW CONSOLE:
 --------------------------------------------------------------------------------
 function mod.show()
-	mod.activator:show()
+	if mod.activator and mod.enabled() then 
+		mod.activator:show()
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -103,22 +92,26 @@ local plugin = {
 
 function plugin.init(deps)
 
+	--------------------------------------------------------------------------------
+	-- Initialise Module:
+	--------------------------------------------------------------------------------
 	mod.init(deps.actionmanager)
 
-	-- Add the command trigger
+	--------------------------------------------------------------------------------
+	-- Add the command trigger:
+	--------------------------------------------------------------------------------
 	deps.fcpxCmds:add("cpConsole")
 		:groupedBy("commandPost")
 		:whenActivated(function() mod.show() end)
 		:activatedBy():ctrl("space")
 
-	-- Add the 'Console' menu items
-	--[[
+	--------------------------------------------------------------------------------
+	-- Add the 'Console' menu item:
+	--------------------------------------------------------------------------------
 	local menu = deps.tools:addMenu(PRIORITY, function() return i18n("console") end)
-
 	menu:addItem(1000, function()
 		return { title = i18n("enableConsole"),	fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
 	end)
-	--]]
 
 	return mod
 
