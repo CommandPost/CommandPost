@@ -2,8 +2,28 @@
 	for i=1,maxItems,1 do
 %}								
 			<tr>
+				<td class="rowIcon">
+					<div id="dropzone{{ i }}" class="dropzone">
+						<div>icon</div>
+						<input id="button{{ i }}_icon" type="file" accept="image/png, image/gif, image/jpeg, image/jpg" />
+						<script>
+							var dropzone{{ i }};
+							dropzone{{ i }} = document.getElementById("dropzone{{ i }}");
+							dropzone{{ i }}.addEventListener("dragover", dragover{{ i }}, false);
+							dropzone{{ i }}.addEventListener("dragleave", dragleave{{ i }}, false);							
+
+							function dragover{{ i }}(e) {
+							  document.getElementById("dropzone{{ i }}").classList.add("hover");
+							}
+
+							function dragleave{{ i }}(e) {
+							  document.getElementById("dropzone{{ i }}").classList.remove("hover");
+							}						
+						</script>						
+					</div>
+				</td>
 				<td class="rowAction">		
-					<select id="action_button{{ i }}" class="actionSelect">
+					<select id="button{{ i }}_action" class="actionSelect">
 						<option value="none">{{ i18n("none", {default = "None"}) }}</option>		
 						{%
 							local cmds = {}
@@ -19,8 +39,9 @@
 						%}			
 					</select>		
 				</td>
-				<td class="rowLabel">label</td>
-				<td class="rowIcon">icon</td>
+				<td class="rowLabel">
+					<input type="text" id="button{{ i }}_label" class="buttonLabel" value="None">
+				</td>
 			</tr>
 {%
 	end

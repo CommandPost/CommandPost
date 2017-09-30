@@ -15,17 +15,34 @@
 	text-overflow: ellipsis;
 }
 
-.rowAction {
-	width: 50%;
-	text-
-}
-
-.rowLabel {
-	width: 40%;	
+.buttonLabel {
+	-webkit-appearance: none; 	
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;		
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 110px;
 }
 
 .rowIcon {
-	width: 10%;
+	width: 15%;
+}
+
+.rowAction {
+	width: 50%;
+}
+
+.rowLabel {
+	width: 35%;	
 }
 
 .touchbar thead {
@@ -110,4 +127,53 @@
 
 .touchBarGroupSelect {
 	float: right;
+}
+
+/* IMAGE DROP ZONE: */
+
+.dropzone {
+  position: relative;
+  border: 2.5px dotted #FFF;
+  border-radius: 5px;
+  color: white;
+  font: bold 12px/50px arial;
+  height: 50px;
+  margin: 7.5px auto;
+  text-align: center;
+  width: 50px;
+}
+
+.dropzone.hover {
+  border: 2.5px solid #5760e7;
+  color: #5760e7;
+}
+
+.dropzone.dropped {
+  background: #222;
+  border: 10px solid #444;
+}
+
+.dropzone div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropzone img {
+  border-radius: 2.5px;
+  vertical-align: middle;
+  max-width: 95%;
+  max-height: 95%;
+}
+
+.dropzone [type="file"] {
+  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
