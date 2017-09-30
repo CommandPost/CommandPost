@@ -615,6 +615,12 @@ return {
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
 			shortcutsControl					=			"Shortcuts are currently being controlled by",
+			
+			touchbarPanelLabel					=			"Touch Bar",
+			touchbarPanelTooltip				=			"Touch Bar Preferences",
+			
+			webappPanelLabel					=			"WebApp",
+			webappPanelTooltip					=			"WebApp Preferences",
 
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
@@ -846,6 +852,13 @@ return {
 	shortcutAlreadyInUseByMacOS			=			"This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
 	shortcutPleaseTryAgain				=			"Please select a new key and/or modifier combination and try again.",
 
+	--------------------------------------------------------------------------------
+	-- TOUCH BAR PANEL:
+	--------------------------------------------------------------------------------
+	customiseTouchBar					=			"Customise Touch Bar",
+	touchBarPreferences					=			"Touch Bar Preferences",
+	touchBarReset						=			"Reset all Touch Bar Items",
+	
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------

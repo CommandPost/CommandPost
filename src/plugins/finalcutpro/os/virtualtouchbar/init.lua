@@ -1,10 +1,10 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                       T O U C H B A R     P L U G I N                      --
+--               V I R T U A L   T O U C H B A R     P L U G I N              --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.os.touchbar ===
+--- === plugins.finalcutpro.os.virtualtouchbar ===
 ---
 --- Virtual Touch Bar Plugin.
 
@@ -44,25 +44,25 @@ local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.os.touchbar.lastLocation <cp.prop: point table>
+--- plugins.finalcutpro.os.virtualtouchbar.lastLocation <cp.prop: point table>
 --- Field
 --- The last known Virtual Touch Bar Location
-mod.lastLocation = config.prop("lastTouchBarLocation")
+mod.lastLocation = config.prop("lastVirtualTouchBarLocation")
 
---- plugins.finalcutpro.os.touchbar.location <cp.prop: string>
+--- plugins.finalcutpro.os.virtualtouchbar.location <cp.prop: string>
 --- Field
 --- The Virtual Touch Bar Location Setting
-mod.location = config.prop("displayTouchBarLocation", DEFAULT_VALUE):watch(function() mod.update() end)
+mod.location = config.prop("displayVirtualTouchBarLocation", DEFAULT_VALUE):watch(function() mod.update() end)
 
---- plugins.finalcutpro.os.touchbar.supported <cp.prop: boolean; read-only>
+--- plugins.finalcutpro.os.virtualtouchbar.supported <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is supported on this OS.
 mod.supported = prop(function() return touchbar.supported() end)
 
---- plugins.finalcutpro.os.touchbar.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.os.virtualtouchbar.enabled <cp.prop: boolean>
 --- Field
 --- Is `true` if the plugin is enabled.
-mod.enabled = config.prop("displayTouchBar", false):watch(function(enabled)
+mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enabled)
 	--------------------------------------------------------------------------------
 	-- Check for compatibility:
 	--------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ mod.enabled = config.prop("displayTouchBar", false):watch(function(enabled)
 	end
 end)
 
---- plugins.finalcutpro.os.touchbar.isActive <cp.prop: boolean; read-only>
+--- plugins.finalcutpro.os.virtualtouchbar.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Is `true` if the plugin is enabled and the TouchBar is supported on this OS.
 mod.isActive = mod.enabled:AND(mod.supported):watch(function(active)
@@ -86,7 +86,7 @@ mod.isActive = mod.enabled:AND(mod.supported):watch(function(active)
 	end
 end)
 
---- plugins.finalcutpro.os.touchbar.updateLocation() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.updateLocation() -> none
 --- Function
 --- Updates the Location of the Virtual Touch Bar
 ---
@@ -138,7 +138,7 @@ function mod.updateLocation()
 	mod.lastLocation(mod.touchBar:topLeft())
 end
 
---- plugins.finalcutpro.os.touchbar.update() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.update() -> none
 --- Function
 --- Updates the visibility and location of the Virtual Touch Bar
 ---
@@ -152,7 +152,7 @@ function mod.update()
 	mod.isActive:update()
 end
 
---- plugins.finalcutpro.os.touchbar.show() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.show() -> none
 --- Function
 --- Show the Virtual Touch Bar
 ---
@@ -172,7 +172,7 @@ function mod.show()
 	end
 end
 
---- plugins.finalcutpro.os.touchbar.hide() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.hide() -> none
 --- Function
 --- Hide the Virtual Touch Bar
 ---
@@ -187,7 +187,7 @@ function mod.hide()
 	end
 end
 
---- plugins.finalcutpro.os.touchbar.callback() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.callback() -> none
 --- Function
 --- Callback Function for the Virtual Touch Bar
 ---
@@ -212,7 +212,7 @@ function mod.callback(obj, message)
 	end
 end
 
---- plugins.finalcutpro.os.touchbar.start() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.start() -> none
 --- Function
 --- Initialises the Virtual Touch Bar
 ---
@@ -264,7 +264,7 @@ function mod.start()
 	end
 end
 
---- plugins.finalcutpro.os.touchbar.stop() -> none
+--- plugins.finalcutpro.os.virtualtouchbar.stop() -> none
 --- Function
 --- Stops the Virtual Touch Bar
 ---
@@ -291,7 +291,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.os.touchbar",
+	id = "finalcutpro.os.virtualtouchbar",
 	group = "finalcutpro",
 	dependencies = {
 		["finalcutpro.menu.tools"]		= "prefs",

@@ -168,7 +168,7 @@ local plugin = {
 	id = "finalcutpro.timeline.transitions",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.os.touchbar"]						= "touchbar",
+		["finalcutpro.os.virtualtouchbar"]						= "touchbar",
 	}
 }
 

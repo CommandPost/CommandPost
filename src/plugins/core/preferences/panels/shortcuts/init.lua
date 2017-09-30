@@ -52,21 +52,6 @@ local mod = {}
 
 mod.DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
-local function shallowCopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in pairs(orig) do
-            copy[orig_key] = orig_value
-        end
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
-
 -- restoreDefaultShortcuts() -> boolean
 -- Function
 -- Restores the Default Shortcuts from the Cache.
