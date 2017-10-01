@@ -129,7 +129,7 @@
 	float: right;
 }
 
-/* IMAGE DROP ZONE: */
+/* ICON DROP ZONE: */
 
 .dropzone {
   position: relative;
@@ -150,7 +150,7 @@
 
 .dropzone.dropped {
   background: #222;
-  border: 10px solid #444;
+  border: 2.5px solid #444;
 }
 
 .dropzone div {

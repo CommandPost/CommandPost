@@ -55,7 +55,10 @@ return {
 			clearList							=			"Clear List",
 			feedback							=			"Feedback",
 			settings							=			"Settings",
-			launch								=			"Launch",
+			launch								=			"Launch",			
+			location							=			"Location",
+			visibility							=			"Visibility",
+			always								=			"Always",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -492,8 +495,7 @@ return {
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
-			touchBar							=			"Virtual Touch Bar",
-			touchBarLocation					=			"Location",
+			touchBar							=			"Virtual Touch Bar",			
 			language							=			"Language",
 			provideFeedback						=			"Provide Feedback",
 			feedback							=			"Feedback",
@@ -858,6 +860,7 @@ return {
 	customiseTouchBar					=			"Customise Touch Bar",
 	touchBarPreferences					=			"Touch Bar Preferences",
 	touchBarReset						=			"Reset all Touch Bar Items",
+	touchBarResetConfirmation			=			"This will reset all modified Touch Bar items to the default values.",
 	
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
@@ -1108,7 +1111,8 @@ return {
 		cpCopyWithCustomLabelAndFolder_title					=	"Copy with Custom Label and Folder",
 		cpHUD_title												=	"Toggle HUD",
 		cpSingleMatchFrameAndHighlight_title					=	"Single Match Frame and Highlight",
-		cpToggleTouchBar_title									=	"Toggle Virtual Touch Bar",
+		cpToggleTouchBar_title									=	"Toggle Virtual Touch Bar (FCPX)",
+		cpGlobalToggleTouchBar_title							=	"Toggle Virtual Touch Bar (Global)",
 		cpToggleVoiceCommands_title								=	"Toggle Voice Commands",
 
 		cpDisableWaveforms_title								=	"Toggle Waveform Drawing",

@@ -13,18 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsShortcuts")
+local log										= require("hs.logger").new("prefsTouchBar")
 
 local dialog									= require("hs.dialog")
-local fnutils									= require("hs.fnutils")
-local fs										= require("hs.fs")
-local hotkey									= require("hs.hotkey")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
-local keycodes									= require("hs.keycodes")
-local timer										= require("hs.timer")
-local toolbar                  					= require("hs.webview.toolbar")
-local webview									= require("hs.webview")
 
 local commands									= require("cp.commands")
 local config									= require("cp.config")
@@ -43,54 +36,17 @@ local _											= require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.panels.touchbar.maxItems
---- Constant
---- The maximum number of Touch Bar items per group.
-mod.maxItems = 8
-
 --- plugins.core.preferences.panels.touchbar.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable Touch Bar Support.
 mod.enabled = config.prop("enableTouchBar", false)
 
-local function getShortcutList()
-	local shortcuts = {}
-	for _,groupId in ipairs(commands.groupIds()) do
-		local group = commands.group(groupId)
-		local cmds = group:getAll()
-		for id,cmd in pairs(cmds) do
-			-- log.df("Processing command: %s", id)
-			local cmdShortcuts = cmd:getShortcuts()
-			if cmdShortcuts and #cmdShortcuts > 0 then
-				for i,shortcut in ipairs(cmd:getShortcuts()) do
-					shortcuts[#shortcuts+1] = {
-						groupId = groupId,
-						command = cmd,
-						shortcutIndex = i,
-						shortcut = shortcut,
-						shortcutId = ("%s_%s"):format(id, i),
-					}
-				end
-			else
-				shortcuts[#shortcuts+1] = {
-					groupId = groupId,
-					command = cmd,
-					shortcutIndex = 1,
-					shortcutId = ("%s_%s"):format(id, 1),
-				}
+--- plugins.core.preferences.panels.touchbar.maxItems
+--- Constant
+--- The maximum number of Touch Bar items per group.
+mod.maxItems = 8
 
-			end
-		end
-	end
-	table.sort(shortcuts, function(a, b)
-		return a.groupId < b.groupId
-			or a.groupId == b.groupId and a.command:getTitle() < b.command:getTitle()
-	end)
-
-	return shortcuts
-end
-
--- resetShortcuts() -> none
+-- resetTouchBar() -> none
 -- Function
 -- Prompts to reset shortcuts to default.
 --
@@ -99,20 +55,26 @@ end
 --
 -- Returns:
 --  * None
-local function resetShortcuts()
+local function resetTouchBar()
 
 	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
 		if result == i18n("yes") then
+			mod._tb.clear()
 			mod._manager.refresh()					
 		end
-	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+	end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
 end
 
-config.watch({
-	reset = deleteShortcuts,
-})
-
+-- renderRows(context) -> none
+-- Function
+-- Generates the Preference Panel HTML Content.
+--
+-- Parameters:
+--  * context - Table of data that you want to share with the renderer
+--
+-- Returns:
+--  * HTML content as string
 local function renderRows(context)
 	if not mod._renderRows then
 		mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
@@ -123,6 +85,15 @@ local function renderRows(context)
 	return mod._renderRows(context)
 end
 
+-- renderPanel(context) -> none
+-- Function
+-- Generates the Preference Panel HTML Content.
+--
+-- Parameters:
+--  * context - Table of data that you want to share with the renderer
+--
+-- Returns:
+--  * HTML content as string
 local function renderPanel(context)
 	if not mod._renderPanel then
 		mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
@@ -133,9 +104,15 @@ local function renderPanel(context)
 	return mod._renderPanel(context)
 end
 
---------------------------------------------------------------------------------
--- GENERATE CONTENT:
---------------------------------------------------------------------------------
+-- generateContent() -> string
+-- Function
+-- Generates the Preference Panel HTML Content.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * HTML content as string
 local function generateContent()
 
 	--------------------------------------------------------------------------------	
@@ -182,68 +159,43 @@ local function generateContent()
 
 		webviewLabel 			= mod._manager.getLabel(),
 		
-		maxItems				= mod.maxItems
+		maxItems				= mod._tb.maxItems,
+		tb						= mod._tb,
 	}
 
 	return renderPanel(context)
 
 end
 
---- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
---- Function
---- Initialise the Module.
----
---- Parameters:
----  * deps - Dependancies Table
----  * env - Environment Table
----
---- Returns:
----  * The Module
-function mod.init(deps, env)
-
-	mod.allKeyCodes		= getAllKeyCodes()
-
-	mod._manager		= deps.manager
-
-	mod._webviewLabel	= deps.manager.getLabel()
-
-	mod._env			= env
-
-	mod._panel 			=  deps.manager.addPanel({
-		priority 		= 2031,
-		id				= "touchbar",
-		label			= i18n("touchbarPanelLabel"),
-		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Trackpad.prefPane/Contents/Resources/Trackpad.icns")),
-		tooltip			= i18n("touchbarPanelTooltip"),
-		height			= 550,
-	})
-
-	mod._panel
-		:addHeading(1, i18n("touchBarPreferences"))
-		:addCheckbox(3,
-			{
-				label		= "Enable Touch Bar Support",
-				checked		= mod.enabled,
-				onchange	= function(id, params) mod.enabled(params.checked) end,
-			}
-		)	
-		:addContent(10, generateContent, true)
-
-	local shortcutsEnabledClass  = ""
-	if shortcutsEnabled then shortcutsEnabledClass = "  buttonDisabled" end
-
-	mod._panel:addButton(20,
-		{
-			label		= i18n("touchBarReset"),
-			onclick		= resetShortcuts,
-			class		= "resetShortcuts" .. shortcutsEnabledClass,
-		}
-	)
-
-	mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
-
-	return mod
-
+-- touchBarPanelCallback() -> none
+-- Function
+-- JavaScript Callback for the Preferences Panel
+--
+-- Parameters:
+--  * id - ID as string
+--  * params - Table of paramaters
+--
+-- Returns:
+--  * None
+local function touchBarPanelCallback(id, params)	
+	if params and params["type"] then
+		if params["type"] == "badExtension" then
+			dialog.webviewAlert(mod._manager.getWebview(), function() end, "Only supported image files (i.e. JPEG, PNG, TIFF, GIF) are supported as Touch Bar icons.", "Please try again", "OK")
+		elseif params["type"] == "updateIcon" then
+			mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
+			mod._tb.update()
+		elseif params["type"] == "updateAction" then
+			mod._tb.updateAction(params["buttonID"], params["groupID"], params["action"])
+			mod._tb.update()
+		elseif params["type"] == "updateLabel" then
+			mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
+			mod._tb.update()
+		else
+			log.df("Unknown Callback:")
+			log.df("id: %s", hs.inspect(id))
+			log.df("params: %s", hs.inspect(params))
+		end							
+	end	
 end
 
 --- plugins.core.preferences.panels.touchbar.setGroupEditor(groupId, editorFn) -> none
@@ -276,6 +228,64 @@ function mod.getGroupEditor(groupId)
 	return mod._groupEditors and mod._groupEditors[groupId]
 end
 
+--- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
+--- Function
+--- Initialise the Module.
+---
+--- Parameters:
+---  * deps - Dependancies Table
+---  * env - Environment Table
+---
+--- Returns:
+---  * The Module
+function mod.init(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Inter-plugin Connectivity:
+	--------------------------------------------------------------------------------
+	mod._tb				= deps.tb
+	mod._manager		= deps.manager
+	mod._webviewLabel	= deps.manager.getLabel()
+	mod._env			= env
+
+	--------------------------------------------------------------------------------
+	-- Setup Preferences Panel:
+	--------------------------------------------------------------------------------	
+	mod._panel 			=  deps.manager.addPanel({
+		priority 		= 2031,
+		id				= "touchbar",
+		label			= i18n("touchbarPanelLabel"),
+		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
+		tooltip			= i18n("touchbarPanelTooltip"),
+		height			= 550,
+	})
+		:addHeading(1, i18n("touchBarPreferences"))
+		:addCheckbox(3,
+			{
+				label		= "Enable Touch Bar Support",
+				checked		= mod.enabled,
+				onchange	= function(id, params) mod.enabled(params.checked) end,
+			}
+		)	
+		:addContent(10, generateContent, true)
+
+	mod._panel:addButton(20,
+		{
+			label		= i18n("touchBarReset"),
+			onclick		= resetTouchBar,
+			class		= "resetShortcuts",
+		}
+	)
+
+	--------------------------------------------------------------------------------
+	-- Setup Callback Manager:
+	--------------------------------------------------------------------------------
+	mod._panel:addHandler("onchange", "touchBarPanelCallback", touchBarPanelCallback)
+
+	return mod
+
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -286,6 +296,8 @@ local plugin = {
 	group			= "core",
 	dependencies	= {
 		["core.preferences.manager"]		= "manager",
+		["core.touchbar.manager"]			= "tb",
+		["finalcutpro.action.manager"]		= "actionmanager",
 	}
 }
 
@@ -293,11 +305,22 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	return mod.init(deps, env)
+	if deps.tb.supported() then			
+		return mod.init(deps, env)
+	end
 end
 
-function plugin.postInit(deps)
+function plugin.postInit(deps, env)
 
+	-- TO DO: Maybe we should use Actions instead of Commands?
+	--[[	
+	local activator = deps.actionmanager.getActivator("touchbar")
+	activator:enableAllHandlers()
+	local allChoices = activator:allChoices()
+	
+	log.df("allChoices: %s", hs.inspect(allChoices))
+	--]]
+	
 end
 
 return plugin
