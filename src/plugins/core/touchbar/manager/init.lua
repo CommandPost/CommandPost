@@ -175,11 +175,7 @@ local function buttonCallback(item)
 	local action = mod.getAction(button, group)	
 	
 	log.df("action: %s", action)
-		
-	local command = commands:get(action)	
-	log.df("command: %s", command)
-	
-	--command:pressed()
+	commands.group(group):get(action):pressed()
 	
 end
 
