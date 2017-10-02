@@ -43,15 +43,20 @@ mod._tbItemIDs = {}
 -- Group Statuses:
 mod._groupStatus = {}
 
---- plugins.core.touchbar.manager.closeBox
---- Constant
+--- plugins.core.touchbar.manager.defaultGroup -> string
+--- Variable
+--- The default group.
+mod.defaultGroup = "global"
+
+--- plugins.core.touchbar.manager.closeBox -> boolean
+--- Variable
 --- An optional boolean, specifying whether or not the system 
 --- escape (or its current replacement) button should be replaced by a button 
 --- to remove the modal bar from the touch bar display when pressed.
 mod.dismissButton = true
 
---- plugins.core.touchbar.manager.maxItems
---- Constant
+--- plugins.core.touchbar.manager.maxItems -> number
+--- Variable
 --- The maximum number of Touch Bar items per group.
 mod.maxItems = 8
 
@@ -76,15 +81,45 @@ mod._items = config.prop("touchBarButtons", {})
 --- Is `true` if the Touch Bar is supported on this version of macOS.
 mod.supported = prop(function() return touchbar.supported() end)
 
+
+--- plugins.core.touchbar.manager.touchBar() -> none
+--- Function
+--- Returns the `hs._asm.undocumented.touchbar` object if it exists.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `hs._asm.undocumented.touchbar`
 function mod.touchBar()
 	return mod._touchBar or nil
 end
 
+--- plugins.core.touchbar.manager.clear() -> none
+--- Function
+--- Clears the Touch Bar items.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.clear()
 	mod._items({})
 	mod.update()
 end
 
+--- plugins.core.touchbar.manager.updateIcon(button, group, icon) -> none
+--- Function
+--- Updates a Touch Bar icon.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---  * icon - Icon Data as string
+---
+--- Returns:
+---  * None
 function mod.updateIcon(button, group, icon)
 	local buttons = mod._items()
 	
@@ -102,6 +137,17 @@ function mod.updateIcon(button, group, icon)
 	mod.update()
 end
 
+--- plugins.core.touchbar.manager.updateAction(button, group, action) -> none
+--- Function
+--- Updates a Touch Bar action.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---  * action - Action as string
+---
+--- Returns:
+---  * None
 function mod.updateAction(button, group, action)
 
 	if action == i18n("none") then
@@ -123,6 +169,17 @@ function mod.updateAction(button, group, action)
 	mod.update()
 end
 
+--- plugins.core.touchbar.manager.updateLabel(button, group, label) -> none
+--- Function
+--- Updates a Touch Bar action.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---  * label - Label as string
+---
+--- Returns:
+---  * None
 function mod.updateLabel(button, group, label)
 	local buttons = mod._items()
 	
@@ -140,6 +197,16 @@ function mod.updateLabel(button, group, label)
 	mod.update()
 end
 
+--- plugins.core.touchbar.manager.getIcon(button, group) -> string
+--- Function
+--- Returns a specific Touch Bar Icon.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Icon data as string
 function mod.getIcon(button, group)
 	local items = mod._items()	
 	if items[group] and items[group][button] and items[group][button]["icon"] then
@@ -149,6 +216,16 @@ function mod.getIcon(button, group)
 	end	
 end
 
+--- plugins.core.touchbar.manager.getAction(button, group) -> string
+--- Function
+--- Returns a specific Touch Bar Action.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Action as string
 function mod.getAction(button, group)
 	local items = mod._items()	
 	if items[group] and items[group][button] and items[group][button]["action"] then
@@ -158,6 +235,16 @@ function mod.getAction(button, group)
 	end	
 end
 
+--- plugins.core.touchbar.manager.getLabel(button, group) -> string
+--- Function
+--- Returns a specific Touch Bar Label.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Label as string
 function mod.getLabel(button, group)
 	local items = mod._items()	
 	if items[group] and items[group][button] and items[group][button]["label"] then
@@ -167,7 +254,15 @@ function mod.getLabel(button, group)
 	end	
 end
 
-
+--- plugins.core.touchbar.manager.start() -> none
+--- Function
+--- Starts the CommandPost Touch Bar module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.start()
 		
 	if not mod._bar then 	
@@ -188,8 +283,17 @@ function mod.start()
 		mod.update()
 	end
 	
-end							 
-
+end				
+			 
+--- plugins.core.touchbar.manager.stop() -> none
+--- Function
+--- Stops the CommandPost Touch Bar module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.stop()
 	if mod._bar then
 		mod._bar:dismissModalBar()
@@ -198,6 +302,15 @@ function mod.stop()
 	end
 end
 
+-- buttonCallback(item) -> none
+-- Function
+-- Callback that's triggered when you click a Touch Bar button.
+--
+-- Parameters:
+--  * item - The Touch Bar item.
+--
+-- Returns:
+--  * None
 local function buttonCallback(item)
 	
 	local id = item:identifier()	
@@ -211,6 +324,18 @@ local function buttonCallback(item)
 	
 end
 
+-- addButton(icon, action, label, id) -> none
+-- Function
+-- Add's a new button to the Touch Bar item tables.
+--
+-- Parameters:
+--  * icon - Icon data as string
+--  * action - Action as string
+--  * label - Label as string
+--  * id - Unique ID of the button 
+--
+-- Returns:
+--  * None
 local function addButton(icon, action, label, id)
 	if not label then
 		label = ""
@@ -228,6 +353,15 @@ local function addButton(icon, action, label, id)
 	end
 end
 
+--- plugins.core.touchbar.manager.activeGroup() -> none
+--- Function
+--- Returns the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Returns the active group or `manager.defaultGroup` as a string. 
 function mod.activeGroup()
 	
 	local groupStatus = mod._groupStatus
@@ -236,13 +370,20 @@ function mod.activeGroup()
 			return group
 		end
 	end
-	return "global"
+	return mod.defaultGroup
 	
 end
 
+--- plugins.core.touchbar.manager.update() -> none
+--- Function
+--- Updates the Touch Bar.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.update()
-	
-	log.df("Updating Touch Bar Content")
 	
 	--------------------------------------------------------------------------------
 	-- Reset the Touch Bar items:
@@ -288,11 +429,19 @@ function mod.update()
 		
 end
 
+--- plugins.core.touchbar.manager.groupStatus(groupID, status) -> none
+--- Function
+--- Updates a group's visibility status.
+---
+--- Parameters:
+---  * groupID - the group you want to update as a string.
+---  * status - the status of the group as a boolean.
+---
+--- Returns:
+---  * None
 function mod.groupStatus(groupID, status)
-
 	mod._groupStatus[groupID] = status
 	mod.update()
-	
 end
 
 --------------------------------------------------------------------------------
@@ -302,9 +451,20 @@ end
 --------------------------------------------------------------------------------
 mod.virtual = {}
 
+--- plugins.core.touchbar.manager.virtual.LOCATION_DRAGGABLE -> string
+--- Constant
+--- Location is Draggable.
 mod.virtual.LOCATION_DRAGGABLE 	= "Draggable"
+
+--- plugins.core.touchbar.manager.virtual.LOCATION_MOUSE -> string
+--- Constant
+--- Location is Mouse.
 mod.virtual.LOCATION_MOUSE		= "Mouse"
-mod.virtual.DEFAULT_VALUE 		= mod.virtual.LOCATION_DRAGGABLE
+
+--- plugins.core.touchbar.manager.virtual.LOCATION_DEFAULT_VALUE -> string
+--- Constant
+--- Default location value.
+mod.virtual.LOCATION_DEFAULT_VALUE 		= mod.virtual.LOCATION_DRAGGABLE
 
 --- plugins.core.touchbar.manager.virtual.lastLocation <cp.prop: point table>
 --- Field
@@ -314,7 +474,7 @@ mod.virtual.lastLocation = config.prop("lastVirtualTouchBarLocation")
 --- plugins.finalcutpro.touchbar.virtual.location <cp.prop: string>
 --- Field
 --- The Virtual Touch Bar Location Setting
-mod.virtual.location = config.prop("displayVirtualTouchBarLocation", mod.virtual.DEFAULT_VALUE):watch(function() mod.virtual.update() end)
+mod.virtual.location = config.prop("displayVirtualTouchBarLocation", mod.virtual.LOCATION_DEFAULT_VALUE):watch(function() mod.virtual.update() end)
 
 --- plugins.core.touchbar.manager.virtual.enabled <cp.prop: boolean>
 --- Field
@@ -416,7 +576,6 @@ function mod.virtual.stop()
 		mod.keyboardWatcher = nil
 	end
 end
-
 
 --- plugins.finalcutpro.touchbar.virtual.updateLocation() -> none
 --- Function

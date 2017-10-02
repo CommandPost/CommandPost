@@ -36,6 +36,11 @@ local _											= require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.panels.touchbar.supportedExtensions -> string
+--- Variable
+--- Table of supported extensions for Touch Bar Icons.
+mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
+
 --- plugins.core.preferences.panels.touchbar.defaultIconPath -> string
 --- Variable
 --- Default Path where built-in icons are stored
@@ -45,6 +50,11 @@ mod.defaultIconPath = cp.config.basePath .. "/plugins/core/touchbar/icons"
 --- Field
 --- Enable or disable Touch Bar Support.
 mod.enabled = config.prop("enableTouchBar", false)
+
+--- plugins.core.preferences.panels.touchbar.lastGroup <cp.prop: string>
+--- Field
+--- Last group used in the Preferences Drop Down.
+mod.lastGroup = config.prop("touchBarPreferencesLastGroup", nil)
 
 --- plugins.core.preferences.panels.touchbar.maxItems -> number
 --- Variable
@@ -125,6 +135,7 @@ local function generateContent()
 	--------------------------------------------------------------------------------
 	local groupOptions = {}
 	local defaultGroup = nil
+	if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
 	for _,id in ipairs(commands.groupIds()) do
 		defaultGroup = defaultGroup or id
 		groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
@@ -203,7 +214,7 @@ end
 local function touchBarPanelCallback(id, params)	
 	if params and params["type"] then
 		if params["type"] == "badExtension" then
-			dialog.webviewAlert(mod._manager.getWebview(), function() end, "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.", "Please try again", "OK")
+			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badTouchBarIcon"), i18n("pleaseTryAgain"), i18n("ok"))
 		elseif params["type"] == "updateIcon" then
 			mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
 		elseif params["type"] == "updateAction" then
@@ -211,13 +222,10 @@ local function touchBarPanelCallback(id, params)
 		elseif params["type"] == "updateLabel" then
 			mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
 		elseif params["type"] == "iconClicked" then			
-			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}, true)
+			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)
+			local failed = false
 			if result and result["1"] then
-				local path = string.sub(result["1"], 8)
-				
-				log.df("Path: '%s'", path)				
-				log.df("Exist: %s", tools.doesFileExist(path))			
-			
+				local path = string.sub(result["1"], 8)								
 				local icon = image.imageFromPath(path)
 				if icon then
 					local encodedIcon = icon:encodeAsURLString()
@@ -225,27 +233,24 @@ local function touchBarPanelCallback(id, params)
 						mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)		
 						mod._manager.refresh()
 					else
-						log.ef("Failed to encode file?")
+						failed = true
 					end
 				else
-					log.ef("Bad file?")
+					failed = true					
 				end
-			else
-				log.ef("Error: %s", inspect(result))
+				if failed then
+					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
+				end
 			end
-		elseif params["type"] == "updateGroup" then			 
-			log.df("UPDATE GROUP: %s", params["groupID"])
+		elseif params["type"] == "updateGroup" then			 			
+			mod.lastGroup(params["groupID"])			
 		else
-			log.df("Unknown Callback:")
+			log.df("Unknown Callback in Touch Bar Preferences Panel:")
 			log.df("id: %s", hs.inspect(id))
 			log.df("params: %s", hs.inspect(params))
 		end							
 	end	
 end
-
--- 
-
-
 
 --- plugins.core.preferences.panels.touchbar.setGroupEditor(groupId, editorFn) -> none
 --- Function

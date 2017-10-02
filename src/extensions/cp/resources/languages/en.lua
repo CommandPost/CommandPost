@@ -862,10 +862,12 @@ return {
 	--------------------------------------------------------------------------------
 	customiseTouchBar					=			"Customise Touch Bar",
 	touchBarPreferences					=			"Touch Bar Preferences",
-	touchBarReset						=			"Reset all Touch Bar Items",
+	touchBarReset						=			"Reset All Touch Bar Items",
 	touchBarResetConfirmation			=			"This will reset all modified Touch Bar items to the default values.",
 	buttonLabel							=			"Button Label",
 	pleaseSelectAnIcon					=			"Please select an icon:",
+	fileCouldNotBeRead					=			"The selected file could not be read.",
+	badTouchBarIcon						=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
 	
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
