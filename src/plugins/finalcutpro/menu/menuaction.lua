@@ -15,6 +15,7 @@
 --
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("menuaction")
+local bench				= require("cp.bench")
 
 local choices			= require("cp.choices")
 local fcp				= require("cp.apple.finalcutpro")
@@ -22,8 +23,9 @@ local fnutils			= require("hs.fnutils")
 local config			= require("cp.config")
 local prop				= require("cp.prop")
 local timer				= require("hs.timer")
+local idle				= require("cp.idle")
 
-local concat			= table.concat
+local insert, concat	= table.insert, table.concat
 
 --------------------------------------------------------------------------------
 --
@@ -55,9 +57,14 @@ function mod.init(actionmanager)
 	:onExecute(mod.onExecute)
 	:onActionId(mod.actionId)
 
+	mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
+	local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
+
 	-- watch for restarts
 	fcp.isRunning:watch(function(running)
-		timer.doAfter(0.1, mod.reset)
+		idle.queue(delay, function()
+			mod.reload()
+		end)
 	end, true)
 end
 
@@ -74,11 +81,8 @@ function mod.id()
 	return ID
 end
 
-function mod.onChoices(choices)
-	if not fcp:menuBar():isShowing() then
-		return true
-	end
-
+function mod.reload()
+	local choices = {}
 	fcp:menuBar():visitMenuItems(function(path, menuItem)
 		local title = menuItem:title()
 
@@ -86,12 +90,30 @@ function mod.onChoices(choices)
 			local params = {}
 			params.path	= fnutils.concat(fnutils.copy(path), { title })
 
-			choices:add(title)
-				:subText(i18n("menuChoiceSubText", {path = concat(path, " > ")}))
-				:params(params)
-				:id(mod.actionId(params))
+			insert(choices, {
+				text = title,
+				subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+				params = params,
+				id = mod.actionId(params),
+			})
 		end
 	end)
+	config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
+	mod._choices = choices
+	mod.reset()
+end
+
+function mod.onChoices(choices)
+	if not fcp:menuBar():isShowing() or not mod._choices then
+		return true
+	end
+
+	for _,choice in ipairs(mod._choices) do
+		choices:add(choice.text)
+			:subText(choice.subText)
+			:params(choice.params)
+			:id(choice.id)
+	end
 end
 
 function mod.reset()
