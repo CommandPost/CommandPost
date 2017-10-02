@@ -102,8 +102,8 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	local group = effects:group():UI()		
-	local groupValue = group:attributeValue("AXValue")	
+	local group = effects:group():UI()
+	local groupValue = group:attributeValue("AXValue")
 	if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
 		effects:showInstalledEffects()
 	end
@@ -117,9 +117,11 @@ function mod.apply(action)
 	-- Click 'All':
 	--------------------------------------------------------------------------------
 	if category then
-		transitions:showTransitionsCategory(category)
+		log.df("Showing audio category '%s'", category)
+		effects:showAudioCategory(category)
 	else
-		transitions:showAllTransitions()
+		log.df("Showing all audio categories")
+		effects:showAllAudioEffects()
 	end
 
 	--------------------------------------------------------------------------------
@@ -132,7 +134,7 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
-		dialog.displayErrorMessage("Unable to find a transition called '"..name.."'.")
+		dialog.displayErrorMessage("Unable to find an audio effect called '"..name.."'.")
 		return false
 	end
 
