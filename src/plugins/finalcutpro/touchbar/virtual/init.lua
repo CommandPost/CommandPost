@@ -31,19 +31,17 @@ local prop										= require("cp.prop")
 --------------------------------------------------------------------------------
 local PRIORITY				= 1000
 
-local LOCATION_TIMELINE		= "TimelineTopCentre"
-local LOCATION_DRAGGABLE 	= "Draggable"
-local LOCATION_MOUSE		= "Mouse"
-
-local VISIBILITY_ALWAYS		= "Always"
-local VISIBILITY_FCP		= "Final Cut Pro"
-
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+mod.LOCATION_TIMELINE		= "TimelineTopCentre"
+
+mod.VISIBILITY_ALWAYS		= "Always"
+mod.VISIBILITY_FCP			= "Final Cut Pro"
 
 --- plugins.finalcutpro.touchbar.virtual.visibility <cp.prop: string>
 --- Field
@@ -107,6 +105,14 @@ function plugin.init(deps)
 	if mod.manager.supported() then
 
 		--------------------------------------------------------------------------------
+		-- Update Touch Bar Buttons when FCPX is active:
+		--------------------------------------------------------------------------------
+		fcp:watch({
+			active		= function() mod.manager.groupStatus("fcpx", true) end,
+			inactive	= function() mod.manager.groupStatus("fcpx", false) end,
+		})
+
+		--------------------------------------------------------------------------------
 		-- Disable/Enable the Touchbar when the Command Editor/etc is open:
 		--------------------------------------------------------------------------------
 		fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(active)
@@ -138,7 +144,7 @@ function plugin.init(deps)
 			-- Show Touch Bar at Top Centre of Timeline:
 			--------------------------------------------------------------------------------
 			local timeline = fcp:timeline()
-			if timeline and displayVirtualTouchBarLocation == LOCATION_TIMELINE and timeline:isShowing() then
+			if timeline and displayVirtualTouchBarLocation == mod.LOCATION_TIMELINE and timeline:isShowing() then
 				--------------------------------------------------------------------------------
 				-- Position Touch Bar to Top Centre of Final Cut Pro Timeline:
 				--------------------------------------------------------------------------------
@@ -162,6 +168,13 @@ function plugin.init(deps)
 		-- Menu items:
 		--------------------------------------------------------------------------------
 		local section = deps.prefs:addSection(PRIORITY)
+		
+		local LOCATION_DRAGGABLE 		= mod.manager.virtual.LOCATION_DRAGGABLE
+		local LOCATION_MOUSE 			= mod.manager.virtual.LOCATION_MOUSE
+		local LOCATION_TIMELINE			= mod.LOCATION_TIMELINE		
+		
+		local VISIBILITY_ALWAYS			= mod.VISIBILITY_ALWAYS
+		local VISIBILITY_FCP			= mod.VISIBILITY_FCP
 
 		if mod.manager.supported() then 
 			section:addMenu(2000, function() return i18n("touchBar") end)

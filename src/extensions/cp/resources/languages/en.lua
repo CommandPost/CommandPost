@@ -59,6 +59,9 @@ return {
 			location							=			"Location",
 			visibility							=			"Visibility",
 			always								=			"Always",
+			none								=			"None",
+			icon								=			"Icon",
+			action								=			"Action",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -861,6 +864,8 @@ return {
 	touchBarPreferences					=			"Touch Bar Preferences",
 	touchBarReset						=			"Reset all Touch Bar Items",
 	touchBarResetConfirmation			=			"This will reset all modified Touch Bar items to the default values.",
+	buttonLabel							=			"Button Label",
+	pleaseSelectAnIcon					=			"Please select an icon:",
 	
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:

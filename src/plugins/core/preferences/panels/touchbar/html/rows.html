@@ -31,7 +31,7 @@
 				</td>
 				<td class="rowAction">		
 					<select id="{{ group:id() }}_button{{ i }}_action" class="actionSelect">
-						<option value="none">{{ i18n("none", {default = "None"}) }}</option>		
+						<option value="none">{{ i18n("none") }}</option>		
 						{%
 							local cmds = {}
 							for id,cmd in pairs(group:getAll()) do
@@ -94,11 +94,32 @@
 						var {{ group:id() }}_dropzone{{ i }};
 						{{ group:id() }}_dropzone{{ i }} = document.getElementById("{{ group:id() }}_dropzone{{ i }}");
 						{{ group:id() }}_dropzone{{ i }}.addEventListener("dragover", dragover{{ i }}, false);
-						{{ group:id() }}_dropzone{{ i }}.addEventListener("dragleave", dragleave{{ i }}, false);				
+						{{ group:id() }}_dropzone{{ i }}.addEventListener("dragleave", dragleave{{ i }}, false);					
 						
 						var {{ group:id() }}_dropzoneInput{{ i }};
 						{{ group:id() }}_dropzoneInput{{ i }} = document.getElementById("{{ group:id() }}_button{{ i }}_icon");	
 						{{ group:id() }}_dropzoneInput{{ i }}.addEventListener("change", dropzoneChange{{ i }}, false);	
+						{{ group:id() }}_dropzoneInput{{ i }}.addEventListener("click", dropzoneClick{{ i }}, false);	
+						
+						function dropzoneClick{{ i }}(e) {		
+							//
+							// Drop Zone Clicked
+							//
+							try {
+								var result = {
+									id: "touchBarPanelCallback",
+									params: {
+										type: "iconClicked",
+										groupID: "{{ group:id() }}",
+										buttonID: "{{ i }}",
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}		
+						}						
 
 						function dragover{{ i }}(e) {
 							{{ group:id() }}_dropzone{{ i }}.classList.add("hover");

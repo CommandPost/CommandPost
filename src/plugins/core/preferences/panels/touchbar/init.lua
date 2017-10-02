@@ -36,13 +36,18 @@ local _											= require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.panels.touchbar.defaultIconPath -> string
+--- Variable
+--- Default Path where built-in icons are stored
+mod.defaultIconPath = cp.config.basePath .. "/plugins/core/touchbar/icons"
+
 --- plugins.core.preferences.panels.touchbar.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable Touch Bar Support.
 mod.enabled = config.prop("enableTouchBar", false)
 
---- plugins.core.preferences.panels.touchbar.maxItems
---- Constant
+--- plugins.core.preferences.panels.touchbar.maxItems -> number
+--- Variable
 --- The maximum number of Touch Bar items per group.
 mod.maxItems = 8
 
@@ -133,7 +138,25 @@ local function generateContent()
 		required	= true,
 	}) .. ui.javascript([[
 		var touchBarGroupSelect = document.getElementById("touchBarGroupSelect")
-		touchBarGroupSelect.onchange = function() {
+		touchBarGroupSelect.onchange = function(e) {
+								
+			//
+			// Change Group Callback:
+			//
+			try {
+				var result = {
+					id: "touchBarPanelCallback",
+					params: {
+						type: "updateGroup",
+						groupID: this.value,
+					},
+				}
+				webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
+			} catch(err) {
+				console.log("Error: " + err)
+				alert('An error has occurred. Does the controller exist yet?');
+			}							
+		
 			console.log("touchBarGroupSelect changed");
 			var groupControls = document.getElementById("touchbarGroupControls");
 			var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
@@ -180,16 +203,38 @@ end
 local function touchBarPanelCallback(id, params)	
 	if params and params["type"] then
 		if params["type"] == "badExtension" then
-			dialog.webviewAlert(mod._manager.getWebview(), function() end, "Only supported image files (i.e. JPEG, PNG, TIFF, GIF) are supported as Touch Bar icons.", "Please try again", "OK")
+			dialog.webviewAlert(mod._manager.getWebview(), function() end, "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.", "Please try again", "OK")
 		elseif params["type"] == "updateIcon" then
 			mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
-			mod._tb.update()
 		elseif params["type"] == "updateAction" then
 			mod._tb.updateAction(params["buttonID"], params["groupID"], params["action"])
-			mod._tb.update()
 		elseif params["type"] == "updateLabel" then
 			mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
-			mod._tb.update()
+		elseif params["type"] == "iconClicked" then			
+			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}, true)
+			if result and result["1"] then
+				local path = string.sub(result["1"], 8)
+				
+				log.df("Path: '%s'", path)				
+				log.df("Exist: %s", tools.doesFileExist(path))			
+			
+				local icon = image.imageFromPath(path)
+				if icon then
+					local encodedIcon = icon:encodeAsURLString()
+					if encodedIcon then 
+						mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)		
+						mod._manager.refresh()
+					else
+						log.ef("Failed to encode file?")
+					end
+				else
+					log.ef("Bad file?")
+				end
+			else
+				log.ef("Error: %s", inspect(result))
+			end
+		elseif params["type"] == "updateGroup" then			 
+			log.df("UPDATE GROUP: %s", params["groupID"])
 		else
 			log.df("Unknown Callback:")
 			log.df("id: %s", hs.inspect(id))
@@ -197,6 +242,10 @@ local function touchBarPanelCallback(id, params)
 		end							
 	end	
 end
+
+-- 
+
+
 
 --- plugins.core.preferences.panels.touchbar.setGroupEditor(groupId, editorFn) -> none
 --- Function

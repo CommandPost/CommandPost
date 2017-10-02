@@ -6,7 +6,8 @@
 
 --- === plugins.core.touchbar.manager ===
 ---
---- Menu Manager Plugin.
+--- Touch Bar Manager Plugin.
+--- This handles both the Virtual Touch Bar and adding items to the physical Touch Bar.
 
 --------------------------------------------------------------------------------
 --
@@ -28,32 +29,42 @@ local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
-local LOCATION_DRAGGABLE 	= "Draggable"
-local LOCATION_MOUSE		= "Mouse"
-local DEFAULT_VALUE 		= LOCATION_DRAGGABLE
-
---------------------------------------------------------------------------------
---
 -- THE MODULE - PHYSICAL TOUCH BAR:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.closeBox = true
+-- Touch Bar Items:
+mod._tbItems = {}
+
+-- Touch Bar Item IDs:
+mod._tbItemIDs = {}
+
+-- Group Statuses:
+mod._groupStatus = {}
+
+--- plugins.core.touchbar.manager.closeBox
+--- Constant
+--- An optional boolean, specifying whether or not the system 
+--- escape (or its current replacement) button should be replaced by a button 
+--- to remove the modal bar from the touch bar display when pressed.
+mod.dismissButton = true
 
 --- plugins.core.touchbar.manager.maxItems
 --- Constant
 --- The maximum number of Touch Bar items per group.
-mod.maxItems = 10
+mod.maxItems = 8
 
 --- plugins.core.touchbar.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable Touch Bar Support.
-mod.enabled = config.prop("enableTouchBar", false)
+mod.enabled = config.prop("enableTouchBar", false):watch(function(enabled)
+	if enabled then
+		mod.start()
+	else
+		mod.stop()
+	end
+end)
 
 --- plugins.core.touchbar.manager.buttons <cp.prop: table>
 --- Field
@@ -71,6 +82,7 @@ end
 
 function mod.clear()
 	mod._items({})
+	mod.update()
 end
 
 function mod.updateIcon(button, group, icon)
@@ -87,13 +99,18 @@ function mod.updateIcon(button, group, icon)
 	buttons[group][button]["icon"] = icon
 	
 	mod._items(buttons)
+	mod.update()
 end
 
 function mod.updateAction(button, group, action)
+
+	if action == i18n("none") then
+		return
+	end
+	
 	local buttons = mod._items()
 	
 	button = tostring(button)
-	
 	if not buttons[group] then	
 		buttons[group] = {}
 	end
@@ -103,6 +120,7 @@ function mod.updateAction(button, group, action)
 	buttons[group][button]["action"] = action
 	
 	mod._items(buttons)
+	mod.update()
 end
 
 function mod.updateLabel(button, group, label)
@@ -119,6 +137,7 @@ function mod.updateLabel(button, group, label)
 	buttons[group][button]["label"] = label
 
 	mod._items(buttons)
+	mod.update()
 end
 
 function mod.getIcon(button, group)
@@ -151,20 +170,33 @@ end
 
 function mod.start()
 		
+	if not mod._bar then 	
 		mod._bar = touchbar.bar.new()		
-		
+	
 		--------------------------------------------------------------------------------
 		-- Setup System Icon:
 		--------------------------------------------------------------------------------
 		mod._sysTrayIcon = touchbar.item.newButton(hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon), "CommandPost")
 							 :callback(function(self) 
-							 	self:presentModalBar(mod._bar, mod.closeBox)
+								self:presentModalBar(mod._bar, mod.dismissButton)
 							 end)
-							 :addToSystemTray(true)	
+							 :addToSystemTray(true)
+							 
+		--------------------------------------------------------------------------------
+		-- Update Touch Bar:
+		--------------------------------------------------------------------------------							 
+		mod.update()
+	end
+	
 end							 
 
-mod._tbItems = {}
-mod._tbItemIDs = {}
+function mod.stop()
+	if mod._bar then
+		mod._bar:dismissModalBar()
+		mod._bar = nil
+		mod._sysTrayIcon = nil
+	end
+end
 
 local function buttonCallback(item)
 	
@@ -174,7 +206,7 @@ local function buttonCallback(item)
 	local button = idTable[2]		
 	local action = mod.getAction(button, group)	
 	
-	log.df("action: %s", action)
+	--log.df("action: %s", action)
 	commands.group(group):get(action):pressed()
 	
 end
@@ -184,40 +216,53 @@ local function addButton(icon, action, label, id)
 		label = ""
 	end
 	if icon then 
-		icon = image.imageFromURL(icon)
+		icon = image.imageFromURL(icon):setSize({w=36,h=36})
 	end	
+	table.insert(mod._tbItemIDs, id)	
 	if icon then 
-		log.df("Adding button with icon")
-		mod._tbItems[#mod._tbItems + 1] = touchbar.item.newButton(label, icon, id):callback(buttonCallback)
-		mod._tbItemIDs[#mod._tbItemIDs + 1] = id
+		--log.df("Adding button with icon")		
+		table.insert(mod._tbItems, touchbar.item.newButton(label, icon, id):callback(buttonCallback))		
 	else
-		log.df("Adding button without icon")
-		mod._tbItems[#mod._tbItems + 1] = touchbar.item.newButton(label, id):callback(buttonCallback)
-		mod._tbItemIDs[#mod._tbItemIDs + 1] = id
+		--log.df("Adding button without icon")
+		table.insert(mod._tbItems, touchbar.item.newButton(label, id):callback(buttonCallback))
 	end
+end
+
+function mod.activeGroup()
+	
+	local groupStatus = mod._groupStatus
+	for group, status in pairs(groupStatus) do
+		if status then
+			return group
+		end
+	end
+	return "global"
+	
 end
 
 function mod.update()
 	
 	log.df("Updating Touch Bar Content")
 	
+	--------------------------------------------------------------------------------
+	-- Reset the Touch Bar items:
+	--------------------------------------------------------------------------------
 	mod._tbItems = {}
 	mod._tbItemIDs = {}
 	
-	local items = mod._items()
-	
+	--------------------------------------------------------------------------------
+	-- Create new buttons:
+	--------------------------------------------------------------------------------
+	local items = mod._items()	
 	for groupID, group in pairs(items) do
-		
-		--log.df("groupID: %s", groupID)
-		if groupID == "global" then 
-	
+		if groupID == mod.activeGroup() then 	
 			for buttonID, button in pairs(group) do		
 				if button["action"] then
 							
-					local action = button["action"] or nil
-					local label = button["label"] or nil
-					local icon = button["icon"] or nil
-					local id = groupID .. "_" .. buttonID
+					local action 		= button["action"] or nil
+					local label 		= button["label"] or nil
+					local icon 			= button["icon"] or nil
+					local id 			= groupID .. "_" .. buttonID
 														
 					addButton(icon, action, label, id)
 										
@@ -226,11 +271,28 @@ function mod.update()
 		end
 	end
 	
+	--------------------------------------------------------------------------------
+	-- Put the buttons in the correct order:
+	--------------------------------------------------------------------------------
+	table.sort(mod._tbItemIDs)
+		
+	--------------------------------------------------------------------------------
+	-- Add buttons to the bar:
+	--------------------------------------------------------------------------------	
 	mod._bar
 		:templateItems(mod._tbItems)
 		:customizableIdentifiers(mod._tbItemIDs)
 		:requiredIdentifiers(mod._tbItemIDs)	
 		:defaultIdentifiers(mod._tbItemIDs)
+		:presentModalBar()
+		
+end
+
+function mod.groupStatus(groupID, status)
+
+	mod._groupStatus[groupID] = status
+	mod.update()
+	
 end
 
 --------------------------------------------------------------------------------
@@ -240,6 +302,10 @@ end
 --------------------------------------------------------------------------------
 mod.virtual = {}
 
+mod.virtual.LOCATION_DRAGGABLE 	= "Draggable"
+mod.virtual.LOCATION_MOUSE		= "Mouse"
+mod.virtual.DEFAULT_VALUE 		= mod.virtual.LOCATION_DRAGGABLE
+
 --- plugins.core.touchbar.manager.virtual.lastLocation <cp.prop: point table>
 --- Field
 --- The last known Virtual Touch Bar Location
@@ -248,7 +314,7 @@ mod.virtual.lastLocation = config.prop("lastVirtualTouchBarLocation")
 --- plugins.finalcutpro.touchbar.virtual.location <cp.prop: string>
 --- Field
 --- The Virtual Touch Bar Location Setting
-mod.virtual.location = config.prop("displayVirtualTouchBarLocation", DEFAULT_VALUE):watch(function() mod.virtual.update() end)
+mod.virtual.location = config.prop("displayVirtualTouchBarLocation", mod.virtual.DEFAULT_VALUE):watch(function() mod.virtual.update() end)
 
 --- plugins.core.touchbar.manager.virtual.enabled <cp.prop: boolean>
 --- Field
@@ -310,7 +376,7 @@ function mod.virtual.start()
 		--------------------------------------------------------------------------------
 		local events = eventtap.event.types
 		mod.keyboardWatcher = eventtap.new({events.flagsChanged, events.keyDown, events.leftMouseDown}, function(ev)
-			if mod.mouseInsideTouchbar and mod.virtual.location() == LOCATION_DRAGGABLE then
+			if mod.mouseInsideTouchbar and mod.virtual.location() == mod.virtual.LOCATION_DRAGGABLE then
 				if ev:getType() == events.flagsChanged and ev:getRawEventData().CGEventData.flags == 524576 then
 					mod._touchBar:backgroundColor{ red = 1 }
 									:movable(true)

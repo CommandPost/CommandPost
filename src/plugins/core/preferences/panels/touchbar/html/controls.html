@@ -1,6 +1,6 @@
 <div id="touchbarGroupControls" class="uiItem">
 {%	for id,group in pairs(groups) do %}
-	<div id="touchbarGroup_{{ id }}" class="touchbarGroup{{ id == defaultGroup and ' selected' or '' }}">
+	<div id="touchbarGroup_{{ id }}" class="touchbarGroup{{ id == defaultGroup and ' selected' or '' }}">			
 	{%
 		local editor = groupEditor(id)
 		if editor then
@@ -10,9 +10,9 @@
 		<table class="touchbar">
 			<thead>
 				<tr>
-					<th class="rowIcon">Icon</th>
-					<th class="rowAction">Action</th>
-					<th class="rowLabel">Button Label</th>					
+					<th class="rowIcon">{{ i18n("icon") }}</th>
+					<th class="rowAction">{{ i18n("action") }}</th>
+					<th class="rowLabel">{{ i18n("buttonLabel") }}</th>					
 				</tr>
 			</thead>
 			<tbody>
