@@ -313,8 +313,10 @@ function MenuBar:_visitMenuItems(visitFn, path, menu)
 	local role = menu:attributeValue("AXRole")
 	local children = menu:attributeValue("AXChildren")
 	if role == "AXMenuBar" or role == "AXMenu" then
-		for _,item in ipairs(children) do
-			self:_visitMenuItems(visitFn, path, item)
+		if children then
+			for _,item in ipairs(children) do
+				self:_visitMenuItems(visitFn, path, item)
+			end
 		end
 	elseif role == "AXMenuBarItem" or role == "AXMenuItem" then
 		local title = menu:attributeValue("AXTitle")
