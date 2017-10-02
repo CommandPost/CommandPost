@@ -23,6 +23,7 @@
 --- to instances of this activator, so disabling "videoEffect" in the "foobar" activator
 --- will not affect the "yadayada" activator.
 local log						= require("hs.logger").new("activator")
+local bench						= require("cp.bench")
 
 local _							= require("moses")
 local prop						= require("cp.prop")
@@ -159,26 +160,26 @@ function activator.new(id, manager)
 --- Field
 --- Contains the set of choice IDs which are hidden in this activator, mapped to a boolean value.
 --- If set to `true`, the choice is hidden.
-	o.hiddenChoices = config.prop(prefix .. "hiddenChoices", {}):bind(o)
+	o.hiddenChoices = config.prop(prefix .. "hiddenChoices", {}):cached():bind(o)
 
 	--- plugins.finalcutpro.action.activator.favoriteChoices <cp.prop: table of booleans>
 	--- Field
 	--- Contains the set of choice IDs which are favorites in this activator, mapped to a boolean value.
 	--- If set to `true`, the choice is a favorite.
-	o.favoriteChoices = config.prop(prefix .. "favoriteChoices", {}):bind(o)
+	o.favoriteChoices = config.prop(prefix .. "favoriteChoices", {}):cached():bind(o)
 	:watch(function() timer.doAfter(1.0, function() o:sortChoices() end) end)
 
 	--- plugins.finalcutpro.action.activator.popularChoices <cp.prop: table of integers>
 	--- Field
 	--- Keeps track of how popular particular choices are. Returns a table of choice IDs
 	--- mapped to the number of times they have been activated.
-	o.popularChoices = config.prop(prefix .. "popularChoices", {}):bind(o)
+	o.popularChoices = config.prop(prefix .. "popularChoices", {}):cached():bind(o)
 	:watch(function() timer.doAfter(1.0, function() o:sortChoices() end) end)
 
 	--- plugins.finalcutpro.action.activator.configurable <cp.prop: boolean>
 	--- Field
 	--- If `true` (the default), the activator can be configured by right-clicking on the main chooser.
-	o.configurable = config.prop(prefix .. "configurable", true):bind(o)
+	o.configurable = config.prop(prefix .. "configurable", true):cached():bind(o)
 
 	return o
 end
@@ -186,7 +187,7 @@ end
 --- plugins.finalcutpro.action.activator:preloadChoices([afterSeconds]) -> activator
 --- Method
 --- Indicates the activator should preload the choices after a number of seconds.
---- Defaults to 6 seconds if no value is provided.
+--- Defaults to 0 seconds if no value is provided.
 ---
 --- Parameters:
 --- * `afterSeconds`	- The number of seconds to wait before preloading.
@@ -194,10 +195,9 @@ end
 --- Returns:
 --- * The activator.
 function activator.mt:preloadChoices(afterSeconds)
-	afterSeconds = afterSeconds or 6
+	afterSeconds = afterSeconds or 0
 	idle.queue(afterSeconds, function()
-		log.df("Preloading Choices for Chooser...")
-		self:_findChoices() 
+		self:_findChoices()
 	end)
 	return self
 end
@@ -333,6 +333,15 @@ function activator.mt:isDisabledHandler(id)
 	return dh[id] == true
 end
 
+function activator.mt:findChoice(id)
+	for _,choice in ipairs(self:allChoices()) do
+		if choice.id == id then
+			return choice
+		end
+	end
+	return nil
+end
+
 --- plugins.finalcutpro.action.activator:hideChoice(id) -> boolean
 --- Method
 --- Hides the choice with the specified ID.
@@ -349,13 +358,8 @@ function activator.mt:hideChoice(id)
 		hidden[id] = true
 		self:hiddenChoices(hidden)
 
-		-- update the actual choice
-		for _,choice in ipairs(self:allChoices()) do
-			if choice.id == id then
-				applyHiddenTo(choice, true)
-				break
-			end
-		end
+		local choice = self:findChoice(id)
+		if choice then applyHiddenTo(choice, true) end
 
 		-- update the chooser list.
 		self:refreshChooser()
@@ -380,13 +384,11 @@ function activator.mt:unhideChoice(id)
 		self:hiddenChoices(hidden)
 		self:refreshChooser()
 
-		-- update the actual choice
-		for _,choice in ipairs(self:allChoices()) do
-			if choice.id == id then
-				applyHiddenTo(choice, false)
-				break
-			end
-		end
+		local choice = self:findChoice(id)
+		if choice then applyHiddenTo(choice, false) end
+
+		-- update the chooser list.
+		self:refreshChooser()
 
 		return true
 	end
@@ -434,6 +436,12 @@ function activator.mt:favoriteChoice(id)
 		local favorites = self:favoriteChoices()
 		favorites[id] = true
 		self:favoriteChoices(favorites)
+
+		local choice = self:findChoice(id)
+		if choice then choice.favorite = true end
+		-- update the chooser list.
+		self:refreshChooser()
+
 		return true
 	end
 	return false
@@ -453,6 +461,12 @@ function activator.mt:unfavoriteChoice(id)
 		local favorites = self:favoriteChoices()
 		favorites[id] = nil
 		self:favoriteChoices(favorites)
+
+		local choice = self:findChoice(id)
+		if choice then choice.favorite = nil end
+		-- update the chooser list.
+		self:refreshChooser()
+
 		return true
 	end
 	return false
@@ -475,21 +489,30 @@ function activator.mt:getPopularity(id)
 	return 0
 end
 
---- plugins.finalcutpro.action.activator:incPopularity(id) -> boolean
+--- plugins.finalcutpro.action.activator:incPopularity(choice, id) -> boolean
 --- Method
---- Marks the choice with the specified ID as not a favorite.
+--- Increases the popularity of the specified choice.
 ---
 --- Parameters:
---- * `id`			- The choice ID to unfavorite.
+--- * `choice`		- The choice.
+--- * `id`			- The choice ID to popularise.
 ---
 --- Returns:
 --- * `true` if successfully unfavorited.
-function activator.mt:incPopularity(id)
+function activator.mt:incPopularity(choice, id)
 	if id then
 		local index = self:popularChoices()
-		local pop = index[id] or 0
-		index[id] = pop + 1
+		local pop = (index[id] or 0) + 1
+		index[id] = pop
+		choice.popularity = pop
 		self:popularChoices(index)
+
+
+		local choice = self:findChoice(id)
+		if choice then choice.popularity = pop end
+		-- update the chooser list.
+		self:refreshChooser()
+
 	end
 end
 
@@ -507,8 +530,8 @@ function activator.mt:sortChoices()
 	if self._choices then
 		return sort(self._choices, function(a, b)
 			-- Favorites get first priority
-			local afav = self:isFavoriteChoice(a.id)
-			local bfav = self:isFavoriteChoice(b.id)
+			local afav = a.favorite
+			local bfav = b.favorite
 			if afav and not bfav then
 				return true
 			elseif bfav and not afav then
@@ -516,8 +539,8 @@ function activator.mt:sortChoices()
 			end
 
 			-- Then popularity, if specified
-			local apop = self:getPopularity(a.id)
-			local bpop = self:getPopularity(b.id)
+			local apop = a.popularity or 0
+			local bpop = b.popularity or 0
 			if apop > bpop then
 				return true
 			elseif bpop > apop then
@@ -607,9 +630,14 @@ function activator.mt:_findChoices()
 		end
 	end
 
+	local popularity = self:popularChoices()
+	local favorites = self:favoriteChoices()
 	local hidden = self:hiddenChoices()
 	for _,choice in ipairs(result) do
-		applyHiddenTo(choice, hidden[choice.id])
+		local id = choice.id
+		applyHiddenTo(choice, hidden[id])
+		choice.popularity = popularity[id] or 0
+		choice.favorite = favorites[id] == true
 	end
 	self._choices = result
 	self:sortChoices()
@@ -786,7 +814,7 @@ function activator.mt:activate(result)
 			self._onActivate(handler, action, text)
 			local actionId = handler:actionId(action)
 			if actionId then
-				self:incPopularity(actionId)
+				self:incPopularity(result, actionId)
 			end
 		else
 			error(format("No action handler with an ID of %s is registered.", hs.inspect(handlerId)))
