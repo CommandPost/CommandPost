@@ -98,13 +98,13 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure panel is open:
 	--------------------------------------------------------------------------------
-	effects:show()	
-	
+	effects:show()
+
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	local group = effects:group():UI()		
-	local groupValue = group:attributeValue("AXValue")	
+	local group = effects:group():UI()
+	local groupValue = group:attributeValue("AXValue")
 	if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
 		effects:showInstalledEffects()
 	end
@@ -118,9 +118,9 @@ function mod.apply(action)
 	-- Click 'All':
 	--------------------------------------------------------------------------------
 	if category then
-		transitions:showTransitionsCategory(category)
+		effects:showVideoCategory(category)
 	else
-		transitions:showAllTransitions()
+		effects:showAllVideoEffects()
 	end
 
 	--------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
-		dialog.displayErrorMessage("Unable to find a transition called '"..name.."'.")
+		dialog.displayErrorMessage("Unable to find a video effect called '"..name.."'.")
 		return false
 	end
 
