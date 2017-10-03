@@ -51,11 +51,11 @@ function mod.widget()
 		:sliderMax(100)
 		:sliderMinImage(image.imageFromName(image.systemImageNames.TouchBarVolumeDownTemplate))
 		:sliderMaxImage(image.imageFromName(image.systemImageNames.TouchBarVolumeUpTemplate))
-		:sliderValue(mod.defaultOutputDevice:volume())
+		:sliderValue(mod.defaultOutputDevice:volume() or 0)
 		:callback(function(item, value)
 			mod.defaultOutputDevice:setVolume(value)
 		end)
-	
+
 	return mod.item
 
 end
@@ -81,7 +81,7 @@ function mod.init(deps)
 			end
 		end)
 		:watcherStart()
-	
+
 	--------------------------------------------------------------------------------
 	-- Register Widget:
 	--------------------------------------------------------------------------------
@@ -91,11 +91,11 @@ function mod.init(deps)
 		text = "Volume Slider",
 		subText = "Adds a volume slider to the Touch Bar",
 		item = mod.widget(),
-	}	
+	}
 	deps.manager.widgets:new(id, params)
-	
+
 	return mod
-	
+
 end
 
 --------------------------------------------------------------------------------
