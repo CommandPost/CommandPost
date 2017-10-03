@@ -131,8 +131,10 @@ function widgets.allGroups()
 	local widgets = widgets:getAll()
 	for id, widget in pairs(widgets) do
 		local params = widget:params()
-		if params and params.group then
-			table.insert(result, params.group)
+		if params and params.group then		
+			if not tools.tableContains(result, params.group) then		
+				table.insert(result, params.group)
+			end
 		end
 	end
 	return result
