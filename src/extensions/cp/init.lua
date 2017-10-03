@@ -295,7 +295,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Display Initialising Notification:
 	--------------------------------------------------------------------------------
-	dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ")")
+	dialog.displayNotification(config.appName .. " " .. config.appVersion)
 
 	return mod
 

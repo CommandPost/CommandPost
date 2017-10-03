@@ -54,6 +54,17 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
 	end
 end)
 
+--- plugins.finalcutpro.touchbar.virtual.VISIBILITY_ALWAYS -> string
+--- Constant
+--- Virtual Touch Bar is displayed at top centre of the Final Cut Pro Timeline.
+mod.VISIBILITY_ALWAYS		= "Always"
+mod.VISIBILITY_FCP			= "Final Cut Pro"
+
+--- plugins.finalcutpro.touchbar.virtual.visibility <cp.prop: string>
+--- Field
+--- When should the Virtual Touch Bar be visible?
+mod.visibility = config.prop("virtualTouchBarVisibility", mod.VISIBILITY_FCP)
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -131,7 +142,7 @@ function plugin.init(deps)
 					local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod.manager.touchBar():getFrame().w/2, y = viewFrame.y + 20}
 					mod.manager.touchBar():topLeft(topLeft)
 				end
-			elseif displayVirtualTouchBarLocation == LOCATION_MOUSE then
+			elseif displayVirtualTouchBarLocation == mod.manager.virtual.LOCATION_MOUSE then
 
 				--------------------------------------------------------------------------------
 				-- Position Touch Bar to Mouse Pointer Location:

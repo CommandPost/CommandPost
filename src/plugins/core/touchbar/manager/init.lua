@@ -799,7 +799,12 @@ end
 --- Returns:
 ---  * None
 function mod.virtual.updateLocation()
-
+	
+	--------------------------------------------------------------------------------
+	-- Check that the Touch Bar exists:
+	--------------------------------------------------------------------------------
+	if not mod._touchBar then return end
+	
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
@@ -1076,6 +1081,14 @@ function plugin.postInit(deps, env)
 		mod.start()
 		mod.update()
 	end
+	
+	--------------------------------------------------------------------------------
+	-- Show Virtual Touch Bar on Load if Enabled:
+	--------------------------------------------------------------------------------
+	if mod.virtual.enabled() then
+		mod.virtual.show()
+	end
+	
 end
 
 return plugin

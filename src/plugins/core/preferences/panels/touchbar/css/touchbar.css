@@ -1,3 +1,8 @@
+.touchbarDropdown {
+	width: 200px;
+	float: left;
+}
+
 .touchbar {
 	margin-top: 10px;
 	table-layout: fixed;
