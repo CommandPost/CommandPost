@@ -27,16 +27,37 @@ local fcp				= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.init(touchbar)
-	mod.touchbar = touchbar
+--- plugins.finalcutpro.timeline.transitions.init() -> none
+--- Function
+--- Initialise the Module
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Module
+function mod.init()
 	return mod
 end
 
---------------------------------------------------------------------------------
--- TRANSITIONS SHORTCUT PRESSED:
--- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the transition to apply in the current FCPX language.
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.transitions(action) -> boolean
+--- Function
+--- Applies the specified action as a transition. Expects action to be a table with the following structure:
+---
+--- ```lua
+--- { name = "XXX", category = "YYY", theme = "ZZZ" }
+--- ```
+---
+--- ...where `"XXX"`, `"YYY"` and `"ZZZ"` are in the current FCPX language. The `category` and `theme` are optional,
+--- but if they are known it's recommended to use them, or it will simply execute the first matching transition with that name.
+---
+--- Alternatively, you can also supply a string with just the name.
+---
+--- Parameters:
+--- * `action`		- A table with the name/category/theme for the transition to apply, or a string with just the name.
+---
+--- Returns:
+--- * `true` if a matching transition was found and applied to the timeline.
 function mod.apply(action)
 
 	--------------------------------------------------------------------------------
@@ -67,7 +88,12 @@ function mod.apply(action)
 	local transitions = fcp:transitions()
 	local transitionsShowing = transitions:isShowing()
 	local transitionsLayout = transitions:saveLayout()
-
+	
+	--------------------------------------------------------------------------------
+	-- Make sure FCPX is at the front.
+	--------------------------------------------------------------------------------
+	fcp:launch()
+	
 	--------------------------------------------------------------------------------
 	-- Make sure panel is open:
 	--------------------------------------------------------------------------------
@@ -76,7 +102,11 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Transitions" is selected:
 	--------------------------------------------------------------------------------
-	transitions:showInstalledTransitions()
+	local group = transitions:group():UI()		
+	local groupValue = group:attributeValue("AXValue")	
+	if groupValue ~= fcp:string("PEMediaBrowserInstalledTransitionsMenuItem") then
+		transitions:showInstalledTransitions()
+	end
 
 	--------------------------------------------------------------------------------
 	-- Make sure there's nothing in the search box:
@@ -111,14 +141,10 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
-	mod.touchbar.hide()
-
 	transitions:applyItem(transition)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
-		mod.touchbar.show()
-
 		transitions:loadLayout(transitionsLayout)
 		if effectsLayout then effects:loadLayout(effectsLayout) end
 		if not transitionsShowing then transitions:hide() end
@@ -137,7 +163,6 @@ local plugin = {
 	id = "finalcutpro.timeline.transitions",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.os.touchbar"]						= "touchbar",
 	}
 }
 
@@ -149,7 +174,7 @@ function plugin.init(deps)
 end
 
 function plugin.postInit(deps)
-	return mod.init(deps.touchbar)
+	return mod.init()
 end
 
 return plugin

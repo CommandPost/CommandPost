@@ -7,7 +7,7 @@
 --- === plugins.finalcutpro.commands.actions ===
 ---
 --- An `action` which will execute a command with matching group/id values.
---- Registers itself with the `finalcutpro.action.manager`.
+--- Registers itself with the `core.action.manager`.
 
 --------------------------------------------------------------------------------
 --
@@ -29,6 +29,7 @@ local format			= string.format
 local mod = {}
 
 local ID	= "cmds"
+local GROUP = "fcpx"
 
 -- TODO: Add documentation
 function mod.init(actionmanager, cmds)
@@ -36,10 +37,10 @@ function mod.init(actionmanager, cmds)
 
 	mod._manager = actionmanager
 
-	mod._handler = actionmanager.addHandler(ID)
-	:onChoices(mod.onChoices)
-	:onExecute(mod.onExecute)
-	:onActionId(mod.getId)
+	mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
+		:onChoices(mod.onChoices)
+		:onExecute(mod.onExecute)
+		:onActionId(mod.getId)
 end
 
 --- plugins.finalcutpro.commands.actionss.onChoices(choices) -> nothing
@@ -133,7 +134,7 @@ local plugin = {
 	id				= "finalcutpro.commands.actions",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.action.manager"]		= "actionmanager",
+		["core.action.manager"]		= "actionmanager",
 		["finalcutpro.commands"]			= "cmds",
 	}
 }

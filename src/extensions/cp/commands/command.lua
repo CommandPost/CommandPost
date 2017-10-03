@@ -42,12 +42,12 @@ function command:new(id, parent)
 		_shortcuts = {},
 	}
 	prop.extend(o, command)
-	
+
 --- cp.commands.command.isEnabled <cp.prop: boolean>
 --- Field
 --- If set to `true`, the command is enabled.
 	o.isEnabled = prop.TRUE():bind(o)
-	
+
 --- cp.commands.command.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
@@ -56,7 +56,7 @@ function command:new(id, parent)
 			shortcut:isEnabled(active)
 		end
 	end, true)
-	
+
 	return o
 end
 
@@ -202,13 +202,13 @@ function command:addShortcut(newShortcut)
 		function() return self:released() end,
 		function() return self:repeated() end
 	)
-	
+
 	--------------------------------------------------------------------------------
 	-- Mark it as a 'command' hotkey:
 	--------------------------------------------------------------------------------
 	local shortcuts = self._shortcuts
 	shortcuts[#shortcuts + 1] = newShortcut
-	newShortcut:isEnabled(self:isEnabled())
+	newShortcut:isEnabled(self:isActive())
 	return self
 end
 
@@ -310,7 +310,7 @@ end
 ---  * the result of the function, or `nil` if none is present.
 ---
 function command:pressed()
-	if self:isEnabled() and self.pressedFn then return self.pressedFn() end
+	if self:isActive() and self.pressedFn then return self.pressedFn() end
 	return nil
 end
 
@@ -325,7 +325,7 @@ end
 ---  * the result of the function, or `nil` if none is present.
 ---
 function command:released()
-	if self:isEnabled() and self.releasedFn then return self.releasedFn() end
+	if self:isActive() and self.releasedFn then return self.releasedFn() end
 	return nil
 end
 
@@ -340,7 +340,7 @@ end
 ---  * the last result.
 ---
 function command:repeated(repeats)
-	if not self:isEnabled() then return nil end
+	if not self:isActive() then return nil end
 
 	if repeats == nil then
 		repeats = 1
@@ -365,7 +365,7 @@ end
 ---  * the last 'truthy' result (non-nil/false).
 ---
 function command:activated(repeats)
-	if not self:isEnabled() then return nil end
+	if not self:isActive() then return nil end
 
 	local result = nil
 	result = self:pressed()
@@ -385,7 +385,7 @@ function command:disable()
 end
 
 function command:__tostring()
-	local result = string.format("command: %s (enabled: %s)", self:id(), self:isEnabled())
+	local result = string.format("command: %s (enabled: %s; active: %s)", self:id(), self:isEnabled(), self:isActive())
 end
 
 return command

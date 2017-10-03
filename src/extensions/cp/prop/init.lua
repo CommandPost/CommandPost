@@ -384,6 +384,27 @@ function prop.mt:shallowTable(skipMetatable)
 	return self
 end
 
+local UNCACHED = {}
+
+--- cp.prop:cached() -> prop
+--- Method
+--- This can be called once to enable caching of the result inside the `prop`.
+--- This can help with performance, but if there are other ways of modifying
+--- the original value outside the prop, it will potentially return stale values.
+---
+--- You can force a reload via the [update](#update) method.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `cp.prop` instance.
+function prop.mt:cached()
+	self._cached = true
+	self._cachedValue = UNCACHED
+	return self
+end
+
 --- cp.prop:value([newValue]) -> value
 --- Method
 --- Returns the current value of the `cp.prop` instance. If a `newValue` is provided, and the instance is mutable, the value will be updated and the new value is returned. If it is not mutable, an error will be thrown.
@@ -421,7 +442,12 @@ end
 --- Returns
 --- * The current value.
 function prop.mt:get()
-	return prepareValue(self._get(self._owner, self), self._tableCopy, self._skipMetatable)
+	local value = self._cachedValue
+	if not self._cached or self._cachedValue == UNCACHED then
+		value = prepareValue(self._get(self._owner, self), self._tableCopy, self._skipMetatable)
+		self._cachedValue = value
+	end
+	return value
 end
 
 --- cp.prop:set(newValue) -> value
@@ -437,12 +463,14 @@ function prop.mt:set(newValue)
 	if not self._set then
 		error("This property cannot be modified.")
 	end
-	-- if currently notifying, defer the update
 	newValue = prepareValue(newValue, self._tableCopy, self._skipMetatable)
-	if self._notifying then
+	if self._notifying then -- defer the update
 		self._doSet = true
 		self._newValue = newValue
-	else
+	else -- update now
+		if self._cached then
+			self._cachedValue = newValue
+		end
 		self._set(newValue, self._owner, self)
 		self:_notify(newValue)
 		return newValue
@@ -694,6 +722,7 @@ end
 --- Returns
 --- * The current value of the property.
 function prop.mt:update()
+	self._cachedValue = UNCACHED
 	local value = self:get()
 	self:_notify(value)
 	return value

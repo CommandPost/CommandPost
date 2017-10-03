@@ -164,9 +164,9 @@ function shortcut:enable()
 	return self
 end
 
---- cp.commands.shortcut:enable() -> shortcut
+--- cp.commands.shortcut:disable() -> shortcut
 --- Method
---- This enables the shortcut. If a hotkey has been bound, it will be enabled also.
+--- This disables the shortcut. If a hotkey has been bound, it will be disabled also.
 ---
 --- Parameters:
 ---  * None
@@ -198,7 +198,7 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 	-- Unbind any existing hotkey:
 	--------------------------------------------------------------------------------
 	self:unbind()
-	
+
 	--------------------------------------------------------------------------------
 	-- Bind a new one with the specified callback functions:
 	--------------------------------------------------------------------------------
@@ -210,6 +210,8 @@ function shortcut:bind(pressedFn, releasedFn, repeatedFn)
 		self._hotkey.shortcut = self
 		if self:isEnabled() then
 			self._hotkey:enable()
+		else
+			self._hotkey:disable()
 		end
 	else
 		-- TODO: Why it this happening?
@@ -240,7 +242,7 @@ end
 
 --- cp.commands.shortcut:delete() -> shortcut
 --- Method
---- Delete's a shortcut.
+--- Deletes a shortcut.
 ---
 --- Parameters:
 ---  * None
@@ -275,7 +277,7 @@ end
 ---
 --- Shortcut Commands Builder Module.
 
---- cp.commands.shortcut.builder:new(receiverFn)
+--- cp.commands.shortcut.builder:new([receiverFn]) -> builder
 --- Method
 --- Creates a new shortcut builder. If provided, the receiver function
 --- will be called when the shortcut has been configured, and passed the new
@@ -283,10 +285,10 @@ end
 --- If no `receiverFn` is provided, the shortcut will be returned directly.
 ---
 --- Parameters:
----  * None
+---  * `receiverFn`	- The function which will be called with the new shortcut, when built.
 ---
 --- Returns:
----  * None
+---  * The builder instance
 function builder:new(receiverFn)
 	local o = {
 		_receiver	= receiverFn,

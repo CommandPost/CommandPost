@@ -679,7 +679,7 @@ local plugin = {
 		["finalcutpro.sharing.xml"]			= "xmlSharing",
 		["finalcutpro.menu.tools"]			= "menu",
 		["finalcutpro.commands"]			= "fcpxCmds",
-		["finalcutpro.action.manager"]		= "actionmanager",
+		["core.action.manager"]		= "actionmanager",
 	}
 }
 

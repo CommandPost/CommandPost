@@ -36,6 +36,7 @@ local format			= string.format
 --------------------------------------------------------------------------------
 local PRIORITY 			= 3000
 local MAX_SHORTCUTS 	= 5
+local GROUP 			= "fcpx"
 
 --------------------------------------------------------------------------------
 --
@@ -61,7 +62,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
 			return format("%s:%s:%s", type, action.name, action.category)
 		end
 
-		mod._handlers[type] = actionmanager.addHandler(type)
+		mod._handlers[type] = actionmanager.addHandler(GROUP .. "_" .. type, GROUP)
 		:onChoices(function(choices)
 			-- get the effects of the specified type in the current language.
 			local list = fcp:plugins():ofType(type)
@@ -113,7 +114,7 @@ local plugin = {
 	id = "finalcutpro.timeline.pluginactions",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.action.manager"]					= "actionmanager",
+		["core.action.manager"]					= "actionmanager",
 		["finalcutpro.timeline.generators"]				= "generators",
 		["finalcutpro.timeline.titles"]					= "titles",
 		["finalcutpro.timeline.transitions"]			= "transitions",
