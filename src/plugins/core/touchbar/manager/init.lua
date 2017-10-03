@@ -131,8 +131,8 @@ function widgets.allGroups()
 	local widgets = widgets:getAll()
 	for id, widget in pairs(widgets) do
 		local params = widget:params()
-		if params and params.group then	
-			table.insert(result, params.group)		
+		if params and params.group then
+			table.insert(result, params.group)
 		end
 	end
 	return result
@@ -160,8 +160,8 @@ mod.defaultGroup = "global"
 
 --- plugins.core.touchbar.manager.closeBox -> boolean
 --- Variable
---- An optional boolean, specifying whether or not the system 
---- escape (or its current replacement) button should be replaced by a button 
+--- An optional boolean, specifying whether or not the system
+--- escape (or its current replacement) button should be replaced by a button
 --- to remove the modal bar from the touch bar display when pressed.
 mod.dismissButton = true
 
@@ -231,17 +231,17 @@ end
 ---  * None
 function mod.updateIcon(button, group, icon)
 	local buttons = mod._items()
-	
+
 	button = tostring(button)
-	
-	if not buttons[group] then	
+
+	if not buttons[group] then
 		buttons[group] = {}
 	end
 	if not buttons[group][button] then
 		buttons[group][button] = {}
 	end
 	buttons[group][button]["icon"] = icon
-	
+
 	mod._items(buttons)
 	mod.update()
 end
@@ -258,11 +258,11 @@ end
 --- Returns:
 ---  * None
 function mod.updateAction(button, group, actionTitle, handlerID, action)
-	
+
 	local buttons = mod._items()
-	
+
 	button = tostring(button)
-	if not buttons[group] then	
+	if not buttons[group] then
 		buttons[group] = {}
 	end
 	if not buttons[group][button] then
@@ -271,10 +271,10 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
 	buttons[group][button]["actionTitle"] = actionTitle
 	buttons[group][button]["handlerID"] = handlerID
 	buttons[group][button]["action"] = action
-	
+
 	mod._items(buttons)
 	mod.update()
-	
+
 end
 
 --- plugins.core.touchbar.manager.updateLabel(button, group, label) -> none
@@ -290,10 +290,10 @@ end
 ---  * None
 function mod.updateLabel(button, group, label)
 	local buttons = mod._items()
-	
+
 	button = tostring(button)
-	
-	if not buttons[group] then	
+
+	if not buttons[group] then
 		buttons[group] = {}
 	end
 	if not buttons[group][button] then
@@ -316,12 +316,12 @@ end
 --- Returns:
 ---  * Icon data as string
 function mod.getIcon(button, group)
-	local items = mod._items()	
+	local items = mod._items()
 	if items[group] and items[group][button] and items[group][button]["icon"] then
 		return items[group][button]["icon"]
 	else
 		return nil
-	end	
+	end
 end
 
 --- plugins.core.touchbar.manager.getActionTitle(button, group) -> string
@@ -335,12 +335,12 @@ end
 --- Returns:
 ---  * Action as string
 function mod.getActionTitle(button, group)
-	local items = mod._items()	
+	local items = mod._items()
 	if items[group] and items[group][button] and items[group][button]["actionTitle"] then
 		return items[group][button]["actionTitle"]
 	else
 		return nil
-	end	
+	end
 end
 
 --- plugins.core.touchbar.manager.getActionHandlerID(button, group) -> string
@@ -354,12 +354,12 @@ end
 --- Returns:
 ---  * Action as string
 function mod.getActionHandlerID(button, group)
-	local items = mod._items()	
+	local items = mod._items()
 	if items[group] and items[group][button] and items[group][button]["handlerID"] then
 		return items[group][button]["handlerID"]
 	else
 		return nil
-	end	
+	end
 end
 
 --- plugins.core.touchbar.manager.getAction(button, group) -> string
@@ -373,12 +373,12 @@ end
 --- Returns:
 ---  * Action as string
 function mod.getAction(button, group)
-	local items = mod._items()	
+	local items = mod._items()
 	if items[group] and items[group][button] and items[group][button]["action"] then
 		return items[group][button]["action"]
 	else
 		return nil
-	end	
+	end
 end
 
 --- plugins.core.touchbar.manager.getLabel(button, group) -> string
@@ -392,12 +392,12 @@ end
 --- Returns:
 ---  * Label as string
 function mod.getLabel(button, group)
-	local items = mod._items()	
+	local items = mod._items()
 	if items[group] and items[group][button] and items[group][button]["label"] then
 		return items[group][button]["label"]
 	else
 		return nil
-	end	
+	end
 end
 
 --- plugins.core.touchbar.manager.start() -> none
@@ -410,28 +410,28 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-		
-	if not mod._bar then 	
-		mod._bar = touchbar.bar.new()		
-	
+
+	if not mod._bar then
+		mod._bar = touchbar.bar.new()
+
 		--------------------------------------------------------------------------------
 		-- Setup System Icon:
 		--------------------------------------------------------------------------------
 		mod._sysTrayIcon = touchbar.item.newButton(hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon), "CommandPost")
-							 :callback(function(self) 
+							 :callback(function(self)
 								self:presentModalBar(mod._bar, mod.dismissButton)
 								mod._sysTrayIcon:addToSystemTray(true)
 							 end)
 							 :addToSystemTray(true)
-							 
+
 		--------------------------------------------------------------------------------
 		-- Update Touch Bar:
-		--------------------------------------------------------------------------------							 
+		--------------------------------------------------------------------------------
 		mod.update()
 	end
-	
-end				
-			 
+
+end
+
 --- plugins.core.touchbar.manager.stop() -> none
 --- Function
 --- Stops the CommandPost Touch Bar module.
@@ -477,18 +477,18 @@ end
 -- Returns:
 --  * None
 local function buttonCallback(item)
-	
-	local id = item:identifier()	
+
+	local id = item:identifier()
 	local idTable = tools.split(id, "_")
 	local group = idTable[1]
-	local button = idTable[2]		
-		
-	local action = mod.getAction(button, group)	
-	local handlerID = mod.getActionHandlerID(button, group)	
-	
-	local handler = mod._actionmanager.getHandler(handlerID)	
+	local button = idTable[2]
+
+	local action = mod.getAction(button, group)
+	local handlerID = mod.getActionHandlerID(button, group)
+
+	local handler = mod._actionmanager.getHandler(handlerID)
 	handler:execute(action)
-	
+
 end
 
 -- addButton(icon, action, label, id) -> none
@@ -499,7 +499,7 @@ end
 --  * icon - Icon data as string
 --  * action - Action as string
 --  * label - Label as string
---  * id - Unique ID of the button 
+--  * id - Unique ID of the button
 --
 -- Returns:
 --  * None
@@ -507,12 +507,12 @@ local function addButton(icon, action, label, id)
 	if not label then
 		label = ""
 	end
-	if icon then 
+	if icon then
 		icon = image.imageFromURL(icon):setSize({w=36,h=36})
-	end	
-	table.insert(mod._tbItemIDs, id)	
-	if icon then 
-		table.insert(mod._tbItems, touchbar.item.newButton(label, icon, id):callback(buttonCallback))		
+	end
+	table.insert(mod._tbItemIDs, id)
+	if icon then
+		table.insert(mod._tbItems, touchbar.item.newButton(label, icon, id):callback(buttonCallback))
 	else
 		table.insert(mod._tbItems, touchbar.item.newButton(label, id):callback(buttonCallback))
 	end
@@ -526,20 +526,20 @@ end
 --  * icon - Icon data as string
 --  * action - Action as string
 --  * label - Label as string
---  * id - Unique ID of the button 
+--  * id - Unique ID of the button
 --
 -- Returns:
 --  * None
 local function addWidget(icon, action, label, id)
-	if action and action.id then	
+	if action and action.id then
 		local widget = widgets:get(action.id)
-		if widget then 
+		if widget then
 			local params = widget:params()
-			if params and params.item then						
-				table.insert(mod._tbItemIDs, widget:id())	
+			if params and params.item then
+				table.insert(mod._tbItemIDs, widget:id())
 				table.insert(mod._tbItems, params.item)
 				mod._tbWidgetID[widget:id()] = id
-			end		
+			end
 		end
 	end
 end
@@ -552,9 +552,9 @@ end
 ---  * None
 ---
 --- Returns:
----  * Returns the active group or `manager.defaultGroup` as a string. 
+---  * Returns the active group or `manager.defaultGroup` as a string.
 function mod.activeGroup()
-	
+
 	local groupStatus = mod._groupStatus
 	for group, status in pairs(groupStatus) do
 		if status then
@@ -562,7 +562,7 @@ function mod.activeGroup()
 		end
 	end
 	return mod.defaultGroup
-	
+
 end
 
 --- plugins.core.touchbar.manager.update() -> none
@@ -575,60 +575,63 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-	
+	if not mod._bar then
+		return
+	end
+
 	--------------------------------------------------------------------------------
 	-- Reset the Touch Bar items:
 	--------------------------------------------------------------------------------
 	mod._tbItems = {}
 	mod._tbItemIDs = {}
 	mod._tbWidgetID = {}
-	
+
 	--------------------------------------------------------------------------------
 	-- Create new buttons and widgets:
 	--------------------------------------------------------------------------------
-	local items = mod._items()	
+	local items = mod._items()
 	for groupID, group in pairs(items) do
-		if groupID == mod.activeGroup() then 	
-			for buttonID, button in pairs(group) do		
+		if groupID == mod.activeGroup() then
+			for buttonID, button in pairs(group) do
 				if button["action"] then
 					local action 		= button["action"] or nil
 					local label 		= button["label"] or nil
 					local icon 			= button["icon"] or nil
 					local id 			= groupID .. "_" .. buttonID
-					
-					if string.sub(button["handlerID"], -8) == "_widgets" then						
+
+					if string.sub(button["handlerID"], -8) == "_widgets" then
 						addWidget(icon, action, label, id)
-					else							
+					else
 						addButton(icon, action, label, id)
-					end		
-				end			
+					end
+				end
 			end
 		end
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Put the buttons in the correct order:
 	--------------------------------------------------------------------------------
 	table.sort(mod._tbItemIDs, function(a,b)
-		if mod._tbWidgetID[a] then 
+		if mod._tbWidgetID[a] then
 			a = mod._tbWidgetID[a]
 		end
-		if mod._tbWidgetID[b] then 
+		if mod._tbWidgetID[b] then
 			b = mod._tbWidgetID[b]
 		end
 		return a<b
 	end)
-		
+
 	--------------------------------------------------------------------------------
 	-- Add buttons to the bar:
-	--------------------------------------------------------------------------------	
+	--------------------------------------------------------------------------------
 	mod._bar
 		:templateItems(mod._tbItems)
 		:customizableIdentifiers(mod._tbItemIDs)
-		:requiredIdentifiers(mod._tbItemIDs)	
+		:requiredIdentifiers(mod._tbItemIDs)
 		:defaultIdentifiers(mod._tbItemIDs)
 		:presentModalBar()
-		
+
 end
 
 --- plugins.core.touchbar.manager.groupStatus(groupID, status) -> none
@@ -647,7 +650,7 @@ function mod.groupStatus(groupID, status)
 end
 
 --------------------------------------------------------------------------------
--- 
+--
 -- THE MODULE - VIRTUAL TOUCH BAR:
 --
 --------------------------------------------------------------------------------
@@ -716,11 +719,11 @@ end)
 ---  * None
 function mod.virtual.start()
 	if mod.supported() and not mod._touchBar then
-	
+
 		--------------------------------------------------------------------------------
 		-- Set up Touch Bar:
 		--------------------------------------------------------------------------------
-		mod._touchBar = touchbar.new()	
+		mod._touchBar = touchbar.new()
 
 		--------------------------------------------------------------------------------
 		-- Touch Bar Watcher:
@@ -768,12 +771,12 @@ end
 --- Returns:
 ---  * None
 function mod.virtual.stop()
-	if mod._touchBar then 
+	if mod._touchBar then
 		mod._touchBar:hide()
 		mod._touchBar = nil
 		collectgarbage() -- See: https://github.com/asmagill/hammerspoon_asm/issues/10#issuecomment-303290853
-	end		
-	if mod.keyboardWatcher then 
+	end
+	if mod.keyboardWatcher then
 		mod.keyboardWatcher:stop()
 		mod.keyboardWatcher = nil
 	end
@@ -789,7 +792,7 @@ end
 --- Returns:
 ---  * None
 function mod.virtual.updateLocation()
-	
+
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
@@ -802,7 +805,7 @@ function mod.virtual.updateLocation()
 	if lastLocation then
 		mod._touchBar:topLeft(lastLocation)
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Trigger Callbacks:
 	--------------------------------------------------------------------------------
@@ -811,11 +814,11 @@ function mod.virtual.updateLocation()
 		for i, v in pairs(updateLocationCallbacks) do
 			local fn = v:callbackFn()
 			if fn and type(fn) == "function" then
-				fn()				
+				fn()
 			end
 		end
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Save last Touch Bar Location to Settings:
 	--------------------------------------------------------------------------------
@@ -986,7 +989,7 @@ function updateLocationCallback:callbackFn()
 end
 
 --------------------------------------------------------------------------------
--- 
+--
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -1029,31 +1032,31 @@ function plugin.postInit(deps, env)
 
 	--------------------------------------------------------------------------------
 	-- Setup Actions:
-	--------------------------------------------------------------------------------		
+	--------------------------------------------------------------------------------
 	mod._handlers = {}
 	local widgetGroups = widgets.allGroups()
 	for _, groupID in pairs(widgetGroups) do
 		mod._handlers[groupID] = deps.actionmanager.addHandler(groupID .. "_" .. "widgets", groupID)
-			:onChoices(function(choices) 
+			:onChoices(function(choices)
 				--------------------------------------------------------------------------------
 				-- Choices:
-				--------------------------------------------------------------------------------											
-				local allWidgets = widgets:getAll()				
+				--------------------------------------------------------------------------------
+				local allWidgets = widgets:getAll()
 				for _, widget in pairs(allWidgets) do
-					
+
 					local id = widget:id()
 					local params = widget:params()
-										
+
 					local action = {
 						id		= id,
 					}
-					
+
 					choices:add(params.text)
 						:subText(params.subText)
 						:params(action)
 						:id(id)
-				end			
-				return choices						
+				end
+				return choices
 			end)
 			:onExecute(function() end)
 			:onActionId(function() return id end)
@@ -1063,9 +1066,9 @@ function plugin.postInit(deps, env)
 	-- Setup Physical Touch Bar Buttons:
 	--------------------------------------------------------------------------------
 	if mod.enabled() then
-		mod.start()						 
+		mod.start()
 		mod.update()
-	end	
+	end
 end
 
 return plugin
