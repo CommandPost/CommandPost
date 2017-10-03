@@ -232,7 +232,7 @@ local function touchBarPanelCallback(id, params)
 			local handlerIds = mod._actionmanager.handlerIds()			
 			for _,id in pairs(handlerIds) do				
 				local handlerTable = tools.split(id, "_")
-				if handlerTable[1] == params["groupID"] then
+				if handlerTable[1] == params["groupID"] or handlerTable[1] == "global" then
 					table.insert(allowedHandlers, id)
 				end										
 			end					
