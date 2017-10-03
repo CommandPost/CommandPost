@@ -730,7 +730,7 @@ function mod.init(deps, env)
 			onclick		= function()
 				mod.uninstall()
 				mod.onboardingRequired(false)
-				--mod.setup.nextPanel()
+				mod.setup.nextPanel()
 			end,
 		})	
 	if mod.onboardingRequired() then 

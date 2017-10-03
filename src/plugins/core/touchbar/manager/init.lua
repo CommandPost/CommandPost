@@ -443,9 +443,27 @@ end
 ---  * None
 function mod.stop()
 	if mod._bar then
+		mod._sysTrayIcon:addToSystemTray(false)
 		mod._bar:dismissModalBar()
 		mod._bar = nil
 		mod._sysTrayIcon = nil
+	end
+end
+
+--- plugins.core.touchbar.manager.toggle() -> none
+--- Function
+--- Toggles the CommandPost Touch Bar module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.toggle()
+	if not mod._bar then
+		mod.start()
+	else
+		mod.stop()
 	end
 end
 
@@ -988,6 +1006,7 @@ local plugin = {
 	required	= true,
 	dependencies	= {
 		["core.action.manager"]				= "actionmanager",
+		["core.commands.global"] 			= "global",
 	}
 }
 
@@ -995,6 +1014,14 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpTouchBar")
+		:whenActivated(mod.toggle)
+
 	return mod.init(deps, env)
 end
 

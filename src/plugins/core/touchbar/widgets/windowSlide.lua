@@ -121,7 +121,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.touchbar.widgets.windowSlide",
+	id				= "core.touchbar.widgets.windowslide",
 	group			= "core",
 	dependencies	= {
 		["core.touchbar.manager"] = "manager",
