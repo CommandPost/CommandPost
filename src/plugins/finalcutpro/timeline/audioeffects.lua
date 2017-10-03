@@ -36,8 +36,7 @@ local mod = {}
 ---
 --- Returns:
 ---  * The Module
-function mod.init(touchbar)
-	mod.touchbar = touchbar
+function mod.init()
 	return mod
 end
 
@@ -103,8 +102,8 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
-	local group = effects:group():UI()		
-	local groupValue = group:attributeValue("AXValue")	
+	local group = effects:group():UI()
+	local groupValue = group:attributeValue("AXValue")
 	if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
 		effects:showInstalledEffects()
 	end
@@ -118,9 +117,11 @@ function mod.apply(action)
 	-- Click 'All':
 	--------------------------------------------------------------------------------
 	if category then
-		transitions:showTransitionsCategory(category)
+		log.df("Showing audio category '%s'", category)
+		effects:showAudioCategory(category)
 	else
-		transitions:showAllTransitions()
+		log.df("Showing all audio categories")
+		effects:showAllAudioEffects()
 	end
 
 	--------------------------------------------------------------------------------
@@ -133,7 +134,7 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
-		dialog.displayErrorMessage("Unable to find a transition called '"..name.."'.")
+		dialog.displayErrorMessage("Unable to find an audio effect called '"..name.."'.")
 		return false
 	end
 
@@ -142,14 +143,10 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
-	mod.touchbar.hide()
-
 	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
-		mod.touchbar.show()
-
 		effects:loadLayout(effectsLayout)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
@@ -168,7 +165,6 @@ local plugin = {
 	id = "finalcutpro.timeline.audioeffects",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.os.touchbar"]						= "touchbar",
 	}
 }
 
@@ -177,7 +173,7 @@ function plugin.init(deps)
 end
 
 function plugin.postInit(deps)
-	return mod.init(deps.touchbar)
+	return mod.init()
 end
 
 return plugin

@@ -717,6 +717,24 @@ function run()
 		-- unmodified after the last update
 		ok(eq(deepProp(),  		{ a = 4, b = { c = 4 } }))
 	end)
+
+	test("Cached Props", function()
+		local value = 1
+
+		local p = prop(function() return value end, function(newValue) value = newValue end):cached()
+
+		ok(eq(p(), 1))
+
+		p(2)
+		ok(eq(value, 2), "value is updated to 2")
+		ok(eq(p(), 2), "p result is updated to 2")
+
+		value = 3
+		ok(eq(p(), 2), "p result has not updated to 3.")
+
+		p:update()
+		ok(eq(p(), 3), "p result has now updated to 3")
+	end)
 end
 
 return run

@@ -28,12 +28,13 @@ local insert, sort						= table.insert, table.sort
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local MAX_SHORTCUTS = 5
-local PRIORITY = 50000
+local MAX_SHORTCUTS 	= 5
+local PRIORITY 			= 50000
+local GROUP 			= "fcpx"
 
 local pluginTypeDetails = {}
 for _,type in pairs(plugins.types) do
-	insert(pluginTypeDetails, { type = type, label = i18n(type.."_action") })
+	insert(pluginTypeDetails, { type = type, label = i18n(GROUP .. "_" ..type.."_action") })
 end
 sort(pluginTypeDetails, function(a, b) return a.label < b.label end)
 
@@ -133,7 +134,7 @@ local plugin = {
 	dependencies = {
 		["finalcutpro.menu.timeline"]					= "menu",
 		["finalcutpro.commands"]						= "fcpxCmds",
-		["finalcutpro.action.manager"]					= "actionmanager",
+		["core.action.manager"]							= "actionmanager",
 		["finalcutpro.timeline.generators"]				= "generators",
 		["finalcutpro.timeline.titles"]					= "titles",
 		["finalcutpro.timeline.transitions"]			= "transitions",

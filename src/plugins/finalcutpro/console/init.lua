@@ -85,7 +85,7 @@ local plugin = {
 	group			= "finalcutpro",
 	dependencies	= {
 		["finalcutpro.commands"]		= "fcpxCmds",
-		["finalcutpro.action.manager"]	= "actionmanager",
+		["core.action.manager"]	= "actionmanager",
 		["finalcutpro.menu.tools"]		= "tools",
 	}
 }
