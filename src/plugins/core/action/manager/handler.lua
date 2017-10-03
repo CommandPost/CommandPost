@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.action.handler ===
+--- === plugins.core.action.handler ===
 ---
 --- A support class for handler handlers. It is not used directly, rather
 --- it is a 'super class' that provides common functionality.
@@ -31,24 +31,26 @@ local handler = {}
 handler.mt = {}
 handler.mt.__index = handler
 
---- plugins.finalcutpro.action.handler.new(id) -> handler
+--- plugins.core.action.handler.new(id, group) -> handler
 --- Constructor
 --- Creates a new handler with the specified ID.
 ---
 --- Parameters:
 --- * `id`		- The unique ID of the action handler.
+--- * `group`	- The group the handler belongs to.
 ---
 --- Returns:
 --- * The new action handler instance.
-function handler.new(id)
+function handler.new(id, group)
 	local o = {
 		_id = id,
+		_group = group
 	}
 
 	return prop.extend(o, handler.mt)
 end
 
---- plugins.finalcutpro.action.handler:onExecute(executeFn) -> handler
+--- plugins.core.action.handler:onExecute(executeFn) -> handler
 --- Method
 --- Configures the function to call when a choice is executed. This will be passed
 --- the choice parameters in a single table.
@@ -63,7 +65,7 @@ function handler.mt:onExecute(executeFn)
 	return self
 end
 
---- plugins.finalcutpro.action.handler:onChoices(choicesFn) -> handler
+--- plugins.core.action.handler:onChoices(choicesFn) -> handler
 --- Method
 --- Adds a callback function which will receive the `cp.choices` instance to add
 --- choices to. This will only get called when required - the results will be cached
@@ -79,7 +81,7 @@ function handler.mt:onChoices(choicesFn)
 	return self
 end
 
---- plugins.finalcutpro.action.handler:onActionId(actionFn) -> handler
+--- plugins.core.action.handler:onActionId(actionFn) -> handler
 --- Method
 --- Configures a function to handle converting an action to unique ID.
 --- The function is passed the `action` table and should return a string.
@@ -94,8 +96,20 @@ function handler.mt:onActionId(actionFn)
 	return self
 end
 
+--- plugins.core.action.handler:group() -> string
+--- Method
+--- Returns the group for this handler.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Group as string.
+function handler.mt:group()
+	return self._group
+end
 
---- plugins.finalcutpro.action.handler:id() -> string
+--- plugins.core.action.handler:id() -> string
 --- Method
 --- Returns the ID for this handler.
 ---
@@ -108,7 +122,7 @@ function handler.mt:id()
 	return self._id
 end
 
---- plugins.finalcutpro.action.handler.cached <cp.prop: boolean>
+--- plugins.core.action.handler.cached <cp.prop: boolean>
 --- Field
 --- If set to `true` (the default), any choices created will be cached until [reset] is called.
 handler.mt.cached = prop.TRUE()
@@ -118,7 +132,7 @@ handler.mt.cached = prop.TRUE()
 	self:reset()
 end)
 
---- plugins.finalcutpro.action.handler.choices <cp.prop: cp.choices; read-only>
+--- plugins.core.action.handler.choices <cp.prop: cp.choices; read-only>
 --- Field
 --- Provides `cp.choices` instance for the handler. May be watched/monitored/etc.
 --- The contents of the choices will have a `params` field, which contains a unique set
@@ -140,7 +154,7 @@ handler.mt.choices = prop(function(self)
 end)
 :bind(handler.mt)
 
--- plugins.finalcutpro.action.handler._onChoices(choices) -> nil
+-- plugins.core.action.handler._onChoices(choices) -> nil
 -- Method
 -- Default handler for adding choices. Throws an error message.
 --
@@ -157,14 +171,14 @@ function handler.mt:_onActionId(action)
 	error("unimplemented: handler:onActionId(actionFn)")
 end
 
---- plugins.finalcutpro.action.handler:actionId(action) -> string
+--- plugins.core.action.handler:actionId(action) -> string
 --- Method
 --- Returns a string that can be used as a unique ID for the action details.
 function handler.mt:actionId(action)
 	return self._onActionId(action)
 end
 
--- plugins.finalcutpro.action.handler._onExecute(action) -> nil
+-- plugins.core.action.handler._onExecute(action) -> nil
 -- Method
 -- Default handler for executing. Throws an error message.
 --
@@ -177,7 +191,7 @@ function handler.mt._onExecute(action)
 	error("unimplemented: handler:onExecute(executeFn)")
 end
 
---- plugins.finalcutpro.action.handler:execute(action) -> boolean
+--- plugins.core.action.handler:execute(action) -> boolean
 --- Method
 --- Executes the action, based on values in the table.
 ---
@@ -193,7 +207,7 @@ function handler.mt:execute(action)
 	return false
 end
 
---- plugins.finalcutpro.action.handler:reset() -> nil
+--- plugins.core.action.handler:reset() -> nil
 --- Method
 --- Resets the handler, clearing any cached result and requesting new ones.
 ---

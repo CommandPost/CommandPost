@@ -30,7 +30,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 110px;
+	width: 90px;
 }
 
 .rowIcon {
@@ -38,11 +38,15 @@
 }
 
 .rowAction {
-	width: 50%;
+	width: 49%;
+}
+
+.rowActionButton {
+	width: 11%;
 }
 
 .rowLabel {
-	width: 35%;	
+	width: 30%;	
 }
 
 .touchbar thead {
@@ -105,8 +109,26 @@
 	height: 20px;
 }
 
-.actionSelect {
-	width: 200px;
+.actionTextbox {
+	-webkit-appearance: none; 	
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;		
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+	width: 200px;	
+}
+
+.actionButton {
+	padding: 5px 5px !important;
 }
 
 #touchbarController {

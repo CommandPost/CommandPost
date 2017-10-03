@@ -4,13 +4,13 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.action.activator ===
+--- === plugins.core.action.activator ===
 ---
 --- This module provides provides a way of activating choices provided by action handlers.
 --- It also provide support for making a particular action a favourite, returning
 --- results based on popularity, and completely hiding particular actions, or categories of action.
 ---
---- Activators are accessed via the [action manager](plugins.finalcutpro.action.manager.md) like so:
+--- Activators are accessed via the [action manager](plugins.core.action.manager.md) like so:
 ---
 --- ```lua
 --- local activator = actionManager.getActivator("foobar")
@@ -66,7 +66,7 @@ local function applyHiddenTo(choice, hidden)
 	end
 end
 
--- plugins.finalcutpro.action.activator.new(id, manager)
+-- plugins.core.action.activator.new(id, manager)
 -- Constructor
 -- Creates a new `activator` instance with the specified ID and action manager
 function activator.new(id, manager)
@@ -80,35 +80,35 @@ function activator.new(id, manager)
 
 	local prefix = PACKAGE .. id .. "."
 
-	--- plugins.finalcutpro.action.activator.searchSubText <cp.prop: boolean>
+	--- plugins.core.action.activator.searchSubText <cp.prop: boolean>
 	--- Field
 	--- If `true`, allow users to search the subtext value.
 	o.searchSubText = config.prop(prefix .. "searchSubText", true):bind(o)
 
-	--- plugins.finalcutpro.action.activator.lastQueryRemembered <cp.prop: boolean>
+	--- plugins.core.action.activator.lastQueryRemembered <cp.prop: boolean>
 	--- Field
 	--- If `true`, remember the last query.
 	o.lastQueryRemembered = config.prop(prefix .. "lastQueryRemembered", true):bind(o)
 
-	--- plugins.finalcutpro.action.activator.lastQueryValue <cp.prop: string>
+	--- plugins.core.action.activator.lastQueryValue <cp.prop: string>
 	--- Field
 	--- The last query value.
 	o.lastQueryValue = config.prop(prefix .. "lastQueryValue", ""):bind(o)
 
-	--- plugins.finalcutpro.action.activator.showHidden <cp.prop: boolean>
+	--- plugins.core.action.activator.showHidden <cp.prop: boolean>
 	--- Field
 	--- If `true`, hidden items are shown.
 	o.showHidden = config.prop(prefix .. "showHidden", false):bind(o)
 	-- refresh the chooser list if this status changes.
 	:watch(function() o:refreshChooser() end)
 
-	-- plugins.finalcutpro.action.activator._allowedHandlers <cp.prop: string>
+	-- plugins.core.action.activator._allowedHandlers <cp.prop: string>
 	-- Field
 	-- The ID of a single handler to source
 	o._allowedHandlers = config.prop(prefix .. "allowedHandlers", nil):bind(o)
 
 
---- plugins.finalcutpro.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
+--- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
 --- Field
 --- Contains all handlers that are allowed in this activator.
 	o.allowedHandlers = o._manager.handlers:mutate(function(handlers)
@@ -124,13 +124,13 @@ function activator.new(id, manager)
 		return allowed
 	end):bind(o)
 
-	-- plugins.finalcutpro.action.activator._disabledHandlers <cp.prop: table of booleans>
+	-- plugins.core.action.activator._disabledHandlers <cp.prop: table of booleans>
 	-- Field
 	-- Table of disabled handlers. If the ID is present with a value of `true`, it's disabled.
 	o._disabledHandlers = config.prop(prefix .. "disabledHandlers", {}):bind(o)
 	:watch(function() o:refreshChooser() end)
 
---- plugins.finalcutpro.action.activator.activeHandlers <cp.prop: table of handlers>
+--- plugins.core.action.activator.activeHandlers <cp.prop: table of handlers>
 --- Field
 --- Contains the table of active handlers. A handler is active if it is both allowed and enabled.
 --- The handler ID is the key, so use `pairs` to iterate the list. E.g.:
@@ -156,27 +156,27 @@ function activator.new(id, manager)
 	:monitor(o._disabledHandlers)
 	:monitor(manager.handlers)
 
---- plugins.finalcutpro.action.activator.hiddenChoices <cp.prop: table of booleans>
+--- plugins.core.action.activator.hiddenChoices <cp.prop: table of booleans>
 --- Field
 --- Contains the set of choice IDs which are hidden in this activator, mapped to a boolean value.
 --- If set to `true`, the choice is hidden.
 	o.hiddenChoices = config.prop(prefix .. "hiddenChoices", {}):cached():bind(o)
 
-	--- plugins.finalcutpro.action.activator.favoriteChoices <cp.prop: table of booleans>
+	--- plugins.core.action.activator.favoriteChoices <cp.prop: table of booleans>
 	--- Field
 	--- Contains the set of choice IDs which are favorites in this activator, mapped to a boolean value.
 	--- If set to `true`, the choice is a favorite.
 	o.favoriteChoices = config.prop(prefix .. "favoriteChoices", {}):cached():bind(o)
 	:watch(function() timer.doAfter(1.0, function() o:sortChoices() end) end)
 
-	--- plugins.finalcutpro.action.activator.popularChoices <cp.prop: table of integers>
+	--- plugins.core.action.activator.popularChoices <cp.prop: table of integers>
 	--- Field
 	--- Keeps track of how popular particular choices are. Returns a table of choice IDs
 	--- mapped to the number of times they have been activated.
 	o.popularChoices = config.prop(prefix .. "popularChoices", {}):cached():bind(o)
 	:watch(function() timer.doAfter(1.0, function() o:sortChoices() end) end)
 
-	--- plugins.finalcutpro.action.activator.configurable <cp.prop: boolean>
+	--- plugins.core.action.activator.configurable <cp.prop: boolean>
 	--- Field
 	--- If `true` (the default), the activator can be configured by right-clicking on the main chooser.
 	o.configurable = config.prop(prefix .. "configurable", true):cached():bind(o)
@@ -184,7 +184,7 @@ function activator.new(id, manager)
 	return o
 end
 
---- plugins.finalcutpro.action.activator:preloadChoices([afterSeconds]) -> activator
+--- plugins.core.action.activator:preloadChoices([afterSeconds]) -> activator
 --- Method
 --- Indicates the activator should preload the choices after a number of seconds.
 --- Defaults to 0 seconds if no value is provided.
@@ -202,7 +202,7 @@ function activator.mt:preloadChoices(afterSeconds)
 	return self
 end
 
---- plugins.finalcutpro.action.activator:id() -> string
+--- plugins.core.action.activator:id() -> string
 --- Method
 --- Returns the activator's unique ID.
 ---
@@ -215,7 +215,7 @@ function activator.mt:id()
 	return self._id
 end
 
---- plugins.finalcutpro.action.activator:getActiveHandler(id) -> handler
+--- plugins.core.action.activator:getActiveHandler(id) -> handler
 --- Method
 --- Returns the active handler with the specified ID, or `nil` if not available.
 ---
@@ -228,7 +228,7 @@ function activator.mt:getActiveHandler(id)
 	return self:activeHandlers()[id]
 end
 
---- plugins.finalcutpro.action.activator:allowHandlers(...) -> boolean
+--- plugins.core.action.activator:allowHandlers(...) -> boolean
 --- Method
 --- Specifies that only the handlers with the specified IDs will be active in
 --- this activator. By default all handlers are allowed.
@@ -251,7 +251,7 @@ function activator.mt:allowHandlers(...)
 	return self
 end
 
---- plugins.finalcutpro.action.activator:disableHandler(id) -> boolean
+--- plugins.core.action.activator:disableHandler(id) -> boolean
 --- Method
 --- Disables the handler with the specified ID.
 ---
@@ -270,7 +270,7 @@ function activator.mt:disableHandler(id)
 	return true
 end
 
---- plugins.finalcutpro.action.activator:enableHandler(id) -> boolean
+--- plugins.core.action.activator:enableHandler(id) -> boolean
 --- Method
 --- Enables the handler with the specified ID.
 ---
@@ -289,7 +289,7 @@ function activator.mt:enableHandler(id)
 	return true
 end
 
---- plugins.finalcutpro.action.activator:enableAllHandlers() -> nothing
+--- plugins.core.action.activator:enableAllHandlers() -> nothing
 --- Method
 --- Enables the all allowed handlers.
 ---
@@ -302,7 +302,7 @@ function activator.mt:enableAllHandlers()
 	self._disabledHandlers:set(nil)
 end
 
---- plugins.finalcutpro.action.activator:disableAllHandlers() -> nothing
+--- plugins.core.action.activator:disableAllHandlers() -> nothing
 --- Method
 --- Disables the all allowed handlers.
 ---
@@ -319,7 +319,7 @@ function activator.mt:disableAllHandlers()
 	self:_disabledHandlers(dh)
 end
 
---- plugins.finalcutpro.action.activator:isDisabledHandler(id) -> boolean
+--- plugins.core.action.activator:isDisabledHandler(id) -> boolean
 --- Method
 --- Returns `true` if the specified handler is disabled.
 ---
@@ -342,7 +342,7 @@ function activator.mt:findChoice(id)
 	return nil
 end
 
---- plugins.finalcutpro.action.activator:hideChoice(id) -> boolean
+--- plugins.core.action.activator:hideChoice(id) -> boolean
 --- Method
 --- Hides the choice with the specified ID.
 ---
@@ -368,7 +368,7 @@ function activator.mt:hideChoice(id)
 	return false
 end
 
---- plugins.finalcutpro.action.activator:unhideChoice(id) -> boolean
+--- plugins.core.action.activator:unhideChoice(id) -> boolean
 --- Method
 --- Reveals the choice with the specified ID.
 ---
@@ -395,7 +395,7 @@ function activator.mt:unhideChoice(id)
 	return false
 end
 
---- plugins.finalcutpro.action.activator:isHiddenChoice(id) -> boolean
+--- plugins.core.action.activator:isHiddenChoice(id) -> boolean
 --- Method
 --- Checks if the specified choice is hidden.
 ---
@@ -408,7 +408,7 @@ function activator.mt:isHiddenChoice(id)
 	return self:hiddenChoices()[id] == true
 end
 
---- plugins.finalcutpro.action.activator:isHiddenChoice(id) -> boolean
+--- plugins.core.action.activator:isHiddenChoice(id) -> boolean
 --- Method
 --- Checks if the specified choice is hidden.
 ---
@@ -422,7 +422,7 @@ function activator.mt:isFavoriteChoice(id)
 	return id and favorites and favorites[id] == true
 end
 
---- plugins.finalcutpro.action.activator:favoriteChoice(id) -> boolean
+--- plugins.core.action.activator:favoriteChoice(id) -> boolean
 --- Method
 --- Marks the choice with the specified ID as a favorite.
 ---
@@ -447,7 +447,7 @@ function activator.mt:favoriteChoice(id)
 	return false
 end
 
---- plugins.finalcutpro.action.activator:unfavoriteChoice(id) -> boolean
+--- plugins.core.action.activator:unfavoriteChoice(id) -> boolean
 --- Method
 --- Marks the choice with the specified ID as not a favorite.
 ---
@@ -472,7 +472,7 @@ function activator.mt:unfavoriteChoice(id)
 	return false
 end
 
---- plugins.finalcutpro.action.activator:getPopularity(id) -> boolean
+--- plugins.core.action.activator:getPopularity(id) -> boolean
 --- Method
 --- Returns the popularity of the specified choice.
 ---
@@ -489,7 +489,7 @@ function activator.mt:getPopularity(id)
 	return 0
 end
 
---- plugins.finalcutpro.action.activator:incPopularity(choice, id) -> boolean
+--- plugins.core.action.activator:incPopularity(choice, id) -> boolean
 --- Method
 --- Increases the popularity of the specified choice.
 ---
@@ -516,7 +516,7 @@ function activator.mt:incPopularity(choice, id)
 	end
 end
 
---- plugins.finalcutpro.action.activator:sortChoices() -> boolean
+--- plugins.core.action.activator:sortChoices() -> boolean
 --- Method
 --- Sorts the current set of choices in the activator. It takes into account
 --- whether it's a favorite (first priority) and its overall popularity.
@@ -562,7 +562,7 @@ function activator.mt:sortChoices()
 	end
 end
 
---- plugins.finalcutpro.action.activator:allChoices() -> table
+--- plugins.core.action.activator:allChoices() -> table
 --- Method
 --- Returns a table of all available choices, even if hidden. Choices from
 --- disabled action handlers are not included.
@@ -579,7 +579,7 @@ function activator.mt:allChoices()
 	return self._choices
 end
 
---- plugins.finalcutpro.action.activator:unhiddenChoices() -> table
+--- plugins.core.action.activator:unhiddenChoices() -> table
 --- Method
 --- Returns a table with visible choices.
 ---
@@ -592,7 +592,7 @@ function activator.mt:unhiddenChoices()
 	return _.filter(self:allChoices(), function(i,choice) return not choice.hidden end)
 end
 
---- plugins.finalcutpro.action.activator:activeChoices() -> table
+--- plugins.core.action.activator:activeChoices() -> table
 --- Method
 --- Returns a table with active choices. If [showHidden](#showHidden) is set to `true`  hidden
 --- items are returned, otherwise they are not.
@@ -609,7 +609,7 @@ function activator.mt:activeChoices()
 	return _.filter(self:allChoices(), function(i,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
 end
 
--- plugins.finalcutpro.action.activator:_findChoices() -> nothing
+-- plugins.core.action.activator:_findChoices() -> nothing
 -- Method
 -- Finds and sorts all choices from enabled handlers. They are available via
 -- the [choices](#choices) or [allChoices](#allChoices) properties.
@@ -643,7 +643,7 @@ function activator.mt:_findChoices()
 	self:sortChoices()
 end
 
---- plugins.finalcutpro.action.activator:refresh()
+--- plugins.core.action.activator:refresh()
 --- Method
 --- Clears the existing set of choices and requests new ones from enabled action handlers.
 function activator.mt:refresh()
@@ -696,7 +696,7 @@ function activator.mt:checkReducedTransparency()
 	end
 end
 
---- plugins.finalcutpro.action.activator:show()
+--- plugins.core.action.activator:show()
 --- Method
 --- Shows a chooser listing the available actions. When selected by the user,
 --- the [onActivate](#onActivate) function is called.
@@ -768,7 +768,7 @@ function activator.mt:hide()
 	end
 end
 
---- plugins.finalcutpro.action.activator:onActivate(activateFn) -> activator
+--- plugins.core.action.activator:onActivate(activateFn) -> activator
 --- Method
 --- Registers the provided function to handle 'activate' actions, when the user selects
 --- an item in the main chooser.

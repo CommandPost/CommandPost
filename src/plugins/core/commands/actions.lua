@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.commands.actions ===
+--- === plugins.core.commands.actions ===
 ---
 --- An `action` which will execute a command with matching group/id values.
 --- Registers itself with the `core.action.manager`.
@@ -29,7 +29,7 @@ local format			= string.format
 local mod = {}
 
 local ID	= "cmds"
-local GROUP = "fcpx"
+local GROUP = "global"
 
 -- TODO: Add documentation
 function mod.init(actionmanager, cmds)
@@ -38,12 +38,12 @@ function mod.init(actionmanager, cmds)
 	mod._manager = actionmanager
 
 	mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
-		:onChoices(mod.onChoices)
-		:onExecute(mod.onExecute)
-		:onActionId(mod.getId)
+	:onChoices(mod.onChoices)
+	:onExecute(mod.onExecute)
+	:onActionId(mod.getId)
 end
 
---- plugins.finalcutpro.commands.actionss.onChoices(choices) -> nothing
+--- plugins.core.commands.actions.onChoices(choices) -> nothing
 --- Function
 --- Adds available choices to the  selection.
 ---
@@ -77,7 +77,7 @@ function mod.getId(action)
 	return format("%s:%s", ID, action.id)
 end
 
---- plugins.finalcutpro.commands.actions.execute(action) -> boolean
+--- plugins.core.commands.actions.execute(action) -> boolean
 --- Function
 --- Executes the action with the provided parameters.
 ---
@@ -112,7 +112,7 @@ function mod.onExecute(action)
 	return false
 end
 
---- plugins.finalcutpro.commands.actions.reset() -> nothing
+--- plugins.core.commands.actions.reset() -> nothing
 --- Function
 --- Resets the set of choices.
 ---
@@ -131,11 +131,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.commands.actions",
-	group			= "finalcutpro",
+	id				= "core.commands.actions",
+	group			= "core",
 	dependencies	= {
 		["core.action.manager"]		= "actionmanager",
-		["finalcutpro.commands"]			= "cmds",
+		["core.commands.global"]	= "cmds",
 	}
 }
 

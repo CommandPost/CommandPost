@@ -214,14 +214,60 @@ end
 local function touchBarPanelCallback(id, params)	
 	if params and params["type"] then
 		if params["type"] == "badExtension" then
+			--------------------------------------------------------------------------------
+			-- Bad Icon File Extension:
+			--------------------------------------------------------------------------------
 			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badTouchBarIcon"), i18n("pleaseTryAgain"), i18n("ok"))
 		elseif params["type"] == "updateIcon" then
+			--------------------------------------------------------------------------------
+			-- Update Icon:
+			--------------------------------------------------------------------------------
 			mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
-		elseif params["type"] == "updateAction" then
-			mod._tb.updateAction(params["buttonID"], params["groupID"], params["action"])
+		elseif params["type"] == "updateAction" then				
+			
+			--------------------------------------------------------------------------------
+			-- Restrict Allowed Handlers for Activator to current group:
+			--------------------------------------------------------------------------------
+			local allowedHandlers = {}			
+			local handlerIds = mod._actionmanager.handlerIds()			
+			for _,id in pairs(handlerIds) do				
+				local handlerTable = tools.split(id, "_")
+				if handlerTable[1] == params["groupID"] then
+					table.insert(allowedHandlers, id)
+				end										
+			end					
+			mod.activator:allowHandlers(table.unpack(allowedHandlers))
+			
+			--------------------------------------------------------------------------------
+			-- Setup Activator Callback:
+			--------------------------------------------------------------------------------
+			mod.activator:onActivate(function(handler, action, text)
+					
+					--log.df("handler: %s", inspect(handler, {depth=1}))
+					--log.df("action: %s", inspect(action))
+					--log.df("text: %s", inspect(text))										
+					
+					local actionTitle = text													
+					local handlerID = handler:id()
+					
+					mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)	
+					mod._manager.refresh()				
+				end)
+				
+			--------------------------------------------------------------------------------
+			-- Show Activator:
+			--------------------------------------------------------------------------------	
+			mod.activator:show()			
+			
 		elseif params["type"] == "updateLabel" then
+			--------------------------------------------------------------------------------
+			-- Update Label:
+			--------------------------------------------------------------------------------
 			mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
 		elseif params["type"] == "iconClicked" then			
+			--------------------------------------------------------------------------------
+			-- Icon Clicked:
+			--------------------------------------------------------------------------------
 			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)
 			local failed = false
 			if result and result["1"] then
@@ -241,10 +287,22 @@ local function touchBarPanelCallback(id, params)
 				if failed then
 					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
 				end
+			else
+				--------------------------------------------------------------------------------
+				-- Clear Icon:
+				--------------------------------------------------------------------------------
+				mod._tb.updateIcon(params["buttonID"], params["groupID"], nil)
+				mod._manager.refresh()			
 			end
 		elseif params["type"] == "updateGroup" then			 			
+			--------------------------------------------------------------------------------
+			-- Update Group:
+			--------------------------------------------------------------------------------
 			mod.lastGroup(params["groupID"])			
 		else
+			--------------------------------------------------------------------------------
+			-- Unknown Callback:
+			--------------------------------------------------------------------------------
 			log.df("Unknown Callback in Touch Bar Preferences Panel:")
 			log.df("id: %s", hs.inspect(id))
 			log.df("params: %s", hs.inspect(params))
@@ -300,8 +358,16 @@ function mod.init(deps, env)
 	mod._tb				= deps.tb
 	mod._manager		= deps.manager
 	mod._webviewLabel	= deps.manager.getLabel()
+	mod._actionmanager	= deps.actionmanager
 	mod._env			= env
 
+	--------------------------------------------------------------------------------
+	-- Setup Activator:
+	--------------------------------------------------------------------------------
+	mod.activator = deps.actionmanager.getActivator("touchbarPreferences")		
+	mod.activator:enableAllHandlers()
+	mod.activator:preloadChoices()
+		
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------	
@@ -351,7 +417,7 @@ local plugin = {
 	dependencies	= {
 		["core.preferences.manager"]		= "manager",
 		["core.touchbar.manager"]			= "tb",
-		["finalcutpro.action.manager"]		= "actionmanager",
+		["core.action.manager"]				= "actionmanager",
 	}
 }
 
@@ -362,19 +428,6 @@ function plugin.init(deps, env)
 	if deps.tb.supported() then			
 		return mod.init(deps, env)
 	end
-end
-
-function plugin.postInit(deps, env)
-
-	-- TO DO: Maybe we should use Actions instead of Commands?
-	--[[	
-	local activator = deps.actionmanager.getActivator("touchbar")
-	activator:enableAllHandlers()
-	local allChoices = activator:allChoices()
-	
-	log.df("allChoices: %s", hs.inspect(allChoices))
-	--]]
-	
 end
 
 return plugin

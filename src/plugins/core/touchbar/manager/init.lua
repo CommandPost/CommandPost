@@ -148,11 +148,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.updateAction(button, group, action)
-
-	if action == i18n("none") then
-		return
-	end
+function mod.updateAction(button, group, actionTitle, handlerID, action)
 	
 	local buttons = mod._items()
 	
@@ -163,10 +159,13 @@ function mod.updateAction(button, group, action)
 	if not buttons[group][button] then
 		buttons[group][button] = {}
 	end
+	buttons[group][button]["actionTitle"] = actionTitle
+	buttons[group][button]["handlerID"] = handlerID
 	buttons[group][button]["action"] = action
 	
 	mod._items(buttons)
 	mod.update()
+	
 end
 
 --- plugins.core.touchbar.manager.updateLabel(button, group, label) -> none
@@ -211,6 +210,44 @@ function mod.getIcon(button, group)
 	local items = mod._items()	
 	if items[group] and items[group][button] and items[group][button]["icon"] then
 		return items[group][button]["icon"]
+	else
+		return nil
+	end	
+end
+
+--- plugins.core.touchbar.manager.getActionTitle(button, group) -> string
+--- Function
+--- Returns a specific Touch Bar Action Title.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Action as string
+function mod.getActionTitle(button, group)
+	local items = mod._items()	
+	if items[group] and items[group][button] and items[group][button]["actionTitle"] then
+		return items[group][button]["actionTitle"]
+	else
+		return nil
+	end	
+end
+
+--- plugins.core.touchbar.manager.getActionHandlerID(button, group) -> string
+--- Function
+--- Returns a specific Touch Bar Action Handler ID.
+---
+--- Parameters:
+---  * button - Button ID as string
+---  * group - Group ID as string
+---
+--- Returns:
+---  * Action as string
+function mod.getActionHandlerID(button, group)
+	local items = mod._items()	
+	if items[group] and items[group][button] and items[group][button]["handlerID"] then
+		return items[group][button]["handlerID"]
 	else
 		return nil
 	end	
@@ -317,10 +354,12 @@ local function buttonCallback(item)
 	local idTable = tools.split(id, "_")
 	local group = idTable[1]
 	local button = idTable[2]		
+		
 	local action = mod.getAction(button, group)	
+	local handlerID = mod.getActionHandlerID(button, group)	
 	
-	--log.df("action: %s", action)
-	commands.group(group):get(action):pressed()
+	local handler = mod._actionmanager.getHandler(handlerID)	
+	handler:execute(action)
 	
 end
 
@@ -789,6 +828,7 @@ end
 --
 --------------------------------------------------------------------------------
 function mod.init(deps, env)
+	mod._actionmanager = deps.actionmanager
 	return mod
 end
 
@@ -802,6 +842,7 @@ local plugin = {
 	group		= "core",
 	required	= true,
 	dependencies	= {
+		["core.action.manager"]				= "actionmanager",
 	}
 }
 
@@ -813,7 +854,6 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps, env)
-
 	--------------------------------------------------------------------------------
 	-- Setup Physical Touch Bar Buttons:
 	--------------------------------------------------------------------------------

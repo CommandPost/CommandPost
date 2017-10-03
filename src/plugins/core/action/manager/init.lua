@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.action.manager ===
+--- === plugins.core.action.manager ===
 ---
 --- Action Manager Module.
 
@@ -119,7 +119,7 @@ function mod.getURL(handlerId, action)
 	end
 end
 
---- plugins.finalcutpro.action.manager.addHandler(id) -> handler
+--- plugins.core.action.manager.addHandler(id) -> handler
 --- Function
 --- Adds a new action handler with the specified unique ID and returns it for further configuration.
 ---
@@ -153,7 +153,7 @@ function mod.addHandler(id)
 	return h
 end
 
---- plugins.finalcutpro.action.manager.handlers <cp.prop: table of handlers; read-only>
+--- plugins.core.action.manager.handlers <cp.prop: table of handlers; read-only>
 --- Constant
 --- Provides access to the set of handlers registered with the manager. It
 --- returns a table with the handler ID's as the key and the handler as the value.
@@ -162,7 +162,7 @@ mod.handlers = prop(function()
 	return copy(mod._handlers)
 end)
 
---- plugins.finalcutpro.action.manager.handlerIds <cp.prop: table of strings; read-only>
+--- plugins.core.action.manager.handlerIds <cp.prop: table of strings; read-only>
 --- Constant
 --- Returns a list of registered handler IDs.
 mod.handlerIds = prop(function()
@@ -173,7 +173,7 @@ mod.handlerIds = prop(function()
 	return ids
 end)
 
---- plugins.finalcutpro.action.manager.getHandler(id) -> handler
+--- plugins.core.action.manager.getHandler(id) -> handler
 --- Function
 --- Returns an existing handler with the specified ID.
 ---
@@ -186,7 +186,7 @@ function mod.getHandler(id)
 	return mod._handlers[id]
 end
 
---- plugins.finalcutpro.action.manager.getActivator(id) -> activator
+--- plugins.core.action.manager.getActivator(id) -> activator
 --- Function
 --- Returns an activator with the specified ID. If it doesn't exist, it will be created.
 --- Future calls to get the same ID, and it will return the same instance each time.
@@ -211,7 +211,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.action.manager",
+	id				= "core.action.manager",
 	group			= "finalcutpro",
 }
 

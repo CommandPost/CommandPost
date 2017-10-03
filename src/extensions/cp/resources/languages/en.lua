@@ -137,7 +137,7 @@ return {
 			--------------------------------------------------------------------------------
 			-- Notifications:
 			--------------------------------------------------------------------------------
-			hasLoaded							=			"has loaded",
+			isInitialising						=			"is initialising",
 			keyboardShortcutsUpdated			=			"Keyboard Shortcuts Updated",
 			keywordPresetsSaved					=			"Your Keywords have been saved to Preset",
 			keywordPresetsRestored				=			"Your Keywords have been restored to Preset",
@@ -763,13 +763,16 @@ return {
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	cmds_action							=			"Commands",
-	menu_action							=			"Menu Items",
-	videoEffect_action					=			"Video Effects",
-	audioEffect_action					=			"Audio Effects",
-	generator_action					=			"Generators",
-	title_action						=			"Titles",
-	transition_action					=			"Transitions",
+	
+	global_cmds_action					=			"Global Commands",
+	
+	fcpx_cmds_action					=			"Commands",
+	fcpx_menu_action					=			"Menu Items",
+	fcpx_videoEffect_action				=			"Video Effects",
+	fcpx_audioEffect_action				=			"Audio Effects",
+	fcpx_generator_action				=			"Generators",
+	fcpx_title_action					=			"Titles",
+	fcpx_transition_action				=			"Transitions",
 
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
