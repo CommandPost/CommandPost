@@ -809,7 +809,7 @@ function mod.virtual.updateLocation()
 	-- Put it back to last known position:
 	--------------------------------------------------------------------------------
 	local lastLocation = mod.virtual.lastLocation()
-	if lastLocation then
+	if lastLocation and mod._touchBar then
 		mod._touchBar:topLeft(lastLocation)
 	end
 

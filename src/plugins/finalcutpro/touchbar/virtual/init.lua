@@ -26,37 +26,15 @@ local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY				= 1000
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.touchbar.virtual.LOCATION_TIMELINE -> string
+--- Constant
+--- Virtual Touch Bar is displayed at top centre of the Final Cut Pro Timeline.
 mod.LOCATION_TIMELINE		= "TimelineTopCentre"
-
-mod.VISIBILITY_ALWAYS		= "Always"
-mod.VISIBILITY_FCP			= "Final Cut Pro"
-
---- plugins.finalcutpro.touchbar.virtual.visibility <cp.prop: string>
---- Field
---- When should the Virtual Touch Bar be visible?
-mod.visibility = config.prop("virtualTouchBarVisibility", VISIBILITY_FCP):watch(function(enabled)
-	if mod.visibility() == VISIBILITY_ALWAYS then 
-		mod.manager.virtual.show()
-	else
-		if fcp.isFrontmost() then 
-			mod.manager.virtual.show()
-		else
-			mod.manager.virtual.hide()
-		end
-	end
-end)
 
 --- plugins.finalcutpro.touchbar.virtual.enabled <cp.prop: boolean>
 --- Field
@@ -164,40 +142,6 @@ function plugin.init(deps)
 		
 		end)
 
-		--------------------------------------------------------------------------------
-		-- Menu items:
-		--------------------------------------------------------------------------------
-		local section = deps.prefs:addSection(PRIORITY)
-		
-		local LOCATION_DRAGGABLE 		= mod.manager.virtual.LOCATION_DRAGGABLE
-		local LOCATION_MOUSE 			= mod.manager.virtual.LOCATION_MOUSE
-		local LOCATION_TIMELINE			= mod.LOCATION_TIMELINE		
-		
-		local VISIBILITY_ALWAYS			= mod.VISIBILITY_ALWAYS
-		local VISIBILITY_FCP			= mod.VISIBILITY_FCP
-
-		if mod.manager.supported() then 
-			section:addMenu(2000, function() return i18n("touchBar") end)
-				:addItems(1000, function()
-					local location = mod.manager.virtual.location()
-					return {
-						{ title = i18n("enableTouchBar"), 		fn = function() mod.enabled:toggle() end, 								checked = mod.enabled() },
-						{ title = "-" },
-						{ title = string.upper(i18n("visibility") .. ":"), disabled = true },												
-						{ title = i18n("always"), 				fn = function() mod.visibility(VISIBILITY_ALWAYS) end, 					checked = mod.visibility() == VISIBILITY_ALWAYS },
-						{ title = i18n("finalCutPro"), 			fn = function() mod.visibility(VISIBILITY_FCP) end, 					checked = mod.visibility() == VISIBILITY_FCP },				
-						{ title = "-" },
-						{ title = string.upper(i18n("location") .. ":"), disabled = true },
-						{ title = i18n("topCentreOfTimeline"), 	fn = function() mod.manager.virtual.location(LOCATION_TIMELINE) end,	checked = mod.manager.virtual.location() == LOCATION_TIMELINE },
-						{ title = i18n("mouseLocation"), 		fn = function() mod.manager.virtual.location(LOCATION_MOUSE) end,		checked = mod.manager.virtual.location() == LOCATION_MOUSE },
-						{ title = i18n("draggable"), 			fn = function() mod.manager.virtual.location(LOCATION_DRAGGABLE) end,	checked = mod.manager.virtual.location() == LOCATION_DRAGGABLE },
-						{ title = "-" },
-						{ title = i18n("touchBarTipOne"), 		disabled = true },
-						{ title = i18n("touchBarTipTwo"), 		disabled = true },
-					}
-				end)
-		end
-	
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro Command:
 		--------------------------------------------------------------------------------
