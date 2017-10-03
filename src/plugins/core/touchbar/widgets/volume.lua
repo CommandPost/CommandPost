@@ -87,7 +87,7 @@ function mod.init(deps)
 	--------------------------------------------------------------------------------
 	local id = ID
 	local params = {
-		group = "core",
+		group = "global",
 		text = "Volume Slider",
 		subText = "Adds a volume slider to the Touch Bar",
 		item = mod.widget(),

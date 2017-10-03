@@ -150,7 +150,7 @@ function plugin.init(deps)
 
 	-- loop through the plugin types
 	for _,details in pairs(pluginTypeDetails) do
-		local type, label = details.type, details.label
+		local type, label = GROUP .. "_" .. details.type, details.label
 		-- The 'Assign Shortcuts' menu
 		local menu = menu:addMenu(PRIORITY, function() return label end)
 
