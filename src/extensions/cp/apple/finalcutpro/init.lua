@@ -195,7 +195,7 @@ function App:init()
 	self:_initWatchers()
 	self:_initStrings()
 	self.application:watch(function() self:reset() end)
-	
+
 	-- set initial state
 	self.application:update()
 	return self
@@ -563,7 +563,7 @@ App.isUnsupported = App.isInstalled:AND(App.isSupported:NOT())
 --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut Pro Frontmost?
-App.isFrontmost = App.application:mutate(function(app) return app and app:isFrontmost() end):bind(App)
+App.isFrontmost = App.application:mutate(function(app) return app ~= nil and app:isFrontmost() end):bind(App)
 
 --- cp.apple.finalcutpro:isModalDialogOpen <cp.prop: boolean; read-only>
 --- Field
@@ -1232,7 +1232,7 @@ function App:getCommandShortcuts(id)
 			local keypadModifier = false
 
 			if fcpxCmd["modifiers"] ~= nil then
-				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end				
+				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
 				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
 			elseif fcpxCmd["modifierMask"] ~= nil then
 				modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
@@ -1535,6 +1535,7 @@ function App:_initWatchers()
 	self._appWatcher = applicationwatcher.new(
 		function(appName, eventType, application)
 			local bundleID = application:bundleID()
+			-- log.df("Application event: bundleID: %s; appName: '%s'; type: %s", bundleID, appName, eventType)
 			if (bundleID == App.BUNDLE_ID or bundleID == nil and appName == "Final Cut Pro") then
 				if eventType == applicationwatcher.activated then
 					timer.doAfter(0.01, function()
@@ -1554,6 +1555,7 @@ function App:_initWatchers()
 					timer.doAfter(0.01, function()
 						self.application:update()
 						self.isRunning:update()
+						self.isFrontmost:update()
 					end)
 					self._watchers:notify("launched")
 					return
@@ -1561,6 +1563,7 @@ function App:_initWatchers()
 					timer.doAfter(0.01, function()
 						self.application:update()
 						self.isRunning:update()
+						self.isFrontmost:update()
 					end)
 					self._watchers:notify("terminated")
 					return
