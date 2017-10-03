@@ -137,7 +137,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Notifications:
 			--------------------------------------------------------------------------------
-			isInitialising						=			"is initialising",
 			keyboardShortcutsUpdated			=			"Keyboard Shortcuts Updated",
 			keywordPresetsSaved					=			"Your Keywords have been saved to Preset",
 			keywordPresetsRestored				=			"Your Keywords have been restored to Preset",

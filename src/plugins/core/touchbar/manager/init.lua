@@ -29,10 +29,120 @@ local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE - PHYSICAL TOUCH BAR:
+-- THE MODULE - WIDGETS:
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+local widgets = {}
+widgets._items = {}
+
+mod.widgets = widgets
+
+--- plugins.core.touchbar.manager.widgets:new(id, params) -> table
+--- Method
+--- Creates a new Touch Bar Widget.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this widget.
+---
+--- Returns:
+---  * table that has been created
+function widgets:new(id, params)
+
+	if widgets._items[id] ~= nil then
+		error("Duplicate Widget ID: " .. id)
+	end
+	local o = {
+		_id = id,
+		_params = params,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	widgets._items[id] = o
+	return o
+
+end
+
+--- plugins.core.touchbar.manager.widgets:get(id) -> table
+--- Method
+--- Gets a Touch Bar widget
+---
+--- Parameters:
+--- * `id`		- The unique ID for the widget you want to return.
+---
+--- Returns:
+---  * table containing the widget
+function widgets:get(id)
+	return self._items[id]
+end
+
+--- plugins.core.touchbar.manager.widgets:getAll() -> table
+--- Method
+--- Returns all of the created widgets
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function widgets:getAll()
+	return self._items
+end
+
+--- plugins.core.touchbar.manager.widgets:id() -> string
+--- Method
+--- Returns the ID of the widget
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the widget as a `string`
+function widgets:id()
+	return self._id
+end
+
+--- plugins.core.touchbar.manager.widgets:params() -> function
+--- Method
+--- Returns the paramaters of the widget
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The paramaters of the widget
+function widgets:params()
+	return self._params
+end
+
+--- plugins.core.touchbar.manager.widgets.allGroups() -> table
+--- Function
+--- Returns a table containing all of the widget groups.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * Table
+function widgets.allGroups()
+	local result = {}
+	local widgets = widgets:getAll()
+	for id, widget in pairs(widgets) do
+		local params = widget:params()
+		if params and params.group then	
+			table.insert(result, params.group)		
+		end
+	end
+	return result
+end
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE - PHYSICAL TOUCH BAR:
+--
+--------------------------------------------------------------------------------
 
 -- Touch Bar Items:
 mod._tbItems = {}
@@ -80,7 +190,6 @@ mod._items = config.prop("touchBarButtons", {})
 --- Field
 --- Is `true` if the Touch Bar is supported on this version of macOS.
 mod.supported = prop(function() return touchbar.supported() end)
-
 
 --- plugins.core.touchbar.manager.touchBar() -> none
 --- Function
@@ -311,6 +420,7 @@ function mod.start()
 		mod._sysTrayIcon = touchbar.item.newButton(hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon), "CommandPost")
 							 :callback(function(self) 
 								self:presentModalBar(mod._bar, mod.dismissButton)
+								mod._sysTrayIcon:addToSystemTray(true)
 							 end)
 							 :addToSystemTray(true)
 							 
@@ -384,11 +494,35 @@ local function addButton(icon, action, label, id)
 	end	
 	table.insert(mod._tbItemIDs, id)	
 	if icon then 
-		--log.df("Adding button with icon")		
 		table.insert(mod._tbItems, touchbar.item.newButton(label, icon, id):callback(buttonCallback))		
 	else
-		--log.df("Adding button without icon")
 		table.insert(mod._tbItems, touchbar.item.newButton(label, id):callback(buttonCallback))
+	end
+end
+
+-- addWidget(icon, action, label, id) -> none
+-- Function
+-- Add's a new widget to the Touch Bar item tables.
+--
+-- Parameters:
+--  * icon - Icon data as string
+--  * action - Action as string
+--  * label - Label as string
+--  * id - Unique ID of the button 
+--
+-- Returns:
+--  * None
+local function addWidget(icon, action, label, id)
+	if action and action.id then	
+		local widget = widgets:get(action.id)
+		if widget then 
+			local params = widget:params()
+			if params and params.item then						
+				table.insert(mod._tbItemIDs, widget:id())	
+				table.insert(mod._tbItems, params.item)
+				mod._tbWidgetID[widget:id()] = id
+			end		
+		end
 	end
 end
 
@@ -429,23 +563,26 @@ function mod.update()
 	--------------------------------------------------------------------------------
 	mod._tbItems = {}
 	mod._tbItemIDs = {}
+	mod._tbWidgetID = {}
 	
 	--------------------------------------------------------------------------------
-	-- Create new buttons:
+	-- Create new buttons and widgets:
 	--------------------------------------------------------------------------------
 	local items = mod._items()	
 	for groupID, group in pairs(items) do
 		if groupID == mod.activeGroup() then 	
 			for buttonID, button in pairs(group) do		
 				if button["action"] then
-							
 					local action 		= button["action"] or nil
 					local label 		= button["label"] or nil
 					local icon 			= button["icon"] or nil
 					local id 			= groupID .. "_" .. buttonID
-														
-					addButton(icon, action, label, id)
-										
+					
+					if string.sub(button["handlerID"], -8) == "_widgets" then						
+						addWidget(icon, action, label, id)
+					else							
+						addButton(icon, action, label, id)
+					end		
 				end			
 			end
 		end
@@ -454,7 +591,15 @@ function mod.update()
 	--------------------------------------------------------------------------------
 	-- Put the buttons in the correct order:
 	--------------------------------------------------------------------------------
-	table.sort(mod._tbItemIDs)
+	table.sort(mod._tbItemIDs, function(a,b)
+		if mod._tbWidgetID[a] then 
+			a = mod._tbWidgetID[a]
+		end
+		if mod._tbWidgetID[b] then 
+			b = mod._tbWidgetID[b]
+		end
+		return a<b
+	end)
 		
 	--------------------------------------------------------------------------------
 	-- Add buttons to the bar:
@@ -744,9 +889,9 @@ updateLocationCallback._items = {}
 
 mod.virtual.updateLocationCallback = updateLocationCallback
 
---- cp.config.updateLocationCallback:new(id, callbackFn) -> table
+--- plugins.core.touchbar.manager.virtual.updateLocationCallback:new(id, callbackFn) -> table
 --- Method
---- Creates a new File Dropped to Dock Icon Callback.
+--- Creates a new Update Location Callback
 ---
 --- Parameters:
 --- * `id`		- The unique ID for this callback.
@@ -770,9 +915,9 @@ function updateLocationCallback:new(id, callbackFn)
 
 end
 
---- cp.config.updateLocationCallback:get(id) -> table
+--- plugins.core.touchbar.manager.virtual.updateLocationCallback:get(id) -> table
 --- Method
---- Creates a new Dock Icon Click Callback.
+--- Gets an Update Location Callback based on an ID.
 ---
 --- Parameters:
 --- * `id`		- The unique ID for the callback you want to return.
@@ -783,9 +928,9 @@ function updateLocationCallback:get(id)
 	return self._items[id]
 end
 
---- cp.config.updateLocationCallback:getAll() -> table
+--- plugins.core.touchbar.manager.virtual.updateLocationCallback:getAll() -> table
 --- Method
---- Returns all of the created Dock Icon Click Callbacks
+--- Returns all of the created Update Location Callbacks
 ---
 --- Parameters:
 --- * None
@@ -796,9 +941,9 @@ function updateLocationCallback:getAll()
 	return self._items
 end
 
---- cp.config.updateLocationCallback:id() -> string
+--- plugins.core.touchbar.manager.virtual.updateLocationCallback:id() -> string
 --- Method
---- Returns the ID of the current Dock Icon Click Callback
+--- Returns the ID of the current Update Location Callback
 ---
 --- Parameters:
 --- * None
@@ -809,9 +954,9 @@ function updateLocationCallback:id()
 	return self._id
 end
 
---- cp.config.updateLocationCallback:callbackFn() -> function
+--- plugins.core.touchbar.manager.virtual.updateLocationCallback:callbackFn() -> function
 --- Method
---- Returns the callbackFn of the current Dock Icon Click Callback
+--- Returns the callbackFn of the current Update Location Callback
 ---
 --- Parameters:
 --- * None
@@ -854,6 +999,39 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Setup Actions:
+	--------------------------------------------------------------------------------		
+	mod._handlers = {}
+	local widgetGroups = widgets.allGroups()
+	for _, groupID in pairs(widgetGroups) do
+		mod._handlers[groupID] = deps.actionmanager.addHandler(groupID .. "_" .. "widgets", groupID)
+			:onChoices(function(choices) 
+				--------------------------------------------------------------------------------
+				-- Choices:
+				--------------------------------------------------------------------------------											
+				local allWidgets = widgets:getAll()				
+				for _, widget in pairs(allWidgets) do
+					
+					local id = widget:id()
+					local params = widget:params()
+										
+					local action = {
+						id		= id,
+					}
+					
+					choices:add(params.text)
+						:subText(params.subText)
+						:params(action)
+						:id(id)
+				end			
+				return choices						
+			end)
+			:onExecute(function() end)
+			:onActionId(function() return id end)
+	end
+
 	--------------------------------------------------------------------------------
 	-- Setup Physical Touch Bar Buttons:
 	--------------------------------------------------------------------------------
