@@ -495,8 +495,7 @@ return {
 			-- Preferences:
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
-			hudOptions							=			"HUD Options",
-			touchBar							=			"Virtual Touch Bar",			
+			hudOptions							=			"HUD Options",		
 			language							=			"Language",
 			provideFeedback						=			"Provide Feedback",
 			feedback							=			"Feedback",
@@ -545,16 +544,7 @@ return {
 			--------------------------------------------------------------------------------
 			enableAnnouncements					=			"Enable Announcements",
 			enableVisualAlerts					=			"Enable Visual Alerts",
-			openDictationPreferences			=			"Open Dictation Preferences...",
-
-			--------------------------------------------------------------------------------
-			-- Touch Bar Location:
-			--------------------------------------------------------------------------------
-			draggable							=			"Draggable",
-			mouseLocation						=			"Centre of Mouse Location",
-			topCentreOfTimeline					=			"Top Centre of Timeline",
-			touchBarTipOne						=			"You can drag by holding",
-			touchBarTipTwo						=			"down the left OPTION key.",
+			openDictationPreferences			=			"Open Dictation Preferences...",		
 
 			--------------------------------------------------------------------------------
 			-- Highlight Colour:
@@ -863,8 +853,9 @@ return {
 	--------------------------------------------------------------------------------
 	-- TOUCH BAR PANEL:
 	--------------------------------------------------------------------------------
-	customiseTouchBar					=			"Customise Touch Bar",
-	touchBarPreferences					=			"Touch Bar Preferences",
+	virtualTouchBar						=			"Virtual Touch Bar",	
+	layoutEditor						=			"Layout Editor",
+	customTouchBar						=			"Custom Touch Bar",
 	touchBarReset						=			"Reset All Touch Bar Items",
 	touchBarResetConfirmation			=			"This will reset all modified Touch Bar items to the default values.",
 	buttonLabel							=			"Button Label",
@@ -872,8 +863,12 @@ return {
 	fileCouldNotBeRead					=			"The selected file could not be read.",
 	badTouchBarIcon						=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
 	enableCustomisedTouchBar			=			"Enable Customised Touch Bar",
-	enableVirtualTouchBar				=			"Enable Virtual Touch Bar",
-
+	enableVirtualTouchBar				=			"Enable Virtual Touch Bar",	
+	draggable							=			"Draggable",
+	mouseLocation						=			"Centre of Mouse Location",
+	topCentreOfTimeline					=			"Top Centre of Timeline",
+	touchBarDragTip						=			"If Draggable is selected, you can hold down the left OPTION key to drag.",
+	
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------

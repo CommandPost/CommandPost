@@ -381,13 +381,15 @@ mod.virtual.VISIBILITY_DEFAULT		= mod.virtual.VISIBILITY_FCP
 --- Virtual Touch Bar is displayed in the top centre of the Final Cut Pro timeline
 mod.virtual.LOCATION_TIMELINE		= "TimelineTopCentre"
 
+-- TODO: This Final Cut Pro stuff shouldn't really be in a Core plugin.
+
 --- plugins.finalcutpro.touchbar.virtual.visibility <cp.prop: string>
 --- Field
 --- When should the Virtual Touch Bar be visible?
-mod.virtual.visibility = config.prop("virtualTouchBarVisibility", mod.virtual.VISIBILITY_DEFAULT):watch(function(enabled)
-	if mod.visibility() == VISIBILITY_ALWAYS then 
+mod.virtual.visibility = config.prop("virtualTouchBarVisibility", mod.virtual.VISIBILITY_DEFAULT):watch(function(status)
+	if status == mod.virtual.VISIBILITY_ALWAYS then 
 		mod._tb.virtual.show()
-	else
+	elseif status == mod.virtual.VISIBILITY_FCP then 
 		if fcp.isFrontmost() then 
 			mod._tb.virtual.show()
 		else
@@ -409,11 +411,11 @@ function visibilityOptions()
  	local visibilityOptions = {}
 	visibilityOptions[#visibilityOptions + 1] = {
 		label = i18n("always"),
-		value = mod.VISIBILITY_ALWAYS,
+		value = mod.virtual.VISIBILITY_ALWAYS,
 	}
 	visibilityOptions[#visibilityOptions + 1] = {
 		label = i18n("finalCutPro"),
-		value = mod.VISIBILITY_FCP,
+		value = mod.virtual.VISIBILITY_FCP,
 	} 
 	return visibilityOptions
 end
@@ -435,15 +437,14 @@ function locationOptions()
 	}
 	locationOptions[#locationOptions + 1] = {
 		label = i18n("mouseLocation"),
-		value = deps.tb.virtual.LOCATION_MOUSE,
+		value = mod._tb.virtual.LOCATION_MOUSE,
 	}
 	locationOptions[#locationOptions + 1] = {
 		label = i18n("draggable"),
-		value = deps.tb.virtual.LOCATION_DRAGGABLE,
+		value = mod._tb.virtual.LOCATION_DRAGGABLE,
 	} 	
 	return locationOptions
 end
-
 
 --- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
 --- Function
@@ -472,12 +473,7 @@ function mod.init(deps, env)
 	mod.activator = deps.actionmanager.getActivator("touchbarPreferences")		
 	mod.activator:enableAllHandlers()
 	mod.activator:preloadChoices()
-	
-	--------------------------------------------------------------------------------
-	-- Visibility Options:
-	--------------------------------------------------------------------------------
-
-
+		
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------	
@@ -487,42 +483,51 @@ function mod.init(deps, env)
 		label			= i18n("touchbarPanelLabel"),
 		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
 		tooltip			= i18n("touchbarPanelTooltip"),
-		height			= 550,
-	})
-		:addHeading(1, i18n("touchBarPreferences"))
-		:addCheckbox(3,
-			{
-				label		= i18n("enableCustomisedTouchBar"),
-				checked		= mod.enabled,
-				onchange	= function(id, params) mod.enabled(params.checked) end,
-			}
-		)	
-		:addCheckbox(4,
+		height			= 680,
+	})			
+		--------------------------------------------------------------------------------
+		-- Virtual Touch Bar
+		--------------------------------------------------------------------------------
+		:addHeading(1, i18n("virtualTouchBar"))
+		:addCheckbox(2,
 			{
 				label		= i18n("enableVirtualTouchBar"),
 				checked		= mod.virtual.enabled,
 				onchange	= function(id, params) mod.virtual.enabled(params.checked) end,
 			}
 		)					
-		:addSelect(5,
+		:addSelect(3,
 			{
 				label		= i18n("visibility"),
-				value		= mod.virtual.visibility(),
-				options		= visibilityOptions,
+				value		= mod.virtual.visibility,
+				options		= visibilityOptions(),
 				required	= true,
+				class		= "touchbarDropdown",
+				onchange	= function(id, params) mod.virtual.visibility(params.value) end,
 			}
 		)
-		:addSelect(6,
+		:addSelect(4,
 			{
 				label		= i18n("location"),
-				value		= mod._tb.virtual.location(),
-				options		= locationOptions,
+				value		= mod._tb.virtual.location,
+				options		= locationOptions(),
 				required	= true,
+				class		= "touchbarDropdown",
+				onchange	= function(id, params) mod._tb.virtual.location(params.value) end,	
 			}
 		)
-
-		
-		
+		:addParagraph(5, "<i>" .. i18n("touchBarDragTip") .. "</i>\n\n", true)
+		--------------------------------------------------------------------------------
+		-- Customise Touch Bar:
+		--------------------------------------------------------------------------------
+		:addHeading(6, i18n("customTouchBar"))
+		:addCheckbox(7,
+			{
+				label		= i18n("enableCustomisedTouchBar"),
+				checked		= mod.enabled,
+				onchange	= function(id, params) mod.enabled(params.checked) end,
+			}
+		)	
 		:addContent(10, generateContent, true)
 
 	mod._panel:addButton(20,
