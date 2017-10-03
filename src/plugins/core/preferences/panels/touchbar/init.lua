@@ -241,12 +241,7 @@ local function touchBarPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Setup Activator Callback:
 			--------------------------------------------------------------------------------
-			mod.activator:onActivate(function(handler, action, text)
-					
-					--log.df("handler: %s", inspect(handler, {depth=1}))
-					--log.df("action: %s", inspect(action))
-					--log.df("text: %s", inspect(text))										
-					
+			mod.activator:onActivate(function(handler, action, text)										
 					local actionTitle = text													
 					local handlerID = handler:id()
 					

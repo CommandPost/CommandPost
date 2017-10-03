@@ -13,6 +13,9 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log				= require("hs.logger").new("console")
+
+local application		= require("hs.application")
 local chooser			= require("hs.chooser")
 local drawing 			= require("hs.drawing")
 local fnutils 			= require("hs.fnutils")
@@ -20,15 +23,13 @@ local menubar			= require("hs.menubar")
 local mouse				= require("hs.mouse")
 local screen			= require("hs.screen")
 local timer				= require("hs.timer")
-local application		= require("hs.application")
 
 local ax 				= require("hs._asm.axuielement")
 
-local fcp				= require("cp.apple.finalcutpro")
 local config			= require("cp.config")
+local fcp				= require("cp.apple.finalcutpro")
 local prop				= require("cp.prop")
-
-local log				= require("hs.logger").new("console")
+local tools				= require("cp.tools")
 
 local format			= string.format
 
@@ -37,7 +38,8 @@ local format			= string.format
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 11000
+local PRIORITY 		= 11000
+local GROUP			= "fcpx"
 
 --------------------------------------------------------------------------------
 --
@@ -55,6 +57,20 @@ function mod.init(actionmanager)
 	mod.actionmanager = actionmanager
 	mod.activator = actionmanager.getActivator("finalcutpro.console")
 		:preloadChoices()
+	
+	--------------------------------------------------------------------------------
+	-- Restrict Allowed Handlers for Activator to current group:
+	--------------------------------------------------------------------------------
+	local allowedHandlers = {}			
+	local handlerIds = mod.actionmanager.handlerIds()			
+	for _,id in pairs(handlerIds) do				
+		local handlerTable = tools.split(id, "_")
+		if handlerTable[1] == GROUP then
+			table.insert(allowedHandlers, id)
+		end										
+	end					
+	mod.activator:allowHandlers(table.unpack(allowedHandlers))
+		
 end
 
 --------------------------------------------------------------------------------
