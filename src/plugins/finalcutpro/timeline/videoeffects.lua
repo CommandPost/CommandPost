@@ -36,8 +36,7 @@ local mod = {}
 ---
 --- Returns:
 ---  * The Module
-function mod.init(touchbar)
-	mod.touchbar = touchbar
+function mod.init()
 	return mod
 end
 
@@ -142,14 +141,10 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Apply the selected Transition:
 	--------------------------------------------------------------------------------
-	mod.touchbar.hide()
-
 	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.1, function()
-		mod.touchbar.show()
-
+	timer.doAfter(0.1, function()		
 		effects:loadLayout(effectsLayout)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
@@ -168,7 +163,6 @@ local plugin = {
 	id = "finalcutpro.timeline.videoeffects",
 	group = "finalcutpro",
 	dependencies = {
-		["finalcutpro.os.touchbar"]						= "touchbar",
 	}
 }
 
@@ -177,7 +171,7 @@ function plugin.init(deps)
 end
 
 function plugin.postInit(deps)
-	return mod.init(deps.touchbar)
+	return mod.init()
 end
 
 return plugin

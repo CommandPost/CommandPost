@@ -293,9 +293,9 @@ function mod.init()
 	log.df("Plugins Loaded.")
 
 	--------------------------------------------------------------------------------
-	-- Loaded notification:
+	-- Display Initialising Notification:
 	--------------------------------------------------------------------------------
-	dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ") " .. i18n("hasLoaded"))
+	dialog.displayNotification(config.appName .. " (v" .. config.appVersion .. ")")
 
 	return mod
 

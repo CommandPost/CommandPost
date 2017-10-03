@@ -33,6 +33,7 @@ local insert, concat	= table.insert, table.concat
 --
 --------------------------------------------------------------------------------
 local ID				= "menu"
+local GROUP				= "fcpx"
 
 --------------------------------------------------------------------------------
 --
@@ -52,7 +53,7 @@ local mod = {}
 ---  * None
 function mod.init(actionmanager)
 	mod._manager = actionmanager
-	mod._handler = actionmanager.addHandler(ID)
+	mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
 	:onChoices(mod.onChoices)
 	:onExecute(mod.onExecute)
 	:onActionId(mod.actionId)
@@ -153,7 +154,7 @@ local plugin = {
 	id				= "finalcutpro.menu.menuaction",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.action.manager"]	= "actionmanager",
+		["core.action.manager"]	= "actionmanager",
 	}
 }
 

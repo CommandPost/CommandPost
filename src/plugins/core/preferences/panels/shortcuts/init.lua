@@ -52,20 +52,10 @@ local mod = {}
 
 mod.DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
-local function shallowCopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in pairs(orig) do
-            copy[orig_key] = orig_value
-        end
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
+--- plugins.core.preferences.panels.shortcuts.lastGroup <cp.prop: string>
+--- Field
+--- Last group used in the Preferences Drop Down.
+mod.lastGroup = config.prop("shortcutPreferencesLastGroup", nil)
 
 -- restoreDefaultShortcuts() -> boolean
 -- Function
@@ -264,6 +254,14 @@ end
 local function updateShortcut(id, params)
 	
 	--------------------------------------------------------------------------------
+	-- Save Selected Group:
+	--------------------------------------------------------------------------------	
+	if params and params["type"] == "updateGroup" then
+		mod.lastGroup(params["groupID"])
+		return
+	end
+	
+	--------------------------------------------------------------------------------
 	-- Values from Callback:
 	--------------------------------------------------------------------------------
 	local modifiers = tools.split(params.modifiers, ":")
@@ -407,43 +405,6 @@ local function keyCodeOptions(shortcut)
 	return keyCodeOptions
 end
 
-local function getShortcutList()
-	local shortcuts = {}
-	for _,groupId in ipairs(commands.groupIds()) do
-		local group = commands.group(groupId)
-		local cmds = group:getAll()
-		for id,cmd in pairs(cmds) do
-			-- log.df("Processing command: %s", id)
-			local cmdShortcuts = cmd:getShortcuts()
-			if cmdShortcuts and #cmdShortcuts > 0 then
-				for i,shortcut in ipairs(cmd:getShortcuts()) do
-					shortcuts[#shortcuts+1] = {
-						groupId = groupId,
-						command = cmd,
-						shortcutIndex = i,
-						shortcut = shortcut,
-						shortcutId = ("%s_%s"):format(id, i),
-					}
-				end
-			else
-				shortcuts[#shortcuts+1] = {
-					groupId = groupId,
-					command = cmd,
-					shortcutIndex = 1,
-					shortcutId = ("%s_%s"):format(id, 1),
-				}
-
-			end
-		end
-	end
-	table.sort(shortcuts, function(a, b)
-		return a.groupId < b.groupId
-			or a.groupId == b.groupId and a.command:getTitle() < b.command:getTitle()
-	end)
-
-	return shortcuts
-end
-
 local function renderRows(context)
 	if not mod._renderRows then
 		mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
@@ -474,6 +435,7 @@ local function generateContent()
 	--------------------------------------------------------------------------------
 	local groupOptions = {}
 	local defaultGroup = nil
+	if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
 	for _,id in ipairs(commands.groupIds()) do
 		defaultGroup = defaultGroup or id
 		groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
@@ -488,6 +450,24 @@ local function generateContent()
 	}) .. ui.javascript([[
 		var groupSelect = document.getElementById("shortcutsGroupSelect")
 		groupSelect.onchange = function() {
+		
+			//
+			// Change Group Callback:
+			//
+			try {
+				var result = {
+					id: "updateShortcut",
+					params: {
+						type: "updateGroup",
+						groupID: this.value,
+					},
+				}
+				webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
+			} catch(err) {
+				console.log("Error: " + err)
+				alert('An error has occurred. Does the controller exist yet?');
+			}	
+		
 			console.log("shortcutsGroupSelect changed");
 			var groupControls = document.getElementById("shortcutsGroupControls");
 			var value = groupSelect.options[groupSelect.selectedIndex].value;
