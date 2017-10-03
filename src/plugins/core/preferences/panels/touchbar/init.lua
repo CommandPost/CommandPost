@@ -340,6 +340,116 @@ function mod.getGroupEditor(groupId)
 	return mod._groupEditors and mod._groupEditors[groupId]
 end
 
+--------------------------------------------------------------------------------
+--
+-- VIRTUAL TOUCH BAR:
+-- 
+--------------------------------------------------------------------------------
+
+mod.virtual = {}
+
+--- plugins.finalcutpro.touchbar.virtual.enabled <cp.prop: boolean>
+--- Field
+--- Is `true` if the plugin is enabled.
+mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enabled)
+	--------------------------------------------------------------------------------
+	-- Check for compatibility:
+	--------------------------------------------------------------------------------
+	if enabled and not mod._tb.supported() then
+		dialog.displayMessage(i18n("touchBarError"))
+		mod.enabled(false)
+	end
+	if enabled then
+		mod._tb.virtual.start()
+	else
+		mod._tb.virtual.stop()
+	end
+end)
+
+--- plugins.finalcutpro.touchbar.virtual.VISIBILITY_ALWAYS -> string
+--- Constant
+--- Virtual Touch Bar is Always Visible
+mod.virtual.VISIBILITY_ALWAYS		= "Always"
+
+--- plugins.finalcutpro.touchbar.virtual.VISIBILITY_FCP -> string
+--- Constant
+--- Virtual Touch Bar is only visible when Final Cut Pro is active.
+mod.virtual.VISIBILITY_FCP			= "Final Cut Pro"
+
+--- plugins.finalcutpro.touchbar.virtual.VISIBILITY_DEFAULT -> string
+--- Constant
+--- The default visibility.
+mod.virtual.VISIBILITY_DEFAULT		= mod.virtual.VISIBILITY_FCP
+
+--- plugins.finalcutpro.touchbar.virtual.LOCATION_TIMELINE -> string
+--- Constant
+--- Virtual Touch Bar is displayed in the top centre of the Final Cut Pro timeline
+mod.virtual.LOCATION_TIMELINE		= "TimelineTopCentre"
+
+--- plugins.finalcutpro.touchbar.virtual.visibility <cp.prop: string>
+--- Field
+--- When should the Virtual Touch Bar be visible?
+mod.virtual.visibility = config.prop("virtualTouchBarVisibility", mod.virtual.VISIBILITY_DEFAULT):watch(function(enabled)
+	if mod.visibility() == VISIBILITY_ALWAYS then 
+		mod._tb.virtual.show()
+	else
+		if fcp.isFrontmost() then 
+			mod._tb.virtual.show()
+		else
+			mod._tb.virtual.hide()
+		end
+	end
+end)
+
+-- visibilityOptions() -> none
+-- Function
+-- Generates a list of visibilities for the Preferences dropdown
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A table of visibilities
+function visibilityOptions()
+ 	local visibilityOptions = {}
+	visibilityOptions[#visibilityOptions + 1] = {
+		label = i18n("always"),
+		value = mod.VISIBILITY_ALWAYS,
+	}
+	visibilityOptions[#visibilityOptions + 1] = {
+		label = i18n("finalCutPro"),
+		value = mod.VISIBILITY_FCP,
+	} 
+	return visibilityOptions
+end
+
+-- visibilityOptions() -> none
+-- Function
+-- Generates a list of visibilities for the Preferences dropdown
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A table of visibilities
+function locationOptions()
+	local locationOptions = {}
+	locationOptions[#locationOptions + 1] = {
+		label = i18n("topCentreOfTimeline"),
+		value = mod.virtual.LOCATION_TIMELINE,
+	}
+	locationOptions[#locationOptions + 1] = {
+		label = i18n("mouseLocation"),
+		value = deps.tb.virtual.LOCATION_MOUSE,
+	}
+	locationOptions[#locationOptions + 1] = {
+		label = i18n("draggable"),
+		value = deps.tb.virtual.LOCATION_DRAGGABLE,
+	} 	
+	return locationOptions
+end
+
+
 --- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
@@ -367,7 +477,12 @@ function mod.init(deps, env)
 	mod.activator = deps.actionmanager.getActivator("touchbarPreferences")		
 	mod.activator:enableAllHandlers()
 	mod.activator:preloadChoices()
-		
+	
+	--------------------------------------------------------------------------------
+	-- Visibility Options:
+	--------------------------------------------------------------------------------
+
+
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------	
@@ -382,11 +497,37 @@ function mod.init(deps, env)
 		:addHeading(1, i18n("touchBarPreferences"))
 		:addCheckbox(3,
 			{
-				label		= "Enable Touch Bar Support",
+				label		= i18n("enableCustomisedTouchBar"),
 				checked		= mod.enabled,
 				onchange	= function(id, params) mod.enabled(params.checked) end,
 			}
 		)	
+		:addCheckbox(4,
+			{
+				label		= i18n("enableVirtualTouchBar"),
+				checked		= mod.virtual.enabled,
+				onchange	= function(id, params) mod.virtual.enabled(params.checked) end,
+			}
+		)					
+		:addSelect(5,
+			{
+				label		= i18n("visibility"),
+				value		= mod.virtual.visibility(),
+				options		= visibilityOptions,
+				required	= true,
+			}
+		)
+		:addSelect(6,
+			{
+				label		= i18n("location"),
+				value		= mod._tb.virtual.location(),
+				options		= locationOptions,
+				required	= true,
+			}
+		)
+
+		
+		
 		:addContent(10, generateContent, true)
 
 	mod._panel:addButton(20,

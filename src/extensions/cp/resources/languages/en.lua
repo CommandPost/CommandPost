@@ -426,8 +426,7 @@ return {
 
 				--------------------------------------------------------------------------------
 				-- Tools Options:
-				--------------------------------------------------------------------------------
-				enableTouchBar					=			"Enable Virtual Touch Bar",
+				--------------------------------------------------------------------------------				
 				enableHUD						=			"Enable HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
@@ -872,7 +871,9 @@ return {
 	pleaseSelectAnIcon					=			"Please select an icon:",
 	fileCouldNotBeRead					=			"The selected file could not be read.",
 	badTouchBarIcon						=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
-	
+	enableCustomisedTouchBar			=			"Enable Customised Touch Bar",
+	enableVirtualTouchBar				=			"Enable Virtual Touch Bar",
+
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------
