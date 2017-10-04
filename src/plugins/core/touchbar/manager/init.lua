@@ -131,8 +131,8 @@ function widgets.allGroups()
 	local widgets = widgets:getAll()
 	for id, widget in pairs(widgets) do
 		local params = widget:params()
-		if params and params.group then		
-			if not tools.tableContains(result, params.group) then		
+		if params and params.group then
+			if not tools.tableContains(result, params.group) then
 				table.insert(result, params.group)
 			end
 		end
@@ -422,7 +422,7 @@ function mod.start()
 		mod._sysTrayIcon = touchbar.item.newButton(hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon), "CommandPost")
 							 :callback(function(self)
 								self:addToSystemTray(false)
-								self:addToSystemTray(true)							 	
+								self:addToSystemTray(true)
 							 	self:presentModalBar(mod._bar, mod.dismissButton)
 							 end)
 							 :addToSystemTray(true)
@@ -800,12 +800,12 @@ end
 --- Returns:
 ---  * None
 function mod.virtual.updateLocation()
-	
+
 	--------------------------------------------------------------------------------
 	-- Check that the Touch Bar exists:
 	--------------------------------------------------------------------------------
 	if not mod._touchBar then return end
-	
+
 	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
@@ -1082,14 +1082,14 @@ function plugin.postInit(deps, env)
 		mod.start()
 		mod.update()
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Show Virtual Touch Bar on Load if Enabled:
 	--------------------------------------------------------------------------------
 	if mod.virtual.enabled() then
 		mod.virtual.show()
 	end
-	
+
 end
 
 return plugin

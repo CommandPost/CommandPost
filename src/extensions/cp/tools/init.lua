@@ -53,6 +53,19 @@ local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
 
+--- cp.tools.unescape(str) -> string
+--- Function
+--- Removes any URL encoding in the provided string.
+---
+--- Parameters:
+---  * str - the string to decode
+---
+--- Returns:
+---  * A string with all "+" characters converted to spaces and all percent encoded sequences converted to their ASCII equivalents.
+function tools.unescape(str)
+    return (str:gsub("+", " "):gsub("%%(%x%x)", function(_) return string.char(tonumber(_, 16)) end):gsub("\r\n", "\n"))
+end
+
 --- cp.tools.split(str, pat) -> table
 --- Function
 --- Splits a string with a pattern.
