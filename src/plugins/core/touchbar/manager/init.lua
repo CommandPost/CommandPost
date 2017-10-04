@@ -1037,6 +1037,7 @@ function plugin.init(deps, env)
 	local global = deps.global
 	global:add("cpTouchBar")
 		:whenActivated(mod.toggle)
+		:groupedBy("commandPost")
 
 	return mod.init(deps, env)
 end
