@@ -52,6 +52,7 @@ local plugin = {
 	group			= "core",
 	dependencies	= {
 		["core.menu.helpandsupport"]	= "helpandsupport",
+		["core.commands.global"] 		= "global",
 	}
 }
 
@@ -59,6 +60,14 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+	--------------------------------------------------------------------------------
+	-- Commands:
+	--------------------------------------------------------------------------------
+	local global = deps.global
+	global:add("cpCredits")
+		:whenActivated(mod.show)
+		:groupedBy("helpandsupport")
 
 	deps.helpandsupport:addItem(PRIORITY, function()
 		return { title = i18n("credits"),	fn = mod.show }

@@ -90,7 +90,7 @@ function plugin.init(deps)
 	-- Connect to Manager:
 	--------------------------------------------------------------------------------
 	mod.manager = deps.manager
-	
+
 	if mod.manager.supported() then
 
 		--------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ function plugin.init(deps)
 		-- Disable/Enable the Touchbar when the Command Editor/etc is open:
 		--------------------------------------------------------------------------------
 		fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(active)
-			if mod.visibility() == VISIBILITY_ALWAYS then	
+			if mod.visibility() == VISIBILITY_ALWAYS then
 				mod.manager.virtual.show()
 			else
 				if active then
@@ -115,7 +115,7 @@ function plugin.init(deps)
 				end
 			end
 		end)
-	
+
 		--------------------------------------------------------------------------------
 		-- Update the Virtual Touch Bar position if either of the main windows move:
 		--------------------------------------------------------------------------------
@@ -125,10 +125,10 @@ function plugin.init(deps)
 		--------------------------------------------------------------------------------
 		-- Add Callbacks to Control Location:
 		--------------------------------------------------------------------------------
-		mod.manager.virtual.updateLocationCallback:new("fcp", function() 
-		
+		mod.manager.virtual.updateLocationCallback:new("fcp", function()
+
 			local displayVirtualTouchBarLocation = mod.manager.virtual.location()
-		
+
 			--------------------------------------------------------------------------------
 			-- Show Touch Bar at Top Centre of Timeline:
 			--------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ function plugin.init(deps)
 				mod.manager.touchBar():atMousePosition()
 
 			end
-		
+
 		end)
 
 		--------------------------------------------------------------------------------
@@ -160,16 +160,17 @@ function plugin.init(deps)
 			:add("cpToggleTouchBar")
 			:activatedBy():ctrl():option():cmd("z")
 			:whenActivated(function() mod.enabled:toggle() end)
-		
+			:groupedBy("commandPost")
+
 		--------------------------------------------------------------------------------
 		-- Global Command:
 		--------------------------------------------------------------------------------
 		deps.global
 			:add("cpGlobalToggleTouchBar")
-			:whenActivated(function() mod.enabled:toggle() end)	
-			
+			:whenActivated(function() mod.enabled:toggle() end)
+			:groupedBy("commandPost")
 	end
-	
+
 	return mod
 end
 
@@ -178,10 +179,10 @@ function plugin.postInit()
 	-- Show on Startup:
 	--------------------------------------------------------------------------------
 	if mod.manager.supported() and mod.manager.virtual.enabled() then
-		if mod.visibility() == VISIBILITY_ALWAYS then 
+		if mod.visibility() == VISIBILITY_ALWAYS then
 			mod.manager.virtual.show()
 		else
-			if fcp.isFrontmost() then 
+			if fcp.isFrontmost() then
 				mod.manager.virtual.show()
 			end
 		end

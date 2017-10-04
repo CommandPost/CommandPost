@@ -55,7 +55,7 @@ return {
 			clearList							=			"Clear List",
 			feedback							=			"Feedback",
 			settings							=			"Settings",
-			launch								=			"Launch",			
+			launch								=			"Launch",
 			location							=			"Location",
 			visibility							=			"Visibility",
 			always								=			"Always",
@@ -175,9 +175,9 @@ return {
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
-			--------------------------------------------------------------------------------			
+			--------------------------------------------------------------------------------
 			noSupportedVersionsOfFCPX			= 			"No supported versions of Final Cut Pro were detected.",
-			
+
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
@@ -426,7 +426,7 @@ return {
 
 				--------------------------------------------------------------------------------
 				-- Tools Options:
-				--------------------------------------------------------------------------------				
+				--------------------------------------------------------------------------------
 				enableHUD						=			"Enable HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
@@ -495,7 +495,7 @@ return {
 			-- Preferences:
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
-			hudOptions							=			"HUD Options",		
+			hudOptions							=			"HUD Options",
 			language							=			"Language",
 			provideFeedback						=			"Provide Feedback",
 			feedback							=			"Feedback",
@@ -531,7 +531,7 @@ return {
 			-- Final Cut Pro:
 			--------------------------------------------------------------------------------
 			allowZoomingWithOptionKey			=			"Enable Timeline Zooming with Mouse Scroll & OPTION key",
-			
+
 			--------------------------------------------------------------------------------
 			-- HUD Options:
 			--------------------------------------------------------------------------------
@@ -544,7 +544,7 @@ return {
 			--------------------------------------------------------------------------------
 			enableAnnouncements					=			"Enable Announcements",
 			enableVisualAlerts					=			"Enable Visual Alerts",
-			openDictationPreferences			=			"Open Dictation Preferences...",		
+			openDictationPreferences			=			"Open Dictation Preferences...",
 
 			--------------------------------------------------------------------------------
 			-- Highlight Colour:
@@ -599,7 +599,7 @@ return {
 
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
-			
+
 			modifierHeading						=			"Modifier Keys",
 
 			languageHeading						=			"Language",
@@ -608,10 +608,10 @@ return {
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
 			shortcutsControl					=			"Shortcuts are currently being controlled by",
-			
+
 			touchbarPanelLabel					=			"Touch Bar",
 			touchbarPanelTooltip				=			"Touch Bar Preferences",
-			
+
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
 
@@ -751,10 +751,10 @@ return {
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	
+
 	global_cmds_action					=			"Global Commands",
 	global_widgets_action				=			"Global Touch Bar Widgets",
-	
+
 	fcpx_cmds_action					=			"Commands",
 	fcpx_menu_action					=			"Menu Items",
 	fcpx_videoEffect_action				=			"Video Effects",
@@ -813,6 +813,8 @@ return {
 	transition_group					=			"Transition",
 	generator_group						=			"Generator",
 	commandPost_group					=			"CommandPost",
+	finalCutPro_group					=			"Final Cut Pro",
+	helpandsupport_group				=			"Help & Support",
 
 	commandChoiceSubText				=			"Command: %{group}",
 
@@ -853,7 +855,7 @@ return {
 	--------------------------------------------------------------------------------
 	-- TOUCH BAR PANEL:
 	--------------------------------------------------------------------------------
-	virtualTouchBar						=			"Virtual Touch Bar",	
+	virtualTouchBar						=			"Virtual Touch Bar",
 	layoutEditor						=			"Layout Editor",
 	customTouchBar						=			"Custom Touch Bar",
 	touchBarReset						=			"Reset All Touch Bar Items",
@@ -863,12 +865,14 @@ return {
 	fileCouldNotBeRead					=			"The selected file could not be read.",
 	badTouchBarIcon						=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
 	enableCustomisedTouchBar			=			"Enable Customised Touch Bar",
-	enableVirtualTouchBar				=			"Enable Virtual Touch Bar",	
+	enableVirtualTouchBar				=			"Enable Virtual Touch Bar",
 	draggable							=			"Draggable",
 	mouseLocation						=			"Centre of Mouse Location",
 	topCentreOfTimeline					=			"Top Centre of Timeline",
 	touchBarDragTip						=			"If Draggable is selected, you can hold down the left OPTION key to drag.",
-	
+	actionOrWidget						=			"Action / Widget",
+	touchBarWidget						=			"Touch Bar Widget",
+
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------
@@ -991,7 +995,7 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-	
+
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
@@ -1011,6 +1015,7 @@ return {
 		cpFeedback_title										=	"Provide Feedback",
 		cpDeveloperGuide_title									=	"Developer Guide",
 		cpTouchBar_title										=	"Toggle Touch Bar",
+		cpCredits_title											=	"Credits",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:

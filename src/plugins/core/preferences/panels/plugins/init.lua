@@ -67,10 +67,10 @@ end
 -- DISABLE PLUGIN:
 --------------------------------------------------------------------------------
 local function disablePlugin(id)
-	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
+	dialog.webviewAlert(mod._manager.getWebview(), function(result)
 		if result == i18n("yes") then
 			if not plugins.disable(id) then
-				dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))								
+				dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))
 			end
 		end
 	end, i18n("pluginsDisableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")
@@ -80,13 +80,13 @@ end
 -- ENABLE PLUGIN:
 --------------------------------------------------------------------------------
 local function enablePlugin(id)
-	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
+	dialog.webviewAlert(mod._manager.getWebview(), function(result)
 		if result == i18n("yes") then
-			if not plugins.enable(id) then			
-				dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))								
+			if not plugins.enable(id) then
+				dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))
 			end
 		end
-	end, i18n("pluginsEnableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")		
+	end, i18n("pluginsEnableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")
 end
 
 --------------------------------------------------------------------------------
@@ -248,6 +248,7 @@ function plugin.init(deps, env)
 	local global = deps.global
 	global:add("cpOpenPluginsFolder")
 		:whenActivated(openPluginsFolder)
+		:groupedBy("commandPost")
 
 	return mod.init(deps, env)
 end

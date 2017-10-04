@@ -67,6 +67,7 @@ function plugin.init(deps)
 	local global = deps.global
 	global:add("cpUserGuide")
 		:whenActivated(mod.show)
+		:groupedBy("helpandsupport")
 
 	--------------------------------------------------------------------------------
 	-- Menubar:
