@@ -40,6 +40,7 @@ local format			= string.format
 --------------------------------------------------------------------------------
 local PRIORITY 		= 11000
 local GROUP			= "fcpx"
+local WIDGETS		= "widgets"
 
 --------------------------------------------------------------------------------
 --
@@ -55,29 +56,13 @@ mod.enabled = config.prop("consoleEnabled", true)
 --------------------------------------------------------------------------------
 function mod.init(actionmanager)
 	mod.actionmanager = actionmanager
-	mod.activator = actionmanager.getActivator("finalcutpro.console")
-		:preloadChoices()
-	
-	--------------------------------------------------------------------------------
-	-- Restrict Allowed Handlers for Activator to current group:
-	--------------------------------------------------------------------------------
-	local allowedHandlers = {}			
-	local handlerIds = mod.actionmanager.handlerIds()			
-	for _,id in pairs(handlerIds) do				
-		local handlerTable = tools.split(id, "_")
-		if handlerTable[1] == GROUP then
-			table.insert(allowedHandlers, id)
-		end										
-	end					
-	mod.activator:allowHandlers(table.unpack(allowedHandlers))
-		
 end
 
 --------------------------------------------------------------------------------
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function mod.refresh()
-	if mod.activator and mod.enabled() then 
+	if mod.activator and mod.enabled() then
 		mod.activator:refresh()
 	end
 end
@@ -86,7 +71,26 @@ end
 -- SHOW CONSOLE:
 --------------------------------------------------------------------------------
 function mod.show()
-	if mod.activator and mod.enabled() then 
+	if mod.actionmanager and mod.enabled() then
+		if not mod.activator then
+			mod.activator = mod.actionmanager.getActivator("finalcutpro.console")
+				:preloadChoices()
+
+			-- --------------------------------------------------------------------------------
+			-- -- Restrict Allowed Handlers for Activator to current group:
+			-- --------------------------------------------------------------------------------
+			local allowedHandlers = {}
+			local handlerIds = mod.actionmanager.handlerIds()
+			for _,id in pairs(handlerIds) do
+				local handlerTable = tools.split(id, "_")
+				if handlerTable[2]~= WIDGETS then
+					table.insert(allowedHandlers, id)
+				end
+			end
+			log.df("allowedHandlers: %s", hs.inspect(allowedHandlers))
+			mod.activator:allowHandlers(table.unpack(allowedHandlers))
+		end
+
 		mod.activator:show()
 	end
 end
@@ -101,7 +105,7 @@ local plugin = {
 	group			= "finalcutpro",
 	dependencies	= {
 		["finalcutpro.commands"]		= "fcpxCmds",
-		["core.action.manager"]	= "actionmanager",
+		["core.action.manager"]			= "actionmanager",
 		["finalcutpro.menu.tools"]		= "tools",
 	}
 }
