@@ -84,6 +84,7 @@ function plugin.init(deps)
 	global:add("cpLaunchFinalCutPro")
 		:activatedBy():ctrl():alt():cmd("l")
 		:whenPressed(mod.openFinalCutPro)
+		:groupedBy("finalCutPro")
 
 	return mod
 end

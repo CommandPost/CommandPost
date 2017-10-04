@@ -570,6 +570,7 @@ function plugin.init(deps, env)
 	local global = deps.global
 	global:add("cpPreferences")
 		:whenActivated(mod.show)
+		:groupedBy("commandPost")
 
 	return mod.init(env)
 end
