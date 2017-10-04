@@ -16,8 +16,9 @@
 local log				= require("hs.logger").new("colorWidget")
 
 local canvas   			= require("hs.canvas")
-local window   			= require("hs.window")
+local eventtap			= require("hs.eventtap")
 local screen   			= require("hs.screen")
+local window   			= require("hs.window")
 
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
@@ -32,44 +33,26 @@ local mod = {}
 
 local function puckWidget(id, aspect, property)
 
+	local colorBoard = fcp:colorBoard()
+
+	local value = colorBoard:getPercentage(aspect, property)
+	if value == nil then value = 0 end
+
 	local widgetCanvas = canvas.new{x = 0, y = 0, h = 30, w = 150}
 
-	-- Box:
 	widgetCanvas[#widgetCanvas + 1] = {
 		id				 = "background",
 		type             = "rectangle",
 		action           = "strokeAndFill",
 		strokeColor      = { white = 1 },
-		fillColor        = { white = .25 },
+		fillColor        = { white = value / 100 },
 		roundedRectRadii = { xRadius = 5, yRadius = 5 },
 	}
-
-	--[[
-	widgetCanvas[#widgetCanvas + 1] = {
-		id          = "zigzag",
-		type        = "segments",
-		action      = "stroke",
-		strokeColor = { blue = 1, green = 1 },
-		coordinates = {
-			{ x =   0, y = 15 },
-			{ x =  65, y = 15 },
-			{ x =  70, y =  5 },
-			{ x =  80, y = 25 },
-			{ x =  85, y = 15 },
-			{ x = 150, y = 15},
-		}
-	}
-	--]]
 
 	widgetCanvas:canvasMouseEvents(true, true, false, true)
 		:mouseCallback(function(o,m,i,x,y)
 
 			local max = mod.item:canvasWidth()
-
-			--------------------------------------------------------------------------------
-			-- Show the Color Board with the correct panel
-			--------------------------------------------------------------------------------
-			local colorBoard = fcp:colorBoard()
 
 			--------------------------------------------------------------------------------
 			-- Show the Color Board if it's hidden:
@@ -82,13 +65,27 @@ local function puckWidget(id, aspect, property)
 				return
 			end
 
-			x = (x - 50) * 2
+			local mods = eventtap.checkKeyboardModifiers()
+			local altPressed = false
+			if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+				altPressed = true
+			end
+
+			if altPressed then
+				x = x * 3.6
+			else
+				x = (x - 50) * 2
+			end
+
+			widgetCanvas.background.fillColor = { white = x/100 }
 
 			if m == "mouseDown" or m == "mouseMove" then
-				colorBoard:applyPercentage(aspect, property, x)
-				widgetCanvas.background.fillColor = hs.drawing.color.definedCollections.hammerspoon.red
+				if altPressed then
+					colorBoard:applyAngle(aspect, property, x)
+				else
+					colorBoard:applyPercentage(aspect, property, x)
+				end
 			elseif m == "mouseUp" then
-				widgetCanvas.background.fillColor = { white = .25 }
 			end
 	end)
 
