@@ -263,10 +263,10 @@ local function touchBarPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Icon Clicked:
 			--------------------------------------------------------------------------------
-			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)
+			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)			
 			local failed = false
 			if result and result["1"] then
-				local path = string.sub(result["1"], 8)								
+				local path = tools.unescape(string.sub(result["1"], 8))									
 				local icon = image.imageFromPath(path)
 				if icon then
 					local encodedIcon = icon:encodeAsURLString()
