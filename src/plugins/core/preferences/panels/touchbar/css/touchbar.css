@@ -43,11 +43,11 @@
 }
 
 .rowAction {
-	width: 49%;
+	width: 32%;
 }
 
 .rowActionButton {
-	width: 11%;
+	width: 23%;
 }
 
 .rowLabel {
@@ -129,7 +129,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 200px;	
+	width: 100px;	
 }
 
 .actionButton {

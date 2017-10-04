@@ -1065,7 +1065,7 @@ function plugin.postInit(deps, env)
 					}
 
 					choices:add(params.text)
-						:subText(params.subText)
+						:subText(i18n("touchBarWidget") .. ": " .. params.subText)
 						:params(action)
 						:id(id)
 				end
