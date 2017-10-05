@@ -77,7 +77,7 @@ function ColorBoard:new(parent)
 		_parent = parent,
 		_child = {}
 	}
-	
+
 	return prop.extend(o, ColorBoard)
 end
 
@@ -289,7 +289,7 @@ function ColorBoard:aspectPropertyPanelUI(aspect, property, type)
 	end
 	self:showPanel(aspect)
 	local details = self:getAspect(aspect, property)
-	if not details[type] then
+	if not details or not details[type] then
 		return nil
 	end
 	local ui = self:childUI(details[type])

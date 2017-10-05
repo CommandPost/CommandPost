@@ -988,6 +988,8 @@ return {
 	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_touchbar_virtual_label						=	"Virtual Touch Bar",
+	finalcutpro_touchbar_widgets_colorboard_label			=	"Widget: Color Board",
+	finalcutpro_touchbar_widgets_zoom_label					= 	"Widget: Timeline Zoom",
 	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
 	finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
 	finalcutpro_viewer_timecodeoverlay_label				=	"Viewer: Timecode Overlay",
