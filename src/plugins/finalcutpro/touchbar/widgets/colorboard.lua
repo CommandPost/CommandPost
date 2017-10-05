@@ -96,7 +96,7 @@ local function puckWidget(id, aspect, property)
 
 end
 
---- plugins.core.touchbar.widgets.test.init() -> nil
+--- plugins.finalcutpro.touchbar.widgets.colorboard.init() -> nil
 --- Function
 --- Initialise the module.
 ---

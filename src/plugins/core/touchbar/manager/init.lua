@@ -9,6 +9,18 @@
 --- Touch Bar Manager Plugin.
 --- This handles both the Virtual Touch Bar and adding items to the physical Touch Bar.
 
+--- === plugins.core.touchbar.manager.virtual ===
+---
+--- Virtual Touch Bar Manager
+
+--- === plugins.core.touchbar.manager.widgets ===
+---
+--- Touch Bar Widgets Manager
+
+--- === plugins.core.touchbar.manager.virtual.updateLocationCallback ===
+---
+--- Virtual Touch Bar Update Location Callback
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:

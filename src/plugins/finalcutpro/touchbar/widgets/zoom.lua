@@ -118,7 +118,7 @@ function mod.widget()
 
 end
 
---- plugins.core.touchbar.widgets.zoom.init() -> nil
+--- plugins.finalcutpro.touchbar.widgets.zoom.init() -> nil
 --- Function
 --- Initialise the module.
 ---

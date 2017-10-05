@@ -57,7 +57,7 @@ function mod.widget()
 			{ x =  85, y = 15 },
 			{ x = 150, y = 15},
 		}
-	}	
+	}
 
 	widgetCanvas:canvasMouseEvents(true, true, false, true):mouseCallback(function(o,m,i,x,y)
 		local max = mod.item:canvasWidth()
@@ -83,15 +83,15 @@ function mod.widget()
 			widgetCanvas.zigzag.coordinates[5].x = 85
 		end
 	end)
-	
+
 	mod.item = touchbar.item.newCanvas(widgetCanvas, ID)
 		:canvasClickColor{ alpha = 0.0 }
-	
+
 	return mod.item
 
 end
 
---- plugins.core.touchbar.widgets.test.init() -> nil
+--- plugins.core.touchbar.widgets.windowSlide.init() -> nil
 --- Function
 --- Initialise the module.
 ---
@@ -108,11 +108,11 @@ function mod.init(deps)
 		text = "Window Slide",
 		subText = "Allows you to slide window positions.",
 		item = mod.widget(),
-	}	
+	}
 	deps.manager.widgets:new(id, params)
 
 	return mod
-	
+
 end
 
 --------------------------------------------------------------------------------
