@@ -111,6 +111,9 @@ function ColorBoard:UI()
 		else
 			-- it's in the top-left panel (half-height)
 			local top = parent:topGroupUI()
+			if not top then
+				return nil
+			end
 			for i,child in ipairs(top) do
 				if ColorBoard.isColorBoard(child) then
 					return child
