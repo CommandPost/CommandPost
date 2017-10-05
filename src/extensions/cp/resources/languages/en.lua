@@ -1018,6 +1018,7 @@ return {
 		cpDeveloperGuide_title									=	"Developer Guide",
 		cpTouchBar_title										=	"Toggle Touch Bar",
 		cpCredits_title											=	"Credits",
+		cpGlobalConsole_title									=	"Activate Global Console",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:

@@ -86,7 +86,6 @@ function mod.getShortcut(handlerId, shortcutNumber)
 end
 
 function mod.applyShortcut(handlerId, shortcutNumber)
-	log.df("Apply Shortcut!")
 	local action = mod.getShortcut(handlerId, shortcutNumber)
 	local apply = mod._apply[handlerId]
 	return apply and apply(action) or false
@@ -175,7 +174,7 @@ function plugin.init(deps)
 		-- Commands with default shortcuts
 		local fcpxCmds = deps.fcpxCmds
 		for i = 1, MAX_SHORTCUTS do
-			fcpxCmds:add("cp" .. tools.firstToUpper(type) .. tostring(i))
+			fcpxCmds:add("cp" .. tools.firstToUpper(details.type) .. tostring(i))
 				:groupedBy("timeline")
 				:whenPressed(function() mod.applyShortcut(type, i) end)
 		end

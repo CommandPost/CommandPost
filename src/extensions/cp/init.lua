@@ -16,11 +16,9 @@
 local logger					= require("hs.logger"); logger.defaultLogLevel = 'debug'
 local log						= logger.new("cp")
 
-local application				= require("hs.application") 
+local application				= require("hs.application")
 local console                   = require("hs.console")
-local drawing                   = require("hs.drawing")
 local fs                        = require("hs.fs")
-local geometry					= require("hs.geometry")
 local host						= require("hs.host")
 local image						= require("hs.image")
 local keycodes                  = require("hs.keycodes")
@@ -53,7 +51,6 @@ i18n.setLocale(userLocale)
 --------------------------------------------------------------------------------
 -- EXTENSIONS (THAT REQUIRE i18N):
 --------------------------------------------------------------------------------
-local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
 local feedback					= require("cp.feedback")
 
@@ -272,9 +269,9 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	console.printStyledtext("")
 	if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
-												writeToConsoleDebug(config.appName .. " Locale:             " .. tostring(i18n.getLocale()),          	true)
+												writeToConsoleDebug(config.appName .. " Locale:             " .. tostring(i18n.getLocale()),     true)
 	if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
-	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	true) end
+	if fcpPath ~= nil then						writeToConsoleDebug("Final Cut Pro Path:             " .. tostring(fcpPath),                 	 true) end
 	if fcpVersion ~= nil then                   writeToConsoleDebug("Final Cut Pro Version:          " .. tostring(fcpVersion),                  true) end
 	if fcpLanguage ~= nil then                  writeToConsoleDebug("Final Cut Pro Language:         " .. tostring(fcpLanguage),                 true) end
 												writeToConsoleDebug("Developer Mode:                 " .. tostring(debugMode))
@@ -291,11 +288,6 @@ function mod.init()
 	log.df("Loading Plugins...")
 	plugins.init(config.pluginPaths)
 	log.df("Plugins Loaded.")
-
-	--------------------------------------------------------------------------------
-	-- Display Initialising Notification:
-	--------------------------------------------------------------------------------
-	dialog.displayNotification(config.appName .. " " .. config.appVersion)
 
 	return mod
 
