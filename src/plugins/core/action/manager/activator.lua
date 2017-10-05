@@ -841,7 +841,7 @@ function activator.mt:rightClickAction(index)
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
-	self._rightClickMenubar = menubar.new(false)
+	self._rightClickMenubar = menubar.new()
 
 	local choiceMenu = {}
 
@@ -948,7 +948,7 @@ function activator.mt:rightClickAction(index)
 		insert(choiceMenu, sections)
 	end
 
-	self._rightClickMenubar:setMenu(choiceMenu)
+	self._rightClickMenubar:setMenu(choiceMenu):removeFromMenuBar()
 	self._rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
 end
 
