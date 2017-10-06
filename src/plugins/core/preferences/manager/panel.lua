@@ -107,7 +107,7 @@ local function getClass(params)
 	return class
 end
 
---- plugins.core.preferences.manager.panel:addContent(priority, content) -> panel
+--- plugins.core.preferences.manager.panel:addContent(priority, content, unescaped) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---

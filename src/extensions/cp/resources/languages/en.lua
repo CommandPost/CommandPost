@@ -600,7 +600,7 @@ return {
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
 
-			modifierHeading						=			"Modifier Keys",
+			general								=			"General",
 
 			languageHeading						=			"Language",
 			commandPostLanguage					=			"CommandPost Language",

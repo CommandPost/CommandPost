@@ -72,6 +72,12 @@ function WindowWatcher:watch(events)
 	windowfilter:subscribe("windowVisible", function(window)
 		local windowUI = axuielement.windowElement(window)
 		if self._window:UI() == windowUI then
+
+			--------------------------------------------------------------------------------
+			-- Cache the Window ID, as it will be used to detect when it's destroyed.
+			--------------------------------------------------------------------------------
+			self._visibleWindowID = window:id()
+
 			self._watchers:notify("show", self._window)
 		end
 	end,
@@ -82,7 +88,8 @@ function WindowWatcher:watch(events)
 	--------------------------------------------------------------------------------
 	windowfilter:subscribe("windowNotVisible", function(window)
 		local windowUI = axuielement.windowElement(window)
-		if self._window:UI() == windowUI then
+		if window:id() == self._visibleWindowID then
+			self._visibleWindowID = nil -- Reset the window ID.
 			self._watchers:notify("hide", self._window)
 		end
 	end, true)
@@ -93,27 +100,27 @@ function WindowWatcher:watch(events)
 	windowfilter:subscribe("windowCreated", function(window)
 		local windowUI = axuielement.windowElement(window)
 		if self._window:UI() == windowUI then
-		
+
 			--------------------------------------------------------------------------------
 			-- Cache the Window ID, as it will be used to detect when it's destroyed.
 			--------------------------------------------------------------------------------
 			self._windowID = window:id()
-			 
+
 			self._watchers:notify("open", self._window)
 		end
 	end, true)
-	
+
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Destroyed:
 	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowDestroyed", function(window)	
+	windowfilter:subscribe("windowDestroyed", function(window)
 		if window:id() == self._windowID then
 			self._windowID = nil -- Reset the window ID.
 			self._watchers:notify("close", self._window)
 		end
 	end,
 	true)
-	
+
 	--------------------------------------------------------------------------------
 	-- Final Cut Pro Window Moved:
 	--------------------------------------------------------------------------------
