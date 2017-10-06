@@ -889,6 +889,7 @@ return {
 	core_action_manager_label								=	"Manager: Actions",
 	core_commands_actions_label								=	"Commands Actions",
 	core_commands_global_label								=	"Global Commands",
+	core_console_label										=	"Console",
 	core_helpandsupport_credits_label						=	"Help & Support: Credits",
 	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
 	core_helpandsupport_feedback_label						=	"Help & Support: Feedback",
