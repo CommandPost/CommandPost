@@ -91,8 +91,10 @@ function mod.pasteHistoryItem(index)
 end
 
 local function watchUpdate(data, name)
-	log.df("Clipboard updated. Adding '%s' to history.", name)
-	mod.addHistoryItem(data, name)
+	if name then
+		log.df("Clipboard updated. Adding '%s' to history.", name)
+		mod.addHistoryItem(data, name)
+	end
 end
 
 function mod.update()
