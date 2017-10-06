@@ -77,36 +77,38 @@ end
 -- WATCHER ACTION:
 --------------------------------------------------------------------------------
 local function watchUpdate(data, name)
-	log.df("Clipboard updated. Adding '%s' to shared history.", name)
+	if name then
+		log.df("Clipboard updated. Adding '%s' to shared history.", name)
 
-	local sharedClipboardPath = mod.getRootPath()
-	if sharedClipboardPath ~= nil then
+		local sharedClipboardPath = mod.getRootPath()
+		if sharedClipboardPath ~= nil then
 
-		local folderName = nil
-		if mod._overrideFolder ~= nil then
-			folderName = mod._overrideFolder
-			mod._overrideFolder = nil
-		else
-			folderName = mod.getLocalFolderName()
+			local folderName = nil
+			if mod._overrideFolder ~= nil then
+				folderName = mod._overrideFolder
+				mod._overrideFolder = nil
+			else
+				folderName = mod.getLocalFolderName()
+			end
+
+			-- First, read the existing history
+			local history = mod.getHistory(folderName) or {}
+
+			-- Drop old history items
+			while (#history >= mod.maxHistory) do
+				table.remove(history, 1)
+			end
+
+			-- Add the new item
+			local item = {
+				name = name,
+				data = base64.encode(data),
+			}
+			table.insert(history, item)
+
+			-- Save the updated history
+			mod.setHistory(folderName, history)
 		end
-
-		-- First, read the existing history
-		local history = mod.getHistory(folderName) or {}
-
-		-- Drop old history items
-		while (#history >= mod.maxHistory) do
-			table.remove(history, 1)
-		end
-
-		-- Add the new item
-		local item = {
-			name = name,
-			data = base64.encode(data),
-		}
-		table.insert(history, item)
-
-		-- Save the updated history
-		mod.setHistory(folderName, history)
 	end
 end
 

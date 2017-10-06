@@ -41,19 +41,25 @@ local PRIORITY 									= 4000
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- IS ENABLED:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.mousezoom.enabled <cp.prop: boolean>
+--- Variable
+--- Is the module enabled?
 mod.enabled = config.prop("enableXMLSharing", false)
 
---------------------------------------------------------------------------------
--- GET SHARING PATH:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.mousezoom.enabled <cp.prop: string>
+--- Variable
+--- Shared XML Path
 mod.sharingPath = config.prop("xmlSharingPath")
 
---------------------------------------------------------------------------------
--- CLEAR SHARED XML FILES:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.sharing.xml.clearSharedFiles() -> none
+--- Function
+--- Clear shared files list.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.clearSharedFiles()
 	local xmlSharingPath = mod.sharingPath()
 	for folder in fs.dir(xmlSharingPath) do
@@ -67,14 +73,20 @@ function mod.clearSharedFiles()
 	end
 end
 
---------------------------------------------------------------------------------
--- LIST FILES MENU:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.sharing.xml.listFilesMenu() -> none
+--- Function
+--- List files menu.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.listFilesMenu()
 	if not mod.enabled() then
 		return nil
 	end
-	
+
 	if mod._filesMenuCache ~= nil then
 		--log.df("Using XML Sharing Menu Cache")
 		return mod._filesMenuCache
@@ -145,9 +157,15 @@ function mod.listFilesMenu()
 	end
 end
 
---------------------------------------------------------------------------------
--- SHARED XML FILE WATCHER:
---------------------------------------------------------------------------------
+-- sharedXMLFileWatcher(files) -> none
+-- Function
+-- The watcher file processor.
+--
+-- Parameters:
+--  * files - A table of files
+--
+-- Returns:
+--  * None
 local function sharedXMLFileWatcher(files)
 	--log.d("Refreshing Shared XML Folder.")
 	for _,file in ipairs(files) do
@@ -179,9 +197,15 @@ local function sharedXMLFileWatcher(files)
 	end
 end
 
---------------------------------------------------------------------------------
--- UPDATE:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.sharing.xml.update() -> none
+--- Function
+--- Starts or stops the watchers.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.update()
 	local enabled = mod.enabled()
 
@@ -209,6 +233,7 @@ function mod.update()
 		-- Watch for Shared XML Folder Changes:
 		--------------------------------------------------------------------------------
 		if not mod._watcher then
+			log.df("Starting Shared XML Watcher")
 			mod._watcher = pathwatcher.new(sharingPath, sharedXMLFileWatcher):start()
 		end
 	else
@@ -329,11 +354,30 @@ function mod.shareXML(incomingXML, noErrors)
 
 end
 
+--- plugins.finalcutpro.sharing.xml.init() -> none
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.init()
-	-- Ensures that mod.update is called whenever enabled changes.
+	--------------------------------------------------------------------------------
+	-- Ensures that mod.update is called whenever enabled changes:
+	--------------------------------------------------------------------------------
 	mod.enabled:watch(mod.update)
-	-- Pre-generate the menu.
+
+	--------------------------------------------------------------------------------
+	-- Pre-generate the menu:
+	--------------------------------------------------------------------------------
 	mod.listFilesMenu()
+
+	--------------------------------------------------------------------------------
+	-- Start the watchers if required:
+	--------------------------------------------------------------------------------
+	mod.update()
 end
 
 --------------------------------------------------------------------------------
