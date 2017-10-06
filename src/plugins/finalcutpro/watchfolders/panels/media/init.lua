@@ -20,20 +20,22 @@ local axuielement 		= require("hs._asm.axuielement")
 local eventtap			= require("hs.eventtap")
 local fnutils			= require("hs.fnutils")
 local fs				= require("hs.fs")
+local host				= require("hs.host")
 local http				= require("hs.http")
 local image				= require("hs.image")
 local notify			= require("hs.notify")
 local pasteboard		= require("hs.pasteboard")
 local pathwatcher		= require("hs.pathwatcher")
 local timer				= require("hs.timer")
-local uuid				= require("hs.host").uuid
 
+local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
-local config			= require("cp.config")
-local tools				= require("cp.tools")
 local prop				= require("cp.prop")
+local tools				= require("cp.tools")
+
+local uuid				= host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -587,9 +589,17 @@ end
 ---  * None
 function mod.watchFolderTriggered(files, eventFlags)
 
+	--log.df("files: %s", hs.inspect(files))
+	--log.df("eventFlags: %s", hs.inspect(eventFlags))
+
 	if not mod.disableImport then
 		local autoFiles = {}
 		for i,file in pairs(files) do
+
+			--------------------------------------------------------------------------------
+			-- Detect the filesystem:
+			--------------------------------------------------------------------------------
+			local volumeFormat = tools.volumeFormat(file)
 
 			--------------------------------------------------------------------------------
 			-- File deleted or removed from Watch Folder:
@@ -643,6 +653,9 @@ function mod.watchFolderTriggered(files, eventFlags)
 					if mod.notifications[file] then
 						mod.notifications[file]:withdraw()
 						mod.notifications[file] = nil
+						local savedNotifications = mod.savedNotifications()
+						savedNotifications[file] = nil
+						mod.savedNotifications(savedNotifications)
 					end
 					newFile = true
 				end
@@ -652,7 +665,22 @@ function mod.watchFolderTriggered(files, eventFlags)
 				--------------------------------------------------------------------------------
 				local movedFile = false
 				if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
-					--log.df("File Moved or Renamed: %s", file)
+					log.df("File Moved or Renamed: %s", file)
+					movedFile = true
+				end
+
+				--------------------------------------------------------------------------------
+				-- New File Moved into Watch Folder on High Sierra:
+				--------------------------------------------------------------------------------
+				if eventFlags[i]["itemChangeOwner"] and eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and volumeFormat == "APFS" then
+					tools.removeFromTable(mod.filesInTransit, file)
+					if mod.notifications[file] then
+						mod.notifications[file]:withdraw()
+						mod.notifications[file] = nil
+						local savedNotifications = mod.savedNotifications()
+						savedNotifications[file] = nil
+						mod.savedNotifications(savedNotifications)
+					end
 					movedFile = true
 				end
 
