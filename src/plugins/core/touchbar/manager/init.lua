@@ -431,7 +431,7 @@ function mod.start()
 		--------------------------------------------------------------------------------
 		-- Setup System Icon:
 		--------------------------------------------------------------------------------
-		mod._sysTrayIcon = touchbar.item.newButton(hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon), "CommandPost")
+		mod._sysTrayIcon = touchbar.item.newButton(image.imageFromName(image.systemImageNames.ApplicationIcon), "CommandPost")
 							 :callback(function(self)
 								self:addToSystemTray(false)
 								self:addToSystemTray(true)
