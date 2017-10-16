@@ -317,6 +317,28 @@ function convertButtonID(buttonID)
 	return whichButton
 end
 
+--- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
+--- Function
+--- Stream Deck Button Callback
+---
+--- Parameters:
+---  * object - The `hs.streamdeck` userdata object
+---  * buttonID - A number containing the button that was pressed/released
+---  * pressed - A boolean indicating whether the button was pressed (`true`) or released (`false`)
+---
+--- Returns:
+---  * None
+function mod.buttonCallback(object, buttonID, pressed)
+	if pressed then
+		local handlerID = mod.getActionHandlerID(tostring(convertButtonID(buttonID)), mod.activeGroup())
+		local action = mod.getAction(tostring(convertButtonID(buttonID)), mod.activeGroup())
+		if handlerID and action then
+			local handler = mod._actionmanager.getHandler(handlerID)
+			handler:execute(action)
+		end
+	end
+end
+
 --- plugins.core.streamdeck.manager.update() -> none
 --- Function
 --- Updates the Touch Bar.
@@ -336,17 +358,17 @@ function mod.update()
 	log.df("Updating Stream Deck...")
 
 	--------------------------------------------------------------------------------
+	-- Reset Stream Deck:
+	--------------------------------------------------------------------------------
+	for serial, streamDeck in pairs(mod._streamDeck) do
+		streamDeck:reset()
+		streamDeck:buttonCallback(mod.buttonCallback)
+	end
+
+	--------------------------------------------------------------------------------
 	-- Create new buttons and widgets:
 	--------------------------------------------------------------------------------
 	local items = mod._items()
-
-	for serial, streamDeck in pairs(mod._streamDeck) do
-		-- Reset Buttons:
-		for button=1, 15 do
-			local color = drawing.color.definedCollections.hammerspoon.black
-			streamDeck:setButtonColor(button, color)
-		end
-	end
 
 	for groupID, group in pairs(items) do
 		if groupID == mod.activeGroup() then
@@ -386,28 +408,6 @@ function mod.update()
 
 end
 
---- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
---- Function
---- Stream Deck Button Callback
----
---- Parameters:
----  * object - The `hs.streamdeck` userdata object
----  * buttonID - A number containing the button that was pressed/released
----  * pressed - A boolean indicating whether the button was pressed (`true`) or released (`false`)
----
---- Returns:
----  * None
-function mod.buttonCallback(object, buttonID, pressed)
-	if pressed then
-		local handlerID = mod.getActionHandlerID(tostring(convertButtonID(buttonID)), mod.activeGroup())
-		local action = mod.getAction(tostring(convertButtonID(buttonID)), mod.activeGroup())
-		if handlerID and action then
-			local handler = mod._actionmanager.getHandler(handlerID)
-			handler:execute(action)
-		end
-	end
-end
-
 --- plugins.core.streamdeck.manager.discoveryCallback(connected, object) -> none
 --- Function
 --- Stream Deck Discovery Callback
@@ -424,15 +424,11 @@ function mod.discoveryCallback(connected, object)
 		log.ef("Failed to get Stream Deck's Serial Number. This normally means the Stream Deck App is running.")
 	else
 		if connected then
-			object:buttonCallback(mod.buttonCallback)
-			for button=1, 15 do
-				local color = drawing.color.definedCollections.hammerspoon.black
-				object:setButtonColor(button, color)
-			end
 			mod._streamDeck[serialNumber] = object
 			mod.update()
 		else
 			if mod._streamDeck[serialNumber] then
+				log.df("Disconnected Stream Deck: %s", serialNumber)
 				mod._streamDeck[serialNumber] = nil
 			else
 				log.ef("Disconnected Stream Deck wasn't previously registered.")
@@ -471,6 +467,7 @@ end
 function mod.start()
 	if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
 		log.df("Starting Stream Deck Support...")
+		mod._streamDeck = {}
 		mod._appWatcher = application.watcher.new(mod.appWatcherCallback):start()
 		streamdeck.init(mod.discoveryCallback)
 		return true
