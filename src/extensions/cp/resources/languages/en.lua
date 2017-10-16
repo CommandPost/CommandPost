@@ -612,6 +612,9 @@ return {
 			touchbarPanelLabel					=			"Touch Bar",
 			touchbarPanelTooltip				=			"Touch Bar Preferences",
 
+			streamdeckPanelLabel				=			"Stream Deck",
+			streamdeckPanelTooltip				=			"Stream Deck Preferences",
+
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
 
@@ -874,6 +877,16 @@ return {
 	touchBarWidget						=			"Touch Bar Widget",
 
 	--------------------------------------------------------------------------------
+	-- STREAM DECK PANEL:
+	--------------------------------------------------------------------------------
+	streamDeck							=			"Stream Deck",
+	streamDeckReset						=			"Reset All Stream Deck Items",
+	streamDeckResetConfirmation			=			"This will reset all modified Stream Deck items to the default values.",
+	enableStreamDeck					=			"Enable Stream Deck",
+	streamDeckAppRunning				=			"Stream Deck App is running.",
+	streamDeckAppRunningMessage			=			"This must be closed to activate Stream Deck support in CommandPost.",
+
+	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------
 	plugin_group_compressor				=			"Compressor",
@@ -1018,6 +1031,7 @@ return {
 		cpFeedback_title										=	"Provide Feedback",
 		cpDeveloperGuide_title									=	"Developer Guide",
 		cpTouchBar_title										=	"Toggle Touch Bar",
+		cpStreamDeck_title										=	"Toggle Stream Deck",
 		cpCredits_title											=	"Credits",
 		cpGlobalConsole_title									=	"Activate Global Console",
 
