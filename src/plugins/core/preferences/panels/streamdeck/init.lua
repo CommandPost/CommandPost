@@ -1,20 +1,21 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---            T O U C H B A R    P R E F E R E N C E S    P A N E L           --
+--         S T R E A M    D E C K    P R E F E R E N C E S    P A N E L       --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.preferences.panels.touchbar ===
+--- === plugins.core.preferences.panels.streamdeck ===
 ---
---- Touch Bar Preferences Panel
+--- Stream Deck Preferences Panel
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsTouchBar")
+local log										= require("hs.logger").new("prefsStreamDeck")
 
+local application								= require("hs.application")
 local dialog									= require("hs.dialog")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
@@ -36,32 +37,27 @@ local _											= require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.panels.touchbar.supportedExtensions -> string
+--- plugins.core.preferences.panels.streamdeck.supportedExtensions -> string
 --- Variable
---- Table of supported extensions for Touch Bar Icons.
+--- Table of supported extensions for Stream Deck Icons.
 mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
 
---- plugins.core.preferences.panels.touchbar.defaultIconPath -> string
+--- plugins.core.preferences.panels.streamdeck.defaultIconPath -> string
 --- Variable
 --- Default Path where built-in icons are stored
 mod.defaultIconPath = config.basePath .. "/plugins/core/touchbar/icons"
 
---- plugins.core.preferences.panels.touchbar.enabled <cp.prop: boolean>
+--- plugins.core.preferences.panels.streamdeck.enabled <cp.prop: boolean>
 --- Field
---- Enable or disable Touch Bar Support.
-mod.enabled = config.prop("enableTouchBar", false)
+--- Enable or disable Stream Deck Support.
+mod.enabled = config.prop("enableStreamDesk", false)
 
---- plugins.core.preferences.panels.touchbar.lastGroup <cp.prop: string>
+--- plugins.core.preferences.panels.streamdeck.lastGroup <cp.prop: string>
 --- Field
 --- Last group used in the Preferences Drop Down.
-mod.lastGroup = config.prop("touchBarPreferencesLastGroup", nil)
+mod.lastGroup = config.prop("streamDeckPreferencesLastGroup", nil)
 
---- plugins.core.preferences.panels.touchbar.maxItems -> number
---- Variable
---- The maximum number of Touch Bar items per group.
-mod.maxItems = 8
-
--- resetTouchBar() -> none
+-- resetStreamDeck() -> none
 -- Function
 -- Prompts to reset shortcuts to default.
 --
@@ -70,14 +66,14 @@ mod.maxItems = 8
 --
 -- Returns:
 --  * None
-local function resetTouchBar()
+local function resetStreamDeck()
 
 	dialog.webviewAlert(mod._manager.getWebview(), function(result)
 		if result == i18n("yes") then
-			mod._tb.clear()
+			mod._sd.clear()
 			mod._manager.refresh()
 		end
-	end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+	end, i18n("streamDeckResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
 end
 
@@ -142,21 +138,21 @@ local function generateContent()
 	end
 	table.sort(groupOptions, function(a, b) return a.label < b.label end)
 
-	local touchBarGroupSelect = ui.select({
-		id			= "touchBarGroupSelect",
+	local streamDeckGroupSelect = ui.select({
+		id			= "streamDeckGroupSelect",
 		value		= defaultGroup,
 		options		= groupOptions,
 		required	= true,
 	}) .. ui.javascript([[
-		var touchBarGroupSelect = document.getElementById("touchBarGroupSelect")
-		touchBarGroupSelect.onchange = function(e) {
+		var streamDeckGroupSelect = document.getElementById("streamDeckGroupSelect")
+		streamDeckGroupSelect.onchange = function(e) {
 
 			//
 			// Change Group Callback:
 			//
 			try {
 				var result = {
-					id: "touchBarPanelCallback",
+					id: "streamDeckPanelCallback",
 					params: {
 						type: "updateGroup",
 						groupID: this.value,
@@ -168,13 +164,13 @@ local function generateContent()
 				alert('An error has occurred. Does the controller exist yet?');
 			}
 
-			console.log("touchBarGroupSelect changed");
-			var groupControls = document.getElementById("touchbarGroupControls");
-			var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
+			console.log("streamDeckGroupSelect changed");
+			var groupControls = document.getElementById("streamDeckGroupControls");
+			var value = streamDeckGroupSelect.options[streamDeckGroupSelect.selectedIndex].value;
 			var children = groupControls.children;
 			for (var i = 0; i < children.length; i++) {
 			  var child = children[i];
-			  if (child.id == "touchbarGroup_" + value) {
+			  if (child.id == "streamDeckGroup_" + value) {
 				  child.classList.add("selected");
 			  } else {
 				  child.classList.remove("selected");
@@ -185,7 +181,7 @@ local function generateContent()
 
 	local context = {
 		_						= _,
-		touchBarGroupSelect		= touchBarGroupSelect,
+		streamDeckGroupSelect	= streamDeckGroupSelect,
 		groups					= commands.groups(),
 		defaultGroup			= defaultGroup,
 
@@ -193,15 +189,15 @@ local function generateContent()
 
 		webviewLabel 			= mod._manager.getLabel(),
 
-		maxItems				= mod._tb.maxItems,
-		tb						= mod._tb,
+		maxItems				= mod._sd.maxItems,
+		tb						= mod._sd,
 	}
 
 	return renderPanel(context)
 
 end
 
--- touchBarPanelCallback() -> none
+-- streamDeckPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
 --
@@ -211,18 +207,18 @@ end
 --
 -- Returns:
 --  * None
-local function touchBarPanelCallback(id, params)
+local function streamDeckPanelCallback(id, params)
 	if params and params["type"] then
 		if params["type"] == "badExtension" then
 			--------------------------------------------------------------------------------
 			-- Bad Icon File Extension:
 			--------------------------------------------------------------------------------
-			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badTouchBarIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badstreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
 		elseif params["type"] == "updateIcon" then
 			--------------------------------------------------------------------------------
 			-- Update Icon:
 			--------------------------------------------------------------------------------
-			mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
+			mod._sd.updateIcon(params["buttonID"], params["groupID"], params["icon"])
 		elseif params["type"] == "updateAction" then
 
 			--------------------------------------------------------------------------------
@@ -245,7 +241,7 @@ local function touchBarPanelCallback(id, params)
 					local actionTitle = text
 					local handlerID = handler:id()
 
-					mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+					mod._sd.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
 					mod._manager.refresh()
 				end)
 
@@ -254,13 +250,13 @@ local function touchBarPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			mod.activator:show()
 		elseif params["type"] == "clearAction" then
-			mod._tb.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
+			mod._sd.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
 			mod._manager.refresh()
 		elseif params["type"] == "updateLabel" then
 			--------------------------------------------------------------------------------
 			-- Update Label:
 			--------------------------------------------------------------------------------
-			mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
+			mod._sd.updateLabel(params["buttonID"], params["groupID"], params["label"])
 		elseif params["type"] == "iconClicked" then
 			--------------------------------------------------------------------------------
 			-- Icon Clicked:
@@ -273,7 +269,7 @@ local function touchBarPanelCallback(id, params)
 				if icon then
 					local encodedIcon = icon:encodeAsURLString()
 					if encodedIcon then
-						mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+						mod._sd.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
 						mod._manager.refresh()
 					else
 						failed = true
@@ -288,7 +284,7 @@ local function touchBarPanelCallback(id, params)
 				--------------------------------------------------------------------------------
 				-- Clear Icon:
 				--------------------------------------------------------------------------------
-				mod._tb.updateIcon(params["buttonID"], params["groupID"], nil)
+				mod._sd.updateIcon(params["buttonID"], params["groupID"], nil)
 				mod._manager.refresh()
 			end
 		elseif params["type"] == "updateGroup" then
@@ -300,14 +296,14 @@ local function touchBarPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Unknown Callback:
 			--------------------------------------------------------------------------------
-			log.df("Unknown Callback in Touch Bar Preferences Panel:")
+			log.df("Unknown Callback in Stream Deck Preferences Panel:")
 			log.df("id: %s", hs.inspect(id))
 			log.df("params: %s", hs.inspect(params))
 		end
 	end
 end
 
---- plugins.core.preferences.panels.touchbar.setGroupEditor(groupId, editorFn) -> none
+--- plugins.core.preferences.panels.streamdeck.setGroupEditor(groupId, editorFn) -> none
 --- Function
 --- Sets the Group Editor
 ---
@@ -324,7 +320,7 @@ function mod.setGroupEditor(groupId, editorFn)
 	mod._groupEditors[groupId] = editorFn
 end
 
---- plugins.core.preferences.panels.touchbar.getGroupEditor(groupId) -> none
+--- plugins.core.preferences.panels.streamdeck.getGroupEditor(groupId) -> none
 --- Function
 --- Gets the Group Editor
 ---
@@ -337,118 +333,7 @@ function mod.getGroupEditor(groupId)
 	return mod._groupEditors and mod._groupEditors[groupId]
 end
 
---------------------------------------------------------------------------------
---
--- VIRTUAL TOUCH BAR:
---
---------------------------------------------------------------------------------
-
-mod.virtual = {}
-
---- plugins.finalcutpro.touchbar.virtual.enabled <cp.prop: boolean>
---- Field
---- Is `true` if the plugin is enabled.
-mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enabled)
-	--------------------------------------------------------------------------------
-	-- Check for compatibility:
-	--------------------------------------------------------------------------------
-	if enabled and not mod._tb.supported() then
-		dialog.displayMessage(i18n("touchBarError"))
-		mod.enabled(false)
-	end
-	if enabled then
-		mod._tb.virtual.start()
-	else
-		mod._tb.virtual.stop()
-	end
-end)
-
---- plugins.finalcutpro.touchbar.virtual.VISIBILITY_ALWAYS -> string
---- Constant
---- Virtual Touch Bar is Always Visible
-mod.virtual.VISIBILITY_ALWAYS		= "Always"
-
---- plugins.finalcutpro.touchbar.virtual.VISIBILITY_FCP -> string
---- Constant
---- Virtual Touch Bar is only visible when Final Cut Pro is active.
-mod.virtual.VISIBILITY_FCP			= "Final Cut Pro"
-
---- plugins.finalcutpro.touchbar.virtual.VISIBILITY_DEFAULT -> string
---- Constant
---- The default visibility.
-mod.virtual.VISIBILITY_DEFAULT		= mod.virtual.VISIBILITY_FCP
-
---- plugins.finalcutpro.touchbar.virtual.LOCATION_TIMELINE -> string
---- Constant
---- Virtual Touch Bar is displayed in the top centre of the Final Cut Pro timeline
-mod.virtual.LOCATION_TIMELINE		= "TimelineTopCentre"
-
--- TODO: This Final Cut Pro stuff shouldn't really be in a Core plugin.
-
---- plugins.finalcutpro.touchbar.virtual.visibility <cp.prop: string>
---- Field
---- When should the Virtual Touch Bar be visible?
-mod.virtual.visibility = config.prop("virtualTouchBarVisibility", mod.virtual.VISIBILITY_DEFAULT):watch(function(status)
-	if status == mod.virtual.VISIBILITY_ALWAYS then
-		mod._tb.virtual.show()
-	elseif status == mod.virtual.VISIBILITY_FCP then
-		if fcp.isFrontmost() then
-			mod._tb.virtual.show()
-		else
-			mod._tb.virtual.hide()
-		end
-	end
-end)
-
--- visibilityOptions() -> none
--- Function
--- Generates a list of visibilities for the Preferences dropdown
---
--- Parameters:
---  * None
---
--- Returns:
---  * A table of visibilities
-function visibilityOptions()
- 	local visibilityOptions = {}
-	visibilityOptions[#visibilityOptions + 1] = {
-		label = i18n("always"),
-		value = mod.virtual.VISIBILITY_ALWAYS,
-	}
-	visibilityOptions[#visibilityOptions + 1] = {
-		label = i18n("finalCutPro"),
-		value = mod.virtual.VISIBILITY_FCP,
-	}
-	return visibilityOptions
-end
-
--- visibilityOptions() -> none
--- Function
--- Generates a list of visibilities for the Preferences dropdown
---
--- Parameters:
---  * None
---
--- Returns:
---  * A table of visibilities
-function locationOptions()
-	local locationOptions = {}
-	locationOptions[#locationOptions + 1] = {
-		label = i18n("topCentreOfTimeline"),
-		value = mod.virtual.LOCATION_TIMELINE,
-	}
-	locationOptions[#locationOptions + 1] = {
-		label = i18n("mouseLocation"),
-		value = mod._tb.virtual.LOCATION_MOUSE,
-	}
-	locationOptions[#locationOptions + 1] = {
-		label = i18n("draggable"),
-		value = mod._tb.virtual.LOCATION_DRAGGABLE,
-	}
-	return locationOptions
-end
-
---- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
+--- plugins.core.preferences.panels.streamdeck.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
 ---
@@ -463,7 +348,7 @@ function mod.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Inter-plugin Connectivity:
 	--------------------------------------------------------------------------------
-	mod._tb				= deps.tb
+	mod._sd				= deps.sd
 	mod._manager		= deps.manager
 	mod._webviewLabel	= deps.manager.getLabel()
 	mod._actionmanager	= deps.actionmanager
@@ -472,7 +357,7 @@ function mod.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Setup Activator:
 	--------------------------------------------------------------------------------
-	mod.activator = deps.actionmanager.getActivator("touchbarPreferences")
+	mod.activator = deps.actionmanager.getActivator("streamdeckPreferences")
 	mod.activator:enableAllHandlers()
 	mod.activator:preloadChoices()
 
@@ -480,64 +365,34 @@ function mod.init(deps, env)
 	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------
 	mod._panel 			=  deps.manager.addPanel({
-		priority 		= 2031,
-		id				= "touchbar",
-		label			= i18n("touchbarPanelLabel"),
-		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
-		tooltip			= i18n("touchbarPanelTooltip"),
-		height			= 690,
+		priority 		= 2032,
+		id				= "streamdeck",
+		label			= i18n("streamdeckPanelLabel"),
+		image			= image.imageFromPath(tools.iconFallback(env:pathToAbsolute("images/streamdeck.icns"))),
+		tooltip			= i18n("streamdeckPanelTooltip"),
+		height			= 550,
 	})
-		--------------------------------------------------------------------------------
-		-- Virtual Touch Bar
-		--------------------------------------------------------------------------------
-		:addHeading(1, i18n("virtualTouchBar"))
-		:addCheckbox(2,
-			{
-				label		= i18n("enableVirtualTouchBar"),
-				checked		= mod.virtual.enabled,
-				onchange	= function(id, params) mod.virtual.enabled(params.checked) end,
-			}
-		)
-		:addParagraph(2.1, "<br />", true)
-		:addSelect(3,
-			{
-				label		= i18n("visibility"),
-				value		= mod.virtual.visibility,
-				options		= visibilityOptions(),
-				required	= true,
-				class		= "touchbarDropdown",
-				onchange	= function(id, params) mod.virtual.visibility(params.value) end,
-			}
-		)
-		:addSelect(4,
-			{
-				label		= i18n("location"),
-				value		= mod._tb.virtual.location,
-				options		= locationOptions(),
-				required	= true,
-				class		= "touchbarDropdown",
-				onchange	= function(id, params) mod._tb.virtual.location(params.value) end,
-			}
-		)
-		:addParagraph(5, [[<span style="float: left; padding-bottom: 20px;"><i>]] .. i18n("touchBarDragTip") .. "</i></i>\n\n", true)
-
-		--------------------------------------------------------------------------------
-		-- Customise Touch Bar:
-		--------------------------------------------------------------------------------
-		:addHeading(6, i18n("customTouchBar"))
+		:addHeading(6, i18n("streamDeck"))
 		:addCheckbox(7,
 			{
-				label		= i18n("enableCustomisedTouchBar"),
+				label		= i18n("enableStreamDeck"),
 				checked		= mod.enabled,
-				onchange	= function(id, params) mod.enabled(params.checked) end,
+				onchange	= function(id, params)
+					if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
+						mod.enabled(params.checked)
+					else
+						dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("streamDeckAppRunning"), i18n("streamDeckAppRunningMessage"), i18n("ok"))
+						mod._manager.refresh()
+					end
+				end,
 			}
 		)
 		:addContent(10, generateContent, true)
 
 	mod._panel:addButton(20,
 		{
-			label		= i18n("touchBarReset"),
-			onclick		= resetTouchBar,
+			label		= i18n("streamDeckReset"),
+			onclick		= resetStreamDeck,
 			class		= "resetShortcuts",
 		}
 	)
@@ -545,7 +400,7 @@ function mod.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Setup Callback Manager:
 	--------------------------------------------------------------------------------
-	mod._panel:addHandler("onchange", "touchBarPanelCallback", touchBarPanelCallback)
+	mod._panel:addHandler("onchange", "streamDeckPanelCallback", streamDeckPanelCallback)
 
 	return mod
 
@@ -557,11 +412,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.panels.touchbar",
+	id				= "core.preferences.panels.streamdeck",
 	group			= "core",
 	dependencies	= {
 		["core.preferences.manager"]		= "manager",
-		["core.touchbar.manager"]			= "tb",
+		["core.streamdeck.manager"]			= "sd",
 		["core.action.manager"]				= "actionmanager",
 	}
 }
@@ -570,9 +425,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	if deps.tb.supported() then
-		return mod.init(deps, env)
-	end
+	return mod.init(deps, env)
 end
 
 return plugin

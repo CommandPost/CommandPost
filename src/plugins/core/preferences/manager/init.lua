@@ -73,7 +73,7 @@ mod.defaultWindowStyle	= {"titled", "closable", "nonactivating"}
 --- plugins.core.preferences.manager.defaultWidth
 --- Variable
 --- Default Width of Preferences Window
-mod.defaultWidth 		= 524
+mod.defaultWidth 		= 550
 
 --- plugins.core.preferences.manager.defaultHeight
 --- Variable
@@ -331,7 +331,6 @@ function mod.new()
 		local toolbar = mod.toolbar
 		for _,panel in ipairs(mod._panels) do
 			local item = panel:getToolbarItem()
-
 			toolbar:addItems(item)
 			-- toolbar:insertItem(item.id, index)
 			if not toolbar:selectedItem() then
