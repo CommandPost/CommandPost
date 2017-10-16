@@ -106,8 +106,8 @@ function activator.new(id, manager)
 	-- Field
 	-- The ID of a single handler to source
 	--o._allowedHandlers = config.prop(prefix .. "allowedHandlers", nil):bind(o)
-	--o._allowedHandlers = prop.THIS(nil):bind(o)
-	o._allowedHandlers = prop.THIS({}):bind(o)
+	o._allowedHandlers = prop.THIS(nil):bind(o)
+	--o._allowedHandlers = prop.THIS({}):bind(o)
 
 --- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
 --- Field
