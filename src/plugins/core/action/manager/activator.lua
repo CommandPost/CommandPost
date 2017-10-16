@@ -49,7 +49,7 @@ local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
 
-local PACKAGE = "finalcutpro.action.activator."
+local PACKAGE = "action.activator."
 
 local function applyHiddenTo(choice, hidden)
 	if choice.oldText then
