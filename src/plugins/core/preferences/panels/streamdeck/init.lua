@@ -190,7 +190,7 @@ local function generateContent()
 		webviewLabel 			= mod._manager.getLabel(),
 
 		maxItems				= mod._sd.maxItems,
-		tb						= mod._sd,
+		sd						= mod._sd,
 	}
 
 	return renderPanel(context)

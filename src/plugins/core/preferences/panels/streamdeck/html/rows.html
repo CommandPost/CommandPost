@@ -4,7 +4,7 @@
 			<tr>
 				<td class="rowIcon">
 					{%
-						local result = tb.getIcon(tostring(i), group:id())
+						local result = sd.getIcon(tostring(i), group:id())
 						local class=""
 						if result then
 							class = " dropped"
@@ -30,14 +30,14 @@
 					</div>
 				</td>
 				<td class="rowAction">
-					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_action" class="actionTextbox" value="{{ tb.getActionTitle(tostring(i), group:id()) or "None" }}" disabled>
+					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_action" class="actionTextbox" value="{{ sd.getActionTitle(tostring(i), group:id()) or "None" }}" disabled>
 				</td>
 				<td class="rowActionButton">
 					<a id="streamDeck{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button actionButton">Select</a>
 					<a id="streamDeck{{ group:id() }}_button{{ i }}_clearActionButton" href="#" class="button actionButton">Clear</a>
 				</td>
 				<td class="rowLabel">
-					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_label" class="buttonLabel" value="{{ tb.getLabel(tostring(i), group:id()) or "None" }}">
+					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_label" class="buttonLabel" value="{{ sd.getLabel(tostring(i), group:id()) or "None" }}">
 				</td>
 				<script>
 						/*
