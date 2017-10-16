@@ -362,7 +362,6 @@ function mod.update()
 	--------------------------------------------------------------------------------
 	for serial, streamDeck in pairs(mod._streamDeck) do
 		streamDeck:reset()
-		streamDeck:buttonCallback(mod.buttonCallback)
 	end
 
 	--------------------------------------------------------------------------------
@@ -424,7 +423,9 @@ function mod.discoveryCallback(connected, object)
 		log.ef("Failed to get Stream Deck's Serial Number. This normally means the Stream Deck App is running.")
 	else
 		if connected then
-			mod._streamDeck[serialNumber] = object
+			local streamDeck = object
+			streamDeck:buttonCallback(mod.buttonCallback)
+			mod._streamDeck[serialNumber] = streamDeck
 			mod.update()
 		else
 			if mod._streamDeck[serialNumber] then
