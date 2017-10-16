@@ -657,18 +657,39 @@ activator.reducedTransparency = prop.new(function()
 end)
 
 local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
-	local color = activator.reducedTransparency() and nil or drawing.color.x11.snow
+
 	local c = chooser.new(executeFn)
 		:bgDark(true)
 		:rightClickCallback(rightClickFn)
 		:choices(choicesFn)
 		:searchSubText(searchSubText)
-		:fgColor(color):subTextColor(color)
 		:refreshChoicesCallback()
+
+	if activator.reducedTransparency() then
+		c:fgColor(nil)
+		 :subTextColor(nil)
+	else
+		c:fgColor(drawing.color.x11.snow)
+		 :subTextColor(drawing.color.x11.snow)
+	end
+
 	return c
 end
 
 function activator.mt:chooser()
+
+	--------------------------------------------------------------------------------
+	-- Reload Console if Reduce Transparency has been toggled:
+	--------------------------------------------------------------------------------
+	local transparency = activator.reducedTransparency()
+	if self._lastReducedTransparency ~= transparency then
+		self._lastReducedTransparency = transparency
+		self._chooser = nil
+	end
+
+	--------------------------------------------------------------------------------
+	-- Create new Chooser if needed:
+	--------------------------------------------------------------------------------
 	if not self._chooser then
 		self._chooser = initChooser(
 			function(result) self:activate(result) end,
@@ -684,17 +705,8 @@ end
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function activator.mt:refreshChooser()
-	if self._chooser then
-		self._chooser:refreshChoicesCallback()
-	end
-end
-
-function activator.mt:checkReducedTransparency()
-	local transparency = activator.reducedTransparency()
-	if self._lastReducedTransparency ~= transparency then
-		self._lastReducedTransparency = transparency
-		self._chooser = nil
-	end
+	local chooser = self:chooser()
+	chooser:refreshChoicesCallback()
 end
 
 --- plugins.core.action.activator:show()
@@ -714,11 +726,6 @@ function activator.mt:show()
 	end
 
 	self._frontApp = application.frontmostApplication()
-
-	--------------------------------------------------------------------------------
-	-- Reload Console if Reduce Transparency
-	--------------------------------------------------------------------------------
-	self:checkReducedTransparency()
 
 	--------------------------------------------------------------------------------
 	-- Refresh Chooser:
