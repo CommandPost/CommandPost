@@ -24,38 +24,20 @@ local config					= require("cp.config")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local PRIORITY = 20000
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- UPDATES THE WATCHER BASED ON THE ENABLED STATUS
---------------------------------------------------------------------------------
-function mod.update()
-	local watcher = mod.getDeviceWatcher()
-	if mod.enabled() then
-		watcher:start()
-	else
-		watcher:stop()
-	end
-end
-
---------------------------------------------------------------------------------
--- RETURNS THE CURRENT ENABLED STATUS
---------------------------------------------------------------------------------
-mod.enabled = config.prop("enableMediaImportWatcher", false):watch(mod.update)
-
---------------------------------------------------------------------------------
--- MEDIA IMPORT WINDOW WATCHER:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.import.ignorecard.getDeviceWatcher() -> none
+--- Function
+--- Media Import Window Watcher
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `hs.fs.volume` object
 function mod.getDeviceWatcher()
 	if not mod.newDeviceMounted then
 		--log.df("Watching for new media...")
@@ -111,6 +93,29 @@ function mod.getDeviceWatcher()
 	return mod.newDeviceMounted
 end
 
+--- plugins.finalcutpro.import.ignorecard.update() -> none
+--- Function
+--- Starts to stops the Ignore Card device watcher.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.update()
+	local watcher = mod.getDeviceWatcher()
+	if mod.enabled() then
+		watcher:start()
+	else
+		watcher:stop()
+	end
+end
+
+--- plugins.finalcutpro.import.ignorecard.enabled <cp.prop: boolean>
+--- Variable
+--- Toggles the Ignore Card Plugin
+mod.enabled = config.prop("enableMediaImportWatcher", false):watch(mod.update)
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -120,20 +125,36 @@ local plugin = {
 	id				= "finalcutpro.import.ignorecard",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.menu.mediaimport"] = "menu",
+		["finalcutpro.preferences.app"]	= "prefs",
 	}
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 
 	--------------------------------------------------------------------------------
-	-- Add the menu item:
+	-- Setup Menubar Preferences Panel:
 	--------------------------------------------------------------------------------
-	local section = deps.menu:addSection(PRIORITY)
-	section:addItem(200, function()
-		return { title = i18n("ignoreInsertedCameraCards"),	fn = function() mod.enabled:toggle() end,	checked = mod.enabled() }
-	end)
-	section:addSeparator(900)
+	if deps.prefs.panel then
+		deps.prefs.panel
+			--------------------------------------------------------------------------------
+			-- Add Preferences Heading:
+			--------------------------------------------------------------------------------
+			:addHeading(1, i18n("general"))
+
+			--------------------------------------------------------------------------------
+			-- Add Preferences Checkbox:
+			--------------------------------------------------------------------------------
+			:addCheckbox(1.1,
+			{
+				label = i18n("ignoreInsertedCameraCards"),
+				onchange = function(_, params) mod.enabled(params.checked) end,
+				checked = mod.enabled,
+			}
+		)
+	end
 
 	--------------------------------------------------------------------------------
 	-- Update the watcher status based on the settings:

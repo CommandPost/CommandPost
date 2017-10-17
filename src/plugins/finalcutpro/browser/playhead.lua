@@ -20,15 +20,15 @@ local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 local timer							= require("hs.timer")
 
-local fcp							= require("cp.apple.finalcutpro")
 local config						= require("cp.config")
+local fcp							= require("cp.apple.finalcutpro")
+local tools							= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 						= 10000
 local DEFAULT_TIME 					= 3
 local DEFAULT_COLOR 				= "Red"
 
@@ -108,14 +108,14 @@ function mod.changeHighlightColor(value)
 	mod.setHighlightColor(value)
 	if value=="Custom" then
 		local currentColor = mod.getHighlightCustomColor()
-		if currentColor then 
+		if currentColor then
 			dialog.color.color(currentColor)
 		end
 		dialog.color.callback(function(color, closed)
 			mod.setHighlightCustomColor(color)
 		end)
-		dialog.color.show()		
-	end	
+		dialog.color.show()
+	end
 end
 
 --- plugins.finalcutpro.browser.playhead.getHighlightShape() -> string
@@ -154,7 +154,7 @@ end
 --- Returns:
 ---  * A number or `nil`
 function mod.getHighlightTime()
-	return config.get("highlightPlayheadTime", DEFAULT_TIME)
+	return tonumber(config.get("highlightPlayheadTime", DEFAULT_TIME))
 end
 
 --- plugins.finalcutpro.browser.playhead.setHighlightTime([value]) -> none
@@ -230,7 +230,7 @@ function mod.highlightFrame(frame)
 	if displayHighlightColour == "Custom" then
 		local displayHighlightCustomColour = config.get("displayHighlightCustomColour")
 		displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
-	end	
+	end
 
 	--------------------------------------------------------------------------------
 	-- Highlight the FCPX Browser Playhead:
@@ -277,6 +277,26 @@ function mod.deleteHighlight()
 	end
 end
 
+-- timeOptions() -> none
+-- Function
+-- Returns a list of time options for the select.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * table
+function timeOptions()
+ 	local timeOptions = {}
+	for i=1, 10 do
+		timeOptions[#timeOptions + 1] = {
+			label = i18n(string.lower(tools.numberToWord(i))) .. " " .. i18n("secs", {count=i}),
+			value = i,
+		}
+	end
+	return timeOptions
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -286,8 +306,8 @@ local plugin = {
 	id				= "finalcutpro.browser.playhead",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.commands"] 					= "fcpxCmds",
-		["finalcutpro.menu.timeline.highlightplayhead"]	= "prefs",
+		["finalcutpro.commands"] 		= "fcpxCmds",
+		["finalcutpro.preferences.app"]	= "prefs",
 	}
 }
 
@@ -324,52 +344,81 @@ function plugin.init(deps)
 	})
 
 	--------------------------------------------------------------------------------
-	-- Setup Menus:
+	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------
-	local section = deps.prefs:addSection(PRIORITY)
-
-	section:addSeparator(1000)
-		:addSeparator(9000)
-
-	local highlightColor = section:addMenu(2000, function() return i18n("highlightPlayheadColour") end)
-	:addItems(1000, function()
-		local displayHighlightColour = mod.getHighlightColor()
-		return {
-			{ title = i18n("red"), 		fn = function() mod.changeHighlightColor("Red") end, 		checked = displayHighlightColour == "Red" },
-			{ title = i18n("blue"), 	fn = function() mod.changeHighlightColor("Blue") end,		checked = displayHighlightColour == "Blue" },
-			{ title = i18n("green"), 	fn = function() mod.changeHighlightColor("Green") end, 		checked = displayHighlightColour == "Green"	},
-			{ title = i18n("yellow"), 	fn = function() mod.changeHighlightColor("Yellow") end, 	checked = displayHighlightColour == "Yellow" },
-			{ title = "-" },
-			{ title = i18n("custom"), 	fn = function() mod.changeHighlightColor("Custom") end, 	checked = displayHighlightColour == "Custom" },
-		}
-	end)
-
-	local highlightShape = section:addMenu(3000, function() return i18n("highlightPlayheadShape") end)
-	:addItems(1000, function()
-		local shape = mod.getHighlightShape()
-		return {
-			{ title = i18n("rectangle"),	fn = function() mod.setHighlightShape(SHAPE_RECTANGLE) end,	checked = shape == SHAPE_RECTANGLE	},
-			{ title = i18n("circle"), 		fn = function() mod.setHighlightShape(SHAPE_CIRCLE) end, 	checked = shape == SHAPE_CIRCLE		},
-			{ title = i18n("diamond"),		fn = function() mod.setHighlightShape(SHAPE_DIAMOND) end, 	checked = shape == SHAPE_DIAMOND	},
-		}
-	end)
-
-	local highlightTime = section:addMenu(4000, function() return i18n("highlightPlayheadTime") end)
-	:addItems(1000, function()
-		local highlightPlayheadTime = mod.getHighlightTime()
-		return {
-			{ title = i18n("one") .. " " .. i18n("secs", {count=1}),	fn = function() mod.setHighlightTime(1) end, 	checked = highlightPlayheadTime == 1 },
-			{ title = i18n("two") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(2) end, 	checked = highlightPlayheadTime == 2 },
-			{ title = i18n("three") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(3) end, 	checked = highlightPlayheadTime == 3 },
-			{ title = i18n("four") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(4) end, 	checked = highlightPlayheadTime == 4 },
-			{ title = i18n("five") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(5) end, 	checked = highlightPlayheadTime == 5 },
-			{ title = i18n("six") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(6) end, 	checked = highlightPlayheadTime == 6 },
-			{ title = i18n("seven") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(7) end, 	checked = highlightPlayheadTime == 7 },
-			{ title = i18n("eight") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(8) end, 	checked = highlightPlayheadTime == 8 },
-			{ title = i18n("nine") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(9) end, 	checked = highlightPlayheadTime == 9 },
-			{ title = i18n("ten") .. " " .. i18n("secs", {count=2}), 	fn = function() mod.setHighlightTime(10) end,	checked = highlightPlayheadTime == 10 },
-		}
-	end)
+	if deps.prefs.panel then
+		deps.prefs.panel
+			:addContent(2000, [[
+				<style>
+					.highLightPlayheadSelect {
+						width: 100px;
+						float: left;
+					}
+				</style>
+			]], true)
+			:addHeading(2000, i18n("highlightPlayhead"))
+			:addSelect(2001,
+			{
+				label		= i18n("highlightPlayheadColour"),
+				value		= mod.getHighlightColor,
+				options		= {
+					{
+						label = i18n("red"),
+						value = "Red",
+					},
+					{
+						label = i18n("blue"),
+						value = "Blue",
+					},
+					{
+						label = i18n("green"),
+						value = "Green",
+					},
+					{
+						label = i18n("yellow"),
+						value = "Yellow",
+					},
+					{
+						label = i18n("custom"),
+						value = "Custom",
+					},
+				},
+				required	= true,
+				onchange	= function(id, params) mod.changeHighlightColor(params.value) end,
+				class		= "highLightPlayheadSelect",
+			})
+			:addSelect(2002,
+			{
+				label		= i18n("highlightPlayheadShape"),
+				value		= mod.getHighlightShape,
+				options		= {
+					{
+						label = i18n("rectangle"),
+						value = SHAPE_RECTANGLE,
+					},
+					{
+						label = i18n("circle"),
+						value = SHAPE_CIRCLE,
+					},
+					{
+						label = i18n("diamond"),
+						value = SHAPE_DIAMOND,
+					},
+				},
+				required	= true,
+				onchange	= function(id, params) mod.setHighlightShape(params.value) end,
+				class		= "highLightPlayheadSelect",
+			})
+			:addSelect(2003,
+			{
+				label		= i18n("highlightPlayheadTime"),
+				value		= mod.getHighlightTime,
+				options		= timeOptions(),
+				required	= true,
+				onchange	= function(id, params) mod.setHighlightTime(params.value) end,
+				class		= "highLightPlayheadSelect",
+			})
+	end
 
 	--------------------------------------------------------------------------------
 	-- Setup Commands:

@@ -23,6 +23,7 @@ local config								= require("cp.config")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+local DEFAULT_VALUE							= true
 local TOOLS_PRIORITY						= 1000
 local OPTIONS_PRIORITY						= 1000
 
@@ -39,7 +40,7 @@ mod.log										= log
 --- plugins.finalcutpro.clipboard.history.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable the Clipboard History.
-mod.enabled = config.prop("enableClipboardHistory", false)
+mod.enabled = config.prop("enableClipboardHistory", DEFAULT_VALUE)
 
 function mod.getHistory()
 	if not mod._history then
@@ -90,8 +91,10 @@ function mod.pasteHistoryItem(index)
 end
 
 local function watchUpdate(data, name)
-	log.df("Clipboard updated. Adding '%s' to history.", name)
-	mod.addHistoryItem(data, name)
+	if name then
+		log.df("Clipboard updated. Adding '%s' to history.", name)
+		mod.addHistoryItem(data, name)
+	end
 end
 
 function mod.update()

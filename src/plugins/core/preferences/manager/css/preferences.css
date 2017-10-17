@@ -1,5 +1,5 @@
 body {
-	background-color: #1f1f1f;	
+	background-color: #1f1f1f;
 	font-family: -apple-system;
 	font-size: 13px;
 	overflow:hidden;
@@ -9,12 +9,12 @@ body {
 ::-webkit-scrollbar {
     width: 7px;
 }
- 
+
 ::-webkit-scrollbar-track {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 4px;
 }
- 
+
 ::-webkit-scrollbar-thumb {
     background: #737373;
     border-radius: 4px;
@@ -24,12 +24,12 @@ checkbox {
 	background-color:#5760e7;
 }
 
-select {	
+select {
 	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAALCAAAAACW+8h0AAAAOUlEQVQI12NwdExaFOvoyOAYNG/hnABHhqB5nZ69cwIY5na5Orr2zmJwhAAMGiYPUw/T7+iYDDIPAPKdHMdxG+BNAAAAAElFTkSuQmCC) no-repeat 95% 50%;
-	-webkit-appearance: none; 	
+	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
-	color: #bfbfbc;		
+	color: #bfbfbc;
 	text-decoration: none;
 	padding: 2px 18px 2px 5px;
 	border:0.5px solid black;
@@ -40,6 +40,12 @@ select {
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
+}
+
+.tip {
+	color: #4a4a4a;
+	font-style: italic;
+	padding-top: 5px;
 }
 
 .button {

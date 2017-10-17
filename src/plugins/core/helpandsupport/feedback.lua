@@ -68,6 +68,7 @@ function plugin.init(deps)
 	local global = deps.global
 	global:add("cpFeedback")
 		:whenActivated(mod.show)
+		:groupedBy("helpandsupport")
 
 	--------------------------------------------------------------------------------
 	-- Menubar:

@@ -55,13 +55,15 @@ return {
 			clearList							=			"Clear List",
 			feedback							=			"Feedback",
 			settings							=			"Settings",
-			launch								=			"Launch",			
+			launch								=			"Launch",
 			location							=			"Location",
 			visibility							=			"Visibility",
 			always								=			"Always",
 			none								=			"None",
 			icon								=			"Icon",
 			action								=			"Action",
+			application							=			"Application",
+			tip									=			"Tip",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -175,9 +177,9 @@ return {
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
-			--------------------------------------------------------------------------------			
+			--------------------------------------------------------------------------------
 			noSupportedVersionsOfFCPX			= 			"No supported versions of Final Cut Pro were detected.",
-			
+
 			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
 
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
@@ -427,7 +429,6 @@ return {
 				--------------------------------------------------------------------------------
 				-- Tools Options:
 				--------------------------------------------------------------------------------
-				enableTouchBar					=			"Enable Virtual Touch Bar",
 				enableHUD						=			"Enable HUD",
 				enableClipboardHistory			=			"Enable Clipboard History",
 				enableSharedClipboard			=			"Enable Shared Clipboard",
@@ -467,7 +468,7 @@ return {
 			-- Advanced:
 			--------------------------------------------------------------------------------
 			scanFinalCutPro						=			"Scan Final Cut Pro",
-	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes:",
+	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes.",
 			advanced							=			"Advanced",
 			install								=			"Install",
 			uninstall							=			"Uninstall",
@@ -497,7 +498,6 @@ return {
 			--------------------------------------------------------------------------------
 			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
-			touchBar							=			"Virtual Touch Bar",			
 			language							=			"Language",
 			provideFeedback						=			"Provide Feedback",
 			feedback							=			"Feedback",
@@ -533,7 +533,7 @@ return {
 			-- Final Cut Pro:
 			--------------------------------------------------------------------------------
 			allowZoomingWithOptionKey			=			"Enable Timeline Zooming with Mouse Scroll & OPTION key",
-			
+
 			--------------------------------------------------------------------------------
 			-- HUD Options:
 			--------------------------------------------------------------------------------
@@ -547,15 +547,6 @@ return {
 			enableAnnouncements					=			"Enable Announcements",
 			enableVisualAlerts					=			"Enable Visual Alerts",
 			openDictationPreferences			=			"Open Dictation Preferences...",
-
-			--------------------------------------------------------------------------------
-			-- Touch Bar Location:
-			--------------------------------------------------------------------------------
-			draggable							=			"Draggable",
-			mouseLocation						=			"Centre of Mouse Location",
-			topCentreOfTimeline					=			"Top Centre of Timeline",
-			touchBarTipOne						=			"You can drag by holding",
-			touchBarTipTwo						=			"down the left OPTION key.",
 
 			--------------------------------------------------------------------------------
 			-- Highlight Colour:
@@ -610,8 +601,8 @@ return {
 
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
-			
-			modifierHeading						=			"Modifier Keys",
+
+			general								=			"General",
 
 			languageHeading						=			"Language",
 			commandPostLanguage					=			"CommandPost Language",
@@ -619,10 +610,13 @@ return {
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
 			shortcutsControl					=			"Shortcuts are currently being controlled by",
-			
+
 			touchbarPanelLabel					=			"Touch Bar",
 			touchbarPanelTooltip				=			"Touch Bar Preferences",
-			
+
+			streamdeckPanelLabel				=			"Stream Deck",
+			streamdeckPanelTooltip				=			"Stream Deck Preferences",
+
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
 
@@ -762,10 +756,10 @@ return {
 	consoleSections						=			"Sections",
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
-	
+
 	global_cmds_action					=			"Global Commands",
 	global_widgets_action				=			"Global Touch Bar Widgets",
-	
+
 	fcpx_cmds_action					=			"Commands",
 	fcpx_menu_action					=			"Menu Items",
 	fcpx_videoEffect_action				=			"Video Effects",
@@ -824,6 +818,8 @@ return {
 	transition_group					=			"Transition",
 	generator_group						=			"Generator",
 	commandPost_group					=			"CommandPost",
+	finalCutPro_group					=			"Final Cut Pro",
+	helpandsupport_group				=			"Help & Support",
 
 	commandChoiceSubText				=			"Command: %{group}",
 
@@ -864,15 +860,36 @@ return {
 	--------------------------------------------------------------------------------
 	-- TOUCH BAR PANEL:
 	--------------------------------------------------------------------------------
-	customiseTouchBar					=			"Customise Touch Bar",
-	touchBarPreferences					=			"Touch Bar Preferences",
+	virtualTouchBar						=			"Virtual Touch Bar",
+	layoutEditor						=			"Layout Editor",
+	customTouchBar						=			"Custom Touch Bar",
 	touchBarReset						=			"Reset All Touch Bar Items",
 	touchBarResetConfirmation			=			"This will reset all modified Touch Bar items to the default values.",
 	buttonLabel							=			"Button Label",
 	pleaseSelectAnIcon					=			"Please select an icon:",
 	fileCouldNotBeRead					=			"The selected file could not be read.",
 	badTouchBarIcon						=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
-	
+	enableCustomisedTouchBar			=			"Enable Customised Touch Bar",
+	enableVirtualTouchBar				=			"Enable Virtual Touch Bar",
+	draggable							=			"Draggable",
+	mouseLocation						=			"Centre of Mouse Location",
+	topCentreOfTimeline					=			"Top Centre of Timeline",
+	touchBarDragTip						=			"If Draggable is selected, you can hold down the left OPTION key to drag.",
+	touchBarSetupTip					=			[[Make sure "App Controls with Control Strip" is selected within the "Touch Bar shows" Keyboard System Preferences to see the CommandPost icon.]],
+	actionOrWidget						=			"Action / Widget",
+	touchBarWidget						=			"Touch Bar Widget",
+
+	--------------------------------------------------------------------------------
+	-- STREAM DECK PANEL:
+	--------------------------------------------------------------------------------
+	streamDeck							=			"Stream Deck",
+	streamDeckReset						=			"Reset All Stream Deck Items",
+	streamDeckResetConfirmation			=			"This will reset all modified Stream Deck items to the default values.",
+	enableStreamDeck					=			"Enable Stream Deck",
+	streamDeckAppRunning				=			"Stream Deck App is running.",
+	streamDeckAppRunningMessage			=			"This must be closed to activate Stream Deck support in CommandPost.",
+	streamDeckAppTip					=			[[You MUST have "Stream Deck.app" closed when using Stream Deck with CommandPost. ]],
+
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------
@@ -889,6 +906,7 @@ return {
 	core_action_manager_label								=	"Manager: Actions",
 	core_commands_actions_label								=	"Commands Actions",
 	core_commands_global_label								=	"Global Commands",
+	core_console_label										=	"Console",
 	core_helpandsupport_credits_label						=	"Help & Support: Credits",
 	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
 	core_helpandsupport_feedback_label						=	"Help & Support: Feedback",
@@ -908,11 +926,13 @@ return {
 	core_preferences_panels_menubar_label					=	"Preferences Panel: Menubar",
 	core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
 	core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
+	core_preferences_panels_streamdeck_label				=	"Preferences Panel: Stream Deck",
 	core_preferences_panels_touchbar_label					=	"Preferences: Touch Bar",
 	core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
 	core_preferences_updates_label							=	"Preferences: Updates",
 	core_quit_label											=	"Quit Command",
 	core_setup_label										= 	"Manager: Setup",
+	core_streamdeck_manager_label							=	"Manger: Stream Deck",
 	core_touchbar_manager_label								=	"Manager: Touch Bar",
 	core_touchbar_widgets_volume_label						=	"Widget: Volume Slider",
 	core_touchbar_widgets_windowslide_label					=	"Widget: Window Slider",
@@ -965,6 +985,7 @@ return {
 	finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
 	finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 	finalcutpro_sharing_xml_label							=	"XML Sharing",
+	finalcutpro_streamdeck_label							=	"Stream Deck",
 	finalcutpro_text2speech_label							=	"Text to Speech",
 	finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
 	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
@@ -988,6 +1009,8 @@ return {
 	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
 	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
 	finalcutpro_touchbar_virtual_label						=	"Virtual Touch Bar",
+	finalcutpro_touchbar_widgets_colorboard_label			=	"Widget: Color Board",
+	finalcutpro_touchbar_widgets_zoom_label					= 	"Widget: Timeline Zoom",
 	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
 	finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
 	finalcutpro_viewer_timecodeoverlay_label				=	"Viewer: Timecode Overlay",
@@ -995,7 +1018,7 @@ return {
 	finalcutpro_watchers_version_label						=	"Watchers: Version",
 	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
 	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
-	
+
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
@@ -1015,6 +1038,9 @@ return {
 		cpFeedback_title										=	"Provide Feedback",
 		cpDeveloperGuide_title									=	"Developer Guide",
 		cpTouchBar_title										=	"Toggle Touch Bar",
+		cpStreamDeck_title										=	"Toggle Stream Deck",
+		cpCredits_title											=	"Credits",
+		cpGlobalConsole_title									=	"Activate Global Console",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:

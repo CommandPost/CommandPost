@@ -49,6 +49,7 @@ local commands									= require("cp.commands")
 local PRIORITY									= 10000
 local PREFERENCES_KEY							= "enableHUD"
 local PREFERENCES_KEY_POSITION					= "hudPosition"
+local GROUP										= "fcpx"
 
 --------------------------------------------------------------------------------
 -- FFPlayerQuality CONSTANTS:
@@ -576,6 +577,19 @@ function hud.assignButton(button)
 
 	activator = hud.actionmanager.getActivator("finalcutpro.hud.buttons")
 	:onActivate(chooserAction)
+
+	--------------------------------------------------------------------------------
+	-- Restrict Allowed Handlers for Activator to current group:
+	--------------------------------------------------------------------------------
+	local allowedHandlers = {}			
+	local handlerIds = hud.actionmanager.handlerIds()			
+	for _,id in pairs(handlerIds) do				
+		local handlerTable = tools.split(id, "_")
+		if handlerTable[1] == GROUP then
+			table.insert(allowedHandlers, id)
+		end										
+	end					
+	activator:allowHandlers(table.unpack(allowedHandlers))
 
 	activator:show()
 end

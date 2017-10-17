@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.console ===
+--- === plugins.core.console ===
 ---
---- Final Cut Pro Console
+--- Global Console
 
 --------------------------------------------------------------------------------
 --
@@ -22,6 +22,7 @@ local tools				= require("cp.tools")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+local GROUP			= "global"
 local WIDGETS		= "widgets"
 
 --------------------------------------------------------------------------------
@@ -35,24 +36,27 @@ local mod = {}
 -- SHOW CONSOLE:
 --------------------------------------------------------------------------------
 function mod.show()
+
 	if not mod.activator then
-		mod.activator = mod.actionmanager.getActivator("finalcutpro.console")
+		mod.activator = mod.actionmanager.getActivator("core.console")
 			:preloadChoices()
 
 		--------------------------------------------------------------------------------
-		-- Don't show widgets in the console:
+		-- Restrict Allowed Handlers for Activator to current group:
 		--------------------------------------------------------------------------------
 		local allowedHandlers = {}
 		local handlerIds = mod.actionmanager.handlerIds()
 		for _,id in pairs(handlerIds) do
 			local handlerTable = tools.split(id, "_")
-			if handlerTable[2]~= WIDGETS then
+			if handlerTable[2]~= WIDGETS and handlerTable[1] == GROUP then
 				table.insert(allowedHandlers, id)
 			end
 		end
 		mod.activator:allowHandlers(table.unpack(allowedHandlers))
+
 	end
 	mod.activator:show()
+
 end
 
 --------------------------------------------------------------------------------
@@ -61,10 +65,10 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.console",
-	group			= "finalcutpro",
+	id				= "core.console",
+	group			= "core",
 	dependencies	= {
-		["finalcutpro.commands"]		= "fcpxCmds",
+		["core.commands.global"] 		= "global",
 		["core.action.manager"]			= "actionmanager",
 	}
 }
@@ -79,10 +83,10 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	-- Add the command trigger:
 	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpConsole")
+	deps.global:add("cpGlobalConsole")
 		:groupedBy("commandPost")
 		:whenActivated(function() mod.show() end)
-		:activatedBy():ctrl("space")
+		:activatedBy():ctrl():option():cmd("space")
 
 	return mod
 

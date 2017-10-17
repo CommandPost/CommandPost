@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.timeline.pluginshortcuts ===
 ---
---- Controls Final Cut Pro's Titles.
+--- Controls for Final Cut Pro's Plugin Shortcuts (for use with Hack Shortcuts).
 
 --------------------------------------------------------------------------------
 --
@@ -45,14 +45,23 @@ sort(pluginTypeDetails, function(a, b) return a.label < b.label end)
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects)
-	mod._actionmanager = actionmanager
+--- plugins.finalcutpro.timeline.pluginshortcuts.init(handlerId, action, shortcutNumber) -> none
+--- Function
+--- Initialise the module.
+---
+--- Parameters:
+--- * `deps` - Dependancies
+---
+--- Returns:
+--- * The module
+function mod.init(deps)
+	mod._actionmanager = deps.actionmanager
 	mod._apply = {
-		[plugins.types.generator]		= generators.apply,
-		[plugins.types.title]			= titles.apply,
-		[plugins.types.transition]		= transitions.apply,
-		[plugins.types.audioEffect]		= audioeffects.apply,
-		[plugins.types.videoEffect]		= videoeffects.apply,
+		[plugins.types.generator]		= deps.generators.apply,
+		[plugins.types.title]			= deps.titles.apply,
+		[plugins.types.transition]		= deps.transitions.apply,
+		[plugins.types.audioEffect]		= deps.audioeffects.apply,
+		[plugins.types.videoEffect]		= deps.videoeffects.apply,
 	}
 
 	return mod
@@ -67,6 +76,17 @@ mod.shortcuts = prop(
 	end
 )
 
+--- plugins.finalcutpro.timeline.pluginshortcuts.setShortcut(handlerId, action, shortcutNumber) -> none
+--- Function
+--- Sets a shortcut.
+---
+--- Parameters:
+--- * `handlerId`		- The action handler ID.
+--- * `action`			- The action.
+--- * `shortcutNumber`	- The shortcut number, between 1 and 5, which is being assigned.
+---
+--- Returns:
+--- * `true` if successful otherwise `false`
 function mod.setShortcut(handlerId, action, shortcutNumber)
 	assert(shortcutNumber >= 1 and shortcutNumber <= MAX_SHORTCUTS)
 	local shortcuts = mod.shortcuts()
@@ -79,17 +99,42 @@ function mod.setShortcut(handlerId, action, shortcutNumber)
 	mod.shortcuts(shortcuts)
 end
 
+--- plugins.finalcutpro.timeline.pluginshortcuts.getShortcut(handlerId, shortcutNumber) -> boolean
+--- Function
+--- Gets a shortcut.
+---
+--- Parameters:
+--- * `handlerId`		- The action handler ID.
+--- * `shortcutNumber`	- The shortcut number, between 1 and 5, which is being assigned.
+---
+--- Returns:
+--- * `true` if successful otherwise `false`
 function mod.getShortcut(handlerId, shortcutNumber)
 	local shortcuts = mod.shortcuts()
 	local handlerShortcuts = shortcuts[handlerId]
 	return handlerShortcuts and handlerShortcuts[shortcutNumber]
 end
 
-function mod.applyShortcut(handlerId, shortcutNumber)
-	log.df("Apply Shortcut!")
-	local action = mod.getShortcut(handlerId, shortcutNumber)
-	local apply = mod._apply[handlerId]
-	return apply and apply(action) or false
+--- plugins.finalcutpro.timeline.pluginshortcuts.applyShortcut(handlerId, shortcutNumber) -> boolean
+--- Function
+--- Applies a shortcut.
+---
+--- Parameters:
+--- * `handlerId`		- The action handler ID.
+--- * `shortcutNumber`	- The shortcut number, between 1 and 5, which is being assigned.
+---
+--- Returns:
+--- * `true` if successful otherwise `false`
+function mod.applyShortcut(handlerID, shortcutNumber)
+
+	local action = mod.getShortcut(handlerID, shortcutNumber)
+	local handler = mod._actionmanager.getHandler(handlerID)
+	if handler then
+		handler:execute(action)
+	else
+		log.ef("Failed to find Plugins Shortcut Handler.")
+	end
+
 end
 
 --- plugins.finalcutpro.timeline.pluginshortcuts.assignShortcut(shortcutNumber, handlerId) -> nothing
@@ -140,17 +185,25 @@ local plugin = {
 		["finalcutpro.timeline.transitions"]			= "transitions",
 		["finalcutpro.timeline.audioeffects"]			= "audioeffects",
 		["finalcutpro.timeline.videoeffects"]			= "videoeffects",
+		["finalcutpro.hacks.shortcuts"]					= "shortcuts",
 	}
 }
 
 function plugin.init(deps)
-	mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 
-	local menu = deps.menu:addMenu(PRIORITY, function() return i18n("pluginShortcuts") end)
+	mod.init(deps)
+
+	mod._actionmanager = deps.actionmanager
+
+	local menu = deps.menu:addMenu(PRIORITY, function()
+		if deps.shortcuts and deps.shortcuts.active() then
+			return i18n("pluginShortcuts")
+		end
+	end)
 
 	-- loop through the plugin types
 	for _,details in pairs(pluginTypeDetails) do
-		local type, label = details.type, details.label
+		local type, label = GROUP .. "_" .. details.type, details.label
 		-- The 'Assign Shortcuts' menu
 		local menu = menu:addMenu(PRIORITY, function() return label end)
 
@@ -175,7 +228,7 @@ function plugin.init(deps)
 		-- Commands with default shortcuts
 		local fcpxCmds = deps.fcpxCmds
 		for i = 1, MAX_SHORTCUTS do
-			fcpxCmds:add("cp" .. tools.firstToUpper(type) .. tostring(i))
+			fcpxCmds:add("cp" .. tools.firstToUpper(details.type) .. tostring(i))
 				:groupedBy("timeline")
 				:whenPressed(function() mod.applyShortcut(type, i) end)
 		end

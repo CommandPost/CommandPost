@@ -406,6 +406,7 @@ function plugin.init(deps, env)
 	local global = deps.global
 	global:add("cpSetupWatchFolders")
 		:whenActivated(mod.show)
+		:groupedBy("commandPost")
 
 	mod.setPanelRenderer(env:compileTemplate("html/panels.html"))
 

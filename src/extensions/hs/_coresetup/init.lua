@@ -83,7 +83,7 @@ hs.accessibilityStateCallback = nil
 		local osascript	= require("hs.osascript")
 		local appleScript = [[
 			set whatError to ]] .. safeErr .. "\n\n" ..[[
-			set iconPath to ("]] .. hs.processInfo["resourcePath"] .. "/extensions/cp/resources/assets/CommandPost.icns" .. [[" as POSIX file)
+			set iconPath to ("]] .. hs.processInfo["resourcePath"] .. "/AppIcon.icns" .. [[" as POSIX file)
 
 			display dialog "]] .. i18n("unexpectedError") .. [[" buttons {"]] .. i18n("sendBugReport") .. [[", "]] .. i18n("quit") .. " " .. i18n("appName") .. [["} with icon iconPath
 			if the button returned of the result is equal to "]] .. i18n("sendBugReport") .. [[" then

@@ -40,7 +40,7 @@ function plugin.init(deps)
 		label		= i18n("webappPanelLabel"),
 		image		= image.imageFromName("NSNetwork"),
 		tooltip		= i18n("webappPanelTooltip"),
-		height		= 382,
+		height		= 350,
 	})
 end
 

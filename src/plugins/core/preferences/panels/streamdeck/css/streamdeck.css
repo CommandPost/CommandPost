@@ -1,9 +1,9 @@
-.touchbarDropdown {
+.streamDeckDropdown {
 	width: 200px;
 	float: left;
 }
 
-.touchbar {
+.streamDeck {
 	margin-top: 10px;
 	table-layout: fixed;
 	width: 100%;
@@ -14,13 +14,13 @@
 	text-align: left;
 }
 
-.touchbar td {
+.streamDeck td {
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.tbButtonLabel {
+.sdButtonLabel {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -38,39 +38,39 @@
 	width: 190px;
 }
 
-.tbRowIcon {
+.sdRowIcon {
 	width: 10%;
 }
 
-.tbRowAction {
+.sdRowAction {
 	width: 40%;
 }
 
-.tbRowActionButton {
+.sdRowActionButton {
 	width: 15%;
 }
 
-.tbRowLabel {
+.sdRowLabel {
 	width: 35%;
 }
 
-.touchbar thead {
+.streamDeck thead {
 	font-weight: bold;
 	font-size: 12px;
 	width: 100%;
 }
 
-.touchbar thead tr, .touchbar tbody tr {
+.streamDeck thead tr, .streamDeck tbody tr {
 	display: table;
 	table-layout: fixed;
 	width: 100%;
 }
 
-.touchbar thead tr {
+.streamDeck thead tr {
 	width: calc( 100% - 8px);
 }
 
-.touchbar tbody {
+.streamDeck tbody {
 	display:block;
 	height: 250px;
 	font-weight: normal;
@@ -81,7 +81,7 @@
 	overflow-y: scroll;
 }
 
-.touchbar tbody tr:hover {
+.streamDeck tbody tr:hover {
 	background-color: #006dd4;
 	color: white;
 }
@@ -103,7 +103,7 @@
 	opacity: 0.4;
 }
 
-.touchbarControl {
+.streamDeckControl {
 	padding-top: 0px;
 	padding-bottom: 3pt;
 	padding-left: 20px;
@@ -114,7 +114,7 @@
 	height: 20px;
 }
 
-.tbActionTextbox {
+.sdActionTextbox {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -132,27 +132,27 @@
 	width: 230px;
 }
 
-.tbActionButton {
+.sdActionButton {
 	padding: 5px 5px !important;
 }
 
-#touchbarController {
+#streamDeckController {
 	font-weight: bold;
 }
 
-#touchbarGroupControls {
+#streamDeckGroupControls {
 	min-height: 295px;
 }
 
-#touchbarGroupControls .touchbarGroup {
+#streamDeckGroupControls .streamDeckGroup {
 	display: none;
 }
 
-#touchbarGroupControls .touchbarGroup.selected {
+#streamDeckGroupControls .streamDeckGroup.selected {
 	display: block;
 }
 
-.touchBarGroupSelect {
+.streamDeckGroupSelect {
 	float: right;
 }
 
