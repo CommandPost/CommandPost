@@ -370,7 +370,7 @@ function mod.init(deps, env)
 		label			= i18n("streamdeckPanelLabel"),
 		image			= image.imageFromPath(tools.iconFallback(env:pathToAbsolute("images/streamdeck.icns"))),
 		tooltip			= i18n("streamdeckPanelTooltip"),
-		height			= 550,
+		height			= 570,
 	})
 		:addHeading(6, i18n("streamDeck"))
 		:addCheckbox(7,
@@ -387,6 +387,7 @@ function mod.init(deps, env)
 				end,
 			}
 		)
+		:addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("streamDeckAppTip") .. "</span>\n\n", true)
 		:addContent(10, generateContent, true)
 
 	mod._panel:addButton(20,

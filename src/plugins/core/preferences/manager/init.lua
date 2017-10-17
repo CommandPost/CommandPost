@@ -73,7 +73,7 @@ mod.defaultWindowStyle	= {"titled", "closable", "nonactivating"}
 --- plugins.core.preferences.manager.defaultWidth
 --- Variable
 --- Default Width of Preferences Window
-mod.defaultWidth 		= 550
+mod.defaultWidth 		= 750
 
 --- plugins.core.preferences.manager.defaultHeight
 --- Variable

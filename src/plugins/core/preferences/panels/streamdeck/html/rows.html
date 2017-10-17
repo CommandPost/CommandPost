@@ -2,7 +2,7 @@
 	for i=1,maxItems,1 do
 %}
 			<tr>
-				<td class="rowIcon">
+				<td class="sdRowIcon">
 					{%
 						local result = sd.getIcon(tostring(i), group:id())
 						local class=""
@@ -29,15 +29,15 @@
 						<input id="streamDeck{{ group:id() }}_button{{ i }}_icon" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" />
 					</div>
 				</td>
-				<td class="rowAction">
-					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_action" class="actionTextbox" value="{{ sd.getActionTitle(tostring(i), group:id()) or "None" }}" disabled>
+				<td class="sdRowAction">
+					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_action" class="sdActionTextbox" value="{{ sd.getActionTitle(tostring(i), group:id()) or "None" }}" disabled>
 				</td>
-				<td class="rowActionButton">
-					<a id="streamDeck{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button actionButton">Select</a>
-					<a id="streamDeck{{ group:id() }}_button{{ i }}_clearActionButton" href="#" class="button actionButton">Clear</a>
+				<td class="sdRowActionButton">
+					<a id="streamDeck{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button sdActionButton">Select</a>
+					<a id="streamDeck{{ group:id() }}_button{{ i }}_clearActionButton" href="#" class="button sdActionButton">Clear</a>
 				</td>
-				<td class="rowLabel">
-					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_label" class="buttonLabel" value="{{ sd.getLabel(tostring(i), group:id()) or "None" }}">
+				<td class="sdRowLabel">
+					<input type="text" id="streamDeck{{ group:id() }}_button{{ i }}_label" class="sdButtonLabel" value="{{ sd.getLabel(tostring(i), group:id()) or "None" }}">
 				</td>
 				<script>
 						/*

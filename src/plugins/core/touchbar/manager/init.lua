@@ -182,7 +182,7 @@ mod.dismissButton = true
 --- plugins.core.touchbar.manager.maxItems -> number
 --- Variable
 --- The maximum number of Touch Bar items per group.
-mod.maxItems = 8
+mod.maxItems = 20
 
 --- plugins.core.touchbar.manager.enabled <cp.prop: boolean>
 --- Field

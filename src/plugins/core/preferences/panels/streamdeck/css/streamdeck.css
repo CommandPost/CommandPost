@@ -20,7 +20,7 @@
 	text-overflow: ellipsis;
 }
 
-.buttonLabel {
+.sdButtonLabel {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -35,23 +35,23 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 90px;
+	width: 190px;
 }
 
-.rowIcon {
+.sdRowIcon {
+	width: 10%;
+}
+
+.sdRowAction {
+	width: 40%;
+}
+
+.sdRowActionButton {
 	width: 15%;
 }
 
-.rowAction {
-	width: 32%;
-}
-
-.rowActionButton {
-	width: 23%;
-}
-
-.rowLabel {
-	width: 30%;
+.sdRowLabel {
+	width: 35%;
 }
 
 .streamDeck thead {
@@ -114,7 +114,7 @@
 	height: 20px;
 }
 
-.actionTextbox {
+.sdActionTextbox {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
@@ -129,10 +129,10 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 100px;
+	width: 230px;
 }
 
-.actionButton {
+.sdActionButton {
 	padding: 5px 5px !important;
 }
 

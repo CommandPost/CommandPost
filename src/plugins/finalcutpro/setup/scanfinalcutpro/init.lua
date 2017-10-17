@@ -99,16 +99,16 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	
-	deps.advanced	
-		:addParagraph(61.1, i18n("scanFinalCutProDescription"), true)
-		:addButton(61.2,
+
+	deps.advanced
+		:addButton(61.1,
 			{
 				label = i18n("scanFinalCutPro"),
 				width = 150,
 				onclick = mod.scanFinalCutPro,
 			}
 		)
+		:addParagraph(61.2, [[<span class="tip">]]  .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("scanFinalCutProDescription") .. [[</span>]], true)
 
 	return mod
 end
