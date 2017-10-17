@@ -45,7 +45,7 @@ mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
 --- plugins.core.preferences.panels.streamdeck.defaultIconPath -> string
 --- Variable
 --- Default Path where built-in icons are stored
-mod.defaultIconPath = config.basePath .. "/plugins/core/touchbar/icons"
+mod.defaultIconPath = config.assetsPath .. "/icons"
 
 --- plugins.core.preferences.panels.streamdeck.enabled <cp.prop: boolean>
 --- Field

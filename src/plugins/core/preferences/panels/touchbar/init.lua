@@ -44,7 +44,7 @@ mod.supportedExtensions = {"jpeg", "jpg", "tiff", "gif", "png", "tif", "bmp"}
 --- plugins.core.preferences.panels.touchbar.defaultIconPath -> string
 --- Variable
 --- Default Path where built-in icons are stored
-mod.defaultIconPath = config.basePath .. "/plugins/core/touchbar/icons"
+mod.defaultIconPath = config.assetsPath .. "/icons"
 
 --- plugins.core.preferences.panels.touchbar.enabled <cp.prop: boolean>
 --- Field

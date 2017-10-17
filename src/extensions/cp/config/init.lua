@@ -103,7 +103,7 @@ mod.pluginPaths			= {
 --- cp.config.iconPath
 --- Constant
 --- Path to the Application Icon
-mod.iconPath            = mod.assetsPath .. "/CommandPost.icns"
+mod.iconPath            = hs.processInfo["resourcePath"] .. "/AppIcon.icns"
 
 --- cp.config.menubarIconPath
 --- Constant
