@@ -72,7 +72,7 @@ end
 --------------------------------------------------------------------------------
 function plugin.postInit()
 	mod.isEnabled:update()
-	log.df("postInit: is enabled = %s", mod.isEnabled())
+	--log.df("postInit: is enabled = %s", mod.isEnabled())
 end
 
 return plugin

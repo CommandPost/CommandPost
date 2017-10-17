@@ -77,7 +77,7 @@ function ColorBoard:new(parent)
 		_parent = parent,
 		_child = {}
 	}
-	
+
 	return prop.extend(o, ColorBoard)
 end
 
@@ -111,6 +111,9 @@ function ColorBoard:UI()
 		else
 			-- it's in the top-left panel (half-height)
 			local top = parent:topGroupUI()
+			if not top then
+				return nil
+			end
 			for i,child in ipairs(top) do
 				if ColorBoard.isColorBoard(child) then
 					return child
@@ -289,7 +292,7 @@ function ColorBoard:aspectPropertyPanelUI(aspect, property, type)
 	end
 	self:showPanel(aspect)
 	local details = self:getAspect(aspect, property)
-	if not details[type] then
+	if not details or not details[type] then
 		return nil
 	end
 	local ui = self:childUI(details[type])

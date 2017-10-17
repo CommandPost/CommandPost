@@ -395,9 +395,11 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	deps.global:add("cpBugReport")
 		:whenActivated(function() mod.open(true) end)
+		:groupedBy("helpandsupport")
 
 	deps.global:add("cpFeatureRequest")
 		:whenActivated(function() mod.open(false) end)
+		:groupedBy("helpandsupport")
 
 	return mod
 

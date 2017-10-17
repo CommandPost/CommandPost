@@ -53,6 +53,38 @@ local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
 
+--- cp.tools.volumeFormat(path) -> string
+--- Function
+--- Gives you the file system volume format of a path.
+---
+--- Parameters:
+---  * path - the path you want to check as a string
+---
+--- Returns:
+---  * The `NSURLVolumeLocalizedFormatDescriptionKey` as a string, otherwise `nil`.
+function tools.volumeFormat(path)
+	local volumeInformation = host.volumeInformation()
+	for volumePath, volumeInformation in pairs(volumeInformation) do
+		if string.sub(path, 1, string.len(volumePath)) == volumePath then
+			return volumeInformation.NSURLVolumeLocalizedFormatDescriptionKey
+		end
+	end
+	return nil
+end
+
+--- cp.tools.unescape(str) -> string
+--- Function
+--- Removes any URL encoding in the provided string.
+---
+--- Parameters:
+---  * str - the string to decode
+---
+--- Returns:
+---  * A string with all "+" characters converted to spaces and all percent encoded sequences converted to their ASCII equivalents.
+function tools.unescape(str)
+    return (str:gsub("+", " "):gsub("%%(%x%x)", function(_) return string.char(tonumber(_, 16)) end):gsub("\r\n", "\n"))
+end
+
 --- cp.tools.split(str, pat) -> table
 --- Function
 --- Splits a string with a pattern.
@@ -184,14 +216,14 @@ function tools.getVRAMSize()
 	if vram then
 		local result
 		for i, v in pairs(vram) do
-			if result then 
-				if v > result then 
+			if result then
+				if v > result then
 					result = v
 				end
 			else
 				result = v
 			end
-		end				
+		end
 		if result >= 256 and result <= 512 then
 			return "256 MB-512 MB"
 		elseif result >= 512 and result <= 1024 then
@@ -200,7 +232,7 @@ function tools.getVRAMSize()
 			return "1-2 GB"
 		elseif result > 2048 then
 			return "More than 2 GB"
-		end		
+		end
 	end
 	return ""
 end
@@ -1087,7 +1119,7 @@ function tools.iconFallback(...)
 	for _,path in ipairs(table.pack(...)) do
 		if tools.doesFileExist(path) then
 			return path
-		end		
+		end
 	end
 	log.ef("Failed to find icon(s): " .. inspect(table.pack(...)))
 	return config.iconPath

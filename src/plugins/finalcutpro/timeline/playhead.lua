@@ -87,7 +87,7 @@ mod.scrollingTimeline = config.prop("scrollingTimelineActive", false):watch(func
 	elseif not mod.playheadLocked() then
 		dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
 	end
-	
+
 	mod.update()
 end)
 
@@ -206,6 +206,7 @@ local plugin = {
 	dependencies = {
 		["finalcutpro.menu.timeline"] 				= "options",
 		["finalcutpro.commands"]					= "fcpxCmds",
+		["finalcutpro.preferences.app"]				= "prefs",
 	}
 }
 
@@ -213,6 +214,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
 	local section = deps.options:addSection(PRIORITY)
 
 	-- menu items

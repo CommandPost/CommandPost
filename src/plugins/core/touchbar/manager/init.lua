@@ -9,6 +9,18 @@
 --- Touch Bar Manager Plugin.
 --- This handles both the Virtual Touch Bar and adding items to the physical Touch Bar.
 
+--- === plugins.core.touchbar.manager.virtual ===
+---
+--- Virtual Touch Bar Manager
+
+--- === plugins.core.touchbar.manager.widgets ===
+---
+--- Touch Bar Widgets Manager
+
+--- === plugins.core.touchbar.manager.virtual.updateLocationCallback ===
+---
+--- Virtual Touch Bar Update Location Callback
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -132,7 +144,9 @@ function widgets.allGroups()
 	for id, widget in pairs(widgets) do
 		local params = widget:params()
 		if params and params.group then
-			table.insert(result, params.group)
+			if not tools.tableContains(result, params.group) then
+				table.insert(result, params.group)
+			end
 		end
 	end
 	return result
@@ -168,7 +182,7 @@ mod.dismissButton = true
 --- plugins.core.touchbar.manager.maxItems -> number
 --- Variable
 --- The maximum number of Touch Bar items per group.
-mod.maxItems = 8
+mod.maxItems = 20
 
 --- plugins.core.touchbar.manager.enabled <cp.prop: boolean>
 --- Field
@@ -417,10 +431,11 @@ function mod.start()
 		--------------------------------------------------------------------------------
 		-- Setup System Icon:
 		--------------------------------------------------------------------------------
-		mod._sysTrayIcon = touchbar.item.newButton(hs.image.imageFromName(hs.image.systemImageNames.ApplicationIcon), "CommandPost")
+		mod._sysTrayIcon = touchbar.item.newButton(image.imageFromName(image.systemImageNames.ApplicationIcon), "CommandPost")
 							 :callback(function(self)
-								self:presentModalBar(mod._bar, mod.dismissButton)
-								mod._sysTrayIcon:addToSystemTray(true)
+								self:addToSystemTray(false)
+								self:addToSystemTray(true)
+							 	self:presentModalBar(mod._bar, mod.dismissButton)
 							 end)
 							 :addToSystemTray(true)
 
@@ -799,6 +814,11 @@ end
 function mod.virtual.updateLocation()
 
 	--------------------------------------------------------------------------------
+	-- Check that the Touch Bar exists:
+	--------------------------------------------------------------------------------
+	if not mod._touchBar then return end
+
+	--------------------------------------------------------------------------------
 	-- Get Settings:
 	--------------------------------------------------------------------------------
 	local displayTouchBarLocation = mod.virtual.location()
@@ -807,7 +827,7 @@ function mod.virtual.updateLocation()
 	-- Put it back to last known position:
 	--------------------------------------------------------------------------------
 	local lastLocation = mod.virtual.lastLocation()
-	if lastLocation then
+	if lastLocation and mod._touchBar then
 		mod._touchBar:topLeft(lastLocation)
 	end
 
@@ -1029,6 +1049,7 @@ function plugin.init(deps, env)
 	local global = deps.global
 	global:add("cpTouchBar")
 		:whenActivated(mod.toggle)
+		:groupedBy("commandPost")
 
 	return mod.init(deps, env)
 end
@@ -1057,7 +1078,7 @@ function plugin.postInit(deps, env)
 					}
 
 					choices:add(params.text)
-						:subText(params.subText)
+						:subText(i18n("touchBarWidget") .. ": " .. params.subText)
 						:params(action)
 						:id(id)
 				end
@@ -1074,6 +1095,14 @@ function plugin.postInit(deps, env)
 		mod.start()
 		mod.update()
 	end
+
+	--------------------------------------------------------------------------------
+	-- Show Virtual Touch Bar on Load if Enabled:
+	--------------------------------------------------------------------------------
+	if mod.virtual.enabled() then
+		mod.virtual.show()
+	end
+
 end
 
 return plugin

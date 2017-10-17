@@ -42,33 +42,6 @@ local GROUP				= "fcpx"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.menu.menuaction.init(actionmanager) -> none
---- Function
---- Initialises the Menu Action plugin
----
---- Parameters:
----  * `actionmanager` - the Action Manager plugin
----
---- Returns:
----  * None
-function mod.init(actionmanager)
-	mod._manager = actionmanager
-	mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
-	:onChoices(mod.onChoices)
-	:onExecute(mod.onExecute)
-	:onActionId(mod.actionId)
-
-	mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
-	local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
-
-	-- watch for restarts
-	fcp.isRunning:watch(function(running)
-		idle.queue(delay, function()
-			mod.reload()
-		end)
-	end, true)
-end
-
 --- plugins.finalcutpro.menu.menuaction.id() -> none
 --- Function
 --- Returns the menu ID
@@ -143,6 +116,34 @@ function mod.onExecute(action)
 		return true
 	end
 	return false
+end
+
+--- plugins.finalcutpro.menu.menuaction.init(actionmanager) -> none
+--- Function
+--- Initialises the Menu Action plugin
+---
+--- Parameters:
+---  * `actionmanager` - the Action Manager plugin
+---
+--- Returns:
+---  * None
+function mod.init(actionmanager)
+	mod._manager = actionmanager
+	mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
+	:onChoices(mod.onChoices)
+	:onExecute(mod.onExecute)
+	:onActionId(mod.actionId)
+
+	mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
+	local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
+
+	-- watch for restarts
+	fcp.isRunning:watch(function(running)
+		idle.queue(delay, function()
+			log.df("Reloading Final Cut Menu Items")
+			mod.reload()
+		end)
+	end, true)
 end
 
 --------------------------------------------------------------------------------
