@@ -20,11 +20,11 @@
 	text-overflow: ellipsis;
 }
 
-.buttonLabel {
-	-webkit-appearance: none; 	
+.tbButtonLabel {
+	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
-	color: #bfbfbc;		
+	color: #bfbfbc;
 	text-decoration: none;
 	padding: 2px 18px 2px 5px;
 	border:0.5px solid black;
@@ -35,23 +35,23 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 90px;
+	width: 190px;
 }
 
-.rowIcon {
+.tbRowIcon {
+	width: 10%;
+}
+
+.tbRowAction {
+	width: 40%;
+}
+
+.tbRowActionButton {
 	width: 15%;
 }
 
-.rowAction {
-	width: 32%;
-}
-
-.rowActionButton {
-	width: 23%;
-}
-
-.rowLabel {
-	width: 30%;	
+.tbRowLabel {
+	width: 35%;
 }
 
 .touchbar thead {
@@ -114,11 +114,11 @@
 	height: 20px;
 }
 
-.actionTextbox {
-	-webkit-appearance: none; 	
+.tbActionTextbox {
+	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
-	color: #bfbfbc;		
+	color: #bfbfbc;
 	text-decoration: none;
 	padding: 2px 18px 2px 5px;
 	border:0.5px solid black;
@@ -129,10 +129,10 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 100px;	
+	width: 230px;
 }
 
-.actionButton {
+.tbActionButton {
 	padding: 5px 5px !important;
 }
 

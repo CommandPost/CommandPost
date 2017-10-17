@@ -62,6 +62,8 @@ return {
 			none								=			"None",
 			icon								=			"Icon",
 			action								=			"Action",
+			application							=			"Application",
+			tip									=			"Tip",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -466,7 +468,7 @@ return {
 			-- Advanced:
 			--------------------------------------------------------------------------------
 			scanFinalCutPro						=			"Scan Final Cut Pro",
-	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes:",
+	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes.",
 			advanced							=			"Advanced",
 			install								=			"Install",
 			uninstall							=			"Uninstall",
@@ -873,6 +875,7 @@ return {
 	mouseLocation						=			"Centre of Mouse Location",
 	topCentreOfTimeline					=			"Top Centre of Timeline",
 	touchBarDragTip						=			"If Draggable is selected, you can hold down the left OPTION key to drag.",
+	touchBarSetupTip					=			[[Make sure "App Controls with Control Strip" is selected within the "Touch Bar shows" Keyboard System Preferences to see the CommandPost icon.]],
 	actionOrWidget						=			"Action / Widget",
 	touchBarWidget						=			"Touch Bar Widget",
 
@@ -885,6 +888,7 @@ return {
 	enableStreamDeck					=			"Enable Stream Deck",
 	streamDeckAppRunning				=			"Stream Deck App is running.",
 	streamDeckAppRunningMessage			=			"This must be closed to activate Stream Deck support in CommandPost.",
+	streamDeckAppTip					=			[[You MUST have "Stream Deck.app" closed when using Stream Deck with CommandPost. ]],
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:

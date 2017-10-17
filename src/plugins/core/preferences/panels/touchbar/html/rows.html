@@ -2,7 +2,7 @@
 	for i=1,maxItems,1 do
 %}
 			<tr>
-				<td class="rowIcon">
+				<td class="tbRowIcon">
 					{%
 						local result = tb.getIcon(tostring(i), group:id())
 						local class=""
@@ -29,15 +29,15 @@
 						<input id="{{ group:id() }}_button{{ i }}_icon" type="file" accept="image/png, image/gif, image/jpeg, image/tiff" />
 					</div>
 				</td>
-				<td class="rowAction">
-					<input type="text" id="{{ group:id() }}_button{{ i }}_action" class="actionTextbox" value="{{ tb.getActionTitle(tostring(i), group:id()) or "None" }}" disabled>
+				<td class="tbRowAction">
+					<input type="text" id="{{ group:id() }}_button{{ i }}_action" class="tbActionTextbox" value="{{ tb.getActionTitle(tostring(i), group:id()) or "None" }}" disabled>
 				</td>
-				<td class="rowActionButton">
-					<a id="{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button actionButton">Select</a>
-					<a id="{{ group:id() }}_button{{ i }}_clearActionButton" href="#" class="button actionButton">Clear</a>
+				<td class="tbRowActionButton">
+					<a id="{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button tbActionButton">Select</a>
+					<a id="{{ group:id() }}_button{{ i }}_clearActionButton" href="#" class="button tbActionButton">Clear</a>
 				</td>
-				<td class="rowLabel">
-					<input type="text" id="{{ group:id() }}_button{{ i }}_label" class="buttonLabel" value="{{ tb.getLabel(tostring(i), group:id()) or "None" }}">
+				<td class="tbRowLabel">
+					<input type="text" id="{{ group:id() }}_button{{ i }}_label" class="tbButtonLabel" value="{{ tb.getLabel(tostring(i), group:id()) or "None" }}">
 				</td>
 				<script>
 						/*

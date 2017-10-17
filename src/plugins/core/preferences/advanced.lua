@@ -214,8 +214,6 @@ function plugin.init(deps)
 		)
 
 		:addHeading(70, i18n("commandLineTool"))
-		:addParagraph(71, i18n("commandLineToolDescription"), true)
-
 		:addButton(75,
 			{
 				label	= getCommandLineToolTitle(),
@@ -224,10 +222,9 @@ function plugin.init(deps)
 				id		= "commandLineTool",
 			}
 		)
+		:addParagraph(76, [[<span class="tip">]]  .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("commandLineToolDescription") .. "</span>", true)
 
 		:addHeading(80, i18n("advanced"))
-		:addParagraph(81, i18n("trashPreferencesDescription"), true)
-
 		:addButton(85,
 			{
 				label	= i18n("trashPreferences"),
@@ -235,6 +232,7 @@ function plugin.init(deps)
 				onclick	= mod.trashPreferences,
 			}
 		)
+		:addParagraph(85.1, [[<span class="tip">]]  .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" ..  i18n("trashPreferencesDescription") .. "</span>", true)
 
 end
 
