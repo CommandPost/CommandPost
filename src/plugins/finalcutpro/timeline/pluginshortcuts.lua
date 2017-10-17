@@ -125,10 +125,16 @@ end
 ---
 --- Returns:
 --- * `true` if successful otherwise `false`
-function mod.applyShortcut(handlerId, shortcutNumber)
-	local action = mod.getShortcut(handlerId, shortcutNumber)
-	local apply = mod._apply[handlerId]
-	return apply and apply(action) or false
+function mod.applyShortcut(handlerID, shortcutNumber)
+
+	local action = mod.getShortcut(handlerID, shortcutNumber)
+	local handler = mod._actionmanager.getHandler(handlerID)
+	if handler then
+		handler:execute(action)
+	else
+		log.ef("Failed to find Plugins Shortcut Handler.")
+	end
+
 end
 
 --- plugins.finalcutpro.timeline.pluginshortcuts.assignShortcut(shortcutNumber, handlerId) -> nothing
@@ -186,6 +192,8 @@ local plugin = {
 function plugin.init(deps)
 
 	mod.init(deps)
+
+	mod._actionmanager = deps.actionmanager
 
 	local menu = deps.menu:addMenu(PRIORITY, function()
 		if deps.shortcuts and deps.shortcuts.active() then
