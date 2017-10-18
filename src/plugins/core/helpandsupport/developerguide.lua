@@ -51,8 +51,8 @@ local plugin = {
 	id				= "core.helpandsupport.developerguide",
 	group			= "core",
 	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
-		["core.commands.global"] 		= "global",
+		["core.menu.helpandsupport.commandpost"]	= "helpandsupport",
+		["core.commands.global"] 					= "global",
 	}
 }
 

@@ -22,7 +22,7 @@ local fcp						= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 					= 2000
-local PREFERENCES_PRIORITY		= 28
+local PREFERENCES_PRIORITY		= 3
 local SETTING 					= "menubarTimelineEnabled"
 
 --------------------------------------------------------------------------------

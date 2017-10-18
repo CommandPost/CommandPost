@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                        T O O L S     M E N U                               --
+--                      T I M E L I N E    M E N U                            --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.menu.tools ===
+--- === plugins.finalcutpro.menu.top ===
 ---
---- The TOOLS menu section.
+--- The top menu section.
 
 --------------------------------------------------------------------------------
 --
@@ -21,9 +21,9 @@ local fcp						= require("cp.apple.finalcutpro")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 					= 3000
-local PREFERENCES_PRIORITY		= 6
-local SETTING 					= "menubarToolsEnabled"
+local PRIORITY 					= 1
+local PREFERENCES_PRIORITY		= 1
+local SETTING 					= "menubarFinalCutProTopEnabled"
 
 --------------------------------------------------------------------------------
 --
@@ -38,7 +38,7 @@ local sectionEnabled = config.prop(SETTING, true)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.tools",
+	id				= "finalcutpro.menu.top",
 	group			= "finalcutpro",
 	dependencies	= {
 		["core.menu.manager"] 				= "manager",
@@ -52,12 +52,12 @@ local plugin = {
 function plugin.init(dependencies)
 
 	--------------------------------------------------------------------------------
-	-- Create the Tools section:
+	-- Create the Timeline section:
 	--------------------------------------------------------------------------------
 	local shortcuts = dependencies.manager.addSection(PRIORITY)
 
 	--------------------------------------------------------------------------------
-	-- Disable the section if the Tools option is disabled:
+	-- Disable the section if the Timeline option is disabled:
 	--------------------------------------------------------------------------------
 	shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
 
@@ -66,7 +66,7 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	shortcuts:addSeparator(0)
 		:addItem(1, function()
-			return { title = string.upper(i18n("tools")) .. ":", disabled = true }
+			return { title = string.upper(i18n("finalCutPro")) .. ":", disabled = true }
 		end)
 
 	--------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ function plugin.init(dependencies)
 	local prefs = dependencies.prefs
 	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
 		{
-			label = i18n("showTools"),
+			label = i18n("show") .. " " .. i18n("finalCutPro"),
 			onchange = function(id, params) sectionEnabled(params.checked) end,
 			checked = sectionEnabled,
 		}

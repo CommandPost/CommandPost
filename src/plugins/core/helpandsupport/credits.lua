@@ -51,8 +51,8 @@ local plugin = {
 	id				= "core.helpandsupport.credits",
 	group			= "core",
 	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
-		["core.commands.global"] 		= "global",
+		["core.menu.helpandsupport.commandpost"]	= "helpandsupport",
+		["core.commands.global"] 					= "global",
 	}
 }
 

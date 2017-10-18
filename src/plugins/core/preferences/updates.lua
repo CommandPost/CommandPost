@@ -77,7 +77,7 @@ local plugin = {
 	id				= "core.preferences.updates",
 	group			= "core",
 	dependencies	= {
-		["core.menu.top"] 					= "menu",
+		["finalcutpro.menu.top"] 					= "menu",
 		["core.preferences.panels.general"]	= "general",
 	}
 }
