@@ -64,7 +64,7 @@ function plugin.init(dependencies)
 	--------------------------------------------------------------------------------
 	-- Add the separator and title for the section:
 	--------------------------------------------------------------------------------
-	shortcuts:addSeparator(0)
+	shortcuts
 		:addItem(1, function()
 			return { title = string.upper(i18n("finalCutPro")) .. ":", disabled = true }
 		end)
