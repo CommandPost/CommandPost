@@ -77,7 +77,7 @@ function mod.selectPuck(aspect, property, whichDirection)
 				colorBoard:shiftAngle(aspect, property, 1)
 			end
 		end, eventtap.keyRepeatInterval())
-	else 
+	else
 		--------------------------------------------------------------------------------
 		-- Just select the puck:
 		--------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ function mod.mousePuck(aspect, property)
 	--------------------------------------------------------------------------------
 	mod.playhead.deleteHighlight()
 
-	colorBoard = fcp:colorBoard()
+	local colorBoard = fcp:colorBoard()
 
 	--------------------------------------------------------------------------------
 	-- Show the Color Board if it's hidden:
@@ -152,6 +152,23 @@ function mod.colorBoardMousePuckRelease()
 	end
 end
 
+function mod.toggleColorBoard()
+
+	--------------------------------------------------------------------------------
+	-- Show the Color Board if it's hidden:
+	--------------------------------------------------------------------------------
+	local colorBoard = fcp:colorBoard()
+	if not colorBoard:isShowing() then colorBoard:show() end
+
+	if not colorBoard:isActive() then
+		dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
+		return "Failed"
+	end
+
+	colorBoard:togglePanel()
+
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -170,7 +187,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	
+
 	mod.playhead = deps.playhead
 
 	local colorFunction = {
@@ -241,6 +258,11 @@ function plugin.init(deps)
 				:whenReleased(function() mod.colorBoardMousePuckRelease() end)
 		end
 	end
+
+	deps.fcpxCmds
+		:add("cpToggleColorBoard")
+		:groupedBy("colorboard")
+		:whenActivated(mod.toggleColorBoard)
 
 	return mod
 

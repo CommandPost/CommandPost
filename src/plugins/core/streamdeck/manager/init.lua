@@ -355,7 +355,7 @@ function mod.update()
 		return
 	end
 
-	log.df("Updating Stream Deck...")
+	--log.df("Updating Stream Deck...")
 
 	--------------------------------------------------------------------------------
 	-- Reset Stream Deck:
@@ -429,7 +429,7 @@ function mod.discoveryCallback(connected, object)
 			mod.update()
 		else
 			if mod._streamDeck[serialNumber] then
-				log.df("Disconnected Stream Deck: %s", serialNumber)
+				--log.df("Disconnected Stream Deck: %s", serialNumber)
 				mod._streamDeck[serialNumber] = nil
 			else
 				log.ef("Disconnected Stream Deck wasn't previously registered.")

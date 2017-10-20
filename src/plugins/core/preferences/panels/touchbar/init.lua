@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsTouchBar")
 
+local canvas									= require("hs.canvas")
 local dialog									= require("hs.dialog")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
@@ -271,12 +272,45 @@ local function touchBarPanelCallback(id, params)
 				local path = tools.unescape(string.sub(result["1"], 8))
 				local icon = image.imageFromPath(path)
 				if icon then
-					local encodedIcon = icon:encodeAsURLString()
-					if encodedIcon then
-						mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
-						mod._manager.refresh()
+					if string.sub(path, 1, string.len(mod.defaultIconPath)) == mod.defaultIconPath then
+						--------------------------------------------------------------------------------
+						-- One of our pre-supplied images:
+						--------------------------------------------------------------------------------
+						local originalImage = image.imageFromPath(path):template(false)
+						if originalImage then
+
+							local a = canvas.new{x = 0, y = 0, w = 512, h = 512 }
+							a[1] = {
+							  type="image",
+							  image = originalImage,
+							  frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+							}
+							a[2] = {
+							  type = "rectangle",
+							  action = "fill",
+							  fillColor = { white = 1 },
+							  compositeRule = "sourceAtop",
+							}
+							local newImage = a:imageFromCanvas()
+
+							local encodedIcon = newImage:encodeAsURLString()
+
+							mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+							mod._manager.refresh()
+						else
+							failed = true
+						end
 					else
-						failed = true
+						--------------------------------------------------------------------------------
+						-- An image from outside the pre-supplied image path:
+						--------------------------------------------------------------------------------
+						local encodedIcon = icon:encodeAsURLString()
+						if encodedIcon then
+							mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+							mod._manager.refresh()
+						else
+							failed = true
+						end
 					end
 				else
 					failed = true

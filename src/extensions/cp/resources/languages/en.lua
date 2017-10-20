@@ -147,6 +147,7 @@ return {
 			playheadLockActivated				=			"Playhead Lock Activated",
 			playheadLockDeactivated				=			"Playhead Lock Deactivated",
 			pleaseSelectSingleClipInTimeline	=			"Please select a single clip in the Timeline.",
+			colorBoardCouldNotBeActivated		=			"The Color Board could not be activated. Please make sure a single clip in the timeline is selected and try again.",
 
 			--------------------------------------------------------------------------------
 			-- Error Log:
@@ -1095,6 +1096,8 @@ return {
 		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
 		cpPuck_customTitle										=	"Select %{panel} Puck %{count}",
 		cpPuckDirection_customTitle								=	"Select  %{panel} Puck %{count} & %{direction}",
+
+		cpToggleColorBoard_title								=	"Toggle Color Board Panel",
 
 		cpCutSwitchVideoAngle_customTitle						=	"Cut n Switch Video Angle %{count}",
 		cpCutSwitchAudioAngle_customTitle						=	"Cut n Switch Audio Angle %{count}",
