@@ -283,14 +283,12 @@ local function switchToPanel(aspect)
 	end
 end
 
-
 local function switchToPanel(aspect)
 	local colorBoard = fcp:colorBoard()
 	if colorBoard then
 		colorBoard:showPanel(aspect)
 	end
 end
-
 
 local function groupPuck(id)
 
@@ -350,7 +348,7 @@ function mod.init(deps)
 	local params = {
 		group = "fcpx",
 		text = "Color Board",
-		subText = "Adds Color Board Panel buttons and puck controllers.",
+		subText = "Color Board Panel Toggle Button & Puck Controls.",
 		item = groupPuck("colorBoardGroup"),
 	}
 	deps.manager.widgets:new("colorBoardGroup", params)
