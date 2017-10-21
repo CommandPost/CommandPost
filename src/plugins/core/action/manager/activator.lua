@@ -49,7 +49,7 @@ local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
 
-local PACKAGE = "action.activator."
+local PACKAGE = "finalcutpro.action.activator."
 
 local function applyHiddenTo(choice, hidden)
 	if choice.oldText then
@@ -105,9 +105,7 @@ function activator.new(id, manager)
 	-- plugins.core.action.activator._allowedHandlers <cp.prop: string>
 	-- Field
 	-- The ID of a single handler to source
-	--o._allowedHandlers = config.prop(prefix .. "allowedHandlers", nil):bind(o)
 	o._allowedHandlers = prop.THIS(nil):bind(o)
-	--o._allowedHandlers = prop.THIS({}):bind(o)
 
 --- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
 --- Field
@@ -604,10 +602,13 @@ end
 --- Returns:
 --- * Table of choices that can be displayed by an `hs.chooser`.
 function activator.mt:activeChoices()
+	log.df("activator:activeChoices(): called")
 	local showHidden = self:showHidden()
 	local disabledHandlers = self:_disabledHandlers()
 
-	return _.filter(self:allChoices(), function(i,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
+	local results = _.filter(self:allChoices(), function(i,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
+	log.df("activator:activeChoices(): #results = %s", #results)
+	return results
 end
 
 -- plugins.core.action.activator:_findChoices() -> nothing
@@ -657,39 +658,18 @@ activator.reducedTransparency = prop.new(function()
 end)
 
 local function initChooser(executeFn, rightClickFn, choicesFn, searchSubText)
-
+	local color = activator.reducedTransparency() and nil or drawing.color.x11.snow
 	local c = chooser.new(executeFn)
 		:bgDark(true)
 		:rightClickCallback(rightClickFn)
 		:choices(choicesFn)
 		:searchSubText(searchSubText)
+		:fgColor(color):subTextColor(color)
 		:refreshChoicesCallback()
-
-	if activator.reducedTransparency() then
-		c:fgColor(nil)
-		 :subTextColor(nil)
-	else
-		c:fgColor(drawing.color.x11.snow)
-		 :subTextColor(drawing.color.x11.snow)
-	end
-
 	return c
 end
 
 function activator.mt:chooser()
-
-	--------------------------------------------------------------------------------
-	-- Reload Console if Reduce Transparency has been toggled:
-	--------------------------------------------------------------------------------
-	local transparency = activator.reducedTransparency()
-	if self._lastReducedTransparency ~= transparency then
-		self._lastReducedTransparency = transparency
-		self._chooser = nil
-	end
-
-	--------------------------------------------------------------------------------
-	-- Create new Chooser if needed:
-	--------------------------------------------------------------------------------
 	if not self._chooser then
 		self._chooser = initChooser(
 			function(result) self:activate(result) end,
@@ -705,8 +685,19 @@ end
 -- REFRESH CONSOLE CHOICES:
 --------------------------------------------------------------------------------
 function activator.mt:refreshChooser()
-	local chooser = self:chooser()
-	chooser:refreshChoicesCallback()
+	log.df("refreshChooser: called")
+	if self._chooser then
+		log.df("refreshChooser: refreshing choices")
+		self._chooser:refreshChoicesCallback()
+	end
+end
+
+function activator.mt:checkReducedTransparency()
+	local transparency = activator.reducedTransparency()
+	if self._lastReducedTransparency ~= transparency then
+		self._lastReducedTransparency = transparency
+		self._chooser = nil
+	end
 end
 
 --- plugins.core.action.activator:show()
@@ -726,6 +717,11 @@ function activator.mt:show()
 	end
 
 	self._frontApp = application.frontmostApplication()
+
+	--------------------------------------------------------------------------------
+	-- Reload Console if Reduce Transparency
+	--------------------------------------------------------------------------------
+	self:checkReducedTransparency()
 
 	--------------------------------------------------------------------------------
 	-- Refresh Chooser:
@@ -849,7 +845,7 @@ function activator.mt:rightClickAction(index)
 	--------------------------------------------------------------------------------
 	-- Menubar:
 	--------------------------------------------------------------------------------
-	self._rightClickMenubar = menubar.new()
+	self._rightClickMenubar = menubar.new(false)
 
 	local choiceMenu = {}
 
@@ -956,7 +952,7 @@ function activator.mt:rightClickAction(index)
 		insert(choiceMenu, sections)
 	end
 
-	self._rightClickMenubar:setMenu(choiceMenu):removeFromMenuBar()
+	self._rightClickMenubar:setMenu(choiceMenu)
 	self._rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
 end
 
