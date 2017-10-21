@@ -65,7 +65,7 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	local currentLanguage = fcp:currentLanguage()
 
-	if type(shortcut) == "string" then
+	if type(action) == "string" then
 		action = { name = action }
 	end
 
@@ -88,12 +88,12 @@ function mod.apply(action)
 	local transitions = fcp:transitions()
 	local transitionsShowing = transitions:isShowing()
 	local transitionsLayout = transitions:saveLayout()
-	
+
 	--------------------------------------------------------------------------------
 	-- Make sure FCPX is at the front.
 	--------------------------------------------------------------------------------
 	fcp:launch()
-	
+
 	--------------------------------------------------------------------------------
 	-- Make sure panel is open:
 	--------------------------------------------------------------------------------
@@ -102,8 +102,8 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Make sure "Installed Transitions" is selected:
 	--------------------------------------------------------------------------------
-	local group = transitions:group():UI()		
-	local groupValue = group:attributeValue("AXValue")	
+	local group = transitions:group():UI()
+	local groupValue = group:attributeValue("AXValue")
 	if groupValue ~= fcp:string("PEMediaBrowserInstalledTransitionsMenuItem") then
 		transitions:showInstalledTransitions()
 	end
