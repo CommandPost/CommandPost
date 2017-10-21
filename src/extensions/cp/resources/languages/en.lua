@@ -147,6 +147,7 @@ return {
 			playheadLockActivated				=			"Playhead Lock Activated",
 			playheadLockDeactivated				=			"Playhead Lock Deactivated",
 			pleaseSelectSingleClipInTimeline	=			"Please select a single clip in the Timeline.",
+			colorBoardCouldNotBeActivated		=			"The Color Board could not be activated. Please make sure a single clip in the timeline is selected and try again.",
 
 			--------------------------------------------------------------------------------
 			-- Error Log:
@@ -913,6 +914,7 @@ return {
 	core_helpandsupport_userguide_label						=	"Help & Support: User Guide",
 	core_language_label										=	"Language Module",
 	core_menu_bottom_label									=	"Menubar: Bottom Section",
+	core_menu_helpandsupport_commandpost_label				=	"Menubar: CommandPost Help & Support",
 	core_menu_helpandsupport_label							=	"Menubar: Help & Support Section",
 	core_menu_manager_label									=	"Manager: Menubar",
 	core_menu_top_label										=	"Menubar: Top Section",
@@ -965,6 +967,7 @@ return {
 	finalcutpro_menu_administrator_label					=	"Menubar: Administrator",
 	finalcutpro_menu_clipboard_label						=	"Menubar: Clipboard",
 	finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
+	finalcutpro_menu_helpandsupport_finalcutpro_label		=	"Menubar: Final Cut Pro Help & Support",
 	finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
 	finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
 	finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
@@ -974,6 +977,7 @@ return {
 	finalcutpro_menu_timeline_label							=	"Menubar: Timeline",
 	finalcutpro_menu_tools_label							=	"Menubar: Tools",
 	finalcutpro_menu_tools_notifications_label				=	"Menubar: Notifications",
+	finalcutpro_menu_top_label								=	"Menubar: Final Cut Pro Top Menu",
 	finalcutpro_menu_viewer_label							=	"Menubar: Viewer",
 	finalcutpro_menu_viewer_showtimecode_label				=	"Menubar: Viewer > Show Timecode",
 	finalcutpro_notifications_imessage_label				=	"Notifications: iMessage",
@@ -1095,6 +1099,8 @@ return {
 		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
 		cpPuck_customTitle										=	"Select %{panel} Puck %{count}",
 		cpPuckDirection_customTitle								=	"Select  %{panel} Puck %{count} & %{direction}",
+
+		cpToggleColorBoard_title								=	"Toggle Color Board Panel",
 
 		cpCutSwitchVideoAngle_customTitle						=	"Cut n Switch Video Angle %{count}",
 		cpCutSwitchAudioAngle_customTitle						=	"Cut n Switch Audio Angle %{count}",

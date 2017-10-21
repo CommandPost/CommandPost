@@ -79,11 +79,11 @@ end
 -- Returns:
 --  * Path as string or `nil` if it can't be found.
 function private.hacksPath(resourceName)
-	assert(type(resourceName) == "string", "Expected argument #1 to be a string")	
-	if mod.commandSetsPath and fcp:isInstalled() then	
+	assert(type(resourceName) == "string", "Expected argument #1 to be a string")
+	if mod.commandSetsPath and fcp:isInstalled() then
 		local ver = v(fcp:getVersion())
 		local path = nil
-		local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)		
+		local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)
 		return fs.pathToAbsolute(target)
 	else
 		return nil
@@ -141,7 +141,7 @@ function private.fileContentsMatch(path1, path2)
 	--------------------------------------------------------------------------------
 	local file2, err = io.open(path2,"rb")
 	if err then log.wf("Unable to read file: %s", path2); return false; end
-	
+
 	--------------------------------------------------------------------------------
 	-- Compare line by line:
 	--------------------------------------------------------------------------------
@@ -248,7 +248,7 @@ end
 --  * `batch`		- The table of batch commands to be executed.
 --  * `sourcePath`	- The source file.
 --  * `targetPath`	- The target path.
--- 
+--
 -- Returns:
 --  * None
 function private.copyFiles(batch, sourcePath, targetPath)
@@ -289,8 +289,8 @@ end
 -- Returns:
 --  * `true` if successful, otherwise `false`
 function private.updateHacksShortcuts(install)
-	
-	if not mod.supported() then	
+
+	if not mod.supported() then
 		dialog.webviewAlert(mod._manger.webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
 		mod._manger.refresh()
 		return false
@@ -370,15 +370,15 @@ function private.updateFCPXCommands(enable, silently)
 		else
 			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
-		
+
 		local whichWebview = mod._manger.webview
 		if whichWebview == nil then
 			whichWebview = mod._setup.webview
 		end
-			
-		dialog.webviewAlert(whichWebview, function(result) 
+
+		dialog.webviewAlert(whichWebview, function(result)
 			if result == i18n("yes") then
-			
+
 				--------------------------------------------------------------------------------
 				-- Let's do it!
 				--------------------------------------------------------------------------------
@@ -392,32 +392,32 @@ function private.updateFCPXCommands(enable, silently)
 				if running and not fcp:restart() then
 					--------------------------------------------------------------------------------
 					-- Failed to restart Final Cut Pro:
-					--------------------------------------------------------------------------------					
-					dialog.webviewAlert(whichWebview, function() 
-						--------------------------------------------------------------------------------					
+					--------------------------------------------------------------------------------
+					dialog.webviewAlert(whichWebview, function()
+						--------------------------------------------------------------------------------
 						-- Refresh the Preferences Panel and/or Move to next Setup Screen:
-						--------------------------------------------------------------------------------									
-						if mod._manger then 
+						--------------------------------------------------------------------------------
+						if mod._manger then
 							mod._manger.refresh()
-						end		
+						end
 						if mod.setup then
 							mod.setup.nextPanel()
 						end
-					end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")				
+					end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")
 				end
-				
+
 			end
-			--------------------------------------------------------------------------------					
+			--------------------------------------------------------------------------------
 			-- Refresh the Preferences Panel and/or Move to next Setup Screen:
-			--------------------------------------------------------------------------------									
-			if mod._manger then 
-				mod._manger.refresh()	
+			--------------------------------------------------------------------------------
+			if mod._manger then
+				mod._manger.refresh()
 			end
 			if mod.setup then
 				mod.setup.nextPanel()
 			end
-		end, prompt, i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))	
-		
+		end, prompt, i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))
+
 	end
 
 end
@@ -431,8 +431,8 @@ end
 --
 -- Returns:
 --  * None
-function private.applyShortcut(id, cmd)	
-	local shortcuts = fcp:getCommandShortcuts(id)	
+function private.applyShortcut(id, cmd)
+	local shortcuts = fcp:getCommandShortcuts(id)
 	if shortcuts ~= nil then
 		cmd:setShortcuts(shortcuts)
 	end
@@ -553,7 +553,7 @@ mod.outdated = mod.supported:AND(mod.working:NOT()):AND(mod.installed:NOT()):AND
 --- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX shortcuts are active.
-mod.active = prop.FALSE()	
+mod.active = prop.FALSE()
 
 --- plugins.finalcutpro.hacks.shortcuts.requiresActivation <cp.prop: boolean; read-only>
 --- Constant
@@ -578,13 +578,13 @@ mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
 			-- Got to restart to reset shortcuts.
 			--------------------------------------------------------------------------------
 			mod.active(false)
-			
+
 			--------------------------------------------------------------------------------
 			-- Delete all shortcuts:
 			--------------------------------------------------------------------------------
 			local groupIDs = commands.groupIds()
 			for _, groupID in ipairs(groupIDs) do
-  
+
 				local group = commands.group(groupID)
 				local cmds = group:getAll()
 
@@ -592,12 +592,12 @@ mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
 					cmd:deleteShortcuts()
 				end
 			end
-			
+
 			--------------------------------------------------------------------------------
 			-- Load Shortcuts from file:
 			--------------------------------------------------------------------------------
 			commands.loadFromFile(mod._shortcuts.DEFAULT_SHORTCUTS)
-							
+
 		end
 	end
 )
@@ -625,7 +625,7 @@ end, true)
 ---
 --- Returns:
 ---  * None
-function mod.update()	
+function mod.update()
 	mod.installed:update()
 	mod.uninstalled:update()
 	mod.onboardingRequired:update()
@@ -647,7 +647,7 @@ function mod.refresh()
 		mod.active(true)
 	end
 end
-	
+
 --- plugins.finalcutpro.hacks.shortcuts.init() -> none
 --- Function
 --- Initialises the module.
@@ -673,18 +673,18 @@ function mod.init(deps, env)
 	config.watch({
 		reset = function() mod.uninstall() end,
 	})
-	
+
 	--------------------------------------------------------------------------------
 	-- Cache the last Command Set Path:
 	--------------------------------------------------------------------------------
 	mod.lastCommandSetPath = fcp:getActiveCommandSetPath()
-	
+
 	--------------------------------------------------------------------------------
 	-- Refresh Shortcuts if Preferences is Updated:
 	--------------------------------------------------------------------------------
 	fcp:watch({
-		preferences = function()		
-			local activeCommandSetPath = fcp:getActiveCommandSetPath()						
+		preferences = function()
+			local activeCommandSetPath = fcp:getActiveCommandSetPath()
 			if mod.lastCommandSetPath ~= fcp:getActiveCommandSetPath() then
 				--------------------------------------------------------------------------------
 				-- Refreshing Hacks Shortcuts:
@@ -695,13 +695,13 @@ function mod.init(deps, env)
 			end
 		end,
 	})
-	
+
 	--------------------------------------------------------------------------------
 	-- Refresh Shortcuts if Command Editor is Closed:
 	--------------------------------------------------------------------------------
 	fcp:commandEditor():watch({
-		close 	= 	function() 
-						--log.df("Updating Hacks Shortcuts due to Command Editor closing.") 
+		close 	= 	function()
+						--log.df("Updating Hacks Shortcuts due to Command Editor closing.")
 						mod.refresh()
 					end
 	})
@@ -713,7 +713,7 @@ function mod.init(deps, env)
 
 	--------------------------------------------------------------------------------
 	-- Create the Setup Panel:
-	--------------------------------------------------------------------------------	
+	--------------------------------------------------------------------------------
 	mod.panel = mod.setup.panel.new("hacksShortcuts", 50)
 		:addIcon(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"))
 		:addParagraph(i18n("commandSetText"), true)
@@ -732,11 +732,11 @@ function mod.init(deps, env)
 				mod.onboardingRequired(false)
 				mod.setup.nextPanel()
 			end,
-		})	
-	if mod.onboardingRequired() then 
+		})
+	if mod.onboardingRequired() then
 		mod.setup.addPanel(mod.panel)
 	end
-	
+
 	return mod
 end
 
@@ -749,7 +749,7 @@ local plugin = {
 	id				= "finalcutpro.hacks.shortcuts",
 	group			= "finalcutpro",
 	dependencies	= {
-		["core.menu.top"] 									= "top",
+		["finalcutpro.menu.top"] 									= "top",
 		["finalcutpro.commands"]							= "fcpxCmds",
 		["finalcutpro.preferences.app"]						= "prefs",
 		["core.setup"] 										= "setup",
@@ -768,7 +768,7 @@ function plugin.init(deps, env)
 	mod._setup = deps.setup
 	mod._shortcuts = deps.shortcuts
 	mod._manger = deps.shortcuts._manager
-		
+
 	--------------------------------------------------------------------------------
 	-- Add the menu item to the top section:
 	--------------------------------------------------------------------------------
@@ -809,7 +809,7 @@ function plugin.init(deps, env)
 	return mod.init(deps, env)
 end
 
-function plugin.postInit(deps, env)		
+function plugin.postInit(deps, env)
 	mod.update()
 end
 

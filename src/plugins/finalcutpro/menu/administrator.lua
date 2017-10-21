@@ -24,7 +24,7 @@ local fcp						= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 					= 5000
-local PREFERENCES_PRIORITY		= 25
+local PREFERENCES_PRIORITY		= 7
 local SETTING 					= "menubarAdministratorEnabled"
 
 --------------------------------------------------------------------------------

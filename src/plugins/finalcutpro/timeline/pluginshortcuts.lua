@@ -196,7 +196,7 @@ function plugin.init(deps)
 	mod._actionmanager = deps.actionmanager
 
 	local menu = deps.menu:addMenu(PRIORITY, function()
-		if deps.shortcuts and deps.shortcuts.active() then
+		if deps.shortcuts then -- and deps.shortcuts.active() then
 			return i18n("pluginShortcuts")
 		end
 	end)

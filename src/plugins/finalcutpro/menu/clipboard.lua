@@ -22,7 +22,7 @@ local fcp						= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 					= 2500
-local PREFERENCES_PRIORITY		= 26
+local PREFERENCES_PRIORITY		= 5
 local SETTING 					= "menubarClipboardEnabled"
 
 --------------------------------------------------------------------------------

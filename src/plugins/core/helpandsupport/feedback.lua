@@ -52,7 +52,7 @@ local plugin = {
 	id				= "core.helpandsupport.feedback",
 	group			= "core",
 	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
+		["core.menu.helpandsupport.commandpost"]	= "helpandsupport",
 		["core.commands.global"] 		= "global",
 	}
 }

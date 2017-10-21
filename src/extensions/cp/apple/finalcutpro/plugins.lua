@@ -269,7 +269,7 @@ end
 ---
 --- Notes:
 ---  * getMotionTheme("~/Movies/Motion Templates.localized/Effects.localized/3065D03D-92D7-4FD9-B472-E524B87B5012.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.moef")
-function getMotionTheme(filename)
+local function getMotionTheme(filename)
 	-- if not firstTheme then
 	-- 	return nil
 	-- end
@@ -345,6 +345,7 @@ local function getPluginName(path, pluginExt, language)
 	return nil, nil, nil
 end
 
+mod._getMotionTheme = getMotionTheme
 mod._getPluginName = getPluginName
 
 -- cp.apple.finalcutpro.plugins:scanPluginsDirectory(language, path, filter) -> boolean

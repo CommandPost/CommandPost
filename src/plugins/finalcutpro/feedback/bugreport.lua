@@ -368,7 +368,7 @@ local plugin = {
 	id				= "finalcutpro.feedback.bugreport",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.menu.support"] 	= "menu",
+		["finalcutpro.menu.helpandsupport.finalcutpro"] 	= "menu",
 		["core.commands.global"] 		= "global",
 	}
 }

@@ -1,19 +1,19 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                       H E L P   &   S U P P O R T                          --
+--      M O B I L E   N O T I F I C A T I O N S   M E N U   S E C T I O N     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.menu.helpandsupport ===
+--- === plugins.core.menu.helpandsupport.commandpost ===
 ---
---- The 'Help & Support' menu section.
+--- The Help & Support > CommandPost menu section.
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 8888888.1
+local PRIORITY = 10
 
 --------------------------------------------------------------------------------
 --
@@ -21,10 +21,10 @@ local PRIORITY = 8888888.1
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.support",
-	group			= "finalcutpro",
+	id				= "core.menu.helpandsupport.commandpost",
+	group			= "core",
 	dependencies	= {
-		["core.menu.bottom"] = "bottom",
+		["core.menu.helpandsupport"] = "helpandsupport"
 	}
 }
 
@@ -32,11 +32,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	local section = dependencies.bottom
-
-		:addSection(PRIORITY + 0.1)
-			:addMenu(0, function() return i18n("finalCutPro") end)
-		return section
+	return dependencies.helpandsupport:addMenu(PRIORITY, function() return i18n("appName") end)
 end
 
 return plugin

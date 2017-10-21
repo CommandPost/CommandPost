@@ -24,7 +24,7 @@ local plugin = {
 function plugin.init(deps, env)
 
 	deps.bottom
-	
+
 		:addItem(10, function()
 			return { title = string.upper(i18n("settings")) .. ":", disabled = true }
 		end)

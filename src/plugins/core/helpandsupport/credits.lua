@@ -29,9 +29,9 @@ local PRIORITY 			= 3
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.helpandsupport.credits.openCredits() -> nil
+--- plugins.core.helpandsupport.credits.show() -> nil
 --- Function
---- Opens CommandPost Credits Window
+--- Opens the CommandPost Credits in a browser
 ---
 --- Parameters:
 ---  * None
@@ -39,7 +39,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	hs.openAbout()
+	os.execute('open "http://help.commandpost.io/getting_started/credits/"')
 end
 
 --------------------------------------------------------------------------------
@@ -51,8 +51,8 @@ local plugin = {
 	id				= "core.helpandsupport.credits",
 	group			= "core",
 	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
-		["core.commands.global"] 		= "global",
+		["core.menu.helpandsupport.commandpost"]	= "helpandsupport",
+		["core.commands.global"] 					= "global",
 	}
 }
 
