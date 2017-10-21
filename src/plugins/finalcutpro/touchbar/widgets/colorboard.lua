@@ -18,7 +18,9 @@ local log				= require("hs.logger").new("colorWidget")
 local canvas   			= require("hs.canvas")
 local eventtap			= require("hs.eventtap")
 local screen   			= require("hs.screen")
+local styledtext		= require("hs.styledtext")
 local window   			= require("hs.window")
+local timer				= require("hs.timer")
 
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
@@ -31,6 +33,11 @@ local tools				= require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+mod.updateInterval = 0.5
+
+mod._doubleTap = {}
+mod._updateCallbacks = {}
 
 local function getBrightness(aspect)
 	if aspect == "global" then
@@ -62,7 +69,7 @@ local function calculateColor(pct, angle)
 	end
 
 	local negative = false
-	if angle and pct < 0 then
+	if pct and angle and pct < 0 then
 		negative = true
 	end
 
@@ -82,26 +89,109 @@ local function getWidgetText(id, aspect)
 
 	local puckTitle = {
 		[1] = "Global",
-		[2] = "Shadows",
-		[3] = "Midtones",
-		[4] = "Highlights",
+		[2] = "Low",
+		[3] = "Mid",
+		[4] = "High",
 	}
 
+	local spanStyle = [[<span style="font-family: -apple-system; font-size: 12px; color: #FFFFFF;">]]
 	if aspect == "*" then
 		local selectedPanel = colorBoard:selectedPanel()
 		if selectedPanel then
 			if aspectTitle[selectedPanel] and puckTitle[puckID] then
-				widgetText = aspectTitle[selectedPanel] .. ": " .. puckTitle[puckID]
-			else
-				log.ef("Something went wrong")
+				widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. aspectTitle[selectedPanel] .. ": </strong>" .. puckTitle[puckID] .. "</span>")
 			end
 		else
-			widgetText = puckTitle[puckID]
+			widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. puckTitle[puckID] .. ":</strong> </span>")
 		end
 	else
-		widgetText = aspectTitle[aspect] .. ": " .. puckTitle[puckID]
+		widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. aspectTitle[aspect] .. ":</strong> </span>") .. puckTitle[puckID]
 	end
+
 	return widgetText
+end
+
+local function updateCanvas(widgetCanvas, id, aspect, property)
+
+	local colorBoard = fcp:colorBoard()
+
+	if colorBoard:isShowing() == false then
+		widgetCanvas.negative.action = "skip"
+		widgetCanvas.arc.action = "skip"
+		widgetCanvas.info.action = "skip"
+		widgetCanvas.circle.action = "skip"
+	else
+		if colorBoard:selectedPanel() == aspect then
+			local pct = colorBoard:getPercentage(aspect, property)
+			local angle	= colorBoard:getAngle(aspect, property)
+
+			local brightness, solidColor, fillColor, negative = calculateColor(pct, angle)
+
+			widgetCanvas.circle.action = "strokeAndFill"
+			if solidColor then
+				widgetCanvas.circle.strokeColor = solidColor
+				widgetCanvas.arc.strokeColor = solidColor
+				widgetCanvas.arc.fillColor = solidColor
+			end
+			widgetCanvas.circle.fillColor = fillColor
+
+			if negative then
+				widgetCanvas.negative.action = "strokeAndFill"
+			else
+				widgetCanvas.negative.action = "skip"
+			end
+
+			if colorBoard:selectedPanel() == "color" and aspect == "*" then
+				widgetCanvas.arc.action = "strokeAndFill"
+			else
+				widgetCanvas.arc.action = "skip"
+			end
+
+			widgetCanvas.info.action = "strokeAndFill"
+			if pct then
+				widgetCanvas.info.text = pct .. "%"
+			else
+				widgetCanvas.info.text = ""
+			end
+
+			widgetCanvas.text.text = getWidgetText(id, aspect)
+		end
+	end
+
+end
+
+mod._timer = timer.new(mod.updateInterval, function()
+	if fcp:isRunning() and fcp:isFrontmost() and fcp:colorBoard():isShowing() then
+		for i, v in pairs(mod._updateCallbacks) do
+			v()
+		end
+	end
+end)
+
+--- plugins.finalcutpro.touchbar.widgets.colorboard.start() -> nil
+--- Function
+--- Stops the Timer.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.start()
+	mod._timer:start()
+end
+
+--- plugins.finalcutpro.touchbar.widgets.colorboard.stop() -> nil
+--- Function
+--- Stops the Timer.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.stop()
+	mod._timer:stop()
 end
 
 local function puckWidget(id, aspect, property)
@@ -193,15 +283,58 @@ local function puckWidget(id, aspect, property)
 	}
 
 	--------------------------------------------------------------------------------
+	-- Text:
+	--------------------------------------------------------------------------------
+	local textValue = value .. "%" or ""
+	widgetCanvas[#widgetCanvas + 1] = {
+		id = "info",
+		frame = { h = 30, w = 120, x = 0, y = 6 },
+		text = textValue,
+		textAlignment = "right",
+		textColor = { white = 1.0 },
+		textSize = 12,
+		type = "text",
+	}
+
+	--------------------------------------------------------------------------------
 	-- Touch Events:
 	--------------------------------------------------------------------------------
 	widgetCanvas:canvasMouseEvents(true, true, false, true)
 		:mouseCallback(function(o,m,i,x,y)
 
 			--------------------------------------------------------------------------------
-			-- Update Text Value:
+			-- Stop the timer:
 			--------------------------------------------------------------------------------
-			widgetCanvas.text.text = getWidgetText(id, aspect)
+			mod.stop()
+
+			--------------------------------------------------------------------------------
+			-- Detect Double Taps:
+			--------------------------------------------------------------------------------
+			local skipMaths = false
+			if m == "mouseDown" then
+				if mod._doubleTap[id] == true then
+					--------------------------------------------------------------------------------
+					-- Reset Puck:
+					--------------------------------------------------------------------------------
+					mod._doubleTap[id] = false
+					colorBoard:applyPercentage(aspect, property, 0)
+
+					local defaultValues = {
+						["global"] = 110,
+						["shadows"] = 180,
+						["midtones"] = 215,
+						["highlights"] = 250,
+					}
+
+					colorBoard:applyAngle(aspect, property, defaultValues[property])
+					skipMaths = true
+				else
+					mod._doubleTap[id] = true
+				end
+				timer.doAfter(eventtap.doubleClickInterval(), function()
+					mod._doubleTap[id] = false
+				end)
+			end
 
 			--------------------------------------------------------------------------------
 			-- Show the Color Board if it's hidden:
@@ -225,52 +358,59 @@ local function puckWidget(id, aspect, property)
 			if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
 				shiftPressed = true
 			end
+			local controlPressed = false
+			if mods['ctrl'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['capslock'] and not mods['fn'] then
+				controlPressed = true
+			end
 
+			--------------------------------------------------------------------------------
+			-- Do the maths:
+			--------------------------------------------------------------------------------
 			if shiftPressed then
-				x = x * 3.6
+				x = x * 2.4
 			else
-				x = (x - 50) * 2
+				if controlPressed then
+					x = (x-75) * 1.333
+				else
+					x = (x-75) * 0.75
+				end
 			end
 
 			--------------------------------------------------------------------------------
 			-- Update UI:
 			--------------------------------------------------------------------------------
-			local pct = colorBoard:getPercentage(aspect, property)
-			local angle	= colorBoard:getAngle(aspect, property)
-
-			local brightness, solidColor, fillColor, negative = calculateColor(pct, angle)
-
-			if solidColor then
-				widgetCanvas.circle.strokeColor = solidColor
-				widgetCanvas.arc.strokeColor = solidColor
-				widgetCanvas.arc.fillColor = solidColor
-			end
-			widgetCanvas.circle.fillColor = fillColor
-
-			if negative then
-				widgetCanvas.negative.action = "strokeAndFill"
-			else
-				widgetCanvas.negative.action = "skip"
-			end
-
-			if colorBoard:selectedPanel() == "color" and aspect == "*" then
-				widgetCanvas.arc.action = "strokeAndFill"
-			else
-				widgetCanvas.arc.action = "skip"
-			end
+			updateCanvas(o, id, aspect, property)
 
 			--------------------------------------------------------------------------------
 			-- Perform Action:
 			--------------------------------------------------------------------------------
-			if m == "mouseDown" or m == "mouseMove" then
-				if shiftPressed then
-					colorBoard:applyAngle(aspect, property, x)
-				else
-					colorBoard:applyPercentage(aspect, property, x)
+			if not skipMaths then
+				if m == "mouseDown" or m == "mouseMove" then
+					if shiftPressed then
+						colorBoard:applyAngle(aspect, property, x)
+					else
+						colorBoard:applyPercentage(aspect, property, x)
+					end
+				elseif m == "mouseUp" then
 				end
-			elseif m == "mouseUp" then
 			end
+
+			--------------------------------------------------------------------------------
+			-- Start the timer:
+			--------------------------------------------------------------------------------
+			mod.start()
+
 	end)
+
+	--------------------------------------------------------------------------------
+	-- Add update callback to timer:
+	--------------------------------------------------------------------------------
+	mod._updateCallbacks[#mod._updateCallbacks + 1] = function() updateCanvas(widgetCanvas, id, aspect, property) end
+
+	--------------------------------------------------------------------------------
+	-- Update the Canvas:
+	--------------------------------------------------------------------------------
+	updateCanvas(widgetCanvas, id, aspect, property)
 
 	return touchbar.item.newCanvas(widgetCanvas, id):canvasClickColor{ alpha = 0.0 }
 
@@ -345,14 +485,20 @@ end
 ---  * None
 function mod.init(deps)
 
+	--------------------------------------------------------------------------------
+	-- Color Board Group:
+	--------------------------------------------------------------------------------
 	local params = {
 		group = "fcpx",
-		text = "Color Board",
-		subText = "Color Board Panel Toggle Button & Puck Controls.",
+		text = "Color Board (Grouped)",
+		subText = "Color Board Panel Toggle Button & 4 x Puck Controls.",
 		item = groupPuck("colorBoardGroup"),
 	}
 	deps.manager.widgets:new("colorBoardGroup", params)
 
+	--------------------------------------------------------------------------------
+	-- Active Puck Controls:
+	--------------------------------------------------------------------------------
 	local params = {
 		group = "fcpx",
 		text = "Color Board Puck 1",
@@ -385,6 +531,111 @@ function mod.init(deps)
 	}
 	deps.manager.widgets:new("colorBoardPuck4", params)
 
+	--------------------------------------------------------------------------------
+	-- Color Panel:
+	--------------------------------------------------------------------------------
+	local params = {
+		group = "fcpx",
+		text = "Color Board Color Puck 1",
+		subText = "Allows you to the Color Panel of the Color Board.",
+		item = puckWidget("colorBoardColorPuck1", "color", "global"),
+	}
+	deps.manager.widgets:new("colorBoardColorPuck1", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Color Puck 2",
+		subText = "Allows you to the Color Panel of the Color Board.",
+		item = puckWidget("colorBoardColorPuck2", "color", "shadows"),
+	}
+	deps.manager.widgets:new("colorBoardColorPuck2", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Color Puck 3",
+		subText = "Allows you to the Color Panel of the Color Board.",
+		item = puckWidget("colorBoardColorPuck3", "color", "midtones"),
+	}
+	deps.manager.widgets:new("colorBoardColorPuck3", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Color Puck 4",
+		subText = "Allows you to the Color Panel of the Color Board.",
+		item = puckWidget("colorBoardColorPuck4", "color", "highlights"),
+	}
+	deps.manager.widgets:new("colorBoardColorPuck4", params)
+
+	--------------------------------------------------------------------------------
+	-- Saturation Panel:
+	--------------------------------------------------------------------------------
+	local params = {
+		group = "fcpx",
+		text = "Color Board Saturation Puck 1",
+		subText = "Allows you to the Saturation Panel of the Color Board.",
+		item = puckWidget("colorBoardSaturationPuck1", "saturation", "global"),
+	}
+	deps.manager.widgets:new("colorBoardSaturationPuck1", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Saturation Puck 2",
+		subText = "Allows you to the Saturation Panel of the Color Board.",
+		item = puckWidget("colorBoardSaturationPuck2", "saturation", "shadows"),
+	}
+	deps.manager.widgets:new("colorBoardSaturationPuck2", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Saturation Puck 3",
+		subText = "Allows you to the Saturation Panel of the Color Board.",
+		item = puckWidget("colorBoardSaturationPuck3", "saturation", "midtones"),
+	}
+	deps.manager.widgets:new("colorBoardSaturationPuck3", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Saturation Puck 4",
+		subText = "Allows you to the Saturation Panel of the Color Board.",
+		item = puckWidget("colorBoardSaturationPuck4", "saturation", "highlights"),
+	}
+	deps.manager.widgets:new("colorBoardSaturationPuck4", params)
+
+	--------------------------------------------------------------------------------
+	-- Exposure Panel:
+	--------------------------------------------------------------------------------
+	local params = {
+		group = "fcpx",
+		text = "Color Board Exposure Puck 1",
+		subText = "Allows you to the Exposure Panel of the Color Board.",
+		item = puckWidget("colorBoardExposurePuck1", "exposure", "global"),
+	}
+	deps.manager.widgets:new("colorBoardExposurePuck1", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Exposure Puck 2",
+		subText = "Allows you to the Exposure Panel of the Color Board.",
+		item = puckWidget("colorBoardExposurePuck2", "exposure", "shadows"),
+	}
+	deps.manager.widgets:new("colorBoardExposurePuck2", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Exposure Puck 3",
+		subText = "Allows you to the Exposure Panel of the Color Board.",
+		item = puckWidget("colorBoardExposurePuck3", "exposure", "midtones"),
+	}
+	deps.manager.widgets:new("colorBoardExposurePuck3", params)
+
+	local params = {
+		group = "fcpx",
+		text = "Color Board Exposure Puck 4",
+		subText = "Allows you to the Exposure Panel of the Color Board.",
+		item = puckWidget("colorBoardExposurePuck4", "exposure", "highlights"),
+	}
+	deps.manager.widgets:new("colorBoardExposurePuck4", params)
+
 	return mod
 
 end
@@ -406,6 +657,17 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+	--------------------------------------------------------------------------------
+	-- Only enable the timer when Final Cut Pro is active:
+	--------------------------------------------------------------------------------
+	fcp:watch({
+		active		= mod.start,
+		inactive	= mod.stop,
+		show		= mod.start,
+		hide		= mod.stop,
+	})
+
 	return mod.init(deps)
 end
 
