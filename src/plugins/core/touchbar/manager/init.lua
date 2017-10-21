@@ -1077,10 +1077,13 @@ function plugin.postInit(deps, env)
 						id		= id,
 					}
 
-					choices:add(params.text)
-						:subText(i18n("touchBarWidget") .. ": " .. params.subText)
-						:params(action)
-						:id(id)
+					if params.group == groupID then
+						choices:add(params.text)
+							:subText(i18n("touchBarWidget") .. ": " .. params.subText)
+							:params(action)
+							:id(id)
+					end
+
 				end
 				return choices
 			end)

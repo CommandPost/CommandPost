@@ -227,33 +227,22 @@ local function touchBarPanelCallback(id, params)
 		elseif params["type"] == "updateAction" then
 
 			--------------------------------------------------------------------------------
-			-- Restrict Allowed Handlers for Activator to current group (and global):
-			--------------------------------------------------------------------------------
-			local allowedHandlers = {}
-			local handlerIds = mod._actionmanager.handlerIds()
-			for _,id in pairs(handlerIds) do
-				local handlerTable = tools.split(id, "_")
-				if handlerTable[1] == params["groupID"] or handlerTable[1] == "global" then
-					table.insert(allowedHandlers, id)
-				end
-			end
-			mod.activator:allowHandlers(table.unpack(allowedHandlers))
-
-			--------------------------------------------------------------------------------
 			-- Setup Activator Callback:
 			--------------------------------------------------------------------------------
-			mod.activator:onActivate(function(handler, action, text)
-					local actionTitle = text
-					local handlerID = handler:id()
+			local groupID = params["groupID"]
+			mod.activator[groupID]:onActivate(function(handler, action, text)
+				local actionTitle = text
+				local handlerID = handler:id()
 
-					mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
-					mod._manager.refresh()
-				end)
+				mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+				mod._manager.refresh()
+			end)
 
 			--------------------------------------------------------------------------------
 			-- Show Activator:
 			--------------------------------------------------------------------------------
-			mod.activator:show()
+			mod.activator[groupID]:show()
+
 		elseif params["type"] == "clearAction" then
 			mod._tb.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
 			mod._manager.refresh()
@@ -504,13 +493,6 @@ function mod.init(deps, env)
 	mod._env			= env
 
 	--------------------------------------------------------------------------------
-	-- Setup Activator:
-	--------------------------------------------------------------------------------
-	mod.activator = deps.actionmanager.getActivator("touchbarPreferences")
-	mod.activator:enableAllHandlers()
-	mod.activator:preloadChoices()
-
-	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------
 	mod._panel 			=  deps.manager.addPanel({
@@ -609,6 +591,37 @@ function plugin.init(deps, env)
 	if deps.tb.supported() then
 		return mod.init(deps, env)
 	end
+end
+
+function plugin.postInit(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Setup Activators:
+	--------------------------------------------------------------------------------
+	mod.activator = {}
+	local handlerIds = mod._actionmanager.handlerIds()
+	for _,groupID in ipairs(commands.groupIds()) do
+
+		--------------------------------------------------------------------------------
+		-- Create new Activator:
+		--------------------------------------------------------------------------------
+		mod.activator[groupID] = deps.actionmanager.getActivator("touchbarPreferences" .. groupID)
+
+		--------------------------------------------------------------------------------
+		-- Restrict Allowed Handlers for Activator to current group (and global):
+		--------------------------------------------------------------------------------
+		local allowedHandlers = {}
+		for _,id in pairs(handlerIds) do
+			local handlerTable = tools.split(id, "_")
+			if handlerTable[1] == groupID or handlerTable[1] == "global" then
+				table.insert(allowedHandlers, id)
+			end
+		end
+		mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
+		mod.activator[groupID]:preloadChoices()
+
+	end
+
 end
 
 return plugin
