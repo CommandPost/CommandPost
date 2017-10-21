@@ -22,7 +22,7 @@ local fcp						= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 					= 2001
-local PREFERENCES_PRIORITY		= 29
+local PREFERENCES_PRIORITY		= 4
 local SETTING 					= "menubarViewerEnabled"
 
 --------------------------------------------------------------------------------

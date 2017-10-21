@@ -57,7 +57,7 @@ function mod.changeFinalCutProLanguage(language)
 		dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
 		return false
 	end
-	
+
 	return true
 end
 
@@ -94,7 +94,7 @@ local plugin = {
 	id = "finalcutpro.language",
 	group = "finalcutpro",
 	dependencies = {
-		["core.menu.top"]			= "top",
+		["finalcutpro.menu.top"]			= "top",
 	}
 }
 

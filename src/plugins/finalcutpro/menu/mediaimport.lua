@@ -22,7 +22,7 @@ local fcp						= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local PRIORITY 					= 1000
-local PREFERENCES_PRIORITY		= 27
+local PREFERENCES_PRIORITY		= 2
 local SETTING 					= "menubarMediaImportEnabled"
 
 --------------------------------------------------------------------------------

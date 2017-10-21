@@ -57,7 +57,7 @@ ColorBoard.aspect.exposure				= {
 	global								= { puck = id "ExpGlobalPuck", pct = id "ExpGlobalPct"},
 	shadows 							= { puck = id "ExpShadowsPuck", pct = id "ExpShadowsPct"},
 	midtones							= { puck = id "ExpMidtonesPuck", pct = id "ExpMidtonesPct"},
-	highlights							= { puck = id "ExpHighlightsPuck", pct = id "ExpHighlighsPct"}
+	highlights							= { puck = id "ExpHighlightsPuck", pct = id "ExpHighlightsPct"}
 }
 ColorBoard.currentAspect = "*"
 
@@ -240,6 +240,44 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
+function ColorBoard:togglePanel()
+	self:show()
+
+	local colorAspect = self:getAspect("color")
+	local saturationAspect = self:getAspect("saturation")
+	local exposureAspect = self:getAspect("exposure")
+
+	local ui = self:colorSatExpUI()
+	if colorAspect and ui and ui[colorAspect.id]:value() == 1 then
+		ui[saturationAspect.id]:doPress()
+	elseif saturationAspect and ui and ui[saturationAspect.id]:value() == 1 then
+		ui[exposureAspect.id]:doPress()
+	elseif exposureAspect and ui and ui[exposureAspect.id]:value() == 1 then
+		ui[colorAspect.id]:doPress()
+	end
+	return self
+end
+
+-- TODO: Add documentation
+function ColorBoard:selectedPanel()
+
+	local colorAspect = self:getAspect("color")
+	local saturationAspect = self:getAspect("saturation")
+	local exposureAspect = self:getAspect("exposure")
+
+	local ui = self:colorSatExpUI()
+	if colorAspect and ui and ui[colorAspect.id]:value() == 1 then
+		return "color"
+	elseif saturationAspect and ui and ui[saturationAspect.id]:value() == 1 then
+		return "saturation"
+	elseif exposureAspect and ui and ui[exposureAspect.id]:value() == 1 then
+		return "exposure"
+	end
+	return nil
+
+end
+
+-- TODO: Add documentation
 function ColorBoard:showPanel(aspect)
 	self:show()
 	aspect = self:getAspect(aspect)
@@ -361,7 +399,7 @@ end
 function ColorBoard:getAngle(aspect, property, value)
 	local angleUI = self:aspectPropertyPanelUI(aspect, property, 'angle')
 	if angleUI then
-		local value = angleUI:getAttributeValue("AXValue")
+		local value = angleUI:attributeValue("AXValue")
 		if value ~= nil then return tonumber(value) end
 	end
 	return nil

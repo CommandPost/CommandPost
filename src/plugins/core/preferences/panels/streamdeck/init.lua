@@ -16,6 +16,7 @@
 local log										= require("hs.logger").new("prefsStreamDeck")
 
 local application								= require("hs.application")
+local canvas									= require("hs.canvas")
 local dialog									= require("hs.dialog")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
@@ -220,24 +221,11 @@ local function streamDeckPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			mod._sd.updateIcon(params["buttonID"], params["groupID"], params["icon"])
 		elseif params["type"] == "updateAction" then
-
-			--------------------------------------------------------------------------------
-			-- Restrict Allowed Handlers for Activator to current group (and global):
-			--------------------------------------------------------------------------------
-			local allowedHandlers = {}
-			local handlerIds = mod._actionmanager.handlerIds()
-			for _,id in pairs(handlerIds) do
-				local handlerTable = tools.split(id, "_")
-				if handlerTable[1] == params["groupID"] or handlerTable[1] == "global" then
-					table.insert(allowedHandlers, id)
-				end
-			end
-			mod.activator:allowHandlers(table.unpack(allowedHandlers))
-
 			--------------------------------------------------------------------------------
 			-- Setup Activator Callback:
 			--------------------------------------------------------------------------------
-			mod.activator:onActivate(function(handler, action, text)
+			local groupID = params["groupID"]
+			mod.activator[groupID]:onActivate(function(handler, action, text)
 					local actionTitle = text
 					local handlerID = handler:id()
 
@@ -248,7 +236,7 @@ local function streamDeckPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Show Activator:
 			--------------------------------------------------------------------------------
-			mod.activator:show()
+			mod.activator[groupID]:show()
 		elseif params["type"] == "clearAction" then
 			mod._sd.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
 			mod._manager.refresh()
@@ -267,12 +255,45 @@ local function streamDeckPanelCallback(id, params)
 				local path = tools.unescape(string.sub(result["1"], 8))
 				local icon = image.imageFromPath(path)
 				if icon then
-					local encodedIcon = icon:encodeAsURLString()
-					if encodedIcon then
-						mod._sd.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
-						mod._manager.refresh()
+					if string.sub(path, 1, string.len(mod.defaultIconPath)) == mod.defaultIconPath then
+						--------------------------------------------------------------------------------
+						-- One of our pre-supplied images:
+						--------------------------------------------------------------------------------
+						local originalImage = image.imageFromPath(path):template(false)
+						if originalImage then
+
+							local a = canvas.new{x = 0, y = 0, w = 512, h = 512 }
+							a[1] = {
+							  type="image",
+							  image = originalImage,
+							  frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+							}
+							a[2] = {
+							  type = "rectangle",
+							  action = "fill",
+							  fillColor = { white = 1 },
+							  compositeRule = "sourceAtop",
+							}
+							local newImage = a:imageFromCanvas()
+
+							local encodedIcon = newImage:encodeAsURLString()
+
+							mod._sd.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+							mod._manager.refresh()
+						else
+							failed = true
+						end
 					else
-						failed = true
+						--------------------------------------------------------------------------------
+						-- An image from outside the pre-supplied image path:
+						--------------------------------------------------------------------------------
+						local encodedIcon = icon:encodeAsURLString()
+						if encodedIcon then
+							mod._sd.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+							mod._manager.refresh()
+						else
+							failed = true
+						end
 					end
 				else
 					failed = true
@@ -427,6 +448,37 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 	return mod.init(deps, env)
+end
+
+function plugin.postInit(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Setup Activators:
+	--------------------------------------------------------------------------------
+	mod.activator = {}
+	local handlerIds = mod._actionmanager.handlerIds()
+	for _,groupID in ipairs(commands.groupIds()) do
+
+		--------------------------------------------------------------------------------
+		-- Create new Activator:
+		--------------------------------------------------------------------------------
+		mod.activator[groupID] = deps.actionmanager.getActivator("streamDeckPreferences" .. groupID)
+
+		--------------------------------------------------------------------------------
+		-- Restrict Allowed Handlers for Activator to current group (and global):
+		--------------------------------------------------------------------------------
+		local allowedHandlers = {}
+		for _,id in pairs(handlerIds) do
+			local handlerTable = tools.split(id, "_")
+			if handlerTable[1] == groupID or handlerTable[1] == "global" then
+				table.insert(allowedHandlers, id)
+			end
+		end
+		mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
+		mod.activator[groupID]:preloadChoices()
+
+	end
+
 end
 
 return plugin

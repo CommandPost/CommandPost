@@ -13,7 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("hud")
+local logName									= "hud"
+local log										= require("hs.logger").new(logName)
 
 local application								= require("hs.application")
 local chooser									= require("hs.chooser")
@@ -453,37 +454,57 @@ end
 function hud.updateVisibility()
 	if hud.enabled() then
 
-		local fcpRunning 	= fcp:isRunning()
-		local fcpFrontmost 	= fcp:isFrontmost()
-		
-		if not fcpRunning and not fcpFrontmost then
+		--------------------------------------------------------------------------------
+		-- Only show if Final Cut Pro is running...
+		--------------------------------------------------------------------------------
+		if not fcp:isRunning() then
+			--log.df("Final Cut Pro is not running.")
 			hud.hide()
 			return
 		end
 
-		local fullscreenWindowShowing = fcp:fullScreenWindow():isShowing()
-		local commandEditorShowing = fcp:commandEditor():isShowing()
-
-		if fullscreenWindowShowing or commandEditorShowing then
-			hud.hide()
-			return
-		end
-		
-		if fcpRunning and fcpFrontmost then
-			hud.show()
-		else		
-			
-			local focusedWindow = window.focusedWindow()		
-			local mouseButtons = mouse.getButtons()
-			
-			if mouseButtons and mouseButtons["left"] and mouseButtons["left"] == true and focusedWindow and focusedWindow:application():pid() == config.processID then
+		--------------------------------------------------------------------------------
+		-- Only show if Final Cut Pro or HUD is Frontmost.
+		--------------------------------------------------------------------------------
+		if not fcp:isFrontmost() then
+			local focusedWindow = window.focusedWindow()
+			if focusedWindow and focusedWindow:application() and focusedWindow:application():pid() == config.processID then
+				--log.df("CommandPost is frontmost")
 				hud.show()
+				return
 			else
+				--log.df("Final Cut Pro is not frontmost.")
 				hud.hide()
-			end				
-
+				return
+			end
 		end
+
+		--------------------------------------------------------------------------------
+		-- Don't show the HUD when in fullscreen mode or Command Editor is visible:
+		--------------------------------------------------------------------------------
+		if fcp:fullScreenWindow():isShowing() or fcp:commandEditor():isShowing() then
+			--log.df("Final Cut Pro Command Editor or Full Screen Playback is visible.")
+			hud.hide()
+			return
+		end
+
+		--------------------------------------------------------------------------------
+		-- Show the HUD:
+		--------------------------------------------------------------------------------
+		--log.df("Let's show the HUD")
+		hud.show()
+
+	else
+		--------------------------------------------------------------------------------
+		-- Hide the HUD:
+		--------------------------------------------------------------------------------
+		hud.hide()
 	end
+
+	--------------------------------------------------------------------------------
+	-- Just to be safe...
+	--------------------------------------------------------------------------------
+	timer.doAfter(0.5, hud.updateVisibility)
 end
 
 --- plugins.finalcutpro.hud.show() -> none
@@ -498,6 +519,19 @@ end
 function hud.show()
 	if not hud.webview then
 		hud.new()
+	end
+
+	--------------------------------------------------------------------------------
+	-- CommandPost Window Watcher:
+	--------------------------------------------------------------------------------
+	if not hud._cpWatcher then
+		hud._cpWatcher = window.filter.new(function(window)
+				return window and window:application():bundleID() == hs.processInfo.bundleID
+		end, logName)
+			:subscribe(window.filter.windowUnfocused, function()
+				--log.df("CommandPost Lost Focus!")
+				hud.updateVisibility()
+			end)
 	end
 
 	hud.webview:show()
@@ -516,6 +550,10 @@ end
 function hud.hide()
 	if hud.webview then
 		hud.webview:hide()
+	end
+	if hud._cpWatcher then
+		--log.df("CommandPost Watcher Destroyed")
+		hud._cpWatcher = nil
 	end
 end
 
@@ -581,14 +619,14 @@ function hud.assignButton(button)
 	--------------------------------------------------------------------------------
 	-- Restrict Allowed Handlers for Activator to current group:
 	--------------------------------------------------------------------------------
-	local allowedHandlers = {}			
-	local handlerIds = hud.actionmanager.handlerIds()			
-	for _,id in pairs(handlerIds) do				
+	local allowedHandlers = {}
+	local handlerIds = hud.actionmanager.handlerIds()
+	for _,id in pairs(handlerIds) do
 		local handlerTable = tools.split(id, "_")
 		if handlerTable[1] == GROUP then
 			table.insert(allowedHandlers, id)
-		end										
-	end					
+		end
+	end
 	activator:allowHandlers(table.unpack(allowedHandlers))
 
 	activator:show()
@@ -713,6 +751,8 @@ function plugin.init(deps, env)
 	fcp:watch({
 		active		= hud.updateVisibility,
 		inactive	= hud.updateVisibility,
+		show		= hud.updateVisibility,
+		hide		= hud.updateVisibility,
 		preferences = hud.refresh,
 	})
 
