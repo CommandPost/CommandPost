@@ -34,7 +34,7 @@ local tools				= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.updateInterval = 0.5
+mod.updateInterval = 2
 
 mod._doubleTap = {}
 mod._updateCallbacks = {}
@@ -398,7 +398,9 @@ local function puckWidget(id, aspect, property)
 			--------------------------------------------------------------------------------
 			-- Start the timer:
 			--------------------------------------------------------------------------------
-			mod.start()
+			timer.doAfter(2, function()
+				mod.start()
+			end)
 
 	end)
 
