@@ -57,7 +57,7 @@ ColorBoard.aspect.exposure				= {
 	global								= { puck = id "ExpGlobalPuck", pct = id "ExpGlobalPct"},
 	shadows 							= { puck = id "ExpShadowsPuck", pct = id "ExpShadowsPct"},
 	midtones							= { puck = id "ExpMidtonesPuck", pct = id "ExpMidtonesPct"},
-	highlights							= { puck = id "ExpHighlightsPuck", pct = id "ExpHighlighsPct"}
+	highlights							= { puck = id "ExpHighlightsPuck", pct = id "ExpHighlightsPct"}
 }
 ColorBoard.currentAspect = "*"
 
