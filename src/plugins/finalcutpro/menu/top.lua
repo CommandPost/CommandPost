@@ -21,7 +21,7 @@ local fcp						= require("cp.apple.finalcutpro")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 					= 1
+local PRIORITY 					= 1.1
 local PREFERENCES_PRIORITY		= 1
 local SETTING 					= "menubarFinalCutProTopEnabled"
 
