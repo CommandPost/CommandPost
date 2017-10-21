@@ -121,7 +121,7 @@ local function updateCanvas(widgetCanvas, id, aspect, property)
 		widgetCanvas.info.action = "skip"
 		widgetCanvas.circle.action = "skip"
 	else
-		if colorBoard:selectedPanel() == aspect then
+		if colorBoard:selectedPanel() == aspect or aspect == "*" then
 			local pct = colorBoard:getPercentage(aspect, property)
 			local angle	= colorBoard:getAngle(aspect, property)
 
