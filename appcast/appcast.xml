@@ -4,7 +4,65 @@
 		<title>CommandPost Changelog</title>
 		<link>https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
-		<language>en</language>		
+		<language>en</language>
+		<item>
+			<title>Version 1.0.0-beta.11</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Interface is now darker and streamlined (issue #717)</li>
+				<li>Added support for Elgato Stream Deck (issue #758)</li>
+				<li>Added Customisable Touch Bar Buttons (issue #748)</li>
+				<li>Added Touch Bar Widget Support (issue #796)</li>
+				<li>Added Final Cut Pro timeline OPTION+Zoom scrolling support for Magic Mouse (issue #691)</li>
+				<li>Added Shortcut Key for Provide Feedback (issue #750)</li>
+				<li>Added "Set all shortcuts to None" button to Shortcuts Preferences (issue #766)</li>
+				<li>Improved Dialog Boxes & File Prompts (issue #709)</li>
+				<li>Generator & Title shortcuts speed improvements (issue #757)</li>
+				<li>Moved Virtual Touch Bar Preferences into Touch Bar Preferences Panel (issue #791)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed Watch Folder Inconsistencies in High Sierra (issue #807)</li>
+				<li>Fixed bug with triggering plugin shortcuts (issue #743)</li>
+				<li>Fixed Documentation Bug (issue #741)</li>
+				<li>Pressing "Unassigned" button in HUD doesn't work (issue #752)</li>
+				<li>Fixed Virtual Touch Bar Bugs (issue #747)</li>
+				<li>Improved `cp.tools.getVRAMSize()` (issue #759)</li>
+				<li>Added error message if adding Finder Tag fails (issue #760)</li>
+				<li>"Control CommandPost Shortcuts within Final Cut Pro" fails to detect Final Cut Pro (issue #742)</li>
+				<li>Fixed Plugin Scanner Errors (issue #744)</li>
+				<li>Fixed Plugin Shortcuts labels in Final Cut Pro (issue #764)</li>
+				<li>Fixed Icons on Setup Screens (issue #774)</li>
+				<li>Fixed Color Board Mouse Puck Commands (issue #775)</li>
+				<li>Fixed bug where correct effect category was not being selected before trying to activate it (issue #780)</li>
+				<li>Fixed Various Console Bugs (issue #777)</li>
+				<li>Shortcuts still work when Final Cut Pro is not active (issue #778)</li>
+				<li>Fixed Bugs with Touch Bar plugin (issue #788)</li>
+				<li>Fixed Bugs in Choosers (issue #792)</li>
+				<li>Fixed issues with Console not listing all appropriate actions (issue #787)</li>
+				<li>Fixed Touch Bar Icon Picker Path Bug #798</li>
+				<li>Added a "Clear" button to "Select" in Touch Bar Preferences Panel (issue #801)</li>
+				<li>Console Menubar incorrectly added to system menubar (issue #789)</li>
+				<li>Fixed "Menu Items" Section in Console bug (issue #818)</li>
+				<li>Fix for Preferences Textbox that don't display full text (issue #816)</li>
+				<li>Fixed Bug in Plugin Shortcuts (issue #804)</li>
+				<li>HUD sometimes remains open even when Final Cut Pro has lost focus (issue #810)</li>
+				<li>Added Labels in Touch Bar Widgets for Colour Board Controls (issue #817)</li>
+				<li>Touch Bar & Stream Deck Preferences Activators Incorrectly Handle Widgets (issue #826)</li>
+				<li>Color Board Touch Bar Widget Improvements (issue #828)</li>
+				<li>Fixed bug in Transition Shortcuts (issue #832)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Sun, 22 Oct 2017 21:13:01 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.11/CommandPost_1.0.0-beta.11.dmg"
+				sparkle:version="1.0.0-beta.11"
+				sparkle:dsaSignature="MC4CFQDH9EnY3w1/urUq7avhLbYf34fDFAIVAMYcHUjzUo/U6R1NFJvIa6CPuvtG"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
 		<item>
 			<title>Version 1.0.0-beta.10</title>
 			<description><![CDATA[
@@ -15,7 +73,7 @@
 				<li>Added Touch Device Extension</li>
 				<li>Add an uninstall script that removes Preferences, Caches & Saved Keyboard Shortcuts (issue #733)</li></ul>
 
-				<h2>Bug Fixes:</h2>							
+				<h2>Bug Fixes:</h2>
 				<ul><li>Final Cut Pro no longer requires a restart when toggling timecode overlays</li>
 				<li>Fixed bugs in Batch Export Tool (issue #694)</li>
 				<li>Prevent multiple CommandPost Feedback Forms from opening at once (issue #714)</li>
@@ -28,7 +86,7 @@
 				<li>Moved Scan Final Cut Pro Button in Preferences to Help & Support Menubar (issue #731)</li>
 				<li>Disappearing Browser when Triggering Actions (issue #734)</li>
 				<li>Email the results of the "Scan Final Cut Pro" checker (issue #732)</li>
-				<li>Bug accessing icons in High Sierra (issue #738)</li></ul>								
+				<li>Bug accessing icons in High Sierra (issue #738)</li></ul>
 			]]>
 			</description>
 			<pubDate>Sat, 19 Aug 2017 07:32:41 +1000</pubDate>
@@ -38,7 +96,7 @@
 				type="application/octet-stream"
 			/>
 			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
-		</item>		
+		</item>
 		<item>
 			<title>Version 1.0.0-beta.9</title>
 			<description><![CDATA[
