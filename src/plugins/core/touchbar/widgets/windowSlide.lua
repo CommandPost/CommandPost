@@ -19,6 +19,9 @@ local screen   			= require("hs.screen")
 
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
+local semver			= require("semver")
+local tools 			= require("cp.tools")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -132,7 +135,9 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod.init(deps)
+	if semver(tools.macOSVersion()) >= semver("10.12.1") then
+		return mod.init(deps)
+	end
 end
 
 return plugin
