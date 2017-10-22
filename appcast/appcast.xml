@@ -8,6 +8,11 @@
 		<item>
 			<title>Version 1.0.0-beta.11</title>
 			<description><![CDATA[
+
+				<h2>IMPORTANT:</h2>
+				We've accidentally broken support for macOS 10.11. Doh!
+				Please stick with Beta 10 if you're on macOS 10.11 and we'll try and fix ASAP.
+
 				<h2>New Features:</h2>
 				<ul><li>Interface is now darker and streamlined (issue #717)</li>
 				<li>Added support for Elgato Stream Deck (issue #758)</li>
