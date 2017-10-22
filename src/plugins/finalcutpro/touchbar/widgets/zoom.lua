@@ -158,7 +158,9 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod.init(deps)
+	if touchbar.supported() then
+		return mod.init(deps)
+	end
 end
 
 return plugin

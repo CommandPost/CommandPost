@@ -25,9 +25,6 @@ local timer				= require("hs.timer")
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 local fcp				= require("cp.apple.finalcutpro")
-local tools				= require("cp.tools")
-
-local semver			= require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -661,7 +658,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	if semver(tools.macOSVersion()) >= semver("10.12.1") then
+	if touchbar.supported() then
 		--------------------------------------------------------------------------------
 		-- Only enable the timer when Final Cut Pro is active:
 		--------------------------------------------------------------------------------
