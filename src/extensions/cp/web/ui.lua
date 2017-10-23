@@ -160,6 +160,7 @@ end
 ---  * The `params` table has the following supported fields:
 ---  ** `value`		- a string (or function) with the value of the checkbox. If not specified, the title is used.
 ---  ** `checked`	- a boolean (or function) set to `true` or `false`, depending on if the checkbox is checked.
+---  ** `disabled`	- a boolean (or function) set to `true` or `false`, depending on if the checkbox is disabled.
 ---  ** `id`		- (optional) a string (or function) with the unique ID for the checkbox.
 ---  ** `name`		- (optional) a unique name for the checkbox field.
 ---  ** `class`		- (optional) the CSS class list.
@@ -167,6 +168,7 @@ function ui.checkbox(params)
 
 	if params then
 		local checked = function() return evaluate(params.checked) and "checked" or nil end
+		local disabled = function() return evaluate(params.disabled) and "disabled" or nil end
 		return html.input {
 			type = "checkbox",
 			name = params.name,
@@ -174,6 +176,7 @@ function ui.checkbox(params)
 			value = params.value,
 			checked,
 			class = params.class,
+			disabled,
 		}
 	else
 		return ""
@@ -271,19 +274,19 @@ end
 
 -- Reads the file at the specified path as binary and returns it as a BASE64 stream of text.
 local function imageToBase64(pathToImage)
-	
+
 	if not tools.doesFileExist(pathToImage) then
 		log.ef("imageToBase64 failed - could not find file: %s", pathToImage)
-		return ""				
+		return ""
 	end
 
 	local tempImage = image.imageFromPath(pathToImage)
 	if tempImage then
 		return tempImage:encodeAsURLString(false, "PNG")
 	end
-	
+
 	return ""
-	
+
 end
 
 --- cp.web.ui.img(params) -> cp.web.html
@@ -309,7 +312,7 @@ function ui.img(params)
 	if srcFile then
 		params.src = imageToBase64(srcFile)
 	end
-	
+
 	return html.img(params)
 end
 

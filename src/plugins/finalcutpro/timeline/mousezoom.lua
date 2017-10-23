@@ -33,7 +33,8 @@ local timer								= require("hs.timer")
 ---------------------------------
 -- 3rd PARTY EXTENSIONS:
 ---------------------------------
-local touchdevice						= require("hs._asm.undocumented.touchdevice")
+local semver							= require("semver")
+local touchdevice
 
 ---------------------------------
 -- COMMANDPOST EXTENSIONS:
@@ -504,6 +505,34 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+	--------------------------------------------------------------------------------
+	-- Version Check:
+	--------------------------------------------------------------------------------
+	local disabled = false
+	local osVersion = tools.macOSVersion()
+	if semver(osVersion) >= semver("10.12") then
+		touchdevice = require("hs._asm.undocumented.touchdevice")
+	else
+		--------------------------------------------------------------------------------
+		-- Setup Menubar Preferences Panel:
+		--------------------------------------------------------------------------------
+		if deps.prefs.panel then
+			deps.prefs.panel
+				--------------------------------------------------------------------------------
+				-- Add Preferences Checkbox:
+				--------------------------------------------------------------------------------
+				:addCheckbox(101,
+				{
+					label = i18n("allowZoomingWithOptionKey") .. " (requires macOS 10.12 or greater)",
+					onchange = function() end,
+					checked = false,
+					disabled = true,
+				}
+			)
+		end
+		return false
+	end
 
 	--------------------------------------------------------------------------------
 	-- Cache Scroll Direction:
