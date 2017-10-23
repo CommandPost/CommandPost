@@ -594,34 +594,34 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps, env)
+	if deps.tb.supported() then
+		--------------------------------------------------------------------------------
+		-- Setup Activators:
+		--------------------------------------------------------------------------------
+		mod.activator = {}
+		local handlerIds = mod._actionmanager.handlerIds()
+		for _,groupID in ipairs(commands.groupIds()) do
 
-	--------------------------------------------------------------------------------
-	-- Setup Activators:
-	--------------------------------------------------------------------------------
-	mod.activator = {}
-	local handlerIds = mod._actionmanager.handlerIds()
-	for _,groupID in ipairs(commands.groupIds()) do
+			--------------------------------------------------------------------------------
+			-- Create new Activator:
+			--------------------------------------------------------------------------------
+			mod.activator[groupID] = deps.actionmanager.getActivator("touchbarPreferences" .. groupID)
 
-		--------------------------------------------------------------------------------
-		-- Create new Activator:
-		--------------------------------------------------------------------------------
-		mod.activator[groupID] = deps.actionmanager.getActivator("touchbarPreferences" .. groupID)
-
-		--------------------------------------------------------------------------------
-		-- Restrict Allowed Handlers for Activator to current group (and global):
-		--------------------------------------------------------------------------------
-		local allowedHandlers = {}
-		for _,id in pairs(handlerIds) do
-			local handlerTable = tools.split(id, "_")
-			if handlerTable[1] == groupID or handlerTable[1] == "global" then
-				table.insert(allowedHandlers, id)
+			--------------------------------------------------------------------------------
+			-- Restrict Allowed Handlers for Activator to current group (and global):
+			--------------------------------------------------------------------------------
+			local allowedHandlers = {}
+			for _,id in pairs(handlerIds) do
+				local handlerTable = tools.split(id, "_")
+				if handlerTable[1] == groupID or handlerTable[1] == "global" then
+					table.insert(allowedHandlers, id)
+				end
 			end
+			mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
+			mod.activator[groupID]:preloadChoices()
+
 		end
-		mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
-		mod.activator[groupID]:preloadChoices()
-
 	end
-
 end
 
 return plugin
