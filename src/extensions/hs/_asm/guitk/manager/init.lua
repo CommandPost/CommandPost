@@ -1,13 +1,53 @@
 --- === hs._asm.guitk.manager ===
 ---
---- Element placement managers for use with `hs._asm.guitk` windows.
+--- This submodule provides a content manager for an `hs._asm.guitk` window that allows the placement and managerment of multiple gui elements.
+---
+--- A manager can also act as an element to another manager -- this allows for the grouping of elements as single units for display or other purposes. See `hs._asm.guitk.element.button` for a further discussion of this when using the radio button style.
+---
+--- Elements can be added and managed through the methods of this module.  There are also metamethods which allow you to manipulate the elements in an array like fashion. Each element is represented as a table and can be accessed from the manager as if it were an array. Valid index numbers range from 1 to `#hs._asm.guitk.manager:elements()` when getting an element or its attributes, or 1 to `#hs._asm.guitk.manager:elements() + 1` when replacing or assigning a new element. To access the userdata representing a specific element you can use the following syntax: `hs._asm.guitk.manager[#]._element` or `hs._asm.guitk.manager(#)` where # is the index number or the string `id` specified in the `frameDetails` attribute described below.
+---
+--- The specific attributes of each element will depend upon the type of element (see `hs._asm.guitk.element`) and the following manager specific attributes:
+---
+--- * `_element`     - A read-only attribute whos value is the userdata representing the gui element itself.
+--- * `_fittingSize` - A read-only size-table specifying the default height and width for the element. Not all elements have a default height or width and the value for one or more of these keys may be 0.
+--- * `_type`        - A read-only string indicating the userdata name for the element.
+--- * `frameDetails` - A table containing positioning and identification information about the element.  All of it's keys are optional and are as follows:
+---   * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.
+---   * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.
+---   * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.
+---   * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.
+---   * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by the `_fittingSize` attribute. If the default height is 0, then this *must* be set or the element will be effectively invisible.
+---   * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by the `_fittingSize` attribute. If the default width is 0, then this *must* be set or the element will be effectively invisible.
+---   * `id` - A string specifying an identifier which can be used to reference this element through the manager's metamethods without requiring knowledge of the element's index position.
+---
+---   * Note that `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.
+---
+--- * When assigning a new element to the manager through the metamethods, you can assign the userdata directly or by using the table format described above. For example:
+---
+--- ~~~lua
+--- manager = hs._asm.guitk.manager.new()
+--- manager[1] = hs._asm.guitk.element.button.new(...)  -- direct assignment of the element
+--- manager[2] = {                                      -- as a table
+---   _element = hs._asm.guitk.element.button.new(...), -- the only time that `_element` can be assigned a value
+---   frameDetails = { cX = "50%", cY = "50%" },
+---   id = "secondButton", -- the only time that `id` can be set outside of the `frameDetails` table
+---   -- other button specific attributes as defined in `hs._asm.guitk.element.button`
+--- }
+--- ~~~
+---
+--- You can remove an existing element by setting its value to nil, e.g. `manager[1] = nil`.
 
 local USERDATA_TAG = "hs._asm.guitk.manager"
 local module       = require(USERDATA_TAG .. ".internal")
 local managerMT    = hs.getObjectMetatable(USERDATA_TAG)
 
+local commonViewMethods = require(USERDATA_TAG:gsub("manager", "element") .. "._view")
+
 local fnutils = require("hs.fnutils")
 local inspect = require("hs.inspect")
+
+require("hs.canvas")
+local canvasMT = hs.getObjectMetatable("hs.canvas")
 
 local basePath = package.searchpath(USERDATA_TAG, package.path)
 if basePath then
@@ -77,13 +117,14 @@ end
 wrappedElementMT.__pairs = function(self)
     local obj = wrappedElementMT.__e[self]
     local manager, element = obj.manager, obj.element
-    local propertiesList = getmetatable(obj.element)["_propertyList"] or {}
+    local keys = {}
+    for i,v in ipairs(getmetatable(element)["_propertyList"] or {}) do table.insert(keys, v) end
     local builtin = { "_element", "_fittingSize", "frameDetails", "_type" }
-    table.move(builtin, 1, #builtin, #propertiesList + 1, propertiesList)
+    table.move(builtin, 1, #builtin, #keys + 1, keys)
 
     return function(_, k)
         local v = nil
-        k = table.remove(propertiesList)
+        k = table.remove(keys)
         if k then v = self[k] end
         return k, v
     end, self, nil
@@ -97,8 +138,71 @@ end
 
 wrappedElementMT.__len = function(self) return 0 end
 
+    -- if requested, merge in common view methods and update properties table
+--     if managerMT._inheritView then
+    local propertieslist = managerMT._propertyList or {}
+    for k,v in pairs(commonViewMethods) do
+        if not managerMT[k] then
+            if type(v) == "function" then
+                if fnutils.contains(commonViewMethods._propertyList, k) then
+                    table.insert(propertieslist, k)
+                end
+            end
+        end
+    end
+    managerMT._propertyList = propertieslist
+-- --         managerMT._inheritView  = nil -- can't clear because this is checked in __index since these methods only "exist" if the manager is an element of another manager
+--     end
+
 -- Public interface ------------------------------------------------------
 
+-- wrap canvas so it's size related methods work with the manager
+local canvasSize = canvasMT.size
+local canvasTL   = canvasMT.topLeft
+canvasMT.size = function(self, ...)
+    local parent = commonViewMethods._nextResponder(self)
+    if parent and getmetatable(parent) == managerMT then
+        local args = table.pack(...)
+        if args.n == 0 then
+            local ans = parent:elementFrameDetails(self)
+            return { h = ans.h, w = ans.w }
+        else
+            return parent:elementFrameDetails(self, ...)
+        end
+    else
+        return canvasSize(self, ...)
+    end
+end
+
+canvasMT.topLeft = function(self, ...)
+    local parent = commonViewMethods._nextResponder(self)
+    if parent and getmetatable(parent) == managerMT then
+        local args = table.pack(...)
+        if args.n == 0 then
+            local ans = parent:elementFrameDetails(self)
+            return { x = ans.x, y = ans.y }
+        else
+            return parent:elementFrameDetails(self, ...)
+        end
+    else
+        return canvasTL(self, ...)
+    end
+end
+
+--- hs._asm.guitk.manager:elementPropertyList(element) -> managerObject
+--- Method
+--- Return a table of key-value pairs containing the properties for the specified element
+---
+--- Parameters:
+---  * `element` - the element userdata to create the property list for
+---
+--- Returns:
+---  * a table containing key-value pairs describing the properties of the element.
+---
+--- Notes:
+---  * The table returned by this method does not support modifying the property values as can be done through the `hs._asm.guitk.manager` metamethods (see the top-level documentation for `hs._asm.guitk.manager`).
+---
+---  * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:propertyList()`
 managerMT.elementPropertyList = function(self, element, ...)
     local args = table.pack(...)
     if args.n == 0 then
@@ -115,6 +219,20 @@ managerMT.elementPropertyList = function(self, element, ...)
     end
 end
 
+--- hs._asm.guitk.manager:elementRemoveFromManager(element) -> managerObject
+--- Method
+--- Remove the specified element from the manager
+---
+--- Parameters:
+---  * `element` - the element userdata to remove from this manager
+---
+--- Returns:
+---  * the manager object
+---
+--- Notes:
+---  * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:removeFromManager()`
+---
+---  * See also [hs._asm.guitk.manager:remove](#remove)
 managerMT.elementRemoveFromManager = function(self, element, ...)
     local idx
     for i,v in ipairs(self:elements()) do
@@ -130,13 +248,26 @@ managerMT.elementRemoveFromManager = function(self, element, ...)
     end
 end
 
+--- hs._asm.guitk.manager:elementId(element, [id]) -> managerObject | string
+--- Method
+--- Get or set the string identifier for the specified element.
+---
+--- Parameters:
+---  * `element` - the element userdata to get or set the id of.
+---  * `id`      - an optional string, or explicit nil to remove, to change the element's identifier to
+---
+--- Returns:
+---  * If an argument is provided, the manager object; otherwise the current value.
+---
+--- Notes:
+---  * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:id([id])`
 managerMT.elementId = function(self, element, ...)
     local args = table.pack(...)
     local details = self:elementFrameDetails(element)
     if args.n == 0 then
         return details.id
-    elseif args.n == 1 and type(args[1]) == "string" then
-        details.id = args[1]
+    elseif args.n == 1 and (type(args[1]) == "string" or type(args[1]) == "nil") then
+        details.id = args[1] or false
         return self:elementFrameDetails(element, details)
     else
         error("expected a single string as an argument", 2)
@@ -156,9 +287,18 @@ managerMT.__index = function(self, key)
             return wrappedElementWithMT(self, element)
         end
 
+        local parentObj = self:_nextResponder()
+-- check to see if we are an element of another manager
+--         if managerMT._inheritView then
+            if getmetatable(parentObj) == managerMT then
+                local fn = commonViewMethods[key]
+                if fn then return fn end
+            end
+--         end
+
 -- pass through method requests that aren't defined for the manager to the guitk object itself
         if type(key) == "string" then
-            local parentObj = self:_nextResponder()
+--             local parentObj = self:_nextResponder()
             if parentObj then
                 local parentFN = parentObj[key]
                 if parentFN then

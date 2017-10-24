@@ -1,0 +1,1278 @@
+[
+  {
+    "Constant" : [
+
+    ],
+    "submodules" : [
+
+    ],
+    "Function" : [
+
+    ],
+    "Variable" : [
+
+    ],
+    "stripped_doc" : [
+
+    ],
+    "Deprecated" : [
+
+    ],
+    "desc" : "This submodule provides a content manager for an `hs._asm.guitk` window that allows the placement and managerment of multiple gui elements.",
+    "type" : "Module",
+    "Constructor" : [
+      {
+        "doc" : "Create a new manager object for use with a `hs._asm.guitk` window or another manager.\n\nParameters:\n * `frame` - an optional frame table specifying the initial position and size of the manager.\n\nReturns:\n * the manager object or nil if there was an error creating the manager.\n\nNotes:\n * In most cases, setting the frame is not necessary and will be overridden when the manager is assigned to a `hs._asm.guitk` window or another manager. It may be useful, however, when assigning elements to an unattached manager so that proper positioning can be worked out before final assignment of the new manager to it's parent object.",
+        "stripped_doc" : [
+          "Create a new manager object for use with a `hs._asm.guitk` window or another manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager.new([frame]) -> managerObject | nil",
+        "name" : "new",
+        "notes" : [
+          " * In most cases, setting the frame is not necessary and will be overridden when the manager is assigned to a `hs._asm.guitk` window or another manager. It may be useful, however, when assigning elements to an unattached manager so that proper positioning can be worked out before final assignment of the new manager to it's parent object."
+        ],
+        "signature" : "hs._asm.guitk.manager.new([frame]) -> managerObject | nil",
+        "type" : "Constructor",
+        "returns" : [
+          " * the manager object or nil if there was an error creating the manager.",
+          ""
+        ],
+        "desc" : "Create a new manager object for use with a `hs._asm.guitk` window or another manager.",
+        "parameters" : [
+          " * `frame` - an optional frame table specifying the initial position and size of the manager.",
+          ""
+        ]
+      }
+    ],
+    "doc" : "This submodule provides a content manager for an `hs._asm.guitk` window that allows the placement and managerment of multiple gui elements.\n\nA manager can also act as an element to another manager -- this allows for the grouping of elements as single units for display or other purposes. See `hs._asm.guitk.element.button` for a further discussion of this when using the radio button style.\n\nElements can be added and managed through the methods of this module.  There are also metamethods which allow you to manipulate the elements in an array like fashion. Each element is represented as a table and can be accessed from the manager as if it were an array. Valid index numbers range from 1 to `#hs._asm.guitk.manager:elements()` when getting an element or its attributes, or 1 to `#hs._asm.guitk.manager:elements() + 1` when replacing or assigning a new element. To access the userdata representing a specific element you can use the following syntax: `hs._asm.guitk.manager[#]._element` or `hs._asm.guitk.manager(#)` where # is the index number or the string `id` specified in the `frameDetails` attribute described below.\n\nThe specific attributes of each element will depend upon the type of element (see `hs._asm.guitk.element`) and the following manager specific attributes:\n\n* `_element`     - A read-only attribute whos value is the userdata representing the gui element itself.\n* `_fittingSize` - A read-only size-table specifying the default height and width for the element. Not all elements have a default height or width and the value for one or more of these keys may be 0.\n* `_type`        - A read-only string indicating the userdata name for the element.\n* `frameDetails` - A table containing positioning and identification information about the element.  All of it's keys are optional and are as follows:\n  * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.\n  * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.\n  * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.\n  * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.\n  * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by the `_fittingSize` attribute. If the default height is 0, then this *must* be set or the element will be effectively invisible.\n  * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by the `_fittingSize` attribute. If the default width is 0, then this *must* be set or the element will be effectively invisible.\n  * `id` - A string specifying an identifier which can be used to reference this element through the manager's metamethods without requiring knowledge of the element's index position.\n\n  * Note that `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.\n\n* When assigning a new element to the manager through the metamethods, you can assign the userdata directly or by using the table format described above. For example:\n\n~~~lua\nmanager = hs._asm.guitk.manager.new()\nmanager[1] = hs._asm.guitk.element.button.new(...)  -- direct assignment of the element\nmanager[2] = {                                      -- as a table\n  _element = hs._asm.guitk.element.button.new(...), -- the only time that `_element` can be assigned a value\n  frameDetails = { cX = \"50%\", cY = \"50%\" },\n  id = \"secondButton\", -- the only time that `id` can be set outside of the `frameDetails` table\n  -- other button specific attributes as defined in `hs._asm.guitk.element.button`\n}\n~~~\n\nYou can remove an existing element by setting its value to nil, e.g. `manager[1] = nil`.",
+    "Field" : [
+
+    ],
+    "Command" : [
+
+    ],
+    "Method" : [
+      {
+        "doc" : "Return a table of key-value pairs containing the properties for the specified element\n\nParameters:\n * `element` - the element userdata to create the property list for\n\nReturns:\n * a table containing key-value pairs describing the properties of the element.\n\nNotes:\n * The table returned by this method does not support modifying the property values as can be done through the `hs._asm.guitk.manager` metamethods (see the top-level documentation for `hs._asm.guitk.manager`).\n\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:propertyList()`",
+        "stripped_doc" : [
+          "Return a table of key-value pairs containing the properties for the specified element",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementPropertyList(element) -> managerObject",
+        "name" : "elementPropertyList",
+        "notes" : [
+          " * The table returned by this method does not support modifying the property values as can be done through the `hs._asm.guitk.manager` metamethods (see the top-level documentation for `hs._asm.guitk.manager`).",
+          "",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:propertyList()`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementPropertyList(element) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing key-value pairs describing the properties of the element.",
+          ""
+        ],
+        "desc" : "Return a table of key-value pairs containing the properties for the specified element",
+        "parameters" : [
+          " * `element` - the element userdata to create the property list for",
+          ""
+        ]
+      },
+      {
+        "doc" : "Remove the specified element from the manager\n\nParameters:\n * `element` - the element userdata to remove from this manager\n\nReturns:\n * the manager object\n\nNotes:\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:removeFromManager()`\n\n * See also [hs._asm.guitk.manager:remove](#remove)",
+        "stripped_doc" : [
+          "Remove the specified element from the manager",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementRemoveFromManager(element) -> managerObject",
+        "name" : "elementRemoveFromManager",
+        "notes" : [
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:removeFromManager()`",
+          "",
+          " * See also [hs._asm.guitk.manager:remove](#remove)"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementRemoveFromManager(element) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Remove the specified element from the manager",
+        "parameters" : [
+          " * `element` - the element userdata to remove from this manager",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the string identifier for the specified element.\n\nParameters:\n * `element` - the element userdata to get or set the id of.\n * `id`      - an optional string, or explicit nil to remove, to change the element's identifier to\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:id([id])`",
+        "stripped_doc" : [
+          "Get or set the string identifier for the specified element.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementId(element, [id]) -> managerObject | string",
+        "name" : "elementId",
+        "notes" : [
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:id([id])`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementId(element, [id]) -> managerObject | string",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the string identifier for the specified element.",
+        "parameters" : [
+          " * `element` - the element userdata to get or set the id of.",
+          " * `id`      - an optional string, or explicit nil to remove, to change the element's identifier to",
+          ""
+        ]
+      },
+      {
+        "doc" : "Enable or disable visual rectangles around element frames in the content manager which can aid in identifying frame or positioning bugs.\n\nParameters:\n * `color` - a color table (as defined in `hs.drawing.color`, boolean, or nil, specifying whether debugging frames should be displayed and if so in what color.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * Specifying `true` will enable the debugging frames with the current system color that represents the keyboard focus ring around controls.\n * Specifying `false` or `nil` will disable the debugging frames (default).\n * Specifying a color as defined by `hs.drawing.color` will display the debugging frames in the specified color.\n\n * Element frames which contain a height or width which is less than .5 points (effectively invisible) will draw an X at the center of the elements position instead of a rectangle.",
+        "stripped_doc" : [
+          "Enable or disable visual rectangles around element frames in the content manager which can aid in identifying frame or positioning bugs.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:_debugFrames([color]) -> managerObject | table | nil",
+        "name" : "_debugFrames",
+        "notes" : [
+          " * Specifying `true` will enable the debugging frames with the current system color that represents the keyboard focus ring around controls.",
+          " * Specifying `false` or `nil` will disable the debugging frames (default).",
+          " * Specifying a color as defined by `hs.drawing.color` will display the debugging frames in the specified color.",
+          "",
+          " * Element frames which contain a height or width which is less than .5 points (effectively invisible) will draw an X at the center of the elements position instead of a rectangle."
+        ],
+        "signature" : "hs._asm.guitk.manager:_debugFrames([color]) -> managerObject | table | nil",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Enable or disable visual rectangles around element frames in the content manager which can aid in identifying frame or positioning bugs.",
+        "parameters" : [
+          " * `color` - a color table (as defined in `hs.drawing.color`, boolean, or nil, specifying whether debugging frames should be displayed and if so in what color.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Recalculate the position of all elements in the manager and update them if necessary.\n\nParameters:\n * None\n\nReturns:\n * the manager object\n\nNotes:\n * This method recalculates the position of elements whose position in `frameDetails` is specified by the element center or whose position or size are specified by percentages. See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information.\n * This method is invoked automatically anytime the managers parent (usually a `hs._asm.guitk` window) is resized and you shouldn't need to invoke it manually very often. If you find that you are needing to invoke it manually on a regular basis, try to determine what the specific circumstances are and submit an issue so that it can be evaluated to determine if the situation can be detected and trigger an update automatically.\n\n* See also [hs._asm.guitk.manager:elementAutoPosition](#elementAutoPosition).",
+        "stripped_doc" : [
+          "Recalculate the position of all elements in the manager and update them if necessary.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:autoPosition() -> managerObject",
+        "name" : "autoPosition",
+        "notes" : [
+          " * This method recalculates the position of elements whose position in `frameDetails` is specified by the element center or whose position or size are specified by percentages. See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information.",
+          " * This method is invoked automatically anytime the managers parent (usually a `hs._asm.guitk` window) is resized and you shouldn't need to invoke it manually very often. If you find that you are needing to invoke it manually on a regular basis, try to determine what the specific circumstances are and submit an issue so that it can be evaluated to determine if the situation can be detected and trigger an update automatically.",
+          "",
+          "* See also [hs._asm.guitk.manager:elementAutoPosition](#elementAutoPosition)."
+        ],
+        "signature" : "hs._asm.guitk.manager:autoPosition() -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Recalculate the position of all elements in the manager and update them if necessary.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Recalculate the position of the specified element in the manager and update it if necessary.\n\nParameters:\n * `element` - the element userdata to recalculate the size and position for.\n\nReturns:\n * the manager object\n\nNotes:\n * This method recalculates the position of the element if it is defined in `framedDetails` as a percentage or by the elements center and it's size if the element size is specified as a percentage or inherits its size from the element's fitting size (see [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize).\n\n * See also [hs._asm.guitk.manager:autoPosition](#autoPosition).\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:autoPosition()`",
+        "stripped_doc" : [
+          "Recalculate the position of the specified element in the manager and update it if necessary.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementAutoPosition(element) -> managerObject",
+        "name" : "elementAutoPosition",
+        "notes" : [
+          " * This method recalculates the position of the element if it is defined in `framedDetails` as a percentage or by the elements center and it's size if the element size is specified as a percentage or inherits its size from the element's fitting size (see [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize).",
+          "",
+          " * See also [hs._asm.guitk.manager:autoPosition](#autoPosition).",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:autoPosition()`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementAutoPosition(element) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Recalculate the position of the specified element in the manager and update it if necessary.",
+        "parameters" : [
+          " * `element` - the element userdata to recalculate the size and position for.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Inserts a new element for the manager to manage.\n\nParameters:\n * `element`      - the element userdata to insert into the manager\n * `frameDetails` - an optional table containing frame details for the element as described for the [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) method.\n * `pos`          - the index position in the list of elements specifying where to insert the element.  Defaults to `#hs._asm.guitk.manager:elements() + 1`, which will insert the element at the end.\n\nReturns:\n * the manager object\n\nNotes:\n * If the frameDetails table is not provided, the elements position will default to the lower left corner of the last element added to the manager, and its size will default to the elements fitting size as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize).",
+        "stripped_doc" : [
+          "Inserts a new element for the manager to manage.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:insert(element, [frameDetails], [pos]) -> managerObject",
+        "name" : "insert",
+        "notes" : [
+          " * If the frameDetails table is not provided, the elements position will default to the lower left corner of the last element added to the manager, and its size will default to the elements fitting size as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize)."
+        ],
+        "signature" : "hs._asm.guitk.manager:insert(element, [frameDetails], [pos]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Inserts a new element for the manager to manage.",
+        "parameters" : [
+          " * `element`      - the element userdata to insert into the manager",
+          " * `frameDetails` - an optional table containing frame details for the element as described for the [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) method.",
+          " * `pos`          - the index position in the list of elements specifying where to insert the element.  Defaults to `#hs._asm.guitk.manager:elements() + 1`, which will insert the element at the end.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Remove an element from the manager as specified by its index position.\n\nParameters:\n * `pos`     - the index position in the list of elements specifying the element to remove.  Defaults to `#hs._asm.guitk.manager:elements()` (the last element)\n\nReturns:\n * the manager object\n\nNotes:\n * See also [hs._asm.guitk.manager:elementRemoveFromManager](#elementRemoveFromManager)",
+        "stripped_doc" : [
+          "Remove an element from the manager as specified by its index position.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:remove([pos]) -> managerObject",
+        "name" : "remove",
+        "notes" : [
+          " * See also [hs._asm.guitk.manager:elementRemoveFromManager](#elementRemoveFromManager)"
+        ],
+        "signature" : "hs._asm.guitk.manager:remove([pos]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Remove an element from the manager as specified by its index position.",
+        "parameters" : [
+          " * `pos`     - the index position in the list of elements specifying the element to remove.  Defaults to `#hs._asm.guitk.manager:elements()` (the last element)",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 above element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushLeft\"  - element1 will be positioned above element2 with its left side at the same `x` position of the left side of element2.\n   * \"centered\"   - element1 will be centered horizontally above element2.\n   * \"flushRight\" - element1 will be positioned above element2 with its right side at the same `x` position of the right side of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveAbove(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 above element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveAbove(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveAbove",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveAbove(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveAbove(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 above element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushLeft\"  - element1 will be positioned above element2 with its left side at the same `x` position of the left side of element2.",
+          "   * \"centered\"   - element1 will be centered horizontally above element2.",
+          "   * \"flushRight\" - element1 will be positioned above element2 with its right side at the same `x` position of the right side of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 below element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushLeft\"  - element1 will be positioned below element2 with its left side at the same `x` position of the left side of element2.\n   * \"centered\"   - element1 will be centered horizontally below element2.\n   * \"flushRight\" - element1 will be positioned below element2 with its right side at the same `x` position of the right side of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveBelow(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 below element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveBelow(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveBelow",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveBelow(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveBelow(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 below element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushLeft\"  - element1 will be positioned below element2 with its left side at the same `x` position of the left side of element2.",
+          "   * \"centered\"   - element1 will be centered horizontally below element2.",
+          "   * \"flushRight\" - element1 will be positioned below element2 with its right side at the same `x` position of the right side of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 to the left of element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushBottom\" - element1 will be positioned to the left of element2 with its top at the same `y` position of the top of element2.\n   * \"centered\"    - element1 will be centered vertically to the left of element2.\n   * \"flushTop\"    - element1 will be positioned to the left of element2 with its bottom at the same `y` position of the bottom of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveLeftOf(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 to the left of element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveLeftOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveLeftOf",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveLeftOf(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveLeftOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 to the left of element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushBottom\" - element1 will be positioned to the left of element2 with its top at the same `y` position of the top of element2.",
+          "   * \"centered\"    - element1 will be centered vertically to the left of element2.",
+          "   * \"flushTop\"    - element1 will be positioned to the left of element2 with its bottom at the same `y` position of the bottom of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 to the right of element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushBottom\" - element1 will be positioned to the right of element2 with its top at the same `y` position of the top of element2.\n   * \"centered\"    - element1 will be centered vertically to the right of element2.\n   * \"flushTop\"    - element1 will be positioned to the right of element2 with its bottom at the same `y` position of the bottom of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveRightOf(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 to the right of element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveRightOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveRightOf",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveRightOf(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveRightOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 to the right of element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushBottom\" - element1 will be positioned to the right of element2 with its top at the same `y` position of the top of element2.",
+          "   * \"centered\"    - element1 will be centered vertically to the right of element2.",
+          "   * \"flushTop\"    - element1 will be positioned to the right of element2 with its bottom at the same `y` position of the bottom of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a table with `h` and `w` keys specifying the element's fitting size as defined by macOS and the element's current properties.\n\nParameters:\n * `element` - the element userdata to get the fitting size for.\n\nReturns:\n * a table with `h` and `w` keys specifying the elements fitting size\n\nNotes:\n * The dimensions provided can be used to determine a minimum size for the element to display fully based on its current properties and may change as these change.\n * Not all elements provide one or both of these fields; in such a case, the value for the missing or unspecified field will be 0.\n * If you do not specify an elements height or width with [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails), the value returned by this method will be used instead; in cases where a specific dimension is not defined by this method, you should make sure to specify it or the element may not be visible.",
+        "stripped_doc" : [
+          "Returns a table with `h` and `w` keys specifying the element's fitting size as defined by macOS and the element's current properties.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementFittingSize(element) -> size-table",
+        "name" : "elementFittingSize",
+        "notes" : [
+          " * The dimensions provided can be used to determine a minimum size for the element to display fully based on its current properties and may change as these change.",
+          " * Not all elements provide one or both of these fields; in such a case, the value for the missing or unspecified field will be 0.",
+          " * If you do not specify an elements height or width with [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails), the value returned by this method will be used instead; in cases where a specific dimension is not defined by this method, you should make sure to specify it or the element may not be visible."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementFittingSize(element) -> size-table",
+        "type" : "Method",
+        "returns" : [
+          " * a table with `h` and `w` keys specifying the elements fitting size",
+          ""
+        ],
+        "desc" : "Returns a table with `h` and `w` keys specifying the element's fitting size as defined by macOS and the element's current properties.",
+        "parameters" : [
+          " * `element` - the element userdata to get the fitting size for.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Adjusts the size of the manager so that it is the minimum size necessary to contain all of its elements.\n\nParameters:\n * `hPad` - an optional number specifying the horizontal padding to include between the elements and the left and right of the manager's new borders. Defaults to 0.0.\n * `vPad` - an optional number specifying the vertical padding to include between the elements and the top and bottom of the manager's new borders.  Defaults to the value of `hPad`.\n\nReturns:\n * the manager object\n\nNotes:\n * If the manager is the member of another manager, this manager's size (but not top-left corner) is adjusted within its parent.\n * If the manager is assigned to a `hs._asm.guitk` window, the window's size (but not top-left corner) will be adjusted to the calculated size.",
+        "stripped_doc" : [
+          "Adjusts the size of the manager so that it is the minimum size necessary to contain all of its elements.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:sizeToFit([hPad], [vPad]) -> managerObject",
+        "name" : "sizeToFit",
+        "notes" : [
+          " * If the manager is the member of another manager, this manager's size (but not top-left corner) is adjusted within its parent.",
+          " * If the manager is assigned to a `hs._asm.guitk` window, the window's size (but not top-left corner) will be adjusted to the calculated size."
+        ],
+        "signature" : "hs._asm.guitk.manager:sizeToFit([hPad], [vPad]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Adjusts the size of the manager so that it is the minimum size necessary to contain all of its elements.",
+        "parameters" : [
+          " * `hPad` - an optional number specifying the horizontal padding to include between the elements and the left and right of the manager's new borders. Defaults to 0.0.",
+          " * `vPad` - an optional number specifying the vertical padding to include between the elements and the top and bottom of the manager's new borders.  Defaults to the value of `hPad`.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns an array containing the elements in index order currently managed by this manager.\n\nParameters:\n * None\n\nReturns:\n * a table containing the elements in index order currently managed by this manager",
+        "stripped_doc" : [
+          "Returns an array containing the elements in index order currently managed by this manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elements() -> table",
+        "name" : "elements",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.guitk.manager:elements() -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing the elements in index order currently managed by this manager"
+        ],
+        "desc" : "Returns an array containing the elements in index order currently managed by this manager.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the pass through callback for the manager.\n\nParameters:\n * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke for elements which do not have their own callbacks assigned.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * The pass through callback should expect one or two arguments and return none.\n\n * The pass through callback is designed so that elements which trigger a callback based on user interaction which do not have a specifically assigned callback can still report user interaction through a common fallback.\n * The arguments received by the pass through callback will be organized as follows:\n   * the manager userdata object\n   * a table containing the arguments provided by the elements callback itself, usually the element userdata followed by any additional arguments as defined for the element's callback function.\n\n * Note that elements which have a callback that returns a response cannot use this common pass through callback method; in such cases a specific callback must be assigned to the element directly as described in the element's documentation.",
+        "stripped_doc" : [
+          "Get or set the pass through callback for the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:passthroughCallback([fn | nil]) -> managerObject | fn | nil",
+        "name" : "passthroughCallback",
+        "notes" : [
+          " * The pass through callback should expect one or two arguments and return none.",
+          "",
+          " * The pass through callback is designed so that elements which trigger a callback based on user interaction which do not have a specifically assigned callback can still report user interaction through a common fallback.",
+          " * The arguments received by the pass through callback will be organized as follows:",
+          "   * the manager userdata object",
+          "   * a table containing the arguments provided by the elements callback itself, usually the element userdata followed by any additional arguments as defined for the element's callback function.",
+          "",
+          " * Note that elements which have a callback that returns a response cannot use this common pass through callback method; in such cases a specific callback must be assigned to the element directly as described in the element's documentation."
+        ],
+        "signature" : "hs._asm.guitk.manager:passthroughCallback([fn | nil]) -> managerObject | fn | nil",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the pass through callback for the manager.",
+        "parameters" : [
+          " * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke for elements which do not have their own callbacks assigned.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the mouse tracking callback for the manager.\n\nParameters:\n * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke when the mouse enters, exits, or moves within the manager. Specify an explicit true if you wish for mouse tracking information to be passed to the parent objects passthrough callback, if defined, instead.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * The mouse tracking callback should expect 3 arguments and return none.\n * The arguments are as follows:\n   * the manager object userdata\n   * a string specifying the type of the callback. Possible values are \"enter\", \"exit\", or \"move\"\n   * a point-table containing the coordinates within the manager of the mouse event. A point table is a table with `x` and `y` keys specifying the mouse coordinates.\n\n * By default, only mouse enter and mouse exit events will invoke the callback to reduce overhead; if you need to track mouse movement within the manager as well, see [hs._asm.guitk.manager:trackMouseMove](#trackMouseMove).",
+        "stripped_doc" : [
+          "Get or set the mouse tracking callback for the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:mouseCallback([fn | true | nil]) -> managerObject | fn | boolean",
+        "name" : "mouseCallback",
+        "notes" : [
+          " * The mouse tracking callback should expect 3 arguments and return none.",
+          " * The arguments are as follows:",
+          "   * the manager object userdata",
+          "   * a string specifying the type of the callback. Possible values are \"enter\", \"exit\", or \"move\"",
+          "   * a point-table containing the coordinates within the manager of the mouse event. A point table is a table with `x` and `y` keys specifying the mouse coordinates.",
+          "",
+          " * By default, only mouse enter and mouse exit events will invoke the callback to reduce overhead; if you need to track mouse movement within the manager as well, see [hs._asm.guitk.manager:trackMouseMove](#trackMouseMove)."
+        ],
+        "signature" : "hs._asm.guitk.manager:mouseCallback([fn | true | nil]) -> managerObject | fn | boolean",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the mouse tracking callback for the manager.",
+        "parameters" : [
+          " * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke when the mouse enters, exits, or moves within the manager. Specify an explicit true if you wish for mouse tracking information to be passed to the parent objects passthrough callback, if defined, instead.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set whether mouse tracking callbacks should include movement within the managers visible area.\n\nParameters:\n * `state` - an optional boolean, default false, specifying whether mouse movement within the manager also triggers a callback.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * [hs._asm.guitk.manager:mouseCallback](#mouseCallback) must bet set to a callback function or true for this attribute to have any effect.",
+        "stripped_doc" : [
+          "Get or set whether mouse tracking callbacks should include movement within the managers visible area.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:trackMouseMove([state]) -> managerObject | boolean",
+        "name" : "trackMouseMove",
+        "notes" : [
+          " * [hs._asm.guitk.manager:mouseCallback](#mouseCallback) must bet set to a callback function or true for this attribute to have any effect."
+        ],
+        "signature" : "hs._asm.guitk.manager:trackMouseMove([state]) -> managerObject | boolean",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set whether mouse tracking callbacks should include movement within the managers visible area.",
+        "parameters" : [
+          " * `state` - an optional boolean, default false, specifying whether mouse movement within the manager also triggers a callback.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the parent object of the manager as a userdata object.\n\nParameters:\n * None\n\nReturns:\n * the userdata object representing the managers parent, usually a `hs._asm.guitk` window, or nil if the manager has no parent or its parent is not controllable through Hammerspoon.\n\nNotes:\n * This method can be used to access the parent object of the manager. Usually this will be a `hs._asm.guitk` window object, but since a manager may also be an element of another manager, this method may return a `hs._asm.guitk.manager` object in these cases.\n * The metamethods for this module are designed so that you usually shouldn't need to access this method directly very often.\n * The name \"nextResponder\" comes from the macOS user interface internal organization and refers to the object which is further up the responder chain when determining the target for user activity.",
+        "stripped_doc" : [
+          "Returns the parent object of the manager as a userdata object.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:_nextResponder() -> userdata",
+        "name" : "_nextResponder",
+        "notes" : [
+          " * This method can be used to access the parent object of the manager. Usually this will be a `hs._asm.guitk` window object, but since a manager may also be an element of another manager, this method may return a `hs._asm.guitk.manager` object in these cases.",
+          " * The metamethods for this module are designed so that you usually shouldn't need to access this method directly very often.",
+          " * The name \"nextResponder\" comes from the macOS user interface internal organization and refers to the object which is further up the responder chain when determining the target for user activity."
+        ],
+        "signature" : "hs._asm.guitk.manager:_nextResponder() -> userdata",
+        "type" : "Method",
+        "returns" : [
+          " * the userdata object representing the managers parent, usually a `hs._asm.guitk` window, or nil if the manager has no parent or its parent is not controllable through Hammerspoon.",
+          ""
+        ],
+        "desc" : "Returns the parent object of the manager as a userdata object.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the tooltip for the manager\n\nParameters:\n * `tooltip` - a string, or nil to remove, specifying the tooltip to display when the mouse pointer hovers over the content manager\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * Tooltips are displayed when the window is active and the mouse pointer hovers over the content manager and no other element at the current mouse position has a defined tooltip.",
+        "stripped_doc" : [
+          "Get or set the tooltip for the manager",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:tooltip([tooltip]) -> managerObject | string",
+        "name" : "tooltip",
+        "notes" : [
+          " * Tooltips are displayed when the window is active and the mouse pointer hovers over the content manager and no other element at the current mouse position has a defined tooltip."
+        ],
+        "signature" : "hs._asm.guitk.manager:tooltip([tooltip]) -> managerObject | string",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the tooltip for the manager",
+        "parameters" : [
+          " * `tooltip` - a string, or nil to remove, specifying the tooltip to display when the mouse pointer hovers over the content manager",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the element userdata for the element specified.\n\nParameters:\n * `id` - a string or integer specifying which element to return.  If `id` is an integer, returns the element at the specified index position; if `id` is a string, returns the element with the specified identifier string.\n\nReturns:\n * the element userdata, or nil if no element exists in the manager at the specified index position or with the specified identifier.\n\nNotes:\n * See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information on setting an element's identifier string.",
+        "stripped_doc" : [
+          "Returns the element userdata for the element specified.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:element([id]) -> elementUserdata | nil",
+        "name" : "element",
+        "notes" : [
+          " * See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information on setting an element's identifier string."
+        ],
+        "signature" : "hs._asm.guitk.manager:element([id]) -> elementUserdata | nil",
+        "type" : "Method",
+        "returns" : [
+          " * the element userdata, or nil if no element exists in the manager at the specified index position or with the specified identifier.",
+          ""
+        ],
+        "desc" : "Returns the element userdata for the element specified.",
+        "parameters" : [
+          " * `id` - a string or integer specifying which element to return.  If `id` is an integer, returns the element at the specified index position; if `id` is a string, returns the element with the specified identifier string.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the frame details in the manager for the specified element.\n\nParameters:\n * `element` - the element to get or set the frame details for\n * `details` - an optional table specifying the details to change or set for this element. The valid key-value pairs for the table are as follows:\n   * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.\n   * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.\n   * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.\n   * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.\n   * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default height is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined height and return the the default behavior.\n   * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default width is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined width and return the the default behavior.\n   * `id` - A string specifying an identifier which can be used to reference this element with [hs._asm.guitk.manager:element](#element) without requiring knowledge of the element's index position. Specify the value as false to clear the identifier and set it to nil.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * When setting the frame details, only those fields provided will be adjusted; other fields will remain unaffected (except as noted above). The values for keys `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.\n\n * When returning the current frame details table, an additional key-value pair is included: `_effective` will be a table specifying the elements actual frame-table (a table specifying the elements position as key-value pairs specifying the top-left position with `x` and `y`, and the element size with `h` and `w`).  This is provided for reference only: if this key-value pair is included when setting the frame details with this method, it will be ignored.\n\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:frameDetails([details])`",
+        "stripped_doc" : [
+          "Get or set the frame details in the manager for the specified element.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementFrameDetails(element, [details]) -> managerObject | table",
+        "name" : "elementFrameDetails",
+        "notes" : [
+          " * When setting the frame details, only those fields provided will be adjusted; other fields will remain unaffected (except as noted above). The values for keys `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.",
+          "",
+          " * When returning the current frame details table, an additional key-value pair is included: `_effective` will be a table specifying the elements actual frame-table (a table specifying the elements position as key-value pairs specifying the top-left position with `x` and `y`, and the element size with `h` and `w`).  This is provided for reference only: if this key-value pair is included when setting the frame details with this method, it will be ignored.",
+          "",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:frameDetails([details])`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementFrameDetails(element, [details]) -> managerObject | table",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the frame details in the manager for the specified element.",
+        "parameters" : [
+          " * `element` - the element to get or set the frame details for",
+          " * `details` - an optional table specifying the details to change or set for this element. The valid key-value pairs for the table are as follows:",
+          "   * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.",
+          "   * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.",
+          "   * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.",
+          "   * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.",
+          "   * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default height is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined height and return the the default behavior.",
+          "   * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default width is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined width and return the the default behavior.",
+          "   * `id` - A string specifying an identifier which can be used to reference this element with [hs._asm.guitk.manager:element](#element) without requiring knowledge of the element's index position. Specify the value as false to clear the identifier and set it to nil.",
+          ""
+        ]
+      }
+    ],
+    "items" : [
+      {
+        "doc" : "Create a new manager object for use with a `hs._asm.guitk` window or another manager.\n\nParameters:\n * `frame` - an optional frame table specifying the initial position and size of the manager.\n\nReturns:\n * the manager object or nil if there was an error creating the manager.\n\nNotes:\n * In most cases, setting the frame is not necessary and will be overridden when the manager is assigned to a `hs._asm.guitk` window or another manager. It may be useful, however, when assigning elements to an unattached manager so that proper positioning can be worked out before final assignment of the new manager to it's parent object.",
+        "stripped_doc" : [
+          "Create a new manager object for use with a `hs._asm.guitk` window or another manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager.new([frame]) -> managerObject | nil",
+        "name" : "new",
+        "notes" : [
+          " * In most cases, setting the frame is not necessary and will be overridden when the manager is assigned to a `hs._asm.guitk` window or another manager. It may be useful, however, when assigning elements to an unattached manager so that proper positioning can be worked out before final assignment of the new manager to it's parent object."
+        ],
+        "signature" : "hs._asm.guitk.manager.new([frame]) -> managerObject | nil",
+        "type" : "Constructor",
+        "returns" : [
+          " * the manager object or nil if there was an error creating the manager.",
+          ""
+        ],
+        "desc" : "Create a new manager object for use with a `hs._asm.guitk` window or another manager.",
+        "parameters" : [
+          " * `frame` - an optional frame table specifying the initial position and size of the manager.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Enable or disable visual rectangles around element frames in the content manager which can aid in identifying frame or positioning bugs.\n\nParameters:\n * `color` - a color table (as defined in `hs.drawing.color`, boolean, or nil, specifying whether debugging frames should be displayed and if so in what color.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * Specifying `true` will enable the debugging frames with the current system color that represents the keyboard focus ring around controls.\n * Specifying `false` or `nil` will disable the debugging frames (default).\n * Specifying a color as defined by `hs.drawing.color` will display the debugging frames in the specified color.\n\n * Element frames which contain a height or width which is less than .5 points (effectively invisible) will draw an X at the center of the elements position instead of a rectangle.",
+        "stripped_doc" : [
+          "Enable or disable visual rectangles around element frames in the content manager which can aid in identifying frame or positioning bugs.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:_debugFrames([color]) -> managerObject | table | nil",
+        "name" : "_debugFrames",
+        "notes" : [
+          " * Specifying `true` will enable the debugging frames with the current system color that represents the keyboard focus ring around controls.",
+          " * Specifying `false` or `nil` will disable the debugging frames (default).",
+          " * Specifying a color as defined by `hs.drawing.color` will display the debugging frames in the specified color.",
+          "",
+          " * Element frames which contain a height or width which is less than .5 points (effectively invisible) will draw an X at the center of the elements position instead of a rectangle."
+        ],
+        "signature" : "hs._asm.guitk.manager:_debugFrames([color]) -> managerObject | table | nil",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Enable or disable visual rectangles around element frames in the content manager which can aid in identifying frame or positioning bugs.",
+        "parameters" : [
+          " * `color` - a color table (as defined in `hs.drawing.color`, boolean, or nil, specifying whether debugging frames should be displayed and if so in what color.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the parent object of the manager as a userdata object.\n\nParameters:\n * None\n\nReturns:\n * the userdata object representing the managers parent, usually a `hs._asm.guitk` window, or nil if the manager has no parent or its parent is not controllable through Hammerspoon.\n\nNotes:\n * This method can be used to access the parent object of the manager. Usually this will be a `hs._asm.guitk` window object, but since a manager may also be an element of another manager, this method may return a `hs._asm.guitk.manager` object in these cases.\n * The metamethods for this module are designed so that you usually shouldn't need to access this method directly very often.\n * The name \"nextResponder\" comes from the macOS user interface internal organization and refers to the object which is further up the responder chain when determining the target for user activity.",
+        "stripped_doc" : [
+          "Returns the parent object of the manager as a userdata object.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:_nextResponder() -> userdata",
+        "name" : "_nextResponder",
+        "notes" : [
+          " * This method can be used to access the parent object of the manager. Usually this will be a `hs._asm.guitk` window object, but since a manager may also be an element of another manager, this method may return a `hs._asm.guitk.manager` object in these cases.",
+          " * The metamethods for this module are designed so that you usually shouldn't need to access this method directly very often.",
+          " * The name \"nextResponder\" comes from the macOS user interface internal organization and refers to the object which is further up the responder chain when determining the target for user activity."
+        ],
+        "signature" : "hs._asm.guitk.manager:_nextResponder() -> userdata",
+        "type" : "Method",
+        "returns" : [
+          " * the userdata object representing the managers parent, usually a `hs._asm.guitk` window, or nil if the manager has no parent or its parent is not controllable through Hammerspoon.",
+          ""
+        ],
+        "desc" : "Returns the parent object of the manager as a userdata object.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Recalculate the position of all elements in the manager and update them if necessary.\n\nParameters:\n * None\n\nReturns:\n * the manager object\n\nNotes:\n * This method recalculates the position of elements whose position in `frameDetails` is specified by the element center or whose position or size are specified by percentages. See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information.\n * This method is invoked automatically anytime the managers parent (usually a `hs._asm.guitk` window) is resized and you shouldn't need to invoke it manually very often. If you find that you are needing to invoke it manually on a regular basis, try to determine what the specific circumstances are and submit an issue so that it can be evaluated to determine if the situation can be detected and trigger an update automatically.\n\n* See also [hs._asm.guitk.manager:elementAutoPosition](#elementAutoPosition).",
+        "stripped_doc" : [
+          "Recalculate the position of all elements in the manager and update them if necessary.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:autoPosition() -> managerObject",
+        "name" : "autoPosition",
+        "notes" : [
+          " * This method recalculates the position of elements whose position in `frameDetails` is specified by the element center or whose position or size are specified by percentages. See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information.",
+          " * This method is invoked automatically anytime the managers parent (usually a `hs._asm.guitk` window) is resized and you shouldn't need to invoke it manually very often. If you find that you are needing to invoke it manually on a regular basis, try to determine what the specific circumstances are and submit an issue so that it can be evaluated to determine if the situation can be detected and trigger an update automatically.",
+          "",
+          "* See also [hs._asm.guitk.manager:elementAutoPosition](#elementAutoPosition)."
+        ],
+        "signature" : "hs._asm.guitk.manager:autoPosition() -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Recalculate the position of all elements in the manager and update them if necessary.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns the element userdata for the element specified.\n\nParameters:\n * `id` - a string or integer specifying which element to return.  If `id` is an integer, returns the element at the specified index position; if `id` is a string, returns the element with the specified identifier string.\n\nReturns:\n * the element userdata, or nil if no element exists in the manager at the specified index position or with the specified identifier.\n\nNotes:\n * See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information on setting an element's identifier string.",
+        "stripped_doc" : [
+          "Returns the element userdata for the element specified.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:element([id]) -> elementUserdata | nil",
+        "name" : "element",
+        "notes" : [
+          " * See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for more information on setting an element's identifier string."
+        ],
+        "signature" : "hs._asm.guitk.manager:element([id]) -> elementUserdata | nil",
+        "type" : "Method",
+        "returns" : [
+          " * the element userdata, or nil if no element exists in the manager at the specified index position or with the specified identifier.",
+          ""
+        ],
+        "desc" : "Returns the element userdata for the element specified.",
+        "parameters" : [
+          " * `id` - a string or integer specifying which element to return.  If `id` is an integer, returns the element at the specified index position; if `id` is a string, returns the element with the specified identifier string.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Recalculate the position of the specified element in the manager and update it if necessary.\n\nParameters:\n * `element` - the element userdata to recalculate the size and position for.\n\nReturns:\n * the manager object\n\nNotes:\n * This method recalculates the position of the element if it is defined in `framedDetails` as a percentage or by the elements center and it's size if the element size is specified as a percentage or inherits its size from the element's fitting size (see [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize).\n\n * See also [hs._asm.guitk.manager:autoPosition](#autoPosition).\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:autoPosition()`",
+        "stripped_doc" : [
+          "Recalculate the position of the specified element in the manager and update it if necessary.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementAutoPosition(element) -> managerObject",
+        "name" : "elementAutoPosition",
+        "notes" : [
+          " * This method recalculates the position of the element if it is defined in `framedDetails` as a percentage or by the elements center and it's size if the element size is specified as a percentage or inherits its size from the element's fitting size (see [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize).",
+          "",
+          " * See also [hs._asm.guitk.manager:autoPosition](#autoPosition).",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:autoPosition()`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementAutoPosition(element) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Recalculate the position of the specified element in the manager and update it if necessary.",
+        "parameters" : [
+          " * `element` - the element userdata to recalculate the size and position for.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns a table with `h` and `w` keys specifying the element's fitting size as defined by macOS and the element's current properties.\n\nParameters:\n * `element` - the element userdata to get the fitting size for.\n\nReturns:\n * a table with `h` and `w` keys specifying the elements fitting size\n\nNotes:\n * The dimensions provided can be used to determine a minimum size for the element to display fully based on its current properties and may change as these change.\n * Not all elements provide one or both of these fields; in such a case, the value for the missing or unspecified field will be 0.\n * If you do not specify an elements height or width with [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails), the value returned by this method will be used instead; in cases where a specific dimension is not defined by this method, you should make sure to specify it or the element may not be visible.",
+        "stripped_doc" : [
+          "Returns a table with `h` and `w` keys specifying the element's fitting size as defined by macOS and the element's current properties.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementFittingSize(element) -> size-table",
+        "name" : "elementFittingSize",
+        "notes" : [
+          " * The dimensions provided can be used to determine a minimum size for the element to display fully based on its current properties and may change as these change.",
+          " * Not all elements provide one or both of these fields; in such a case, the value for the missing or unspecified field will be 0.",
+          " * If you do not specify an elements height or width with [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails), the value returned by this method will be used instead; in cases where a specific dimension is not defined by this method, you should make sure to specify it or the element may not be visible."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementFittingSize(element) -> size-table",
+        "type" : "Method",
+        "returns" : [
+          " * a table with `h` and `w` keys specifying the elements fitting size",
+          ""
+        ],
+        "desc" : "Returns a table with `h` and `w` keys specifying the element's fitting size as defined by macOS and the element's current properties.",
+        "parameters" : [
+          " * `element` - the element userdata to get the fitting size for.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the frame details in the manager for the specified element.\n\nParameters:\n * `element` - the element to get or set the frame details for\n * `details` - an optional table specifying the details to change or set for this element. The valid key-value pairs for the table are as follows:\n   * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.\n   * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.\n   * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.\n   * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.\n   * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default height is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined height and return the the default behavior.\n   * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default width is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined width and return the the default behavior.\n   * `id` - A string specifying an identifier which can be used to reference this element with [hs._asm.guitk.manager:element](#element) without requiring knowledge of the element's index position. Specify the value as false to clear the identifier and set it to nil.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * When setting the frame details, only those fields provided will be adjusted; other fields will remain unaffected (except as noted above). The values for keys `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.\n\n * When returning the current frame details table, an additional key-value pair is included: `_effective` will be a table specifying the elements actual frame-table (a table specifying the elements position as key-value pairs specifying the top-left position with `x` and `y`, and the element size with `h` and `w`).  This is provided for reference only: if this key-value pair is included when setting the frame details with this method, it will be ignored.\n\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:frameDetails([details])`",
+        "stripped_doc" : [
+          "Get or set the frame details in the manager for the specified element.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementFrameDetails(element, [details]) -> managerObject | table",
+        "name" : "elementFrameDetails",
+        "notes" : [
+          " * When setting the frame details, only those fields provided will be adjusted; other fields will remain unaffected (except as noted above). The values for keys `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.",
+          "",
+          " * When returning the current frame details table, an additional key-value pair is included: `_effective` will be a table specifying the elements actual frame-table (a table specifying the elements position as key-value pairs specifying the top-left position with `x` and `y`, and the element size with `h` and `w`).  This is provided for reference only: if this key-value pair is included when setting the frame details with this method, it will be ignored.",
+          "",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:frameDetails([details])`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementFrameDetails(element, [details]) -> managerObject | table",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the frame details in the manager for the specified element.",
+        "parameters" : [
+          " * `element` - the element to get or set the frame details for",
+          " * `details` - an optional table specifying the details to change or set for this element. The valid key-value pairs for the table are as follows:",
+          "   * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.",
+          "   * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.",
+          "   * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.",
+          "   * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.",
+          "   * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default height is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined height and return the the default behavior.",
+          "   * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize). If the default width is 0, then this *must* be set or the element will be effectively invisible. Set to false to clear a defined width and return the the default behavior.",
+          "   * `id` - A string specifying an identifier which can be used to reference this element with [hs._asm.guitk.manager:element](#element) without requiring knowledge of the element's index position. Specify the value as false to clear the identifier and set it to nil.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the string identifier for the specified element.\n\nParameters:\n * `element` - the element userdata to get or set the id of.\n * `id`      - an optional string, or explicit nil to remove, to change the element's identifier to\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:id([id])`",
+        "stripped_doc" : [
+          "Get or set the string identifier for the specified element.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementId(element, [id]) -> managerObject | string",
+        "name" : "elementId",
+        "notes" : [
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:id([id])`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementId(element, [id]) -> managerObject | string",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the string identifier for the specified element.",
+        "parameters" : [
+          " * `element` - the element userdata to get or set the id of.",
+          " * `id`      - an optional string, or explicit nil to remove, to change the element's identifier to",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 above element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushLeft\"  - element1 will be positioned above element2 with its left side at the same `x` position of the left side of element2.\n   * \"centered\"   - element1 will be centered horizontally above element2.\n   * \"flushRight\" - element1 will be positioned above element2 with its right side at the same `x` position of the right side of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveAbove(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 above element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveAbove(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveAbove",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveAbove(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveAbove(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 above element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushLeft\"  - element1 will be positioned above element2 with its left side at the same `x` position of the left side of element2.",
+          "   * \"centered\"   - element1 will be centered horizontally above element2.",
+          "   * \"flushRight\" - element1 will be positioned above element2 with its right side at the same `x` position of the right side of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 below element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushLeft\"  - element1 will be positioned below element2 with its left side at the same `x` position of the left side of element2.\n   * \"centered\"   - element1 will be centered horizontally below element2.\n   * \"flushRight\" - element1 will be positioned below element2 with its right side at the same `x` position of the right side of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveBelow(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 below element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveBelow(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveBelow",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveBelow(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveBelow(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 below element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushLeft\", specifying the horizontal relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushLeft\"  - element1 will be positioned below element2 with its left side at the same `x` position of the left side of element2.",
+          "   * \"centered\"   - element1 will be centered horizontally below element2.",
+          "   * \"flushRight\" - element1 will be positioned below element2 with its right side at the same `x` position of the right side of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 to the left of element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushBottom\" - element1 will be positioned to the left of element2 with its top at the same `y` position of the top of element2.\n   * \"centered\"    - element1 will be centered vertically to the left of element2.\n   * \"flushTop\"    - element1 will be positioned to the left of element2 with its bottom at the same `y` position of the bottom of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveLeftOf(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 to the left of element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveLeftOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveLeftOf",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveLeftOf(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveLeftOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 to the left of element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushBottom\" - element1 will be positioned to the left of element2 with its top at the same `y` position of the top of element2.",
+          "   * \"centered\"    - element1 will be centered vertically to the left of element2.",
+          "   * \"flushTop\"    - element1 will be positioned to the left of element2 with its bottom at the same `y` position of the bottom of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Moves element1 to the right of element2 in the manager.\n\nParameters:\n * `element1`     - the element userdata to adjust the `x` and `y` coordinates of\n * `element2`     - the element userdata to anchor element1 to\n * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship\n * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:\n   * \"flushBottom\" - element1 will be positioned to the right of element2 with its top at the same `y` position of the top of element2.\n   * \"centered\"    - element1 will be centered vertically to the right of element2.\n   * \"flushTop\"    - element1 will be positioned to the right of element2 with its bottom at the same `y` position of the bottom of element2.\n\nReturns:\n * the manager object\n\nNotes:\n * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveRightOf(element2, [offset], [relationship])`\n\n * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow\n * this method will not adjust the postion of any other element which may already be at the new position for element1\n * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works.",
+        "stripped_doc" : [
+          "Moves element1 to the right of element2 in the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementMoveRightOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "name" : "elementMoveRightOf",
+        "notes" : [
+          " * This method will set the `x` and `y` fields of `frameDetails` for the element.  See [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) for the effect of this on other frame details.",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:moveRightOf(element2, [offset], [relationship])`",
+          "",
+          " * this method moves element1 in relation to element2's current position -- moving element2 at a later point will not cause element1 to follow",
+          " * this method will not adjust the postion of any other element which may already be at the new position for element1",
+          " * an extension to `hs._asm.guitk.manager` which may support these limitations is under consideration but is currently not in the works."
+        ],
+        "signature" : "hs._asm.guitk.manager:elementMoveRightOf(element1, element2, [offset], [relationship]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Moves element1 to the right of element2 in the manager.",
+        "parameters" : [
+          " * `element1`     - the element userdata to adjust the `x` and `y` coordinates of",
+          " * `element2`     - the element userdata to anchor element1 to",
+          " * `offset`       - a number, default 0.0, specifying the space between element1 and element2 in their new relationship",
+          " * `relationship` - a string, default \"flushTop\", specifying the vertical relationship between `element1` and `element2`.  May be one of the following:",
+          "   * \"flushBottom\" - element1 will be positioned to the right of element2 with its top at the same `y` position of the top of element2.",
+          "   * \"centered\"    - element1 will be centered vertically to the right of element2.",
+          "   * \"flushTop\"    - element1 will be positioned to the right of element2 with its bottom at the same `y` position of the bottom of element2.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Return a table of key-value pairs containing the properties for the specified element\n\nParameters:\n * `element` - the element userdata to create the property list for\n\nReturns:\n * a table containing key-value pairs describing the properties of the element.\n\nNotes:\n * The table returned by this method does not support modifying the property values as can be done through the `hs._asm.guitk.manager` metamethods (see the top-level documentation for `hs._asm.guitk.manager`).\n\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:propertyList()`",
+        "stripped_doc" : [
+          "Return a table of key-value pairs containing the properties for the specified element",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementPropertyList(element) -> managerObject",
+        "name" : "elementPropertyList",
+        "notes" : [
+          " * The table returned by this method does not support modifying the property values as can be done through the `hs._asm.guitk.manager` metamethods (see the top-level documentation for `hs._asm.guitk.manager`).",
+          "",
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:propertyList()`"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementPropertyList(element) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing key-value pairs describing the properties of the element.",
+          ""
+        ],
+        "desc" : "Return a table of key-value pairs containing the properties for the specified element",
+        "parameters" : [
+          " * `element` - the element userdata to create the property list for",
+          ""
+        ]
+      },
+      {
+        "doc" : "Remove the specified element from the manager\n\nParameters:\n * `element` - the element userdata to remove from this manager\n\nReturns:\n * the manager object\n\nNotes:\n * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:removeFromManager()`\n\n * See also [hs._asm.guitk.manager:remove](#remove)",
+        "stripped_doc" : [
+          "Remove the specified element from the manager",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elementRemoveFromManager(element) -> managerObject",
+        "name" : "elementRemoveFromManager",
+        "notes" : [
+          " * This method is wrapped so that elements which are assigned to a manager can access this method as `hs._asm.guitk.element:removeFromManager()`",
+          "",
+          " * See also [hs._asm.guitk.manager:remove](#remove)"
+        ],
+        "signature" : "hs._asm.guitk.manager:elementRemoveFromManager(element) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Remove the specified element from the manager",
+        "parameters" : [
+          " * `element` - the element userdata to remove from this manager",
+          ""
+        ]
+      },
+      {
+        "doc" : "Returns an array containing the elements in index order currently managed by this manager.\n\nParameters:\n * None\n\nReturns:\n * a table containing the elements in index order currently managed by this manager",
+        "stripped_doc" : [
+          "Returns an array containing the elements in index order currently managed by this manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:elements() -> table",
+        "name" : "elements",
+        "notes" : [
+
+        ],
+        "signature" : "hs._asm.guitk.manager:elements() -> table",
+        "type" : "Method",
+        "returns" : [
+          " * a table containing the elements in index order currently managed by this manager"
+        ],
+        "desc" : "Returns an array containing the elements in index order currently managed by this manager.",
+        "parameters" : [
+          " * None",
+          ""
+        ]
+      },
+      {
+        "doc" : "Inserts a new element for the manager to manage.\n\nParameters:\n * `element`      - the element userdata to insert into the manager\n * `frameDetails` - an optional table containing frame details for the element as described for the [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) method.\n * `pos`          - the index position in the list of elements specifying where to insert the element.  Defaults to `#hs._asm.guitk.manager:elements() + 1`, which will insert the element at the end.\n\nReturns:\n * the manager object\n\nNotes:\n * If the frameDetails table is not provided, the elements position will default to the lower left corner of the last element added to the manager, and its size will default to the elements fitting size as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize).",
+        "stripped_doc" : [
+          "Inserts a new element for the manager to manage.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:insert(element, [frameDetails], [pos]) -> managerObject",
+        "name" : "insert",
+        "notes" : [
+          " * If the frameDetails table is not provided, the elements position will default to the lower left corner of the last element added to the manager, and its size will default to the elements fitting size as returned by [hs._asm.guitk.manager:elementFittingSize](#elementFittingSize)."
+        ],
+        "signature" : "hs._asm.guitk.manager:insert(element, [frameDetails], [pos]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Inserts a new element for the manager to manage.",
+        "parameters" : [
+          " * `element`      - the element userdata to insert into the manager",
+          " * `frameDetails` - an optional table containing frame details for the element as described for the [hs._asm.guitk.manager:elementFrameDetails](#elementFrameDetails) method.",
+          " * `pos`          - the index position in the list of elements specifying where to insert the element.  Defaults to `#hs._asm.guitk.manager:elements() + 1`, which will insert the element at the end.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the mouse tracking callback for the manager.\n\nParameters:\n * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke when the mouse enters, exits, or moves within the manager. Specify an explicit true if you wish for mouse tracking information to be passed to the parent objects passthrough callback, if defined, instead.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * The mouse tracking callback should expect 3 arguments and return none.\n * The arguments are as follows:\n   * the manager object userdata\n   * a string specifying the type of the callback. Possible values are \"enter\", \"exit\", or \"move\"\n   * a point-table containing the coordinates within the manager of the mouse event. A point table is a table with `x` and `y` keys specifying the mouse coordinates.\n\n * By default, only mouse enter and mouse exit events will invoke the callback to reduce overhead; if you need to track mouse movement within the manager as well, see [hs._asm.guitk.manager:trackMouseMove](#trackMouseMove).",
+        "stripped_doc" : [
+          "Get or set the mouse tracking callback for the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:mouseCallback([fn | true | nil]) -> managerObject | fn | boolean",
+        "name" : "mouseCallback",
+        "notes" : [
+          " * The mouse tracking callback should expect 3 arguments and return none.",
+          " * The arguments are as follows:",
+          "   * the manager object userdata",
+          "   * a string specifying the type of the callback. Possible values are \"enter\", \"exit\", or \"move\"",
+          "   * a point-table containing the coordinates within the manager of the mouse event. A point table is a table with `x` and `y` keys specifying the mouse coordinates.",
+          "",
+          " * By default, only mouse enter and mouse exit events will invoke the callback to reduce overhead; if you need to track mouse movement within the manager as well, see [hs._asm.guitk.manager:trackMouseMove](#trackMouseMove)."
+        ],
+        "signature" : "hs._asm.guitk.manager:mouseCallback([fn | true | nil]) -> managerObject | fn | boolean",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the mouse tracking callback for the manager.",
+        "parameters" : [
+          " * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke when the mouse enters, exits, or moves within the manager. Specify an explicit true if you wish for mouse tracking information to be passed to the parent objects passthrough callback, if defined, instead.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the pass through callback for the manager.\n\nParameters:\n * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke for elements which do not have their own callbacks assigned.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * The pass through callback should expect one or two arguments and return none.\n\n * The pass through callback is designed so that elements which trigger a callback based on user interaction which do not have a specifically assigned callback can still report user interaction through a common fallback.\n * The arguments received by the pass through callback will be organized as follows:\n   * the manager userdata object\n   * a table containing the arguments provided by the elements callback itself, usually the element userdata followed by any additional arguments as defined for the element's callback function.\n\n * Note that elements which have a callback that returns a response cannot use this common pass through callback method; in such cases a specific callback must be assigned to the element directly as described in the element's documentation.",
+        "stripped_doc" : [
+          "Get or set the pass through callback for the manager.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:passthroughCallback([fn | nil]) -> managerObject | fn | nil",
+        "name" : "passthroughCallback",
+        "notes" : [
+          " * The pass through callback should expect one or two arguments and return none.",
+          "",
+          " * The pass through callback is designed so that elements which trigger a callback based on user interaction which do not have a specifically assigned callback can still report user interaction through a common fallback.",
+          " * The arguments received by the pass through callback will be organized as follows:",
+          "   * the manager userdata object",
+          "   * a table containing the arguments provided by the elements callback itself, usually the element userdata followed by any additional arguments as defined for the element's callback function.",
+          "",
+          " * Note that elements which have a callback that returns a response cannot use this common pass through callback method; in such cases a specific callback must be assigned to the element directly as described in the element's documentation."
+        ],
+        "signature" : "hs._asm.guitk.manager:passthroughCallback([fn | nil]) -> managerObject | fn | nil",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the pass through callback for the manager.",
+        "parameters" : [
+          " * `fn` - a function, or an explicit nil to remove, specifying the callback to invoke for elements which do not have their own callbacks assigned.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Remove an element from the manager as specified by its index position.\n\nParameters:\n * `pos`     - the index position in the list of elements specifying the element to remove.  Defaults to `#hs._asm.guitk.manager:elements()` (the last element)\n\nReturns:\n * the manager object\n\nNotes:\n * See also [hs._asm.guitk.manager:elementRemoveFromManager](#elementRemoveFromManager)",
+        "stripped_doc" : [
+          "Remove an element from the manager as specified by its index position.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:remove([pos]) -> managerObject",
+        "name" : "remove",
+        "notes" : [
+          " * See also [hs._asm.guitk.manager:elementRemoveFromManager](#elementRemoveFromManager)"
+        ],
+        "signature" : "hs._asm.guitk.manager:remove([pos]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Remove an element from the manager as specified by its index position.",
+        "parameters" : [
+          " * `pos`     - the index position in the list of elements specifying the element to remove.  Defaults to `#hs._asm.guitk.manager:elements()` (the last element)",
+          ""
+        ]
+      },
+      {
+        "doc" : "Adjusts the size of the manager so that it is the minimum size necessary to contain all of its elements.\n\nParameters:\n * `hPad` - an optional number specifying the horizontal padding to include between the elements and the left and right of the manager's new borders. Defaults to 0.0.\n * `vPad` - an optional number specifying the vertical padding to include between the elements and the top and bottom of the manager's new borders.  Defaults to the value of `hPad`.\n\nReturns:\n * the manager object\n\nNotes:\n * If the manager is the member of another manager, this manager's size (but not top-left corner) is adjusted within its parent.\n * If the manager is assigned to a `hs._asm.guitk` window, the window's size (but not top-left corner) will be adjusted to the calculated size.",
+        "stripped_doc" : [
+          "Adjusts the size of the manager so that it is the minimum size necessary to contain all of its elements.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:sizeToFit([hPad], [vPad]) -> managerObject",
+        "name" : "sizeToFit",
+        "notes" : [
+          " * If the manager is the member of another manager, this manager's size (but not top-left corner) is adjusted within its parent.",
+          " * If the manager is assigned to a `hs._asm.guitk` window, the window's size (but not top-left corner) will be adjusted to the calculated size."
+        ],
+        "signature" : "hs._asm.guitk.manager:sizeToFit([hPad], [vPad]) -> managerObject",
+        "type" : "Method",
+        "returns" : [
+          " * the manager object",
+          ""
+        ],
+        "desc" : "Adjusts the size of the manager so that it is the minimum size necessary to contain all of its elements.",
+        "parameters" : [
+          " * `hPad` - an optional number specifying the horizontal padding to include between the elements and the left and right of the manager's new borders. Defaults to 0.0.",
+          " * `vPad` - an optional number specifying the vertical padding to include between the elements and the top and bottom of the manager's new borders.  Defaults to the value of `hPad`.",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set the tooltip for the manager\n\nParameters:\n * `tooltip` - a string, or nil to remove, specifying the tooltip to display when the mouse pointer hovers over the content manager\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * Tooltips are displayed when the window is active and the mouse pointer hovers over the content manager and no other element at the current mouse position has a defined tooltip.",
+        "stripped_doc" : [
+          "Get or set the tooltip for the manager",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:tooltip([tooltip]) -> managerObject | string",
+        "name" : "tooltip",
+        "notes" : [
+          " * Tooltips are displayed when the window is active and the mouse pointer hovers over the content manager and no other element at the current mouse position has a defined tooltip."
+        ],
+        "signature" : "hs._asm.guitk.manager:tooltip([tooltip]) -> managerObject | string",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set the tooltip for the manager",
+        "parameters" : [
+          " * `tooltip` - a string, or nil to remove, specifying the tooltip to display when the mouse pointer hovers over the content manager",
+          ""
+        ]
+      },
+      {
+        "doc" : "Get or set whether mouse tracking callbacks should include movement within the managers visible area.\n\nParameters:\n * `state` - an optional boolean, default false, specifying whether mouse movement within the manager also triggers a callback.\n\nReturns:\n * If an argument is provided, the manager object; otherwise the current value.\n\nNotes:\n * [hs._asm.guitk.manager:mouseCallback](#mouseCallback) must bet set to a callback function or true for this attribute to have any effect.",
+        "stripped_doc" : [
+          "Get or set whether mouse tracking callbacks should include movement within the managers visible area.",
+          ""
+        ],
+        "def" : "hs._asm.guitk.manager:trackMouseMove([state]) -> managerObject | boolean",
+        "name" : "trackMouseMove",
+        "notes" : [
+          " * [hs._asm.guitk.manager:mouseCallback](#mouseCallback) must bet set to a callback function or true for this attribute to have any effect."
+        ],
+        "signature" : "hs._asm.guitk.manager:trackMouseMove([state]) -> managerObject | boolean",
+        "type" : "Method",
+        "returns" : [
+          " * If an argument is provided, the manager object; otherwise the current value.",
+          ""
+        ],
+        "desc" : "Get or set whether mouse tracking callbacks should include movement within the managers visible area.",
+        "parameters" : [
+          " * `state` - an optional boolean, default false, specifying whether mouse movement within the manager also triggers a callback.",
+          ""
+        ]
+      }
+    ],
+    "name" : "hs._asm.guitk.manager"
+  }
+]
