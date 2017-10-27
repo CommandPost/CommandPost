@@ -72,14 +72,12 @@ mod.maxItems = 8
 -- Returns:
 --  * None
 local function resetTouchBar()
-
 	dialog.webviewAlert(mod._manager.getWebview(), function(result)
 		if result == i18n("yes") then
 			mod._tb.clear()
 			mod._manager.refresh()
 		end
 	end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-
 end
 
 -- renderRows(context) -> none
@@ -134,12 +132,16 @@ local function generateContent()
 	--------------------------------------------------------------------------------
 	-- The Group Select:
 	--------------------------------------------------------------------------------
+	local groups = {}
 	local groupOptions = {}
 	local defaultGroup = nil
 	if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
 	for _,id in ipairs(commands.groupIds()) do
-		defaultGroup = defaultGroup or id
-		groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
+		for subGroupID=1, mod._tb.numberOfSubGroups do
+			defaultGroup = defaultGroup or id
+			groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bar " .. tostring(subGroupID) .. ")"}
+			groups[#groups + 1] = id .. subGroupID
+		end
 	end
 	table.sort(groupOptions, function(a, b) return a.label < b.label end)
 
@@ -187,7 +189,7 @@ local function generateContent()
 	local context = {
 		_						= _,
 		touchBarGroupSelect		= touchBarGroupSelect,
-		groups					= commands.groups(),
+		groups					= groups,
 		defaultGroup			= defaultGroup,
 
 		groupEditor				= mod.getGroupEditor,
@@ -230,6 +232,7 @@ local function touchBarPanelCallback(id, params)
 			-- Setup Activator Callback:
 			--------------------------------------------------------------------------------
 			local groupID = params["groupID"]
+
 			mod.activator[groupID]:onActivate(function(handler, action, text)
 				local actionTitle = text
 				local handlerID = handler:id()
@@ -501,7 +504,7 @@ function mod.init(deps, env)
 		label			= i18n("touchbarPanelLabel"),
 		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
 		tooltip			= i18n("touchbarPanelTooltip"),
-		height			= 740,
+		height			= 760,
 	})
 		--------------------------------------------------------------------------------
 		-- Virtual Touch Bar
@@ -602,24 +605,26 @@ function plugin.postInit(deps, env)
 		local handlerIds = mod._actionmanager.handlerIds()
 		for _,groupID in ipairs(commands.groupIds()) do
 
-			--------------------------------------------------------------------------------
-			-- Create new Activator:
-			--------------------------------------------------------------------------------
-			mod.activator[groupID] = deps.actionmanager.getActivator("touchbarPreferences" .. groupID)
+			for subGroupID=1, mod._tb.numberOfSubGroups do
 
-			--------------------------------------------------------------------------------
-			-- Restrict Allowed Handlers for Activator to current group (and global):
-			--------------------------------------------------------------------------------
-			local allowedHandlers = {}
-			for _,id in pairs(handlerIds) do
-				local handlerTable = tools.split(id, "_")
-				if handlerTable[1] == groupID or handlerTable[1] == "global" then
-					table.insert(allowedHandlers, id)
+				--------------------------------------------------------------------------------
+				-- Create new Activator:
+				--------------------------------------------------------------------------------
+				mod.activator[groupID .. subGroupID] = deps.actionmanager.getActivator("touchbarPreferences" .. groupID .. subGroupID)
+
+				--------------------------------------------------------------------------------
+				-- Restrict Allowed Handlers for Activator to current group (and global):
+				--------------------------------------------------------------------------------
+				local allowedHandlers = {}
+				for _,id in pairs(handlerIds) do
+					local handlerTable = tools.split(id, "_")
+					if handlerTable[1] == groupID or handlerTable[1] == "global" then
+						table.insert(allowedHandlers, id)
+					end
 				end
+				mod.activator[groupID .. subGroupID]:allowHandlers(table.unpack(allowedHandlers))
+				mod.activator[groupID .. subGroupID]:preloadChoices()
 			end
-			mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
-			mod.activator[groupID]:preloadChoices()
-
 		end
 	end
 end

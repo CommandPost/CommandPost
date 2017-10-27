@@ -841,7 +841,7 @@ return {
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
 	shortcut_group_global				=			"Global",
-	shortcut_group_fcpx					=			"Final Cut Pro X",
+	shortcut_group_fcpx					=			"Final Cut Pro",
 
 	customiseShortcuts					=			"Customise Shortcuts",
 	shortcutsGroup						=			"Group",
@@ -876,7 +876,7 @@ return {
 	mouseLocation						=			"Centre of Mouse Location",
 	topCentreOfTimeline					=			"Top Centre of Timeline",
 	touchBarDragTip						=			"If Draggable is selected, you can hold down the left OPTION key to drag.",
-	touchBarSetupTip					=			[[Make sure "App Controls with Control Strip" is selected within the "Touch Bar shows" Keyboard System Preferences to see the CommandPost icon.]],
+	touchBarSetupTip					=			[[Make sure "App Controls with Control Strip" is selected within the "Touch Bar shows" Keyboard System Preferences to see the CommandPost icon. You can then tap this icon to toggle through the different Touch Bar groups.]],
 	actionOrWidget						=			"Action / Widget",
 	touchBarWidget						=			"Touch Bar Widget",
 
