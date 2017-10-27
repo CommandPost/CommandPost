@@ -138,7 +138,7 @@ local function generateContent()
 	if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
 	for _,id in ipairs(commands.groupIds()) do
 		for subGroupID=1, mod._tb.numberOfSubGroups do
-			defaultGroup = defaultGroup or id
+			defaultGroup = defaultGroup or id .. subGroupID
 			groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bar " .. tostring(subGroupID) .. ")"}
 			groups[#groups + 1] = id .. subGroupID
 		end
