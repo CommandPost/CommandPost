@@ -5,7 +5,24 @@
 		<link>https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
+		<item>
+			<title>Version 1.0.0-beta.13</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>You can now have five different Touch Bars per application. To toggle between the different Touch Bars, use the CommandPost icon that's on the Touch Bar control strip. This means, for example, you could have one Touch Bar for Color Board control, another for audio shortcuts, another for video effects, etc.</li></ul>
 
+				<h2>Bug Fixes:</h2>
+				<ul><li>The Color Board Touch Bar Widget has been improved.</li></ul>
+			]]>
+			</description>
+			<pubDate>Sat, 28 Oct 2017 02:41:01 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.13/CommandPost_1.0.0-beta.13.dmg"
+				sparkle:version="1.0.0-beta.13"
+				sparkle:dsaSignature="MC4CFQCbn1RLKdY5MyDd+TCjHIdWjHm+GQIVAKjE45mVlFyj/Ls244vZsKJSJhbA"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
 		<item>
 			<title>Version 1.0.0-beta.12</title>
 			<description><![CDATA[
