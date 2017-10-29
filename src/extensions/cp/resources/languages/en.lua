@@ -468,7 +468,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
-			scanFinalCutPro						=			"Scan Final Cut Pro",
 	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes.",
 			advanced							=			"Advanced",
 			install								=			"Install",
@@ -501,7 +500,6 @@ return {
 			hudOptions							=			"HUD Options",
 			language							=			"Language",
 			provideFeedback						=			"Provide Feedback",
-			feedback							=			"Feedback",
 			createdBy							=			"Created by",
 			appVersion							=			"Version",
 
@@ -523,8 +521,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Menubar Options:
 			--------------------------------------------------------------------------------
-			showShortcuts						=			"Show Shortcuts",
-			showAutomation						=			"Show Automation",
 			showTools							=			"Show Tools",
 			showAdminTools						=			"Show Administrator",
 			displayProxyOriginalIcon			=			"Display Proxy/Original Icon in Menubar",
@@ -603,8 +599,6 @@ return {
 			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
 
-			general								=			"General",
-
 			languageHeading						=			"Language",
 			commandPostLanguage					=			"CommandPost Language",
 
@@ -617,9 +611,6 @@ return {
 
 			streamdeckPanelLabel				=			"Stream Deck",
 			streamdeckPanelTooltip				=			"Stream Deck Preferences",
-
-			webappPanelLabel					=			"WebApp",
-			webappPanelTooltip					=			"WebApp Preferences",
 
 			webappPanelLabel					=			"WebApp",
 			webappPanelTooltip					=			"WebApp Preferences",
@@ -666,7 +657,6 @@ return {
 	importToTimeline					=			"Import directly into Timeline",
 	newFileForFinalCutPro				=			"New Media for Final Cut Pro",
 	import								=			"Import",
-	skip								=			"Skip",
 	finalCutProNotRunning				=			"Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.",
 	deleteAfterImport					=			"Delete file from Watch Folder (5 seconds after Import)",
 	deleteNote							=			"Make sure <strong>Copy to library storage location</strong> is selected in Final Cut Pro's Preferences.",
@@ -773,7 +763,6 @@ return {
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",
-	removeFromList						=			"Remove from List",
 	restoreToList						=			"Restore to List",
 	displayOptions						=			"Display Options",
 	showNone							=			"Show None",
@@ -1145,7 +1134,6 @@ return {
 		cpChangeBackupInterval_title							=	"Change Backup Interval...",
 		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
 		cpShowTimelineInPlayer_title							=	"Show Timeline in Player",
-		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
 		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",
 
 		cpShowProjectTimecodeTop_title 							= 	"Show Project Timecode Top",
