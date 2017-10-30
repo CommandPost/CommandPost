@@ -266,7 +266,7 @@ guitkMT.simplifiedWindowCallback = function(self, ...)
     local args = table.pack(...)
     if args.n == 0 then
         return self:notificationCallback()
-    elseif args.n == 1 and ((type(args[1]) == "function") or getmetatable(args[1]).__call) then
+    elseif (args.n == 1) and (type(args[1]) == "function") or (getmetatable(args[1]) or {}).__call then
         local fn = function(s, m)
             local newM         = simplifiedNotificationMap[m]
             local callbackArgs = { newM or "other", s }

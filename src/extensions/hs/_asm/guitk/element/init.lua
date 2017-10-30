@@ -110,7 +110,7 @@ for k,v in pairs(metatables) do
                 if parentObj then
                     local parentFN = parentObj[key]
                     if parentFN then
-                        if type(parentFN) == "function" then
+                        if type(parentFN) == "function" or (getmetatable(parentFN) or {}).__call then
                             return function(self, ...)
                                 local answer = parentFN(parentObj, ...)
                                 if answer == parentObj then
@@ -126,7 +126,7 @@ for k,v in pairs(metatables) do
     -- if parent has a method matching our key prefixed with "element", pass self in as first argument
                         parentFN = parentObj["element" .. key:sub(1,1):upper() .. key:sub(2)]
                         if parentFN then
-                            if type(parentFN) == "function" then
+                            if type(parentFN) == "function" or (getmetatable(parentFN) or {}).__call then
                                 return function(self, ...)
                                     local answer = parentFN(parentObj, self, ...)
                                     if answer == parentObj then
