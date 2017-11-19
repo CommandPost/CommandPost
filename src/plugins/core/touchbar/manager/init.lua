@@ -169,7 +169,7 @@ mod._tbItemIDs = {}
 mod._groupStatus = {}
 
 -- Current Sub Group Statuses:
-mod._currentSubGroup = {}
+mod._currentSubGroup = config.prop("touchBarCurrentSubGroup", {})
 
 --- plugins.core.touchbar.manager.defaultGroup -> string
 --- Variable
@@ -630,10 +630,11 @@ end
 --- Returns:
 ---  * Returns the active sub group as string
 function mod.activeSubGroup()
+	local currentSubGroup = mod._currentSubGroup()
 	local result = 1
 	local activeGroup = mod.activeGroup()
-	if mod._currentSubGroup[activeGroup] then
-		result = mod._currentSubGroup[activeGroup]
+	if currentSubGroup[activeGroup] then
+		result = currentSubGroup[activeGroup]
 	end
 	return tostring(result)
 end
@@ -648,12 +649,15 @@ end
 --- Returns:
 ---  * None
 function mod.incrementActiveSubGroup()
+
+	local currentSubGroup = mod._currentSubGroup()
+
 	local items = mod._items()
 	local activeGroup = mod.activeGroup()
 	local result = 0
 	local startingGroup = 1
-	if mod._currentSubGroup[activeGroup] then
-		startingGroup = mod._currentSubGroup[activeGroup]
+	if currentSubGroup[activeGroup] then
+		startingGroup = currentSubGroup[activeGroup]
 	end
 	for i=startingGroup + 1, mod.numberOfSubGroups do
 		if items[activeGroup .. tostring(i)] then
@@ -674,7 +678,11 @@ function mod.incrementActiveSubGroup()
 			result = 1
 		end
 	end
-	mod._currentSubGroup[activeGroup] = result
+	currentSubGroup[activeGroup] = result
+
+	-- Save to Preferences:
+	mod._currentSubGroup(currentSubGroup)
+
 end
 
 --- plugins.core.touchbar.manager.update() -> none
