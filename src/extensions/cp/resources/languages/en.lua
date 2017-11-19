@@ -1038,6 +1038,10 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
+		cpStabilizationToggle_title								=	"Toggle Stabilization",
+		cpStabilizationEnable_title								=	"Enable Stabilization",
+		cpStabilizationDisable_title							=	"Disable Stabilization",
+
 		cpText2Speech_title										=	"Activate Text to Speech Tool",
 
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
