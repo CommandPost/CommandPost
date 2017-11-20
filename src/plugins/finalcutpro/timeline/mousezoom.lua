@@ -129,8 +129,10 @@ function mod.stop()
 	--------------------------------------------------------------------------------
 	if mod.touchDevices then
 		for _, id in ipairs(mod.magicMouseIDs) do
-			mod.touchDevices[id]:stop()
-			mod.touchDevices[id] = nil
+			if mod.touchDevices[id] then
+				mod.touchDevices[id]:stop()
+				mod.touchDevices[id] = nil
+			end
 		end
 		mod.touchDevices = nil
 	end
