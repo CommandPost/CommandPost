@@ -1038,6 +1038,10 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
+		cpStabilizationToggle_title								=	"Toggle Stabilization",
+		cpStabilizationEnable_title								=	"Enable Stabilization",
+		cpStabilizationDisable_title							=	"Disable Stabilization",
+
 		cpText2Speech_title										=	"Activate Text to Speech Tool",
 
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
@@ -1112,7 +1116,6 @@ return {
 
 		cpChangeBackupInterval_title							=	"Change Backup Interval",
 		cpToggleMovingMarkers_title								=	"Toggle Moving Markers",
-		cpAllowTasksDuringPlayback_title						=	"Allow Tasks During Playback",
 		cpShowListOfShortcutKeys_title							=	"Show Keyboard Shortcuts",
 		cpOpenCommandEditor_title								=	"Open Command Editor",
 
@@ -1131,7 +1134,6 @@ return {
 		cpBackgroundRenderOn_title								=	"Enable Background Render",
 		cpBackgroundRenderOff_title								=	"Disable Background Render",
 
-		cpChangeBackupInterval_title							=	"Change Backup Interval...",
 		cpToggleTimecodeOverlays_title							=	"Toggle Timecode Overlay",
 		cpShowTimelineInPlayer_title							=	"Show Timeline in Player",
 		cpAllowTasksDuringPlayback_title						=	"Toggle Rendering During Playback",

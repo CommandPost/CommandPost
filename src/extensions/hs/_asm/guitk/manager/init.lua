@@ -12,15 +12,19 @@
 --- * `_fittingSize` - A read-only size-table specifying the default height and width for the element. Not all elements have a default height or width and the value for one or more of these keys may be 0.
 --- * `_type`        - A read-only string indicating the userdata name for the element.
 --- * `frameDetails` - A table containing positioning and identification information about the element.  All of it's keys are optional and are as follows:
----   * `x`  - The horizontal position of the elements top-left corner. Only one of `x` and `cX` can be set; setting one will clear the other.
----   * `y`  - The vertical position of the elements top-left corner. Only one of `y` and `cY` can be set; setting one will clear the other.
----   * `cX` - The horizontal position of the elements center point. Only one of `x` and `cX` can be set; setting one will clear the other.
----   * `cY` - The vertical position of the elements center point. Only one of `y` and `cY` can be set; setting one will clear the other.
+---   * `x`  - The horizontal position of the elements left side. Only one of `x`, `rX`, or`cX` can be set; setting one will clear the others.
+---   * `rX`  - The horizontal position of the elements right side. Only one of `x`, `rX`, or`cX` can be set; setting one will clear the others.
+---   * `cX` - The horizontal position of the elements center point. Only one of `x`, `rX`, or`cX` can be set; setting one will clear the others.
+---   * `y`  - The vertical position of the elements top. Only one of `y`, `bY`, or `cY` can be set; setting one will clear the others.
+---   * `bY`  - The vertical position of the elements bottom. Only one of `y`, `bY`, or `cY` can be set; setting one will clear the others.
+---   * `cY` - The vertical position of the elements center point. Only one of `y`, `bY`, or `cY` can be set; setting one will clear the others.
 ---   * `h`  - The element's height. If this is set, it will be used instead of the default height as returned by the `_fittingSize` attribute. If the default height is 0, then this *must* be set or the element will be effectively invisible.
 ---   * `w`  - The element's width. If this is set, it will be used instead of the default width as returned by the `_fittingSize` attribute. If the default width is 0, then this *must* be set or the element will be effectively invisible.
 ---   * `id` - A string specifying an identifier which can be used to reference this element through the manager's metamethods without requiring knowledge of the element's index position.
 ---
----   * Note that `x`, `cX`, `y`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `cX`, and `w`) or height (for `y`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.
+---   * `honorCanvasMove` - A boolean, default nil (false), indicating whether or not the frame wrapper functions for `hs.canvas` objects should honor location changes when made with `hs.canvas:topLeft` or `hs.canvas:frame`. This is a (hopefully temporary) fix because canvas objects are not aware of the `hs._asm.guitk` frameDetails model for element placement.
+---
+---   * Note that `x`, `rX`, `cX`, `y`, `bY`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `rX`, `cX`, and `w`) or height (for `y`, `bY`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number. A negative percentage indicates a value to be subtracted from 100% (e.g. -25% is the same as 75%). For position attributes, this has the effect of treating it as a percentage from the opposite side (i.e. from the right or bottom instead of left or top).
 ---
 --- * When assigning a new element to the manager through the metamethods, you can assign the userdata directly or by using the table format described above. For example:
 ---
@@ -156,18 +160,27 @@ wrappedElementMT.__len = function(self) return 0 end
 
 -- Public interface ------------------------------------------------------
 
--- wrap canvas so it's size related methods work with the manager
+-- wrap canvas so it's size and topLeft methods work with the manager
 local canvasSize = canvasMT.size
 local canvasTL   = canvasMT.topLeft
+
+-- -- Calling _nextResponder on a canvas results in a lot of logging because the built in canvas window object has no converter. Waiting
+-- -- on adding one until I decide how best to integrate canvas with guitk; in the mean time, this check doesn't trigger the messages.
+-- local isCanvasViewSeparated = function(self)
+--     local r, s = pcall(self.level, self)
+--     return not r
+-- end
+
 canvasMT.size = function(self, ...)
+--     local parent = isCanvasViewSeparated(self) and commonViewMethods._nextResponder(self) or nil
     local parent = commonViewMethods._nextResponder(self)
     if parent and getmetatable(parent) == managerMT then
         local args = table.pack(...)
         if args.n == 0 then
-            local ans = parent:elementFrameDetails(self)
+            local ans = parent:elementFrameDetails(self)._effective
             return { h = ans.h, w = ans.w }
         else
-            return parent:elementFrameDetails(self, ...)
+            return parent:elementFrameDetails(self, { h = args[1].h, w = args[1].w })
         end
     else
         return canvasSize(self, ...)
@@ -175,14 +188,20 @@ canvasMT.size = function(self, ...)
 end
 
 canvasMT.topLeft = function(self, ...)
+--     local parent = isCanvasViewSeparated(self) and commonViewMethods._nextResponder(self) or nil
     local parent = commonViewMethods._nextResponder(self)
     if parent and getmetatable(parent) == managerMT then
         local args = table.pack(...)
         if args.n == 0 then
-            local ans = parent:elementFrameDetails(self)
+            local ans = parent:elementFrameDetails(self)._effective
             return { x = ans.x, y = ans.y }
         else
-            return parent:elementFrameDetails(self, ...)
+            local frameDetails = parent:elementFrameDetails(self)
+            if frameDetails.honorCanvasMove then
+                return parent:elementFrameDetails(self, { x = args[1].x, y = args[1].y })
+            else
+                return self
+            end
         end
     else
         return canvasTL(self, ...)
@@ -274,6 +293,23 @@ managerMT.elementId = function(self, element, ...)
     end
 end
 
+managerMT._insert = managerMT.insert     -- save raw version
+managerMT.insert = function(self, ...)
+    local args = table.pack(...)
+    local element = args[1]
+    local details = args[2]
+    if element and getmetatable(element) == canvasMT then
+        local newDetails = {}
+        -- shallow copy so we don't modify a table the user might re-use
+        for k,v in pairs(details or {}) do newDetails[k] = v end
+        local size = element:size()
+        if type(newDetails.h) == "nil" then newDetails.h = size.h end
+        if type(newDetails.w) == "nil" then newDetails.w = size.w end
+        args[2] = newDetails
+    end
+    return managerMT._insert(self, table.unpack(args))
+end
+
 managerMT.__call  = function(self, ...) return self:element(...) end
 managerMT.__len   = function(self) return #self:elements() end
 
@@ -282,37 +318,54 @@ managerMT.__index = function(self, key)
     if managerMT.__core[key] then
         return managerMT.__core[key]
     else
+
+-- check common view methods if we're not the contentManager of a window since, hey, we are actually a view!
+        local parentObj = self:_nextResponder()
+        if not parentObj or getmetatable(parentObj) == managerMT then
+            local fn = commonViewMethods[key]
+            if fn then
+                return fn
+            elseif parentObj and type(key) == "string" then
+-- check our own "element[A-Z]\w+" methods since we're acting as an element
+                parentFN = parentObj["element" .. key:sub(1,1):upper() .. key:sub(2)]
+                if parentFN then
+                    if type(parentFN) == "function" or (getmetatable(parentFN) or {}).__call then
+                        return function(self, ...)
+                            local answer = parentFN(parentObj, self, ...)
+                            if answer == parentObj then
+                                return self
+                            else
+                                return answer
+                            end
+                        end
+                    else
+                        return parentFN
+                    end
+                end
+            end
+        end
+
+-- check to see if its an index or key to an element of this manager
         local element = self(key)
         if element then
             return wrappedElementWithMT(self, element)
         end
 
-        local parentObj = self:_nextResponder()
--- check to see if we are an element of another manager
---         if managerMT._inheritView then
-            if getmetatable(parentObj) == managerMT then
-                local fn = commonViewMethods[key]
-                if fn then return fn end
-            end
---         end
-
--- pass through method requests that aren't defined for the manager to the guitk object itself
-        if type(key) == "string" then
---             local parentObj = self:_nextResponder()
-            if parentObj then
-                local parentFN = parentObj[key]
-                if parentFN then
-                    return function(self, ...)
-                        local answer = parentFN(parentObj, ...)
-                        if answer == parentObj then
-                            return self
-                        else
-                            return answer
-                        end
+-- finally pass through method requests that aren't defined for the manager to the guitk object itself
+        if parentObj then
+            local parentFN = parentObj[key]
+            if parentFN and type(parentFN) == "function" or (getmetatable(parentFN) or {}).__call then
+                return function(self, ...)
+                    local answer = parentFN(parentObj, ...)
+                    if answer == parentObj then
+                        return self
+                    else
+                        return answer
                     end
                 end
             end
         end
+
     end
     return nil
 end
@@ -360,6 +413,7 @@ end
 
 managerMT.__pairs = function(self)
     local keys = {}
+    -- id is optional and it would just be a second way to access the same object, so stick with indicies
     for i = #self, 1, -1 do table.insert(keys, i) end
 
     return function(_, k)
