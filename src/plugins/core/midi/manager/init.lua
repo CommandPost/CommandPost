@@ -203,10 +203,12 @@ end
 ---  * None
 function mod.midiCallback(object, deviceName, commandType, description, metadata)
 
+	--[[
 	print("deviceName: " .. deviceName)
 	print("commandType: " .. commandType)
 	print("metadata: " .. hs.inspect(metadata))
 	print("------------")
+	--]]
 
 	local activeGroup = mod.activeGroup()
 	local items = mod._items()
@@ -216,23 +218,18 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 			if deviceName == item.device and item.channel == metadata.channel then
 				if commandType == "noteOff" or commandType == "noteOn" then
 					if tostring(item.number) == tostring(metadata.note) then
-
-
-						log.df("Found a note press!")
-
-						local handler = mod._actionmanager.getHandler(item.handlerID)
-						handler:execute(item.action)
-
+						if item.handlerID and item.action then
+							local handler = mod._actionmanager.getHandler(item.handlerID)
+							handler:execute(item.action)
+						end
 						return
 					end
 				elseif commandType == "controlChange" then
 					if tostring(item.number) == tostring(metadata.controllerNumber) and tostring(item.value) == tostring(metadata.controllerValue) then
-
-						log.df("Found a controller change!")
-
-						local handler = mod._actionmanager.getHandler(item.handlerID)
-						handler:execute(item.action)
-
+						if item.handlerID and item.action then
+							local handler = mod._actionmanager.getHandler(item.handlerID)
+							handler:execute(item.action)
+						end
 						return
 					end
 				end
