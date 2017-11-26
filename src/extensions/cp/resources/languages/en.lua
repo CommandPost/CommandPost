@@ -889,6 +889,7 @@ return {
 	-- MIDI PANEL:
 	--------------------------------------------------------------------------------
 	midi								=			"MIDI",
+	midiEditor							=			"MIDI Editor",
 	midiControls						=			"MIDI Controls",
 	midiReset							=			"Reset All MIDI Items",
 	refreshMidi							=			"Refresh MIDI Devices",
