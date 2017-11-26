@@ -1,0 +1,31 @@
+<div id="midiGroupControls" class="uiItem">
+{%	for id,group in pairs(groups) do %}
+	<div id="midiGroup_{{ id }}" class="midiGroup{{ id == defaultGroup and ' selected' or '' }}">
+	{%
+		local editor = groupEditor(id)
+		if editor then
+	%}
+			{* editor(group) *}
+	{%	else %}
+		<table class="midi">
+			<thead>
+				<tr>
+					<th class="midiRowAction">{{ i18n("actionOrWidget") }}</th>
+					<th class="midiRowActionButton"></th>
+					<th class="midiRowDevice">{{ i18n("device") }}</th>
+					<th class="midiRowCommandType">{{ i18n("number") }}</th>
+					<th class="midiRowChannel">{{ i18n("channel") }}</th>
+					<th class="midiRowValue">{{ i18n("value") }}</th>
+					<th class="midiRowLearn"></th>
+				</tr>
+			</thead>
+			<tbody>
+			{(html/rows.html, _.extend({group = group}, context))}
+			</tbody>
+		</table>
+	{%
+		end --if
+	%}
+	</div>
+{% end %}
+</div>

@@ -64,6 +64,10 @@ return {
 			action								=			"Action",
 			application							=			"Application",
 			tip									=			"Tip",
+			device								=			"Device",
+			select								=			"Select",
+			clear								=			"Clear",
+			number								=			"Number",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -879,6 +883,25 @@ return {
 	streamDeckAppRunning				=			"Stream Deck App is running.",
 	streamDeckAppRunningMessage			=			"This must be closed to activate Stream Deck support in CommandPost.",
 	streamDeckAppTip					=			[[You MUST have "Stream Deck.app" closed when using Stream Deck with CommandPost. ]],
+	badStreamDeckIcon					=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Stream Deck icons.",
+
+	--------------------------------------------------------------------------------
+	-- MIDI PANEL:
+	--------------------------------------------------------------------------------
+	midi								=			"MIDI",
+	midiControls						=			"MIDI Controls",
+	midiReset							=			"Reset All MIDI Items",
+	midiResetConfirmation				=			"This will reset all modified MIDI items to the default values.",
+	enableMIDI							=			"Enable MIDI Controls",
+	badMIDIIcon							=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as MIDI icons.",
+	commmandType						=			"Type",
+	channel								=			"Channel",
+	value								=			"Value",
+	learn								=			"Learn",
+	noteOn								=			"Note On",
+	noteOff								=			"Note Off",
+	controlChange						=			"Control Change",
+	learnMIDIMessage					=			"If you press the 'Yes' button below you'll have 3 seconds to trigger any button or controller on any of your connected MIDI devices.",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
@@ -1032,6 +1055,7 @@ return {
 		cpDeveloperGuide_title									=	"Developer Guide",
 		cpTouchBar_title										=	"Toggle Touch Bar",
 		cpStreamDeck_title										=	"Toggle Stream Deck",
+		cpMIDI_title											=	"Toggle MIDI Controls",
 		cpCredits_title											=	"Credits",
 		cpGlobalConsole_title									=	"Activate Global Console",
 
