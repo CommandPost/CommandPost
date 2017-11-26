@@ -891,6 +891,7 @@ return {
 	midi								=			"MIDI",
 	midiControls						=			"MIDI Controls",
 	midiReset							=			"Reset All MIDI Items",
+	refreshMidi							=			"Refresh MIDI Devices",
 	midiResetConfirmation				=			"This will reset all modified MIDI items to the default values.",
 	enableMIDI							=			"Enable MIDI Controls",
 	badMIDIIcon							=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as MIDI icons.",

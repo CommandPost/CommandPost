@@ -250,13 +250,11 @@ end
 ---  * None
 function mod.start()
 
-	-- Start the MIDI Watchers
 	log.df("Starting MIDI Watchers")
 
 	if not mod._midiDevices then
 		mod._midiDevices = {}
 	end
-
 	for _, deviceName in ipairs(mod._deviceNames) do
 		if not mod._midiDevices[deviceName] then
 			mod._midiDevices[deviceName] = midi.new(deviceName)
@@ -279,7 +277,6 @@ end
 ---  * None
 function mod.stop()
 
-	-- Stop the MIDI Watchers
 	log.df("Stopping MIDI Watchers")
 
 	for _, id in pairs(mod._midiDevices) do
@@ -300,11 +297,7 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-
-	-- Update the MIDI Watchers
-	log.df("Update MIDI Watchers")
 	mod.start()
-
 end
 
 --- plugins.core.midi.manager.enabled <cp.prop: boolean>

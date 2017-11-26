@@ -447,6 +447,14 @@ function mod.init(deps, env)
 		}
 	)
 
+	mod._panel:addButton(21,
+		{
+			label		= i18n("refreshMidi"),
+			onclick		= mod._manager.refresh,
+			class		= "refreshMidi",
+		}
+	)
+
 	--------------------------------------------------------------------------------
 	-- Setup Callback Manager:
 	--------------------------------------------------------------------------------

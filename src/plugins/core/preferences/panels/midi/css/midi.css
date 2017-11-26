@@ -100,6 +100,12 @@
 	float: left;
 }
 
+.refreshMidi {
+	margin: 10px 0px;
+	text-align: right;
+	float: right;
+}
+
 .resetShortcutsToNone {
 	margin: 10px 0px;
 	text-align: right;
