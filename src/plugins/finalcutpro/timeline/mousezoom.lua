@@ -129,8 +129,10 @@ function mod.stop()
 	--------------------------------------------------------------------------------
 	if mod.touchDevices then
 		for _, id in ipairs(mod.magicMouseIDs) do
-			mod.touchDevices[id]:stop()
-			mod.touchDevices[id] = nil
+			if mod.touchDevices[id] then
+				mod.touchDevices[id]:stop()
+				mod.touchDevices[id] = nil
+			end
 		end
 		mod.touchDevices = nil
 	end
@@ -197,12 +199,36 @@ function mod.findMagicMouses()
 			for _, id in ipairs(devices) do
 				local selectedDevice = touchdevice.forDeviceID(id)
 				if selectedDevice then
-					local selectedProductName = selectedDevice:details().productName
-					if selectedProductName == "Magic Mouse" or selectedProductName == "Magic Mouse 2" then
-						--log.df("Found a Magic Mouse with ID: %s", id)
+
+					--------------------------------------------------------------------------------
+					-- First Generation:
+					--
+					-- The original Magic Mouse annoyingly returns the customisable mouse name as
+					-- the `productName`, so we need to detect it differently:
+					--------------------------------------------------------------------------------
+					if selectedDevice:details().builtin == false and
+					selectedDevice:details().driverType == 4 and
+					selectedDevice:details().familyID == 112 and
+					selectedDevice:details().sensorDimensions.h == 9056 and
+					selectedDevice:details().sensorDimensions.w == 5152 and
+					selectedDevice:details().sensorSurfaceDimensions.h == 9056 and
+					selectedDevice:details().sensorSurfaceDimensions.w == 5152 and
+					selectedDevice:details().supportsForce == false then
+						log.df("Found a first generation Magic Mouse with ID: %s", id)
 						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
 						mod.foundMagicMouse = true
 					end
+
+					--------------------------------------------------------------------------------
+					-- Second Generation:
+					--------------------------------------------------------------------------------
+					local selectedProductName = selectedDevice:details().productName
+					if selectedProductName == "Magic Mouse 2" then
+						log.df("Found a second generation Magic Mouse with ID: %s", id)
+						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
+						mod.foundMagicMouse = true
+					end
+
 				end
 			end
 		end
@@ -374,7 +400,7 @@ function mod.start()
 	--------------------------------------------------------------------------------
 	mod.distributedObserver = distributednotifications.new(function(name)
 	    if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-	    	--log.df("New Multi-touch Device Detected. Re-scanning...")
+	    	log.df("New Multi-touch Device Detected. Re-scanning...")
 	    	mod.stop()
 	    	mod.update()
 	    end
@@ -394,7 +420,7 @@ function mod.start()
 			--------------------------------------------------------------------------------
 			-- Cache Scroll Direction:
 			--------------------------------------------------------------------------------
-			--log.df("Global Preferences Updated. Refreshing scroll direction cache.")
+			log.df("Global Preferences Updated. Refreshing scroll direction cache.")
 			mod.scrollDirection = mouse.scrollDirection()
 		end
 	end):start()
