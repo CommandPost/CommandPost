@@ -101,9 +101,15 @@
 }
 
 .refreshMidi {
+	margin: 10px -15px;
+	text-align: left;
+	float: left;
+}
+
+.openAudioMIDISetup {
 	margin: 10px 0px;
-	text-align: right;
-	float: right;
+	text-align: left;
+	float: left;
 }
 
 .resetShortcutsToNone {

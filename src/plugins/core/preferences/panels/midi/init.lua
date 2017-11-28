@@ -439,21 +439,28 @@ function mod.init(deps, env)
 		)
 		:addContent(10, generateContent, true)
 
-	mod._panel:addButton(20,
-		{
-			label		= i18n("midiReset"),
-			onclick		= resetMIDI,
-			class		= "resetShortcuts",
-		}
-	)
-
-	mod._panel:addButton(21,
-		{
-			label		= i18n("refreshMidi"),
-			onclick		= mod._manager.refresh,
-			class		= "refreshMidi",
-		}
-	)
+	mod._panel
+		:addButton(20,
+			{
+				label		= i18n("midiReset"),
+				onclick		= resetMIDI,
+				class		= "resetShortcuts",
+			}
+		)
+		:addButton(21,
+			{
+				label		= i18n("refreshMidi"),
+				onclick		= mod._manager.refresh,
+				class		= "refreshMidi",
+			}
+		)
+		:addButton(22,
+			{
+				label		= i18n("openAudioMIDISetup"),
+				onclick		= function() hs.open("/Applications/Utilities/Audio MIDI Setup.app") end,
+				class		= "openAudioMIDISetup",
+			}
+		)
 
 	--------------------------------------------------------------------------------
 	-- Setup Callback Manager:
@@ -507,7 +514,12 @@ function plugin.postInit(deps, env)
 		for _,id in pairs(handlerIds) do
 			local handlerTable = tools.split(id, "_")
 			if handlerTable[1] == groupID or handlerTable[1] == "global" then
-				table.insert(allowedHandlers, id)
+				--------------------------------------------------------------------------------
+				-- Don't include "widgets" (that are used for the Touch Bar):
+				--------------------------------------------------------------------------------
+				if handlerTable[2] ~= "widgets" then
+					table.insert(allowedHandlers, id)
+				end
 			end
 		end
 		mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))

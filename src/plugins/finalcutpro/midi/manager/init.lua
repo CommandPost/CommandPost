@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.midi ===
+--- === plugins.finalcutpro.midi.manager ===
 ---
 --- MIDI Plugin for Final Cut Pro.
 
@@ -23,7 +23,7 @@ local fcp										= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.midi",
+	id = "finalcutpro.midi.manager",
 	group = "finalcutpro",
 	dependencies = {
 		["core.midi.manager"]		= "manager",

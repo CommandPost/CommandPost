@@ -31,14 +31,123 @@ local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- THE MODULE - CONTROLS:
 --
 --------------------------------------------------------------------------------
 
 local mod = {}
 
--- MIDI Devices:
-mod._midiDevices = {}
+local controls = {}
+controls._items = {}
+
+mod.controls = controls
+
+--- plugins.core.midi.manager.controls:new(id, params) -> table
+--- Method
+--- Creates a new MIDI control.
+---
+--- Parameters:
+--- * `id`		- The unique ID for this widget.
+---
+--- Returns:
+---  * table that has been created
+function controls:new(id, params)
+
+	if controls._items[id] ~= nil then
+		error("Duplicate Control ID: " .. id)
+	end
+	local o = {
+		_id = id,
+		_params = params,
+	}
+	setmetatable(o, self)
+	self.__index = self
+
+	controls._items[id] = o
+	return o
+
+end
+
+--- plugins.core.midi.manager.controls:get(id) -> table
+--- Method
+--- Gets a MIDI control.
+---
+--- Parameters:
+--- * `id`		- The unique ID for the widget you want to return.
+---
+--- Returns:
+---  * table containing the widget
+function controls:get(id)
+	return self._items[id]
+end
+
+--- plugins.core.midi.manager.controls:getAll() -> table
+--- Method
+--- Returns all of the created controls.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * table containing all of the created callbacks
+function controls:getAll()
+	return self._items
+end
+
+--- plugins.core.midi.manager.controls:id() -> string
+--- Method
+--- Returns the ID of the control.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The ID of the widget as a `string`
+function controls:id()
+	return self._id
+end
+
+--- plugins.core.midi.manager.controls:params() -> function
+--- Method
+--- Returns the paramaters of the control.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * The paramaters of the widget
+function controls:params()
+	return self._params
+end
+
+--- plugins.core.midi.manager.controls.allGroups() -> table
+--- Function
+--- Returns a table containing all of the control groups.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+---  * Table
+function controls.allGroups()
+	local result = {}
+	local controls = controls:getAll()
+	for id, widget in pairs(controls) do
+		local params = widget:params()
+		if params and params.group then
+			if not tools.tableContains(result, params.group) then
+				table.insert(result, params.group)
+			end
+		end
+	end
+	return result
+end
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 -- MIDI Device Names
 mod._deviceNames = {}
@@ -225,12 +334,24 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 						return
 					end
 				elseif commandType == "controlChange" then
-					if tostring(item.number) == tostring(metadata.controllerNumber) and tostring(item.value) == tostring(metadata.controllerValue) then
-						if item.handlerID and item.action then
-							local handler = mod._actionmanager.getHandler(item.handlerID)
-							handler:execute(item.action)
+					if tostring(item.number) == tostring(metadata.controllerNumber) then
+						if tostring(item.value) == tostring(metadata.controllerValue) then
+							if item.handlerID and item.action then
+								local handler = mod._actionmanager.getHandler(item.handlerID)
+								handler:execute(item.action)
+							end
+							return
+						elseif item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
+
+							--------------------------------------------------------------------------------
+							-- MIDI Controls:
+							--------------------------------------------------------------------------------
+							local id = item.action.id
+							local control = controls:get(id)
+							local params = control:params()
+							params.fn(metadata)
+
 						end
-						return
 					end
 				end
 			end
@@ -249,10 +370,8 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-
-	log.df("Starting MIDI Watchers")
-
 	if not mod._midiDevices then
+		log.df("Starting MIDI Watchers")
 		mod._midiDevices = {}
 	end
 	for _, deviceName in ipairs(mod._deviceNames) do
@@ -263,7 +382,6 @@ function mod.start()
 			end
 		end
 	end
-
 end
 
 --- plugins.core.midi.manager.start() -> boolean
@@ -276,15 +394,12 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-
 	log.df("Stopping MIDI Watchers")
-
 	for _, id in pairs(mod._midiDevices) do
 		mod._midiDevices[id] = nil
 	end
 	mod._midiDevices = nil
 	collectgarbage()
-
 end
 
 --- plugins.core.midi.manager.update() -> none
@@ -297,6 +412,7 @@ end
 --- Returns:
 ---  * None
 function mod.update()
+	--log.df("Updating MIDI Watchers")
 	mod.start()
 end
 
@@ -375,6 +491,41 @@ function plugin.init(deps, env)
 end
 
 function plugin.postInit(deps, env)
+
+	--------------------------------------------------------------------------------
+	-- Setup Actions:
+	--------------------------------------------------------------------------------
+	mod._handlers = {}
+	local controlGroups = controls.allGroups()
+	for _, groupID in pairs(controlGroups) do
+		mod._handlers[groupID] = deps.actionmanager.addHandler(groupID .. "_" .. "midicontrols", groupID)
+			:onChoices(function(choices)
+				--------------------------------------------------------------------------------
+				-- Choices:
+				--------------------------------------------------------------------------------
+				local allControls = controls:getAll()
+				for _, control in pairs(allControls) do
+
+					local id = control:id()
+					local params = control:params()
+
+					local action = {
+						id		= id,
+					}
+
+					if params.group == groupID then
+						choices:add(params.text)
+							:subText(params.subText)
+							:params(action)
+							:id(id)
+					end
+
+				end
+				return choices
+			end)
+			:onExecute(function() end)
+			:onActionId(function() return id end)
+	end
 
 	if mod.enabled() then
 		mod.start()
