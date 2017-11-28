@@ -64,6 +64,10 @@ return {
 			action								=			"Action",
 			application							=			"Application",
 			tip									=			"Tip",
+			device								=			"Device",
+			select								=			"Select",
+			clear								=			"Clear",
+			number								=			"Number",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -748,18 +752,6 @@ return {
 	consoleSectionsShowAll				=			"Show All",
 	consoleSectionsHideAll				=			"Hide All",
 
-	global_cmds_action					=			"Global Commands",
-	global_widgets_action				=			"Global Touch Bar Widgets",
-
-	fcpx_cmds_action					=			"Commands",
-	fcpx_menu_action					=			"Menu Items",
-	fcpx_videoEffect_action				=			"Video Effects",
-	fcpx_audioEffect_action				=			"Audio Effects",
-	fcpx_generator_action				=			"Generators",
-	fcpx_title_action					=			"Titles",
-	fcpx_transition_action				=			"Transitions",
-	fcpx_widgets_action					=			"Touch Bar Widgets",
-
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",
@@ -784,6 +776,27 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
+
+	--------------------------------------------------------------------------------
+	-- ACTIONS:
+	--------------------------------------------------------------------------------
+
+	-- GLOBAL:
+
+	global_cmds_action					=			"Global Commands",
+	global_widgets_action				=			"Global Touch Bar Widgets",
+
+	-- FINAL CUT PRO:
+
+	fcpx_cmds_action					=			"Commands",
+	fcpx_menu_action					=			"Menu Items",
+	fcpx_videoEffect_action				=			"Video Effects",
+	fcpx_audioEffect_action				=			"Audio Effects",
+	fcpx_generator_action				=			"Generators",
+	fcpx_title_action					=			"Titles",
+	fcpx_transition_action				=			"Transitions",
+	fcpx_widgets_action					=			"Touch Bar Widgets",
+	fcpx_midicontrols_action			=			"MIDI Controls",
 
 	--------------------------------------------------------------------------------
 	-- Command URL Execution:
@@ -879,6 +892,34 @@ return {
 	streamDeckAppRunning				=			"Stream Deck App is running.",
 	streamDeckAppRunningMessage			=			"This must be closed to activate Stream Deck support in CommandPost.",
 	streamDeckAppTip					=			[[You MUST have "Stream Deck.app" closed when using Stream Deck with CommandPost. ]],
+	badStreamDeckIcon					=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Stream Deck icons.",
+
+	--------------------------------------------------------------------------------
+	-- MIDI PANEL:
+	--------------------------------------------------------------------------------
+	midi								=			"MIDI",
+	midiEditor							=			"MIDI Editor",
+	midiControls						=			"MIDI Controls",
+	midiReset							=			"Reset All MIDI Items",
+	refreshMidi							=			"Refresh MIDI Devices",
+	midiResetConfirmation				=			"This will reset all modified MIDI items to the default values.",
+	enableMIDI							=			"Enable MIDI Controls",
+	badMIDIIcon							=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as MIDI icons.",
+	commmandType						=			"Type",
+	channel								=			"Channel",
+	value								=			"Value",
+	learn								=			"Learn",
+	noteOn								=			"Note On",
+	noteOff								=			"Note Off",
+	controlChange						=			"Control Change",
+	learnMIDIMessage					=			"If you press the 'Yes' button below you'll have 3 seconds to trigger any button or controller on any of your connected MIDI devices.",
+	openAudioMIDISetup					=			"Open Audio MIDI Setup",
+
+	--------------------------------------------------------------------------------
+	-- MIDI CONTROLS:
+	--------------------------------------------------------------------------------
+	midiTimelineZoom					=			"MIDI Timeline Zoom",
+	midiTimelineZoomDescription			=			"Allows you to control timeline zoom via MIDI controls.",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
@@ -891,7 +932,13 @@ return {
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
+
+	-- COMPRESSOR:
+
 	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
+
+	-- CORE:
+
 	core_accessibility_label								=	"Accessibility Permissions",
 	core_action_manager_label								=	"Manager: Actions",
 	core_commands_actions_label								=	"Commands Actions",
@@ -907,6 +954,7 @@ return {
 	core_menu_helpandsupport_label							=	"Menubar: Help & Support Section",
 	core_menu_manager_label									=	"Manager: Menubar",
 	core_menu_top_label										=	"Menubar: Top Section",
+	core_midi_manager_label									=	"Manager: MIDI",
 	core_preferences_advanced_label							=	"Preferences: Advanced",
 	core_preferences_general_label							=	"Preferences: General",
 	core_preferences_generate_label							=	"Preferences: Generate",
@@ -915,6 +963,7 @@ return {
 	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
 	core_preferences_panels_general_label					=	"Preferences Panel: General",
 	core_preferences_panels_menubar_label					=	"Preferences Panel: Menubar",
+	core_preferences_panels_midi_label 						=	"Preferences Panel: MIDI",
 	core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
 	core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
 	core_preferences_panels_streamdeck_label				=	"Preferences Panel: Stream Deck",
@@ -930,6 +979,9 @@ return {
 	core_watchfolders_manager_label							= 	"Manger: Watch Folders",
 	core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 	core_webapp_label										=	"WebApp",
+
+	-- FINAL CUT PRO:
+
 	finalcutpro_browser_addnote_label						=	"Browser: Add Note",
 	finalcutpro_browser_keywords_label						=	"Browser: Keyword Features",
 	finalcutpro_browser_playhead_label						=	"Browser: Playhead Features",
@@ -969,6 +1021,8 @@ return {
 	finalcutpro_menu_top_label								=	"Menubar: Final Cut Pro Top Menu",
 	finalcutpro_menu_viewer_label							=	"Menubar: Viewer",
 	finalcutpro_menu_viewer_showtimecode_label				=	"Menubar: Viewer > Show Timecode",
+	finalcutpro_midi_controls_zoom_label					=	"MIDI Controls: Timeline Zoom",
+	finalcutpro_midi_manager_label							=	"Manager: MIDI",
 	finalcutpro_notifications_imessage_label				=	"Notifications: iMessage",
 	finalcutpro_notifications_manager_label					=	"Manager: Notifications",
 	finalcutpro_notifications_prowl_label					=	"Notifications: Prowl",
@@ -997,6 +1051,7 @@ return {
 	finalcutpro_timeline_pluginshortcuts_label				=	"Timeline: Plugin Shortcuts",
 	finalcutpro_timeline_preferences_label					=	"Timeline: Preferences",
 	finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
+	finalcutpro_timeline_stabilization_label				=	"Inspector: Stablization",
 	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
 	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
 	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
@@ -1032,6 +1087,7 @@ return {
 		cpDeveloperGuide_title									=	"Developer Guide",
 		cpTouchBar_title										=	"Toggle Touch Bar",
 		cpStreamDeck_title										=	"Toggle Stream Deck",
+		cpMIDI_title											=	"Toggle MIDI Controls",
 		cpCredits_title											=	"Credits",
 		cpGlobalConsole_title									=	"Activate Global Console",
 
