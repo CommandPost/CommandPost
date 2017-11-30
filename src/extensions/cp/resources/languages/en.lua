@@ -68,6 +68,9 @@ return {
 			select								=			"Select",
 			clear								=			"Clear",
 			number								=			"Number",
+			validate							=			"Validate",
+			success								=			"Success",
+			unknownError						=			"Unknown Error",
 
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
@@ -190,8 +193,6 @@ return {
 			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
 			newKeyboardShortcutsRestart			=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.",
 
-			prowlError							=			"The Prowl API Key failed to validate due to the following error:",
-
 			sharedClipboardRootFolder			=			"Shared Clipboard Root Folder",
 			sharedClipboardFileNotFound			=			"The Shared Clipboard file could not be found.",
 			sharedClipboardNotRead				=			"The Shared Clipboard file could not be read.",
@@ -275,13 +276,52 @@ return {
 			selectDestinationPreset				=			"Please select a Destination Preset:",
 			selectDestinationFolder				=			"Please select a Destination Folder:",
 
+		--------------------------------------------------------------------------------
+		-- NOTIFICATIONS:
+		--------------------------------------------------------------------------------
+
 			--------------------------------------------------------------------------------
-			-- Mobile Notifications
+			-- iMessage:
 			--------------------------------------------------------------------------------
+			iMessage							=			"iMessage",
 			iMessageTextBox						=			"Please enter the phone number or email address registered with iMessage to send the message to:",
+
+			--------------------------------------------------------------------------------
+			-- Prowl:
+			--------------------------------------------------------------------------------
+			prowl								=			"Prowl",
 			prowlTextbox						=			"Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com.",
 			prowlTextboxError 					=			"The Prowl API Key you entered is not valid.",
+			prowlError							=			"The Prowl API Key failed to validate due to the following error:",
 
+			--------------------------------------------------------------------------------
+			-- Pushover:
+			--------------------------------------------------------------------------------
+			pushover							=			"Pushover",
+			pushoverEnterUserAPI				=			"Please enter your Pushover User API key below, or press the 'Register with Pushover' button to :",
+			enablePushoverNotifications			=			"Enable Pushover Notifications",
+			pushoverNotifications				=			"Pushover Notifications",
+			userAPIKey							=			"User API Key",
+			applicationAPIKey					=			"Application API Key",
+			needUserAndAppAPIKey				=			"You must supply both a User & Application API key to continue.",
+			apiKeysValidated					=			"Your API keys you entered have been successfully validated.",
+			invalidAPIKeysSupplied				=			"Invalid API Keys Supplied",
+			notValidKeysAndError				=			"The supplied API keys are not valid.\n\nThe following error(s) occurred:\n",
+			pushoverSignup						=			"Signup for a Pushover Account",
+			getCommandPostPushoverAPIKey		=			"Create Application API Key",
+			pushoverTestFailed 					=			"You must enter both a User and Application API key and then press the 'Validate' button before you can test Pushover Notifications.",
+			pushoverValidateFailed				=			"You must enter both a User and Application API key and then press the 'Validate' button before you can enable Pushover Notifications.",
+			pushoverServerFailed				=			"Could not communicate with the Pushover server.",
+
+			--------------------------------------------------------------------------------
+			-- Common:
+			--------------------------------------------------------------------------------
+			areYouConnectedToTheInternet		=			"Are you actually connected to the Internet?",
+			testTitle							=			"CommandPost Test",
+			thisIsATest							=			"This is a test",
+			notificationTestFailed				=			"Notification Test Failed",		
+			notificationTestFailedMessage		=			"The test failed with the following errors:",
+			sendTestNotification				=			"Send Test Notification",
 			shareSuccessful 					=			"Share Successful\n%{info}",
 			shareFailed							=			"Share Failed",
 			shareUnknown						=			"Type: %{type}",
@@ -508,12 +548,6 @@ return {
 			appVersion							=			"Version",
 
 			--------------------------------------------------------------------------------
-			-- Notification Platform:
-			--------------------------------------------------------------------------------
-			iMessage							=			"iMessage",
-			prowl								=			"Prowl",
-
-			--------------------------------------------------------------------------------
 			-- Batch Export Options:
 			--------------------------------------------------------------------------------
 			performBatchExport					=			"Perform Batch Export",
@@ -570,6 +604,9 @@ return {
 			--------------------------------------------------------------------------------
 			generalPanelLabel					=			"General",
 			generalPanelTooltip					=			"General Preferences",
+
+			notificationsPanelLabel				=			"Notifications",
+			notificationsPanelTooltip			=			"Notifications Preferences",
 
 			menubarPanelLabel					=			"Menubar",
 			menubarPanelTooltip					=			"Menubar Preferences",
@@ -781,25 +818,27 @@ return {
 	-- ACTIONS:
 	--------------------------------------------------------------------------------
 
-	-- GLOBAL:
+		--------------------------------------------------------------------------------
+		-- Global:
+		--------------------------------------------------------------------------------
+		global_cmds_action					=			"Global Commands",
+		global_widgets_action				=			"Global Touch Bar Widgets",
 
-	global_cmds_action					=			"Global Commands",
-	global_widgets_action				=			"Global Touch Bar Widgets",
-
-	-- FINAL CUT PRO:
-
-	fcpx_cmds_action					=			"Commands",
-	fcpx_menu_action					=			"Menu Items",
-	fcpx_videoEffect_action				=			"Video Effects",
-	fcpx_audioEffect_action				=			"Audio Effects",
-	fcpx_generator_action				=			"Generators",
-	fcpx_title_action					=			"Titles",
-	fcpx_transition_action				=			"Transitions",
-	fcpx_widgets_action					=			"Touch Bar Widgets",
-	fcpx_midicontrols_action			=			"MIDI Controls",
+		--------------------------------------------------------------------------------
+		-- Final Cut Pro:
+		--------------------------------------------------------------------------------
+		fcpx_cmds_action					=			"Commands",
+		fcpx_menu_action					=			"Menu Items",
+		fcpx_videoEffect_action				=			"Video Effects",
+		fcpx_audioEffect_action				=			"Audio Effects",
+		fcpx_generator_action				=			"Generators",
+		fcpx_title_action					=			"Titles",
+		fcpx_transition_action				=			"Transitions",
+		fcpx_widgets_action					=			"Touch Bar Widgets",
+		fcpx_midicontrols_action			=			"MIDI Controls",
 
 	--------------------------------------------------------------------------------
-	-- Command URL Execution:
+	-- COMMAND URL EXECUTION:
 	--------------------------------------------------------------------------------
 	actionMismatchError					=			"Expected '%{expected}' action type but got '%{actual}.",
 	actionUndefinedError				=			"No action was specified to execute.",
@@ -808,7 +847,7 @@ return {
 	cmdGroupNotActivated				=			"Unable to activate the '%{id}' command group.",
 
 	--------------------------------------------------------------------------------
-	-- Command Groups:
+	-- COMMAND GROUPS:
 	--------------------------------------------------------------------------------
 	timeline_group						=			"Timeline",
 	browser_group						=			"Browser",
@@ -933,145 +972,152 @@ return {
 	-- PLUGIN LABELS:
 	--------------------------------------------------------------------------------
 
-	-- COMPRESSOR:
+		--------------------------------------------------------------------------------
+		-- Compressor:
+		--------------------------------------------------------------------------------
+		compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
 
-	compressor_watchfolders_panels_media_label				=	"Watch Folders: Compressor",
+		--------------------------------------------------------------------------------
+		-- Core:
+		--------------------------------------------------------------------------------
+		core_accessibility_label								=	"Accessibility Permissions",
+		core_action_manager_label								=	"Manager: Actions",
+		core_commands_actions_label								=	"Commands Actions",
+		core_commands_global_label								=	"Global Commands",
+		core_console_label										=	"Console",
+		core_helpandsupport_credits_label						=	"Help & Support: Credits",
+		core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
+		core_helpandsupport_feedback_label						=	"Help & Support: Feedback",
+		core_helpandsupport_userguide_label						=	"Help & Support: User Guide",
+		core_language_label										=	"Language Module",
+		core_menu_bottom_label									=	"Menubar: Bottom Section",
+		core_menu_helpandsupport_commandpost_label				=	"Menubar: CommandPost Help & Support",
+		core_menu_helpandsupport_label							=	"Menubar: Help & Support Section",
+		core_menu_manager_label									=	"Manager: Menubar",
+		core_menu_top_label										=	"Menubar: Top Section",
+		core_midi_manager_label									=	"Manager: MIDI",
+		core_preferences_advanced_label							=	"Preferences: Advanced",
+		core_preferences_general_label							=	"Preferences: General",
+		core_preferences_generate_label							=	"Preferences: Generate",
+		core_preferences_manager_label							=	"Manager: Preferences",
+		core_preferences_menuitem_label							=   "Preferences: Menu Item",
+		core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
+		core_preferences_panels_general_label					=	"Preferences Panel: General",
+		core_preferences_panels_menubar_label					=	"Preferences Panel: Menubar",
+		core_preferences_panels_midi_label 						=	"Preferences Panel: MIDI",
+		core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
+		core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
+		core_preferences_panels_streamdeck_label				=	"Preferences Panel: Stream Deck",
+		core_preferences_panels_touchbar_label					=	"Preferences: Touch Bar",
+		core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
+		core_preferences_updates_label							=	"Preferences: Updates",
+		core_quit_label											=	"Quit Command",
+		core_setup_label										= 	"Manager: Setup",
+		core_streamdeck_manager_label							=	"Manger: Stream Deck",
+		core_touchbar_manager_label								=	"Manager: Touch Bar",
+		core_touchbar_widgets_volume_label						=	"Widget: Volume Slider",
+		core_touchbar_widgets_windowslide_label					=	"Widget: Window Slider",
+		core_watchfolders_manager_label							= 	"Manger: Watch Folders",
+		core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
+		core_webapp_label										=	"WebApp",
 
-	-- CORE:
-
-	core_accessibility_label								=	"Accessibility Permissions",
-	core_action_manager_label								=	"Manager: Actions",
-	core_commands_actions_label								=	"Commands Actions",
-	core_commands_global_label								=	"Global Commands",
-	core_console_label										=	"Console",
-	core_helpandsupport_credits_label						=	"Help & Support: Credits",
-	core_helpandsupport_developerguide_label				=	"Help & Support: Developer Guide",
-	core_helpandsupport_feedback_label						=	"Help & Support: Feedback",
-	core_helpandsupport_userguide_label						=	"Help & Support: User Guide",
-	core_language_label										=	"Language Module",
-	core_menu_bottom_label									=	"Menubar: Bottom Section",
-	core_menu_helpandsupport_commandpost_label				=	"Menubar: CommandPost Help & Support",
-	core_menu_helpandsupport_label							=	"Menubar: Help & Support Section",
-	core_menu_manager_label									=	"Manager: Menubar",
-	core_menu_top_label										=	"Menubar: Top Section",
-	core_midi_manager_label									=	"Manager: MIDI",
-	core_preferences_advanced_label							=	"Preferences: Advanced",
-	core_preferences_general_label							=	"Preferences: General",
-	core_preferences_generate_label							=	"Preferences: Generate",
-	core_preferences_manager_label							=	"Manager: Preferences",
-	core_preferences_menuitem_label							=   "Preferences: Menu Item",
-	core_preferences_panels_advanced_label					=	"Preferences Panel: Advanced",
-	core_preferences_panels_general_label					=	"Preferences Panel: General",
-	core_preferences_panels_menubar_label					=	"Preferences Panel: Menubar",
-	core_preferences_panels_midi_label 						=	"Preferences Panel: MIDI",
-	core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
-	core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
-	core_preferences_panels_streamdeck_label				=	"Preferences Panel: Stream Deck",
-	core_preferences_panels_touchbar_label					=	"Preferences: Touch Bar",
-	core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
-	core_preferences_updates_label							=	"Preferences: Updates",
-	core_quit_label											=	"Quit Command",
-	core_setup_label										= 	"Manager: Setup",
-	core_streamdeck_manager_label							=	"Manger: Stream Deck",
-	core_touchbar_manager_label								=	"Manager: Touch Bar",
-	core_touchbar_widgets_volume_label						=	"Widget: Volume Slider",
-	core_touchbar_widgets_windowslide_label					=	"Widget: Window Slider",
-	core_watchfolders_manager_label							= 	"Manger: Watch Folders",
-	core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
-	core_webapp_label										=	"WebApp",
-
-	-- FINAL CUT PRO:
-
-	finalcutpro_browser_addnote_label						=	"Browser: Add Note",
-	finalcutpro_browser_keywords_label						=	"Browser: Keyword Features",
-	finalcutpro_browser_playhead_label						=	"Browser: Playhead Features",
-	finalcutpro_clipboard_history_label						=	"Clipboard History",
-	finalcutpro_clipboard_manager_label						=	"Manager: Clipboard",
-	finalcutpro_clipboard_shared_label						=	"Shared Clipboard",
-	finalcutpro_commands_actions_label						=	"Commands Actions",
-	finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
-	finalcutpro_console_label								=	"Console",
-	finalcutpro_export_batch_label							=	"Batch Export",
-	finalcutpro_feedback_bugreport_label					=	"Help & Support: Report Bug to Apple",
-	finalcutpro_fullscreen_shortcuts_label					=	"Fullscreen Shortcuts",
-	finalcutpro_hacks_backupinterval_label					=	"Backup Interval",
-	finalcutpro_hacks_movingmarkers_label					=	"Moving Makers",
-	finalcutpro_hacks_playbackrendering_label				=	"Playback Rendering Controls",
-	finalcutpro_hacks_shortcuts_label						=	"Hacks Shortcuts",
-	finalcutpro_hacks_smartcollectionslabel_label			=	"Smart Collections Label",
-	finalcutpro_hacks_timecodeoverlay_label					=	"Timecode Overlay",
-	finalcutpro_hud_label									=	"HUD",
-	finalcutpro_import_ignorecard_label						=	"Ignore Cards",
-	finalcutpro_import_preferences_label					=	"Import Preferences",
-	finalcutpro_language_label								=	"Final Cut Pro Languages",
-	finalcutpro_menu_administrator_advancedfeatures_label	=	"Menubar: Advanced Features",
-	finalcutpro_menu_administrator_label					=	"Menubar: Administrator",
-	finalcutpro_menu_clipboard_label						=	"Menubar: Clipboard",
-	finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
-	finalcutpro_menu_helpandsupport_finalcutpro_label		=	"Menubar: Final Cut Pro Help & Support",
-	finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
-	finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
-	finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
-	finalcutpro_menu_support_label							=	"Menubar: Support",
-	finalcutpro_menu_timeline_assignshortcuts_label			=	"Menubar: Timeline Assign Shortcuts",
-	finalcutpro_menu_timeline_highlightplayhead_label		=	"Menubar: Highlight Playhead",
-	finalcutpro_menu_timeline_label							=	"Menubar: Timeline",
-	finalcutpro_menu_tools_label							=	"Menubar: Tools",
-	finalcutpro_menu_tools_notifications_label				=	"Menubar: Notifications",
-	finalcutpro_menu_top_label								=	"Menubar: Final Cut Pro Top Menu",
-	finalcutpro_menu_viewer_label							=	"Menubar: Viewer",
-	finalcutpro_menu_viewer_showtimecode_label				=	"Menubar: Viewer > Show Timecode",
-	finalcutpro_midi_controls_zoom_label					=	"MIDI Controls: Timeline Zoom",
-	finalcutpro_midi_manager_label							=	"Manager: MIDI",
-	finalcutpro_notifications_imessage_label				=	"Notifications: iMessage",
-	finalcutpro_notifications_manager_label					=	"Manager: Notifications",
-	finalcutpro_notifications_prowl_label					=	"Notifications: Prowl",
-	finalcutpro_open_label									=	"Open Final Cut Pro",
-	finalcutpro_os_voice_label								=	"Voice Commands",
-	finalcutpro_preferences_app_label						=	"Preferences: Panel",
-	finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
-	finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
-	finalcutpro_sharing_xml_label							=	"XML Sharing",
-	finalcutpro_streamdeck_label							=	"Stream Deck",
-	finalcutpro_text2speech_label							=	"Text to Speech",
-	finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
-	finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
-	finalcutpro_timeline_disablewaveforms_label				=	"Timeline: Waveform Drawing",
-	finalcutpro_timeline_effects_label						=	"Timeline: Effects",
-	finalcutpro_timeline_generators_label					=	"Timeline: Generators",
-	finalcutpro_timeline_height_label						=	"Timeline: Height",
-	finalcutpro_timeline_lanes_label						=	"Timeline: Lanes",
-	finalcutpro_timeline_matchframe_label					=	"Timeline: Match Frame",
-	finalcutpro_timeline_mousezoom_label					=	"Timeline: Mouse Zoom",
-	finalcutpro_timeline_movetoplayhead_label				=	"Timeline: Move to Playhead",
-	finalcutpro_timeline_multicam_label						=	"Timeline: Multicam",
-	finalcutpro_timeline_playback_label						=	"Timeline: Playback",
-	finalcutpro_timeline_playhead_label						=	"Timeline: Playhead",
-	finalcutpro_timeline_pluginactions_label				=	"Timeline: Plugin Actions",
-	finalcutpro_timeline_pluginshortcuts_label				=	"Timeline: Plugin Shortcuts",
-	finalcutpro_timeline_preferences_label					=	"Timeline: Preferences",
-	finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
-	finalcutpro_timeline_stabilization_label				=	"Inspector: Stablization",
-	finalcutpro_timeline_titles_label						=	"Timeline: Titles",
-	finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
-	finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
-	finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
-	finalcutpro_touchbar_virtual_label						=	"Virtual Touch Bar",
-	finalcutpro_touchbar_widgets_colorboard_label			=	"Widget: Color Board",
-	finalcutpro_touchbar_widgets_zoom_label					= 	"Widget: Timeline Zoom",
-	finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
-	finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
-	finalcutpro_viewer_timecodeoverlay_label				=	"Viewer: Timecode Overlay",
-	finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
-	finalcutpro_watchers_version_label						=	"Watchers: Version",
-	finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
-	finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
+		--------------------------------------------------------------------------------
+		-- Final Cut Pro:
+		--------------------------------------------------------------------------------
+		finalcutpro_browser_addnote_label						=	"Browser: Add Note",
+		finalcutpro_browser_keywords_label						=	"Browser: Keyword Features",
+		finalcutpro_browser_playhead_label						=	"Browser: Playhead Features",
+		finalcutpro_clipboard_history_label						=	"Clipboard History",
+		finalcutpro_clipboard_manager_label						=	"Manager: Clipboard",
+		finalcutpro_clipboard_shared_label						=	"Shared Clipboard",
+		finalcutpro_commands_actions_label						=	"Commands Actions",
+		finalcutpro_commands_label								=	"Final Cut Pro Keyboard Commands",
+		finalcutpro_console_label								=	"Console",
+		finalcutpro_export_batch_label							=	"Batch Export",
+		finalcutpro_feedback_bugreport_label					=	"Help & Support: Report Bug to Apple",
+		finalcutpro_fullscreen_shortcuts_label					=	"Fullscreen Shortcuts",
+		finalcutpro_hacks_backupinterval_label					=	"Backup Interval",
+		finalcutpro_hacks_movingmarkers_label					=	"Moving Makers",
+		finalcutpro_hacks_playbackrendering_label				=	"Playback Rendering Controls",
+		finalcutpro_hacks_shortcuts_label						=	"Hacks Shortcuts",
+		finalcutpro_hacks_smartcollectionslabel_label			=	"Smart Collections Label",
+		finalcutpro_hacks_timecodeoverlay_label					=	"Timecode Overlay",
+		finalcutpro_hud_label									=	"HUD",
+		finalcutpro_import_ignorecard_label						=	"Ignore Cards",
+		finalcutpro_import_preferences_label					=	"Import Preferences",
+		finalcutpro_language_label								=	"Final Cut Pro Languages",
+		finalcutpro_menu_administrator_advancedfeatures_label	=	"Menubar: Advanced Features",
+		finalcutpro_menu_administrator_label					=	"Menubar: Administrator",
+		finalcutpro_menu_clipboard_label						=	"Menubar: Clipboard",
+		finalcutpro_menu_finalcutpro_label						=	"Menubar: Final Cut Pro",
+		finalcutpro_menu_helpandsupport_finalcutpro_label		=	"Menubar: Final Cut Pro Help & Support",
+		finalcutpro_menu_mediaimport_label						=	"Menubar: Media Import",
+		finalcutpro_menu_menuaction_label						=	"Menubar: Menu Action",
+		finalcutpro_menu_proxyicon_label						=	"Proxy Icon",
+		finalcutpro_menu_support_label							=	"Menubar: Support",
+		finalcutpro_menu_timeline_assignshortcuts_label			=	"Menubar: Timeline Assign Shortcuts",
+		finalcutpro_menu_timeline_highlightplayhead_label		=	"Menubar: Highlight Playhead",
+		finalcutpro_menu_timeline_label							=	"Menubar: Timeline",
+		finalcutpro_menu_tools_label							=	"Menubar: Tools",
+		finalcutpro_menu_tools_notifications_label				=	"Menubar: Notifications",
+		finalcutpro_menu_top_label								=	"Menubar: Final Cut Pro Top Menu",
+		finalcutpro_menu_viewer_label							=	"Menubar: Viewer",
+		finalcutpro_menu_viewer_showtimecode_label				=	"Menubar: Viewer > Show Timecode",
+		finalcutpro_midi_controls_zoom_label					=	"MIDI Controls: Timeline Zoom",
+		finalcutpro_midi_manager_label							=	"Manager: MIDI",
+		finalcutpro_notifications_imessage_label				=	"Notifications: iMessage",
+		finalcutpro_notifications_manager_label					=	"Manager: Notifications",
+		finalcutpro_notifications_prowl_label					=	"Notifications: Prowl",
+		finalcutpro_open_label									=	"Open Final Cut Pro",
+		finalcutpro_os_voice_label								=	"Voice Commands",
+		finalcutpro_preferences_app_label						=	"Preferences: Panel",
+		finalcutpro_preferences_scanfinalcutpro_label			=	"Preferences: Scan Final Cut Pro",
+		finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
+		finalcutpro_sharing_xml_label							=	"XML Sharing",
+		finalcutpro_streamdeck_label							=	"Stream Deck",
+		finalcutpro_text2speech_label							=	"Text to Speech",
+		finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
+		finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
+		finalcutpro_timeline_disablewaveforms_label				=	"Timeline: Waveform Drawing",
+		finalcutpro_timeline_effects_label						=	"Timeline: Effects",
+		finalcutpro_timeline_generators_label					=	"Timeline: Generators",
+		finalcutpro_timeline_height_label						=	"Timeline: Height",
+		finalcutpro_timeline_lanes_label						=	"Timeline: Lanes",
+		finalcutpro_timeline_matchframe_label					=	"Timeline: Match Frame",
+		finalcutpro_timeline_mousezoom_label					=	"Timeline: Mouse Zoom",
+		finalcutpro_timeline_movetoplayhead_label				=	"Timeline: Move to Playhead",
+		finalcutpro_timeline_multicam_label						=	"Timeline: Multicam",
+		finalcutpro_timeline_playback_label						=	"Timeline: Playback",
+		finalcutpro_timeline_playhead_label						=	"Timeline: Playhead",
+		finalcutpro_timeline_pluginactions_label				=	"Timeline: Plugin Actions",
+		finalcutpro_timeline_pluginshortcuts_label				=	"Timeline: Plugin Shortcuts",
+		finalcutpro_timeline_preferences_label					=	"Timeline: Preferences",
+		finalcutpro_timeline_selectalltimelineclips_label		=	"Timeline: Select All Timeline Clips",
+		finalcutpro_timeline_stabilization_label				=	"Inspector: Stablization",
+		finalcutpro_timeline_titles_label						=	"Timeline: Titles",
+		finalcutpro_timeline_transitions_label					=	"Timeline: Transitions",
+		finalcutpro_timeline_videoeffects_label					=	"Timeline: Video Effects",
+		finalcutpro_timeline_zoomtoselection_label				=	"Timeline: Zoom to Selection",
+		finalcutpro_touchbar_virtual_label						=	"Virtual Touch Bar",
+		finalcutpro_touchbar_widgets_colorboard_label			=	"Widget: Color Board",
+		finalcutpro_touchbar_widgets_zoom_label					= 	"Widget: Timeline Zoom",
+		finalcutpro_viewer_showtimecode_label					=	"Viewer: Show Timecode",
+		finalcutpro_viewer_showtimelineinplayer_label			=	"Viewer: Show Timeline in Player",
+		finalcutpro_viewer_timecodeoverlay_label				=	"Viewer: Timecode Overlay",
+		finalcutpro_watchers_preferences_label					=	"Watchers: Preferences",
+		finalcutpro_watchers_version_label						=	"Watchers: Version",
+		finalcutpro_watchfolders_panels_fcpxml_label			=	"Watch Folders: XML",
+		finalcutpro_watchfolders_panels_media_label				=	"Watch Folders: Media",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND TITLES:
 	--------------------------------------------------------------------------------
-	fcpx_command_group										=	"FCPX",
-	global_command_group									=	"Global",
+
+		--------------------------------------------------------------------------------
+		-- Groups:
+		--------------------------------------------------------------------------------
+		fcpx_command_group										=	"FCPX",
+		global_command_group									=	"Global",
 
 		--------------------------------------------------------------------------------
 		-- Global:
