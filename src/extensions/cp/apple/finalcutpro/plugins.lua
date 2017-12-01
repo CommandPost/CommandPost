@@ -167,12 +167,35 @@ mod.motionTemplates = {
 -- Returns:
 --  * None
 function mod.mt:scanSystemAudioUnits(language)
-	local audioEffect = mod.types.audioEffect
 
-	local audioUnits = {}
-	-- get the full list of aufx plugins
+	--------------------------------------------------------------------------------
+	-- Restore from cache:
+	--------------------------------------------------------------------------------
+	local cache = {}
+	local cacheFile = "~/Library/Caches/AudioUnitCache/com.apple.audiounits.cache"
+	local currentModification = fs.attributes(cacheFile)
+	local lastModification = config.get("audioUnitsCacheModification", nil)				
+	local audioUnitsCache = config.get("audioUnitsCache", nil)	
+		
+	if audioUnitsCache and lastModification and currentModification ~= lastModification then
+		log.df("Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items).")
+		for _, data in pairs(audioUnitsCache) do 
+			local coreAudioPlistPath = data.coreAudioPlistPath or nil
+			local audioEffect = data.audioEffect or nil
+			local category = data.category or nil
+			local plugin = data.plugin or nil
+			local language = data.language or nil	
+			self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, language)
+		end
+		return
+	end	
+
+	--------------------------------------------------------------------------------
+	-- Get the full list of Audio Unit Plugins via `auval`:
+	--------------------------------------------------------------------------------
 	local output, status = hs.execute("auval -s aufx")
-
+	local audioEffect = mod.types.audioEffect
+	
 	if status and output then
 
 		local coreAudioPlistPath = mod.coreAudioPreferences
@@ -203,12 +226,36 @@ function mod.mt:scanSystemAudioUnits(language)
 						end
 					end
 				end
+				
+				--------------------------------------------------------------------------------
+				-- Cache Plugins:
+				--------------------------------------------------------------------------------
+				table.insert(cache, {
+					["coreAudioPlistPath"] = coreAudioPlistPath, 
+					["audioEffect"] = audioEffect,
+					["category"] = category, 
+					["plugin"] = plugin, 
+					["language"] = language,
+				})
+				
 				self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, language)
 			end
 		end
+		
+		--------------------------------------------------------------------------------
+		-- Save Cache:
+		--------------------------------------------------------------------------------
+		local modification = fs.attributes(cacheFile)
+		if modification then		
+			log.df("Saving Audio Units to Cache.")
+			config.set("audioUnitsCacheModification", modification.modification)
+			config.set("audioUnitsCache", cache)
+		end
+		
 	else
 		log.ef("Failed to scan for Audio Units.")
 	end
+	
 end
 
 -- scanUserEffectsPresets(language) -> none
