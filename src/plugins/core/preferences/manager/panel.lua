@@ -114,7 +114,7 @@ end
 --- Parameters:
 --- * `priority`		- the priority order of the content.
 --- * `content`			- a value that can be converted to a string.
---- * `unescaped`		- if `true`, the content will not be escaped. Defaults to true.
+--- * `unescaped`		- if `true`, the content will not be escaped. Defaults to `false`.
 ---
 --- Returns:
 --- * The panel.
@@ -217,7 +217,7 @@ function panel:addTextbox(priority, params)
 	local textbox = ui.textbox(params)
 	if params.label then
 		local label = html (params.label)
-		textbox = html.label (label .. " " .. textbox)
+		textbox = html.label (label) .. " " .. textbox
 	end
 
 	local content = html.p { class=getClass(params) } ( textbox )

@@ -28,7 +28,7 @@ local SETTING 					= "menubarMediaImportEnabled"
 --------------------------------------------------------------------------------
 -- LOCAL FUNCTIONS:
 --------------------------------------------------------------------------------
-local sectionEnabled = config.prop(SETTING, true)
+local sectionEnabled = config.prop(SETTING, false) -- Chris deliberately changed the default to false, as very few people actually use these buttons.
 
 --------------------------------------------------------------------------------
 --

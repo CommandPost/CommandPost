@@ -1,19 +1,23 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---      M O B I L E   N O T I F I C A T I O N S   M E N U   S E C T I O N     --
+--        N O T I F I C A T I O N S    P R E F E R E N C E S    P A N E L     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.menu.tools.notifications ===
+--- === plugins.core.preferences.panels.notifications ===
 ---
---- The AUTOMATION > 'Options' > 'Mobile Notifications' menu section.
+--- Notifications Preferences Panel
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
+-- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 10000
+local log										= require("hs.logger").new("prefsNotify")
+
+local image										= require("hs.image")
+
+local tools										= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -21,18 +25,25 @@ local PRIORITY = 10000
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.tools.notifications",
-	group			= "finalcutpro",
+	id				= "core.preferences.panels.notifications",
+	group			= "core",
 	dependencies	= {
-		["finalcutpro.menu.tools"] = "tools"
+		["core.preferences.manager"]	= "manager",
 	}
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(dependencies)
-	return dependencies.tools:addMenu(PRIORITY, function() return i18n("mobileNotifications") end)
+function plugin.init(deps)
+	return deps.manager.addPanel({
+		priority 	= 2025,
+		id			= "notifications",
+		label		= i18n("notificationsPanelLabel"),
+		image		= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Notifications.prefPane/Contents/Resources/Notifications-RTL.icns")),
+		tooltip		= i18n("notificationsPanelTooltip"),
+		height		= 620,
+	})
 end
 
 return plugin
