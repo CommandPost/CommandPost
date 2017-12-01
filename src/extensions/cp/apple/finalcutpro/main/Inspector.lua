@@ -104,12 +104,16 @@ function Inspector:UI()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
 		if ui then
-			-- it's in the right panel (full-height)
+			-----------------------------------------------------------------------
+			-- It's in the right panel (full-height):
+			-----------------------------------------------------------------------
 			if Inspector.matches(ui) then
 				return ui
 			end
 		else
-			-- it's in the top-left panel (half-height)
+			-----------------------------------------------------------------------
+			-- It's in the top-left panel (half-height):
+			-----------------------------------------------------------------------
 			local top = parent:topGroupUI()
 			for i,child in ipairs(top) do
 				if Inspector.matches(child) then
@@ -332,11 +336,12 @@ function Inspector:stabilization(value)
 		if value == nil or type(value) == "boolean" then
 			self:selectTab("Video")
 			if self:selectedTab() == "Video" then
-				if ui and ui[1] and ui[1][1] and ui[1][1][1] then
-					for id,child in ipairs(ui[1][1][1]) do
+				local inspectorContent = axutils.childWithID(ui, id "DetailsPanel")
+				if inspectorContent then
+					for id,child in ipairs(inspectorContent[1][1]) do
 						if child:attributeValue("AXValue") == app:string("FFStabilizationEffect") then
-							if ui[1][1][1][id - 1] then
-								local checkbox = ui[1][1][1][id - 1]
+							if inspectorContent[1][1][id - 1] then
+								local checkbox = inspectorContent[1][1][id - 1]
 								if checkbox then
 									local checkboxValue = checkbox:attributeValue("AXValue")
 									if value == nil then
