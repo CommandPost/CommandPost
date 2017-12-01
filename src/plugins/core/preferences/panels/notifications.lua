@@ -42,7 +42,7 @@ function plugin.init(deps)
 		label		= i18n("notificationsPanelLabel"),
 		image		= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/Notifications.prefPane/Contents/Resources/Notifications-RTL.icns")),
 		tooltip		= i18n("notificationsPanelTooltip"),
-		height		= 338,
+		height		= 620,
 	})
 end
 

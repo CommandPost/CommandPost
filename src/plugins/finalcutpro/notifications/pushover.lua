@@ -26,7 +26,7 @@ local config									= require("cp.config")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 10
+local PRIORITY = 100
 
 --------------------------------------------------------------------------------
 --
@@ -207,60 +207,19 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	if deps.prefs then
 		deps.prefs
-			:addContent(PRIORITY+2, [[			
+			:addContent(PRIORITY, [[			
 				<style>
-					.api label {
-						width:140px;
-						clear:left;
-						text-align:left;
-						padding-right:10px;
-						padding-bottom:20px;
-						float: left;
-					}
-
-					.api input[type=text] {
-						float: left;
-						-webkit-appearance: none;
-						-webkit-box-shadow: none;
-						-webkit-rtl-ordering: logical;
-						-webkit-user-select: text;
-						color: #959595;
-						background-color:#161616;
-						border-style: solid;
-						border-color: #0a0a0a;
-						border-width: 2px;
-						border-radius: 6px;
-						width: 300px;
-						text-align: center;
-						font-size: 13px;
-						height: 20px;
-					}
-
-					.api input[type=text]:focus {
-						float: left;
-						-webkit-appearance: none;
-						-webkit-box-shadow: none;
-						-webkit-rtl-ordering: logical;
-						-webkit-user-select: text;
-						color: #959595;
-						border-style: solid;
-						border-color: #1a3868;
-						border-width: 2px;
-						border-radius: 6px;
-						width: 300px;
-						text-align: center;
-						font-size: 13px;
-						height: 20px;
-					}
 					.validatePushover {
 						float:left;
+						margin-bottom: 10px;
 					}
-					.getPushover {		
+					.sendTestNotification {		
+						clear: both;
 						float:left;										
 						margin-top: 5px;
 						margin-bottom: 10px;						
 					}
-					.createPushover {
+					.pushoverButtons {
 						float:left;
 						margin-left: -15px;
 						margin-top: 5px;
@@ -268,44 +227,29 @@ function plugin.init(deps)
 					}
 				</style>			
 			]], true)
-			:addHeading(PRIORITY, i18n("pushoverNotifications"))
-			:addCheckbox(PRIORITY+1,
+			:addHeading(PRIORITY+1, i18n("pushoverNotifications"))
+			:addCheckbox(PRIORITY+2,
 				{
 					label = i18n("enablePushoverNotifications"),
 					onchange = function(_, params) 
 						if mod.apiValidated() then 
 							mod.enabled(params.checked) 
 						else
-							dialog.webviewAlert(deps.prefsManager.getWebview(), function() 
-								deps.prefsManager.injectScript([[
-									document.getElementById("pushoverEnable").checked = false;
-								]])
-							end, i18n("invalidAPIKeysSupplied"), i18n("pushoverValidateFailed"), i18n("ok"))
+							if params.checked then 
+								mod.enabled(false)
+								dialog.webviewAlert(deps.prefsManager.getWebview(), function() 
+									deps.prefsManager.injectScript([[
+										document.getElementById("pushoverEnable").checked = false;
+									]])
+								end, i18n("invalidAPIKeysSupplied"), i18n("pushoverValidateFailed"), i18n("ok"))
+							end
 						end
 					end,
 					checked = mod.enabled,
 					id = "pushoverEnable",
 				}
 			)
-			:addButton(PRIORITY+7,
-				{
-					label = i18n("pushoverSignup"),
-					onclick = function(_, params)		
-						os.execute('open "https://pushover.net/login"')
-					end,
-					class = "getPushover",
-				}
-			)			
-			:addButton(PRIORITY+8,
-				{
-					label = i18n("getCommandPostPushoverAPIKey"),
-					onclick = function(_, params)		
-						os.execute('open "https://pushover.net/apps/clone/commandpost"')
-					end,
-					class = "createPushover",
-				}
-			)			
-			:addButton(PRIORITY+9,
+			:addButton(PRIORITY+3,
 				{
 					label = i18n("sendTestNotification"),
 					onclick = function(_, params)
@@ -319,10 +263,29 @@ function plugin.init(deps)
 							dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("invalidAPIKeysSupplied"), i18n("pushoverTestFailed"), i18n("ok"))
 						end						
 					end,
-					class = "createPushover",
+					class = "sendTestNotification",
+				}
+			)		
+			:addButton(PRIORITY+4,
+				{
+					label = i18n("pushoverSignup"),
+					onclick = function(_, params)		
+						os.execute('open "https://pushover.net/login"')
+					end,
+					class = "pushoverButtons",
 				}
 			)			
-			:addTextbox(PRIORITY+10,
+			:addButton(PRIORITY+5,
+				{
+					label = i18n("getCommandPostPushoverAPIKey"),
+					onclick = function(_, params)		
+						os.execute('open "https://pushover.net/apps/clone/commandpost"')
+					end,
+					class = "pushoverButtons",
+				}
+			)			
+	
+			:addTextbox(PRIORITY+6,
 				{
 					label = i18n("userAPIKey") .. ":",
 					value = mod.userAPIKey(),
@@ -330,11 +293,15 @@ function plugin.init(deps)
 					id = "pushoverUserAPIKey",
 					onchange = function(_, params) 
 						mod.apiValidated(false)
+						deps.prefsManager.injectScript([[
+							document.getElementById("pushoverEnable").checked = false;
+						]])						
+						mod.enabled(false)
 						mod.userAPIKey(params.value)
 					end,
 				}
 			)
-			:addTextbox(PRIORITY+11,
+			:addTextbox(PRIORITY+7,
 				{
 					label = i18n("applicationAPIKey") .. ":",					
 					value = mod.appAPIKey(),
@@ -343,10 +310,14 @@ function plugin.init(deps)
 					onchange = function(_, params) 
 						mod.apiValidated(false)
 						mod.appAPIKey(params.value)
+						deps.prefsManager.injectScript([[
+							document.getElementById("pushoverEnable").checked = false;
+						]])						
+						mod.enabled(false)
 					end,
 				}
 			)
-			:addButton(PRIORITY+12,
+			:addButton(PRIORITY+8,
 				{
 					label = i18n("validate"),
 					onclick = function(_, params)		

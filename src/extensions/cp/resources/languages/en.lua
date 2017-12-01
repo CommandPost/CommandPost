@@ -283,16 +283,25 @@ return {
 			--------------------------------------------------------------------------------
 			-- iMessage:
 			--------------------------------------------------------------------------------
-			iMessage							=			"iMessage",
-			iMessageTextBox						=			"Please enter the phone number or email address registered with iMessage to send the message to:",
+			iMessageNotifications				=			"iMessage Notifications",
+			enableiMessageNotifications			=			"Enable iMessage Notifications",
+			iMessageDestination					=			"Mobile/Apple ID",
+			iMessageMissingDestination			=			"Phone Number or Apple ID Required",
+			iMessageMissingMessage				=			"You must enter a valid phone number or Apple ID before enabling iMessage Notifications.",
+			openMessages						=			"Open Messages",
+			openContacts						=			"Open Contacts",
 
 			--------------------------------------------------------------------------------
 			-- Prowl:
 			--------------------------------------------------------------------------------
-			prowl								=			"Prowl",
-			prowlTextbox						=			"Please enter your Prowl API key below.\n\nIf you don't have one you can register for free at prowlapp.com.",
-			prowlTextboxError 					=			"The Prowl API Key you entered is not valid.",
-			prowlError							=			"The Prowl API Key failed to validate due to the following error:",
+			prowlNotifications					=			"Prowl Notifications",
+			enableProwlNotifications			=			"Enable Prowl Notifications",
+			prowlAPIKey							=			"Prowl API Key",				
+			prowlMissingAPIKey					=			"Missing Prowl API Key",
+			prowlMissingAPIKeyMessage			=			"You must enter a valid Prowl API Key to enable Prowl Notifications.",
+			invalidProwlAPIKey					=			"Invalid Prowl API Key",
+			notValidProwlAPIKeyError			=			"The Prowl API Key failed to validate due to the following error:",				
+			getProwlAccount						=			"Signup for a Prowl Account",
 
 			--------------------------------------------------------------------------------
 			-- Pushover:
