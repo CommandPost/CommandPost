@@ -6,6 +6,36 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.14</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Added Shortcut to Add Stabilisation to Selected Clip in Timeline (issue #637)</li>
+				<li>Added MIDI Support (issue #638)</li>
+				<li>Added Color Board MIDI Controls (issue #847)</li>
+				<li>Added Pushover Notification Support (issue #218)</li>
+				<li>Added option to ignore offline/missing files when Batch Exporting (issue #853)</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>Audio Unit scan results are now cached for faster startup (issue #850)</li>
+				<li>CommandPost now remembers the last Touch Bar sub-group you used</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>OPTION + Mouse Zoom now works with original Magic Mouse (issue #837)</li>
+				<li>Fixed bug in primaryWindow():rightGroupUI() (issue #843)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Sat,  2 Dec 2017 02:48:48 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.14/CommandPost_1.0.0-beta.14.dmg"
+				sparkle:version="1.0.0-beta.14"
+				sparkle:dsaSignature="MC0CFQDSQKZTXsFu2GQeHv5UGHmLwR5SfQIUCW1e0pkICvDCeTxizPI1SeV2Fh4="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.13</title>
 			<description><![CDATA[
 				<h2>New Features:</h2>
