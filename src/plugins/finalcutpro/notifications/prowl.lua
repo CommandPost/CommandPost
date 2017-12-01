@@ -135,11 +135,11 @@ end
 function mod.sendNotification(message, optionalTitle)
 	local prowlAPIKey = mod.apiKey()
 	if prowlAPIKey ~= nil then
-		local prowlApplication = http.encodeForQuery(optionalTitle) or http.encodeForQuery(string.upper(i18n("finalCutPro")))
-		local prowlEvent = http.encodeForQuery("")
-		local prowlDescription = http.encodeForQuery(message)
+		local prowlApplication = optionalTitle or string.upper(i18n("finalCutPro"))
+		local prowlEvent = ""
+		local prowlDescription = message
 
-		local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. prowlAPIKey .. "&application=" .. prowlApplication .. "&event=" .. prowlEvent .. "&description=" .. prowlDescription
+		local prowlAction = "https://api.prowlapp.com/publicapi/add?apikey=" .. http.encodeForQuery(prowlAPIKey) .. "&application=" .. http.encodeForQuery(prowlApplication) .. "&event=" .. http.encodeForQuery(prowlEvent) .. "&description=" .. http.encodeForQuery(prowlDescription)
 		httpResponse, httpBody, httpHeader = http.get(prowlAction, nil)
 
 		if string.match(httpBody, "success") then
