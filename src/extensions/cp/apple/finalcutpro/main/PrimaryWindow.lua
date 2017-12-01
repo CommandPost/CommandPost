@@ -152,8 +152,8 @@ end
 
 -- TODO: Add documentation
 function PrimaryWindow:rightGroupUI()
-	local root = self:rootGroupUI()
-	if root and #root == 2 then
+	local root = self:rootGroupUI()		
+	if root and #root == 3 then
 		if #(root[1]) >= 3 then
 			return root[1]
 		else
