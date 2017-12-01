@@ -563,6 +563,7 @@ return {
 			setDestinationPreset	 			=			"Set Destination Preset",
 			setDestinationFolder				=			"Set Destination Folder",
 			replaceExistingFiles				=			"Replace Existing Files",
+			ignoreMissingEffects				=			"Ignore Missing & Offline Files",
 			sendToCompressor					=			"Send to Compressor",
 
 			--------------------------------------------------------------------------------
