@@ -159,7 +159,7 @@ mod.motionTemplates = {
 
 -- scanSystemAudioUnits() -> none
 -- Function
--- Scans for Validated Audio Units
+-- Scans for Validated Audio Units, and saves the results to a cache for faster subsequent startup times.
 --
 -- Parameters:
 --  * None
@@ -172,7 +172,7 @@ function mod.mt:scanSystemAudioUnits(language)
 	-- Restore from cache:
 	--------------------------------------------------------------------------------
 	local cache = {}
-	local cacheFile = "~/Library/Caches/AudioUnitCache/com.apple.audiounits.cache"
+	local cacheFile = "~/Library/Preferences/com.apple.audio.InfoHelper.plist"
 
 	local currentModification = fs.attributes(cacheFile) and fs.attributes(cacheFile).modification
 	local lastModification = config.get("audioUnitsCacheModification", nil)
