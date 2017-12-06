@@ -6,6 +6,24 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.15</title>
+			<description><![CDATA[
+				<h2>Bug Fix:</h2>
+				<ul><li>Fixed Audio Units Cache (issue #858)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Thu,  7 Dec 2017 00:13:22 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.15/CommandPost_1.0.0-beta.15.dmg"
+				sparkle:version="1.0.0-beta.15"
+				sparkle:dsaSignature="MCwCFEoOeXl1PhoDVVgOilS/3a1iH4tzAhQftMgmHcjGymlbg9lFNW2nGqCjCg=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.14</title>
 			<description><![CDATA[
 				<h2>New Features:</h2>
