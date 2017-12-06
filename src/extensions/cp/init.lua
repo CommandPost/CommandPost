@@ -91,7 +91,12 @@ function mod.init()
 		logger.defaultLogLevel = 'debug'
 		require("cp.developer")
 	else
-		logger.defaultLogLevel = 'warning'
+		--------------------------------------------------------------------------------
+		-- NOTE: For now, whilst we're in beta, it's probably better if our error
+		--       logs contain all the debug message we write to the console, so we can
+		--       refer to them if users submit feedback.
+		--------------------------------------------------------------------------------
+		--logger.defaultLogLevel = 'warning'
 	end
 
 	--------------------------------------------------------------------------------
