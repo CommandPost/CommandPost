@@ -6,6 +6,26 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.16</title>
+			<description><![CDATA[
+				<h2>Improvements:</h2>
+				<ul><li>Improved MIDI Control Responsiveness (issue #863)</li>
+				<li>Increased Custom Plugin Shortcuts from 5 to 9 (issue #867)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed Fullscreen Shortcut Bug (issue #861)</li>
+				<li>Fixed Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Wed, 13 Dec 2017 00:55:40 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.16/CommandPost_1.0.0-beta.16.dmg"
+				sparkle:version="1.0.0-beta.16"
+				sparkle:dsaSignature="MC0CFEzwBmARDQ2TQvGxsGThSmCFBV6WAhUA81hSgDrKASnoZ8kDgEeGI5p8ih4="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.15</title>
 			<description><![CDATA[
 				<h2>Bug Fix:</h2>
