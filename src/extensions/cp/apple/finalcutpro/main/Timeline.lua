@@ -322,12 +322,12 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 			-- The timeline and/or playhead does not exist.
 			if status ~= Timeline.INVISIBLE then
 				status = Timeline.INVISIBLE
-				log.df("Timeline not visible.")
+				--log.df("Timeline not visible.")
 			end
 
 			stopCounter = Timeline.stopThreshold
 			if deactivateWhenStopped then
-				log.df("Deactivating lock.")
+				--log.df("Deactivating lock.")
 				self:unlockPlayhead()
 			end
 		else
@@ -340,9 +340,9 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 				incPlayheadStopped()
 				if playheadHasStopped() and status ~= Timeline.STOPPED then
 					status = Timeline.STOPPED
-					log.df("Playhead stopped.")
+					--log.df("Playhead stopped.")
 					if deactivateWhenStopped then
-						log.df("Deactivating lock.")
+						--log.df("Deactivating lock.")
 						self:unlockPlayhead()
 					end
 				end
@@ -359,12 +359,12 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 				if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
 					if status ~= Timeline.DEADZONE then
 						status = Timeline.DEADZONE
-						log.df("In the deadzone.")
+						--log.df("In the deadzone.")
 					end
 				else
 					if status ~= Timeline.TRACKING then
 						status = Timeline.TRACKING
-						log.df("Tracking the playhead.")
+						--log.df("Tracking the playhead.")
 					end
 
 					-----------------------------------------------------------------------
