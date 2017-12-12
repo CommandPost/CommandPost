@@ -260,9 +260,11 @@ function mod.unarchiveFCPXData(fcpxData)
 	if clipboardTable then
 		local base64Data = clipboardTable[CLIPBOARD.PASTEBOARD_OBJECT]
 		if base64Data then
-			local fcpxTable = plist.base64ToTable(base64Data)
+			local fcpxTable, errorMessage = plist.base64ToTable(base64Data)
 			if fcpxTable then
 				return archiver.unarchive(fcpxTable)
+			else
+				log.ef("plist.base64ToTable Error: %s", errorMessage)
 			end
 		end
 	end

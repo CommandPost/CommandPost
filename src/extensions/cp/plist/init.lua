@@ -14,8 +14,11 @@
 --
 --------------------------------------------------------------------------------
 local log			= require("hs.logger").new("plist")
-local plistParse 	= require("cp.plist.plistParse")
+
 local fs			= require("hs.fs")
+
+local plistParse 	= require("cp.plist.plistParse")
+local tools 		= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -26,28 +29,41 @@ local plist = {}
 
 plist.log = log
 
---- cp.plist.base64ToTable(base64Data) -> table | nil
+--- cp.plist.base64ToTable(base64Data) -> table | nil, errorMessage
 --- Function
---- Converts base64 Data into a LUA Table.
+--- Converts base64 encoded Property List string into a Table.
 ---
 --- Parameters:
----  * base64Data - Binary data encoded in base64
+---  * base64Data - Binary data encoded in base64 as a string
 ---
 --- Returns:
 ---  * A table of the plist data
+---  * A error message as string if an error occurs
 function plist.base64ToTable(base64Data)
 
+	--------------------------------------------------------------------------------
+	-- Trim Base64 data:
+	--------------------------------------------------------------------------------
+	if base64Data then
+ 		base64Data = tools.trim(base64Data)
+ 	end
+
+	--------------------------------------------------------------------------------
 	-- Define Temporary Files:
+	--------------------------------------------------------------------------------
 	local base64FileName = os.tmpname()
 	local plistFileName	= os.tmpname()
 
-	local plistTable, err
+	local err = ""
+	local plistTable
 
 	local file = io.open(base64FileName, "w")
 	file:write(base64Data)
 	file:close()
 
+	--------------------------------------------------------------------------------
 	-- Convert the base64 file to a binary plist:
+	--------------------------------------------------------------------------------
 	executeCommand = 'openssl base64 -in "' .. tostring(base64FileName) .. '" -out "' .. tostring(plistFileName) .. '" -d'
 	executeOutput, executeStatus, _, _ = hs.execute(executeCommand)
 	if not executeStatus then
@@ -57,7 +73,9 @@ function plist.base64ToTable(base64Data)
 		plistTable, err = plist.fileToTable(plistFileName)
 	end
 
+	--------------------------------------------------------------------------------
 	-- Clean up the Temporary Files:
+	--------------------------------------------------------------------------------
 	os.remove(base64FileName)
 	os.remove(plistFileName)
 
@@ -221,7 +239,7 @@ function plist.fileToTable(plistFileName)
 	if not absoluteFilename then
 		return nil, string.format("Unable to find '%s'", plistFileName)
 	end
-	
+
 	if plist.isBinaryPlist(absoluteFilename) then
 		-- it's a binary plist
 		return plist.binaryFileToTable(absoluteFilename)
