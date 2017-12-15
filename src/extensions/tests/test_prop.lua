@@ -4,7 +4,7 @@ local inspect	= require("hs.inspect")
 
 local prop		= require("cp.prop")
 
-function run()
+return test("cp.prop", function()
 	test("Prop Prepare Value", function()
 		local prep = prop._prepareValue
 
@@ -735,6 +735,4 @@ function run()
 		p:update()
 		ok(eq(p(), 3), "p result has now updated to 3")
 	end)
-end
-
-return run
+end)

@@ -14,7 +14,7 @@ function expectError(fn, ...)
 	return result
 end
 
-function run()
+return test.suite("cp.text", {
 	test("text from string", function()
 		local utf8text = "a丽𐐷"
 		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
@@ -34,7 +34,7 @@ function run()
 		ok(eq(value:encode(text.encoding.utf16be), utf16be))
 
 		ok(eq(tostring(value), utf8text))
-	end)
+	end),
 
 	test("text from codepoints", function()
 		local utf8text = "a丽𐐷"
@@ -60,12 +60,12 @@ function run()
 		ok(eq(text.fromCodepoints(codepoints, -1),		text "𐐷"))
 		ok(eq(text.fromCodepoints(codepoints, 2, 1),	text ""))
 		ok(eq(text.fromCodepoints(codepoints, 4),		text ""))
-	end)
+	end),
 
 	test("read-only", function()
 		local value = text "a丽𐐷"
 		expectError(function() value[1] = 1 end)
-	end)
+	end),
 
 	test("concatenation", function()
 		local utf8String = "a丽𐐷"
@@ -80,7 +80,7 @@ function run()
 		ok(text.is(right))
 		ok(eq(direct, left))
 		ok(eq(direct, right))
-	end)
+	end),
 
 
 	test("len", function()
@@ -91,14 +91,14 @@ function run()
 		ok(eq(unicodeText:len(), 3))
 		ok(eq(#unicodeText, 3))
 		ok(eq(unicodeText:encode(text.encoding.utf16le):len(), 8))
-	end)
+	end),
 
 	test("equality", function()
 		ok("a丽𐐷" == "a丽𐐷", "string == string")
 		ok("a丽𐐷" ~= text "a丽𐐷" ,"string ~= text")
 		ok(text "a丽𐐷" == text "a丽𐐷", "text == text")
 		ok(text "a丽𐐷" ~= text "other text", "text ~= different text")
-	end)
+	end),
 
 	test("sub", function()
 		local value = text("123456789")
@@ -110,7 +110,7 @@ function run()
 		ok(eq(value:sub(-2),		text "89"))
 		ok(eq(value:sub(-5, -3),	text "567"))
 		ok(eq(value:sub(5,1),		text ""))
-	end)
+	end),
 
 	test("text with BOM", function()
 		local utf8text		= "\239\187\191".."a丽𐐷"								-- BOM.."a丽𐐷"
@@ -121,14 +121,14 @@ function run()
 		ok(eq(text.fromString(utf8text).codes, codepoints))
 		ok(eq(text.fromString(utf16le).codes, codepoints))
 		ok(eq(text.fromString(utf16be).codes, codepoints))
-	end)
+	end),
 
 	test("text from file", function()
 		-- loading from BOM
 		ok(eq(text.fromFile(TEXT_PATH.."utf8.txt"), text "ABC123"))
 		ok(eq(text.fromFile(TEXT_PATH.."utf16le.txt"), text "ABC123"))
 		ok(eq(text.fromFile(TEXT_PATH.."utf16be.txt"), text "ABC123"))
-	end)
+	end),
 
 
 	test("match", function()
@@ -145,7 +145,7 @@ function run()
 
 		local result = text("foobar"):match("^%d*$")
 		ok(eq(result, nil))
-	end)
+	end),
 
 	test("gmatch", function()
 		local v = text("banana")
@@ -155,7 +155,7 @@ function run()
 			count = count + 1
 		end
 		ok(eq(count, 2))
-	end)
+	end),
 
 	test("gsub", function()
 		local x
@@ -195,7 +195,7 @@ function run()
 			return utf8.char(tonumber(s:sub(3):encode()))
 		end)
 		ok(eq(x, text "AӒB"))
-	end)
+	end),
 
 	test("quotes matcher", function()
 		local keyValue = matcher('^%"(.+)%"%s*%=%s*%"(.+)%";.*$')
@@ -216,8 +216,5 @@ function run()
 		local x = CHAR_ESCAPE:gsub(escaped.." ", '%1')
 		ok(eq(tostring(x), 'Is "Escaped" '))
 
-	end)
-
-end
-
-return run
+	end),
+})

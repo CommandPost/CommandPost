@@ -1,4 +1,4 @@
-local test				= require("cp.test.neu")
+local test				= require("cp.test")
 local log				= require("hs.logger").new("t_utf16")
 local inspect			= require("hs.inspect")
 
@@ -9,13 +9,13 @@ local utf16				= require("cp.utf16")
 
 local TEXT_PATH = config.scriptPath .. "/tests/unicode/"
 
-function expectError(fn, ...)
+local function expectError(fn, ...)
 	local success, result = pcall(fn, ...)
 	ok(not success)
 	return result
 end
 
-return test("utf16", function()
+return test.suite("cp.utf16"):with(
 	test("toBytes", function()
 		local toBytes = utf16._toBytes
 
@@ -23,7 +23,7 @@ return test("utf16", function()
 		ok(eq({toBytes(0x1234)}, {0x34, 0x12, 0, 0, 0, 0, 0, 0}))
 		ok(eq({toBytes(0x1234, 2)}, {0x34, 0x12}))
 		ok(eq({toBytes(0x1234, 2, true)}, {0x12, 0x34}))
-	end)
+	end),
 
 	test("UTF-16 Invalid Codepoints", function()
 		local char = utf16.char
@@ -31,19 +31,19 @@ return test("utf16", function()
 		expectError(char, false, 0xD800)	-- reserved
 		expectError(char, false, 0xDFFF)	-- reserved
 		expectError(char, false, 0x110000)	-- the maximum codepoint is 0x10FFFF
-	end)
+	end),
 
 	test("UTF-16LE file", function()
 		for line in io.lines(TEXT_PATH .. "utf16le.txt") do
 			ok(eq(line, "\xFF\xFEA\x00B\x00C\x001\x002\x003\x00"))
 		end
-	end)
+	end),
 
 	test("UTF-16BE file", function()
 		for line in io.lines(TEXT_PATH .. "utf16be.txt") do
 			ok(eq(line, "\xFE\xFF\x00A\x00B\x00C\x001\x002\x003"))
 		end
-	end)
+	end),
 
 	test("UTF-16 char conversion", function()
 		local char = utf16.char
@@ -71,7 +71,7 @@ return test("utf16", function()
 
 		local utf16be = char(true,  utf8.codepoint(utf8text, 1, #utf8text))
 		ok(eq(utf16be,		"\x00a".."\x4E\x3D".."\xD8\x01\xDC\x37"))
-	end)
+	end),
 
 	test("read2Bytes", function()
 		local read2Bytes = utf16._read2Bytes
@@ -86,7 +86,7 @@ return test("utf16", function()
 
 		expectError(read2Bytes, true,  string, -1)				-- out of range
 		expectError(read2Bytes, true,  string, 6)				-- not enough bits left for 16 bytes.
-	end)
+	end),
 
 	test("fromBytes", function()
 		local fromBytes = utf16._fromBytes
@@ -138,7 +138,7 @@ return test("utf16", function()
 		expectError(fromBytes, false, utf16le, 0)
 		expectError(fromBytes, false, utf16le, 8)
 		expectError(fromBytes, false, utf16le, 9)
-	end)
+	end),
 
 	test("codepoint", function()
 		local codepoint = utf16.codepoint
@@ -162,7 +162,7 @@ return test("utf16", function()
 		ok(eq({codepoint(false, utf16le, 1, -1)}, {utf8.codepoint("a丽𐐷", 1, -1)}))
 
 		ok(eq(codepoint(true, utf16be, -4), utf8.codepoint("𐐷")))		-- third character of the string, big-endian
-	end)
+	end),
 
 	test("codes", function()
 		local codes = utf16.codes
@@ -181,7 +181,7 @@ return test("utf16", function()
 			table.insert(result, cp)
 		end
 		ok(eq(result, codepoints))
-	end)
+	end),
 
 	test("len", function()
 		local len = utf16.len
@@ -196,7 +196,7 @@ return test("utf16", function()
 		ok(eq(len(true, utf16be),			utf8.len(utf8text)))
 		ok(eq(len(true, utf16be, 3),		utf8.len(utf8text, 2)))
 		ok(eq(len(true, utf16be, 1, 3),		utf8.len(utf8text, 1, 2)))
-	end)
+	end),
 
 	test("offset", function()
 		local offset = utf16.offset
@@ -225,4 +225,4 @@ return test("utf16", function()
 		expectError(offset, false, utf16le, 5)
 		expectError(offset, false, utf16le, -5)
 	end)
-end)
+)

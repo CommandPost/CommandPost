@@ -6,7 +6,7 @@ local plistSrc	= require("cp.strings.source.plist")
 local strings	= require("cp.strings")
 local config	= require("cp.config")
 
-function run()
+return test("cp.strings", function()
 	test("Table Source Test", function()
 		local src = tableSrc.new()
 			:add("en", {foo = "bar"})
@@ -67,6 +67,4 @@ function run()
 		ok(eq(strs:findKeys("en", "bar"), {"foo"}))
 	end)
 
-end
-
-return run
+end)
