@@ -1,13 +1,7 @@
 local test 		= require("cp.test")
 
--- return test.suite("cp", {
--- 	"tests.test_text",
--- 	"tests.test_utf16"
--- })
-
 return test.suite("cp"):with(
-
-	-- "tests.test_fcp",
+	"tests.test_fcp",
 	"tests.test_fcpplugins",
 	"tests.test_html",
 	"tests.test_just",

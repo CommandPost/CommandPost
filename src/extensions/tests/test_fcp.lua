@@ -327,7 +327,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 -- custom run function, that loops through all languages (or languages provided)
 :onRun(function(self, runTests, languages, ...)
 	-- Figure out which languages to test
-	if type(languages) == table then
+	if type(languages) == "table" then
 		languages = languages and #languages > 0 and languages
 	elseif type(languages) == "string" then
 		languages = { languages }
@@ -349,7 +349,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 	hs.execute([[cp -R "]] .. testLibrary .. [[" "]] .. temporaryDirectory .. [["]])
 
 	for _,lang in ipairs(languages) do
-		log.df("Testing FCPX in the '%s' language...", lang)
+		-- log.df("Testing FCPX in the '%s' language...", lang)
 		self.name = originalName .. " > " .. lang
 		if fcp:currentLanguage(lang) then
 			just.wait(2)
@@ -357,7 +357,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 			just.doUntil(fcp.isRunning)
 
 			-- run the actual tests
-			runTests(...)
+			runTests(self, ...)
 		else
 			log.ef("Unable to set FCPX to use the '%s' language.", lang)
 		end
@@ -369,7 +369,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 
 	-- Quit FCPX and remove Test Library from Temporary Directory:
 	-- log.df("Quitting FCPX and deleting Test Library...")
-	-- fcp:quit()
-	-- fs.rmdir(temporaryDirectory)
+	fcp:quit()
+	fs.rmdir(temporaryDirectory)
 
 end)

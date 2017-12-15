@@ -336,30 +336,31 @@ function test.suite.mt:onRun(onRunFn, ...)
 end
 
 -- Default _run function, that just passes on the filters
-function test.suite.mt._run(self, runFn, ...)
+function test.suite.mt:_run(runFn, ...)
 	runFn(self, ...)
 end
 
 function test.suite.mt:run(...)
-	self._run(self, function(filter, ...)
-		self.result = test.result.new()
+	self.result = test.result.new()
 
-		pushSuite(self)
-		self.result:start()
+	pushSuite(self)
+	self.result:start()
+
+	self:_run(function(self, filter, ...)
 		local count = #self.tests
 		for i,t in ipairs(self.tests) do
 			if matchesFilter(t, i, count, filter) then
 				t(...)
 			end
 		end
-		self.result:stop()
-		popSuite()
-
-		-- only output the summary if there is no parent suite, or if 'verbose' is enabled.
-		if (not addResult(self.result) or verbose) and handler.summary then
-			handler.summary(self)
-		end
 	end, ...)
+	self.result:stop()
+	popSuite()
+
+	-- only output the summary if there is no parent suite, or if 'verbose' is enabled.
+	if (not addResult(self.result) or verbose) and handler.summary then
+		handler.summary(self)
+	end
 end
 
 function test.suite.mt:addResult(newResult)
