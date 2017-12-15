@@ -10,7 +10,6 @@ local test					= require("cp.test")
 
 local TEST_LIBRARY 			= "Test Library.fcpbundle"
 
-local testLibrary 			= config.scriptPath .. "/tests/fcp/" .. TEST_LIBRARY
 local temporaryDirectory 	= fs.temporaryDirectory() .. "CommandPost"
 local temporaryLibrary 		= temporaryDirectory .. "/" .. TEST_LIBRARY
 
@@ -46,7 +45,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 		ok(fcp:inspector():isShowing())
 		ok(fcp:viewer():isShowing())
 		ok(not fcp:eventViewer():isShowing())
-	end),
+	-- end),
 
 	-- test("Check Event Viewer", function()
 	-- 	-- Reset to default workspace
@@ -319,10 +318,11 @@ return test.suite("cp.apple.finalcutpro"):with(
 	-- 	ok(panel:backgroundRender():isShowing())
 
 	-- 	panel:hide()
-	-- end)
+	end)
 )
 -- custom run function, that loops through all languages (or languages provided)
 :onRun(function(runTests, languages, ...)
+	-- Figure out which languages to test
 	if type(languages) == table then
 		languages = languages and #languages > 0 and languages
 	elseif type(languages) == "string" then
@@ -337,6 +337,8 @@ return test.suite("cp.apple.finalcutpro"):with(
 	local originalLanguage = fcp:currentLanguage()
 
 	-- Copy Test Library to Temporary Directory:
+	local testLibrary = config.scriptPath .. "/tests/fcp/libraries/" .. fcp:getVersion() .. TEST_LIBRARY
+
 	fs.rmdir(temporaryDirectory)
 	fs.mkdir(temporaryDirectory)
 	hs.execute([[cp -R "]] .. testLibrary .. [[" "]] .. temporaryDirectory .. [["]])
@@ -359,6 +361,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 	fcp:currentLanguage(originalLanguage)
 
 	-- Quit FCPX and remove Test Library from Temporary Directory:
+	log.df("Quitting FCPX and deleting Test Library...")
 	fcp:quit()
 	fs.rmdir(temporaryDirectory)
 
