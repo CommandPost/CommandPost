@@ -51,12 +51,20 @@ local mod = {}
 function mod.update()
 	if mod.enabled() and fcp:fullScreenWindow():isShowing() then
 		--log.df("Watching for fullscreen shortcuts")
-		mod.keyUpWatcher:start()
-		mod.keyDownWatcher:start()
+		if mod.keyUpWatcher then
+			mod.keyUpWatcher:start()
+		end
+		if mod.keyDownWatcher then
+			mod.keyDownWatcher:start()
+		end
 	else
 		--log.df("Not watching for fullscreen shortcuts")
-		mod.keyUpWatcher:stop()
-		mod.keyDownWatcher:stop()
+		if mod.keyUpWatcher then
+			mod.keyUpWatcher:stop()
+		end
+		if mod.keyDownWatcher then
+			mod.keyDownWatcher:stop()
+		end
 	end
 end
 

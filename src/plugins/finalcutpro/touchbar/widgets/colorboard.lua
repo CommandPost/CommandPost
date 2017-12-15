@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.touchbar.widgets.colorboard ===
 ---
---- Final Cut Pro Color Board Widget for Touch Bar.
+--- A collection of Final Cut Pro Color Board Widgets for the Touch Bar.
 
 --------------------------------------------------------------------------------
 --
@@ -25,7 +25,6 @@ local timer				= require("hs.timer")
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 local fcp				= require("cp.apple.finalcutpro")
-local tools				= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -34,11 +33,30 @@ local tools				= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.touchbar.widgets.colorboard.updateInterval -> number
+--- Variable
+--- How often the Touch Bar widgets should be refreshed in seconds
 mod.updateInterval = 2
 
+-- plugins.finalcutpro.touchbar.widgets.colorboard._doubleTap -> table
+-- Variable
+-- Table containing whether or not a double tap has occurred.
 mod._doubleTap = {}
+
+-- plugins.finalcutpro.touchbar.widgets.colorboard._updateCallbacks -> table
+-- Variable
+-- A table containing all of the update callback functions for each widget
 mod._updateCallbacks = {}
 
+-- getBrightness(aspect) -> number
+-- Function
+-- Returns the brightness of an aspect
+--
+-- Parameters:
+--  * aspect - "color", "saturation" or "exposure"
+--
+-- Returns:
+--  * A number
 local function getBrightness(aspect)
 	if aspect == "global" then
 		return 0.25
@@ -53,6 +71,19 @@ local function getBrightness(aspect)
 	end
 end
 
+-- calculateColor(pct, angle) -> brightness, solidColor, fillColor, negative
+-- Function
+-- Returns the color
+--
+-- Parameters:
+--  * pct - percentage value as number
+--  * aspect - "color", "saturation" or "exposure"
+--
+-- Returns:
+--  * brightness - value as number
+--  * solidColor - color in `hs.drawing.color` format
+--  * fillColor - color in `hs.drawing.color` format
+--  * negative - boolean
 local function calculateColor(pct, angle)
 	local brightness = nil
 	local solidColor = nil
@@ -76,6 +107,16 @@ local function calculateColor(pct, angle)
 	return brightness, solidColor, fillColor, negative
 end
 
+-- getWidgetText(id, aspect) -> string
+-- Function
+-- Returns the widget text
+--
+-- Parameters:
+--  * id - puck ID
+--  * aspect - "color", "saturation" or "exposure"
+--
+-- Returns:
+--  * Text in `hs.styledtext` format
 local function getWidgetText(id, aspect)
 	local colorBoard = fcp:colorBoard()
 	local widgetText
@@ -111,11 +152,23 @@ local function getWidgetText(id, aspect)
 	return widgetText
 end
 
+-- updateCanvas(widgetCanvas, id, aspect, property) -> none
+-- Function
+-- Updates a Canvas
+--
+-- Parameters:
+--  * widgetCanvas - a `hs.canvas` object
+--  * id - ID of the puck as string
+--  * aspect - "color", "saturation" or "exposure"
+--  * property - "global", "shadows", "midtones", "highlights"
+--
+-- Returns:
+--  * None
 local function updateCanvas(widgetCanvas, id, aspect, property)
 
 	local colorBoard = fcp:colorBoard()
 
-	if colorBoard:isShowing() == false then
+	if not colorBoard:isActive() then
 		widgetCanvas.negative.action = "skip"
 		widgetCanvas.arc.action = "skip"
 		widgetCanvas.info.action = "skip"
@@ -160,13 +213,23 @@ local function updateCanvas(widgetCanvas, id, aspect, property)
 
 end
 
-mod._timer = timer.new(mod.updateInterval, function()
+-- update() -> none
+-- Function
+-- Triggers all the available update callbacks
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function update()
 	if fcp:isRunning() and fcp:isFrontmost() and fcp:colorBoard():isShowing() then
 		for i, v in pairs(mod._updateCallbacks) do
 			v()
 		end
 	end
-end)
+
+end
 
 --- plugins.finalcutpro.touchbar.widgets.colorboard.start() -> nil
 --- Function
@@ -177,8 +240,14 @@ end)
 ---
 --- Returns:
 ---  * None
-function mod.start()
-	mod._timer:start()
+function mod.start(delay)
+	if delay and type(delay) == "number" then
+		timer.doAfter(delay, function()
+			mod._timer:start()
+		end)
+	else
+		mod._timer:start()
+	end
 end
 
 --- plugins.finalcutpro.touchbar.widgets.colorboard.stop() -> nil
@@ -194,6 +263,17 @@ function mod.stop()
 	mod._timer:stop()
 end
 
+-- puckWidget(id, aspect, property) -> `hs._asm.undocumented.touchbar.item` object
+-- Function
+-- Creates a Puck Widget
+--
+-- Parameters:
+--  * id - ID of the widget as string
+--  * aspect - "color", "saturation" or "exposure"
+--  * property - "global", "shadows", "midtones", "highlights"
+--
+-- Returns:
+--  * A `hs._asm.undocumented.touchbar.item` object
 local function puckWidget(id, aspect, property)
 
 	local colorBoard = fcp:colorBoard()
@@ -398,40 +478,42 @@ local function puckWidget(id, aspect, property)
 			--------------------------------------------------------------------------------
 			-- Start the timer:
 			--------------------------------------------------------------------------------
-			timer.doAfter(2, function()
-				mod.start()
-			end)
+			mod.start(2)
 
 	end)
-
-	--------------------------------------------------------------------------------
-	-- Add update callback to timer:
-	--------------------------------------------------------------------------------
-	mod._updateCallbacks[#mod._updateCallbacks + 1] = function() updateCanvas(widgetCanvas, id, aspect, property) end
 
 	--------------------------------------------------------------------------------
 	-- Update the Canvas:
 	--------------------------------------------------------------------------------
 	updateCanvas(widgetCanvas, id, aspect, property)
 
-	return touchbar.item.newCanvas(widgetCanvas, id):canvasClickColor{ alpha = 0.0 }
+	--------------------------------------------------------------------------------
+	-- Create new Touch Bar Item from Canvas:
+	--------------------------------------------------------------------------------
+	local item = touchbar.item.newCanvas(widgetCanvas, id):canvasClickColor{ alpha = 0.0 }
 
-end
-
-local function switchToPanel(aspect)
-	local colorBoard = fcp:colorBoard()
-	if colorBoard then
-		colorBoard:showPanel(aspect)
+	--------------------------------------------------------------------------------
+	-- Add update callback to timer:
+	--------------------------------------------------------------------------------
+	mod._updateCallbacks[#mod._updateCallbacks + 1] = function()
+		if item:isVisible() then
+			updateCanvas(widgetCanvas, id, aspect, property)
+		end
 	end
+
+	return item
+
 end
 
-local function switchToPanel(aspect)
-	local colorBoard = fcp:colorBoard()
-	if colorBoard then
-		colorBoard:showPanel(aspect)
-	end
-end
-
+-- groupPuck(id) -> `hs._asm.undocumented.touchbar.item` object
+-- Function
+-- Creates the Group Puck
+--
+-- Parameters:
+--  * id - ID of the group as string
+--
+-- Returns:
+--  * A `hs._asm.undocumented.touchbar.item` object
 local function groupPuck(id)
 
 	--------------------------------------------------------------------------------
@@ -458,7 +540,9 @@ local function groupPuck(id)
 	widgetCanvas:canvasMouseEvents(true, true, false, true)
 		:mouseCallback(function(o,m,i,x,y)
 			if m == "mouseDown" or m == "mouseMove" then
+				mod.stop()
 				fcp:colorBoard():togglePanel()
+				mod.start(0.01)
 			end
 		end)
 
@@ -486,6 +570,21 @@ end
 --- Returns:
 ---  * None
 function mod.init(deps)
+
+	--------------------------------------------------------------------------------
+	-- Setup Timer:
+	--------------------------------------------------------------------------------
+	mod._timer = timer.new(mod.updateInterval, update)
+
+	--------------------------------------------------------------------------------
+	-- Only enable the timer when Final Cut Pro is active:
+	--------------------------------------------------------------------------------
+	fcp:watch({
+		active		= mod.start,
+		inactive	= mod.stop,
+		show		= mod.start,
+		hide		= mod.stop,
+	})
 
 	--------------------------------------------------------------------------------
 	-- Color Board Group:
@@ -659,18 +758,12 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-
 	--------------------------------------------------------------------------------
-	-- Only enable the timer when Final Cut Pro is active:
+	-- Only load this plugin if the Touch Bar is supported:
 	--------------------------------------------------------------------------------
-	fcp:watch({
-		active		= mod.start,
-		inactive	= mod.stop,
-		show		= mod.start,
-		hide		= mod.stop,
-	})
-
-	return mod.init(deps)
+	if touchbar.supported() then
+		return mod.init(deps)
+	end
 end
 
 return plugin

@@ -11,81 +11,195 @@
 --- Usage:
 --- require("cp.apple.finalcutpro"):plugins():scan()
 
-
---------------------------------------------------------------------------------
---
--- NOTE: This might be useful? But no cache for 'es'?
---
--- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_de
--- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_en
--- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_fr
--- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_ja
--- /Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized/registryCache_zh-Hans
---
---------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------
--- GREP NOTES:
---------------------------------------------------------------------------------
---[[
-grep -lr "Cross Dissolve" /Applications/Final\ Cut\ Pro.app/Contents
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFAnchoredTimelineModule-iMovie.nib
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFAnchoredTimelineModule.nib
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFAnchoredTimelineModule-iMovie.nib
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFAnchoredTimelineModule.nib
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFAnchoredTimelineModule-iMovie.nib
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFAnchoredTimelineModule.nib
-/Applications/Final Cut Pro.app/Contents/PlugIns/FxPlug/FiltersLegacyPath.bundle/Contents/Resources/English.lproj/Localizable.strings
-/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings
-/Applications/Final Cut Pro.app/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/MacOS/MotionEffect
-
-grep -lr "Draw Mask" /Applications/Final\ Cut\ Pro.app/Contents
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Resources/en.lproj/FFLocalizable.strings
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/A/Resources/en.lproj/FFLocalizable.strings
-/Applications/Final Cut Pro.app/Contents/Frameworks/Flexo.framework/Versions/Current/Resources/en.lproj/FFLocalizable.strings
-/Applications/Final Cut Pro.app/Contents/Resources/FinalCutPro10.help/Contents/Resources/en.lproj/navigation.json
---]]
---------------------------------------------------------------------------------
-
-
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("scan")
-local bench										= require("cp.bench")
+local log						= require("hs.logger").new("scan")
+local bench						= require("cp.bench")
 
-local fnutils									= require("hs.fnutils")
-local fs 										= require("hs.fs")
-local json										= require("hs.json")
+local fnutils					= require("hs.fnutils")
+local fs 						= require("hs.fs")
+local json						= require("hs.json")
 
-local archiver									= require("cp.plist.archiver")
-local config									= require("cp.config")
-local plist										= require("cp.plist")
-local tools										= require("cp.tools")
-local watcher									= require("cp.watcher")
+local archiver					= require("cp.plist.archiver")
+local config					= require("cp.config")
+local plist						= require("cp.plist")
+local tools						= require("cp.tools")
+local watcher					= require("cp.watcher")
 
-local text										= require("cp.web.text")
-local localized									= require("cp.localized")
-local strings									= require("cp.strings")
+local text						= require("cp.web.text")
+local localized					= require("cp.localized")
+local strings					= require("cp.strings")
 
-local v											= require("semver")
-
-local copy										= fnutils.copy
+local v							= require("semver")
 
 --------------------------------------------------------------------------------
 --
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+
+local mod 						= {}
+
+mod.mt 							= {}
+mod.mt.__index 					= mod.mt
+
+local TEMPLATE_START_PATTERN	= ".*<template>.*"
+local THEME_PATTERN				= ".*<theme>(.+)</theme>.*"
+local FLAGS_PATTERN				= ".*<flags>(.+)</flags>.*"
+local TEMPLATE_END_PATTERN		= ".*</template>.*"
+
+local OBSOLETE_FLAG				= 2
+
+--- cp.apple.finalcutpro.plugins.types
+--- Constant
+--- Table of the different audio/video/transition/generator types.
+mod.types = {
+	videoEffect	= "videoEffect",
+	audioEffect	= "audioEffect",
+	title		= "title",
+	generator	= "generator",
+	transition	= "transition",
+}
+
+--- cp.apple.finalcutpro.plugins.coreAudioPreferences
+--- Constant
+--- Core Audio Preferences File Path
+mod.coreAudioPreferences = "/System/Library/Components/CoreAudio.component/Contents/Info.plist"
+
+--- cp.apple.finalcutpro.plugins.audioUnitsCache
+--- Constant
+--- Path to the Audio Units Cache
+mod.audioUnitsCache 	 = "~/Library/Preferences/com.apple.audio.InfoHelper.plist"
+
+--- cp.apple.finalcutpro.plugins.appBuiltinPlugins
+--- Constant
+--- Table of built-in plugins
+mod.appBuiltinPlugins = {
+	--------------------------------------------------------------------------------
+	-- Built-in Effects:
+	--------------------------------------------------------------------------------
+	[mod.types.videoEffect] = {
+		["FFEffectCategoryColor"]	= { "FFCorrectorEffectName" },
+		["FFMaskEffect"]			= { "FFSplineMaskEffect", "FFShapeMaskEffect" },
+		["Stylize"] 				= { "DropShadow::Filter Name" },
+		["FFEffectCategoryKeying"]	= { "Keyer::Filter Name", "LumaKeyer::Filter Name" }
+	},
+
+	--------------------------------------------------------------------------------
+	-- Built-in Transitions:
+	--------------------------------------------------------------------------------
+	[mod.types.transition] = {
+		["Transitions::Dissolves"] = { "CrossDissolve::Filter Name", "DipToColorDissolve::Transition Name", "FFTransition_OpticalFlow" },
+		["Movements"] = { "SpinSlide::Transition Name", "Swap::Transition Name", "RippleTransition::Transition Name", "Mosaic::Transition Name", "PageCurl::Transition Name", "PuzzleSlide::Transition Name", "Slide::Transition Name" },
+		["Objects"] = { "Cube::Transition Name", "StarIris::Transition Name", "Doorway::Transition Name" },
+		["Wipes"] = { "BandWipe::Transition Name", "CenterWipe::Transition Name", "CheckerWipe::Transition Name", "ChevronWipe::Transition Name", "OvalIris::Transition Name", "ClockWipe::Transition Name", "GradientImageWipe::Transition Name", "Inset Wipe::Transition Name", "X-Wipe::Transition Name", "EdgeWipe::Transition Name" },
+		["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
+	},
+}
+
+--- cp.apple.finalcutpro.plugins.appEdelEffects
+--- Constant
+--- Table of Built-in Soundtrack Pro EDEL Effects.
+mod.appEdelEffects = {
+	["Distortion"] = {
+		"Bitcrusher",
+		"Clip Distortion",
+		"Distortion",
+		"Distortion II",
+		"Overdrive",
+		"Phase Distortion",
+		"Ringshifter",
+	},
+	["Echo"] = {
+		"Delay Designer",
+		"Modulation Delay",
+		"Stereo Delay",
+		"Tape Delay",
+	},
+	["EQ"] = {
+		"AutoFilter",
+		"Channel EQ", -- This isn't actually listed as a Logic plugin in FCPX, but it is.
+		"Fat EQ",
+		"Linear Phase EQ",
+	},
+	["Levels"] = {
+		"Adaptive Limiter",
+		"Compressor",
+		"Enveloper",
+		"Expander",
+		"Gain",
+		"Limiter",
+		"Multichannel Gain",
+		"Multipressor",
+		"Noise Gate",
+		"Spectral Gate",
+		"Surround Compressor",
+	},
+	["Modulation"] = {
+		"Chorus",
+		"Ensemble",
+		"Flanger",
+		"Phaser",
+		"Scanner Vibrato",
+		"Tremolo"
+	},
+	["Spaces"] = {
+		"PlatinumVerb",
+		"Space Designer",
+	},
+	["Specialized"] = {
+		"Correlation Meter",
+		"Denoiser",
+		"Direction Mixer",
+		"Exciter",
+		"MultiMeter",
+		"Stereo Spread",
+		"SubBass",
+		"Test Oscillator",
+	},
+	["Voice"] = {
+		"DeEsser",
+		"Pitch Correction",
+		"Pitch Shifter II",
+		"Vocal Transformer",
+	},
+}
+
+--- cp.apple.finalcutpro.plugins.types
+--- Constant
+--- Table of the different Motion Template Extensions
+mod.motionTemplates = {
+	["Effects"] = {
+		type = mod.types.videoEffect,
+		extension = "moef",
+	},
+	["Transitions"] = {
+		type = mod.types.transition,
+		extension = "motr",
+	},
+	["Generators"] = {
+		type = mod.types.generator,
+		extension = "motn",
+	},
+	["Titles"] = {
+		type = mod.types.title,
+		extension = "moti",
+	}
+}
+
+--------------------------------------------------------------------------------
 -- HELPER FUNCTIONS:
---
 --------------------------------------------------------------------------------
 
-local unescapeXML				= text.unescapeXML
-local isBinaryPlist				= plist.isBinaryPlist
+local contains					= fnutils.contains
+local copy						= fnutils.copy
 local getLocalizedName			= localized.getLocalizedName
 local insert, remove			= table.insert, table.remove
-local contains					= fnutils.contains
+local isBinaryPlist				= plist.isBinaryPlist
+local unescapeXML				= text.unescapeXML
 
 -- string:split(delimiter) -> table
 -- Function
@@ -115,51 +229,24 @@ function string:split(delimiter)
    return list
 end
 
---------------------------------------------------------------------------------
+-- endsWith(str, ending) -> boolean
+-- Function
+-- Checks to see if `str` has the same ending as `ending`.
 --
--- THE MODULE:
+-- Parameters:
+--  * str		- String to analysis
+--  * ending 	- End of string to compare against
 --
---------------------------------------------------------------------------------
-
-
-local mod = {}
--- The metatable
-mod.mt = {}
-mod.mt.__index = mod.mt
-
-mod.types = {
-	videoEffect	= "videoEffect",
-	audioEffect	= "audioEffect",
-	title		= "title",
-	generator	= "generator",
-	transition	= "transition",
-}
-
---------------------------------------------------------------------------------
--- Define Plugin Types:
---------------------------------------------------------------------------------
-mod.motionTemplates = {
-	["Effects"] = {
-		type = mod.types.videoEffect,
-		extension = "moef",
-	},
-	["Transitions"] = {
-		type = mod.types.transition,
-		extension = "motr",
-	},
-	["Generators"] = {
-		type = mod.types.generator,
-		extension = "motn",
-	},
-	["Titles"] = {
-		type = mod.types.title,
-		extension = "moti",
-	}
-}
+-- Returns:
+--  * table
+function endsWith(str, ending)
+	local len = #ending
+	return str:len() >= len and str:sub(len * -1) == ending
+end
 
 -- scanSystemAudioUnits() -> none
 -- Function
--- Scans for Validated Audio Units
+-- Scans for Validated Audio Units, and saves the results to a cache for faster subsequent startup times.
 --
 -- Parameters:
 --  * None
@@ -167,11 +254,35 @@ mod.motionTemplates = {
 -- Returns:
 --  * None
 function mod.mt:scanSystemAudioUnits(language)
-	local audioEffect = mod.types.audioEffect
 
-	local audioUnits = {}
-	-- get the full list of aufx plugins
+	--------------------------------------------------------------------------------
+	-- Restore from cache:
+	--------------------------------------------------------------------------------
+	local cache = {}
+	local cacheFile = mod.audioUnitsCache
+
+	local currentModification = fs.attributes(cacheFile) and fs.attributes(cacheFile).modification
+	local lastModification = config.get("audioUnitsCacheModification", nil)
+	local audioUnitsCache = config.get("audioUnitsCache", nil)
+
+	if currentModification and lastModification and audioUnitsCache and currentModification == lastModification then
+		log.df("Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items).")
+		for _, data in pairs(audioUnitsCache) do
+			local coreAudioPlistPath = data.coreAudioPlistPath or nil
+			local audioEffect = data.audioEffect or nil
+			local category = data.category or nil
+			local plugin = data.plugin or nil
+			local language = data.language or nil
+			self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, language)
+		end
+		return
+	end
+
+	--------------------------------------------------------------------------------
+	-- Get the full list of Audio Unit Plugins via `auval`:
+	--------------------------------------------------------------------------------
 	local output, status = hs.execute("auval -s aufx")
+	local audioEffect = mod.types.audioEffect
 
 	if status and output then
 
@@ -203,12 +314,36 @@ function mod.mt:scanSystemAudioUnits(language)
 						end
 					end
 				end
+
+				--------------------------------------------------------------------------------
+				-- Cache Plugins:
+				--------------------------------------------------------------------------------
+				table.insert(cache, {
+					["coreAudioPlistPath"] = coreAudioPlistPath,
+					["audioEffect"] = audioEffect,
+					["category"] = category,
+					["plugin"] = plugin,
+					["language"] = language,
+				})
+
 				self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, language)
 			end
+		end
+
+		--------------------------------------------------------------------------------
+		-- Save Cache:
+		--------------------------------------------------------------------------------
+		if currentModification and #cache ~= 0 then
+			config.set("audioUnitsCacheModification", currentModification)
+			config.set("audioUnitsCache", cache)
+			log.df("Saved " .. #cache .. " Audio Units to Cache.")
+		else
+			log.ef("Failed to cache Audio Units.")
 		end
 	else
 		log.ef("Failed to scan for Audio Units.")
 	end
+
 end
 
 -- scanUserEffectsPresets(language) -> none
@@ -243,38 +378,19 @@ function mod.mt:scanUserEffectsPresets(language)
 	end
 end
 
-local TEMPLATE_START_PATTERN	= ".*<template>.*"
-local THEME_PATTERN				= ".*<theme>(.+)</theme>.*"
-local FLAGS_PATTERN				= ".*<flags>(.+)</flags>.*"
-local TEMPLATE_END_PATTERN		= ".*</template>.*"
-
-local OBSOLETE_FLAG				= 2
-
-local firstTheme = true
-
-local function endsWith(str, ending)
-	local len = #ending
-	return str:len() >= len and str:sub(len * -1) == ending
-end
-
---- cp.apple.finalcutpro.scannplugins.getMotionTheme(filename) -> string | nil
---- Function
---- Process a plugin so that it's added to the current scan
----
---- Parameters:
----  * filename - Filename of the plugin
----
---- Returns:
----  * The theme name, or `nil` if not found.
----
---- Notes:
----  * getMotionTheme("~/Movies/Motion Templates.localized/Effects.localized/3065D03D-92D7-4FD9-B472-E524B87B5012.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.moef")
+-- getMotionTheme(filename) -> string | nil
+-- Function
+-- Process a plugin so that it's added to the current scan
+--
+-- Parameters:
+--  * filename - Filename of the plugin
+--
+-- Returns:
+--  * The theme name, or `nil` if not found.
+--
+-- Notes:
+--  * getMotionTheme("~/Movies/Motion Templates.localized/Effects.localized/3065D03D-92D7-4FD9-B472-E524B87B5012.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.moef")
 local function getMotionTheme(filename)
-	-- if not firstTheme then
-	-- 	return nil
-	-- end
-	-- firstTheme = false
-	--
 	filename = fs.pathToAbsolute(filename)
 	if filename then
 		local inTemplate = false
@@ -315,7 +431,7 @@ local function getMotionTheme(filename)
 	return nil
 end
 
--- cp.apple.finalcutpro.plugins.getPluginName(path, pluginExt) -> boolean
+-- getPluginName(path, pluginExt) -> boolean
 -- Function
 -- Checks if the specified path is a plugin directory, and returns the plugin name.
 --
@@ -348,25 +464,25 @@ end
 mod._getMotionTheme = getMotionTheme
 mod._getPluginName = getPluginName
 
--- cp.apple.finalcutpro.plugins:scanPluginsDirectory(language, path, filter) -> boolean
--- Method
--- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
---
--- 1. <type>/<plugin name>/<plugin name>.<ext>
--- 2. <type>/<group>/<plugin name>/<plugin name>.<ext>
--- 3. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
---
--- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of languages.
---
--- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `language` provided. Other languages are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
---
--- Parameters:
---  * `language`	- The language code to scan for (e.g. "en" or "fr").
---  * `path`		- The path of the root plugin directory to scan.
---  * `checkFn`		- A function which will receive the path being scanned and return `true` if it should be scanned.
---
--- Returns:
---  * `true` if the plugin directory was successfully scanned.
+--- cp.apple.finalcutpro.plugins:scanPluginsDirectory(language, path, filter) -> boolean
+--- Method
+--- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
+---
+---   1. <type>/<plugin name>/<plugin name>.<ext>
+---   2. <type>/<group>/<plugin name>/<plugin name>.<ext>
+---   3. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
+---
+--- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of languages.
+---
+--- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `language` provided. Other languages are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
+---
+--- Parameters:
+---  * `language`	- The language code to scan for (e.g. "en" or "fr").
+---  * `path`		- The path of the root plugin directory to scan.
+---  * `checkFn`		- A function which will receive the path being scanned and return `true` if it should be scanned.
+---
+--- Returns:
+---  * `true` if the plugin directory was successfully scanned.
 function mod.mt:scanPluginsDirectory(language, path, checkFn)
 	--------------------------------------------------------------------------------
 	-- Check that the directoryPath actually exists:
@@ -874,104 +990,6 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
 		end
 	end
 end
-
---------------------------------------------------------------------------------
--- Core Audio Preferences File:
---------------------------------------------------------------------------------
-mod.coreAudioPreferences = "/System/Library/Components/CoreAudio.component/Contents/Info.plist"
-
-
-mod.appBuiltinPlugins = {
-	--------------------------------------------------------------------------------
-	-- Built-in Effects:
-	--------------------------------------------------------------------------------
-	[mod.types.videoEffect] = {
-		["FFEffectCategoryColor"]	= { "FFCorrectorEffectName" },
-		["FFMaskEffect"]			= { "FFSplineMaskEffect", "FFShapeMaskEffect" },
-		["Stylize"] 				= { "DropShadow::Filter Name" },
-		["FFEffectCategoryKeying"]	= { "Keyer::Filter Name", "LumaKeyer::Filter Name" }
-	},
-
-	--------------------------------------------------------------------------------
-	-- Built-in Transitions:
-	--------------------------------------------------------------------------------
-	[mod.types.transition] = {
-		["Transitions::Dissolves"] = { "CrossDissolve::Filter Name", "DipToColorDissolve::Transition Name", "FFTransition_OpticalFlow" },
-		["Movements"] = { "SpinSlide::Transition Name", "Swap::Transition Name", "RippleTransition::Transition Name", "Mosaic::Transition Name", "PageCurl::Transition Name", "PuzzleSlide::Transition Name", "Slide::Transition Name" },
-		["Objects"] = { "Cube::Transition Name", "StarIris::Transition Name", "Doorway::Transition Name" },
-		["Wipes"] = { "BandWipe::Transition Name", "CenterWipe::Transition Name", "CheckerWipe::Transition Name", "ChevronWipe::Transition Name", "OvalIris::Transition Name", "ClockWipe::Transition Name", "GradientImageWipe::Transition Name", "Inset Wipe::Transition Name", "X-Wipe::Transition Name", "EdgeWipe::Transition Name" },
-		["Blurs"] = { "CrossZoom::Transition Name", "CrossBlur::Transition Name" },
-	},
-}
-
-
---------------------------------------------------------------------------------
--- Built-in Soundtrack Pro EDEL Effects:
---------------------------------------------------------------------------------
-mod.appEdelEffects = {
-	["Distortion"] = {
-		"Bitcrusher",
-		"Clip Distortion",
-		"Distortion",
-		"Distortion II",
-		"Overdrive",
-		"Phase Distortion",
-		"Ringshifter",
-	},
-	["Echo"] = {
-		"Delay Designer",
-		"Modulation Delay",
-		"Stereo Delay",
-		"Tape Delay",
-	},
-	["EQ"] = {
-		"AutoFilter",
-		"Channel EQ", -- This isn't actually listed as a Logic plugin in FCPX, but it is.
-		"Fat EQ",
-		"Linear Phase EQ",
-	},
-	["Levels"] = {
-		"Adaptive Limiter",
-		"Compressor",
-		"Enveloper",
-		"Expander",
-		"Gain",
-		"Limiter",
-		"Multichannel Gain",
-		"Multipressor",
-		"Noise Gate",
-		"Spectral Gate",
-		"Surround Compressor",
-	},
-	["Modulation"] = {
-		"Chorus",
-		"Ensemble",
-		"Flanger",
-		"Phaser",
-		"Scanner Vibrato",
-		"Tremolo"
-	},
-	["Spaces"] = {
-		"PlatinumVerb",
-		"Space Designer",
-	},
-	["Specialized"] = {
-		"Correlation Meter",
-		"Denoiser",
-		"Direction Mixer",
-		"Exciter",
-		"MultiMeter",
-		"Stereo Spread",
-		"SubBass",
-		"Test Oscillator",
-	},
-	["Voice"] = {
-		"DeEsser",
-		"Pitch Correction",
-		"Pitch Shifter II",
-		"Vocal Transformer",
-	},
-}
 
 function mod.mt:app()
 	return self._app

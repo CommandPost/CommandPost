@@ -17,6 +17,7 @@ local log			= require("hs.logger").new("batch")
 
 local timer			= require("hs.timer")
 
+local axutils		= require("cp.ui.axutils")
 local compressor	= require("cp.apple.compressor")
 local config		= require("cp.config")
 local dialog		= require("cp.dialog")
@@ -47,16 +48,15 @@ local mod = {}
 --
 -- Returns:
 --  * `true` if successful otherwise `false`
-local function selectShare(destinationPreset)
+local function selectShare(destinationPreset)	
 	return fcp:menuBar():selectMenu({"File", "Share", function(menuItem)
 		if destinationPreset == nil then
 			return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
 		else
-			local title = menuItem:attributeValue("AXTitle")
-			return title and string.find(title, destinationPreset) ~= nil
+			local title = menuItem:attributeValue("AXTitle")						
+			return title and string.find(title, destinationPreset, 1, true) ~= nil
 		end
 	end})
-
 end
 
 -- sendClipsToCompressor(libraries, clips, exportPath, destinationPreset, replaceExisting) -> boolean
@@ -165,8 +165,41 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
 		--------------------------------------------------------------------------------
 		local exportDialog = fcp:exportDialog()
 		if not just.doUntil(function() return exportDialog:isShowing() end) then
-			dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-			return false
+		
+			--------------------------------------------------------------------------------
+			-- "...has missing or offline titles, effects or generators."
+			--------------------------------------------------------------------------------
+			local triggerError = true
+			local windowUIs = fcp:windowsUI()
+			if windowUIs then 
+				for _, windowUI in pairs(windowUIs) do
+					local sheets = axutils.childrenWithRole(windowUI, "AXSheet")					
+					if sheets then 
+						for _, sheet in pairs(sheets) do
+							if axutils.childWithID(sheet, "_NS:76") and axutils.childWithID(sheet, "_NS:9") then							
+								if mod.ignoreMissingEffects() then					
+									--------------------------------------------------------------------------------
+									-- Press the 'Continue' button:
+									--------------------------------------------------------------------------------			
+									local continueButton = axutils.childWithID(sheet, "_NS:9")
+									local result = continueButton:performAction("AXPress")
+									if result ~= nil then 
+										triggerError = false
+									end
+								else
+									dialog.displayErrorMessage("Missing or offline titles, effects or generators were detected, which has aborted the Batch Export.\n\nMissing & Offline Effects can be ignored via the Batch Export settings if required.")
+									return false
+								end
+							end
+						end
+					end
+				end
+			end						
+			if triggerError then 
+				dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
+				return false
+			end
+			
 		end
 		exportDialog:pressNext()
 
@@ -424,7 +457,15 @@ function mod.batchExport()
 
 end
 
+--- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Replace Existing Files.
 mod.replaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
+
+--- plugins.finalcutpro.export.batch.ignoreMissingEffects <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Ignore Missing Effects.
+mod.ignoreMissingEffects = config.prop("batchExportIgnoreMissingEffects", false)
 
 --------------------------------------------------------------------------------
 --
@@ -474,6 +515,7 @@ function plugin.init(deps)
 			{ title = i18n("setDestinationFolder"),	fn = mod.changeExportDestinationFolder },
 			{ title = "-" },
 			{ title = i18n("replaceExistingFiles"),	fn = function() mod.replaceExistingFiles:toggle() end, checked = mod.replaceExistingFiles() },
+			{ title = i18n("ignoreMissingEffects"),	fn = function() mod.ignoreMissingEffects:toggle() end, checked = mod.ignoreMissingEffects() },
 		}
 	end)
 

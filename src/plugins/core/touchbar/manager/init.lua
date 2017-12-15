@@ -28,16 +28,17 @@
 --------------------------------------------------------------------------------
 local log										= require("hs.logger").new("managerTouchBar")
 
-local inspect									= require("hs.inspect")
+local canvas									= require("hs.canvas")
 local eventtap									= require("hs.eventtap")
 local image										= require("hs.image")
+local inspect									= require("hs.inspect")
 
 local touchbar 									= require("hs._asm.undocumented.touchbar")
 
+local commands									= require("cp.commands")
 local config									= require("cp.config")
 local prop										= require("cp.prop")
 local tools										= require("cp.tools")
-local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
@@ -167,6 +168,9 @@ mod._tbItemIDs = {}
 -- Group Statuses:
 mod._groupStatus = {}
 
+-- Current Sub Group Statuses:
+mod._currentSubGroup = config.prop("touchBarCurrentSubGroup", {})
+
 --- plugins.core.touchbar.manager.defaultGroup -> string
 --- Variable
 --- The default group.
@@ -183,6 +187,11 @@ mod.dismissButton = true
 --- Variable
 --- The maximum number of Touch Bar items per group.
 mod.maxItems = 20
+
+--- plugins.core.touchbar.manager.numberOfSubGroups -> number
+--- Variable
+--- The number of Sub Groups per Touch Bar Group.
+mod.numberOfSubGroups = 5
 
 --- plugins.core.touchbar.manager.enabled <cp.prop: boolean>
 --- Field
@@ -429,20 +438,51 @@ function mod.start()
 		mod._bar = touchbar.bar.new()
 
 		--------------------------------------------------------------------------------
+		-- Resize Icon:
+		--------------------------------------------------------------------------------
+		local icon = canvas.new{x = 0, y = 0, w = 512, h = 512 }
+		icon[1] = {
+		  type="image",
+		  image = image.imageFromName(image.systemImageNames.ApplicationIcon),
+		  frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+		}
+
+		--------------------------------------------------------------------------------
 		-- Setup System Icon:
 		--------------------------------------------------------------------------------
-		mod._sysTrayIcon = touchbar.item.newButton(image.imageFromName(image.systemImageNames.ApplicationIcon), "CommandPost")
+		mod._sysTrayIcon = touchbar.item.newButton(icon:imageFromCanvas(), "CommandPost")
 							 :callback(function(self)
-								self:addToSystemTray(false)
-								self:addToSystemTray(true)
-							 	self:presentModalBar(mod._bar, mod.dismissButton)
+
+								--[[
+							 	log.df("visible: %s", mod._bar:isVisible())
+								if mod._bar:isVisible() then
+									mod._bar:minimizeModalBar()
+								else
+									mod._bar:presentModalBar()
+									--self:presentModalBar(mod._bar, mod.dismissButton)
+								end
+								--]]
+
+								mod.incrementActiveSubGroup()
+								mod.update()
+
+								--self:addToSystemTray(false)
+								--self:addToSystemTray(true)
 							 end)
 							 :addToSystemTray(true)
+
+							 --[[
+							 :visibilityCallback(function(object, visible)
+							 	log.df("object: %s", object)
+							 	log.df("visible: %s", visible)
+							 end)
+							 --]]
 
 		--------------------------------------------------------------------------------
 		-- Update Touch Bar:
 		--------------------------------------------------------------------------------
 		mod.update()
+
 	end
 
 end
@@ -559,7 +599,7 @@ local function addWidget(icon, action, label, id)
 	end
 end
 
---- plugins.core.touchbar.manager.activeGroup() -> none
+--- plugins.core.touchbar.manager.activeGroup() -> string
 --- Function
 --- Returns the active group.
 ---
@@ -577,6 +617,71 @@ function mod.activeGroup()
 		end
 	end
 	return mod.defaultGroup
+
+end
+
+--- plugins.core.touchbar.manager.activeSubGroup() -> string
+--- Function
+--- Returns the active sub-group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Returns the active sub group as string
+function mod.activeSubGroup()
+	local currentSubGroup = mod._currentSubGroup()
+	local result = 1
+	local activeGroup = mod.activeGroup()
+	if currentSubGroup[activeGroup] then
+		result = currentSubGroup[activeGroup]
+	end
+	return tostring(result)
+end
+
+--- plugins.core.touchbar.manager.incrementActiveSubGroup() -> none
+--- Function
+--- Increments the active sub-group
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.incrementActiveSubGroup()
+
+	local currentSubGroup = mod._currentSubGroup()
+
+	local items = mod._items()
+	local activeGroup = mod.activeGroup()
+	local result = 0
+	local startingGroup = 1
+	if currentSubGroup[activeGroup] then
+		startingGroup = currentSubGroup[activeGroup]
+	end
+	for i=startingGroup + 1, mod.numberOfSubGroups do
+		if items[activeGroup .. tostring(i)] then
+			result  = i
+			break
+		end
+	end
+	if result == 0 then
+		local foundResult = false
+		for i=1, mod.numberOfSubGroups do
+			if items[activeGroup .. tostring(i)] then
+				result  = i
+				foundResult = true
+				break
+			end
+		end
+		if not foundResult then
+			result = 1
+		end
+	end
+	currentSubGroup[activeGroup] = result
+
+	-- Save to Preferences:
+	mod._currentSubGroup(currentSubGroup)
 
 end
 
@@ -606,7 +711,7 @@ function mod.update()
 	--------------------------------------------------------------------------------
 	local items = mod._items()
 	for groupID, group in pairs(items) do
-		if groupID == mod.activeGroup() then
+		if groupID == mod.activeGroup() .. mod.activeSubGroup() then
 			for buttonID, button in pairs(group) do
 				if button["action"] then
 					local action 		= button["action"] or nil

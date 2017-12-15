@@ -42,12 +42,12 @@ local simplifiedNotificationMap = {
 
 -- Public interface ------------------------------------------------------
 
---- hs._asm.guitk:styleMask([mask]) -> guitkObject | currentMask
+--- hs._asm.guitk:styleMask([mask]) -> guitkObject | integer
 --- Method
 --- Get or set the window display style
 ---
 --- Parameters:
----  * mask - if present, this mask should be a combination of values found in [hs._asm.guitk.masks](#masks) describing the window style.  The mask should be provided as one of the following:
+---  * `mask` - if present, this mask should be a combination of values found in [hs._asm.guitk.masks](#masks) describing the window style.  The mask should be provided as one of the following:
 ---    * integer - a number representing the style which can be created by combining values found in [hs._asm.guitk.masks](#masks) with the logical or operator (e.g. `value1 | value2 | ... | valueN`).
 ---    * string  - a single key from [hs._asm.guitk.masks](#masks) which will be toggled in the current window style.
 ---    * table   - a list of keys from [hs._asm.guitk.masks](#masks) which will be combined to make the final style by combining their values with the logical or operator.
@@ -86,13 +86,12 @@ guitkMT.styleMask = function(self, ...) -- add nice wrapper version
     end
 end
 
---- hs._asm.guitk:collectionBehavior([behaviorMask]) -> guitkObject | currentValue
+--- hs._asm.guitk:collectionBehavior([behaviorMask]) -> guitkObject | integer
 --- Method
 --- Get or set the guitk window collection behavior with respect to Spaces and Exposé.
 ---
 --- Parameters:
----  * behaviorTable - an optional table of strings and/or numbers specifying the desired window behavior for the webview object.
----  * behaviorMask - if present, this mask should be a combination of values found in [hs._asm.guitk.behaviors](#behaviors) describing the collection behavior.  The mask should be provided as one of the following:
+---  * `behaviorMask` - if present, this mask should be a combination of values found in [hs._asm.guitk.behaviors](#behaviors) describing the collection behavior.  The mask should be provided as one of the following:
 ---    * integer - a number representing the desired behavior which can be created by combining values found in [hs._asm.guitk.behaviors](#behaviors) with the logical or operator (e.g. `value1 | value2 | ... | valueN`).
 ---    * string  - a single key from [hs._asm.guitk.behaviors](#behaviors) which will be toggled in the current collection behavior.
 ---    * table   - a list of keys from [hs._asm.guitk.behaviors](#behaviors) which will be combined to make the final collection behavior by combining their values with the logical or operator.
@@ -134,7 +133,7 @@ guitkMT.collectionBehavior = function(self, ...)          -- add nice wrapper ve
     end
 end
 
---- hs._asm.guitk:level([theLevel]) -> guitkObject | currentValue
+--- hs._asm.guitk:level([theLevel]) -> guitkObject | integer
 --- Method
 --- Get or set the guitk window level
 ---
@@ -267,7 +266,7 @@ guitkMT.simplifiedWindowCallback = function(self, ...)
     local args = table.pack(...)
     if args.n == 0 then
         return self:notificationCallback()
-    elseif args.n == 1 and ((type(args[1]) == "function") or getmetatable(args[1]).__call) then
+    elseif (args.n == 1) and (type(args[1]) == "function") or (getmetatable(args[1]) or {}).__call then
         local fn = function(s, m)
             local newM         = simplifiedNotificationMap[m]
             local callbackArgs = { newM or "other", s }
@@ -295,6 +294,43 @@ module.behaviors     = ls.makeConstantsTable(module.behaviors)
 module.levels        = ls.makeConstantsTable(module.levels)
 module.masks         = ls.makeConstantsTable(module.masks)
 module.notifications = ls.makeConstantsTable(module.notifications)
+
+--- hs._asm.guitk.newCanvas([rect]) -> guitkObject
+--- Constructor
+--- Creates a new empty guitk window that is transparent and has no decorations.
+---
+--- Parameters:
+---  * `rect` - an optional rect-table specifying the initial location and size of the guitk window.
+---
+--- Returns:
+---  * the guitk object, or nil if there was an error creating the window.
+---
+--- Notes:
+---  * a rect-table is a table with key-value pairs specifying the top-left coordinate on the screen of the guitk window (keys `x`  and `y`) and the size (keys `h` and `w`). The table may be crafted by any method which includes these keys, including the use of an `hs.geometry` object.
+---
+---  * this constructor creates an "invisible" container which is intended to display visual information only and does not accept user interaction by default, similar to an empty canvas created with `hs.canvas.new`. This is a shortcut for the following:
+--- ~~~lua
+--- hs._asm.guitk.new(rect, hs._asm.guitk.masks.borderless):backgroundColor{ alpha = 0 }
+---                                                        :opaque(false)
+---                                                        :hasShadow(false)
+---                                                        :ignoresMouseEvents(true)
+---                                                        :allowTextEntry(false)
+---                                                        :animationBehavior("none")
+---                                                        :level(hs._asm.guitk.levels.screenSaver)
+--- ~~~
+---  * If you do not specify `rect`, then the window will have no height or width and will not be able to display its contents; make sure to adjust this with [hs._asm.guitk:frame](#frame) or [hs._asm.guitk:size](#size) once content has been assigned to the window.
+module.newCanvas = function(...)
+    local args = table.pack(...)
+    if type(args[1]) == "nil" then args[1] = {} end
+    table.insert(args, 2, module.masks.borderless)
+    return module.new(table.unpack(args)):backgroundColor{ alpha = 0 }
+                                         :opaque(false)
+                                         :hasShadow(false)
+                                         :ignoresMouseEvents(true)
+                                         :allowTextEntry(false)
+                                         :animationBehavior("none")
+                                         :level(module.levels.screenSaver)
+end
 
 -- Return Module Object --------------------------------------------------
 

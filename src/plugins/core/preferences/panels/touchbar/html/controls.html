@@ -1,12 +1,6 @@
 <div id="touchbarGroupControls" class="uiItem">
-{%	for id,group in pairs(groups) do %}
-	<div id="touchbarGroup_{{ id }}" class="touchbarGroup{{ id == defaultGroup and ' selected' or '' }}">
-	{%
-		local editor = groupEditor(id)
-		if editor then
-	%}
-			{* editor(group) *}
-	{%	else %}
+{%	for __, groupID in pairs(groups) do %}
+	<div id="touchbarGroup_{{ groupID }}" class="touchbarGroup{{ groupID == defaultGroup and ' selected' or '' }}">
 		<table class="touchbar">
 			<thead>
 				<tr>
@@ -17,12 +11,9 @@
 				</tr>
 			</thead>
 			<tbody>
-			{(html/rows.html, _.extend({group = group}, context))}
+			{(html/rows.html, _.extend({groupID = groupID}, context))}
 			</tbody>
 		</table>
-	{%
-		end --if
-	%}
 	</div>
 {% end %}
 </div>
