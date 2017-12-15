@@ -1,4 +1,7 @@
 return {
+	LogicPlugins = {
+		PitchShifter						= "Pitch Shifter II",
+	},
 	CommandEditor = {
 		KeyDetailPanel						= "_NS:273",
 		SaveButton							= "_NS:50",
