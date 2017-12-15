@@ -336,12 +336,12 @@ function test.suite.mt:onRun(onRunFn, ...)
 end
 
 -- Default _run function, that just passes on the filters
-function test.suite.mt._run(runFn, ...)
-	runFn(...)
+function test.suite.mt._run(self, runFn, ...)
+	runFn(self, ...)
 end
 
 function test.suite.mt:run(...)
-	self._run(function(filter, ...)
+	self._run(self, function(filter, ...)
 		self.result = test.result.new()
 
 		pushSuite(self)

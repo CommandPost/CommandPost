@@ -154,7 +154,7 @@ end):bind(Viewer)
 Viewer.isOnSecondary = prop.new(function(self)
 	local ui = self:UI()
 	return ui and SecondaryWindow.matches(ui:window())
-end)
+end):bind(Viewer)
 
 -- TODO: Add documentation
 Viewer.isOnPrimary = prop.new(function(self)
@@ -171,12 +171,14 @@ end):bind(Viewer)
 function Viewer:showOnPrimary()
 	local menuBar = self:app():menuBar()
 
-	-- if the browser is on the secondary, we need to turn it off before enabling in primary
-	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Viewers"})
+	-- if it is on the secondary, we need to turn it off before enabling in primary
+	if self:isOnSecondary() then
+		menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
+	end
 
-	if self:isEventViewer() then
+	if self:isEventViewer() and not self:isShowing() then
 		-- Enable the Event Viewer
-		menuBar:checkMenu({"Window", "Show in Workspace", "Event Viewer"})
+		menuBar:selectMenu({"Window", "Show in Workspace", "Event Viewer"})
 	end
 
 	return self
@@ -186,11 +188,13 @@ end
 function Viewer:showOnSecondary()
 	local menuBar = self:app():menuBar()
 
-	menuBar:checkMenu({"Window", "Show in Secondary Display", "Viewers"})
+	if not self:isOnSecondary() then
+		menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
+	end
 
-	if self:isEventViewer() then
+	if self:isEventViewer() and not self:isShowing() then
 		-- Enable the Event Viewer
-		menuBar:checkMenu({"Window", "Show in Workspace", "Event Viewer"})
+		menuBar:selectMenu({"Window", "Show in Workspace", "Event Viewer"})
 	end
 
 	return self
@@ -202,10 +206,12 @@ function Viewer:hide()
 
 	if self:isEventViewer() then
 		-- Uncheck it from the primary workspace
-		menuBar:uncheckMenu({"Window", "Show in Workspace", "Event Viewer"})
+		if self:isShowing() then
+			menuBar:selectMenu({"Window", "Show in Workspace", "Event Viewer"})
+		end
 	elseif self:isOnSecondary() then
 		-- The Viewer can only be hidden from the Secondary Display
-		menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Viewers"})
+		menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
 	end
 	return self
 end
