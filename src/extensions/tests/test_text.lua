@@ -14,7 +14,7 @@ function expectError(fn, ...)
 	return result
 end
 
-return test.suite("cp.text", {
+return test.suite("cp.text"):with(
 	test("text from string", function()
 		local utf8text = "a丽𐐷"
 		local utf16le = "a\x00".."\x3D\x4E".."\x01\xD8\x37\xDC"	-- "a".."丽".."𐐷" (little-endian)
@@ -216,5 +216,5 @@ return test.suite("cp.text", {
 		local x = CHAR_ESCAPE:gsub(escaped.." ", '%1')
 		ok(eq(tostring(x), 'Is "Escaped" '))
 
-	end),
-})
+	end)
+)

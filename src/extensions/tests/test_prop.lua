@@ -4,7 +4,7 @@ local inspect	= require("hs.inspect")
 
 local prop		= require("cp.prop")
 
-return test("cp.prop", function()
+return test.suite("cp.prop"):with(
 	test("Prop Prepare Value", function()
 		local prep = prop._prepareValue
 
@@ -31,7 +31,7 @@ return test("cp.prop", function()
 		prepped = prep(value, "shallow")
 		ok(prepped ~= value, "prepped is not the value")
 		ok(prepped.b == value.b, "prepped.b is the value.b")
-	end)
+	end),
 
 	test("Prop new", function()
 		local state = true
@@ -41,7 +41,7 @@ return test("cp.prop", function()
 		ok(eq(isState(false), false))
 		ok(eq(isState(), false))
 		ok(eq(state, false))
-	end)
+	end),
 
 	test("Prop Call", function()
 		local state = true
@@ -49,7 +49,7 @@ return test("cp.prop", function()
 		local isState = prop(function() return state end)
 		ok(isState())
 		ok(eq(isState:mutable(), false))
-	end)
+	end),
 
 	test("Prop THIS", function()
 		local isTrue = prop.THIS(true)
@@ -65,19 +65,19 @@ return test("cp.prop", function()
 		ok(eq(isHello("Hello universe"), "Hello universe"))
 		ok(eq(isHello(nil), "Hello universe"))
 		ok(eq(isHello:set(nil), nil))
-	end)
+	end),
 
 	test("Prop TRUE", function()
 		local isTrue = prop.TRUE()
 		ok(eq(isTrue(), true))
 		ok(eq(isTrue:toggle(), false))
-	end)
+	end),
 
 	test("Prop FALSE", function()
 		local isFalse = prop.FALSE()
 		ok(eq(isFalse(), false))
 		ok(eq(isFalse:toggle(), true))
-	end)
+	end),
 
 	test("is IMMUTABLE", function()
 		local isTrue = prop.TRUE():IMMUTABLE()
@@ -87,7 +87,7 @@ return test("cp.prop", function()
 		local check = spy(function() isTrue():toggle() end)
 		check()
 		ok(check.errors[1], "Can't toggle an immutable value.")
-	end)
+	end),
 
 	test("Toggling", function()
 		local state = true
@@ -102,7 +102,7 @@ return test("cp.prop", function()
 		ok(eq(hello(), "Hello world"))
 		ok(eq(hello:toggle(), nil))
 		ok(eq(hello:toggle(), true))
-	end)
+	end),
 
 	test("Prop Watch", function()
 		local state = true
@@ -128,7 +128,7 @@ return test("cp.prop", function()
 		ok(eq(isState:toggle(), true))
 		ok(eq(count, 3))
 		ok(eq(watchValue, true))
-	end)
+	end),
 
 	test("Prop Unwatch", function()
 		local log = {}
@@ -145,13 +145,13 @@ return test("cp.prop", function()
 		prop:unwatch(watcher)
 		ok(eq(prop(true), true))
 		ok(eq(log, {true, false}))
-	end)
+	end),
 
 	test("Prop Watch Bound", function()
 		local owner = {}
 		owner.prop = prop.TRUE():watch(function(value, self) ok(eq(self, owner)) end):bind(owner)
 		owner.prop:update()
-	end)
+	end),
 
 	test("Prop NOT", function()
 		local state = true
@@ -186,7 +186,7 @@ return test("cp.prop", function()
 		-- Check that non-booleans work as expected
 		ok(eq(prop.THIS("Hello"):NOT():value(), nil))
 		ok(eq(prop.THIS(nil):NOT():value(), true))
-	end)
+	end),
 
 	test("Prop AND", function()
 		local leftState = true
@@ -250,7 +250,7 @@ return test("cp.prop", function()
 		ok(eq(prop.THIS("Hello"):AND(prop.THIS("world")):value(), "world"))
 		ok(eq(prop.THIS("Hello"):AND(prop.THIS(nil)):value(), nil))
 		ok(eq(prop.THIS("Hello"):AND(prop.FALSE()):value(), false))
-	end)
+	end),
 
 	test("Prop OR", function()
 		local isLeft	= prop.TRUE()
@@ -305,7 +305,7 @@ return test("cp.prop", function()
 		ok(eq(prop.THIS("Hello"):OR(prop.THIS("world")):value(), "Hello"))
 		ok(eq(prop.THIS(nil):OR(prop.THIS("world")):value(), "world"))
 		ok(eq(prop.THIS(nil):OR(prop.FALSE()):value(), false))
-	end)
+	end),
 
 	test("Prop Bind", function()
 		local instance = {
@@ -352,7 +352,7 @@ return test("cp.prop", function()
 		ok(instance:isOrMethod() == true)
 		ok(instance:isSimple(false) == false)
 		ok(instance:isOrMethod() == false)
-	end)
+	end),
 
 	test("Prop Extend", function()
 		local source, target = {}, {}
@@ -368,7 +368,7 @@ return test("cp.prop", function()
 		ok(target.isFunction:owner() == nil)
 		ok(target.isFunction == source.isFunction)
 		ok(target.isRealFunction == source.isRealFunction)
-	end)
+	end),
 
 	test("Prop Notify Loop", function()
 		local aProp = prop.TRUE()
@@ -390,7 +390,7 @@ return test("cp.prop", function()
 		-- should be two sets of logs, one after the other.
 		ok(eq(aProp(), false))
 		ok(eq(log, {1, 2, 3, 1, 2, 3}))
-	end)
+	end),
 
 	test("Prop Notify On/Off", function()
 		local aProp = prop.TRUE()
@@ -415,7 +415,7 @@ return test("cp.prop", function()
 		-- The value was reset before the notification loop finished, so no change occurs.
 		ok(eq(aProp(), true))
 		ok(eq(log, {1, 2, 3}))
-	end)
+	end),
 
 	test("Prop Parent Notify Loop", function()
 		local aProp = prop.TRUE()
@@ -441,7 +441,7 @@ return test("cp.prop", function()
 
 		ok(eq(cProp(), true))
 		ok(eq(log, {{one = false}, {two = false}, {one = true}, {two = true}}))
-	end)
+	end),
 
 	test("Prop Clone", function()
 		local owner = {}
@@ -464,7 +464,7 @@ return test("cp.prop", function()
 		ok(bProp() == true)
 		ok(aClone() == true)
 		ok(bClone() == true)
-	end)
+	end),
 
 	test("Prop Bind AND Watch", function()
 		local owner = {}
@@ -490,7 +490,7 @@ return test("cp.prop", function()
 
 		ok(#andBound._watchers == 1)
 		ok(andBound._watchers[1].fn == boundWatch)
-	end)
+	end),
 
 	test("Prop Binary Functions", function()
 		local one, two, three = prop.THIS(1), prop.THIS(2), prop.THIS(3)
@@ -517,7 +517,7 @@ return test("cp.prop", function()
 		ok(comp:value() == true)
 		something(0)
 		ok(comp:value() == false)
-	end)
+	end),
 
 	test("Prop Notify/Update Same Value", function()
 		local report = {}
@@ -527,7 +527,7 @@ return test("cp.prop", function()
 		value:update()
 		-- should only be one log entry since the value didn't change.
 		ok(eq(report, {true}))
-	end)
+	end),
 
 	test("Prop Monitoring", function()
 		local report = {}
@@ -544,7 +544,7 @@ return test("cp.prop", function()
 
 		ok(eq(report, {"false"}))
 
-	end)
+	end),
 
 	test("Prop Mutation", function()
 		local report = {}
@@ -570,7 +570,7 @@ return test("cp.prop", function()
 		anyNumber(7)
 		ok(isEven() == false)
 		ok(eq(report, {true, false}))
-	end)
+	end),
 
 	test("Prop Wrapping", function()
 		local a = prop.TRUE()
@@ -609,7 +609,7 @@ return test("cp.prop", function()
 		ok(eq(aReport, {false, true}))
 		ok(eq(bReport, {false, true}))
 		ok(eq(cReport, {false, true}))
-	end)
+	end),
 
 	test("Prop Pre-Watch", function()
 		local preWatched = 0
@@ -641,7 +641,7 @@ return test("cp.prop", function()
 		ok(eq(preWatched, 1))
 		ok(eq(instantPreWatch, 1))
 		ok(eq(watched, 2))
-	end)
+	end),
 
 	test("Prop Table Copying", function()
 		local originalValue = { a = 1, b = { c = 1 } }
@@ -716,7 +716,7 @@ return test("cp.prop", function()
 		ok(eq(shallowProp(),	{ a = 5, b = { c = 5 } }))
 		-- unmodified after the last update
 		ok(eq(deepProp(),  		{ a = 4, b = { c = 4 } }))
-	end)
+	end),
 
 	test("Cached Props", function()
 		local value = 1
@@ -735,4 +735,4 @@ return test("cp.prop", function()
 		p:update()
 		ok(eq(p(), 3), "p result has now updated to 3")
 	end)
-end)
+)

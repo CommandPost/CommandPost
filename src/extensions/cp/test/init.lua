@@ -155,6 +155,9 @@ local function newCase(name, executeFn)
 	if name == nil or #name == 0 then
 		error "Please provide a name"
 	end
+	if executeFn == nil or type(executeFn) ~= "function" then
+		error "Please provide a function to execute the test."
+	end
 
 	local o = {
 		parent		= parent,
@@ -179,7 +182,7 @@ function test.case.mt:__tostring()
 	return "test: " .. self.name
 end
 
-function test.case.mt:run(quiet)
+function test.case.mt:run()
 	self.result = test.result.new()
 	local result = self.result
 
@@ -326,24 +329,37 @@ function matchesFilter(t, i, count, filter)
 	return result
 end
 
-function test.suite.mt:run(filter, ...)
-	self.result = test.result.new()
+-- allows the default 'run' function to get overridden. Passes in a function
+function test.suite.mt:onRun(onRunFn, ...)
+	self._run = onRunFn
+	return self
+end
 
-	pushSuite(self)
-	self.result:start()
-	local count = #self.tests
-	for i,t in ipairs(self.tests) do
-		if matchesFilter(t, i, count, filter) then
-			t(...)
+-- Default _run function, that just passes on the filters
+function test.suite.mt._run(runFn, ...)
+	runFn(...)
+end
+
+function test.suite.mt:run(...)
+	self._run(function(filter, ...)
+		self.result = test.result.new()
+
+		pushSuite(self)
+		self.result:start()
+		local count = #self.tests
+		for i,t in ipairs(self.tests) do
+			if matchesFilter(t, i, count, filter) then
+				t(...)
+			end
 		end
-	end
-	self.result:stop()
-	popSuite()
+		self.result:stop()
+		popSuite()
 
-	-- only output the summary if there is no parent suite, or if 'verbose' is enabled.
-	if (not addResult(self.result) or verbose) and handler.summary then
-		handler.summary(self)
-	end
+		-- only output the summary if there is no parent suite, or if 'verbose' is enabled.
+		if (not addResult(self.result) or verbose) and handler.summary then
+			handler.summary(self)
+		end
+	end, ...)
 end
 
 function test.suite.mt:addResult(newResult)
