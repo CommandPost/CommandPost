@@ -53,6 +53,36 @@ local leftMouseDown 	= eventtap.event.types["leftMouseDown"]
 local leftMouseUp 		= eventtap.event.types["leftMouseUp"]
 local clickState 		= eventtap.event.properties.mouseEventClickState
 
+--- cp.tools.mergeTable(target, ...) -> table
+--- Function
+--- Gives you the file system volume format of a path.
+---
+--- Parameters:
+---  * target 	- The target table
+---  * ... 		- Any other tables you want to merge into target
+---
+--- Returns:
+---  * Table
+function tools.mergeTable(target, ...)
+	for _,source in ipairs(table.pack(...)) do
+		for key,value in pairs(source) do
+			local tValue = target[key]
+			if type(value) == "table" then
+				if type(tValue) ~= "table" then
+					tValue = {}
+				end
+				--------------------------------------------------------------------------------
+				-- Deep Extend Subtables:
+				--------------------------------------------------------------------------------
+				target[key] = tools.mergeTable(tValue, value)
+			else
+				target[key] = value
+			end
+		end
+	end
+	return target
+end
+
 --- cp.tools.volumeFormat(path) -> string
 --- Function
 --- Gives you the file system volume format of a path.
