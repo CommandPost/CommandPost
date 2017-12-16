@@ -1013,6 +1013,19 @@ function App:colorBoard()
 	return self:primaryWindow():colorBoard()
 end
 
+--- cp.apple.finalcutpro:colorInspector() -> ColorInspector
+--- Method
+--- Returns the ColorInspector instance from the primary window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the ColorInspector
+function App:colorInspector()
+	return self:primaryWindow():colorInspector()
+end
+
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
