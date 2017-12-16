@@ -190,6 +190,7 @@ end
 ---  * This method will open the Inspector if it's closed, and leave it open.
 ---  * Valid strings for `value` are as follows:
 ---    * Audio
+---    * Color
 ---    * Effect
 ---    * Generator
 ---    * Info
@@ -234,6 +235,8 @@ function Inspector:selectTab(value)
 				elseif title == app:string("FFInspectorTabAudio") and value == "Audio" then
 					result = true
 				elseif title == app:string("FFInspectorTabShare") and value == "Share" then
+					result = true
+				elseif title == app:string("FFInspectorTabColor") and value == "Color" then
 					result = true
 				end
 				if result then
