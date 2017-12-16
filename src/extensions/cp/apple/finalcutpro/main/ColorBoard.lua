@@ -105,10 +105,8 @@ function ColorBoard.isColorBoard(element)
 		local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
 		if splitGroup then
 			local colorBoardGroup = axutils.childWith(splitGroup, "AXIdentifier", id "ColorBoardGroup")
-			if colorBoardGroup and colorBoardGroup[1] and colorBoardGroup[1][1] then
-				if #colorBoardGroup[1][1]:attributeValue("AXChildren") > 19 then
-					return true
-				end
+			if colorBoardGroup and colorBoardGroup[1] and colorBoardGroup[1][1] and #colorBoardGroup[1][1]:attributeValue("AXChildren") >= 19 then
+				return true
 			end
 		end
 	end
@@ -201,17 +199,11 @@ function ColorBoard:UI()
 						-----------------------------------------------------------------------
 						-- Final Cut Pro 10.4:
 						----------------------------------------------------------------------
-
-						-- TO DO: This doesn't work...
-
-						log.df("Role: %s", hs.inspect(child[1][1][1][1][1]:attributeValue("AXRole")))
 						return child and child[1] and child[1][1] and child[1][1][1] and child[1][1][1][1] and child[1][1][1][1][1]
-
 					else
 						-----------------------------------------------------------------------
 						-- Final Cut Pro 10.3:
 						-----------------------------------------------------------------------
-						log.df("Role: %s", child:attributeValue("AXRole"))
 						return child
 					end
 				end
@@ -233,8 +225,6 @@ ColorBoard.isActive = prop.new(function(self)
 	local ui = self:colorSatExpUI()
 	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
 end):bind(ColorBoard)
-
-
 
 -- TODO: Add documentation
 function ColorBoard:show()
@@ -280,6 +270,9 @@ function ColorBoard:childUI(id)
 end
 
 -- TODO: Add documentation
+
+-- NOTE: This doesn't really exist in 10.4
+
 function ColorBoard:topToolbarUI()
 	return axutils.cache(self, "_topToolbar", function()
 		local ui = self:UI()
