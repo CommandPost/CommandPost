@@ -4,6 +4,7 @@ return test.suite("cp"):with(
 	"tests.test_fcp",
 	"tests.test_fcpplugins",
 	"tests.test_html",
+	"tests.test_ids",
 	"tests.test_just",
 	"tests.test_localized",
 	"tests.test_matcher",
