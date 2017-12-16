@@ -1,4 +1,7 @@
 return {
+	Inspector = {
+		DetailsPanel						= "_NS:139",
+	},
 	LogicPlugins = {
 		PitchShifter						= "Pitch Shifter",
 	},
