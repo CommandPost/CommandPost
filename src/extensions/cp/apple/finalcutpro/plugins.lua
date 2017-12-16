@@ -35,6 +35,8 @@ local strings					= require("cp.strings")
 
 local v							= require("semver")
 
+local id						= require("cp.apple.finalcutpro.ids") "LogicPlugins"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -163,7 +165,7 @@ mod.appEdelEffects = {
 	["Voice"] = {
 		"DeEsser",
 		"Pitch Correction",
-		"Pitch Shifter II",
+		id "PitchShifter",
 		"Vocal Transformer",
 	},
 }
