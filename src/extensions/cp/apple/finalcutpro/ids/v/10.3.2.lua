@@ -13,6 +13,8 @@ return {
 		MainPanel							= "_NS:39",
 	},
 	ColorBoard = {
+		ColorBoard							= "Color Board",
+
 		BackButton							= "_NS:180",
 		ColorSatExp							= "_NS:128",
 
