@@ -263,6 +263,7 @@ end
 --- Notes:
 ---  * The tab strings can be:
 ---    * Audio
+---    * Color
 ---    * Effect
 ---    * Generator
 ---    * Info
@@ -298,6 +299,8 @@ function Inspector:selectedTab()
 						return "Audio"
 					elseif title == app:string("FFInspectorTabShare") then
 						return "Share"
+					elseif title == app:string("FFInspectorTabColor") then
+						return "Color"
 					end
 				end
 			end

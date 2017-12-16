@@ -33,24 +33,38 @@ local id								= require("cp.apple.finalcutpro.ids") "ColorBoard"
 --------------------------------------------------------------------------------
 local ColorBoard = {}
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.ColorBoard.aspect -> table
+--- Constant
+--- A table containing tables of all the aspect panel settings
 ColorBoard.aspect						= {}
+
+--- cp.apple.finalcutpro.main.ColorBoard.aspect.color -> table
+--- Constant
+--- A table containing the Color Board Color panel settings
 ColorBoard.aspect.color					= {
-	id 						= 1,
-	reset 					= id "ColorReset",
-	global 					= { puck = id "ColorGlobalPuck", pct = id "ColorGlobalPct", angle = id "ColorGlobalAngle"},
-	shadows 				= { puck = id "ColorShadowsPuck", pct = id "ColorShadowsPct", angle = id "ColorShadowsAngle"},
-	midtones 				= { puck = id "ColorMidtonesPuck", pct = id "ColorMidtonesPct", angle = id "ColorMidtonesAngle"},
-	highlights 				= { puck = id "ColorHighlightsPuck", pct = id "ColorHighlightsPct", angle = id "ColorHighlightsAngle"}
+	id 									= 1,
+	reset 								= id "ColorReset",
+	global 								= { puck = id "ColorGlobalPuck", pct = id "ColorGlobalPct", angle = id "ColorGlobalAngle"},
+	shadows 							= { puck = id "ColorShadowsPuck", pct = id "ColorShadowsPct", angle = id "ColorShadowsAngle"},
+	midtones 							= { puck = id "ColorMidtonesPuck", pct = id "ColorMidtonesPct", angle = id "ColorMidtonesAngle"},
+	highlights 							= { puck = id "ColorHighlightsPuck", pct = id "ColorHighlightsPct", angle = id "ColorHighlightsAngle"}
 }
+
+--- cp.apple.finalcutpro.main.ColorBoard.aspect.saturation -> table
+--- Constant
+--- A table containing the Color Board Saturation panel settings
 ColorBoard.aspect.saturation			= {
-	id 						= 2,
-	reset 					= id "SatReset",
-	global 					= { puck = id "SatGlobalPuck", pct = id "SatGlobalPct"},
-	shadows 				= { puck = id "SatShadowsPuck", pct = id "SatShadowsPct"},
-	midtones 				= { puck = id "SatMidtonesPuck", pct = id "SatMidtonesPct"},
-	highlights 				= { puck = id "SatHighlightsPuck", pct = id "SatHighlightsPct"}
+	id 									= 2,
+	reset 								= id "SatReset",
+	global 								= { puck = id "SatGlobalPuck", pct = id "SatGlobalPct"},
+	shadows 							= { puck = id "SatShadowsPuck", pct = id "SatShadowsPct"},
+	midtones 							= { puck = id "SatMidtonesPuck", pct = id "SatMidtonesPct"},
+	highlights 							= { puck = id "SatHighlightsPuck", pct = id "SatHighlightsPct"}
 }
+
+--- cp.apple.finalcutpro.main.ColorBoard.aspect.exposure -> table
+--- Constant
+--- A table containing the Color Board Exposure panel settings
 ColorBoard.aspect.exposure				= {
 	id									= 3,
 	reset								= id "ExpReset",
@@ -59,19 +73,52 @@ ColorBoard.aspect.exposure				= {
 	midtones							= { puck = id "ExpMidtonesPuck", pct = id "ExpMidtonesPct"},
 	highlights							= { puck = id "ExpHighlightsPuck", pct = id "ExpHighlightsPct"}
 }
+
+--- cp.apple.finalcutpro.main.ColorBoard.currentAspect -> string
+--- Variable
+--- The current aspect as a string.
 ColorBoard.currentAspect = "*"
 
--- TODO: Add documentation
-function ColorBoard.isColorBoard(element)
+--- cp.apple.finalcutpro.main.ColorBoard.isColorBoard(self, element) -> boolean
+--- Function
+--- Checks to see if a GUI element is the Color Board or not
+---
+--- Parameters:
+---  * `self`		- Self
+---  * `element`	- The element you want to check
+---
+--- Returns:
+---  * `true` if the `element` is a Color Board otherwise `false`
+function ColorBoard.isColorBoard(self, element)
+
+	-----------------------------------------------------------------------
+	-- Final Cut Pro 10.3:
+	----------------------------------------------------------------------
 	for i,child in ipairs(element) do
 		if axutils.childWith(child, "AXIdentifier", id "BackButton") then
 			return true
 		end
 	end
+
+	-----------------------------------------------------------------------
+	-- Final Cut Pro 10.4:
+	-----------------------------------------------------------------------
+	if self and self:parent() and self:parent():inspector() and self:parent():inspector():selectedTab() and self:parent():inspector():selectedTab() == "Color" then
+		return true
+	end
+
 	return false
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.ColorBoard:new(parent) -> ColorBoard object
+--- Method
+--- Creates a new ColorBoard object
+---
+--- Parameters:
+---  * `parent`		- The parent
+---
+--- Returns:
+---  * A ColorBoard object
 function ColorBoard:new(parent)
 	local o = {
 		_parent = parent,
@@ -81,12 +128,28 @@ function ColorBoard:new(parent)
 	return prop.extend(o, ColorBoard)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.ColorBoard:parent() -> table
+--- Method
+--- Returns the ColorBoard's parent table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object as a table
 function ColorBoard:parent()
 	return self._parent
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.ColorBoard:app() -> table
+--- Method
+--- Returns the `cp.apple.finalcutpro` app table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The application object as a table
 function ColorBoard:app()
 	return self:parent():app()
 end
@@ -97,36 +160,44 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.ColorBoard:UI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Color Board
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object
 function ColorBoard:UI()
 	return axutils.cache(self, "_ui",
 	function()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
 		if ui then
-			-- it's in the right panel (full-height)
-			if ColorBoard.isColorBoard(ui) then
+			-----------------------------------------------------------------------
+			-- It's in the right panel (full-height):
+			-----------------------------------------------------------------------
+			if ColorBoard.isColorBoard(self, ui) then
 				return ui
 			end
 		else
-			-- it's in the top-left panel (half-height)
+			-----------------------------------------------------------------------
+			-- It's in the top-left panel (half-height):
+			-----------------------------------------------------------------------
 			local top = parent:topGroupUI()
 			if not top then
 				return nil
 			end
 			for i,child in ipairs(top) do
-				if ColorBoard.isColorBoard(child) then
+				if ColorBoard.isColorBoard(self, child) then
 					return child
 				end
 			end
 		end
 		return nil
 	end,
-	function(element) return ColorBoard:isColorBoard(element) end)
-end
-
--- TODO: Add documentation
-function ColorBoard:_findUI()
+	function(element) return ColorBoard:isColorBoard(self, element) end)
 end
 
 -- TODO: Add documentation
