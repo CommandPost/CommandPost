@@ -7,6 +7,7 @@ return {
 	},
 	EffectsBrowser = {
 		Contents							= "_NS:53",
+		Sidebar								= "_NS:90",
 	},
 	TimelineAppearance = {
 		ClipHeight							= "_NS:62",
