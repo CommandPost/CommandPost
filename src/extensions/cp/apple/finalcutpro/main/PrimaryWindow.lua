@@ -26,7 +26,7 @@ local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.main.Inspector")
 local ColorBoard					= require("cp.apple.finalcutpro.main.ColorBoard")
-local ColorBoard					= require("cp.apple.finalcutpro.main.ColorInspector")
+local ColorInspector				= require("cp.apple.finalcutpro.main.ColorInspector")
 
 --------------------------------------------------------------------------------
 --
