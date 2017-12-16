@@ -355,10 +355,12 @@ end
 
 function Libraries:selectClipTitled(title)
 	local clips = self:clips()
-	for _,clip in ipairs(clips) do
-		if clip:getTitle() == title then
-			self:selectClip(clip)
-			return true
+	if clips then
+		for _,clip in ipairs(clips) do
+			if clip:getTitle() == title then
+				self:selectClip(clip)
+				return true
+			end
 		end
 	end
 	return false

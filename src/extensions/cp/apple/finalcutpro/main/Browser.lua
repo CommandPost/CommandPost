@@ -126,7 +126,7 @@ function Browser:showOnSecondary()
 	local menuBar = self:app():menuBar()
 
 	if not self:isOnSecondary() then
-		menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
+		menuBar:selectMenu({"Window", "Show in Secondary Display", "Browser"})
 	end
 	return self
 end
@@ -135,7 +135,7 @@ end
 function Browser:hide()
 	if self:isShowing() then
 		-- Uncheck it from the workspace
-		self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Browser"})
+		self:app():menuBar():selectMenu({"Window", "Show in Workspace", "Browser"})
 	end
 	return self
 end

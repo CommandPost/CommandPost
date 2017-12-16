@@ -14,59 +14,59 @@ function expectError(fn, ...)
 	return result
 end
 
-function run()
+return test.suite("cp.text.matcher"):with(
 	test("simple matcher", function()
 		local value = text "banana"
 		local m = matcher(text "an")
-		
+
 		local first, last = m:find(value)
 		ok(eq(first, 2))
 		ok(eq(last, 3))
-		
+
 		first, last = m:find(value, 4)
 		ok(eq(first, 4))
 		ok(eq(last, 5))
-	end)
-	
+	end),
+
 	test("simple group", function()
 		local value = text "banana"
 		local m = matcher(text "(an)")
-		
+
 		local first, last, grp1, grp2 = m:find(value)
 		ok(eq(first, 2))
 		ok(eq(last, 3))
 		ok(eq(grp1, text "an"))
 		ok(eq(grp2, nil))
-		
+
 		first, last = m:find(value, 4)
 		ok(eq(first, 4))
 		ok(eq(last, 5))
 		ok(eq(grp1, text "an"))
 		ok(eq(grp2, nil))
-	end)
-	
+	end),
+
 	test("string conversion", function()
 		local m = matcher("(an)")
 		local value = "banana"
-		
+
 		local first, last, grp1, grp2 = m:find(value)
 		ok(eq(first, 2))
 		ok(eq(last, 3))
 		ok(eq(grp1, text "an"))
 		ok(eq(grp2, nil))
-		
+
 		first, last = m:find(value, 4)
 		ok(eq(first, 4))
 		ok(eq(last, 5))
 		ok(eq(grp1, text "an"))
 		ok(eq(grp2, nil))
-	end)
-	
+	end),
+
 	test("character classes", function()
 		local first, last = matcher("%a"):find("1!a")
 		ok(eq(first, 3))
 		ok(eq(last, 3))
-		
+
 		local first, last = matcher("%c"):find("1!a\001")
 		ok(eq(first, 4))
 		ok(eq(last, 4))
@@ -74,7 +74,7 @@ function run()
 		local first, last = matcher("%d"):find("1!a")
 		ok(eq(first, 1))
 		ok(eq(last, 1))
-		
+
 		local first, last = matcher("%x"):find("ONE1")
 		ok(eq(first, 3))
 		ok(eq(last, 3))
@@ -90,7 +90,7 @@ function run()
 		local first, last = matcher("%p"):find("1!a")
 		ok(eq(first, 2))
 		ok(eq(last, 2))
-		
+
 		local first, last = matcher("%s"):find("abc ABC")
 		ok(eq(first, 4))
 		ok(eq(last, 4))
@@ -98,18 +98,18 @@ function run()
 		local first, last = matcher("%w"):find("?123 ABC")
 		ok(eq(first, 2))
 		ok(eq(last, 2))
-		
+
 		local first, last = matcher("%z"):find("abc\000ABC")
 		ok(eq(first, 4))
 		ok(eq(last, 4))
-	end)
-	
+	end),
+
 	test("multiple characters", function()
 		local first, last = matcher("%x%x"):find("ONE1")
 		ok(eq(first, 3))
 		ok(eq(last, 4))
-	end)
-	
+	end),
+
 	test("custom character classes", function()
 		local first, last = matcher("[E]"):find("ONE1")
 		ok(eq(first, 3))
@@ -118,16 +118,16 @@ function run()
 		local first, last = matcher("[EN]"):find("ONE1")
 		ok(eq(first, 2))
 		ok(eq(last, 2))
-		
+
 		local first, last = matcher("[E-N]"):find("ONE1")
 		ok(eq(first, 2))
 		ok(eq(last, 2))
-		
+
 		local first, last = matcher("[^O]"):find("ONE1")
 		ok(eq(first, 2))
 		ok(eq(last, 2))
-		
-	end)
+
+	end),
 
 	test("quantifiers", function()
 		local first, last = matcher("[EN]+"):find("ONE1")
@@ -145,7 +145,7 @@ function run()
 		local first, last = matcher("[EN]-"):find("ONE1")
 		ok(eq(first, 1))
 		ok(eq(last, 0))
-	end)
+	end),
 
 	test("complex quantifiers", function()
 		local first, last = matcher("[EN]+1"):find("ONE1")
@@ -163,8 +163,8 @@ function run()
 		local first, last = matcher("[EN]-1"):find("ONE1")
 		ok(eq(first, 2))
 		ok(eq(last, 4))
-	end)
-	
+	end),
+
 	test("first last", function()
 		local first, last = matcher("^%a"):find("ONE1")
 		ok(eq(first, 1))
@@ -177,8 +177,8 @@ function run()
 		local first, last = matcher("^.*$"):find("ONE1")
 		ok(eq(first, 1))
 		ok(eq(last, 4))
-	end)
-	
+	end),
+
 	test("complex pattern", function()
 		local m = matcher("^([^@]+)@([^@]+)$")
 
@@ -193,7 +193,7 @@ function run()
 		ok(eq(last, nil))
 		ok(eq(grp1, nil))
 		ok(eq(grp2, nil))
-	end)
+	end),
 
 	test("match", function()
 		local m = matcher("^([^@]+)@([^@]+)$")
@@ -205,14 +205,14 @@ function run()
 		local grp1, grp2 = m:match("@bad")
 		ok(eq(grp1, nil))
 		ok(eq(grp2, nil))
-		
+
 		local result = matcher("^.*$"):match("foobar")
 		ok(eq(result, text "foobar"))
-		
+
 		local result = matcher("^%d*$"):match("foobar")
 		ok(eq(result, nil))
-	end)
-	
+	end),
+
 	test("gmatch", function()
 		local m = matcher("an")
 		local count = 0
@@ -221,11 +221,11 @@ function run()
 			count = count + 1
 		end
 		ok(eq(count, 2))
-	end)
-	
+	end),
+
 	test("gsub", function()
 		local x
-		
+
 		x = matcher("%w+"):gsub("hello world", "%1 %1")
 		ok(eq(x, text "hello hello world world"))
 
@@ -247,6 +247,4 @@ function run()
 		x = matcher("%$(%w+)"):gsub("$name-$version.tar.gz", t)
 		ok(eq(x, text "lua-5.1.tar.gz"))
 	end)
-end
-
-return run
+)
