@@ -26,6 +26,8 @@ local Pucker							= require("cp.apple.finalcutpro.main.ColorPucker")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorBoard"
 
+local semver							= require("semver")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -79,34 +81,37 @@ ColorBoard.aspect.exposure				= {
 --- The current aspect as a string.
 ColorBoard.currentAspect = "*"
 
---- cp.apple.finalcutpro.main.ColorBoard.isColorBoard(self, element) -> boolean
+--- cp.apple.finalcutpro.main.ColorBoard.isColorBoard(element) -> boolean
 --- Function
 --- Checks to see if a GUI element is the Color Board or not
 ---
 --- Parameters:
----  * `self`		- Self
 ---  * `element`	- The element you want to check
 ---
 --- Returns:
 ---  * `true` if the `element` is a Color Board otherwise `false`
-function ColorBoard.isColorBoard(self, element)
-
-	-----------------------------------------------------------------------
-	-- Final Cut Pro 10.3:
-	----------------------------------------------------------------------
-	for i,child in ipairs(element) do
+function ColorBoard.isColorBoard(element)
+	for _, child in ipairs(element) do
+		-----------------------------------------------------------------------
+		-- Final Cut Pro 10.3:
+		----------------------------------------------------------------------
 		if axutils.childWith(child, "AXIdentifier", id "BackButton") then
 			return true
 		end
-	end
 
-	-----------------------------------------------------------------------
-	-- Final Cut Pro 10.4:
-	-----------------------------------------------------------------------
-	if self and self:parent() and self:parent():inspector() and self:parent():inspector():selectedTab() and self:parent():inspector():selectedTab() == "Color" then
-		return true
+		-----------------------------------------------------------------------
+		-- Final Cut Pro 10.4:
+		-----------------------------------------------------------------------
+		local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
+		if splitGroup then
+			local colorBoardGroup = axutils.childWith(splitGroup, "AXIdentifier", id "ColorBoardGroup")
+			if colorBoardGroup and colorBoardGroup[1] and colorBoardGroup[1][1] then
+				if #colorBoardGroup[1][1]:attributeValue("AXChildren") > 19 then
+					return true
+				end
+			end
+		end
 	end
-
 	return false
 end
 
@@ -178,7 +183,7 @@ function ColorBoard:UI()
 			-----------------------------------------------------------------------
 			-- It's in the right panel (full-height):
 			-----------------------------------------------------------------------
-			if ColorBoard.isColorBoard(self, ui) then
+			if ColorBoard.isColorBoard(ui) then
 				return ui
 			end
 		else
@@ -190,14 +195,31 @@ function ColorBoard:UI()
 				return nil
 			end
 			for i,child in ipairs(top) do
-				if ColorBoard.isColorBoard(self, child) then
-					return child
+				if ColorBoard.isColorBoard(child) then
+					local version = self:app():getVersion()
+					if version and semver(version) >= semver("10.4") then
+						-----------------------------------------------------------------------
+						-- Final Cut Pro 10.4:
+						----------------------------------------------------------------------
+
+						-- TO DO: This doesn't work...
+
+						log.df("Role: %s", hs.inspect(child[1][1][1][1][1]:attributeValue("AXRole")))
+						return child and child[1] and child[1][1] and child[1][1][1] and child[1][1][1][1] and child[1][1][1][1][1]
+
+					else
+						-----------------------------------------------------------------------
+						-- Final Cut Pro 10.3:
+						-----------------------------------------------------------------------
+						log.df("Role: %s", child:attributeValue("AXRole"))
+						return child
+					end
 				end
 			end
 		end
 		return nil
 	end,
-	function(element) return ColorBoard:isColorBoard(self, element) end)
+	function(element) return ColorBoard:isColorBoard(element) end)
 end
 
 -- TODO: Add documentation
@@ -212,10 +234,32 @@ ColorBoard.isActive = prop.new(function(self)
 	return ui ~= nil and axutils.childWith(ui:parent(), "AXIdentifier", id "ColorSatExp")
 end):bind(ColorBoard)
 
+
+
 -- TODO: Add documentation
 function ColorBoard:show()
 	if not self:isShowing() then
-		self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
+
+		local version = self:app():getVersion()
+		if version and semver(version) >= semver("10.4") then
+			-----------------------------------------------------------------------
+			-- Final Cut Pro 10.4:
+			-----------------------------------------------------------------------
+			if not self:isShowing() then
+
+				-- TO-DO: This is probably not the best way to do it, as there might already be a Color Board on the clip?
+
+				self:app():menuBar():selectMenu({"Edit", "Add Color Board"})
+				self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
+
+			end
+		else
+			-----------------------------------------------------------------------
+			-- Final Cut Pro 10.3:
+			-----------------------------------------------------------------------
+			self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
+		end
+
 	end
 	return self
 end
@@ -337,11 +381,11 @@ function ColorBoard:selectedPanel()
 	local exposureAspect = self:getAspect("exposure")
 
 	local ui = self:colorSatExpUI()
-	if colorAspect and ui and ui[colorAspect.id]:value() == 1 then
+	if colorAspect and ui and ui[colorAspect.id] and ui[colorAspect.id]:value() == 1 then
 		return "color"
-	elseif saturationAspect and ui and ui[saturationAspect.id]:value() == 1 then
+	elseif saturationAspect and ui and ui[saturationAspect.id] and ui[saturationAspect.id]:value() == 1 then
 		return "saturation"
-	elseif exposureAspect and ui and ui[exposureAspect.id]:value() == 1 then
+	elseif exposureAspect and ui and ui[exposureAspect.id] and ui[exposureAspect.id]:value() == 1 then
 		return "exposure"
 	end
 	return nil

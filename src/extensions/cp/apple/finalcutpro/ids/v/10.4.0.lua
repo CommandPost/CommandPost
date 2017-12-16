@@ -13,7 +13,8 @@ return {
 	},
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
-		CorrectionBar						= "_NS:9",
+
+		ColorBoardGroup						= "_NS:41",
 
 		ColorSatExp							= "_NS:77",
 
