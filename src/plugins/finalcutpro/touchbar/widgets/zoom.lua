@@ -101,7 +101,7 @@ function mod.widget()
 			if m == "mouseDown" or m == "mouseMove" then
 				local appearance = fcp:timeline():toolbar():appearance()
 				if appearance then
-					appearance:show():zoomAmount():setValue(x / 10)
+					appearance:show():zoomAmount():setValue(x/(canvasWidth/10))
 				end
 			elseif m == "mouseUp" then
 				local appearance = fcp:timeline():toolbar():appearance()
