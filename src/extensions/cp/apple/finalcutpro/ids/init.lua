@@ -91,6 +91,57 @@ local function currentVersion()
 
 end
 
+function mod.versions()
+	if not mod.versions then
+		mod.versions = {}
+		local path = fs.pathToAbsolute(config.scriptPath .. "/cp/apple/finalcutpro/ids/v/")
+		for file in fs.dir(path) do
+			if file:sub(-4) == ".lua" then
+				local versionString = file:sub(1, -5)
+				local version = v(versionString)
+				if version then
+					insert(mod.versions, v(version))
+				end
+			end
+		end
+		table.sort(mod.versions)
+		log.df("ids.versions loaded: %s", mod.versions)
+	end
+	return mod.versions
+end
+
+--- cp.apple.finalcutpro.ids.previousVersion(version) -> table
+--- Function
+--- Returns the previous version number that has stored IDs.
+---
+--- Parameters:
+---  * version - The version number you want to load as a string (i.e. "10.4.0") or a `semver`
+---
+--- Returns:
+---  * A `semver` instance for the previous version.
+function mod.previousVersion(version)
+	if not version then
+		return {}
+	end
+
+	----------------------------------------------------------------------------------------
+	-- Make sure we're working with a semver version:
+	----------------------------------------------------------------------------------------
+	version = type(version) == "string" and v(version) or version
+
+	local prev = nil
+
+	for i,ver in ipairs(mod.versions) do
+		if ver < version then
+			prev = ver
+		end
+		if ver >= version then
+			break
+		end
+	end
+	return prev
+end
+
 --- cp.apple.finalcutpro.ids.load(version) -> table
 --- Function
 --- Loads and caches Final Cut Pro IDs for the given version.
