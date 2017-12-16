@@ -476,7 +476,7 @@ function App:getPath()
 		if appPath then
 			return appPath
 		else
-			log.df("GET PATH: Failed to get running application path.")
+			log.ef("GET PATH: Failed to get running application path.")
 		end
 	else
 		----------------------------------------------------------------------------------------
@@ -513,10 +513,10 @@ App.getVersion = App.application:mutate(function(app)
 			if info then
 				return info["CFBundleShortVersionString"]
 			else
-				log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
+				log.ef("VERSION CHECK: Could not determine Final Cut Pro's version.")
 			end
 		else
-			log.df("VERSION CHECK: Could not determine Final Cut Pro's path.")
+			log.ef("VERSION CHECK: Could not determine Final Cut Pro's path.")
 		end
 	end
 
@@ -527,7 +527,7 @@ App.getVersion = App.application:mutate(function(app)
 	if info then
 		return info["CFBundleShortVersionString"]
 	else
-		log.df("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
+		log.ef("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
 	end
 
 	----------------------------------------------------------------------------------------
