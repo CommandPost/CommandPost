@@ -264,18 +264,19 @@ function ColorBoard:colorInspectorBarUI()
 	-- Find the Color Inspector Bar:
 	-----------------------------------------------------------------------
 	local inspectorUI = self:app():inspector():UI()
-	for _, child in ipairs(inspectorUI:attributeValue("AXChildren")) do
-		local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
-		if splitGroup then
-			for _, subchild in ipairs(splitGroup:attributeValue("AXChildren")) do
-				local group = axutils.childWith(subchild, "AXIdentifier", id "ChooseColorCorrectorsBar")
-				if group then
-					return group
+	if inspectorUI then
+		for _, child in ipairs(inspectorUI:attributeValue("AXChildren")) do
+			local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
+			if splitGroup then
+				for _, subchild in ipairs(splitGroup:attributeValue("AXChildren")) do
+					local group = axutils.childWith(subchild, "AXIdentifier", id "ChooseColorCorrectorsBar")
+					if group then
+						return group
+					end
 				end
 			end
 		end
 	end
-
 	return nil
 
 end

@@ -115,9 +115,11 @@ function Inspector:UI()
 			-- It's in the top-left panel (half-height):
 			-----------------------------------------------------------------------
 			local top = parent:topGroupUI()
-			for i,child in ipairs(top) do
-				if Inspector.matches(child) then
-					return child
+			if top then
+				for i,child in ipairs(top) do
+					if Inspector.matches(child) then
+						return child
+					end
 				end
 			end
 		end
