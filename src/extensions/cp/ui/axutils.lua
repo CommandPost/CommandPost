@@ -259,7 +259,7 @@ function axutils.isValid(element)
 	return element ~= nil and element.role
 end
 
---- cp.ui.axutils.cache(source, key, finderFn, verifyFn) -> axuielement
+--- cp.ui.axutils.cache(source, key, finderFn, [verifyFn]) -> axuielement
 --- Function
 --- Checks if the cached value at the `source[key]` is a valid axuielement. If not
 --- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
@@ -269,10 +269,10 @@ end
 --- to return `true` or `false`.
 ---
 --- Parameters:
----  * source	- the table containing the cache
----  * key		- the key the value is cached under
----  * finderFn	- the function which will return the element if not found.
----  * verifyFn	- (optional) a function which will check the cached element to verify it is still valid.
+---  * source		- the table containing the cache
+---  * key			- the key the value is cached under
+---  * finderFn		- the function which will return the element if not found.
+---  * [verifyFn]	- an optional function which will check the cached element to verify it is still valid.
 ---
 --- Returns:
 ---  * The valid cached value.

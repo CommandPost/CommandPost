@@ -190,6 +190,7 @@ end
 ---  * This method will open the Inspector if it's closed, and leave it open.
 ---  * Valid strings for `value` are as follows:
 ---    * Audio
+---    * Color
 ---    * Effect
 ---    * Generator
 ---    * Info
@@ -235,6 +236,8 @@ function Inspector:selectTab(value)
 					result = true
 				elseif title == app:string("FFInspectorTabShare") and value == "Share" then
 					result = true
+				elseif title == app:string("FFInspectorTabColor") and value == "Color" then
+					result = true
 				end
 				if result then
 					local actionResult = subChild:performAction("AXPress")
@@ -263,6 +266,7 @@ end
 --- Notes:
 ---  * The tab strings can be:
 ---    * Audio
+---    * Color
 ---    * Effect
 ---    * Generator
 ---    * Info
@@ -298,6 +302,8 @@ function Inspector:selectedTab()
 						return "Audio"
 					elseif title == app:string("FFInspectorTabShare") then
 						return "Share"
+					elseif title == app:string("FFInspectorTabColor") then
+						return "Color"
 					end
 				end
 			end

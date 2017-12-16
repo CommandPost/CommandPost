@@ -14,6 +14,10 @@ return {
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
 
+		ChooseColorCorrectorsBar			= "_NS:9",
+
+		ColorBoardGroup						= "_NS:41",
+
 		ColorSatExp							= "_NS:77",
 
 		ColorReset							= "_NS:246",
@@ -33,5 +37,24 @@ return {
 		ExpShadowsPuck						= "_NS:240",
 		ExpMidtonesPuck						= "_NS:124",
 		ExpHighlightsPuck					= "_NS:117",
+
+		ColorGlobalPct						= "_NS:48",
+		ColorGlobalAngle					= "_NS:9",
+		ColorShadowsPct						= "_NS:28",
+		ColorShadowsAngle					= "_NS:21",
+		ColorMidtonesPct					= "_NS:54",
+		ColorMidtonesAngle					= "_NS:41",
+		ColorHighlightsPct					= "_NS:34",
+		ColorHighlightsAngle				= "_NS:60",
+
+		SatGlobalPct						= "_NS:48",
+		SatShadowsPct						= "_NS:28",
+		SatMidtonesPct						= "_NS:54",
+		SatHighlightsPct					= "_NS:34",
+
+		ExpGlobalPct						= "_NS:48",
+		ExpShadowsPct						= "_NS:28",
+		ExpMidtonesPct						= "_NS:54",
+		ExpHighlightsPct					= "_NS:34",
 	},
 }
