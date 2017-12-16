@@ -22,7 +22,7 @@ local just							= require("cp.just")
 local SaveSheet						= require("cp.apple.finalcutpro.export.SaveSheet")
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
-local id							= require "cp.apple.finalcutpro.ids" "ExportDialog"
+local id							= require("cp.apple.finalcutpro.ids") "ExportDialog"
 
 local prop							= require("cp.prop")
 
