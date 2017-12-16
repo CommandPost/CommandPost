@@ -96,9 +96,15 @@ function MenuBar:selectMenu(path)
 end
 
 -- TODO: Add documentation
+local function _isMenuChecked(menu)
+	return menu:attributeValue("AXMenuItemMarkChar") ~= nil
+end
+
+
+-- TODO: Add documentation
 function MenuBar:isChecked(path)
 	local menuItemUI = self:findMenuUI(path)
-	return menuItemUI and self:_isMenuChecked(menuItemUI)
+	return menuItemUI and _isMenuChecked(menuItemUI)
 end
 
 -- TODO: Add documentation
@@ -108,25 +114,30 @@ function MenuBar:isEnabled(path)
 end
 
 -- TODO: Add documentation
-function MenuBar:_isMenuChecked(menu)
-	return menu:attributeValue("AXMenuItemMarkChar") ~= nil
-end
-
--- TODO: Add documentation
-function MenuBar:checkMenu(path)
+function MenuBar:checkMenu(path, wait)
 	local menuItemUI = self:findMenuUI(path)
 	if menuItemUI then
-		menuItemUI:doPress()
+		if not _isMenuChecked(menuItemUI) then
+			menuItemUI:doPress()
+			if wait then
+				just.doUntil(function() return _isMenuChecked(menuItemUI) end, 5)
+			end
+		end
 		return true
 	end
 	return false
 end
 
 -- TODO: Add documentation
-function MenuBar:uncheckMenu(path)
+function MenuBar:uncheckMenu(path, wait)
 	local menuItemUI = self:findMenuUI(path)
 	if menuItemUI then
-		menuItemUI:doPress()
+		if _isMenuChecked(menuItemUI) then
+			menuItemUI:doPress()
+			if wait then
+				just.doUntil(function() return not _isMenuChecked(menuItemUI) end, 5)
+			end
+		end
 		return true
 	end
 	return false

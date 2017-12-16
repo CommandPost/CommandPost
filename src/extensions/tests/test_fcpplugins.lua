@@ -10,10 +10,11 @@ local plugins		= require("cp.apple.finalcutpro.plugins")
 local PLUGINS_PATH = config.scriptPath .. "/tests/fcp/plugins"
 local EFFECTS_PATH = PLUGINS_PATH .. "/Effects.localized"
 
-function run()
-	local app = {
-		getPath = function() return "/Applications/Final Cut Pro.app" end
-	}
+local app = {
+	getPath = function() return "/Applications/Final Cut Pro.app" end
+}
+
+return test.suite("cp.apple.finalcutpro.plugins"):with(
 
 	test("Get Motion Theme", function()
 		local testEffect = EFFECTS_PATH .. "/Test/Test Effect/Test Effect.moef"
@@ -21,7 +22,7 @@ function run()
 
 		local themedTestEffect = EFFECTS_PATH .. "/Test/Test Theme/Themed Test Effect/Themed Test Effect.moef"
 		ok(eq(plugins._getMotionTheme(themedTestEffect), "Test Theme"))
-	end)
+	end),
 
 	test("Scan Theme", function()
 		local testTheme = EFFECTS_PATH .. "/Test/Test Theme"
@@ -44,7 +45,7 @@ function run()
 			}
 		}}}
 		ok(eq(scanner._plugins, plugins))
-	end)
+	end),
 
 	test("Scan Category", function()
 		local testCategory = EFFECTS_PATH .. "/Test"
@@ -74,7 +75,7 @@ function run()
 			},
 		}}}
 		ok(eq(scanner._plugins, plugins))
-	end)
+	end),
 
 	test("Scan Effects", function()
 		local path = EFFECTS_PATH
@@ -122,7 +123,4 @@ function run()
 		}}}
 		ok(eq(scanner._plugins, plugin))
 	end)
-
-end
-
-return run
+)

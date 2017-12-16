@@ -6,7 +6,7 @@ local plistSrc	= require("cp.strings.source.plist")
 local strings	= require("cp.strings")
 local config	= require("cp.config")
 
-function run()
+return test.suite("cp.strings"):with(
 	test("Table Source Test", function()
 		local src = tableSrc.new()
 			:add("en", {foo = "bar"})
@@ -15,7 +15,7 @@ function run()
 		ok(eq(src:find("es", "foo"), "baz"))
 		ok(eq(src:find("fr", "foo"), nil))
 		ok(eq(src:find("en", "xxx"), nil))
-	end)
+	end),
 
 	test("Strings from single source", function()
 		local src = tableSrc.new()
@@ -28,7 +28,7 @@ function run()
 		ok(eq(strs:find("es", "foo"), "baz"))
 		ok(eq(strs:find("fr", "foo"), nil))
 		ok(eq(strs:find("en", "xxx"), nil))
-	end)
+	end),
 
 	test("Strings from multiple sources", function()
 		local src1 = tableSrc.new()
@@ -49,7 +49,7 @@ function run()
 
 		ok(eq(strs:find("en", "yada"), "yada"))
 		ok(eq(strs:find("es", "yada"), "nada"))
-	end)
+	end),
 
 	test("Strings from plist", function()
 		local src = plistSrc.new(config.scriptPath .. "/tests/test.${language}.plist")
@@ -60,13 +60,11 @@ function run()
 		ok(eq(strs:find("es", "foo"), "baz"))
 		ok(eq(strs:find("fr", "foo"), nil))
 		ok(eq(strs:find("en", "xxx"), nil))
-	end)
+	end),
 
 	test("Keys from plist", function()
 		local strs = strings.new():fromPlist(config.scriptPath .. "/tests/test.${language}.plist")
 		ok(eq(strs:findKeys("en", "bar"), {"foo"}))
 	end)
 
-end
-
-return run
+)
