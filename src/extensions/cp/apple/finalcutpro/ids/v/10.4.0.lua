@@ -6,11 +6,14 @@ return {
 		PitchShifter						= "Pitch Shifter",
 	},
 	EffectsBrowser = {
-		Contents							= "_NS:53",
 		Sidebar								= "_NS:90",
+		Contents							= "_NS:53",
 	},
-	TimelineAppearance = {
-		ClipHeight							= "_NS:62",
+	LibrariesBrowser = {
+		FilterToggle						= "_NS:9",
+	},
+	ColorInspector = {
+		ChooseColorCorrectorsBar			= "_NS:9",
 	},
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
