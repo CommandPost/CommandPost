@@ -128,11 +128,6 @@ local App = {}
 --- The earliest version of Final Cut Pro supported by this module.
 App.EARLIEST_SUPPORTED_VERSION = "10.3.2"
 
---------------------------------------------------------------------------------
--- TODO: The below five constants should probably just be determined from the
---       Final Cut Pro plist file?
---------------------------------------------------------------------------------
-
 --- cp.apple.finalcutpro.BUNDLE_ID
 --- Constant
 --- Final Cut Pro's Bundle ID
@@ -143,8 +138,14 @@ App.BUNDLE_ID = "com.apple.FinalCut"
 --- Final Cut Pro's Pasteboard UTI
 App.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
 
+--- cp.apple.finalcutpro.PREFS_PATH
+--- Constant
+--- Final Cut Pro's Preferences Path
 App.PREFS_PATH = "~/Library/Preferences/"
 
+--- cp.apple.finalcutpro.PREFS_PLIST_FILE
+--- Constant
+--- Final Cut Pro's Preferences File
 App.PREFS_PLIST_FILE = "com.apple.FinalCut.plist"
 
 --- cp.apple.finalcutpro.PREFS_PLIST_PATH
@@ -201,16 +202,42 @@ function App:init()
 	return self
 end
 
+--- cp.apple.finalcutpro:reset() -> none
+--- Function
+--- Resets the language cache
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function App:reset()
-	-- resets the language cache
 	self._currentLanguage = nil
 	self._activeCommandSet = nil
 end
 
+-- cp.apple.finalcutpro:_initStrings() -> none
+-- Function
+-- Initialise Strings Watchers
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 function App:_initStrings()
 	self.isRunning:watch(function() self:_resetStrings() end, true)
 end
 
+-- cp.apple.finalcutpro:_resetStrings() -> none
+-- Function
+-- Reset Strings
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 function App:_resetStrings()
 	self._strings = strings.new()
 
@@ -229,7 +256,7 @@ end
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
----  * `lang`	- The language code to use. Defaults to the current language.
+---  * `[lang]` - The language code to use. Defaults to the current language.
 ---
 --- Returns:
 ---  * The requested string or `nil` if the application is not running.
@@ -244,7 +271,7 @@ end
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
----  * `lang`	- The language (defaults to current FCPX language).
+---  * `[lang]`	- The language (defaults to current FCPX language).
 ---
 --- Returns:
 ---  * The array of keys with a matching string.
@@ -476,7 +503,7 @@ function App:getPath()
 		if appPath then
 			return appPath
 		else
-			log.df("GET PATH: Failed to get running application path.")
+			log.ef("GET PATH: Failed to get running application path.")
 		end
 	else
 		----------------------------------------------------------------------------------------
@@ -513,10 +540,10 @@ App.getVersion = App.application:mutate(function(app)
 			if info then
 				return info["CFBundleShortVersionString"]
 			else
-				log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
+				log.ef("VERSION CHECK: Could not determine Final Cut Pro's version.")
 			end
 		else
-			log.df("VERSION CHECK: Could not determine Final Cut Pro's path.")
+			log.ef("VERSION CHECK: Could not determine Final Cut Pro's path.")
 		end
 	end
 
@@ -527,7 +554,7 @@ App.getVersion = App.application:mutate(function(app)
 	if info then
 		return info["CFBundleShortVersionString"]
 	else
-		log.df("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
+		log.ef("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
 	end
 
 	----------------------------------------------------------------------------------------
@@ -636,8 +663,9 @@ end
 function App:menuBar()
 	if not self._menuBar then
 		local menuBar = MenuBar:new(self)
-
-		-- Add a finder for Share Destinations
+		----------------------------------------------------------------------------------------
+		-- Add a finder for Share Destinations:
+		----------------------------------------------------------------------------------------
 		menuBar:addMenuFinder(function(parentItem, path, childName, language)
 			if _.isEqual(path, {"File", "Share"}) then
 				childName = childName:match("(.*)…$") or childName
@@ -649,7 +677,9 @@ function App:menuBar()
 			end
 			return nil
 		end)
-		-- Add a finder for missing menus
+		----------------------------------------------------------------------------------------
+		-- Add a finder for missing menus:
+		----------------------------------------------------------------------------------------
 		local missingMenuMap = {
 			{ path = {"Final Cut Pro"},					child = "Commands",		key = "CommandSubmenu" },
 			{ path = {"Final Cut Pro", "Commands"},		child = "Customize…",	key = "Customize" },
@@ -991,14 +1021,13 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:getPreferences() -> table or nil
+--- cp.apple.finalcutpro:getPreferences([forceReload]) -> table or nil
 --- Method
 --- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
 --- file has been modified and reloads when necessary.
 ---
 --- Parameters:
----  * forceReload	- (optional) if true, a reload will be forced even if the file hasn't been modified.
----  * preventMultipleReloads - (optional) if true, adds a 0.01 delay before reloading preferences (for use with the watcher)
+---  * [forceReload]	- If `true`, an optional reload will be forced even if the file hasn't been modified.
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
@@ -1015,14 +1044,14 @@ function App:getPreferences(forceReload)
 	return self._preferences
 end
 
---- cp.apple.finalcutpro:getPreference(value, default, forceReload) -> string or nil
+--- cp.apple.finalcutpro:getPreference(value, [default], [forceReload]) -> string or nil
 --- Method
 --- Get an individual Final Cut Pro preference
 ---
 --- Parameters:
 ---  * value 			- The preference you want to return
----  * default			- (optional) The default value to return if the preference is not set.
----  * forceReload		= (optional) If true, forces a reload of the app's preferences.
+---  * [default]		- The optional default value to return if the preference is not set.
+---  * [forceReload]	- If `true`, optionally forces a reload of the app's preferences.
 ---
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
@@ -1091,7 +1120,7 @@ function App:setPreference(key, value)
 	return false
 end
 
---- cp.apple.finalcutpro:importXML() -> boolean
+--- cp.apple.finalcutpro:importXML(path) -> boolean
 --- Method
 --- Imports an XML file into Final Cut Pro
 ---
@@ -1145,7 +1174,7 @@ end
 --- Gets the path to the 'Default' Command Set.
 ---
 --- Parameters:
----  * `language`	- (optional) The language code to use. Defaults to the current FCPX language.
+---  * [language]	- The optional language code to use. Defaults to the current FCPX language.
 ---
 --- Returns:
 ---  * The 'Default' Command Set path, or `nil` if an error occurred
@@ -1175,7 +1204,7 @@ end
 --- `true` for `forceReload` if you want to reload it.
 ---
 --- Parameters:
----  * forceReload	- (optional) If `true`, require the Command Set to be reloaded.
+---  * [forceReload]	- If `true`, require the Command Set to be reloaded.
 ---
 --- Returns:
 ---  * A table of the Active Command Set's contents, or `nil` if an error occurred
@@ -1265,7 +1294,7 @@ function App:getCommandShortcuts(id)
 	return shortcuts
 end
 
---- cp.apple.finalcutpro:performShortcut() -> boolean
+--- cp.apple.finalcutpro:performShortcut(whichShortcut) -> boolean
 --- Method
 --- Performs a Final Cut Pro Shortcut
 ---
@@ -1299,7 +1328,9 @@ end
 --- Constant
 --- The current language the FCPX is displayed in.
 App.currentLanguage = prop(
-	-- getter
+	--------------------------------------------------------------------------------
+	-- Getter:
+	--------------------------------------------------------------------------------
 	function(self)
 		--------------------------------------------------------------------------------
 		-- Caching:
@@ -1383,8 +1414,9 @@ App.currentLanguage = prop(
 		self._currentLanguage = "en"
 		return self._currentLanguage
 	end,
-
-	-- setter
+	--------------------------------------------------------------------------------
+	-- Setter:
+	--------------------------------------------------------------------------------
 	function(value, self, prop)
 		if value == prop:get() then return end
 
@@ -1480,7 +1512,7 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:watch() -> string
+--- cp.apple.finalcutpro:watch(events) -> string
 --- Method
 --- Watch for events that happen in the application.
 --- The optional functions will be called when the window is shown or hidden, respectively.
@@ -1499,7 +1531,7 @@ function App:watch(events)
 	return self._watchers:watch(events)
 end
 
---- cp.apple.finalcutpro:unwatch() -> boolean
+--- cp.apple.finalcutpro:unwatch(id) -> boolean
 --- Method
 --- Stop watching for events that happen in the application for the specified ID.
 ---

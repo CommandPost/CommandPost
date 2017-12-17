@@ -8,12 +8,15 @@ return {
 	EffectsBrowser = {
 		Sidebar								= "_NS:90",
 		Contents							= "_NS:53",
+		Sidebar								= "_NS:90",
 	},
 	TimelineAppearance = {
 		ClipHeight							= "_NS:62",
 	},
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
+
+		ChooseColorCorrectorsBar			= "_NS:9",
 
 		ColorBoardGroup						= "_NS:41",
 
