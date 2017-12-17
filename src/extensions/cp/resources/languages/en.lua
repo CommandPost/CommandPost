@@ -1095,6 +1095,7 @@ return {
 		finalcutpro_text2speech_label							=	"Text to Speech",
 		finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
 		finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
+		finalcutpro_timeline_commandsetactions_label			=	"Command Set Actions",
 		finalcutpro_timeline_disablewaveforms_label				=	"Timeline: Waveform Drawing",
 		finalcutpro_timeline_effects_label						=	"Timeline: Effects",
 		finalcutpro_timeline_generators_label					=	"Timeline: Generators",
