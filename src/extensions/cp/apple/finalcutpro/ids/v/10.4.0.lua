@@ -10,9 +10,6 @@ return {
 		Contents							= "_NS:53",
 	},
 	LibrariesBrowser = {
-		ToggleViewMode						= "_NS:89",
-		AppearanceAndFiltering				= "_NS:75",
-		SearchToggle						= "_NS:99",
 		FilterToggle						= "_NS:9",
 	},
 	ColorBoard = {

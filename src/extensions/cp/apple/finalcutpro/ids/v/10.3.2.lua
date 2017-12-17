@@ -64,9 +64,6 @@ return {
 		NothingToInspect					= "_NS:53",
 	},
 	LibrariesBrowser = {
-		ToggleViewMode						= "_NS:82",
-		AppearanceAndFiltering				= "_NS:68",
-		SearchToggle						= "_NS:92",
 		Search								= "_NS:34",
 		Sidebar								= "_NS:9",
 	},
