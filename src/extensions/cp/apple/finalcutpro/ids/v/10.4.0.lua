@@ -8,7 +8,6 @@ return {
 	EffectsBrowser = {
 		Sidebar								= "_NS:90",
 		Contents							= "_NS:53",
-		Sidebar								= "_NS:90",
 	},
 	LibrariesBrowser = {
 		ToggleViewMode						= "_NS:89",
