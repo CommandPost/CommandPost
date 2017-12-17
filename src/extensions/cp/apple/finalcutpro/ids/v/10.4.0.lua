@@ -12,6 +12,9 @@ return {
 	LibrariesBrowser = {
 		FilterToggle						= "_NS:9",
 	},
+	ColorInspector = {
+		ChooseColorCorrectorsBar			= "_NS:9",
+	},
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
 
