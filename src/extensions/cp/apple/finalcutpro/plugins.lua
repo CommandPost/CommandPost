@@ -998,12 +998,21 @@ function mod.mt:app()
 end
 
 function mod.mt:init()
+
 	--------------------------------------------------------------------------------
 	-- Define Soundtrack Pro EDEL Effects Paths:
 	--------------------------------------------------------------------------------
 	self.appEdelEffectPaths = {
 		self:app():getPath() .. "/Contents/Frameworks/Flexo.framework/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
 	}
+
+	--------------------------------------------------------------------------------
+	-- Add Final Cut Pro 10.4 Specific Effects:
+	--------------------------------------------------------------------------------
+	local version = self:app():getVersion()
+	if version and v(version) >= v("10.4") then
+		mod.appBuiltinPlugins[mod.types.videoEffect]["FFEffectCategoryColor"] = { "FFCorrectorColorBoard", "PAEColorCurvesEffectDisplayName", "PAECorrectorEffectDisplayName", "PAELUTEffectDisplayName", "HDRTools::Filter Name", "PAEHSCurvesEffectDisplayName" }
+	end
 
 	return self
 end
