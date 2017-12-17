@@ -15,9 +15,6 @@ return {
 		SearchToggle						= "_NS:99",
 		FilterToggle						= "_NS:9",
 	},
-	TimelineAppearance = {
-		ClipHeight							= "_NS:62",
-	},
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
 

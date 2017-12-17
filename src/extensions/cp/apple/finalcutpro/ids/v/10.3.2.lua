@@ -85,7 +85,6 @@ return {
 	},
 	TimelineAppearance = {
 		Toggle								= "_NS:154",
-		ClipHeight							= "_NS:104",
 		ZoomAmount							= "_NS:56",
 	},
 	TimelineToolbar = {
