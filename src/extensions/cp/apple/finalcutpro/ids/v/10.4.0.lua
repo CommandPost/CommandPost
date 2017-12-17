@@ -10,6 +10,12 @@ return {
 		Contents							= "_NS:53",
 		Sidebar								= "_NS:90",
 	},
+	LibrariesBrowser = {
+		ToggleViewMode						= "_NS:89",
+		AppearanceAndFiltering				= "_NS:75",
+		SearchToggle						= "_NS:99",
+		FilterToggle						= "_NS:9",
+	},
 	TimelineAppearance = {
 		ClipHeight							= "_NS:62",
 	},
