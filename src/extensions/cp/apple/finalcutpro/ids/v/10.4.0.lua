@@ -12,6 +12,9 @@ return {
 	TimelineAppearance = {
 		ClipHeight							= "_NS:62",
 	},
+	ColorInspector = {
+		ChooseColorCorrectorsBar			= "_NS:9",
+	},
 	ColorBoard = {
 		ColorBoard							= "Color Inspector",
 

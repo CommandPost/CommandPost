@@ -79,4 +79,65 @@ function ColorInspector:app()
 	return self:parent():app()
 end
 
+-----------------------------------------------------------------------
+--
+-- COLOR INSPECTOR UI:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:colorInspectorBarUI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector Bar (i.e. where you can add new Color Corrections from the dropdown)
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object
+function ColorInspector:colorInspectorBarUI()
+
+	-----------------------------------------------------------------------
+	-- Check that we're running Final Cut Pro 10.4:
+	-----------------------------------------------------------------------
+	local version = self:app():getVersion()
+	if version and semver(version) < semver("10.4") then
+		log.ef("colorInspectorBarUI is only supported in Final Cut Pro 10.4 or later.")
+		return nil
+	end
+
+	-----------------------------------------------------------------------
+	-- Find the Color Inspector Bar:
+	-----------------------------------------------------------------------
+	local inspectorUI = self:app():inspector():UI()
+	if inspectorUI then
+		for _, child in ipairs(inspectorUI:attributeValue("AXChildren")) do
+			local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
+			if splitGroup then
+				for _, subchild in ipairs(splitGroup:attributeValue("AXChildren")) do
+					local group = axutils.childWith(subchild, "AXIdentifier", id "ChooseColorCorrectorsBar")
+					if group then
+						return group
+					end
+				end
+			end
+		end
+	end
+	return nil
+
+end
+
+--- cp.apple.finalcutpro.main.ColorInspector:isShowing() -> boolean
+--- Method
+--- Returns whether or not the Color Inspector is visible
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the Color Inspector is showing, otherwise `false`
+function ColorInspector:isShowing()
+	local colorInspectorBarUI = self:colorInspectorBarUI()
+	return colorInspectorBarUI ~= nil or false
+end
+
 return ColorInspector
