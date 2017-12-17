@@ -82,7 +82,7 @@ function mod.mt:currentVersion()
 end
 
 function mod.mt:versions()
-	if not mod._versions then
+	if not self._versions then
 		local versions = {}
 		local path = fs.pathToAbsolute(self.path)
 		for file in fs.dir(path) do
@@ -95,9 +95,9 @@ function mod.mt:versions()
 			end
 		end
 		table.sort(versions)
-		mod._versions = versions
+		self._versions = versions
 	end
-	return mod._versions
+	return self._versions
 end
 
 --- cp.ids:previousVersion([version]) -> semver

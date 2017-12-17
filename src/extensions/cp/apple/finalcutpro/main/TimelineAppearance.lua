@@ -114,7 +114,9 @@ end
 function TimelineAppearance:clipHeight()
 	if not self._clipHeight then
 		self._clipHeight = Slider:new(self, function()
-			return axutils.childWithID(self:UI(), id "ClipHeight")
+			return axutils.childMatching(self:UI(), function(e)
+				return e:attributeValue("AXRole") == "AXSlider" and e:attributeValue("AXMaxValue") == 210
+			end)
 		end)
 	end
 	return self._clipHeight

@@ -64,9 +64,6 @@ return {
 		NothingToInspect					= "_NS:53",
 	},
 	LibrariesBrowser = {
-		ToggleViewMode						= "_NS:82",
-		AppearanceAndFiltering				= "_NS:68",
-		SearchToggle						= "_NS:92",
 		Search								= "_NS:34",
 		Sidebar								= "_NS:9",
 	},
@@ -85,7 +82,6 @@ return {
 	},
 	TimelineAppearance = {
 		Toggle								= "_NS:154",
-		ClipHeight							= "_NS:104",
 		ZoomAmount							= "_NS:56",
 	},
 	TimelineToolbar = {
