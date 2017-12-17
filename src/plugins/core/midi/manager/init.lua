@@ -8,6 +8,10 @@
 ---
 --- MIDI Manager Plugin.
 
+--- === plugins.core.midi.manager.controls ===
+---
+--- MIDI Manager Controls.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
