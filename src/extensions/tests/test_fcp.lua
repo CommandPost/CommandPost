@@ -172,9 +172,10 @@ return test.suite("cp.apple.finalcutpro"):with(
 		-- Check the search UI
 		ok(libraries:searchToggle():isShowing())
 		-- Show the search field if necessary
-		while not libraries:search():isShowing() or not libraries:filterToggle():isShowing() do
+		if not libraries:search():isShowing() or not libraries:filterToggle():isShowing() then
 			libraries:searchToggle():press()
 		end
+
 		ok(libraries:search():isShowing())
 		ok(libraries:filterToggle():isShowing())
 		-- turn it back off
@@ -369,7 +370,7 @@ return test.suite("cp.apple.finalcutpro"):with(
 
 	-- Quit FCPX and remove Test Library from Temporary Directory:
 	-- log.df("Quitting FCPX and deleting Test Library...")
-	fcp:quit()
-	fs.rmdir(temporaryDirectory)
+	-- fcp:quit()
+	-- fs.rmdir(temporaryDirectory)
 
 end)

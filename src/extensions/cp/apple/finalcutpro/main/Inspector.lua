@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timline")
+local log								= require("hs.logger").new("inspector")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")

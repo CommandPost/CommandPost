@@ -40,7 +40,6 @@ return {
 		Content								= "_NS:18",
 	},
 	TimelineAppearance = {
-		ClipHeight							= "_NS:85",
 		ZoomAmount							= "_NS:35",
 	},
 }
