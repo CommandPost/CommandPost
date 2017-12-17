@@ -244,6 +244,8 @@ return {
 
 			sharedXMLError						=			"Something went wrong when attempting to translate the XML data you dropped. Please try again.",
 
+			shortcutCouldNotBeTriggered 		= 			"This shortcut could not be triggered.\n\nPlease check that you valid shortcut keys assigned to command you've tried to trigger in the Final Cut Pro Command Editor and try again.",
+
 			--------------------------------------------------------------------------------
 			-- Yes/No Dialog Boxes:
 			--------------------------------------------------------------------------------
@@ -823,6 +825,7 @@ return {
 	titlesShortcuts						=			"Titles Shortcuts",
 	generatorsShortcuts					=			"Generators Shortcuts",
 	menuItems							=			"Menu Items",
+	commandEditorShortcut				= 			"Command Editor Shortcut",
 
 	--------------------------------------------------------------------------------
 	-- ACTIONS:
@@ -846,6 +849,7 @@ return {
 		fcpx_transition_action				=			"Transitions",
 		fcpx_widgets_action					=			"Touch Bar Widgets",
 		fcpx_midicontrols_action			=			"MIDI Controls",
+		fcpx_shortcuts_action				=			"Command Editor Shortcuts",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND URL EXECUTION:

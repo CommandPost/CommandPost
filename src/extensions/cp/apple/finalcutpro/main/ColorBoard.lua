@@ -526,7 +526,7 @@ function ColorBoard:getAspect(aspect, property)
 			local ui = self:colorSatExpUI()
 			if ui then
 				for k,value in pairs(ColorBoard.aspect) do
-					if ui[value.id]:value() == 1 then
+					if ui[value.id] and ui[value.id]:value() == 1 then
 						panel = value
 					end
 				end
