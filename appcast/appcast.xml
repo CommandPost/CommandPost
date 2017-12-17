@@ -6,6 +6,35 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.17</title>
+			<description><![CDATA[
+				<h2>Improvements:</h2>
+				<ul><li>All commands that appear in Final Cut Pro's Command Editor can now be assigned in the CommandPost Console (issue #889)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Update Logic Plugins List for Final Cut Pro 10.4 (issue #877)</li>
+				<li>`cp.apple.finalcutpro.ids` didn't take into account previous minor versions (issue #879)</li>
+				<li>`fcp:inspector():isShowing()` was broken in Final Cut Pro 10.4 (issue #882)</li>
+				<li>Made test logging less verbose (issue #830)</li>
+				<li>Updated Color Board API to work in Final Cut Pro 10.4 (issue #869)</li>
+				<li>Touch Bar Timeline Zoom wasn't smooth (issue #888)</li>
+				<li>`fcp:effects():showAllVideoEffects()` failed in Final Cut Pro 10.4 (issue #881)</li>
+				<li>Added Missing Final Cut Pro 10.4 Effects (issue #893)</li>
+				<li>Added initial support for Final Cut Pro 10.4's new Color Inspector (issue #884)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Controlling CommandPost Shortcuts within Final Cut Pro's Command Editor doesn't currently work in Final Cut Pro 10.4 (issue #896)</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon, 18 Dec 2017 02:01:57 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.17/CommandPost_1.0.0-beta.17.dmg"
+				sparkle:version="1.0.0-beta.17"
+				sparkle:dsaSignature="MC4CFQD9hGWpxLE8XBvdTeSrVTGS/A1otQIVAPTABQc5Exkgr6zpNXzq5WcnjQoS"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.16</title>
 			<description><![CDATA[
 				<h2>Improvements:</h2>
