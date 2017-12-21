@@ -24,7 +24,7 @@
 ---
 ---   * `honorCanvasMove` - A boolean, default nil (false), indicating whether or not the frame wrapper functions for `hs.canvas` objects should honor location changes when made with `hs.canvas:topLeft` or `hs.canvas:frame`. This is a (hopefully temporary) fix because canvas objects are not aware of the `hs._asm.guitk` frameDetails model for element placement.
 ---
----   * Note that `x`, `rX`, `cX`, `y`, `bY`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `rX`, `cX`, and `w`) or height (for `y`, `bY`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number. A negative percentage indicates a value to be subtracted from 100% (e.g. -25% is the same as 75%). For position attributes, this has the effect of treating it as a percentage from the opposite side (i.e. from the right or bottom instead of left or top).
+---   * Note that `x`, `rX`, `cX`, `y`, `bY`, `cY`, `h`, and `w` may be specified as numbers or as strings representing percentages of the element's parent width (for `x`, `rX`, `cX`, and `w`) or height (for `y`, `bY`, `cY`, and `h`). Percentages should specified in the string as defined for your locale or in the `en_US` locale (as a fallback) which is either a number followed by a % sign or a decimal number.
 ---
 --- * When assigning a new element to the manager through the metamethods, you can assign the userdata directly or by using the table format described above. For example:
 ---
@@ -64,6 +64,24 @@ end
 local log = require("hs.logger").new(USERDATA_TAG, require"hs.settings".get(USERDATA_TAG .. ".logLevel") or "warning")
 
 -- private variables and methods -----------------------------------------
+
+-- a simplified one line inspect used to stringify tables
+local finspect = function(...)
+    local args = table.pack(...)
+    if args.n == 1 and type(args[1]) == "table" then
+        args = args[1]
+    else
+        args.n = nil -- supress the count from table.pack
+    end
+
+    -- causes issues with recursive calls to __tostring in inspect
+    local mt = getmetatable(args)
+    if mt then setmetatable(args, nil) end
+    local answer = inspect(args, { newline = " ", indent = "" })
+    if mt then setmetatable(args, mt) end
+    return answer
+end
+
 
 local wrappedElementMT = {
     __e = setmetatable({}, { __mode = "k" })
@@ -232,8 +250,19 @@ managerMT.elementPropertyList = function(self, element, ...)
         results.frameDetails = self:elementFrameDetails(element)
         results._fittingSize = self:elementFittingSize(element)
         results._type        = getmetatable(element).__type
-        return setmetatable(results, { __tostring = inspect })
-    else
+--         return setmetatable(results, { __tostring = inspect })
+        return setmetatable(results, { __tostring = function(self)
+            return (inspect(self, { process = function(item, path)
+                if path[#path] == inspect.KEY then return item end
+                if path[#path] == inspect.METATABLE then return nil end
+                if #path > 0 and type(item) == "table" then
+                    return finspect(item)
+                else
+                    return item
+                end
+            end
+            }):gsub("[\"']{", "{"):gsub("}[\"']", "}"))
+        end})    else
         error("unexpected arguments", 2)
     end
 end
@@ -382,7 +411,7 @@ managerMT.__newindex = function(self, key, value)
     else
         if math.type(key) == "integer" then
             if key < 1 or key > (#self + 1) then
-                error("replacement index out of bounds", 2)
+                error("index out of bounds", 2)
             end
             if type(value) == "userdata" then value = { _element = value } end
             if type(value) == "table" and pcall(self.elementFittingSize, self, value._element) then
@@ -394,13 +423,12 @@ managerMT.__newindex = function(self, key, value)
                         if newElement[k] then
                             newElement[k](newElement, v)
                         else
-                            log.wf("%s:insert metamethod, unrecognized key %s", USERDATA_TAG, k)
+                            log.wf("insert metamethod, unrecognized key %s for %s", k, newElement.__type)
                         end
                     end
                 end
 
-                local oldElement = self:element(key)
-                if oldElement then self:remove(key) end
+                if self:element(key) then self:remove(key) end
                 self:insert(newElement, details, key)
             else
                 error("replacement value does not specify an element", 2)

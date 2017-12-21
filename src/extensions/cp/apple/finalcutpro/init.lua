@@ -486,7 +486,7 @@ function App:quit()
 	return self
 end
 
---- cp.apple.finalcutpro:path() -> string or nil
+--- cp.apple.finalcutpro:getPath() -> string or nil
 --- Method
 --- Path to Final Cut Pro Application
 ---
@@ -1326,6 +1326,8 @@ function App:performShortcut(whichShortcut)
 
 	if shortcuts and #shortcuts > 0 then
 		shortcuts[1]:trigger()
+	else
+		return false
 	end
 
 	return true

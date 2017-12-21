@@ -16,11 +16,8 @@
 --
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("colorInspect")
-local inspect							= require("hs.inspect")
-local geometry							= require("hs.geometry")
 
 local prop								= require("cp.prop")
-local just								= require("cp.just")
 local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 

@@ -12,9 +12,9 @@ local module       = {}
 require("hs.drawing.color")
 require("hs.image")
 require("hs.styledtext")
+require("hs.sound")
 
 local fnutils = require("hs.fnutils")
-local inspect = require("hs.inspect")
 
 local commonControlMethods = require(USERDATA_TAG .. "._control")
 local commonViewMethods    = require(USERDATA_TAG .. "._view")
@@ -48,6 +48,49 @@ end
 module.datepicker.calendarIdentifiers   = ls.makeConstantsTable(module.datepicker.calendarIdentifiers)
 module.datepicker.timezoneAbbreviations = ls.makeConstantsTable(module.datepicker.timezoneAbbreviations)
 module.datepicker.timezoneNames         = ls.makeConstantsTable(module.datepicker.timezoneNames)
+
+--- hs._asm.guitk.element.button.radioButtonSet(...) -> managerObject
+--- Constructor
+--- Creates an `hs._asm.guitk.manager` object which can be used as an element containing a set of radio buttons with labels defined by the specified title strings.
+---
+--- Parameters:
+---  `...` - a single table of strings, or list of strings separated by commas, specifying the labels to assign to the radion buttons in the set.
+---
+--- Returns:
+---  * a new managerObject which can be used as an element to another `hs._asm.guitk.manager` or assigned to an `hs._asm.guitk` window directly.
+---
+--- Notes:
+---  * Radio buttons in the same view (manager) are treated as related and only one can be selected at a time. By grouping radio button sets in separate managers, these independant managers can be assigned to a parent manager and each set will be seen as independent -- each set can have a selected item independent of the other radio sets which may also be displayed in the parent.
+---
+---  * For example:
+--- ~~~ lua
+---     g = require("hs._asm.guitk")
+---     m = g.new{ x = 100, y = 100, h = 100, w = 130 }:contentManager(g.manager.new()):contentManager():show()
+---     m[1] = g.element.button.radioButtonSet(1, 2, 3, 4)
+---     m[2] = g.element.button.radioButtonSet{"abc", "d", "efghijklmn"}
+---     m(2):moveRightOf(m(1), 10, "centered")
+--- ~~~
+---
+--- See [hs._asm.guitk.element.button.radioButton](#radioButton) for more details.
+module.button.radioButtonSet = function(...)
+    local args = table.pack(...)
+    if args.n == 1 and type(args[1]) == "table" then
+        args = args[1]
+        args.n = #args
+    end
+
+    if args.n > 0 then
+        local manager = require(USERDATA_TAG:gsub("%.element", ".manager"))
+        local result = manager.new()
+        for i,v in ipairs(args) do
+            result[i] = module.button.radioButton(tostring(v))
+        end
+        result:sizeToFit()
+        return result
+    else
+        error("expected a table of strings")
+    end
+end
 
 for k,v in pairs(metatables) do
 
