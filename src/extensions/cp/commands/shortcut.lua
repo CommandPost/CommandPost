@@ -33,9 +33,13 @@ local prop										= require("cp.prop")
 
 -- The shortcut class
 local shortcut = {}
+shortcut.mt = {}
+shortcut.mt.__index = shortcut.mt
 
 -- The shortcut builder class
 local builder = {}
+builder.mt = {}
+builder.mt.__index = builder.mt
 
 -- Only show Hotkey Errors:
 hotkey.setLogLevel("error")
@@ -60,8 +64,8 @@ function shortcut.textToKeyCode(input)
 	return result
 end
 
---- cp.commands.shortcut:new(modifiers, keyCode) -> shortcut
---- Method
+--- cp.commands.shortcut.new(modifiers, keyCode) -> shortcut
+--- Function
 --- Creates a new keyboard shortcut, attached to the specified `hs.commands.command`
 ---
 --- Parameters:
@@ -70,16 +74,16 @@ end
 ---
 --- Returns:
 ---  * shortcut - The shortcut that was created.
-function shortcut:new(modifiers, keyCode)
+function shortcut.new(modifiers, keyCode)
 	local o = {
 		_modifiers	= modifiers or {},
 		_keyCode	= keyCode,
 	}
-	return prop.extend(o, shortcut)
+	return prop.extend(o, shortcut.mt)
 end
 
---- cp.commands.shortcut:build(receiverFn) -> cp.commands.shortcut.builder
---- Method
+--- cp.commands.shortcut.build(receiverFn) -> cp.commands.shortcut.builder
+--- Function
 --- Creates a new shortcut builder.
 ---
 --- Parameters:
@@ -98,13 +102,13 @@ end
 ---
 ---   For example:
 ---
----     `local myShortcut = shortcut:build():cmd():alt("x")`
+---     `local myShortcut = shortcut.build():cmd():alt("x")`
 ---
 ---   Alternately, provide a `receiver` function and it will get passed the shortcut instead:
 ---
----     `shortcut:build(function(shortcut) self._myShortcut = shortcut end):cmd():alt("x")`
-function shortcut:build(receiverFn)
-	return builder:new(receiverFn)
+---     `shortcut.build(function(shortcut) self._myShortcut = shortcut end):cmd():alt("x")`
+function shortcut.build(receiverFn)
+	return builder.new(receiverFn)
 end
 
 --- cp.commands.shortcut:getModifiers() -> table
@@ -116,7 +120,7 @@ end
 ---
 --- Returns:
 ---  * `table` containing the modifiers of the shortcut.
-function shortcut:getModifiers()
+function shortcut.mt:getModifiers()
 	return self._modifiers
 end
 
@@ -129,14 +133,14 @@ end
 ---
 --- Returns:
 ---  * `string` containing the keycode of the shortcut.
-function shortcut:getKeyCode()
+function shortcut.mt:getKeyCode()
 	return self._keyCode
 end
 
 --- cp.commands.shortcut:isEnabled <cp.prop: boolean>
 --- Field
 --- If `true`, the shortcut is enabled.
-shortcut.isEnabled = prop(
+shortcut.mt.isEnabled = prop(
 	function(self) return self._enabled end,
 	function(enabled, self)
 		self._enabled = enabled
@@ -148,7 +152,7 @@ shortcut.isEnabled = prop(
 			end
 		end
 	end
-):bind(shortcut)
+):bind(shortcut.mt)
 
 --- cp.commands.shortcut:enable() -> shortcut
 --- Method
@@ -159,7 +163,7 @@ shortcut.isEnabled = prop(
 ---
 --- Returns:
 ---  * `self`
-function shortcut:enable()
+function shortcut.mt:enable()
 	self:isEnabled(true)
 	return self
 end
@@ -173,7 +177,7 @@ end
 ---
 --- Returns:
 ---  * `self`
-function shortcut:disable()
+function shortcut.mt:disable()
 	self:ifEnabled(false)
 	return self
 end
@@ -192,7 +196,7 @@ end
 ---
 --- Notes:
 ---  * If the shortcut is enabled, the hotkey will also be enabled at this point.
-function shortcut:bind(pressedFn, releasedFn, repeatedFn)
+function shortcut.mt:bind(pressedFn, releasedFn, repeatedFn)
 
 	--------------------------------------------------------------------------------
 	-- Unbind any existing hotkey:
@@ -230,7 +234,7 @@ end
 ---
 --- Returns:
 ---  * `self`
-function shortcut:unbind()
+function shortcut.mt:unbind()
 	local hotkey = self._hotkey
 	if hotkey then
 		hotkey:disable()
@@ -249,7 +253,7 @@ end
 ---
 --- Returns:
 ---  * `self`
-function shortcut:delete()
+function shortcut.mt:delete()
 	return self:unbind()
 end
 
@@ -262,13 +266,13 @@ end
 ---
 --- Returns:
 ---  * `self`
-function shortcut:trigger()
+function shortcut.mt:trigger()
 	local keyCode = shortcut.textToKeyCode(self:getKeyCode())
 	eventtap.keyStroke(self._modifiers, keyCode)
 	return self
 end
 
-function shortcut:__tostring()
+function shortcut.mt:__tostring()
 	local modifiers = table.concat(self._modifiers, "+")
 	return string.format("shortcut: %s %s", modifiers, self:getKeyCode())
 end
@@ -277,7 +281,7 @@ end
 ---
 --- Shortcut Commands Builder Module.
 
---- cp.commands.shortcut.builder:new([receiverFn]) -> builder
+--- cp.commands.shortcut.builder.new([receiverFn]) -> builder
 --- Method
 --- Creates a new shortcut builder. If provided, the receiver function
 --- will be called when the shortcut has been configured, and passed the new
@@ -289,13 +293,12 @@ end
 ---
 --- Returns:
 ---  * The builder instance
-function builder:new(receiverFn)
+function builder.new(receiverFn)
 	local o = {
 		_receiver	= receiverFn,
-		_modifiers 	= modifiers or {},
+		_modifiers 	= {},
 	}
-	setmetatable(o, self)
-	self.__index = self
+	setmetatable(o, builder.mt)
 	return o
 end
 
@@ -311,12 +314,12 @@ end
 ---
 --- Returns:
 ---  * `self` if no `keyCode` is provided, or the original `command`.
-function builder:add(modifier, keyCode)
+function builder.mt:add(modifier, keyCode)
 	self._modifiers[#self._modifiers + 1] = modifier
 	if keyCode then
 		self._keyCode = keyCode
 		-- we're done here
-		local shortcut = shortcut:new(self._modifiers, keyCode)
+		local shortcut = shortcut.new(self._modifiers, keyCode)
 		if self._receiver then
 			return self._receiver(shortcut)
 		else
@@ -329,37 +332,37 @@ function builder:add(modifier, keyCode)
 end
 
 -- TODO: Add documentation
-function builder:control(keyCode)
+function builder.mt:control(keyCode)
 	return self:add("control", keyCode)
 end
 
 -- TODO: Add documentation
-function builder:ctrl(keyCode)
+function builder.mt:ctrl(keyCode)
 	return self:control(keyCode)
 end
 
 -- TODO: Add documentation
-function builder:option(keyCode)
+function builder.mt:option(keyCode)
 	return self:add("option", keyCode)
 end
 
 -- TODO: Add documentation
-function builder:alt(keyCode)
+function builder.mt:alt(keyCode)
 	return self:option(keyCode)
 end
 
 -- TODO: Add documentation
-function builder:command(keyCode)
+function builder.mt:command(keyCode)
 	return self:add("command", keyCode)
 end
 
 -- TODO: Add documentation
-function builder:cmd(keyCode)
+function builder.mt:cmd(keyCode)
 	return self:command(keyCode)
 end
 
 -- TODO: Add documentation
-function builder:shift(keyCode)
+function builder.mt:shift(keyCode)
 	return self:add("shift", keyCode)
 end
 

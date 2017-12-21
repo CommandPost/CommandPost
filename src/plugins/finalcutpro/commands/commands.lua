@@ -44,7 +44,7 @@ function plugin.init()
 	--------------------------------------------------------------------------------
 	-- New Final Cut Pro Command Collection:
 	--------------------------------------------------------------------------------
-	mod.cmds = commands:new("fcpx")
+	mod.cmds = commands.new("fcpx")
 
 	--------------------------------------------------------------------------------
 	-- Switch to Final Cut Pro to activate:
