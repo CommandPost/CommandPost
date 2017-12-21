@@ -21,6 +21,7 @@ local console                   = require("hs.console")
 local fs                        = require("hs.fs")
 local host						= require("hs.host")
 local image						= require("hs.image")
+local ipc						= require("hs.ipc") 						-- Not used in `init.lua`, but is required to "jump start" the CLI support
 local keycodes                  = require("hs.keycodes")
 local notify					= require("hs.notify")
 local styledtext                = require("hs.styledtext")
@@ -102,14 +103,14 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Add Toolbar To Error Log:
 	--------------------------------------------------------------------------------
-	function consoleOnTopIcon()
+	local function consoleOnTopIcon()
 		if hs.consoleOnTop() then
 			return image.imageFromName("NSStatusAvailable")
 		else
 			return image.imageFromName("NSStatusUnavailable")
 		end
 	end
-	errorLogToolbar = toolbar.new("myConsole", {
+	console.toolbar(toolbar.new("myConsole", {
 			{ id = i18n("reload"), image = image.imageFromName("NSSynchronize"),
 				fn = function()
 					console.clearConsole()
@@ -123,9 +124,9 @@ function mod.init()
 				end
 			},
 			{ id = i18n("alwaysOnTop"), image = consoleOnTopIcon(),
-				fn = function()
+				fn = function(object)
 					hs.consoleOnTop(not hs.consoleOnTop())
-					errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
+					object:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
 				end
 			},
 			{ id = "NSToolbarFlexibleSpaceItem" },
@@ -142,7 +143,7 @@ function mod.init()
 		})
 		:canCustomize(true)
 		:autosaves(true)
-	console.toolbar(errorLogToolbar)
+	)
 
 	--------------------------------------------------------------------------------
 	-- Kill any existing Notifications:
