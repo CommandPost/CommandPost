@@ -520,17 +520,17 @@ function App:getPath()
 end
 
 --- cp.apple.finalcutpro.getVersion <cp.prop: string; read-only>
---- Constant
---- Version of Final Cut Pro
+--- Field
+--- Version of Final Cut Pro as string.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * Version as string or nil if Final Cut Pro cannot be found.
+---  * Version as string or `nil` if Final Cut Pro cannot be found.
 ---
 --- Notes:
----  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
+---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
 App.getVersion = App.application:mutate(function(app)
 	----------------------------------------------------------------------------------------
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
@@ -1342,7 +1342,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.currentLanguage <cp.prop:string>
---- Constant
+--- Field
 --- The current language the FCPX is displayed in.
 App.currentLanguage = prop(
 	--------------------------------------------------------------------------------

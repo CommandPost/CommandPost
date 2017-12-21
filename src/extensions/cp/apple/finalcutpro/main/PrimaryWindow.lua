@@ -174,7 +174,7 @@ function PrimaryWindow:leftGroupUI()
 	if root then
 		for i,child in ipairs(root) do
 			-----------------------------------------------------------------------
-			-- the left group has only one child:
+			-- The left group has only one child:
 			-----------------------------------------------------------------------
 			if #child == 1 then
 				return child[1]
@@ -195,7 +195,7 @@ end
 ---  * An `hs._asm.axuielement` object
 function PrimaryWindow:rightGroupUI()
 	local root = self:rootGroupUI()
-	if root and #root == 3 then
+	if root and #root >= 3 then -- NOTE: Chris changed from "== 3" to ">= 3" because this wasn't working with FCPX 10.4 as there seems to be two AXSplitters.
 		if #(root[1]) >= 3 then
 			return root[1]
 		else

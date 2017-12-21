@@ -250,35 +250,7 @@ end
 --- Returns:
 ---  * A `hs._asm.axuielement` object
 function ColorBoard:colorInspectorBarUI()
-
-	-----------------------------------------------------------------------
-	-- Check that we're running Final Cut Pro 10.4:
-	-----------------------------------------------------------------------
-	local version = self:app():getVersion()
-	if version and semver(version) < semver("10.4") then
-		log.ef("colorInspectorBarUI is only supported in Final Cut Pro 10.4 or later.")
-		return nil
-	end
-
-	-----------------------------------------------------------------------
-	-- Find the Color Inspector Bar:
-	-----------------------------------------------------------------------
-	local inspectorUI = self:app():inspector():UI()
-	if inspectorUI then
-		for _, child in ipairs(inspectorUI:attributeValue("AXChildren")) do
-			local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
-			if splitGroup then
-				for _, subchild in ipairs(splitGroup:attributeValue("AXChildren")) do
-					local group = axutils.childWith(subchild, "AXIdentifier", id "ChooseColorCorrectorsBar")
-					if group then
-						return group
-					end
-				end
-			end
-		end
-	end
-	return nil
-
+	return self:app():colorInspector():colorInspectorBarUI()
 end
 
 --- cp.apple.finalcutpro.main.ColorBoard:isShowing() -> boolean
@@ -295,19 +267,8 @@ ColorBoard.isShowing = prop.new(function(self)
 	if version and semver(version) >= semver("10.4") then
 		-----------------------------------------------------------------------
 		-- Final Cut Pro 10.4:
-		----------------------------------------------------------------------
-		local colorInspectorBarUI = self:colorInspectorBarUI()
-		if colorInspectorBarUI then
-			local menuButton = axutils.childWith(colorInspectorBarUI, "AXRole", "AXMenuButton")
-			local colorBoardText = self:app():string("FFCorrectorColorBoard")
-			if menuButton and colorBoardText and string.find(menuButton:attributeValue("AXTitle"), colorBoardText) then
-				return true
-			else
-				return false
-			end
-		else
-			return false
-		end
+		-----------------------------------------------------------------------
+		return self:app():colorInspector():colorBoard():isShowing()
 	else
 		-----------------------------------------------------------------------
 		-- Final Cut Pro 10.3:
@@ -347,57 +308,7 @@ function ColorBoard:show()
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.4:
 			-----------------------------------------------------------------------
-			log.df("Showing a 10.4 Color Board")
-			self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
-			local colorInspectorBarUI = self:colorInspectorBarUI()
-			if colorInspectorBarUI then
-				local menuButton = axutils.childWith(colorInspectorBarUI, "AXRole", "AXMenuButton")
-				local colorBoardText = self:app():string("FFCorrectorColorBoard")
-				if menuButton then
-					if not string.find(menuButton:attributeValue("AXTitle"), colorBoardText) then
-						-----------------------------------------------------------------------
-						-- A Color Board is not already selected by default:
-						-----------------------------------------------------------------------
-						local result = menuButton:performAction("AXPress")
-						if result then
-							local subMenus = menuButton:attributeValue("AXChildren")
-							if subMenus and subMenus[1] then
-								local foundAColorBoard = false
-								local newColorBoardUI = nil
-								for _, child in ipairs(subMenus[1]) do
-									local title = child:attributeValue("AXTitle")
-									if title and foundAColorBoard == false and not (title == "+" .. colorBoardText) and string.find(title, colorBoardText) then
-										-----------------------------------------------------------------------
-										-- Found an existing Color Board in the list, so open the first one:
-										-----------------------------------------------------------------------
-										foundAColorBoard = true
-										child:performAction("AXPress")
-									end
-									-----------------------------------------------------------------------
-									-- Save the "Add Color Board" button just in case we need it...
-									-----------------------------------------------------------------------
-									if title and title == "+" .. colorBoardText then
-										newColorBoardUI = child
-									end
-								end
-								if not foundAColorBoard and newColorBoardUI then
-									-----------------------------------------------------------------------
-									-- Not existing Color Board was found so creating new one:
-									-----------------------------------------------------------------------
-									local result = newColorBoardUI:performAction("AXPress")
-									if not result then
-										log.ef("Failed to trigger new Color Board button.")
-									end
-								end
-							end
-						else
-							log.ef("Failed to activate Color Controls drop down.")
-						end
-					end
-				end
-			else
-				log.ef("Could not find colorInspectorBarUI.")
-			end
+			self:app():colorInspector():colorBoard():show()
 		else
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.3:

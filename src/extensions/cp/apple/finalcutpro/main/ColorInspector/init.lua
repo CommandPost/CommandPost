@@ -1,0 +1,353 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   F I N A L    C U T    P R O    A P I                     --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === cp.apple.finalcutpro.main.ColorInspector ===
+---
+--- Color Inspector Module.
+---
+--- Requires Final Cut Pro 10.4 or later.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+local log								= require("hs.logger").new("colorInspect")
+
+local prop								= require("cp.prop")
+local axutils							= require("cp.ui.axutils")
+local tools								= require("cp.tools")
+
+local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
+
+local ColorBoard						= require("cp.apple.finalcutpro.main.ColorInspector.ColorBoard")
+local ColorWheels						= require("cp.apple.finalcutpro.main.ColorInspector.ColorWheels")
+local ColorCurves						= require("cp.apple.finalcutpro.main.ColorInspector.ColorCurves")
+local HueSaturationCurves				= require("cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves")
+
+local semver							= require("semver")
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local ColorInspector = {}
+
+--- cp.apple.finalcutpro.main.ColorInspector.CORRECTION_TYPES
+--- Constant
+--- Table of Correction Types
+ColorInspector.CORRECTION_TYPES = {
+	["Color Board"] 			= "FFCorrectorColorBoard",
+	["Color Wheels"]			= "PAECorrectorEffectDisplayName",
+	["Color Curves"] 			= "PAEColorCurvesEffectDisplayName",
+	["Hue/Saturation Curves"] 	= "PAEHSCurvesEffectDisplayName",
+}
+
+--- cp.apple.finalcutpro.main.ColorInspector:new(parent) -> ColorInspector object
+--- Method
+--- Creates a new ColorInspector object
+---
+--- Parameters:
+---  * `parent`		- The parent
+---
+--- Returns:
+---  * A ColorInspector object
+function ColorInspector:new(parent)
+	local o = {
+		_parent = parent,
+		_child = {}
+	}
+
+	return prop.extend(o, ColorInspector)
+end
+
+--- cp.apple.finalcutpro.main.ColorInspector:parent() -> table
+--- Method
+--- Returns the ColorInspector's parent table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object as a table
+function ColorInspector:parent()
+	return self._parent
+end
+
+--- cp.apple.finalcutpro.main.ColorInspector:app() -> table
+--- Method
+--- Returns the `cp.apple.finalcutpro` app table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The application object as a table
+function ColorInspector:app()
+	return self:parent():app()
+end
+
+-----------------------------------------------------------------------
+--
+-- COLOR INSPECTOR UI:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:colorInspectorBarUI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector Bar (i.e. where you can add new Color Corrections from the dropdown)
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
+function ColorInspector:colorInspectorBarUI()
+
+	-----------------------------------------------------------------------
+	-- Check that we're running Final Cut Pro 10.4:
+	-----------------------------------------------------------------------
+	local version = self:app():getVersion()
+	if version and semver(version) < semver("10.4") then
+		log.ef("colorInspectorBarUI is only supported in Final Cut Pro 10.4 or later.")
+		return nil
+	end
+
+	-----------------------------------------------------------------------
+	-- Find the Color Inspector Bar:
+	-----------------------------------------------------------------------
+	local inspectorUI = self:app():inspector():UI()
+	if inspectorUI then
+		for _, child in ipairs(inspectorUI:attributeValue("AXChildren")) do
+			local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
+			if splitGroup then
+				for _, subchild in ipairs(splitGroup:attributeValue("AXChildren")) do
+					local group = axutils.childWith(subchild, "AXIdentifier", id "ChooseColorCorrectorsBar")
+					if group then
+						return group
+					end
+				end
+			end
+		end
+	else
+		log.df("inspectorUI is nil")
+	end
+	return nil
+
+end
+
+--------------------------------------------------------------------------------
+--
+-- COLOR INSPECTOR:
+--
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:isShowing([correctionType]) -> boolean
+--- Method
+--- Returns whether or not the Color Inspector is visible
+---
+--- Parameters:
+---  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.main.ColorInspector.CORRECTION_TYPES).
+---
+--- Returns:
+---  * `true` if the Color Inspector is showing, otherwise `false`
+function ColorInspector:isShowing(correctionType)
+	local colorInspectorBarUI = self:colorInspectorBarUI()
+	if correctionType then
+		if colorInspectorBarUI then
+			local menuButton = axutils.childWith(colorInspectorBarUI, "AXRole", "AXMenuButton")
+			local colorBoardText = self:app():string(self.CORRECTION_TYPES[correctionType])
+			if menuButton and colorBoardText and string.find(menuButton:attributeValue("AXTitle"), colorBoardText) then
+				return true
+			else
+				return false
+			end
+		else
+			return false
+		end
+	else
+		return colorInspectorBarUI ~= nil or false
+	end
+end
+
+--- cp.apple.finalcutpro.main.ColorInspector:show([correctionType]) -> ColorInspector
+--- Method
+--- Show's the Color Inspector
+---
+--- Parameters:
+---  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.main.ColorInspector.CORRECTION_TYPES).
+---
+--- Returns:
+---  * ColorInspector object
+function ColorInspector:show(correctionType)
+	if not self:isShowing() then
+		self:app():menuBar():selectMenu({"Window", "Go To", "Color Inspector"})
+	end
+	if correctionType then
+		if self.CORRECTION_TYPES[correctionType] then
+			local colorInspectorBarUI = self:colorInspectorBarUI()
+			if colorInspectorBarUI then
+				local menuButton = axutils.childWith(colorInspectorBarUI, "AXRole", "AXMenuButton")
+				local colorInspectorText = self:app():string(self.CORRECTION_TYPES[correctionType])
+				if menuButton then
+					if not string.find(menuButton:attributeValue("AXTitle"), colorInspectorText) then
+						-----------------------------------------------------------------------
+						-- A Color Board is not already selected by default:
+						-----------------------------------------------------------------------
+						local result = menuButton:performAction("AXPress")
+						if result then
+							local subMenus = menuButton:attributeValue("AXChildren")
+							if subMenus and subMenus[1] then
+								local foundAColorInspector = false
+								local newColorInspectorUI = nil
+								for _, child in ipairs(subMenus[1]) do
+									local title = child:attributeValue("AXTitle")
+									if title and foundAColorInspector == false and not (title == "+" .. colorInspectorText) and string.find(title, colorInspectorText) then
+										-----------------------------------------------------------------------
+										-- Found an existing Color Correction in the list, so open the first one:
+										-----------------------------------------------------------------------
+										foundAColorInspector = true
+										child:performAction("AXPress")
+									end
+									-----------------------------------------------------------------------
+									-- Save the "Add" button just in case we need it...
+									-----------------------------------------------------------------------
+									if title and title == "+" .. colorInspectorText then
+										newColorInspectorUI = child
+									end
+								end
+								if not foundAColorInspector and newColorInspectorUI then
+									-----------------------------------------------------------------------
+									-- Not existing Color Correction was found so creating new one:
+									-----------------------------------------------------------------------
+									local result = newColorInspectorUI:performAction("AXPress")
+									if not result then
+										log.ef("Failed to trigger new Color Board button.")
+									end
+								end
+							end
+						else
+							log.ef("Failed to activate Color Controls drop down.")
+						end
+					end
+				end
+			else
+				--log.ef("Could not find colorInspectorBarUI.")
+			end
+		else
+			log.ef("Invalid Correction Type: %s", correctionType)
+		end
+	end
+
+	return self
+end
+
+--- cp.apple.finalcutpro.main.ColorInspector:hide() -> ColorInspector
+--- Method
+--- Hides's the Color Inspector
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * ColorInspector object
+function ColorInspector:hide()
+	if self:isShowing() then
+		self:app():menuBar():selectMenu({"Window", "Show in Workspace", "Inspector"})
+	end
+	return self
+end
+
+--------------------------------------------------------------------------------
+--
+-- COLOR BOARD:
+--
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:colorBoard() -> ColorBoard
+--- Method
+--- Gets the ColorBoard object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A new ColorBoard object
+function ColorInspector:colorBoard()
+	if not self._colorBoard then
+		self._colorBoard = ColorBoard:new(self)
+	end
+	return self._colorBoard
+end
+
+--------------------------------------------------------------------------------
+--
+-- COLOR WHEELS:
+--
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:colorWheels() -> ColorWheels
+--- Method
+--- Gets the ColorWheels object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A new ColorWheels object
+function ColorInspector:colorWheels()
+	if not self._colorWheels then
+		self._colorWheels = ColorWheels:new(self)
+	end
+	return self._colorWheels
+end
+
+--------------------------------------------------------------------------------
+--
+-- COLOR CURVES:
+--
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:colorCurves() -> ColorCurves
+--- Method
+--- Gets the ColorCurves object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A new ColorCurves object
+function ColorInspector:colorCurves()
+	if not self._colorCurves then
+		self._colorCurves = ColorCurves:new(self)
+	end
+	return self._colorCurves
+end
+
+--------------------------------------------------------------------------------
+--
+-- HUE/SATURATION CURVES:
+--
+--------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.ColorInspector:hueSaturationCurves() -> HueSaturationCurves
+--- Method
+--- Gets the HueSaturationCurves object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A new HueSaturationCurves object
+function ColorInspector:hueSaturationCurves()
+	if not self._hueSaturationCurves then
+		self._hueSaturationCurves = HueSaturationCurves:new(self)
+	end
+	return self._hueSaturationCurves
+end
+
+return ColorInspector
