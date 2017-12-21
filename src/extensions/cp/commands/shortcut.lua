@@ -319,11 +319,9 @@ function builder.mt:add(modifier, keyCode)
 	if keyCode then
 		self._keyCode = keyCode
 		-- we're done here
-		local shortcut = shortcut.new(self._modifiers, keyCode)
+		local s = shortcut.new(self._modifiers, keyCode)
 		if self._receiver then
-			return self._receiver(shortcut)
-		else
-			return
+			return self._receiver(s)
 		end
 		return self._command:addShortcut(self)
 	else
