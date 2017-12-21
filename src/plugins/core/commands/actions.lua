@@ -41,6 +41,10 @@ function mod.init(actionmanager, cmds)
 	:onChoices(mod.onChoices)
 	:onExecute(mod.onExecute)
 	:onActionId(mod.getId)
+
+	cmds:watch({
+		add		= function() mod._handler:reset() end
+	})
 end
 
 --- plugins.core.commands.actions.onChoices(choices) -> nothing
