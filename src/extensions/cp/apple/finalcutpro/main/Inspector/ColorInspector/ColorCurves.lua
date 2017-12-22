@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.ColorInspector.ColorBoard ===
+--- === cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves ===
 ---
---- Color Board Module.
+--- Color Curves Module.
 ---
 --- Requires Final Cut Pro 10.4 or later.
 
@@ -15,7 +15,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("colorBoard")
+local log								= require("hs.logger").new("colorCurves")
 
 local prop								= require("cp.prop")
 
@@ -25,47 +25,47 @@ local prop								= require("cp.prop")
 --
 --------------------------------------------------------------------------------
 
-local CORRECTION_TYPE					= "Color Board"
+local CORRECTION_TYPE					= "Color Curves"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorBoard = {}
+local ColorCurves = {}
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorBoard:new(parent) -> ColorBoard object
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:new(parent) -> ColorCurves object
 --- Method
---- Creates a new ColorBoard object
+--- Creates a new ColorCurves object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
 ---  * A ColorInspector object
-function ColorBoard:new(parent)
+function ColorCurves:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
 
-	return prop.extend(o, ColorBoard)
+	return prop.extend(o, ColorCurves)
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorBoard:parent() -> table
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:parent() -> table
 --- Method
---- Returns the ColorBoard's parent table
+--- Returns the ColorCurves's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function ColorBoard:parent()
+function ColorCurves:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorBoard:app() -> table
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -74,17 +74,17 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function ColorBoard:app()
+function ColorCurves:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- COLOR BOARD:
+-- COLOR CURVES:
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorBoard:show() -> ColorBoard object
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
 ---
@@ -92,37 +92,10 @@ end
 ---  * None
 ---
 --- Returns:
----  * ColorBoard object
-function ColorBoard:show()
+---  * ColorCurves object
+function ColorCurves:show()
 	self:parent():show(CORRECTION_TYPE)
 	return self
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorBoard:hide() -> ColorBoard object
---- Method
---- Hide's the Color Board, by hiding the entire Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorBoard object
-function ColorBoard:hide()
-	self:parent():hide()
-	return self
-end
-
---- cp.apple.finalcutpro.main.ColorInspector.ColorBoard.isShowing() -> boolean
---- Method
---- Is the Color Board currently showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function ColorBoard:isShowing()
-	return self:parent():isShowing(CORRECTION_TYPE)
-end
-
-return ColorBoard
+return ColorCurves

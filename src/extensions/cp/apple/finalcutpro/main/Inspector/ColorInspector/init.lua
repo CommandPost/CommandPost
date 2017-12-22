@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.ColorInspector ===
+--- === cp.apple.finalcutpro.main.Inspector.ColorInspector ===
 ---
 --- Color Inspector Module.
 ---
@@ -23,12 +23,10 @@ local tools								= require("cp.tools")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
 
-local ColorBoard						= require("cp.apple.finalcutpro.main.ColorInspector.ColorBoard")
-local ColorWheels						= require("cp.apple.finalcutpro.main.ColorInspector.ColorWheels")
-local ColorCurves						= require("cp.apple.finalcutpro.main.ColorInspector.ColorCurves")
-local HueSaturationCurves				= require("cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves")
-
-local semver							= require("semver")
+local ColorBoard						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard")
+local ColorWheels						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels")
+local ColorCurves						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves")
+local HueSaturationCurves				= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves")
 
 --------------------------------------------------------------------------------
 --
@@ -37,7 +35,7 @@ local semver							= require("semver")
 --------------------------------------------------------------------------------
 local ColorInspector = {}
 
---- cp.apple.finalcutpro.main.ColorInspector.CORRECTION_TYPES
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.CORRECTION_TYPES
 --- Constant
 --- Table of Correction Types
 ColorInspector.CORRECTION_TYPES = {
@@ -47,7 +45,7 @@ ColorInspector.CORRECTION_TYPES = {
 	["Hue/Saturation Curves"] 	= "PAEHSCurvesEffectDisplayName",
 }
 
---- cp.apple.finalcutpro.main.ColorInspector:new(parent) -> ColorInspector object
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:new(parent) -> ColorInspector object
 --- Method
 --- Creates a new ColorInspector object
 ---
@@ -65,7 +63,7 @@ function ColorInspector:new(parent)
 	return prop.extend(o, ColorInspector)
 end
 
---- cp.apple.finalcutpro.main.ColorInspector:parent() -> table
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:parent() -> table
 --- Method
 --- Returns the ColorInspector's parent table
 ---
@@ -78,7 +76,7 @@ function ColorInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.ColorInspector:app() -> table
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -97,7 +95,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector:colorInspectorBarUI() -> hs._asm.axuielement object
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:colorInspectorBarUI() -> hs._asm.axuielement object
 --- Method
 --- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector Bar (i.e. where you can add new Color Corrections from the dropdown)
 ---
@@ -111,8 +109,7 @@ function ColorInspector:colorInspectorBarUI()
 	-----------------------------------------------------------------------
 	-- Check that we're running Final Cut Pro 10.4:
 	-----------------------------------------------------------------------
-	local version = self:app():getVersion()
-	if version and semver(version) < semver("10.4") then
+	if not self:app():isColorInspectorSupported() then
 		log.ef("colorInspectorBarUI is only supported in Final Cut Pro 10.4 or later.")
 		return nil
 	end
@@ -134,10 +131,30 @@ function ColorInspector:colorInspectorBarUI()
 			end
 		end
 	else
-		log.df("inspectorUI is nil")
+		--log.df("inspectorUI is nil")
 	end
 	return nil
 
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:UI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
+function ColorInspector:UI()
+	local colorInspectorBarUI = self:colorInspectorBarUI()
+	return colorInspectorBarUI
+		and colorInspectorBarUI:attributeValue("AXParent")
+		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")
+		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")[1]
+		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")[1][1]
+		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")[1][1][1]
+		or nil
 end
 
 --------------------------------------------------------------------------------
@@ -146,12 +163,12 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector:isShowing([correctionType]) -> boolean
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:isShowing([correctionType]) -> boolean
 --- Method
 --- Returns whether or not the Color Inspector is visible
 ---
 --- Parameters:
----  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.main.ColorInspector.CORRECTION_TYPES).
+---  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.main.Inspector.ColorInspector.CORRECTION_TYPES).
 ---
 --- Returns:
 ---  * `true` if the Color Inspector is showing, otherwise `false`
@@ -174,12 +191,12 @@ function ColorInspector:isShowing(correctionType)
 	end
 end
 
---- cp.apple.finalcutpro.main.ColorInspector:show([correctionType]) -> ColorInspector
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:show([correctionType]) -> ColorInspector
 --- Method
 --- Show's the Color Inspector
 ---
 --- Parameters:
----  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.main.ColorInspector.CORRECTION_TYPES).
+---  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.main.Inspector.ColorInspector.CORRECTION_TYPES).
 ---
 --- Returns:
 ---  * ColorInspector object
@@ -246,7 +263,7 @@ function ColorInspector:show(correctionType)
 	return self
 end
 
---- cp.apple.finalcutpro.main.ColorInspector:hide() -> ColorInspector
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:hide() -> ColorInspector
 --- Method
 --- Hides's the Color Inspector
 ---
@@ -268,7 +285,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector:colorBoard() -> ColorBoard
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:colorBoard() -> ColorBoard
 --- Method
 --- Gets the ColorBoard object.
 ---
@@ -290,7 +307,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector:colorWheels() -> ColorWheels
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:colorWheels() -> ColorWheels
 --- Method
 --- Gets the ColorWheels object.
 ---
@@ -312,7 +329,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector:colorCurves() -> ColorCurves
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:colorCurves() -> ColorCurves
 --- Method
 --- Gets the ColorCurves object.
 ---
@@ -334,7 +351,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector:hueSaturationCurves() -> HueSaturationCurves
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:hueSaturationCurves() -> HueSaturationCurves
 --- Method
 --- Gets the HueSaturationCurves object.
 ---

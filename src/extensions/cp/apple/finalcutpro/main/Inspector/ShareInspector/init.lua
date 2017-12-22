@@ -4,68 +4,57 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.ColorInspector.ColorWheels ===
+--- === cp.apple.finalcutpro.main.Inspector.ShareInspector ===
 ---
---- Color Wheels Module.
----
---- Requires Final Cut Pro 10.4 or later.
+--- Share Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("colorWheels")
+local log								= require("hs.logger").new("shareInspect")
 
 local prop								= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
-local CORRECTION_TYPE					= "Color Wheels"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorWheels = {}
+local ShareInspector = {}
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorWheels:new(parent) -> ColorInspector object
+--- cp.apple.finalcutpro.main.Inspector.ShareInspector:new(parent) -> ShareInspector object
 --- Method
---- Creates a new ColorWheels object
+--- Creates a new ShareInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A ColorInspector object
-function ColorWheels:new(parent)
+---  * A ShareInspector object
+function ShareInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-
-	return prop.extend(o, ColorWheels)
+	return prop.extend(o, ShareInspector)
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorWheels:parent() -> table
+--- cp.apple.finalcutpro.main.Inspector.ShareInspector:parent() -> table
 --- Method
---- Returns the ColorWheels's parent table
+--- Returns the ShareInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function ColorWheels:parent()
+function ShareInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorWheels:app() -> table
+--- cp.apple.finalcutpro.main.Inspector.ShareInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -74,28 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function ColorWheels:app()
+function ShareInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- COLOR WHEELS:
+-- SHARE INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorWheels:show() -> boolean
---- Method
---- Show's the Color Board within the Color Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorWheels object
-function ColorWheels:show()
-	self:parent():show(CORRECTION_TYPE)
-	return self
-end
-
-return ColorWheels
+return ShareInspector

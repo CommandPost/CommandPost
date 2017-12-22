@@ -4,68 +4,57 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves ===
+--- === cp.apple.finalcutpro.main.Inspector.EffectInspector ===
 ---
---- Hue/Saturation Curves Module.
----
---- Requires Final Cut Pro 10.4 or later.
+--- Effect Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("hueSaturationCurves")
+local log								= require("hs.logger").new("effectInspect")
 
 local prop								= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
-local CORRECTION_TYPE					= "Hue/Saturation Curves"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local HueSaturationCurves = {}
+local EffectInspector = {}
 
---- cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves:new(parent) -> HueSaturationCurves object
+--- cp.apple.finalcutpro.main.Inspector.EffectInspector:new(parent) -> EffectInspector object
 --- Method
---- Creates a new HueSaturationCurves object
+--- Creates a new EffectInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A HueSaturationCurves object
-function HueSaturationCurves:new(parent)
+---  * A EffectInspector object
+function EffectInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-
-	return prop.extend(o, HueSaturationCurves)
+	return prop.extend(o, EffectInspector)
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves:parent() -> table
+--- cp.apple.finalcutpro.main.Inspector.EffectInspector:parent() -> table
 --- Method
---- Returns the HueSaturationCurves's parent table
+--- Returns the EffectInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function HueSaturationCurves:parent()
+function EffectInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves:app() -> table
+--- cp.apple.finalcutpro.main.Inspector.EffectInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -74,28 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function HueSaturationCurves:app()
+function EffectInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- HUE/SATURATION CURVES:
+-- EFFECT INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector.HueSaturationCurves:show() -> boolean
---- Method
---- Show's the Color Board within the Color Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * HueSaturationCurves object
-function HueSaturationCurves:show()
-	self:parent():show(CORRECTION_TYPE)
-	return self
-end
-
-return HueSaturationCurves
+return EffectInspector

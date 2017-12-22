@@ -26,7 +26,6 @@ local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.main.Inspector")
 local ColorBoard					= require("cp.apple.finalcutpro.main.ColorBoard")
-local ColorInspector				= require("cp.apple.finalcutpro.main.ColorInspector")
 
 --------------------------------------------------------------------------------
 --
@@ -329,28 +328,6 @@ function PrimaryWindow:colorBoard()
 		self._colorBoard = ColorBoard:new(self)
 	end
 	return self._colorBoard
-end
-
------------------------------------------------------------------------
---
--- COLOR INSPECTOR:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.main.PrimaryWindow:colorInspector() -> ColorInspector
---- Method
---- Gets the ColorInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorInspector
-function PrimaryWindow:colorInspector()
-	if not self._colorInspector then
-		self._colorInspector = ColorInspector:new(self)
-	end
-	return self._colorInspector
 end
 
 -----------------------------------------------------------------------

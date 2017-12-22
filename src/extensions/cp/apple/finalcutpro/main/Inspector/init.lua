@@ -20,6 +20,17 @@ local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
+local AudioInspector					= require("cp.apple.finalcutpro.main.Inspector.AudioInspector")
+local ColorInspector					= require("cp.apple.finalcutpro.main.Inspector.ColorInspector")
+local EffectInspector					= require("cp.apple.finalcutpro.main.Inspector.EffectInspector")
+local GeneratorInspector				= require("cp.apple.finalcutpro.main.Inspector.GeneratorInspector")
+local InfoInspector						= require("cp.apple.finalcutpro.main.Inspector.InfoInspector")
+local ShareInspector					= require("cp.apple.finalcutpro.main.Inspector.ShareInspector")
+local TextInspector						= require("cp.apple.finalcutpro.main.Inspector.TextInspector")
+local TitleInspector					= require("cp.apple.finalcutpro.main.Inspector.TitleInspector")
+local TransitionInspector				= require("cp.apple.finalcutpro.main.Inspector.TransitionInspector")
+local VideoInspector					= require("cp.apple.finalcutpro.main.Inspector.VideoInspector")
+
 local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 
 --------------------------------------------------------------------------------
@@ -28,6 +39,22 @@ local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 --
 --------------------------------------------------------------------------------
 local Inspector = {}
+
+--- cp.apple.finalcutpro.main.Inspector.INSPECTOR_TABS -> table
+--- Constant
+--- Table of supported Inspector Tabs
+Inspector.INSPECTOR_TABS = {
+	["Audio"] 		= "FFInspectorTabAudio",
+	["Color"] 		= "FFInspectorTabColor",
+	["Effect"] 		= "FFInspectorTabMotionEffectEffect",
+	["Generator"] 	= "FFInspectorTabGenerator",
+	["Info"] 		= "FFInspectorTabMetadata",
+	["Share"] 		= "FFInspectorTabShare",
+	["Text"] 		= "FFInspectorTabMotionEffectText",
+	["Title"] 		= "FFInspectorTabMotionEffectTitle",
+	["Transition"] 	= "FFInspectorTabMotionEffectTransition",
+	["Video"] 		= "FFInspectorTabMotionEffectVideo",
+}
 
 --- cp.apple.finalcutpro.main.Inspector.matches(element) -> boolean
 --- Function
@@ -142,22 +169,43 @@ Inspector.isShowing = prop.new(function(self)
 	return ui ~= nil
 end):bind(Inspector)
 
---- cp.apple.finalcutpro.main.Inspector:show() -> Inspector
+--- cp.apple.finalcutpro.main.Inspector:show([tab]) -> Inspector
 --- Method
 --- Shows the inspector.
 ---
 --- Parameters:
----  * None
+---  * [tab] - A string from the `cp.apple.finalcutpro.main.Inspector.INSPECTOR_TABS` table
 ---
 --- Returns:
 ---  * The `Inspector` instance.
-function Inspector:show()
-	local parent = self:parent()
-	-- show the parent.
-	if parent:show() then
-		local menuBar = self:app():menuBar()
-		-- Enable it in the primary
-		menuBar:checkMenu({"Window", "Show in Workspace", "Inspector"})
+---
+--- Notes:
+---  * Valid strings for `value` are as follows:
+---    * Audio
+---    * Color
+---    * Effect
+---    * Generator
+---    * Info
+---    * Share
+---    * Text
+---    * Title
+---    * Transition
+---    * Video
+function Inspector:show(tab)
+	if tab and Inspector.INSPECTOR_TABS[tab] then
+		self:selectTab(tab)
+	else
+		local parent = self:parent()
+		-----------------------------------------------------------------------
+		-- Show the parent:
+		-----------------------------------------------------------------------
+		if parent:show() then
+			local menuBar = self:app():menuBar()
+			-----------------------------------------------------------------------
+			-- Enable it in the primary:
+			-----------------------------------------------------------------------
+			menuBar:checkMenu({"Window", "Show in Workspace", "Inspector"})
+		end
 	end
 	return self
 end
@@ -178,12 +226,12 @@ function Inspector:hide()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector:selectTab([value]) -> boolean or nil
+--- cp.apple.finalcutpro.main.Inspector:selectTab([tab]) -> boolean or nil
 --- Method
 --- Selects a tab in the inspector.
 ---
 --- Parameters:
----  * None
+---  * [tab] - A string from the `cp.apple.finalcutpro.main.Inspector.INSPECTOR_TABS` table
 ---
 --- Returns:
 ---  * A string of the selected tab, otherwise `nil` if an error occurred.
@@ -202,8 +250,8 @@ end
 ---    * Transition
 ---    * Video
 function Inspector:selectTab(value)
-	if not value then
-		log.ef("selectTab requires a valid tab string.")
+	if not value and not Inspector.INSPECTOR_TABS[value] then
+		log.ef("selectTab requires a valid tab string: %s", value)
 		return nil
 	end
 	if not self.isShowing() then
@@ -314,86 +362,224 @@ function Inspector:selectedTab()
 	return nil
 end
 
---- cp.apple.finalcutpro.main.Inspector:stabilization([value]) -> boolean
+-----------------------------------------------------------------------
+--
+-- VIDEO INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:videoInspector() -> VideoInspector
 --- Method
---- Sets or returns the stabilization setting for a clip.
+--- Gets the VideoInspector object.
 ---
 --- Parameters:
----  * [value] - A boolean value you want to set the stabilization setting for the clip to.
+---  * None
 ---
 --- Returns:
----  * The value of the stabilization settings, or `nil` if an error has occurred.
+---  * ColorInspector
+function Inspector:videoInspector()
+	if not self._videoInspector then
+		self._videoInspector = VideoInspector:new(self)
+	end
+	return self._videoInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- GENERATOR INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:generatorInspector() -> GeneratorInspector
+--- Method
+--- Gets the GeneratorInspector object.
 ---
---- Notes:
----  * This method will open the Inspector if it's closed, and close it again after adjusting the stablization settings.
-function Inspector:stabilization(value)
-	local inspectorOriginallyClosed = false
-	if not self.isShowing() then
-		self:show()
-		if not self.isShowing() then
-			log.ef("Failed to open Inspector")
-			return nil
-		end
-		inspectorOriginallyClosed = true
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * GeneratorInspector
+function Inspector:generatorInspector()
+	if not self._generatorInspector then
+		self._generatorInspector = GeneratorInspector:new(self)
 	end
-	local app = self:app()
-	local contents = app:timeline():contents()
-	local selectedClips = contents:selectedClipsUI()
-	if selectedClips and #selectedClips >= 1 then
-		local ui = self:UI()
-		if value == nil or type(value) == "boolean" then
-			self:selectTab("Video")
-			if self:selectedTab() == "Video" then
-				local inspectorContent = axutils.childWithID(ui, id "DetailsPanel")
-				if inspectorContent then
-					for id,child in ipairs(inspectorContent[1][1]) do
-						if child:attributeValue("AXValue") == app:string("FFStabilizationEffect") then
-							if inspectorContent[1][1][id - 1] then
-								local checkbox = inspectorContent[1][1][id - 1]
-								if checkbox then
-									local checkboxValue = checkbox:attributeValue("AXValue")
-									if value == nil then
-										if checkboxValue == 1 then
-											return true
-										else
-											return false
-										end
-									else
-										if (checkboxValue == 1 and value == true) or (checkboxValue == 0 and value == false) then
-											return value
-										else
-											local result = checkbox:performAction("AXPress")
-											if result then
-												return not value
-											else
-												log.ef("Failed to press checkbox.")
-												return nil
-											end
-										end
-									end
-								else
-									log.ef("Could not find stabilization checkbox.")
-								end
-							end
-						end
-					end
-				else
-					log.ef("Could not find Inspector UI.")
-				end
-				log.ef("Could not find stabilization checkbox.")
-			else
-				log.ef("Could not select the video tab.")
-			end
-		else
-			log.ef("The optional value parameter should be a boolean.")
-		end
-	else
-		log.ef("No clip(s) selected.")
+	return self._generatorInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- INFO INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:infoInspector() -> InfoInspector
+--- Method
+--- Gets the InfoInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * InfoInspector
+function Inspector:infoInspector()
+	if not self._infoInspector then
+		self._infoInspector = InfoInspector:new(self)
 	end
-	if inspectorOriginallyClosed then
-		self:hide()
+	return self._infoInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- EFFECT INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:effectInspector() -> EffectInspector
+--- Method
+--- Gets the EffectInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * EffectInspector
+function Inspector:effectInspector()
+	if not self._effectInspector then
+		self._effectInspector = EffectInspector:new(self)
 	end
-	return nil
+	return self._effectInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- TEXT INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:textInspector() -> TextInspector
+--- Method
+--- Gets the TextInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * TextInspector
+function Inspector:textInspector()
+	if not self._textInspector then
+		self._textInspector = TextInspector:new(self)
+	end
+	return self._textInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- TITLE INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:titleInspector() -> TitleInspector
+--- Method
+--- Gets the TitleInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * TitleInspector
+function Inspector:titleInspector()
+	if not self._titleInspector then
+		self._titleInspector = TitleInspector:new(self)
+	end
+	return self._titleInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- TRANSITION INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:transitionInspector() -> TransitionInspector
+--- Method
+--- Gets the TransitionInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * TransitionInspector
+function Inspector:transitionInspector()
+	if not self._transitionInspector then
+		self._transitionInspector = TransitionInspector:new(self)
+	end
+	return self._transitionInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- AUDIO INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:audioInspector() -> AudioInspector
+--- Method
+--- Gets the AudioInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * AudioInspector
+function Inspector:audioInspector()
+	if not self._audioInspector then
+		self._audioInspector = AudioInspector:new(self)
+	end
+	return self._audioInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- SHARE INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:shareInspector() -> ShareInspector
+--- Method
+--- Gets the ShareInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * ShareInspector
+function Inspector:shareInspector()
+	if not self._shareInspector then
+		self._shareInspector = ShareInspector:new(self)
+	end
+	return self._shareInspector
+end
+
+-----------------------------------------------------------------------
+--
+-- COLOR INSPECTOR:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.Inspector:colorInspector() -> ColorInspector
+--- Method
+--- Gets the ColorInspector object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * ColorInspector
+function Inspector:colorInspector()
+	if not self._colorInspector then
+		self._colorInspector = ColorInspector:new(self)
+	end
+	return self._colorInspector
 end
 
 return Inspector

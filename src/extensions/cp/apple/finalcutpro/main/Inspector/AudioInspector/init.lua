@@ -4,68 +4,57 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.ColorInspector.ColorCurves ===
+--- === cp.apple.finalcutpro.main.Inspector.AudioInspector ===
 ---
---- Color Curves Module.
----
---- Requires Final Cut Pro 10.4 or later.
+--- Audio Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("colorCurves")
+local log								= require("hs.logger").new("audioInspect")
 
 local prop								= require("cp.prop")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
-local CORRECTION_TYPE					= "Color Curves"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorCurves = {}
+local AudioInspector = {}
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorCurves:new(parent) -> ColorCurves object
+--- cp.apple.finalcutpro.main.Inspector.AudioInspector:new(parent) -> AudioInspector object
 --- Method
---- Creates a new ColorCurves object
+--- Creates a new AudioInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A ColorInspector object
-function ColorCurves:new(parent)
+---  * A AudioInspector object
+function AudioInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-
-	return prop.extend(o, ColorCurves)
+	return prop.extend(o, AudioInspector)
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorCurves:parent() -> table
+--- cp.apple.finalcutpro.main.Inspector.AudioInspector:parent() -> table
 --- Method
---- Returns the ColorCurves's parent table
+--- Returns the AudioInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function ColorCurves:parent()
+function AudioInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorCurves:app() -> table
+--- cp.apple.finalcutpro.main.Inspector.AudioInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -74,28 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function ColorCurves:app()
+function AudioInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- COLOR CURVES:
+-- AUDIO INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.ColorInspector.ColorCurves:show() -> boolean
---- Method
---- Show's the Color Board within the Color Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * ColorCurves object
-function ColorCurves:show()
-	self:parent():show(CORRECTION_TYPE)
-	return self
-end
-
-return ColorCurves
+return AudioInspector

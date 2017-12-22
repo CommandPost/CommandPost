@@ -26,8 +26,6 @@ local Pucker							= require("cp.apple.finalcutpro.main.ColorPucker")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorBoard"
 
-local semver							= require("semver")
-
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -173,17 +171,19 @@ end
 --- Returns:
 ---  * A `hs._asm.axuielement` object
 function ColorBoard:UI()
+
+	-- TODO: David should review this code, as there's repeated code.
+
 	return axutils.cache(self, "_ui",
 	function()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
-		local version = self:app():getVersion()
 		if ui then
 			-----------------------------------------------------------------------
 			-- It's in the right panel (full-height):
 			-----------------------------------------------------------------------
 			if ColorBoard.isColorBoard(ui) then
-				if version and semver(version) >= semver("10.4") then
+				if self:app():isColorInspectorSupported() then
 					-----------------------------------------------------------------------
 					-- Final Cut Pro 10.4:
 					----------------------------------------------------------------------
@@ -213,7 +213,7 @@ function ColorBoard:UI()
 			end
 			for i,child in ipairs(top) do
 				if ColorBoard.isColorBoard(child) then
-					if version and semver(version) >= semver("10.4") then
+					if self:app():isColorInspectorSupported() then
 						-----------------------------------------------------------------------
 						-- Final Cut Pro 10.4:
 						----------------------------------------------------------------------
@@ -250,7 +250,7 @@ end
 --- Returns:
 ---  * A `hs._asm.axuielement` object
 function ColorBoard:colorInspectorBarUI()
-	return self:app():colorInspector():colorInspectorBarUI()
+	return self:app():inspector():colorInspector():colorInspectorBarUI()
 end
 
 --- cp.apple.finalcutpro.main.ColorBoard:isShowing() -> boolean
@@ -263,12 +263,11 @@ end
 --- Returns:
 ---  * `true` if the Color Board is showing, otherwise `false`
 ColorBoard.isShowing = prop.new(function(self)
-	local version = self:app():getVersion()
-	if version and semver(version) >= semver("10.4") then
+	if self:app():isColorInspectorSupported() then
 		-----------------------------------------------------------------------
 		-- Final Cut Pro 10.4:
 		-----------------------------------------------------------------------
-		return self:app():colorInspector():colorBoard():isShowing()
+		return self:app():inspector():colorInspector():colorBoard():isShowing()
 	else
 		-----------------------------------------------------------------------
 		-- Final Cut Pro 10.3:
@@ -303,12 +302,11 @@ end):bind(ColorBoard)
 ---  * ColorBoard object
 function ColorBoard:show()
 	if not self:isShowing() then
-		local version = self:app():getVersion()
-		if version and semver(version) >= semver("10.4") then
+		if self:app():isColorInspectorSupported() then
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.4:
 			-----------------------------------------------------------------------
-			self:app():colorInspector():colorBoard():show()
+			self:app():inspector():colorInspector():colorBoard():show()
 		else
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.3:
