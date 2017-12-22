@@ -531,7 +531,6 @@ return {
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
 			openErrorLogOnDockClick				=			"Open Error Log on Dock Icon Click",
-			togglingDeveloperMode				=			"Toggling Developer Mode will require CommandPost to reload.",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
 			cliInstallError						=			"I'm sorry, but we failed to Install the Command Line Tool. Please try again.",

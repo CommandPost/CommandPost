@@ -293,9 +293,12 @@ end
 --- cp.config.developerMode <cp.prop: boolean>
 --- Constant
 --- When `true`, the app is in developer mode.
-mod.developerMode = mod.prop("debugMode", false):watch(function()
-	console.clearConsole()
-	hs.reload()
+mod.developerMode = mod.prop("debugMode", false):watch(function(value)
+	if value then
+		log.df("Developer Mode Enabled")
+	else
+		log.df("Developer Mode Disabled")
+	end
 end)
 
 --------------------------------------------------------------------------------

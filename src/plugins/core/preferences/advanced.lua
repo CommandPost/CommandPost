@@ -40,21 +40,17 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.trashPreferences()
-
 	dialog.webviewAlert(mod.manager.getWebview(), function(result)
 		if result == i18n("yes") then
 			config.reset()
 		end
 	end, i18n("trashPreferencesConfirmation"), "", i18n("yes"), i18n("no"), "informational")
-
 end
 
 --- plugins.core.preferences.advanced.developerMode <cp.prop: boolean>
 --- Field
 --- Enables or disables developer mode.
-mod.developerMode = config.developerMode:watch(function()
-	mod.manager.hide()
-end)
+mod.developerMode = config.developerMode
 
 --- plugins.core.preferences.advanced.toggleDeveloperMode() -> none
 --- Function
@@ -66,14 +62,8 @@ end)
 --- Returns:
 ---  * None
 function mod.toggleDeveloperMode()
-
-	dialog.webviewAlert(mod.manager.getWebview(), function(result)
-		if result == i18n("yes") then
-			mod.developerMode:toggle()
-		end
-		mod.manager.refresh()
-	end, i18n("togglingDeveloperMode"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-
+	mod.developerMode:toggle()
+	mod.manager.refresh()
 end
 
 --- plugins.core.preferences.advanced.openErrorLog() -> none
