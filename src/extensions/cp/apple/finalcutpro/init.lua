@@ -1300,7 +1300,7 @@ function App:getCommandShortcuts(id)
 			end
 
 			if keyCode ~= nil and keyCode ~= "" then
-				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
+				shortcuts[#shortcuts + 1] = shortcut.new(modifiers, keyCode)
 			end
 		end
 

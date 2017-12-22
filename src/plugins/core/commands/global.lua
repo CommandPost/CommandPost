@@ -31,7 +31,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init()
-	return commands:new("global")
+	return commands.new("global")
 end
 
 return plugin

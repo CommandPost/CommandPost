@@ -110,6 +110,13 @@ function mod.init()
 			return image.imageFromName("NSStatusUnavailable")
 		end
 	end
+	local function autoReloadIcon()
+		if config.automaticScriptReloading() then
+			return image.imageFromName("NSStatusAvailable")
+		else
+			return image.imageFromName("NSStatusUnavailable")
+		end
+	end
 	console.toolbar(toolbar.new("myConsole", {
 			{ id = i18n("reload"), image = image.imageFromName("NSSynchronize"),
 				fn = function()
@@ -129,6 +136,12 @@ function mod.init()
 					object:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
 				end
 			},
+			{ id = i18n("toggleAutomaticScriptReloading"), image = autoReloadIcon(),
+				fn = function(object)
+					config.automaticScriptReloading:toggle()
+					object:modifyItem({id = i18n("toggleAutomaticScriptReloading"), image = autoReloadIcon()})
+				end
+			},
 			{ id = "NSToolbarFlexibleSpaceItem" },
 			{ id = i18n("preferences"), image = image.imageFromName("NSPreferencesGeneral"),
 				fn = function()
@@ -145,7 +158,7 @@ function mod.init()
 		:autosaves(true)
 	)
 
-	--------------------------------------------------------------------------------
+	---------------------------------------------------------------------------------
 	-- Kill any existing Notifications:
 	--------------------------------------------------------------------------------
 	notify.withdrawAll()
