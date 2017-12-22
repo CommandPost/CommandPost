@@ -41,6 +41,12 @@ function mod.init(actionmanager, cmds)
 		:onChoices(mod.onChoices)
 		:onExecute(mod.onExecute)
 		:onActionId(mod.getId)
+
+	-- watch for any aditional commands added after this point...
+	cmds:watch({
+		add		= function() mod._handler:reset() end
+	})
+
 end
 
 --- plugins.finalcutpro.commands.actionss.onChoices(choices) -> nothing

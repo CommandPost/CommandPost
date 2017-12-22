@@ -29,7 +29,7 @@ local prop				= require("cp.prop")
 local handler = {}
 
 handler.mt = {}
-handler.mt.__index = handler
+handler.mt.__index = handler.mt
 
 --- plugins.core.action.handler.new(id, group) -> handler
 --- Constructor
@@ -207,18 +207,20 @@ function handler.mt:execute(action)
 	return false
 end
 
---- plugins.core.action.handler:reset() -> nil
+--- plugins.core.action.handler:reset([updateNow]) -> nil
 --- Method
 --- Resets the handler, clearing any cached result and requesting new ones.
 ---
 --- Parameters:
---- * None
+--- * `updateNow`	- (optional) If `true`, the choices will update immediately, otherwise they will update when the choices are next requested.
 ---
 --- Returns:
 --- * Nothing
-function handler.mt:reset()
+function handler.mt:reset(updateNow)
 	self._choices = nil
-	self.choices:update()
+	if updateNow then
+		self.choices:update()
+	end
 end
 
 return handler

@@ -24,24 +24,27 @@ local prop					= require("cp.prop")
 --
 --------------------------------------------------------------------------------
 local command = {}
+command.mt = {}
+command.mt.__index = command.mt
 
---- cp.commands.command:new() -> command
+--- cp.commands.command.new() -> command
 --- Method
 --- Creates a new command, which can have keyboard shortcuts assigned to it.
 ---
 --- Parameters:
----  * `id`	= the unique identifier for the command. E.g. 'cpCustomCommand'
+---  * `id`		- the unique identifier for the command. E.g. 'cpCustomCommand'
+---  * `parent`	- The parent group.
 ---
 --- Returns:
 ---  * command - The command that was created.
 ---
-function command:new(id, parent)
+function command.new(id, parent)
 	local o = {
 		_id = id,
 		_parent = parent,
 		_shortcuts = {},
 	}
-	prop.extend(o, command)
+	prop.extend(o, command.mt)
 
 --- cp.commands.command.isEnabled <cp.prop: boolean>
 --- Field
@@ -60,11 +63,29 @@ function command:new(id, parent)
 	return o
 end
 
-function command:id()
+--- cp.commands.command:id() -> string
+--- Method
+--- Returns the ID for this command.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The ID.
+function command.mt:id()
 	return self._id
 end
 
-function command:parent()
+--- cp.commands.command:parent() -> cp.commands
+--- Method
+--- Returns the parent command group.
+---
+--- Parameters:
+--- * None
+---
+--- Returns
+--- * The parent `cp.commands`.
+function command.mt:parent()
 	return self._parent
 end
 
@@ -78,12 +99,21 @@ end
 --- Returns:
 ---  * command - The command that was created.
 ---
-function command:titled(title)
+function command.mt:titled(title)
 	self._title = title
 	return self
 end
 
-function command:getTitle()
+--- cp.commands.command:getTitle() -> string
+--- Method
+--- Returns the command title in the current language, if availalbe. If not, the ID is returned.
+---
+--- Parameters:
+--- * None
+---
+--- Returns
+--- * The human-readable command title.
+function command.mt:getTitle()
 	if self._title then
 		return self._title
 	else
@@ -91,12 +121,31 @@ function command:getTitle()
 	end
 end
 
-function command:subtitled(subtitle)
+--- cp.commands.command:subtitled(subtitle) -> cp.commands.command
+--- Method
+--- Sets the specified subtitle and returns the `cp.commands.command` instance.
+---
+--- Note: By default, it will look up the `<ID>_subtitle` value.
+--- Anything set here will override it in all langauges.
+---
+--- Parameters:
+--- * `subtitle`	- The new subtitle.
+function command.mt:subtitled(subtitle)
 	self._subtitle = subtitle
 	return self
 end
 
-function command:getSubtitle()
+--- cp.commands.command:getSubtitle() -> string
+--- Method
+--- Returns the current subtitle, based on either the set subtitle, or the "<ID>_subtitle" value in the I18N files.
+--- If nothing is available, it will return `nil`.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The subtitle value or `nil`.
+function command.mt:getSubtitle()
 	if self._subtitle then
 		return self._subtitle
 	else
@@ -104,12 +153,31 @@ function command:getSubtitle()
 	end
 end
 
-function command:groupedBy(group)
+--- cp.commands.command:groupedBy(group) -> cp.commands.command
+--- Method
+--- Specifies that the command is grouped by a specific value.
+--- Note: This is different to the command group/parent value.
+---
+--- Parameters:
+--- * `group`	- The group ID.
+---
+--- Returns:
+--- * The `cp.commands.command` instance.
+function command.mt:groupedBy(group)
 	self._group = group
 	return self
 end
 
-function command:getGroup()
+--- cp.commands.command:getGroup() -> string
+--- Method
+--- Returns the group ID for the command.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The group ID.
+function command.mt:getGroup()
 	return self._group
 end
 
@@ -140,7 +208,7 @@ end
 ---
 --- Returns:
 ---  * `command` if a `keyCode` was provided, or `modifier` if not.
-function command:activatedBy(modifiers, keyCode)
+function command.mt:activatedBy(modifiers, keyCode)
 	if keyCode and not modifiers then
 		modifiers = {}
 	elseif modifiers and not keyCode then
@@ -149,10 +217,10 @@ function command:activatedBy(modifiers, keyCode)
 	end
 
 	if keyCode then
-		self:addShortcut(shortcut:new(modifiers, keyCode))
+		self:addShortcut(shortcut.new(modifiers, keyCode))
 		return self
 	else
-		return shortcut:build(
+		return shortcut.build(
 			function(newShortcut)
 				return self:addShortcut(newShortcut)
 			end
@@ -170,7 +238,7 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:deleteShortcuts()
+function command.mt:deleteShortcuts()
 	for i,shortcut in ipairs(self._shortcuts) do
 		shortcut:delete()
 	end
@@ -178,7 +246,16 @@ function command:deleteShortcuts()
 	return self
 end
 
-function command:setShortcuts(shortcuts)
+--- cp.commands.command:setShortcuts(shortcuts) -> command
+--- Method
+--- Deletes any existing shortcuts and applies the new set of shortcuts in the table.
+---
+--- Parameters:
+--- * shortcuts		- The set of `cp.commands.shortcuts` to apply to this command.
+---
+--- Returns:
+--- * The `cp.commands.command` instance.
+function command.mt:setShortcuts(shortcuts)
 	self:deleteShortcuts()
 	for _,newShortcut in ipairs(shortcuts) do
 		self:addShortcut(newShortcut)
@@ -186,17 +263,17 @@ function command:setShortcuts(shortcuts)
 	return self
 end
 
---- cp.commands.command:addShortcut() -> command
+--- cp.commands.command:addShortcut(newShortcut) -> command
 --- Method
 --- Adds the specified shortcut to the command.
 --- If the command is enabled, the shortcut will also be enabled.
 ---
 --- Parameters:
----  * `newShortcut`	- the shortcut
+---  * `newShortcut`	- the shortcut to add.
 ---
 --- Returns:
 ---  * `self`
-function command:addShortcut(newShortcut)
+function command.mt:addShortcut(newShortcut)
 	newShortcut:bind(
 		function() return self:pressed() end,
 		function() return self:released() end,
@@ -221,7 +298,7 @@ end
 ---
 --- Returns:
 ---  * The associated shortcuts.
-function command:getShortcuts()
+function command.mt:getShortcuts()
 	return self._shortcuts
 end
 
@@ -234,11 +311,11 @@ end
 ---
 --- Returns:
 ---  * The first shortcut, or `nil`.
-function command:getFirstShortcut()
+function command.mt:getFirstShortcut()
 	return self._shortcuts and #self._shortcuts > 0 and self._shortcuts[1] or nil
 end
 
---- cp.commands.command:whenActivated(function) -> command
+--- cp.commands.command:whenActivated(activatedFn) -> command
 --- Method
 --- Sets the function that will be called when the command is activated.
 ---
@@ -250,11 +327,11 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenActivated(activatedFn)
+function command.mt:whenActivated(activatedFn)
 	return self:whenPressed(activatedFn)
 end
 
---- cp.commands.command:whenPressed(function) -> command
+--- cp.commands.command:whenPressed(pressedFn) -> command
 --- Method
 --- Sets the function that will be called when the command key combo is pressed.
 ---
@@ -264,12 +341,12 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenPressed(pressedFn)
+function command.mt:whenPressed(pressedFn)
 	self.pressedFn = pressedFn
 	return self
 end
 
---- cp.commands.command:whenReleased(function) -> command
+--- cp.commands.command:whenReleased(releasedFn) -> command
 --- Method
 --- Sets the function that will be called when the command key combo is released.
 ---
@@ -279,12 +356,12 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenReleased(releasedFn)
+function command.mt:whenReleased(releasedFn)
 	self.releasedFn = releasedFn
 	return self
 end
 
---- cp.commands.command:whenRepeated(function) -> command
+--- cp.commands.command:whenRepeated(repeatedFn) -> command
 --- Method
 --- Sets the function that will be called when the command key combo is repeated.
 ---
@@ -294,7 +371,7 @@ end
 --- Returns:
 ---  * command - The current command
 ---
-function command:whenRepeated(repeatedFn)
+function command.mt:whenRepeated(repeatedFn)
 	self.repeatedFn = repeatedFn
 	return self
 end
@@ -309,7 +386,7 @@ end
 --- Returns:
 ---  * the result of the function, or `nil` if none is present.
 ---
-function command:pressed()
+function command.mt:pressed()
 	if self:isActive() and self.pressedFn then return self.pressedFn() end
 	return nil
 end
@@ -324,7 +401,7 @@ end
 --- Returns:
 ---  * the result of the function, or `nil` if none is present.
 ---
-function command:released()
+function command.mt:released()
 	if self:isActive() and self.releasedFn then return self.releasedFn() end
 	return nil
 end
@@ -339,7 +416,7 @@ end
 --- Returns:
 ---  * the last result.
 ---
-function command:repeated(repeats)
+function command.mt:repeated(repeats)
 	if not self:isActive() then return nil end
 
 	if repeats == nil then
@@ -364,7 +441,7 @@ end
 --- Returns:
 ---  * the last 'truthy' result (non-nil/false).
 ---
-function command:activated(repeats)
+function command.mt:activated(repeats)
 	if not self:isActive() then return nil end
 
 	local result = nil
@@ -374,17 +451,35 @@ function command:activated(repeats)
 	return result
 end
 
-function command:enable()
+--- cp.commands.command:enable() -> cp.commands.command
+--- Method
+--- Enables the command.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `cp.commands.command` instance.
+function command.mt:enable()
 	self:isEnabled(true)
 	return self
 end
 
-function command:disable()
+--- cp.commands.command:disable() -> cp.commands.command
+--- Method
+--- Disables the command.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `cp.commands.command` instance.
+function command.mt:disable()
 	self:isEnabled(false)
 	return self
 end
 
-function command:__tostring()
+function command.mt:__tostring()
 	local result = string.format("command: %s (enabled: %s; active: %s)", self:id(), self:isEnabled(), self:isActive())
 end
 
