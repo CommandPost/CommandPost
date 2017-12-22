@@ -221,6 +221,38 @@ local function streamDeckPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			mod._sd.updateIcon(params["buttonID"], params["groupID"], params["icon"])
 		elseif params["type"] == "updateAction" then
+
+			--------------------------------------------------------------------------------
+			-- Setup Activators:
+			--------------------------------------------------------------------------------
+			if not mod.activator then
+				mod.activator = {}
+				local handlerIds = mod._actionmanager.handlerIds()
+				for _,groupID in ipairs(commands.groupIds()) do
+
+					log.df("Create activator groupID: %s", groupID)
+
+					--------------------------------------------------------------------------------
+					-- Create new Activator:
+					--------------------------------------------------------------------------------
+					mod.activator[groupID] = mod._actionmanager.getActivator("streamDeckPreferences" .. groupID)
+
+					--------------------------------------------------------------------------------
+					-- Restrict Allowed Handlers for Activator to current group (and global):
+					--------------------------------------------------------------------------------
+					local allowedHandlers = {}
+					for _,id in pairs(handlerIds) do
+						local handlerTable = tools.split(id, "_")
+						if handlerTable[1] == groupID or handlerTable[1] == "global" then
+							table.insert(allowedHandlers, id)
+						end
+					end
+					mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
+					mod.activator[groupID]:preloadChoices()
+
+				end
+			end
+
 			--------------------------------------------------------------------------------
 			-- Setup Activator Callback:
 			--------------------------------------------------------------------------------
@@ -376,13 +408,6 @@ function mod.init(deps, env)
 	mod._env			= env
 
 	--------------------------------------------------------------------------------
-	-- Setup Activator:
-	--------------------------------------------------------------------------------
-	mod.activator = deps.actionmanager.getActivator("streamdeckPreferences")
-	mod.activator:enableAllHandlers()
-	mod.activator:preloadChoices()
-
-	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:
 	--------------------------------------------------------------------------------
 	mod._panel 			=  deps.manager.addPanel({
@@ -448,37 +473,6 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 	return mod.init(deps, env)
-end
-
-function plugin.postInit(deps, env)
-
-	--------------------------------------------------------------------------------
-	-- Setup Activators:
-	--------------------------------------------------------------------------------
-	mod.activator = {}
-	local handlerIds = mod._actionmanager.handlerIds()
-	for _,groupID in ipairs(commands.groupIds()) do
-
-		--------------------------------------------------------------------------------
-		-- Create new Activator:
-		--------------------------------------------------------------------------------
-		mod.activator[groupID] = deps.actionmanager.getActivator("streamDeckPreferences" .. groupID)
-
-		--------------------------------------------------------------------------------
-		-- Restrict Allowed Handlers for Activator to current group (and global):
-		--------------------------------------------------------------------------------
-		local allowedHandlers = {}
-		for _,id in pairs(handlerIds) do
-			local handlerTable = tools.split(id, "_")
-			if handlerTable[1] == groupID or handlerTable[1] == "global" then
-				table.insert(allowedHandlers, id)
-			end
-		end
-		mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
-		mod.activator[groupID]:preloadChoices()
-
-	end
-
 end
 
 return plugin
