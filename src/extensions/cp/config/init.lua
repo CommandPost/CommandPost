@@ -301,6 +301,23 @@ mod.developerMode = mod.prop("debugMode", false):watch(function(value)
 	end
 end)
 
+--- cp.config.automaticScriptReloading <cp.prop: boolean>
+--- Variable
+--- Automatic Script Reloading.
+mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(function(value)
+	if value then
+		log.df("Automatic Script Reloading Enabled")
+		mod.sourceWatcher:start()
+	else
+		log.df("Automatic Script Reloading Disabled")
+		mod.sourceWatcher:stop()
+	end
+end)
+if not mod.automaticScriptReloading() then
+	log.df("Automatic Script Reloading Disabled")
+	mod.sourceWatcher:stop()
+end
+
 --------------------------------------------------------------------------------
 --
 -- SHUTDOWN CALLBACK:

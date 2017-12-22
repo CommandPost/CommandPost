@@ -47,6 +47,19 @@ function mod.trashPreferences()
 	end, i18n("trashPreferencesConfirmation"), "", i18n("yes"), i18n("no"), "informational")
 end
 
+--- plugins.core.preferences.advanced.toggleEnableAutomaticScriptReloading() -> none
+--- Function
+--- Toggles the Automatic Script Reloading.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.toggleEnableAutomaticScriptReloading()
+	config.automaticScriptReloading:toggle()
+end
+
 --- plugins.core.preferences.advanced.developerMode <cp.prop: boolean>
 --- Field
 --- Enables or disables developer mode.
@@ -182,6 +195,14 @@ function plugin.init(deps)
 				label = i18n("enableDeveloperMode"),
 				onchange = mod.toggleDeveloperMode,
 				checked = mod.developerMode,
+			}
+		)
+
+		:addCheckbox(61.1,
+			{
+				label = i18n("enableAutomaticScriptReloading"),
+				onchange = mod.toggleEnableAutomaticScriptReloading,
+				checked = config.automaticScriptReloading(),
 			}
 		)
 

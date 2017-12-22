@@ -530,6 +530,8 @@ return {
 			developer							=			"Developer Tools",
 			commandLineTool						=			"Command Line Tool",
 			enableDeveloperMode					=			"Enable Developer Mode",
+			enableAutomaticScriptReloading		=			"Enable Automatic Script Reloading",
+			toggleAutomaticScriptReloading		=			"Auto Reload",
 			openErrorLogOnDockClick				=			"Open Error Log on Dock Icon Click",
 			trashPreferences					=			"Trash Preferences",
 			cliUninstallError					=			"I'm sorry, but we failed to Uninstall the Command Line Tool. Please try again.",
