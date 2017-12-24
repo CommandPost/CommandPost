@@ -621,6 +621,9 @@ return {
 			notificationsPanelLabel				=			"Notifications",
 			notificationsPanelTooltip			=			"Notifications Preferences",
 
+			tangentPanelLabel					=			"Tangent",
+			tangentPanelTooltip					=			"Tangent Preferences",
+
 			menubarPanelLabel					=			"Menubar",
 			menubarPanelTooltip					=			"Menubar Preferences",
 

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<TangentWave fileType="PanelMap" fileVersion="3.0">
+    <Panels>
+        <Panel type="Element-Kb">
+            <Mode id="0x00010001"> <!-- Config Mode -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- A Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- B Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Prev Knob Bank -->
+                            </Mapping>
+                        </Control>
+					</Bank>
+                </ControlBank>
+				<ControlBank id="Encoder">
+                    <Bank>
+						<Control type="Encoder" number="9">
+                            <Mapping mode="Std">
+                                <Key>0x00040001</Key> <!-- Select Input Menu -->
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="10">
+                            <Mapping mode="Std">
+                                <Key>0x00040002</Key> <!-- Select Output Menu -->
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="11">
+                            <Mapping mode="Std">
+                                <Key>0x00040003</Key> <!-- Bit Depth Menu -->
+                            </Mapping>
+						</Control>
+                    </Bank>
+				</ControlBank>
+            </Mode>
+            <Mode id="0x00010002"> <!-- Grading Mode -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- A Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- B Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Prev Knob Bank -->
+                            </Mapping>
+                        </Control>
+					</Bank>
+                </ControlBank>
+				<ControlBank id="Encoder">
+                    <Bank>
+						<Control type="Encoder" number="0">
+                            <Mapping mode="Std">
+                                <Key>0x00042001</Key> <!-- Master Saturation -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="3">
+                            <Mapping mode="Std">
+                                <Key>0x00042002</Key> <!-- Red Sat -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="4">
+                            <Mapping mode="Std">
+                                <Key>0x00042003</Key> <!-- Green Sat -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="5">
+                            <Mapping mode="Std">
+                                <Key>0x00042004</Key> <!-- Blue Sat -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+					</Bank>
+                    <Bank> <!-- Example of Second Bank -->
+						<Control type="Encoder" number="0">
+                            <Mapping mode="Std"> 
+                                <Key>0x00042001</Key>   <!-- Master Saturation -->
+								<Display>Bar</Display>  <!-- This control duplicated from last bank just to show that it can be done -->
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="3">
+                            <Mapping mode="Std">
+                                <Key>0x00032002</Key> <!-- Primary Red Gain -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="4">
+                            <Mapping mode="Std">
+                                <Key>0x00032003</Key> <!-- Primary Green Gain -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="5">
+                            <Mapping mode="Std">
+                                <Key>0x00032004</Key> <!-- Primary Blue Gain -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+                    </Bank>
+				</ControlBank>
+            </Mode>
+            <Mode id="0x00010003"> <!-- Geometry Mode -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- A Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- B Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Prev Knob Bank -->
+                            </Mapping>
+                        </Control>
+					</Bank>
+                </ControlBank>
+				<ControlBank id="Encoder">
+                    <Bank>
+						<Control type="Encoder" number="9">
+                            <Mapping mode="Std">
+                                <Key>0x00060003</Key> <!-- Rotate -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+						<Control type="Encoder" number="10">
+                            <Mapping mode="Std">
+                                <Key>0x00060010</Key> <!-- Zoom -->
+								<Display>Bar</Display>
+                            </Mapping>
+						</Control>
+                    </Bank>
+				</ControlBank>
+            </Mode>
+        </Panel>
+    </Panels>
+</TangentWave>

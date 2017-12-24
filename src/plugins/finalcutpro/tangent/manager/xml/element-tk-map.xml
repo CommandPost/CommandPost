@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<TangentWave fileType="PanelMap" fileVersion="3.0">
+    <Panels>
+        <Panel type="Element-Tk">
+            <Mode id="0x00010001"> <!-- Config Mode -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- A Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                        </Control>
+						<Control type="Button" number="7"> <!-- B Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000007</Key> <!-- Prev Trackerball Bank -->
+                            </Mapping>
+                        </Control>                    
+					</Bank>
+                </ControlBank>
+			</Mode>
+            <Mode id="0x00010002"> <!-- Grading Mode -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- A Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                        </Control>
+						<Control type="Button" number="7"> <!-- B Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000007</Key> <!-- Prev Trackerball Bank -->
+                            </Mapping>
+                        </Control>                    
+					</Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+					<Bank>
+						<Control type="Encoder" number="0"> <!-- Left TrackerBall X -->
+                            <Mapping mode="Std">
+								<Key>0x00033002</Key> <!-- Primary Lift Diff X -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="1"> <!-- Left TrackerBall Y -->
+                            <Mapping mode="Std">
+								<Key>0x00033003</Key> <!-- Primary Lift Diff Y -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="2"> <!-- Left TrackerBall Ring -->
+                            <Mapping mode="Std">
+								<Key>0x00033001</Key> <!-- Primary Lift Master -->
+								<Display>Bar</Display>
+							</Mapping>                							
+                        </Control>
+						<Control type="Encoder" number="3"> <!-- Middle TrackerBall X -->
+                            <Mapping mode="Std">
+								<Key>0x00033012</Key> <!-- Primary Gamma Diff X -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="4"> <!-- Middle TrackerBall Y -->
+                            <Mapping mode="Std">
+								<Key>0x00033013</Key> <!-- Primary Gamma Diff Y -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="5"> <!-- Middle TrackerBall Ring -->
+                            <Mapping mode="Std">
+								<Key>0x00033011</Key> <!-- Primary Gamma Master -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="6"> <!-- Right TrackerBall X -->
+                            <Mapping mode="Std">
+								<Key>0x00033022</Key> <!-- Primary Gain Diff X -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="7"> <!-- Right TrackerBall Y -->
+                            <Mapping mode="Std">
+								<Key>0x00033023</Key> <!-- Primary Gain Diff Y -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="8"> <!-- Right TrackerBall Ring -->
+                            <Mapping mode="Std">
+								<Key>0x00033021</Key> <!-- Primary Gain Master -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+					</Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010003"> <!-- Geometry Mode -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- A Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- ALT -->
+                            </Mapping>
+                        </Control>
+						<Control type="Button" number="7"> <!-- B Key -->
+                            <Mapping mode="Std">
+                                <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
+                            </Mapping>
+                           <Mapping mode="Alt">
+                                <Key>0x80000007</Key> <!-- Prev Trackerball Bank -->
+                            </Mapping>
+                        </Control>                    
+					</Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+					<Bank>
+						<Control type="Encoder" number="3"> <!-- Middle TrackerBall X -->
+                            <Mapping mode="Std">
+								<Key>0x00060001</Key> <!-- Pos X -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="4"> <!-- Middle TrackerBall Y -->
+                            <Mapping mode="Std">
+								<Key>0x00060002</Key> <!-- Pos Y -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                        </Control>
+						<Control type="Encoder" number="5"> <!-- Middle TrackerBall Ring -->
+                            <Mapping mode="Std">
+								<Key>0x00060010</Key> <!-- Zoom -->
+								<Display>Bar</Display>
+							</Mapping>                           
+                            <Mapping mode="Alt">
+								<Key>0x00060003</Key> <!-- Rotate -->
+								<Display>Bar</Display>
+							</Mapping>
+						</Control>
+					</Bank>
+                </ControlBank>
+            </Mode>
+        </Panel>
+    </Panels>
+</TangentWave>
