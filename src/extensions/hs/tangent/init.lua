@@ -251,6 +251,16 @@ local function processHubCommand(data)
     if id == mod.HUB_MESSAGE["INITIATE_COMMS"] then
 	    --------------------------------------------------------------------------------
 	    -- InitiateComms (0x01)
+	    --  * Initiates communication between the Hub and the application.
+	    --  * Communicates the quantity, type and IDs of the panels which are
+	    --    configured to be connected in the panel-list.xml file. Note that this is
+	    --    not the same as the panels which are actually connected – just those
+	    --    which are expected to be connected.
+	    --  * The length is dictated by the number of panels connected as the details
+	    --    of each panel occupies 5 bytes.
+	    --  * On receipt the application should respond with the
+	    --    ApplicationDefinition (0x81) command.
+	    --
         -- 0x01, <protocolRev>, <numPanels>, (<mod.PANEL_TYPE>, <panelID>)...
         --------------------------------------------------------------------------------
         log.df("InitiateComms (0x01) Triggered:")
@@ -277,65 +287,220 @@ local function processHubCommand(data)
 	elseif id == mod.HUB_MESSAGE["PARAMETER_CHANGE"] then
 		--------------------------------------------------------------------------------
 		-- ParameterChange (0x02)
+		--  * Requests that the application increment a parameter. The application needs
+		--    to constrain the value to remain within its maximum and minimum values.
+		--  * On receipt the application should respond to the Hub with the new
+		--    absolute parameter value using the ParameterValue (0x82) command,
+		--    if the value has changed.
+		--
 		-- 0x02, <paramID>, <increment>
 		--------------------------------------------------------------------------------
-		log.df("PARAMETER_CHANGE")
+		local paramID = byteStringToNumber(data, 5, 4)
+		local increment = byteStringToNumber(data, 9, 4)
+		if paramID and increment then
+			mod._callback("PARAMETER_CHANGE", {
+				["paramID"] = paramID,
+				["increment"] = increment
+			})
+		else
+			log.ef("Error translating PARAMETER_CHANGE.")
+		end
 	elseif id == mod.HUB_MESSAGE["PARAMETER_RESET"] then
 		--------------------------------------------------------------------------------
 		-- ParameterReset (0x03)
+		--  * Requests that the application changes a parameter to its reset value.
+		--  * On receipt the application should respond to the Hub with the new absolute
+		--    parameter value using the ParameterValue (0x82) command, if the value
+		--    has changed.
+		--
 		-- 0x03, <paramID>
 		--------------------------------------------------------------------------------
-		log.df("PARAMETER_RESET")
+		local paramID = byteStringToNumber(data, 5, 4)
+		if paramID then
+			mod._callback("PARAMETER_RESET", {
+				["paramID"] = paramID
+			})
+		else
+			log.ef("Error translating PARAMETER_RESET.")
+		end
 	elseif id == mod.HUB_MESSAGE["PARAMETER_VALUE_REQUEST"] then
 		--------------------------------------------------------------------------------
 		-- ParameterValueRequest (0x04)
+		--  * Requests that the application sends a ParameterValue (0x82) command
+		--    to the Hub.
+		--
 		-- 0x04, <paramID>
 		--------------------------------------------------------------------------------
-		log.df("PARAMETER_VALUE_REQUEST")
+		local paramID = byteStringToNumber(data, 5, 4)
+		if paramID then
+			mod._callback("PARAMETER_VALUE_REQUEST", {
+				["paramID"] = paramID
+			})
+		else
+			log.ef("Error translating PARAMETER_VALUE_REQUEST.")
+		end
 	elseif id == mod.HUB_MESSAGE["MENU_CHANGE"] then
-		log.df("MENU_CHANGE")
+		--------------------------------------------------------------------------------
+		-- MenuChange (0x05)
+		--  * Requests the application change a menu index by +1 or -1.
+		--  * We recommend that menus that only have two values (e.g. on/off) should
+		--    toggle their state on receipt of either a +1 or -1 increment value.
+		--    This will allow a single button to toggle the state of such an item
+		--    without the need for separate ‘up’ and ‘down’ buttons.
+		--
+		-- 0x05, <menuID>, < increment >
+		--------------------------------------------------------------------------------
+		local menuID = byteStringToNumber(data, 5, 4)
+		local increment = byteStringToNumber(data, 9, 4)
+		if paramID and increment then
+			mod._callback("MENU_CHANGE", {
+				["menuID"] = menuID,
+				["increment"] = increment
+			})
+		else
+			log.ef("Error translating MENU_CHANGE.")
+		end
 	elseif id == mod.HUB_MESSAGE["MENU_RESET"] then
-		log.df("MENU_RESET")
+		--------------------------------------------------------------------------------
+		-- MenuReset (0x06)
+		--  * Requests that the application sends a MenuString (0x83) command to the Hub.
+		--
+		-- 0x06, <menuID>
+		--------------------------------------------------------------------------------
+		local menuID = byteStringToNumber(data, 5, 4)
+		if menuID then
+			mod._callback("MENU_RESET", {
+				["menuID"] = menuID
+			})
+		else
+			log.ef("Error translating MENU_RESET.")
+		end
 	elseif id == mod.HUB_MESSAGE["MENU_STRING_REQUEST"] then
-		log.df("MENU_STRING_REQUEST")
+		--------------------------------------------------------------------------------
+		-- MenuStringRequest (0x07)
+		--  * Requests that the application sends a MenuString (0x83) command to the Hub.
+		--  * On receipt, the application should respond to the Hub with the new menu
+		--    value using the MenuString (0x83) command, if the menu has changed.
+		--
+		-- 0x07, <menuID>
+		--------------------------------------------------------------------------------
+		local menuID = byteStringToNumber(data, 5, 4)
+		if menuID then
+			mod._callback("MENU_STRING_REQUEST", {
+				["menuID"] = menuID
+			})
+		else
+			log.ef("Error translating MENU_STRING_REQUEST.")
+		end
 	elseif id == mod.HUB_MESSAGE["ACTION_ON"] then
 		--------------------------------------------------------------------------------
 		-- Action On (0x08)
+		--  * Requests that the application performs the specified action.
+		--
 		-- 0x08, <actionID>
 		--------------------------------------------------------------------------------
 		local actionID = byteStringToNumber(data, 5, 4)
-		log.df("ACTION_ON: %s", actionID)
-
-		if actionID == 0x00020001 then
-			log.df("Activate Global Console")
-		elseif actionID == 0x00020002 then
-			log.df("Credits")
+		if actionID then
+			mod._callback("ACTION_ON", {
+				["actionID"] = actionID
+			})
+		else
+			log.ef("Error translating ACTION_ON.")
 		end
-
-		mod._callback("ACTION_ON", {
-			["actionID"] = actionID
-		})
-
-
 	elseif id == mod.HUB_MESSAGE["MODE_CHANGE"] then
-		log.df("MODE_CHANGE")
+		--------------------------------------------------------------------------------
+		-- ModeChange (0x09)
+		--  * Requests that the application changes to the specified mode.
+		--
+		-- 0x09, <modeID>
+		--------------------------------------------------------------------------------
+
 	elseif id == mod.HUB_MESSAGE["TRANSPORT"] then
-		log.df("TRANSPORT")
+		--------------------------------------------------------------------------------
+		-- Transport (0x0A)
+		--  * Requests the application to move the currently active transport.
+		--  * jogValue or shuttleValue will never both be set simultaneously
+		--  * One revolution of the control represents 32 counts by default.
+		--    The user will be able to adjust the sensitivity of Jog & Shuttle
+		--    independently in the TUBE Mapper tool to send more or less than
+		--    32 counts per revolution.
+		--
+		-- 0x0A, <jogValue>, <shuttleValue>
+		--------------------------------------------------------------------------------
+
 	elseif id == mod.HUB_MESSAGE["ACTION_OFF"] then
-		log.df("ACTION_OFF")
+		--------------------------------------------------------------------------------
+		-- ActionOff (0x0B)
+		--  * Requests that the application cancels the specified action.
+		--  * This is typically sent when a button is released.
+		--
+		-- 0x0B, <actionID>
+		--------------------------------------------------------------------------------
+		local actionID = byteStringToNumber(data, 5, 4)
+		if actionID then
+			mod._callback("ACTION_OFF", {
+				["actionID"] = actionID
+			})
+		else
+			log.ef("Error translating ACTION_OFF.")
+		end
 	elseif id == mod.HUB_MESSAGE["UNMANAGED_PANEL_CAPABILITIES"] then
-		log.df("UNMANAGED_PANEL_CAPABILITIES")
+		--------------------------------------------------------------------------------
+		-- UnmanagedPanelCapabilities (0x30)
+		--  * Only used when working in Unmanaged panel mode.
+		--  * Sent in response to a UnmanagedPanelCapabilitiesRequest (0xA0) command.
+		--  * The values returned are those given in the table in Section 18.
+		--    Panel Data for Unmanaged Mode.
+		--
+		-- 0x30, <panelID>, <numButtons>, <numEncoders>, <numDisplays>, <numDisplayLines>, <numDisplayChars>
+		--------------------------------------------------------------------------------
 	elseif id == mod.HUB_MESSAGE["UNMANAGED_BUTTON_DOWN"] then
-		log.df("UNMANAGED_BUTTON_DOWN")
+		--------------------------------------------------------------------------------
+		-- UnmanagedButtonDown (0x31)
+		--  * Only used when working in Unmanaged panel mode
+		--  * Issued when a button has been pressed
+		--
+		-- 0x31, <panelID>, <buttonID>
+		--------------------------------------------------------------------------------
 	elseif id == mod.HUB_MESSAGE["UNMANAGED_BUTTON_UP"] then
-		log.df("UNMANAGED_BUTTON_UP")
+		--------------------------------------------------------------------------------
+		-- UnmanagedButtonUp (0x32)
+		--  * Only used when working in Unmanaged panel mode.
+		-- 	* Issued when a button has been released
+		--
+		-- 0x32, <panelID>, <buttonID>
+		--------------------------------------------------------------------------------
 	elseif id == mod.HUB_MESSAGE["UNMANAGED_ENCODER_CHANGE"] then
-		log.df("UNMANAGED_ENCODER_CHANGE")
+		--------------------------------------------------------------------------------
+		-- UnmanagedEncoderChange (0x33)
+		--  * Only used when working in Unmanaged panel mode.
+		--  * Issued when an encoder has been moved.
+		--
+		-- 0x33, <panelID>, <encoderID>, <increment>
+		--------------------------------------------------------------------------------
 	elseif id == mod.HUB_MESSAGE["UNMANAGED_DISPLAY_REFRESH"] then
-		log.df("UNMANAGED_DISPLAY_REFRESH")
+		--------------------------------------------------------------------------------
+		-- UnmanagedDisplayRefresh (0x34)
+		--  * Only used when working in Unmanaged panel mode
+		--	* Issued when a panel has been connected or the focus of the panel has
+		--    been returned to your application.
+		--  * On receipt your application should send all the current information to
+		--    each display on the panel in question.
+		--
+		-- 0x34, <panelID>
+		--------------------------------------------------------------------------------
 	elseif id == mod.HUB_MESSAGE["PANEL_CONNECTION_STATE"] then
-		log.df("PANEL_CONNECTION_STATE")
+		--------------------------------------------------------------------------------
+		-- PanelConnectionState (0x35)
+		--  * Sent in response to a PanelConnectionStatesRequest (0xA5) command to
+		--    report the current connected/disconnected status of a configured panel.
+		--
+		-- 0x35, <panelID>, <state>
+		--------------------------------------------------------------------------------
     else
+    	--------------------------------------------------------------------------------
+    	-- Unknown Message:
+    	--------------------------------------------------------------------------------
     	local hexDump = utf8.hexDump(data)
         log.df("Unknown message received from Tangent Hub:\n%s", hexDump)
     end

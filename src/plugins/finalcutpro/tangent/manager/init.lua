@@ -33,6 +33,11 @@ local config									= require("cp.config")
 
 local mod = {}
 
+function mod.callback(id, metadata)
+	log.df("id: %s", id)
+	log.df("metadata: %s", hs.inspect(metadata))
+end
+
 --- plugins.finalcutpro.tangent.manager.start() -> boolean
 --- Function
 --- Starts the Tangent Plugin
@@ -46,6 +51,7 @@ function mod.start()
 	if tangent.isTangentHubInstalled() then
 		local result, errorMessage = tangent.connect("CommandPost", mod._path)
 		if result then
+			tangent.callback(mod.callback)
 			return true
 		else
 			log.ef("Failed to start Tangent Support: %s", errorMessage)
@@ -158,7 +164,7 @@ function plugin.init(deps, env)
 				{
 					label = "Open Tangent Mapper",
 					onclick = function(_, params)
-						hs.open("/Applications/Tangent/Tangent Mapper.app")
+						os.execute('open "/Applications/Tangent/Tangent Mapper.app"')
 					end,
 					class = "tangentButtonOne",
 				}
@@ -167,7 +173,7 @@ function plugin.init(deps, env)
 				{
 					label = "Download Tangent Hub",
 					onclick = function(_, params)
-						hs.open("http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/")
+						os.execute('open "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"')
 					end,
 					class = "tangentButtonTwo",
 				}
@@ -176,7 +182,7 @@ function plugin.init(deps, env)
 				{
 					label = "Visit Tangent Website",
 					onclick = function(_, params)
-						hs.open("http://www.tangentwave.co.uk/")
+						os.execute('open "http://www.tangentwave.co.uk/"')
 					end,
 					class = "tangentButtonTwo",
 				}

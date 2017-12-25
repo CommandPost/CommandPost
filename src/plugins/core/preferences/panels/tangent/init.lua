@@ -37,7 +37,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 	return deps.manager.addPanel({
-		priority 	= 2026,
+		priority 	= 2032.1,
 		id			= "tangent",
 		label		= i18n("tangentPanelLabel"),
 		image		= image.imageFromPath(env:pathToAbsolute("/tangent.icns")),
