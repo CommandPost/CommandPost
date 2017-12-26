@@ -41,13 +41,16 @@ local moses										= require("moses")
 
 local mod = {}
 
---------------------------------------------------------------------------------
--- COLOR INSPECTOR PARAMETERS:
---
---  * aspect - "color", "saturation" or "exposure"
---  * property - "global", "shadows", "midtones", "highlights"
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.tangent.manager.colorInspectorParameter
+--- Variable
+--- Table containing custom Color Inspector paramaters.
 mod.colorInspectorParameter = {
+	--------------------------------------------------------------------------------
+	-- COLOR INSPECTOR PARAMETERS:
+	--
+	--  * aspect - "color", "saturation" or "exposure"
+	--  * property - "global", "shadows", "midtones", "highlights"
+	--------------------------------------------------------------------------------
 	["0x00030001"] = {
 		["name"] = "Color Board Master Color Angle",
 		["name9"] = "CB MT ANG",
@@ -56,9 +59,17 @@ mod.colorInspectorParameter = {
 		["stepSize"] = 1,
 		["getValue"] = function() return fcp:colorBoard():getAngle("color", "global") end,
 		["shiftValue"] = function(value) return fcp:colorBoard():shiftAngle("color", "global", value) end,
-	}
+	},
+	["0x00030002"] = {
+		["name"] = "Color Board Master Color Percentage",
+		["name9"] = "CB MT PER",
+		["minValue"] = -100,
+		["maxValue"] = 100,
+		["stepSize"] = 1,
+		["getValue"] = function() return fcp:colorBoard():getPercentage("color", "global") end,
+		["shiftValue"] = function(value) return fcp:colorBoard():shiftPercentage("color", "global", value) end,
+	},
 }
-
 --------------------------------------------------------------------------------
 -- HELPER FUNCTIONS:
 --------------------------------------------------------------------------------
@@ -348,11 +359,16 @@ function mod.callback(id, metadata)
 		--------------------------------------------------------------------------------
 		if metadata and metadata.increment and metadata.paramID then
 			if fcp.isFrontmost() == false then
-				--log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-				--return
+				log.df("Final Cut Pro isn't actually frontmost so ignoring.")
+				return
 			end
 
 			local paramID = string.format("%#010x", metadata.paramID)
+
+			--------------------------------------------------------------------------------
+			-- TODO: Need to work out how to convert a HEX Value to Float.
+			-- TODO: Work out a way to prevent lagging/delays.
+			--------------------------------------------------------------------------------
 			local increment = metadata.increment/1000000000
 
 			log.df("ParamID: %s, Increment: %s", paramID, increment)
