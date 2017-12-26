@@ -25,6 +25,7 @@ local dialog									= require("hs.dialog")
 local fs										= require("hs.fs")
 local json										= require("hs.json")
 local tangent									= require("hs.tangent")
+local timer										= require("hs.timer")
 
 local commands									= require("cp.commands")
 local config									= require("cp.config")
@@ -310,6 +311,9 @@ mod.MODES = {"Global", "Final Cut Pro"}
 --- Enable or disables the Tangent Manager.
 mod.enabled = config.prop("enableTangent", false)
 
+mod._callbackInProcess = false
+mod._incrementBuffer = 0
+
 --- plugins.finalcutpro.tangent.manager.callback(id, metadata) -> none
 --- Function
 --- Tangent Manager Callback Function
@@ -359,21 +363,34 @@ function mod.callback(id, metadata)
 		--------------------------------------------------------------------------------
 		if metadata and metadata.increment and metadata.paramID then
 			if fcp.isFrontmost() == false then
-				log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-				return
+				--log.df("Final Cut Pro isn't actually frontmost so ignoring.")
+				--return
 			end
 
 			local paramID = string.format("%#010x", metadata.paramID)
 
-			--------------------------------------------------------------------------------
-			-- TODO: Need to work out how to convert a HEX Value to Float.
-			-- TODO: Work out a way to prevent lagging/delays.
-			--------------------------------------------------------------------------------
-			local increment = metadata.increment/1000000000
+			local increment = metadata.increment
 
-			log.df("ParamID: %s, Increment: %s", paramID, increment)
+			--log.df("ParamID: %s\nIncrement: %s\ndata: %s\nhexdump: %s", paramID, increment, metadata.data, hs.utf8.hexDump(metadata.data))
+			--log.df("ParamID: %s\nIncrement: %s", paramID, increment)
 
-			mod.colorInspectorParameter[paramID].shiftValue(increment)
+			if mod._callbackInProcess then
+				log.df("Callback already in process")
+				mod._incrementBuffer = mod._incrementBuffer + 1
+				timer.doAfter(0.5, function()
+					log.df("Resetting lock")
+					mod._incrementBuffer = 0
+					mod._callbackInProcess = false
+				end)
+			else
+				mod._callbackInProcess = true
+				timer.doAfter(0.0001, function()
+					log.df("Shifting: %s", increment)
+					mod.colorInspectorParameter[paramID].shiftValue(increment + mod._incrementBuffer)
+					mod._incrementBuffer = 0
+					mod._callbackInProcess = false
+				end)
+			end
 
 			tangent.send("PARAMETER_VALUE", {
 				["paramID"] = paramID,

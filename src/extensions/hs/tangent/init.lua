@@ -165,6 +165,12 @@ local function byteStringToNumber(str, offset, numberOfBytes)
   return x
 end
 
+local function numberToFloat(value)
+	s=string.pack("i8",value)
+	f=string.unpack("f",s)
+	return f
+end
+
 -- numberToByteString(n) -> string
 -- Function
 -- Translates a number into a byte string.
@@ -239,6 +245,7 @@ local function processHubCommand(data)
             table.insert(panels, {
                 ["panelID"] = currentPanelID,
                 ["panelType"] = getPanelType(currentPanelType),
+                ["data"] = data,
             })
         end
         --------------------------------------------------------------------------------
@@ -249,6 +256,7 @@ local function processHubCommand(data)
                 ["protocolRev"] = protocolRev,
                 ["numberOfPanels"] = numberOfPanels,
                 ["panels"] = panels,
+                ["data"] = data,
             })
         end
         --------------------------------------------------------------------------------
@@ -266,17 +274,24 @@ local function processHubCommand(data)
         --    absolute parameter value using the ParameterValue (0x82) command,
         --    if the value has changed.
         --
-        -- 0x02, <paramID>, <increment>
+        -- Format: 0x02, <paramID>, <increment>
+        --
+        -- paramID: The ID value of the parameter (Unsigned Int)
+        -- increment: The incremental value which should be applied to the parameter (Float)
         --------------------------------------------------------------------------------
         local paramID = byteStringToNumber(data, 5, 4)
-        local increment = byteStringToNumber(data, 9, 4)
+        local increment = numberToFloat(byteStringToNumber(data, 9, 4))
         if paramID and increment and mod._callback then
             mod._callback("PARAMETER_CHANGE", {
                 ["paramID"] = paramID,
-                ["increment"] = increment
+                ["increment"] = increment,
+                ["data"] = data,
             })
         else
             log.ef("Error translating PARAMETER_CHANGE.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["PARAMETER_RESET"] then
         --------------------------------------------------------------------------------
@@ -291,10 +306,14 @@ local function processHubCommand(data)
         local paramID = byteStringToNumber(data, 5, 4)
         if paramID and mod._callback then
             mod._callback("PARAMETER_RESET", {
-                ["paramID"] = paramID
+                ["paramID"] = paramID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating PARAMETER_RESET.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["PARAMETER_VALUE_REQUEST"] then
         --------------------------------------------------------------------------------
@@ -307,10 +326,14 @@ local function processHubCommand(data)
         local paramID = byteStringToNumber(data, 5, 4)
         if paramID and mod._callback then
             mod._callback("PARAMETER_VALUE_REQUEST", {
-                ["paramID"] = paramID
+                ["paramID"] = paramID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating PARAMETER_VALUE_REQUEST.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["MENU_CHANGE"] then
         --------------------------------------------------------------------------------
@@ -328,10 +351,14 @@ local function processHubCommand(data)
         if menuID and increment and mod._callback then
             mod._callback("MENU_CHANGE", {
                 ["menuID"] = menuID,
-                ["increment"] = increment
+                ["increment"] = increment,
+                ["data"] = data,
             })
         else
             log.ef("Error translating MENU_CHANGE.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["MENU_RESET"] then
         --------------------------------------------------------------------------------
@@ -343,10 +370,14 @@ local function processHubCommand(data)
         local menuID = byteStringToNumber(data, 5, 4)
         if menuID and mod._callback then
             mod._callback("MENU_RESET", {
-                ["menuID"] = menuID
+                ["menuID"] = menuID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating MENU_RESET.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["MENU_STRING_REQUEST"] then
         --------------------------------------------------------------------------------
@@ -360,10 +391,14 @@ local function processHubCommand(data)
         local menuID = byteStringToNumber(data, 5, 4)
         if menuID and mod._callback then
             mod._callback("MENU_STRING_REQUEST", {
-                ["menuID"] = menuID
+                ["menuID"] = menuID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating MENU_STRING_REQUEST.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["ACTION_ON"] then
         --------------------------------------------------------------------------------
@@ -375,10 +410,14 @@ local function processHubCommand(data)
         local actionID = byteStringToNumber(data, 5, 4)
         if actionID and mod._callback then
             mod._callback("ACTION_ON", {
-                ["actionID"] = actionID
+                ["actionID"] = actionID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating ACTION_ON.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["MODE_CHANGE"] then
         --------------------------------------------------------------------------------
@@ -390,10 +429,14 @@ local function processHubCommand(data)
         local modeID = byteStringToNumber(data, 5, 4)
         if modeID and mod._callback then
             mod._callback("MODE_CHANGE", {
-                ["modeID"] = modeID
+                ["modeID"] = modeID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating MODE_CHANGE.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["TRANSPORT"] then
         --------------------------------------------------------------------------------
@@ -412,10 +455,14 @@ local function processHubCommand(data)
         if jogValue and shuttleValue and mod._callback then
             mod._callback("TRANSPORT", {
                 ["jogValue"] = jogValue,
-                ["shuttleValue"] = shuttleValue
+                ["shuttleValue"] = shuttleValue,
+                ["data"] = data,
             })
         else
             log.ef("Error translating TRANSPORT.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["ACTION_OFF"] then
         --------------------------------------------------------------------------------
@@ -428,10 +475,14 @@ local function processHubCommand(data)
         local actionID = byteStringToNumber(data, 5, 4)
         if actionID and mod._callback then
             mod._callback("ACTION_OFF", {
-                ["actionID"] = actionID
+                ["actionID"] = actionID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating ACTION_OFF.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["UNMANAGED_PANEL_CAPABILITIES"] then
         --------------------------------------------------------------------------------
@@ -457,9 +508,13 @@ local function processHubCommand(data)
                 ["numDisplays"]         = numDisplays,
                 ["numDisplayLines"]     = numDisplayLines,
                 ["numDisplayChars"]     = numDisplayChars,
+                ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_PANEL_CAPABILITIES.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["UNMANAGED_BUTTON_DOWN"] then
         --------------------------------------------------------------------------------
@@ -475,9 +530,13 @@ local function processHubCommand(data)
             mod._callback("UNMANAGED_BUTTON_DOWN", {
                 ["panelID"] = panelID,
                 ["buttonID"] = buttonID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_BUTTON_DOWN.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["UNMANAGED_BUTTON_UP"] then
         --------------------------------------------------------------------------------
@@ -493,9 +552,13 @@ local function processHubCommand(data)
             mod._callback("UNMANAGED_BUTTON_UP", {
                 ["panelID"] = panelID,
                 ["buttonID"] = buttonID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_BUTTON_UP.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["UNMANAGED_ENCODER_CHANGE"] then
         --------------------------------------------------------------------------------
@@ -513,9 +576,13 @@ local function processHubCommand(data)
                 ["panelID"] = panelID,
                 ["encoderID"] = encoderID,
                 ["increment"] = increment,
+                ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_ENCODER_CHANGE.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     elseif id == mod.HUB_MESSAGE["UNMANAGED_DISPLAY_REFRESH"] then
         --------------------------------------------------------------------------------
@@ -532,9 +599,13 @@ local function processHubCommand(data)
         if panelID and mod._callback then
             mod._callback("UNMANAGED_DISPLAY_REFRESH", {
                 ["panelID"] = panelID,
+                ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_DISPLAY_REFRESH.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
 
     elseif id == mod.HUB_MESSAGE["PANEL_CONNECTION_STATE"] then
@@ -555,9 +626,13 @@ local function processHubCommand(data)
             mod._callback("PANEL_CONNECTION_STATE", {
                 ["panelID"] = panelID,
                 ["state"] = stateBoolean,
+                ["data"] = data,
             })
         else
             log.ef("Error translating PANEL_CONNECTION_STATE.")
+            mod._callback("ERROR", {
+                ["data"] = data
+            })
         end
     else
         --------------------------------------------------------------------------------
