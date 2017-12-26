@@ -844,16 +844,17 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
-		fcpx_cmds_action					=			"Commands",
-		fcpx_menu_action					=			"Menu Items",
-		fcpx_videoEffect_action				=			"Video Effects",
 		fcpx_audioEffect_action				=			"Audio Effects",
+		fcpx_cmds_action					=			"Commands",
+		fcpx_colorInspector_action			=			"Color Inspector",
 		fcpx_generator_action				=			"Generators",
-		fcpx_title_action					=			"Titles",
-		fcpx_transition_action				=			"Transitions",
-		fcpx_widgets_action					=			"Touch Bar Widgets",
+		fcpx_menu_action					=			"Menu Items",
 		fcpx_midicontrols_action			=			"MIDI Controls",
 		fcpx_shortcuts_action				=			"Command Editor Shortcuts",
+		fcpx_title_action					=			"Titles",
+		fcpx_transition_action				=			"Transitions",
+		fcpx_videoEffect_action				=			"Video Effects",
+		fcpx_widgets_action					=			"Touch Bar Widgets",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND URL EXECUTION:
