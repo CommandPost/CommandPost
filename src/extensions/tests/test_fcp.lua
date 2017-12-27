@@ -10,7 +10,6 @@ local test					= require("cp.test")
 
 local TEST_LIBRARY 			= "Test Library.fcpbundle"
 
-local testLibrary 			= config.scriptPath .. "/tests/fcp/" .. TEST_LIBRARY
 local temporaryDirectory 	= fs.temporaryDirectory() .. "CommandPost"
 local temporaryLibrary 		= temporaryDirectory .. "/" .. TEST_LIBRARY
 
@@ -25,15 +24,18 @@ local function reset()
 	loadLibrary()
 	-- keep trying until the library loads successfully, waiting up to 10 seconds.
 	just.doUntil(function() return fcp:libraries():selectLibrary("Test Library") ~= nil end, 10.0)
-	fcp:libraries():openClipTitled("Test Project")
+	if not fcp:libraries():openClipTitled("Test Project") then
+		error(string.format("Unable to open the 'Test Project' clip."))
+
+	end
 end
 
-local function run()
+return test.suite("cp.apple.finalcutpro"):with(
 	test("Launch FCP", function()
 		-- Launch FCP
 		fcp:launch()
 		ok(fcp:isRunning(), "FCP is running")
-	end)
+	end),
 
 	test("Check FCP Primary Components", function()
 		-- Reset to the default workspace
@@ -46,7 +48,7 @@ local function run()
 		ok(fcp:inspector():isShowing())
 		ok(fcp:viewer():isShowing())
 		ok(not fcp:eventViewer():isShowing())
-	end)
+	end),
 
 	test("Check Event Viewer", function()
 		-- Reset to default workspace
@@ -58,7 +60,7 @@ local function run()
 		ok(fcp:eventViewer():isShowing())
 		fcp:eventViewer():hide()
 		ok(not fcp:eventViewer():isShowing())
-	end)
+	end),
 
 	test("Command Editor", function()
 		reset()
@@ -70,7 +72,7 @@ local function run()
 		ok(fcp:commandEditor():saveButton():UI() ~= nil)
 		fcp:commandEditor():hide()
 		ok(not fcp:commandEditor():isShowing())
-	end)
+	end),
 
 	test("Export Dialog", function()
 		reset()
@@ -81,7 +83,7 @@ local function run()
 		ok(fcp:exportDialog():isShowing())
 		fcp:exportDialog():hide()
 		ok(not fcp:exportDialog():isShowing())
-	end)
+	end),
 
 	test("Media Importer", function()
 		reset()
@@ -94,7 +96,7 @@ local function run()
 		-- The window takes a moment to close sometimes, give it a second.
 		just.doWhile(function() return fcp:mediaImport():isShowing() end, 1.0)
 		ok(not fcp:mediaImport():isShowing())
-	end)
+	end),
 
 	test("Effects Browser", function()
 		reset()
@@ -106,7 +108,7 @@ local function run()
 		ok(browser:contents():isShowing())
 		browser:hide()
 		ok(not browser:isShowing())
-	end)
+	end),
 
 	test("Transitions Browser", function()
 		reset()
@@ -118,7 +120,7 @@ local function run()
 		ok(browser:contents():isShowing())
 		browser:hide()
 		ok(not browser:isShowing())
-	end)
+	end),
 
 	test("Media Browser", function()
 		reset()
@@ -129,7 +131,7 @@ local function run()
 		ok(browser:sidebar():isShowing())
 		browser:hide()
 		ok(not browser:isShowing())
-	end)
+	end),
 
 	test("Generators Browser", function()
 		reset()
@@ -141,17 +143,18 @@ local function run()
 		ok(browser:contents():isShowing())
 		browser:hide()
 		ok(not browser:isShowing())
-	end)
+	end),
 
 	test("Inspector", function()
 		reset()
 
 		local inspector = fcp:inspector()
 		inspector:show()
+		just.doUntil(function() return inspector:isShowing() end, 1)
 		ok(inspector:isShowing())
 		inspector:hide()
 		ok(not inspector:isShowing())
-	end)
+	end),
 
 	test("Libraries Browser", function()
 		reset()
@@ -169,9 +172,10 @@ local function run()
 		-- Check the search UI
 		ok(libraries:searchToggle():isShowing())
 		-- Show the search field if necessary
-		while not libraries:search():isShowing() or not libraries:filterToggle():isShowing() do
+		if not libraries:search():isShowing() or not libraries:filterToggle():isShowing() then
 			libraries:searchToggle():press()
 		end
+
 		ok(libraries:search():isShowing())
 		ok(libraries:filterToggle():isShowing())
 		-- turn it back off
@@ -187,7 +191,7 @@ local function run()
 		ok(not libraries:searchToggle():isShowing())
 		ok(not libraries:search():isShowing())
 		ok(not libraries:filterToggle():isShowing())
-	end)
+	end),
 
 	test("Libraries Filmstrip", function()
 		reset()
@@ -197,7 +201,7 @@ local function run()
 		libraries:filmstrip():show()
 		ok(libraries:filmstrip():isShowing())
 		ok(not libraries:list():isShowing())
-	end)
+	end),
 
 	test("Libraries List", function()
 		reset()
@@ -212,7 +216,7 @@ local function run()
 		ok(list:playerUI() ~= nil)
 		ok(list:contents():isShowing())
 		ok(list:clipsUI() ~= nil)
-	end)
+	end),
 
 	test("Timeline", function()
 		reset()
@@ -221,7 +225,7 @@ local function run()
 		ok(timeline:isShowing())
 		timeline:hide()
 		ok(not timeline:isShowing())
-	end)
+	end),
 
 	test("Timeline Appearance", function()
 		reset()
@@ -238,7 +242,7 @@ local function run()
 		appearance:hide()
 		ok(not appearance:isShowing())
 		ok(not appearance:clipHeight():isShowing())
-	end)
+	end),
 
 	test("Timeline Contents", function()
 		reset()
@@ -246,7 +250,7 @@ local function run()
 
 		ok(contents:isShowing())
 		ok(contents:scrollAreaUI() ~= nil)
-	end)
+	end),
 
 	test("Timeline Toolbar", function()
 		reset()
@@ -259,7 +263,7 @@ local function run()
 		ok(toolbar:effectsGroupUI() ~= nil)
 		ok(toolbar:effectsGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "EffectsGroup")
 
-	end)
+	end),
 
 	test("Viewer", function()
 		reset()
@@ -271,7 +275,7 @@ local function run()
 		ok(viewer:formatUI() ~= nil)
 		ok(viewer:getFramerate() ~= nil)
 		ok(viewer:getTitle() ~= nil)
-	end)
+	end),
 
 	test("PreferencesWindow", function()
 		reset()
@@ -282,7 +286,7 @@ local function run()
 
 		prefs:hide()
 		ok(not prefs:isShowing())
-	end)
+	end),
 
 	test("ImportPanel", function()
 		reset()
@@ -302,7 +306,7 @@ local function run()
 		ok(panel:copyToMediaFolder():isChecked() or panel:leaveInPlace():isChecked())
 
 		panel:hide()
-	end)
+	end),
 
 	test("PlaybackPanel", function()
 		reset()
@@ -320,27 +324,41 @@ local function run()
 
 		panel:hide()
 	end)
-end
-
-function runAllLanguages(...)
-	local args = table.pack(...)
-	local languages = args and #args > 0 and args or fcp:getSupportedLanguages()
+)
+-- custom run function, that loops through all languages (or languages provided)
+:onRun(function(self, runTests, languages, ...)
+	-- Figure out which languages to test
+	if type(languages) == "table" then
+		languages = languages and #languages > 0 and languages
+	elseif type(languages) == "string" then
+		languages = { languages }
+	elseif languages == nil or languages == true then
+		languages = fcp:getSupportedLanguages()
+	else
+		error(string.format("Unsupported 'languages' filter: %s", languages))
+	end
 
 	-- Store the current language:
 	local originalLanguage = fcp:currentLanguage()
+	local originalName = self.name
 
 	-- Copy Test Library to Temporary Directory:
+	local testLibrary = config.scriptPath .. "/tests/fcp/libraries/" .. fcp:getVersion() .. "/" .. TEST_LIBRARY
+
 	fs.rmdir(temporaryDirectory)
 	fs.mkdir(temporaryDirectory)
 	hs.execute([[cp -R "]] .. testLibrary .. [[" "]] .. temporaryDirectory .. [["]])
 
 	for _,lang in ipairs(languages) do
-		log.df("Testing FCPX in the '%s' language...", lang)
+		-- log.df("Testing FCPX in the '%s' language...", lang)
+		self.name = originalName .. " > " .. lang
 		if fcp:currentLanguage(lang) then
 			just.wait(2)
 			fcp:launch()
 			just.doUntil(fcp.isRunning)
-			run()
+
+			-- run the actual tests
+			runTests(self, ...)
 		else
 			log.ef("Unable to set FCPX to use the '%s' language.", lang)
 		end
@@ -348,11 +366,11 @@ function runAllLanguages(...)
 
 	-- Reset to the current language
 	fcp:currentLanguage(originalLanguage)
+	self.name = originalName
 
 	-- Quit FCPX and remove Test Library from Temporary Directory:
-	fcp:quit()
-	fs.rmdir(temporaryDirectory)
+	-- log.df("Quitting FCPX and deleting Test Library...")
+	-- fcp:quit()
+	-- fs.rmdir(temporaryDirectory)
 
-end
-
-return runAllLanguages
+end)

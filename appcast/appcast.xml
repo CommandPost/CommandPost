@@ -6,6 +6,103 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.17</title>
+			<description><![CDATA[
+				<h2>Improvements:</h2>
+				<ul><li>All commands that appear in Final Cut Pro's Command Editor can now be assigned in the CommandPost Console (issue #889)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Update Logic Plugins List for Final Cut Pro 10.4 (issue #877)</li>
+				<li>`cp.apple.finalcutpro.ids` didn't take into account previous minor versions (issue #879)</li>
+				<li>`fcp:inspector():isShowing()` was broken in Final Cut Pro 10.4 (issue #882)</li>
+				<li>Made test logging less verbose (issue #830)</li>
+				<li>Updated Color Board API to work in Final Cut Pro 10.4 (issue #869)</li>
+				<li>Touch Bar Timeline Zoom wasn't smooth (issue #888)</li>
+				<li>`fcp:effects():showAllVideoEffects()` failed in Final Cut Pro 10.4 (issue #881)</li>
+				<li>Added Missing Final Cut Pro 10.4 Effects (issue #893)</li>
+				<li>Added initial support for Final Cut Pro 10.4's new Color Inspector (issue #884)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Controlling CommandPost Shortcuts within Final Cut Pro's Command Editor doesn't currently work in Final Cut Pro 10.4 (issue #896)</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon, 18 Dec 2017 02:01:57 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.17/CommandPost_1.0.0-beta.17.dmg"
+				sparkle:version="1.0.0-beta.17"
+				sparkle:dsaSignature="MC4CFQD9hGWpxLE8XBvdTeSrVTGS/A1otQIVAPTABQc5Exkgr6zpNXzq5WcnjQoS"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.0.0-beta.16</title>
+			<description><![CDATA[
+				<h2>Improvements:</h2>
+				<ul><li>Improved MIDI Control Responsiveness (issue #863)</li>
+				<li>Increased Custom Plugin Shortcuts from 5 to 9 (issue #867)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed Fullscreen Shortcut Bug (issue #861)</li>
+				<li>Fixed Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Wed, 13 Dec 2017 00:55:40 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.16/CommandPost_1.0.0-beta.16.dmg"
+				sparkle:version="1.0.0-beta.16"
+				sparkle:dsaSignature="MC0CFEzwBmARDQ2TQvGxsGThSmCFBV6WAhUA81hSgDrKASnoZ8kDgEeGI5p8ih4="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.0.0-beta.15</title>
+			<description><![CDATA[
+				<h2>Bug Fix:</h2>
+				<ul><li>Fixed Audio Units Cache (issue #858)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Thu,  7 Dec 2017 00:13:22 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.15/CommandPost_1.0.0-beta.15.dmg"
+				sparkle:version="1.0.0-beta.15"
+				sparkle:dsaSignature="MCwCFEoOeXl1PhoDVVgOilS/3a1iH4tzAhQftMgmHcjGymlbg9lFNW2nGqCjCg=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.0.0-beta.14</title>
+			<description><![CDATA[
+				<h2>New Features:</h2>
+				<ul><li>Added Shortcut to Add Stabilisation to Selected Clip in Timeline (issue #637)</li>
+				<li>Added MIDI Support (issue #638)</li>
+				<li>Added Color Board MIDI Controls (issue #847)</li>
+				<li>Added Pushover Notification Support (issue #218)</li>
+				<li>Added option to ignore offline/missing files when Batch Exporting (issue #853)</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>Audio Unit scan results are now cached for faster startup (issue #850)</li>
+				<li>CommandPost now remembers the last Touch Bar sub-group you used</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>OPTION + Mouse Zoom now works with original Magic Mouse (issue #837)</li>
+				<li>Fixed bug in primaryWindow():rightGroupUI() (issue #843)</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
+			]]>
+			</description>
+			<pubDate>Sat,  2 Dec 2017 02:48:48 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.14/CommandPost_1.0.0-beta.14.dmg"
+				sparkle:version="1.0.0-beta.14"
+				sparkle:dsaSignature="MC0CFQDSQKZTXsFu2GQeHv5UGHmLwR5SfQIUCW1e0pkICvDCeTxizPI1SeV2Fh4="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.13</title>
 			<description><![CDATA[
 				<h2>New Features:</h2>

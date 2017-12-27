@@ -21,6 +21,7 @@ local console                   = require("hs.console")
 local fs                        = require("hs.fs")
 local host						= require("hs.host")
 local image						= require("hs.image")
+local ipc						= require("hs.ipc") 						-- Not used in `init.lua`, but is required to "jump start" the CLI support
 local keycodes                  = require("hs.keycodes")
 local notify					= require("hs.notify")
 local styledtext                = require("hs.styledtext")
@@ -91,20 +92,32 @@ function mod.init()
 		logger.defaultLogLevel = 'debug'
 		require("cp.developer")
 	else
-		logger.defaultLogLevel = 'warning'
+		--------------------------------------------------------------------------------
+		-- NOTE: For now, whilst we're in beta, it's probably better if our error
+		--       logs contain all the debug message we write to the console, so we can
+		--       refer to them if users submit feedback.
+		--------------------------------------------------------------------------------
+		--logger.defaultLogLevel = 'warning'
 	end
 
 	--------------------------------------------------------------------------------
 	-- Add Toolbar To Error Log:
 	--------------------------------------------------------------------------------
-	function consoleOnTopIcon()
+	local function consoleOnTopIcon()
 		if hs.consoleOnTop() then
 			return image.imageFromName("NSStatusAvailable")
 		else
 			return image.imageFromName("NSStatusUnavailable")
 		end
 	end
-	errorLogToolbar = toolbar.new("myConsole", {
+	local function autoReloadIcon()
+		if config.automaticScriptReloading() then
+			return image.imageFromName("NSStatusAvailable")
+		else
+			return image.imageFromName("NSStatusUnavailable")
+		end
+	end
+	console.toolbar(toolbar.new("myConsole", {
 			{ id = i18n("reload"), image = image.imageFromName("NSSynchronize"),
 				fn = function()
 					console.clearConsole()
@@ -118,9 +131,15 @@ function mod.init()
 				end
 			},
 			{ id = i18n("alwaysOnTop"), image = consoleOnTopIcon(),
-				fn = function()
+				fn = function(object)
 					hs.consoleOnTop(not hs.consoleOnTop())
-					errorLogToolbar:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
+					object:modifyItem({id = i18n("alwaysOnTop"), image = consoleOnTopIcon()})
+				end
+			},
+			{ id = i18n("toggleAutomaticScriptReloading"), image = autoReloadIcon(),
+				fn = function(object)
+					config.automaticScriptReloading:toggle()
+					object:modifyItem({id = i18n("toggleAutomaticScriptReloading"), image = autoReloadIcon()})
 				end
 			},
 			{ id = "NSToolbarFlexibleSpaceItem" },
@@ -137,9 +156,9 @@ function mod.init()
 		})
 		:canCustomize(true)
 		:autosaves(true)
-	console.toolbar(errorLogToolbar)
+	)
 
-	--------------------------------------------------------------------------------
+	---------------------------------------------------------------------------------
 	-- Kill any existing Notifications:
 	--------------------------------------------------------------------------------
 	notify.withdrawAll()

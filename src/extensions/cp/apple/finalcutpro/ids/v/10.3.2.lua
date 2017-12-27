@@ -1,4 +1,7 @@
 return {
+	LogicPlugins = {
+		PitchShifter						= "Pitch Shifter II",
+	},
 	CommandEditor = {
 		KeyDetailPanel						= "_NS:273",
 		SaveButton							= "_NS:50",
@@ -10,6 +13,8 @@ return {
 		MainPanel							= "_NS:39",
 	},
 	ColorBoard = {
+		ColorBoard							= "Color Board",
+
 		BackButton							= "_NS:180",
 		ColorSatExp							= "_NS:128",
 
@@ -59,9 +64,6 @@ return {
 		NothingToInspect					= "_NS:53",
 	},
 	LibrariesBrowser = {
-		ToggleViewMode						= "_NS:82",
-		AppearanceAndFiltering				= "_NS:68",
-		SearchToggle						= "_NS:92",
 		Search								= "_NS:34",
 		Sidebar								= "_NS:9",
 	},
@@ -80,7 +82,6 @@ return {
 	},
 	TimelineAppearance = {
 		Toggle								= "_NS:154",
-		ClipHeight							= "_NS:104",
 		ZoomAmount							= "_NS:56",
 	},
 	TimelineToolbar = {

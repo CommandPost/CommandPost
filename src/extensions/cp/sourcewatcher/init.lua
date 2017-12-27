@@ -6,7 +6,7 @@
 
 --- === cp.sourcewatcher ===
 ---
---- Watches folders for specific file extensions and 
+--- Watches folders for specific file extensions and
 --- reloads the app if they change.
 
 --------------------------------------------------------------------------------
@@ -69,6 +69,22 @@ function mod.mt:watchPath(path)
 		end
 	):start()
 	return self
+end
+
+function mod.mt:stop()
+	if self.watchers then
+		for _,watcher in ipairs(self.watchers) do
+			watcher:stop()
+		end
+	end
+end
+
+function mod.mt:start()
+	if self.watchers then
+		for _,watcher in ipairs(self.watchers) do
+			watcher:start()
+		end
+	end
 end
 
 return mod

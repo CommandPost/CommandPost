@@ -99,3 +99,56 @@ h3.uiItem {
 	padding-top: 12pt;
 	padding-bottom: 3pt;
 }
+
+hr {
+	clear: both;
+	display: block;
+	border: 0;
+	border-top: 1px solid #4a4a4a;
+	margin-left: 25px;
+	margin-right: 25px;
+}
+
+.api label {
+	width:140px;
+	clear:left;
+	text-align:left;
+	padding-right:10px;
+	padding-bottom:20px;
+	float: left;
+}
+
+.api input[type=text] {
+	float: left;
+	-webkit-appearance: none;
+	-webkit-box-shadow: none;
+	-webkit-rtl-ordering: logical;
+	-webkit-user-select: text;
+	color: #959595;
+	background-color:#161616;
+	border-style: solid;
+	border-color: #0a0a0a;
+	border-width: 2px;
+	border-radius: 6px;
+	width: 400px;
+	text-align: center;
+	font-size: 13px;
+	height: 20px;
+}
+
+.api input[type=text]:focus {
+	float: left;
+	-webkit-appearance: none;
+	-webkit-box-shadow: none;
+	-webkit-rtl-ordering: logical;
+	-webkit-user-select: text;
+	color: #959595;
+	border-style: solid;
+	border-color: #1a3868;
+	border-width: 2px;
+	border-radius: 6px;
+	width: 400px;
+	text-align: center;
+	font-size: 13px;
+	height: 20px;
+}

@@ -8,6 +8,10 @@
 ---
 --- MIDI Manager Plugin.
 
+--- === plugins.core.midi.manager.controls ===
+---
+--- MIDI Manager Controls.
+
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -23,6 +27,7 @@ local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local midi										= require("hs.midi")
 local styledtext								= require("hs.styledtext")
+local timer										= require("hs.timer")
 
 local config									= require("cp.config")
 local prop										= require("cp.prop")
@@ -149,11 +154,24 @@ end
 --
 --------------------------------------------------------------------------------
 
--- MIDI Device Names
+--
+-- MIDI Device Names:
+--
 mod._deviceNames = {}
 
+--
 -- Group Statuses:
+--
 mod._groupStatus = {}
+
+--
+-- Used to prevent callback delays:
+--
+mod._alreadyProcessingCallback 	= false
+mod._lastControllerNumber 		= nil
+mod._lastControllerValue 		= nil
+mod._lastControllerChannel 		= nil
+mod._lastTimestamp 				= nil
 
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
@@ -312,13 +330,6 @@ end
 ---  * None
 function mod.midiCallback(object, deviceName, commandType, description, metadata)
 
-	--[[
-	print("deviceName: " .. deviceName)
-	print("commandType: " .. commandType)
-	print("metadata: " .. hs.inspect(metadata))
-	print("------------")
-	--]]
-
 	local activeGroup = mod.activeGroup()
 	local items = mod._items()
 
@@ -342,15 +353,36 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 							end
 							return
 						elseif item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
-
 							--------------------------------------------------------------------------------
 							-- MIDI Controls:
 							--------------------------------------------------------------------------------
 							local id = item.action.id
 							local control = controls:get(id)
 							local params = control:params()
-							params.fn(metadata)
-
+							if mod._alreadyProcessingCallback then
+								if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
+									if mod._lastControllerValue == metadata.controllerValue then
+										return
+									else
+										timer.doAfter(0.0001, function()
+											if metadata.timestamp == mod._lastTimestamp then
+												params.fn(metadata)
+												mod._alreadyProcessingCallback = false
+											end
+										end)
+									end
+								end
+								mod._lastTimestamp = metadata and metadata.timestamp
+							else
+								mod._alreadyProcessingCallback = true
+								timer.doAfter(0.000000000000000000001, function()
+									params.fn(metadata)
+									mod._alreadyProcessingCallback = false
+								end)
+								mod._lastControllerNumber = metadata and metadata.controllerNumber
+								mod._lastControllerValue = metadata and metadata.controllerValue
+								mod._lastControllerChannel = metadata and metadata.channel
+							end
 						end
 					end
 				end

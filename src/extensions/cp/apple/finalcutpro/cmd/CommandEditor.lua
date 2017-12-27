@@ -22,7 +22,7 @@ local just							= require("cp.just")
 local Button						= require("cp.ui.Button")
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
-local id							= require("cp.apple.finalcutpro.ids").current("CommandEditor")
+local id							= require("cp.apple.finalcutpro.ids") "CommandEditor"
 local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------

@@ -143,7 +143,7 @@ end
 function Libraries:toggleViewMode()
 	if not self._viewMode then
 		self._viewMode = Button:new(self, function()
-			return axutils.childWithID(self:UI(), id "ToggleViewMode")
+			return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 3)
 		end)
 	end
 	return self._viewMode
@@ -153,7 +153,7 @@ end
 function Libraries:appearanceAndFiltering()
 	if not self._appearanceAndFiltering then
 		self._appearanceAndFiltering = Button:new(self, function()
-			return axutils.childWithID(self:UI(), id "AppearanceAndFiltering")
+			return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 2)
 		end)
 	end
 	return self._appearanceAndFiltering
@@ -163,7 +163,7 @@ end
 function Libraries:searchToggle()
 	if not self._searchToggle then
 		self._searchToggle = Button:new(self, function()
-			return axutils.childWithID(self:UI(), id "SearchToggle")
+			return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 1)
 		end)
 	end
 	return self._searchToggle
@@ -355,10 +355,12 @@ end
 
 function Libraries:selectClipTitled(title)
 	local clips = self:clips()
-	for _,clip in ipairs(clips) do
-		if clip:getTitle() == title then
-			self:selectClip(clip)
-			return true
+	if clips then
+		for _,clip in ipairs(clips) do
+			if clip:getTitle() == title then
+				self:selectClip(clip)
+				return true
+			end
 		end
 	end
 	return false

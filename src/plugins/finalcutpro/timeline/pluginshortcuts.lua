@@ -28,7 +28,7 @@ local insert, sort						= table.insert, table.sort
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local MAX_SHORTCUTS 	= 5
+local MAX_SHORTCUTS 	= 9
 local PRIORITY 			= 50000
 local GROUP 			= "fcpx"
 

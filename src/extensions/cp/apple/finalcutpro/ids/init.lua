@@ -13,37 +13,36 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("ids")
+local log				= require("hs.logger").new("fcp_ids")
 
 local application		= require("hs.application")
-local fs				= require("hs.fs")
-
-local v					= require("semver")
-
 local config			= require("cp.config")
+local ids				= require("cp.ids")
 
---------------------------------------------------------------------------------
+
+-- currentVersion() -> string
+-- Function
+-- Returns the current version number of Final Cut Pro
 --
--- THE MODULE:
+-- Parameters:
+--  * None
 --
---------------------------------------------------------------------------------
-local mod = {}
-
-mod.cache = {}
-
---------------------------------------------------------------------------------
--- TODO: This should really be calling cp.apple.finalcutpro:getVersion()
---       instead, but not sure how best to do this...
---------------------------------------------------------------------------------
+-- Returns:
+--  * A string with Final Cut Pro's version number or `nil` if Final Cut Pro could not be detected
 local function currentVersion()
 
+	--------------------------------------------------------------------------------
+	-- TODO: This should really be calling cp.apple.finalcutpro:getVersion()
+	--       instead, but not sure how best to do this...
+	--------------------------------------------------------------------------------
+
 	----------------------------------------------------------------------------------------
-	-- GET RUNNING COPY OF FINAL CUT PRO:
+	-- Get running copy of Final Cut Pro:
 	----------------------------------------------------------------------------------------
 	local app = application.applicationsForBundleID("com.apple.FinalCut")
 
 	----------------------------------------------------------------------------------------
-	-- FINAL CUT PRO IS CURRENTLY RUNNING:
+	-- Final Cut Pro is currently running:
 	----------------------------------------------------------------------------------------
 	if app and next(app) ~= nil then
 		app = app[1]
@@ -61,7 +60,7 @@ local function currentVersion()
 	end
 
 	----------------------------------------------------------------------------------------
-	-- NO VERSION OF FINAL CUT PRO CURRENTLY RUNNING:
+	-- No version of Final Cut Pro currently running:
 	----------------------------------------------------------------------------------------
 	local app = application.infoForBundleID("com.apple.FinalCut")
 	if app then
@@ -71,73 +70,10 @@ local function currentVersion()
 	end
 
 	----------------------------------------------------------------------------------------
-	-- FINAL CUT PRO COULD NOT BE DETECTED:
+	-- Final Cut Pro could not be detected:
 	----------------------------------------------------------------------------------------
 	return nil
+
 end
 
-local function deepextend(target, ...)
-	for _,source in ipairs(table.pack(...)) do
-		for key,value in pairs(source) do
-			local tValue = target[key]
-			if type(value) == "table" then
-				if type(tValue) ~= "table" then
-					tValue = {}
-				end
-				-- deep extend subtables
-				target[key] = deepextend(tValue, value)
-			else
-				target[key] = value
-			end
-		end
-	end
-	return target
-end
-
-function mod.load(version)
-	if not version then
-		return {}
-	end
-
-	-- Make sure we're working with a semver version
-	version = type(version) == "string" and v(version) or version
-
-	local vStr = tostring(version)
-	if mod.cache[vStr] then
-		return mod.cache[vStr]
-	end
-
-	local vIds = {}
-
-	local vFile = fs.pathToAbsolute(("%s/cp/apple/finalcutpro/ids/v/%s.lua"):format(config.scriptPath, version))
-	if vFile then
-		vIds = dofile(vFile)
-	end
-
-	-- load any previous version details.
-	if version.patch > 0 then
-		local pIds = mod.load(v(version.major, version.minor, version.patch-1))
-		vIds = deepextend({}, pIds, vIds)
-	end
-
-	mod.cache[vStr] = vIds
-	return vIds
-end
-
-function mod.version(version, subset)
-	local data = mod.load(version)
-	local subsetData = data[subset] or {}
-	return function(name)
-		return subsetData[name]
-	end
-end
-
-function mod.current(subset)
-	return mod.version(currentVersion(), subset)
-end
-
-function mod.__call(_,...)
-	return mod.current(...)
-end
-
-return setmetatable(mod, mod)
+return ids.new(config.scriptPath .. "/cp/apple/finalcutpro/ids/v/", currentVersion)

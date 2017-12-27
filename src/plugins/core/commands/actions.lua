@@ -41,6 +41,11 @@ function mod.init(actionmanager, cmds)
 	:onChoices(mod.onChoices)
 	:onExecute(mod.onExecute)
 	:onActionId(mod.getId)
+
+	-- watch for any aditional commands added after this point...
+	cmds:watch({
+		add		= function() mod._handler:reset() end
+	})
 end
 
 --- plugins.core.commands.actions.onChoices(choices) -> nothing
@@ -140,6 +145,16 @@ local plugin = {
 }
 
 function plugin.init(deps)
+	return mod
+end
+
+function plugin.postInit(deps)
+
+	--
+	-- TO-DO: Moving `mod.init()` from `plugin.init()` to `plugin.postInit()` is just a temporary fix
+	--        until David comes up with a better fix in issue #897
+	--
+
 	mod.init(deps.actionmanager, deps.cmds)
 	return mod
 end

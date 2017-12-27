@@ -1,15 +1,15 @@
-return function()
-	require("tests.test_fcp")()
-	require("tests.test_fcpplugins")()
-	require("tests.test_html")()
-	require("tests.test_just")()
-	require("tests.test_localized")()
-	require("tests.test_matcher")()
-	require("tests.test_prop")()
-	require("tests.test_strings")()
-	require("tests.test_text")()
-	require("tests.test_utf16")()
+local test 		= require("cp.test")
 
-	hs.openConsole()
-	print("Tests Complete!")
-end
+return test.suite("cp"):with(
+	"tests.test_fcp",
+	"tests.test_fcpplugins",
+	"tests.test_html",
+	"tests.test_ids",
+	"tests.test_just",
+	"tests.test_localized",
+	"tests.test_matcher",
+	"tests.test_prop",
+	"tests.test_strings",
+	"tests.test_text",
+	"tests.test_utf16"
+)

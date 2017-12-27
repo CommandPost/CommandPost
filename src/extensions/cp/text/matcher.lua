@@ -538,6 +538,9 @@ matcher.mt.gsub = function(self, value, repl, limit)
 			local matched = value:sub(first, last)
 			captures = tail(found, 2)
 			captures[0] = matched
+			if #captures == 0 then
+				captures[1] = matched
+			end
 			local replaced = replace(repl, captures)
 			ret = ret .. value:sub(next, first - 1) .. replaced
 			next = last + 1

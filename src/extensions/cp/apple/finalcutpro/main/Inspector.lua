@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timline")
+local log								= require("hs.logger").new("inspector")
 local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
@@ -104,16 +104,22 @@ function Inspector:UI()
 		local parent = self:parent()
 		local ui = parent:rightGroupUI()
 		if ui then
-			-- it's in the right panel (full-height)
+			-----------------------------------------------------------------------
+			-- It's in the right panel (full-height):
+			-----------------------------------------------------------------------
 			if Inspector.matches(ui) then
 				return ui
 			end
 		else
-			-- it's in the top-left panel (half-height)
+			-----------------------------------------------------------------------
+			-- It's in the top-left panel (half-height):
+			-----------------------------------------------------------------------
 			local top = parent:topGroupUI()
-			for i,child in ipairs(top) do
-				if Inspector.matches(child) then
-					return child
+			if top then
+				for i,child in ipairs(top) do
+					if Inspector.matches(child) then
+						return child
+					end
 				end
 			end
 		end
@@ -186,6 +192,7 @@ end
 ---  * This method will open the Inspector if it's closed, and leave it open.
 ---  * Valid strings for `value` are as follows:
 ---    * Audio
+---    * Color
 ---    * Effect
 ---    * Generator
 ---    * Info
@@ -231,6 +238,8 @@ function Inspector:selectTab(value)
 					result = true
 				elseif title == app:string("FFInspectorTabShare") and value == "Share" then
 					result = true
+				elseif title == app:string("FFInspectorTabColor") and value == "Color" then
+					result = true
 				end
 				if result then
 					local actionResult = subChild:performAction("AXPress")
@@ -259,6 +268,7 @@ end
 --- Notes:
 ---  * The tab strings can be:
 ---    * Audio
+---    * Color
 ---    * Effect
 ---    * Generator
 ---    * Info
@@ -294,6 +304,8 @@ function Inspector:selectedTab()
 						return "Audio"
 					elseif title == app:string("FFInspectorTabShare") then
 						return "Share"
+					elseif title == app:string("FFInspectorTabColor") then
+						return "Color"
 					end
 				end
 			end
@@ -332,11 +344,12 @@ function Inspector:stabilization(value)
 		if value == nil or type(value) == "boolean" then
 			self:selectTab("Video")
 			if self:selectedTab() == "Video" then
-				if ui and ui[1] and ui[1][1] and ui[1][1][1] then
-					for id,child in ipairs(ui[1][1][1]) do
+				local inspectorContent = axutils.childWithID(ui, id "DetailsPanel")
+				if inspectorContent then
+					for id,child in ipairs(inspectorContent[1][1]) do
 						if child:attributeValue("AXValue") == app:string("FFStabilizationEffect") then
-							if ui[1][1][1][id - 1] then
-								local checkbox = ui[1][1][1][id - 1]
+							if inspectorContent[1][1][id - 1] then
+								local checkbox = inspectorContent[1][1][id - 1]
 								if checkbox then
 									local checkboxValue = checkbox:attributeValue("AXValue")
 									if value == nil then
