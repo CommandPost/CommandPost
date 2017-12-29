@@ -1,475 +1,228 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
-        <Panel type="Wave">
-            <Mode id="0x00010001"> <!-- Config Mode -->
+        <Panel type="Wave" number="1">
+            <Mode id="0x00010001"> <!-- Global -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Button" number="9"> <!-- ALT Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="25"> <!-- Up Arrow Key -->
+                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
                             <Mapping mode="Std">
                                 <Key>0x80000002</Key> <!-- Next Knob Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Prev Knob Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="26"> <!-- Down Arrow Key -->
+                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
                             <Mapping mode="Std">
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Prev Button Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
                             </Mapping>
                         </Control>
-                        <Control type="Button" number="40"> <!-- Play Fwd Key -->
+                        <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
-                                <Key>0x00020001</Key> <!-- Play Fwd -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="39"> <!-- Stop Key -->
+                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
                             <Mapping mode="Std">
-                                <Key>0x00020002</Key> <!-- Stop -->
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="38"> <!-- Play Rev Key -->
+                        <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
                             <Mapping mode="Std">
-                                <Key>0x00020003</Key> <!-- Play Rev -->
+                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="37"> <!-- Inch Fwd Key -->
+                        <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00020006</Key> <!-- Next Frame -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00020004</Key> <!-- Next Clip -->
+                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="36"> <!-- Inch Rev Key -->
+                        <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00020007</Key> <!-- Previous Frame -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00020005</Key> <!-- Previous Clip -->
+                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Encoder" number="12"> <!-- Jog Dial -->
+                        <Control type="Encoder" number="14"> <!-- Wave Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport Ring -->
-                            </Mapping>                                                   
+                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="16"> <!-- Wave Trackerball 2 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
                     </Bank>
                 </ControlBank>
-				<ControlBank id="Encoder">
+                <ControlBank id="Encoder">
                     <Bank>
-						<Control type="Encoder" number="0">
-                            <Mapping mode="Std">
-                                <Key>0x00040001</Key> <!-- Select Input Menu -->
-                            </Mapping>
-						</Control>
-						<Control type="Encoder" number="1">
-                            <Mapping mode="Std">
-                                <Key>0x00040002</Key> <!-- Select Output Menu -->
-                            </Mapping>
-						</Control>
-						<Control type="Encoder" number="2">
-                            <Mapping mode="Std">
-                                <Key>0x00040003</Key> <!-- Bit Depth Menu -->
-                            </Mapping>
-						</Control>
                     </Bank>
-				</ControlBank>
-				<ControlBank id="Button"> 
+                </ControlBank>
+                <ControlBank id="Button">
                     <Bank>
-						<Control type="Button" number="10">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010001</Argument> <!-- Mode Config -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="11">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010002</Argument> <!-- Mode Grading -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="12">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010003</Argument> <!-- Mode Geometry -->
-                            </Mapping>
-						</Control>
                     </Bank>
-				</ControlBank>
+                </ControlBank>
             </Mode>
-            <Mode id="0x00010002"> <!-- Grading Mode -->
+            <Mode id="0x00010002"> <!-- Final Cut Pro -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Button" number="9"> <!-- ALT Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="25"> <!-- Up Arrow Key -->
+                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
                             <Mapping mode="Std">
                                 <Key>0x80000002</Key> <!-- Next Knob Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Prev Knob Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="26"> <!-- Down Arrow Key -->
+                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
                             <Mapping mode="Std">
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Prev Button Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
                             </Mapping>
                         </Control>
-                        <Control type="Button" number="40"> <!-- Play Fwd Key -->
+                        <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
-                                <Key>0x00020001</Key> <!-- Play Fwd -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="39"> <!-- Stop Key -->
+                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
                             <Mapping mode="Std">
-                                <Key>0x00020002</Key> <!-- Stop -->
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="38"> <!-- Play Rev Key -->
+                        <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
                             <Mapping mode="Std">
-                                <Key>0x00020003</Key> <!-- Play Rev -->
+                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="37"> <!-- Inch Fwd Key -->
+                        <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00020006</Key> <!-- Next Frame -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00020004</Key> <!-- Next Clip -->
+                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="36"> <!-- Inch Rev Key -->
+                        <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00020007</Key> <!-- Previous Frame -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00020005</Key> <!-- Previous Clip -->
+                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Encoder" number="12"> <!-- Jog Dial -->
+                        <Control type="Encoder" number="14"> <!-- Wave Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport Ring -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Button" number="33"> <!-- F1 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050101</Key> <!-- Copy Grade 1 -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00050201</Key> <!-- Paste Grade 1 -->
+                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="34"> <!-- F2 Key -->
+                        <Control type="Encoder" number="16"> <!-- Wave Trackerball 2 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00050102</Key> <!-- Copy Grade 2 -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00050202</Key> <!-- Paste Grade 2 -->
+                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="35"> <!-- F3 Key -->
+                        <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00050103</Key> <!-- Copy Grade 3 -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00050203</Key> <!-- Paste Grade 3 -->
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
-						<Control type="Button" number="30"> <!-- F4 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050001</Key> <!-- Mark IN -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Button" number="31"> <!-- F5 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050002</Key> <!-- Mark OUT -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="13"> <!-- Left TrackerBall X -->
-                            <Mapping mode="Std">
-								<Key>0x00033002</Key> <!-- Primary Lift Diff X -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="14"> <!-- Left TrackerBall Y -->
-                            <Mapping mode="Std">
-								<Key>0x00033003</Key> <!-- Primary Lift Diff Y -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="9"> <!-- Left TrackerBall Ring -->
-                            <Mapping mode="Std">
-								<Key>0x00033001</Key> <!-- Primary Lift Diff X -->
-                            </Mapping>                           
-                        </Control>
-					</Bank>
+                    </Bank>
                 </ControlBank>
-				<ControlBank id="Encoder">
+                <ControlBank id="Encoder">
                     <Bank>
-						<Control type="Encoder" number="0">
+                        <Control type="Encoder" number="0"> <!-- Wave Knob 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00042001</Key> <!-- Master Saturation -->
-								<Display>Bar</Display>
+                                <Key>0x00030016</Key> <!-- Color Board - Exposure - Highlights -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
-						</Control>
-						<Control type="Encoder" number="3">
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Wave Knob 2 -->
                             <Mapping mode="Std">
-                                <Key>0x00042002</Key> <!-- Red Sat -->
-								<Display>Bar</Display>
+                                <Key>0x00030015</Key> <!-- Color Board - Exposure - Midtones -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
-						</Control>
-						<Control type="Encoder" number="4">
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Wave Knob 3 -->
                             <Mapping mode="Std">
-                                <Key>0x00042003</Key> <!-- Green Sat -->
-								<Display>Bar</Display>
+                                <Key>0x00030014</Key> <!-- Color Board - Exposure - Shadows -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
-						</Control>
-						<Control type="Encoder" number="5">
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x00042004</Key> <!-- Blue Sat -->
-								<Display>Bar</Display>
+                                <Key>0x00030014</Key> <!-- Color Board - Exposure - Shadows -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
-						</Control>
-					</Bank>
-                    <Bank> <!-- Example of Second Bank -->
-						<Control type="Encoder" number="0">
-                            <Mapping mode="Std"> 
-                                <Key>0x00042001</Key>   <!-- Master Saturation -->
-								<Display>Bar</Display>  <!-- This control duplicated from last bank just to show that it can be done -->
-                            </Mapping>
-						</Control>
-						<Control type="Encoder" number="3">
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Wave Knob 5 -->
                             <Mapping mode="Std">
-                                <Key>0x00032002</Key> <!-- Primary Red Gain -->
-								<Display>Bar</Display>
+                                <Key>0x00030015</Key> <!-- Color Board - Exposure - Midtones -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
-						</Control>
-						<Control type="Encoder" number="4">
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Wave Knob 6 -->
                             <Mapping mode="Std">
-                                <Key>0x00032003</Key> <!-- Primary Green Gain -->
-								<Display>Bar</Display>
+                                <Key>0x00030016</Key> <!-- Color Board - Exposure - Highlights -->
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
-						</Control>
-						<Control type="Encoder" number="5">
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Wave Knob 7 -->
                             <Mapping mode="Std">
-                                <Key>0x00032004</Key> <!-- Primary Blue Gain -->
-								<Display>Bar</Display>
+                                <Key>0x00030013</Key> <!-- Color Board - Exposure - Master -->
                             </Mapping>
-						</Control>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Wave Knob 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030009</Key> <!-- Color Board - Saturation - Master -->
+                            </Mapping>
+                        </Control>
                     </Bank>
-				</ControlBank>
-				<ControlBank id="Button">
                     <Bank>
-						<Control type="Button" number="10">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010001</Argument> <!-- Mode Config -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="11">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010002</Argument> <!-- Mode Grading -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="12">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010003</Argument> <!-- Mode Geometry -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="20">
-                            <Mapping mode="Std">
-                                <Key>0x0003001E</Key> <!-- Bypass Primary Menu -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="21">
-                            <Mapping mode="Std">
-                                <Key>0x0003001F</Key> <!-- Enhance Primary Menu -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="22">
-                            <Mapping mode="Std">
-                                <Key>0x0003001A</Key> <!-- Filter Primary Menu -->
-                            </Mapping>
-						</Control>
                     </Bank>
-				</ControlBank>
-            </Mode>
-            <Mode id="0x00010003"> <!-- Geometry Mode -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="9"> <!-- ALT Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="25"> <!-- Up Arrow Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Prev Knob Bank -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="26"> <!-- Down Arrow Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Prev Button Bank -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="40"> <!-- Play Fwd Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00020001</Key> <!-- Play Fwd -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="39"> <!-- Stop Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00020002</Key> <!-- Stop -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="38"> <!-- Play Rev Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00020003</Key> <!-- Play Rev -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="37"> <!-- Inch Fwd Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00020006</Key> <!-- Next Frame -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00020004</Key> <!-- Next Clip -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="36"> <!-- Inch Rev Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00020007</Key> <!-- Previous Frame -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00020005</Key> <!-- Previous Clip -->
-                            </Mapping>
-                        </Control>
-						<Control type="Encoder" number="12"> <!-- Jog Dial -->
-                            <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport Ring -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Button" number="33"> <!-- F1 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050101</Key> <!-- Copy Grade 1 -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00050201</Key> <!-- Paste Grade 1 -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="34"> <!-- F2 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050102</Key> <!-- Copy Grade 2 -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00050202</Key> <!-- Paste Grade 2 -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="35"> <!-- F3 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050103</Key> <!-- Copy Grade 3 -->
-                            </Mapping>                           
-							<Mapping mode="Alt">
-                                <Key>0x00050203</Key> <!-- Paste Grade 3 -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="30"> <!-- F4 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050001</Key> <!-- Mark IN -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Button" number="31"> <!-- F5 Key -->
-                            <Mapping mode="Std">
-                                <Key>0x00050002</Key> <!-- Mark OUT -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="13"> <!-- Left Trackerball X -->
-                            <Mapping mode="Std">
-								<Key>0x00060001</Key> <!-- Position X -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="14"> <!-- Left Trackerball Y -->
-                            <Mapping mode="Std">
-								<Key>0x00060002</Key> <!-- Position Y -->
-                            </Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="9"> <!-- Left Trackerball Ring -->
-                            <Mapping mode="Std">
-								<Key>0x00060010</Key> <!-- Zoom -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-								<Key>0x00060003</Key> <!-- Rotate -->
-                            </Mapping>     							
-                        </Control>
-					</Bank>
                 </ControlBank>
-				<ControlBank id="Button">
+                <ControlBank id="Button">
                     <Bank>
-						<Control type="Button" number="10">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010001</Argument> <!-- Mode Config -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="11">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010002</Argument> <!-- Mode Grading -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="12">
-                            <Mapping mode="Std">
-                                <Key>0x8000000B</Key> <!-- Go To Mode -->
-								<Argument>0x00010003</Argument> <!-- Mode Geometry -->
-                            </Mapping>
-						</Control>
                     </Bank>
-				</ControlBank>
-				<ControlBank id="Encoder">
-                    <Bank>
-						<Control type="Encoder" number="6">
-                            <Mapping mode="Std">
-                                <Key>0x00060003</Key> <!-- Rotate -->
-								<Display>Bar</Display>
-                            </Mapping>
-						</Control>
-						<Control type="Encoder" number="7">
-                            <Mapping mode="Std">
-                                <Key>0x00060010</Key> <!-- Zoom -->
-								<Display>Bar</Display>
-                            </Mapping>
-						</Control>
-                    </Bank>
-				</ControlBank>
+                </ControlBank>
             </Mode>
         </Panel>
     </Panels>

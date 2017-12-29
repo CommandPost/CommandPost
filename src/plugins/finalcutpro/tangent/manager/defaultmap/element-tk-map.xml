@@ -2,154 +2,140 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Tk">
-            <Mode id="0x00010001"> <!-- Config Mode -->
+            <Mode id="0x00010001"> <!-- Global -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Button" number="0"> <!-- A Key -->
+                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="7"> <!-- B Key -->
+                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
                                 <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000007</Key> <!-- Prev Trackerball Bank -->
-                            </Mapping>
-                        </Control>                    
-					</Bank>
-                </ControlBank>
-			</Mode>
-            <Mode id="0x00010002"> <!-- Grading Mode -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- A Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000007</Key> <!-- Previous Trackerball Bank -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="7"> <!-- B Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000007</Key> <!-- Prev Trackerball Bank -->
-                            </Mapping>
-                        </Control>                    
-					</Bank>
+                    </Bank>
                 </ControlBank>
                 <ControlBank id="Trackerball">
-					<Bank>
-						<Control type="Encoder" number="0"> <!-- Left TrackerBall X -->
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Tk Trackerball 1 X -->
                             <Mapping mode="Std">
-								<Key>0x00033002</Key> <!-- Primary Lift Diff X -->
-								<Display>Bar</Display>
-							</Mapping>                           
+                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                            </Mapping>
                         </Control>
-						<Control type="Encoder" number="1"> <!-- Left TrackerBall Y -->
+                        <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
                             <Mapping mode="Std">
-								<Key>0x00033003</Key> <!-- Primary Lift Diff Y -->
-								<Display>Bar</Display>
-							</Mapping>                           
+                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                            </Mapping>
                         </Control>
-						<Control type="Encoder" number="2"> <!-- Left TrackerBall Ring -->
+                        <Control type="Encoder" number="3"> <!-- Element-Tk Trackerball 2 X -->
                             <Mapping mode="Std">
-								<Key>0x00033001</Key> <!-- Primary Lift Master -->
-								<Display>Bar</Display>
-							</Mapping>                							
+                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
-						<Control type="Encoder" number="3"> <!-- Middle TrackerBall X -->
+                        <Control type="Encoder" number="4"> <!-- Element-Tk Trackerball 2 Y -->
                             <Mapping mode="Std">
-								<Key>0x00033012</Key> <!-- Primary Gamma Diff X -->
-								<Display>Bar</Display>
-							</Mapping>                           
+                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
-						<Control type="Encoder" number="4"> <!-- Middle TrackerBall Y -->
+                        <Control type="Encoder" number="6"> <!-- Element-Tk Trackerball 3 X -->
                             <Mapping mode="Std">
-								<Key>0x00033013</Key> <!-- Primary Gamma Diff Y -->
-								<Display>Bar</Display>
-							</Mapping>                           
+                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
-						<Control type="Encoder" number="5"> <!-- Middle TrackerBall Ring -->
+                        <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
                             <Mapping mode="Std">
-								<Key>0x00033011</Key> <!-- Primary Gamma Master -->
-								<Display>Bar</Display>
-							</Mapping>                           
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
-						<Control type="Encoder" number="6"> <!-- Right TrackerBall X -->
-                            <Mapping mode="Std">
-								<Key>0x00033022</Key> <!-- Primary Gain Diff X -->
-								<Display>Bar</Display>
-							</Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="7"> <!-- Right TrackerBall Y -->
-                            <Mapping mode="Std">
-								<Key>0x00033023</Key> <!-- Primary Gain Diff Y -->
-								<Display>Bar</Display>
-							</Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="8"> <!-- Right TrackerBall Ring -->
-                            <Mapping mode="Std">
-								<Key>0x00033021</Key> <!-- Primary Gain Master -->
-								<Display>Bar</Display>
-							</Mapping>                           
-                        </Control>
-					</Bank>
+                    </Bank>
                 </ControlBank>
             </Mode>
-            <Mode id="0x00010003"> <!-- Geometry Mode -->
+            <Mode id="0x00010002"> <!-- Final Cut Pro -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Button" number="0"> <!-- A Key -->
+                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="7"> <!-- B Key -->
+                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
                                 <Key>0x80000006</Key> <!-- Next Trackerball Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000007</Key> <!-- Prev Trackerball Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000007</Key> <!-- Previous Trackerball Bank -->
                             </Mapping>
-                        </Control>                    
-					</Bank>
+                        </Control>
+                    </Bank>
                 </ControlBank>
                 <ControlBank id="Trackerball">
-					<Bank>
-						<Control type="Encoder" number="3"> <!-- Middle TrackerBall X -->
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Tk Trackerball 1 X -->
                             <Mapping mode="Std">
-								<Key>0x00060001</Key> <!-- Pos X -->
-								<Display>Bar</Display>
-							</Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="4"> <!-- Middle TrackerBall Y -->
-                            <Mapping mode="Std">
-								<Key>0x00060002</Key> <!-- Pos Y -->
-								<Display>Bar</Display>
-							</Mapping>                           
-                        </Control>
-						<Control type="Encoder" number="5"> <!-- Middle TrackerBall Ring -->
-                            <Mapping mode="Std">
-								<Key>0x00060010</Key> <!-- Zoom -->
-								<Display>Bar</Display>
-							</Mapping>                           
+                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                             <Mapping mode="Alt">
-								<Key>0x00060003</Key> <!-- Rotate -->
-								<Display>Bar</Display>
-							</Mapping>
-						</Control>
-					</Bank>
+                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Tk Trackerball 2 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Element-Tk Trackerball 2 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Element-Tk Trackerball 3 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
                 </ControlBank>
             </Mode>
         </Panel>

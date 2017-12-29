@@ -14,10 +14,6 @@
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
 --- here: http://www.tangentwave.co.uk/developer-support/
 
--- TODO:
---  * Change modes when Final Cut Pro is no longer active.
---  * Investigate using menus
-
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
@@ -46,6 +42,24 @@ local moses										= require("moses")
 --------------------------------------------------------------------------------
 
 local mod = {}
+
+--------------------------------------------------------------------------------
+-- MODULE CONSTANTS:
+--------------------------------------------------------------------------------
+
+--- plugins.finalcutpro.tangent.manager.MODES() -> none
+--- Constant
+--- The default Modes for CommandPost in the Tangent Mapper.
+mod.MODES = {
+	["0x00010001"] = {
+		["name"] 	=	"Global",
+		["active"]	=	function() return not fcp.isFrontmost() end,
+	},
+	["0x00010002"] = {
+		["name"]	=	"Final Cut Pro",
+		["active"]	=	function() return fcp.isFrontmost() end,
+	},
+}
 
 --- plugins.finalcutpro.tangent.manager.colorInspectorParameter
 --- Variable
@@ -389,7 +403,6 @@ function writeControlsXML()
 		-- Set starting values:
 		--------------------------------------------------------------------------------
 		local currentActionID = 131073 -- Action ID starts at 0x00020001
-		local currentModeID = 65537 -- Mode ID starts at 0x00010001
 
 		local result = ""
 		result = result .. [[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>]] .. "\n"
@@ -408,12 +421,10 @@ function writeControlsXML()
 		-- Modes:
 		--------------------------------------------------------------------------------
 		result = result .. [[	<Modes>]] .. "\n"
-		for _, mode in pairs(mod.MODES) do
-			local modeID = string.format("%#010x", currentModeID)
+		for modeID, metadata in pairs(mod.MODES) do
 			result = result .. [[		<Mode id="]] .. modeID .. [[">]] .. "\n"
-			result = result .. [[			<Name>]] .. mode .. [[</Name>]] .. "\n"
+			result = result .. [[			<Name>]] .. metadata.name .. [[</Name>]] .. "\n"
 			result = result .. [[		</Mode>]] .. "\n"
-			currentModeID = currentModeID + 1
 		end
 		result = result .. [[	</Modes>]] .. "\n"
 
@@ -505,22 +516,41 @@ function writeControlsXML()
 end
 
 --------------------------------------------------------------------------------
--- MODULE CONSTANTS:
---------------------------------------------------------------------------------
-
---- plugins.finalcutpro.tangent.manager.MODES() -> none
---- Constant
---- The default Modes for CommandPost in the Tangent Mapper.
-mod.MODES = {"Global", "Final Cut Pro"}
-
---------------------------------------------------------------------------------
 -- MODULE METHODS & FUNCTIONS:
 --------------------------------------------------------------------------------
+
+--- plugins.finalcutpro.tangent.manager.active -> boolean
+--- Variable
+--- Returns `true` if plugin is active, otherwise `false`.
+mod.active = false
 
 --- plugins.finalcutpro.tangent.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disables the Tangent Manager.
 mod.enabled = config.prop("enableTangent", false)
+
+--- plugins.finalcutpro.tangent.manager.updateMode() -> none
+--- Function
+--- Updates the Mode on the Tangent Hub
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updateMode()
+	if mod.active then
+		for id,metadata in pairs(mod.MODES) do
+			local active = metadata.active()
+			if active == true then
+				local result, errorMessage = tangent.send("MODE_VALUE", {
+					["modeID"] = tonumber(id)
+				})
+				return
+			end
+		end
+	end
+end
 
 --- plugins.finalcutpro.tangent.manager.callback(id, metadata) -> none
 --- Function
@@ -554,6 +584,10 @@ function mod.callback(id, metadata)
 		timer.doAfter(1, function()
 			tangent.send("DISPLAY_TEXT", {["stringOne"]="CommandPost " .. config.appVersion,["stringOneDoubleHeight"]=false})
 		end)
+		--------------------------------------------------------------------------------
+		-- Update Mode:
+		--------------------------------------------------------------------------------
+		mod.updateMode()
 	elseif id == "ACTION_ON" then
 		--------------------------------------------------------------------------------
 		-- Action On:
@@ -594,25 +628,28 @@ function mod.callback(id, metadata)
 			--------------------------------------------------------------------------------
 			-- Send Values back to Tangent Hub:
 			--------------------------------------------------------------------------------
-			local value = mod.colorInspectorParameter[paramID].getValue()
-			tangent.send("PARAMETER_VALUE", {
-				["paramID"] = paramID,
-				["value"] = value,
-				["atDefault"] = false,
-			})
-
+			local value = mod.colorInspectorParameter[paramID] and mod.colorInspectorParameter[paramID].getValue()
+			if value then
+				tangent.send("PARAMETER_VALUE", {
+					["paramID"] = paramID,
+					["value"] = value,
+					["atDefault"] = false,
+				})
+			end
 		end
 	elseif id == "PARAMETER_VALUE_REQUEST" then
 		--------------------------------------------------------------------------------
 		-- Parameter Value Request:
 		--------------------------------------------------------------------------------
 		local paramID = string.format("%#010x", metadata.paramID)
-		local value = mod.colorInspectorParameter[paramID].getValue()
-		tangent.send("PARAMETER_VALUE", {
-			["paramID"] = paramID,
-			["value"] = value,
-			["atDefault"] = false,
-		})
+		local value = mod.colorInspectorParameter[paramID] and mod.colorInspectorParameter[paramID].getValue()
+		if value then
+			tangent.send("PARAMETER_VALUE", {
+				["paramID"] = paramID,
+				["value"] = value,
+				["atDefault"] = false,
+			})
+		end
 	elseif id == "ACTION_OFF" then
 		--------------------------------------------------------------------------------
 		-- Action Off:
@@ -625,63 +662,91 @@ function mod.callback(id, metadata)
 		local paramID = string.format("%#010x", metadata.paramID)
 		log.df("Parameter Reset Request: %s", paramID)
 		mod.colorInspectorParameter[paramID].resetValue()
-	elseif id == "MENU_CHANGE" then
-		--------------------------------------------------------------------------------
-		-- Menu Change:
-		--------------------------------------------------------------------------------
-		-- Do nothing.
-	elseif id == "MENU_RESET" then
-		--------------------------------------------------------------------------------
-		-- Menu Reset:
-		--------------------------------------------------------------------------------
-		-- Do nothing.
-	elseif id == "MENU_STRING_REQUEST" then
-		--------------------------------------------------------------------------------
-		-- Menu String Request:
-		--------------------------------------------------------------------------------
-		-- Do nothing.
-	elseif id == "MODE_CHANGE" then
-		--------------------------------------------------------------------------------
-		-- Mode Change:
-		--------------------------------------------------------------------------------
-		-- Do nothing.
 	elseif id == "TRANSPORT" then
 		--------------------------------------------------------------------------------
 		-- Transport:
 		--------------------------------------------------------------------------------
+		if fcp.isFrontmost() then
+			log.df("jogValue: %s, shuttleValue: %s", metadata.jogValue, metadata.shuttleValue)
+			if metadata.jogValue == 1 then
+				fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
+			elseif metadata.jogValue == -1 then
+				fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
+			end
+		end
+	elseif id == "MENU_CHANGE" then
+		--------------------------------------------------------------------------------
+		-- Menu Change:
+		--------------------------------------------------------------------------------
+		--
 		-- Do nothing.
+		--
+	elseif id == "MENU_RESET" then
+		--------------------------------------------------------------------------------
+		-- Menu Reset:
+		--------------------------------------------------------------------------------
+		--
+		-- Do nothing.
+		--
+	elseif id == "MENU_STRING_REQUEST" then
+		--------------------------------------------------------------------------------
+		-- Menu String Request:
+		--------------------------------------------------------------------------------
+		--
+		-- Do nothing.
+		--
+	elseif id == "MODE_CHANGE" then
+		--------------------------------------------------------------------------------
+		-- Mode Change:
+		--------------------------------------------------------------------------------
+		--
+		-- Do nothing.
+		--
 	elseif id == "UNMANAGED_PANEL_CAPABILITIES" then
 		--------------------------------------------------------------------------------
 		-- Unmanaged Panel Capabilities:
 		--------------------------------------------------------------------------------
-		-- Do nothing.
+		--
+		-- Only used when working in Unmanaged panel mode.
+		--
 	elseif id == "UNMANAGED_BUTTON_DOWN" then
 		--------------------------------------------------------------------------------
 		-- Unmanaged Button Down:
 		--------------------------------------------------------------------------------
-		-- Do nothing.
+		--
+		-- Only used when working in Unmanaged panel mode.
+		--
 	elseif id == "UNMANAGED_BUTTON_UP" then
 		--------------------------------------------------------------------------------
 		-- Unmanaged Button Up:
 		--------------------------------------------------------------------------------
-		-- Do nothing.
+		--
+		-- Only used when working in Unmanaged panel mode.
+		--
 	elseif id == "UNMANAGED_ENCODER_CHANGE" then
 		--------------------------------------------------------------------------------
 		-- Unmanaged Encoder Change:
 		--------------------------------------------------------------------------------
-		-- Do nothing.
+		--
+		-- Only used when working in Unmanaged panel mode.
+		--
 	elseif id == "UNMANAGED_DISPLAY_REFRESH" then
 		--------------------------------------------------------------------------------
 		-- Unmanaged Display Refresh:
 		--------------------------------------------------------------------------------
-		-- Do nothing.
+		--
+		-- Only used when working in Unmanaged panel mode.
+		--
 	elseif id == "PANEL_CONNECTION_STATE" then
 		--------------------------------------------------------------------------------
 		-- Panel Connection State:
 		--------------------------------------------------------------------------------
-		-- Do nothing.
+		--
+		-- Sent in response to a PanelConnectionStatesRequest (0xA5) command to report the
+		-- current connected/disconnected status of a configured panel.
+		--
 	else
-		log.df("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
+		log.df("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, metadata and inspect(metadata))
 	end
 end
 
@@ -696,13 +761,52 @@ end
 ---  * `true` if successfully started, otherwise `false`
 function mod.start(resetControlMap)
 	if tangent.isTangentHubInstalled() then
+		--------------------------------------------------------------------------------
+		-- Write Controls XML:
+		--------------------------------------------------------------------------------
 		if resetControlMap then
 			writeControlsXML()
 		end
+		--------------------------------------------------------------------------------
+		-- Disable "Final Cut Pro" in Tangent Hub:
+		--------------------------------------------------------------------------------
+		local hideFilePath = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
+		if tools.doesFileExist(hideFilePath) then
+			--------------------------------------------------------------------------------
+			-- Read existing Hide file:
+			--------------------------------------------------------------------------------
+			local file = io.open(hideFilePath, "r")
+			local fileContents = file:read("*a")
+			file:close()
+			if fileContents and string.match(fileContents, "Final Cut Pro") then
+				--------------------------------------------------------------------------------
+				-- Final Cut Pro is already hidden in the Tangent Hub.
+				--------------------------------------------------------------------------------
+			else
+				--------------------------------------------------------------------------------
+				-- Append Existing Hide File:
+				--------------------------------------------------------------------------------
+				local appendFile = io.open(hideFilePath, "a")
+				appendFile:write("\nFinal Cut Pro")
+				appendFile:close()
+			end
+		else
+			--------------------------------------------------------------------------------
+			-- Create new Hide File:
+			--------------------------------------------------------------------------------
+			local newFile = io.open(hideFilePath, "w")
+			log.df("newFile: %s", newFile)
+			newFile:write("Final Cut Pro")
+			newFile:close()
+		end
+		--------------------------------------------------------------------------------
+		-- Connect to Tangent Hub:
+		--------------------------------------------------------------------------------
 		log.df("Connecting to Tangent Hub...")
 		local result, errorMessage = tangent.connect("CommandPost", mod._configPath)
 		if result then
 			tangent.callback(mod.callback)
+			mod.active = true
 			return true
 		else
 			log.ef("Failed to start Tangent Support: %s", errorMessage)
@@ -724,6 +828,7 @@ end
 ---  * None
 function mod.stop()
 	tangent.disconnect()
+	mod.active = false
 	log.df("Disconnected from Tangent Hub.")
 end
 
@@ -781,6 +886,16 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	mod._pluginPath = env:pathToAbsolute("/defaultmap")
 	mod._configPath = config.userConfigRootPath .. "/Tangent Settings"
+
+	--------------------------------------------------------------------------------
+	-- Final Cut Pro Watchers:
+	--------------------------------------------------------------------------------
+	fcp:watch({
+		active		= mod.updateMode,
+		inactive	= mod.updateMode,
+		show		= mod.updateMode,
+		hide		= mod.updateMode,
+	})
 
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:

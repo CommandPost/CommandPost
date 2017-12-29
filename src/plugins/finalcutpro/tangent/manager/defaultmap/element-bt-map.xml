@@ -2,124 +2,53 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Bt">
-            <Mode id="0x00010001"> <!-- Config Mode -->
+            <Mode id="0x00010001"> <!-- Global -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Button" number="12"> <!-- A Key -->
+                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="13"> <!-- B Key -->
+                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
                             <Mapping mode="Std">
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Prev Button Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
                             </Mapping>
                         </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
-            <Mode id="0x00010002"> <!-- Grading Mode -->
+            <Mode id="0x00010002"> <!-- Final Cut Pro -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Button" number="12"> <!-- A Key -->
+                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-						<Control type="Button" number="13"> <!-- B Key -->
+                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
                             <Mapping mode="Std">
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Prev Button Bank -->
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
                             </Mapping>
                         </Control>
                     </Bank>
                 </ControlBank>
-				<ControlBank id="Button">
+                <ControlBank id="Button">
                     <Bank>
-						<Control type="Button" number="9">
-                            <Mapping mode="Std">
-                                <Key>0x0003001E</Key> <!-- Bypass Primary Menu -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="10">
-                            <Mapping mode="Std">
-                                <Key>0x0003001F</Key> <!-- Enhance Primary Menu -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="11">
-                            <Mapping mode="Std">
-                                <Key>0x0003001A</Key> <!-- Filter Primary Menu -->
-                            </Mapping>
-						</Control>
-                    </Bank>
-				</ControlBank>
-            </Mode>
-            <Mode id="0x00010003"> <!-- Geometry Mode -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- A Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- ALT -->
-                            </Mapping>
-                        </Control>
-						<Control type="Button" number="13"> <!-- B Key -->
-                            <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
-                            </Mapping>
-                           <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Prev Button Bank -->
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
-				<ControlBank id="Button">
-                    <Bank>
-						<Control type="Button" number="3">
-                            <Mapping mode="Std">
-                                <Key>0x00060011</Key> <!-- Flip X -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="4">
-                            <Mapping mode="Std">
-                                <Key>0x00060012</Key> <!-- Flip Y -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="6">
-                            <Mapping mode="Std">
-                                <Key>0x00060021</Key> <!-- Mirror X -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="7">
-                            <Mapping mode="Std">
-                                <Key>0x00060022</Key> <!-- Mirror Y -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="9">
-                            <Mapping mode="Std">
-                                <Key>0x00060031</Key> <!-- Rotate 90 CW -->
-                            </Mapping>
-						</Control>
-						<Control type="Button" number="10">
-                            <Mapping mode="Std">
-                                <Key>0x00060032</Key> <!-- Rotate 90 CCW -->
-                            </Mapping>
-						</Control>
-					</Bank>
-				</ControlBank>
             </Mode>
         </Panel>
     </Panels>
