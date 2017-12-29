@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<TangentWave fileType="PanelMap" fileVersion="3.0">
+    <Panels>
+        <Panel type="Element-Kb">
+            <Mode id="0x00010001"> <!-- Global -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Encoder">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010002"> <!-- Final Cut Pro -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Encoder">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030013</Key> <!-- Color Board - Exposure - Master -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030009</Key> <!-- Color Board - Saturation - Master -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030014</Key> <!-- Color Board - Exposure - Shadows -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030010</Key> <!-- Color Board - Saturation - Shadows -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030015</Key> <!-- Color Board - Exposure - Midtones -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Element-Kb Knob 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030011</Key> <!-- Color Board - Saturation - Midtones -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030016</Key> <!-- Color Board - Exposure - Highlights -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="10"> <!-- Element-Kb Knob 11 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030012</Key> <!-- Color Board - Saturation - Highlights -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                    <Bank>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+        </Panel>
+    </Panels>
+</TangentWave>

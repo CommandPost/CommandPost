@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<TangentWave fileType="PanelMap" fileVersion="3.0">
+    <Panels>
+        <Panel type="Ripple">
+            <Mode id="0x00010001"> <!-- Global -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Ripple Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x0002040C</Key> <!-- Launch Final Cut Pro -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Ripple Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x00020411</Key> <!-- Report Final Cut Pro Bug to Apple -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010002"> <!-- Final Cut Pro -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Ripple Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x000201E7</Key> <!-- Previous Clip -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x000200CA</Key> <!-- Apply Color Correction from Two Clips Back -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Ripple Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x0002019E</Key> <!-- Next Clip -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x000200C8</Key> <!-- Apply Color Correction from Previous Clip -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+        </Panel>
+    </Panels>
+</TangentWave>
