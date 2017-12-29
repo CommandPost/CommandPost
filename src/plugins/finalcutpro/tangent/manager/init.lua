@@ -768,36 +768,38 @@ function mod.start(resetControlMap)
 			writeControlsXML()
 		end
 		--------------------------------------------------------------------------------
-		-- Disable "Final Cut Pro" in Tangent Hub:
+		-- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
 		--------------------------------------------------------------------------------
-		local hideFilePath = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
-		if tools.doesFileExist(hideFilePath) then
-			--------------------------------------------------------------------------------
-			-- Read existing Hide file:
-			--------------------------------------------------------------------------------
-			local file = io.open(hideFilePath, "r")
-			local fileContents = file:read("*a")
-			file:close()
-			if fileContents and string.match(fileContents, "Final Cut Pro") then
+		if tools.doesDirectoryExist("/Library/Application Support/Tangent/Hub/KeypressApps/Final Cut Pro") then
+			local hideFilePath = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
+			if tools.doesFileExist(hideFilePath) then
 				--------------------------------------------------------------------------------
-				-- Final Cut Pro is already hidden in the Tangent Hub.
+				-- Read existing Hide file:
 				--------------------------------------------------------------------------------
+				local file = io.open(hideFilePath, "r")
+				local fileContents = file:read("*a")
+				file:close()
+				if fileContents and string.match(fileContents, "Final Cut Pro") then
+					--------------------------------------------------------------------------------
+					-- Final Cut Pro is already hidden in the Tangent Hub.
+					--------------------------------------------------------------------------------
+				else
+					--------------------------------------------------------------------------------
+					-- Append Existing Hide File:
+					--------------------------------------------------------------------------------
+					local appendFile = io.open(hideFilePath, "a")
+					appendFile:write("\nFinal Cut Pro")
+					appendFile:close()
+				end
 			else
 				--------------------------------------------------------------------------------
-				-- Append Existing Hide File:
+				-- Create new Hide File:
 				--------------------------------------------------------------------------------
-				local appendFile = io.open(hideFilePath, "a")
-				appendFile:write("\nFinal Cut Pro")
-				appendFile:close()
+				local newFile = io.open(hideFilePath, "w")
+				log.df("newFile: %s", newFile)
+				newFile:write("Final Cut Pro")
+				newFile:close()
 			end
-		else
-			--------------------------------------------------------------------------------
-			-- Create new Hide File:
-			--------------------------------------------------------------------------------
-			local newFile = io.open(hideFilePath, "w")
-			log.df("newFile: %s", newFile)
-			newFile:write("Final Cut Pro")
-			newFile:close()
 		end
 		--------------------------------------------------------------------------------
 		-- Connect to Tangent Hub:
