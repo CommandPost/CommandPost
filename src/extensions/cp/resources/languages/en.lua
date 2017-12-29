@@ -980,6 +980,27 @@ return {
 	midiTimelineZoomDescription			=			"Allows you to control timeline zoom via MIDI controls.",
 
 	--------------------------------------------------------------------------------
+	-- TANGENT SUPPORT:
+	--------------------------------------------------------------------------------
+	tangentPanelSupport					=			"Tangent Panel Support",
+	tangentPreferencesInfo				=			[[CommandPost offers native support of the entire range of Tangent's panels, including the <strong>Element</strong>, <strong>Wave</strong>, <strong>Ripple</strong>, the <strong>Element-Vs iPad app</strong>, and any future panels.<br />
+													<br />
+													All actions within CommandPost can be assigned to any Tangent panel button/wheel using <strong>Tangent's Mapper</strong> application. This allows you to create your own layouts and modes.<br />
+													<br />
+													If you add a new effect or plugin in Final Cut Pro, you can use the <strong>Rebuild Control Map</strong> button below to make these new items appear in <strong>Tangent Mapper</strong>.<br />
+													<br />]],
+	enableTangentPanelSupport			=			"Enable Tangent Panel Support",
+	mustInstallTangentMapper			=			"You must install the Tangent Mapper & Hub to enable Tangent Panel support.",
+	enablingTangentPanelSupport			=			"Enabling Tangent Panel Support",
+	rebuildControlMap					=			"Rebuild Control Map",
+	rebuildControlMapMessage			=			"Just a heads up, it can take a few minutes to re-build the Control Map once you click OK.",
+	openTangentMapper					=			"Open Tangent Mapper",
+	tangentMapperNotFound				=			"Tangent Mapper Not Found",
+	tangentMapperNotFoundMessage		=			"The Tangent Mapper application could not be found.\n\nPlease download the latest version from the Tangent website and try again.",
+	downloadTangentHub					=			"Download Tangent Hub",
+	visitTangentWebsite					=			"Visit Tangent Website",
+
+	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
 	--------------------------------------------------------------------------------
 	plugin_group_compressor				=			"Compressor",
@@ -1028,6 +1049,7 @@ return {
 		core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
 		core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
 		core_preferences_panels_streamdeck_label				=	"Preferences Panel: Stream Deck",
+		core_preferences_panels_tangent_label					=	"Preferences Panel: Tangent",
 		core_preferences_panels_touchbar_label					=	"Preferences: Touch Bar",
 		core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
 		core_preferences_updates_label							=	"Preferences: Updates",
@@ -1097,6 +1119,7 @@ return {
 		finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 		finalcutpro_sharing_xml_label							=	"XML Sharing",
 		finalcutpro_streamdeck_label							=	"Stream Deck",
+		finalcutpro_tangent_manager_label						=	"Manager: Tangent",
 		finalcutpro_text2speech_label							=	"Text to Speech",
 		finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
 		finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",

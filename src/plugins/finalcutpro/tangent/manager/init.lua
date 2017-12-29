@@ -863,8 +863,8 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id			= "core.tangent.manager",
-	group		= "core",
+	id			= "finalcutpro.tangent.manager",
+	group		= "finalcutpro",
 	required	= true,
 	dependencies	= {
 		["core.preferences.panels.tangent"]				= "prefs",
@@ -929,17 +929,11 @@ function plugin.init(deps, env)
 					}
 				</style>
 			]], true)
-			:addHeading(2, "Tangent Panel Support")
-			:addParagraph(3,
-			[[CommandPost offers native support of the entire range of Tangent's panels, including the <strong>Element</strong>, <strong>Wave</strong>, <strong>Ripple</strong>, the <strong>Element-Vs iPad app</strong>, and any future panels.<br />
-			<br />
-			All actions within CommandPost can be assigned to any Tangent panel button/wheel using <strong>Tangent's Mapper</strong> application. This allows you to create your own layouts and modes.<br />
-			<br />
-			If you add a new effect or plugin in Final Cut Pro, you can use the <strong>Rebuild Control Map</strong> button below to make these new items appear in <strong>Tangent Mapper</strong>.<br />
-			<br />]], true)
+			:addHeading(2, i18n("tangentPanelSupport"))
+			:addParagraph(3, i18n("tangentPreferencesInfo"), true)
 			:addCheckbox(4,
 				{
-					label = "Enable Tangent Panel Support",
+					label = i18n("enableTangentPanelSupport"),
 					onchange = function(_, params)
 						if params.checked then
 							if not tangent.isTangentHubInstalled() then
@@ -948,12 +942,12 @@ function plugin.init(deps, env)
 									deps.prefsManager.injectScript([[
 										document.getElementById("enableTangentSupport").checked = false;
 									]])
-								end, "Tangent Panel Support", [[You must install the Tangent Mapper & Hub to enable Tangent Panel support.]], i18n("ok"))
+								end, i18n("tangentPanelSupport"), i18n("mustInstallTangentMapper"), i18n("ok"))
 							else
 								dialog.webviewAlert(deps.prefsManager.getWebview(), function()
 									mod.enabled(true)
 									mod.start(true)
-								end, "Enabling Tangent Panel Support", "Just a heads up, it can take a few minutes to re-build the Control Map once you click OK.", i18n("ok"))
+								end, i18n("enablingTangentPanelSupport"), i18n("rebuildControlMapMessage"), i18n("ok"))
 							end
 						else
 							mod.enabled(false)
@@ -967,16 +961,20 @@ function plugin.init(deps, env)
 			:addParagraph(5, "<br />", true)
 			:addButton(6,
 				{
-					label = "Open Tangent Mapper",
+					label = i18n("openTangentMapper"),
 					onclick = function(_, params)
-						os.execute('open "/Applications/Tangent/Tangent Mapper.app"')
+						if tools.doesFileExist("/Applications/Tangent/Tangent Mapper.app") then
+							os.execute('open "/Applications/Tangent/Tangent Mapper.app"')
+						else
+							dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
+						end
 					end,
 					class = "tangentButtonOne",
 				}
 			)
 			:addButton(7,
 				{
-					label = "Rebuild Control Map",
+					label = i18n("rebuildControlMap"),
 					onclick = function(_, params)
 						dialog.webviewAlert(deps.prefsManager.getWebview(), function()
 							if mod.enabled() then
@@ -985,14 +983,14 @@ function plugin.init(deps, env)
 							else
 								writeControlsXML()
 							end
-						end, "Rebuild Control Map", "Just a heads up, it can take a few minutes to re-build the Control Map once you click OK.", i18n("ok"))
+						end, i18n("rebuildControlMap"), i18n("rebuildControlMapMessage"), i18n("ok"))
 					end,
 					class = "tangentButtonTwo",
 				}
 			)
 			:addButton(8,
 				{
-					label = "Download Tangent Hub",
+					label = i18n("downloadTangentHub"),
 					onclick = function(_, params)
 						os.execute('open "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"')
 					end,
@@ -1001,7 +999,7 @@ function plugin.init(deps, env)
 			)
 			:addButton(9,
 				{
-					label = "Visit Tangent Website",
+					label = i18n("visitTangentWebsite"),
 					onclick = function(_, params)
 						os.execute('open "http://www.tangentwave.co.uk/"')
 					end,
