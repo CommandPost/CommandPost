@@ -320,7 +320,7 @@ mod.customParameters = {
 -- Returns:
 --  * table or `nil` if no match.
 local function getCustomParameter(id)
-	for groupID, group in pairs(mod.customParameters) do
+	for _, group in pairs(mod.customParameters) do
 		for parameterID, parameter in pairs(group) do
 			if parameterID == id then
 				return parameter
@@ -408,7 +408,7 @@ end
 --
 -- Returns:
 --  * A sorted table
-function getKeysSortedByValue(tbl, sortFunction)
+local function getKeysSortedByValue(tbl, sortFunction)
 	local keys = {}
 	for key in pairs(tbl) do
 		table.insert(keys, key)
@@ -546,7 +546,6 @@ function writeControlsXML()
 							--------------------------------------------------------------------------------
 							-- Add Parameter:
 							--------------------------------------------------------------------------------
-							local actionID = string.format("%#010x", id)
 							result = result .. [[			<Parameter id="]] .. id .. [[">]] .. "\n"
 							result = result .. [[				<Name>]] .. metadata.name .. [[</Name>]] .. "\n"
 							result = result .. [[				<Name9>]] .. metadata.name9 .. [[</Name9>]] .. "\n"
