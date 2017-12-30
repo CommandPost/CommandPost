@@ -13,25 +13,10 @@
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Encoder">
                     <Bank>
-                        <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
@@ -46,14 +31,6 @@
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-                        <Control type="Button" number="13"> <!-- Element-Kb Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Encoder">
@@ -61,80 +38,104 @@
                         <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
                             <Mapping mode="Std">
                                 <Key>0x00030013</Key> <!-- Color Board - Exposure - Master -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00030009</Key> <!-- Color Board - Saturation - Master -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Kb Knob 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00030018</Key> <!-- Timeline Zoom -->
+                                <Display>Percentage</Display>
+                                <Sensitivity>5</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00030014</Key> <!-- Color Board - Exposure - Shadows -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Element-Kb Knob 5 -->
                             <Mapping mode="Std">
                                 <Key>0x00030010</Key> <!-- Color Board - Saturation - Shadows -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00030015</Key> <!-- Color Board - Exposure - Midtones -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Element-Kb Knob 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00030011</Key> <!-- Color Board - Saturation - Midtones -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00030016</Key> <!-- Color Board - Exposure - Highlights -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="10"> <!-- Element-Kb Knob 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00030012</Key> <!-- Color Board - Saturation - Highlights -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>

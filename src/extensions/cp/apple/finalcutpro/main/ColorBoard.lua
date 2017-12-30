@@ -347,7 +347,7 @@ function ColorBoard:show()
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.4:
 			-----------------------------------------------------------------------
-			log.df("Showing a 10.4 Color Board")
+			--log.df("Showing a 10.4 Color Board")
 			self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
 			local colorInspectorBarUI = self:colorInspectorBarUI()
 			if colorInspectorBarUI then
