@@ -847,6 +847,7 @@ return {
 		fcpx_audioEffect_action				=			"Audio Effects",
 		fcpx_cmds_action					=			"Commands",
 		fcpx_colorInspector_action			=			"Color Inspector",
+		fcpx_timeline_action				=			"Timeline",
 		fcpx_generator_action				=			"Generators",
 		fcpx_menu_action					=			"Menu Items",
 		fcpx_midicontrols_action			=			"MIDI Controls",

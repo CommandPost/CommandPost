@@ -13,14 +13,6 @@
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
@@ -33,14 +25,6 @@
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
                             </Mapping>
                         </Control>
                     </Bank>

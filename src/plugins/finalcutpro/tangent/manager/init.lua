@@ -61,218 +61,215 @@ mod.MODES = {
 	},
 }
 
---- plugins.finalcutpro.tangent.manager.colorInspectorParameter
+--- plugins.finalcutpro.tangent.manager.customParameters
 --- Variable
---- Table containing custom Color Inspector paramaters.
-mod.colorInspectorParameter = {
+--- Table containing custom Tangent parameters.
+mod.customParameters = {
 	--------------------------------------------------------------------------------
 	-- COLOR INSPECTOR PARAMETERS:
 	--
 	--  * aspect - "color", "saturation" or "exposure"
 	--  * property - "global", "shadows", "midtones", "highlights"
 	--------------------------------------------------------------------------------
+	["fcpx_colorInspector"] = {
+		--------------------------------------------------------------------------------
+		-- COLOR BOARD - COLOR:
+		--------------------------------------------------------------------------------
+		["0x00030001"] = {
+			["name"] = "Color Board - Color - Master - Angle",
+			["name9"] = "CB MS ANG",
+			["minValue"] = 0,
+			["maxValue"] = 359,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getAngle("color", "global") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "global", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyAngle("color", "global", 110)
+				fcp:colorBoard():applyPercentage("color", "global", 0)
+			end,
+		},
+		["0x00030002"] = {
+			["name"] = "Color Board - Color - Master - Percentage",
+			["name9"] = "CB MS PER",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "global") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "global", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyAngle("color", "global", 110)
+				fcp:colorBoard():applyPercentage("color", "global", 0)
+			end,
+		},
+		["0x00030003"] = {
+			["name"] = "Color Board - Color - Shadows - Angle",
+			["name9"] = "CB SD ANG",
+			["minValue"] = 0,
+			["maxValue"] = 359,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getAngle("color", "shadows") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "shadows", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyAngle("color", "shadows", 180)
+				fcp:colorBoard():applyPercentage("color", "shadows", 0)
+			end,
+		},
+		["0x00030004"] = {
+			["name"] = "Color Board - Color - Shadows - Percentage",
+			["name9"] = "CB SD PER",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "shadows") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "shadows", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyAngle("color", "shadows", 180)
+				fcp:colorBoard():applyPercentage("color", "shadows", 0)
+			end,
+		},
+		["0x00030005"] = {
+			["name"] = "Color Board - Color - Midtones - Angle",
+			["name9"] = "CB MT ANG",
+			["minValue"] = 0,
+			["maxValue"] = 359,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getAngle("color", "midtones") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "midtones", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyAngle("color", "midtones", 215)
+				fcp:colorBoard():applyPercentage("color", "midtones", 0)
+			end,
+		},
+		["0x00030006"] = {
+			["name"] = "Color Board - Color - Midtones - Percentage",
+			["name9"] = "CB HL PER",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "midtones") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "midtones", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyAngle("color", "midtones", 215)
+				fcp:colorBoard():applyPercentage("color", "midtones", 0)
+			end,
+		},
+		["0x00030007"] = {
+			["name"] = "Color Board - Color - Highlights - Angle",
+			["name9"] = "CB HL ANG",
+			["minValue"] = 0,
+			["maxValue"] = 359,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getAngle("color", "highlights") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "highlights", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyPercentage("color", "highlights", 0)
+				fcp:colorBoard():applyAngle("color", "highlights", 250)
+			end,
+		},
+		["0x00030008"] = {
+			["name"] = "Color Board - Color - Highlights - Percentage",
+			["name9"] = "CB HL PER",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "highlights") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "highlights", value) end,
+			["resetValue"] = function()
+				fcp:colorBoard():applyPercentage("color", "highlights", 0)
+				fcp:colorBoard():applyAngle("color", "highlights", 250)
+			end,
+		},
 
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - COLOR:
-	--------------------------------------------------------------------------------
-	["0x00030001"] = {
-		["name"] = "Color Board - Color - Master - Angle",
-		["name9"] = "CB MS ANG",
-		["minValue"] = 0,
-		["maxValue"] = 359,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getAngle("color", "global") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "global", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyAngle("color", "global", 110)
-			fcp:colorBoard():applyPercentage("color", "global", 0)
-		end,
-	},
-	["0x00030002"] = {
-		["name"] = "Color Board - Color - Master - Percentage",
-		["name9"] = "CB MS PER",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("color", "global") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "global", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyAngle("color", "global", 110)
-			fcp:colorBoard():applyPercentage("color", "global", 0)
-		end,
-	},
-	["0x00030003"] = {
-		["name"] = "Color Board - Color - Shadows - Angle",
-		["name9"] = "CB SD ANG",
-		["minValue"] = 0,
-		["maxValue"] = 359,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getAngle("color", "shadows") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "shadows", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyAngle("color", "shadows", 180)
-			fcp:colorBoard():applyPercentage("color", "shadows", 0)
-		end,
-	},
-	["0x00030004"] = {
-		["name"] = "Color Board - Color - Shadows - Percentage",
-		["name9"] = "CB SD PER",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("color", "shadows") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "shadows", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyAngle("color", "shadows", 180)
-			fcp:colorBoard():applyPercentage("color", "shadows", 0)
-		end,
-	},
-	["0x00030005"] = {
-		["name"] = "Color Board - Color - Midtones - Angle",
-		["name9"] = "CB MT ANG",
-		["minValue"] = 0,
-		["maxValue"] = 359,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getAngle("color", "midtones") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "midtones", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyAngle("color", "midtones", 215)
-			fcp:colorBoard():applyPercentage("color", "midtones", 0)
-		end,
-	},
-	["0x00030006"] = {
-		["name"] = "Color Board - Color - Midtones - Percentage",
-		["name9"] = "CB HL PER",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("color", "midtones") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "midtones", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyAngle("color", "midtones", 215)
-			fcp:colorBoard():applyPercentage("color", "midtones", 0)
-		end,
-	},
-	["0x00030007"] = {
-		["name"] = "Color Board - Color - Highlights - Angle",
-		["name9"] = "CB HL ANG",
-		["minValue"] = 0,
-		["maxValue"] = 359,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getAngle("color", "highlights") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "highlights", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyPercentage("color", "highlights", 0)
-			fcp:colorBoard():applyAngle("color", "highlights", 250)
-		end,
-	},
-	["0x00030008"] = {
-		["name"] = "Color Board - Color - Highlights - Percentage",
-		["name9"] = "CB HL PER",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("color", "highlights") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "highlights", value) end,
-		["resetValue"] = function()
-			fcp:colorBoard():applyPercentage("color", "highlights", 0)
-			fcp:colorBoard():applyAngle("color", "highlights", 250)
-		end,
-	},
+		--------------------------------------------------------------------------------
+		-- COLOR BOARD - SATURATION:
+		--------------------------------------------------------------------------------
+		["0x00030009"] = {
+			["name"] = "Color Board - Saturation - Master",
+			["name9"] = "CB SAT MS",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "global") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "global", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "global", 0) end,
+		},
+		["0x00030010"] = {
+			["name"] = "Color Board - Saturation - Shadows",
+			["name9"] = "CB SAT SD",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "shadows") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "shadows", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "shadows", 0) end,
+		},
+		["0x00030011"] = {
+			["name"] = "Color Board - Saturation - Midtones",
+			["name9"] = "CB SAT MT",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "midtones") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "midtones", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "midtones", 0) end,
+		},
+		["0x00030012"] = {
+			["name"] = "Color Board - Saturation - Highlights",
+			["name9"] = "CB SAT HL",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "highlights") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "highlights", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "highlights", 0) end,
+		},
 
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - SATURATION:
-	--------------------------------------------------------------------------------
-	["0x00030009"] = {
-		["name"] = "Color Board - Saturation - Master",
-		["name9"] = "CB SAT MS",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "global") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "global", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "global", 0) end,
-	},
-	["0x00030010"] = {
-		["name"] = "Color Board - Saturation - Shadows",
-		["name9"] = "CB SAT SD",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "shadows") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "shadows", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "shadows", 0) end,
-	},
-	["0x00030011"] = {
-		["name"] = "Color Board - Saturation - Midtones",
-		["name9"] = "CB SAT MT",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "midtones") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "midtones", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "midtones", 0) end,
-	},
-	["0x00030012"] = {
-		["name"] = "Color Board - Saturation - Highlights",
-		["name9"] = "CB SAT HL",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "highlights") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "highlights", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "highlights", 0) end,
-	},
-
-	--------------------------------------------------------------------------------
-	-- COLOR BOARD - EXPOSURE:
-	--------------------------------------------------------------------------------
-	["0x00030013"] = {
-		["name"] = "Color Board - Exposure - Master",
-		["name9"] = "CB EXP MS",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "global") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "global", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "global", 0) end,
-	},
-	["0x00030014"] = {
-		["name"] = "Color Board - Exposure - Shadows",
-		["name9"] = "CB EXP SD",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "shadows") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "shadows", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "shadows", 0) end,
-	},
-	["0x00030015"] = {
-		["name"] = "Color Board - Exposure - Midtones",
-		["name9"] = "CB EXP MT",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "midtones") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "midtones", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "midtones", 0) end,
-	},
-	["0x00030016"] = {
-		["name"] = "Color Board - Exposure - Highlights",
-		["name9"] = "CB EXP HL",
-		["minValue"] = -100,
-		["maxValue"] = 100,
-		["stepSize"] = 1,
-		["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "highlights") end,
-		["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "highlights", value) end,
-		["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "highlights", 0) end,
-	},
-}
-
---- plugins.finalcutpro.tangent.manager.colorInspectorBindings
---- Variable
---- Table containing custom Color Inspector Bindings.
-mod.colorInspectorBindings = [[
+		--------------------------------------------------------------------------------
+		-- COLOR BOARD - EXPOSURE:
+		--------------------------------------------------------------------------------
+		["0x00030013"] = {
+			["name"] = "Color Board - Exposure - Master",
+			["name9"] = "CB EXP MS",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "global") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "global", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "global", 0) end,
+		},
+		["0x00030014"] = {
+			["name"] = "Color Board - Exposure - Shadows",
+			["name9"] = "CB EXP SD",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "shadows") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "shadows", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "shadows", 0) end,
+		},
+		["0x00030015"] = {
+			["name"] = "Color Board - Exposure - Midtones",
+			["name9"] = "CB EXP MT",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "midtones") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "midtones", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "midtones", 0) end,
+		},
+		["0x00030016"] = {
+			["name"] = "Color Board - Exposure - Highlights",
+			["name9"] = "CB EXP HL",
+			["minValue"] = -100,
+			["maxValue"] = 100,
+			["stepSize"] = 1,
+			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "highlights") end,
+			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "highlights", value) end,
+			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "highlights", 0) end,
+		},
+		["bindings"] = {
+			["name"] = "zzzzzzzzzzz", -- This is just to put the binding alphabetically last.
+			["xml"] = [[
 				<Binding name="Color Board Master Color">
 					<Member id="0x00030001"/>
 					<Member id="0x00030002"/>
@@ -289,11 +286,49 @@ mod.colorInspectorBindings = [[
 					<Member id="0x00030007"/>
 					<Member id="0x00030008"/>
 				</Binding>
-]]
+				]],
+			},
+		},
+	["fcpx_timeline"] = {
+		--------------------------------------------------------------------------------
+		-- TIMELINE ZOOM:
+		--------------------------------------------------------------------------------
+		["0x00030018"] = {
+			["name"] = "Timeline Zoom",
+			["name9"] = "Zoom",
+			["minValue"] = 0,
+			["maxValue"] = 10,
+			["stepSize"] = 0.2,
+			["getValue"] = function() return fcp:timeline():toolbar():appearance():show():show():zoomAmount():getValue() end,
+			["shiftValue"] = function(value) return fcp:timeline():toolbar():appearance():show():zoomAmount():shiftValue(value) end,
+			["resetValue"] = function() fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(10) end,
+		},
+	},
+}
 
 --------------------------------------------------------------------------------
 -- HELPER FUNCTIONS:
 --------------------------------------------------------------------------------
+
+-- getCustomParameter(id) -> table
+-- Function
+-- Returns a custom parameter table.
+--
+-- Parameters:
+--  * id - The ID of the table as string.
+--
+-- Returns:
+--  * table or `nil` if no match.
+local function getCustomParameter(id)
+	for groupID, group in pairs(mod.customParameters) do
+		for parameterID, parameter in pairs(group) do
+			if parameterID == id then
+				return parameter
+			end
+		end
+	end
+	return nil
+end
 
 -- loadMapping() -> none
 -- Function
@@ -363,6 +398,29 @@ local function makeStringTangentFriendly(value)
 	end
 end
 
+-- getKeysSortedByValue(tbl, sortFunction) -> table
+-- Function
+-- Sorts table keys by a value
+--
+-- Parameters:
+--  * tbl - the table you want to sort
+--  * sortFunction - the function you want to use to sort the table
+--
+-- Returns:
+--  * A sorted table
+function getKeysSortedByValue(tbl, sortFunction)
+	local keys = {}
+	for key in pairs(tbl) do
+		table.insert(keys, key)
+	end
+
+	table.sort(keys, function(a, b)
+		return sortFunction(tbl[a], tbl[b])
+	end)
+
+	return keys
+end
+
 -- writeControlsXML() -> none
 -- Function
 -- Writes the Tangent controls.xml File to the User's Application Support folder.
@@ -429,11 +487,20 @@ function writeControlsXML()
 		result = result .. [[	</Modes>]] .. "\n"
 
 		--------------------------------------------------------------------------------
-		-- Get & Sort a list of Handler IDs:
+		-- Get a list of Handler IDs:
 		--------------------------------------------------------------------------------
-		local colorInspectorID = "fcpx_colorInspector"
 		local handlerIds = mod._actionmanager.handlerIds()
-		table.insert(handlerIds, colorInspectorID)
+
+		--------------------------------------------------------------------------------
+		-- Add Custom Parameters to Handler IDs:
+		--------------------------------------------------------------------------------
+		for id, _ in pairs(mod.customParameters) do
+			table.insert(handlerIds, id)
+		end
+
+		--------------------------------------------------------------------------------
+		-- Sort the Handler IDs alphabetically:
+		--------------------------------------------------------------------------------
 		table.sort(handlerIds, function(a, b) return i18n(a .. "_action") < i18n(b .. "_action") end)
 
 		--------------------------------------------------------------------------------
@@ -441,30 +508,65 @@ function writeControlsXML()
 		--------------------------------------------------------------------------------
 		result = result .. [[	<Controls>]] .. "\n"
 		for _, handlerID in pairs(handlerIds) do
-			if handlerID == colorInspectorID then
-				--------------------------------------------------------------------------------
-				-- Custom Color Inspector Parameters:
-				--------------------------------------------------------------------------------
-				local handlerLabel = i18n(handlerID .. "_action")
-				result = result .. [[		<Group name="]] .. handlerLabel .. [[">]] .. "\n"
-				table.sort(mod.colorInspectorParameter, function(a, b) return a.name < b.name end)
-				for id, metadata in pairs(mod.colorInspectorParameter) do
-					local actionID = string.format("%#010x", id)
-					result = result .. [[			<Parameter id="]] .. id .. [[">]] .. "\n"
-					result = result .. [[				<Name>]] .. metadata.name .. [[</Name>]] .. "\n"
-					result = result .. [[				<Name9>]] .. metadata.name9 .. [[</Name9>]] .. "\n"
-					result = result .. [[				<MinValue>]] .. metadata.minValue .. [[</MinValue>]] .. "\n"
-					result = result .. [[				<MaxValue>]] .. metadata.maxValue .. [[</MaxValue>]] .. "\n"
-					result = result .. [[				<StepSize>]] .. metadata.stepSize .. [[</StepSize>]] .. "\n"
-					result = result .. [[			</Parameter>]] .. "\n"
-					currentActionID = currentActionID + 1
+
+			--------------------------------------------------------------------------------
+			-- Add Custom Parameters & Bindings:
+			--------------------------------------------------------------------------------
+			local match = false
+			for customParameterID, customParameter in pairs(mod.customParameters) do
+				if handlerID == customParameterID then
+
+					--------------------------------------------------------------------------------
+					-- Found a match:
+					--------------------------------------------------------------------------------
+					match = true
+
+					--------------------------------------------------------------------------------
+					-- Start Group:
+					--------------------------------------------------------------------------------
+					local handlerLabel = i18n(handlerID .. "_action")
+					result = result .. [[		<Group name="]] .. handlerLabel .. [[">]] .. "\n"
+
+					--------------------------------------------------------------------------------
+					-- Sort table alphabetically by name:
+					--------------------------------------------------------------------------------
+					local sortedKeys = getKeysSortedByValue(customParameter, function(a, b) return a.name < b.name end)
+
+					--------------------------------------------------------------------------------
+					-- Process the Custom Parameters:
+					--------------------------------------------------------------------------------
+					for _, id in pairs(sortedKeys) do
+						local metadata = customParameter[id]
+						if id == "bindings" then
+							--------------------------------------------------------------------------------
+							-- Add Bindings:
+							--------------------------------------------------------------------------------
+							result = result .. metadata.xml
+						else
+							--------------------------------------------------------------------------------
+							-- Add Parameter:
+							--------------------------------------------------------------------------------
+							local actionID = string.format("%#010x", id)
+							result = result .. [[			<Parameter id="]] .. id .. [[">]] .. "\n"
+							result = result .. [[				<Name>]] .. metadata.name .. [[</Name>]] .. "\n"
+							result = result .. [[				<Name9>]] .. metadata.name9 .. [[</Name9>]] .. "\n"
+							result = result .. [[				<MinValue>]] .. metadata.minValue .. [[</MinValue>]] .. "\n"
+							result = result .. [[				<MaxValue>]] .. metadata.maxValue .. [[</MaxValue>]] .. "\n"
+							result = result .. [[				<StepSize>]] .. metadata.stepSize .. [[</StepSize>]] .. "\n"
+							result = result .. [[			</Parameter>]] .. "\n"
+							currentActionID = currentActionID + 1
+						end
+					end
+
+					--------------------------------------------------------------------------------
+					-- End Group:
+					--------------------------------------------------------------------------------
+					result = result .. [[		</Group>]] .. "\n"
+
 				end
-				--------------------------------------------------------------------------------
-				-- Add Bindings:
-				--------------------------------------------------------------------------------
-				result = result .. mod.colorInspectorBindings
-				result = result .. [[		</Group>]] .. "\n"
-			else
+			end
+
+			if not match then
 				--------------------------------------------------------------------------------
 				-- Action Manager Actions:
 				--------------------------------------------------------------------------------
@@ -495,6 +597,21 @@ function writeControlsXML()
 			end
 		end
 		result = result .. [[	</Controls>]] .. "\n"
+
+		--------------------------------------------------------------------------------
+		-- Default Global Settings:
+		--------------------------------------------------------------------------------
+		result = result .. [[	<DefaultGlobalSettings>]] .. "\n"
+		result = result .. [[		<KnobSensitivity std="5" alt="5"/>]] .. "\n"
+		result = result .. [[		<JogDialSensitivity std="5" alt="5"/>]] .. "\n"
+		result = result .. [[		<TrackerballSensitivity std="5" alt="5"/>]] .. "\n"
+		result = result .. [[		<TrackerballDialSensitivity std="5" alt="5"/>]] .. "\n"
+		result = result .. [[		<IndependentPanelBanks enabled="false"/>]] .. "\n"
+		result = result .. [[	</DefaultGlobalSettings>]] .. "\n"
+
+		--------------------------------------------------------------------------------
+		-- End of XML:
+		--------------------------------------------------------------------------------
 		result = result .. [[</TangentWave>]]
 
 		--------------------------------------------------------------------------------
@@ -623,12 +740,36 @@ function mod.callback(id, metadata)
 
 			local paramID = string.format("%#010x", metadata.paramID)
 			local increment = metadata.increment
-			mod.colorInspectorParameter[paramID].shiftValue(increment + mod._incrementBuffer)
 
-			--------------------------------------------------------------------------------
-			-- Send Values back to Tangent Hub:
-			--------------------------------------------------------------------------------
-			local value = mod.colorInspectorParameter[paramID] and mod.colorInspectorParameter[paramID].getValue()
+
+			local customParameter = getCustomParameter(paramID)
+			if customParameter then
+				--------------------------------------------------------------------------------
+				-- Shift Value:
+				--------------------------------------------------------------------------------
+				customParameter.shiftValue(increment)
+
+				--------------------------------------------------------------------------------
+				-- Send Values back to Tangent Hub:
+				--------------------------------------------------------------------------------
+				local value = customParameter.getValue()
+				if value then
+					tangent.send("PARAMETER_VALUE", {
+						["paramID"] = paramID,
+						["value"] = value,
+						["atDefault"] = false,
+					})
+				end
+			end
+		end
+	elseif id == "PARAMETER_VALUE_REQUEST" then
+		--------------------------------------------------------------------------------
+		-- Parameter Value Request:
+		--------------------------------------------------------------------------------
+		local paramID = string.format("%#010x", metadata.paramID)
+		local customParameter = getCustomParameter(paramID)
+		if customParameter then
+			local value = customParameter.getValue()
 			if value then
 				tangent.send("PARAMETER_VALUE", {
 					["paramID"] = paramID,
@@ -637,37 +778,27 @@ function mod.callback(id, metadata)
 				})
 			end
 		end
-	elseif id == "PARAMETER_VALUE_REQUEST" then
-		--------------------------------------------------------------------------------
-		-- Parameter Value Request:
-		--------------------------------------------------------------------------------
-		local paramID = string.format("%#010x", metadata.paramID)
-		local value = mod.colorInspectorParameter[paramID] and mod.colorInspectorParameter[paramID].getValue()
-		if value then
-			tangent.send("PARAMETER_VALUE", {
-				["paramID"] = paramID,
-				["value"] = value,
-				["atDefault"] = false,
-			})
-		end
 	elseif id == "ACTION_OFF" then
 		--------------------------------------------------------------------------------
 		-- Action Off:
 		--------------------------------------------------------------------------------
+		--
 		-- A key has been released.
+		--
 	elseif id == "PARAMETER_RESET" then
 		--------------------------------------------------------------------------------
 		-- Parameter Reset:
 		--------------------------------------------------------------------------------
 		local paramID = string.format("%#010x", metadata.paramID)
-		log.df("Parameter Reset Request: %s", paramID)
-		mod.colorInspectorParameter[paramID].resetValue()
+		local customParameter = getCustomParameter(paramID)
+		if customParameter then
+			customParameter.resetValue()
+		end
 	elseif id == "TRANSPORT" then
 		--------------------------------------------------------------------------------
 		-- Transport:
 		--------------------------------------------------------------------------------
 		if fcp.isFrontmost() then
-			log.df("jogValue: %s, shuttleValue: %s", metadata.jogValue, metadata.shuttleValue)
 			if metadata.jogValue == 1 then
 				fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
 			elseif metadata.jogValue == -1 then
