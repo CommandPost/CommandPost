@@ -988,7 +988,7 @@ return {
 													<br />
 													All actions within CommandPost can be assigned to any Tangent panel button/wheel using <strong>Tangent's Mapper</strong> application. This allows you to create your own layouts and modes.<br />
 													<br />
-													If you add a new effect or plugin in Final Cut Pro, you can use the <strong>Rebuild Control Map</strong> button below to make these new items appear in <strong>Tangent Mapper</strong>.<br />
+													If you add a new effect or plugin in Final Cut Pro, or change Languages, you can use the <strong>Rebuild Control Map</strong> button below to make these new items appear in <strong>Tangent Mapper</strong>. Please be aware that when you rebuild the Control Map this may affect your custom layouts in Tangent Mapper as plugins/effects may have been added, removed or renamed.<br />
 													<br />]],
 	enableTangentPanelSupport			=			"Enable Tangent Panel Support",
 	mustInstallTangentMapper			=			"You must install the Tangent Mapper & Hub to enable Tangent Panel support.",
