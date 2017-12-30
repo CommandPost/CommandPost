@@ -291,8 +291,8 @@ end
 function private.updateHacksShortcuts(install)
 
 	if not mod.supported() then
-		dialog.webviewAlert(mod._manger.webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
-		mod._manger.refresh()
+		dialog.webviewAlert(mod._manager.webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
+		mod._manager.refresh()
 		return false
 	end
 
@@ -371,7 +371,7 @@ function private.updateFCPXCommands(enable, silently)
 			prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
 		end
 
-		local whichWebview = mod._manger.webview
+		local whichWebview = mod._manager.webview
 		if whichWebview == nil then
 			whichWebview = mod._setup.webview
 		end
@@ -397,8 +397,8 @@ function private.updateFCPXCommands(enable, silently)
 						--------------------------------------------------------------------------------
 						-- Refresh the Preferences Panel and/or Move to next Setup Screen:
 						--------------------------------------------------------------------------------
-						if mod._manger then
-							mod._manger.refresh()
+						if mod._manager then
+							mod._manager.refresh()
 						end
 						if mod.setup then
 							mod.setup.nextPanel()
@@ -410,8 +410,13 @@ function private.updateFCPXCommands(enable, silently)
 			--------------------------------------------------------------------------------
 			-- Refresh the Preferences Panel and/or Move to next Setup Screen:
 			--------------------------------------------------------------------------------
-			if mod._manger then
-				mod._manger.refresh()
+			if mod._manager then
+				if enable then
+					mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), mod.editorRenderer)
+				else
+					mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), nil)
+				end
+				mod._manager.refresh()
 			end
 			if mod.setup then
 				mod.setup.nextPanel()
@@ -473,7 +478,14 @@ function private.applyCommandSetShortcuts()
 		add		= function(cmd)	private.applyShortcut(cmd) end,
 	})
 
-	mod.fcpxCmds:isEditable(false)
+	--------------------------------------------------------------------------------
+	-- TODO: David, the below line was causing an error on my machine, and I can't
+	--       work out what it actually does, as this seems to be the only line of
+	--       code with `isEditable`, so I've commented it out.
+	--
+	--       hacks/shortcuts/init.lua:480: attempt to call a nil value (method 'isEditable')
+	--------------------------------------------------------------------------------
+	-- mod.fcpxCmds:isEditable(false)
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.uninstall(silently) -> none
@@ -749,7 +761,7 @@ local plugin = {
 	id				= "finalcutpro.hacks.shortcuts",
 	group			= "finalcutpro",
 	dependencies	= {
-		["finalcutpro.menu.top"] 									= "top",
+		["finalcutpro.menu.top"] 							= "top",
 		["finalcutpro.commands"]							= "fcpxCmds",
 		["finalcutpro.preferences.app"]						= "prefs",
 		["core.setup"] 										= "setup",
@@ -767,7 +779,7 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	mod._setup = deps.setup
 	mod._shortcuts = deps.shortcuts
-	mod._manger = deps.shortcuts._manager
+	mod._manager = deps.shortcuts._manager
 
 	--------------------------------------------------------------------------------
 	-- Add the menu item to the top section:
