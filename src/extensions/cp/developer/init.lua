@@ -23,6 +23,8 @@ end)
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log			= require("hs.logger").new("develop")
+
 local ax 			= require("hs._asm.axuielement")
 local drawing		= require("hs.drawing")
 local geometry		= require("hs.geometry")
@@ -30,17 +32,31 @@ local inspect		= require("hs.inspect")
 local mouse			= require("hs.mouse")
 local timer			= require("hs.timer")
 
+local fcp			= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
--- PLUGINS AVAILABLE AT _plugins
+-- SHORTCUTS:
 --------------------------------------------------------------------------------
 _plugins			= require("cp.plugins")
+_fcp				= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- FIND TEXT:
+--------------------------------------------------------------------------------
+function _findString(string)
+	local output, status = hs.execute([[grep -r ']] .. string .. [[' ']] .. fcp:getPath() .. [[/']])
+	if status then
+		log.df("Output: %s", output)
+	else
+		log.ef("An error occurred in _findString")
+	end
+end
 
 --------------------------------------------------------------------------------
 -- ELEMENT AT MOUSE:

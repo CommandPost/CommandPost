@@ -520,17 +520,17 @@ function App:getPath()
 end
 
 --- cp.apple.finalcutpro.getVersion <cp.prop: string; read-only>
---- Constant
---- Version of Final Cut Pro
+--- Field
+--- Version of Final Cut Pro as string.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * Version as string or nil if Final Cut Pro cannot be found.
+---  * Version as string or `nil` if Final Cut Pro cannot be found.
 ---
 --- Notes:
----  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
+---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
 App.getVersion = App.application:mutate(function(app)
 	----------------------------------------------------------------------------------------
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
@@ -574,6 +574,18 @@ end):bind(App)
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
 App.isSupported = App.getVersion:mutate(function(version)
 	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
+end):bind(App)
+
+--- cp.apple.finalcutpro:colorInspectorSupported <cp.prop: boolean; read-only>
+--- Field
+--- Is the Color Inspector supported in the installed version of Final Cut Pro?
+App.isColorInspectorSupported = prop.new(function(self)
+	local version = self:getVersion()
+	if version and v(version) >= v("10.4") then
+		return true
+	else
+		return false
+	end
 end):bind(App)
 
 --- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
@@ -1342,7 +1354,7 @@ end
 ----------------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.currentLanguage <cp.prop:string>
---- Constant
+--- Field
 --- The current language the FCPX is displayed in.
 App.currentLanguage = prop(
 	--------------------------------------------------------------------------------
