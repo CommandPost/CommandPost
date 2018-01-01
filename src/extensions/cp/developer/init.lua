@@ -53,16 +53,22 @@ function _findUnusedLanguageStrings()
 	local translations = require("cp.resources.languages.en")["en"]
 	local result = "\nUNUSED STRINGS IN EN.LUA:\n"
 	local stringCount = 0
-	local ignore = {"_action", "_label", "_title"}
+	local ignoreStart = {"plugin_group_", "shareDetails_", "plugin_status_", "plugin_action_", "shortcut_group_"}
+	local ignoreEnd = {"_action", "_label", "_title", "_customTitle", "_group"}
 	for string, _ in pairs(translations) do
 		local skip = false
-		for _, ignoreFile in pairs(ignore) do
+		for _, ignoreFile in pairs(ignoreStart) do
+			if string.sub(string, 1, string.len(ignoreFile)) == ignoreFile then
+				skip = true
+			end
+		end
+		for _, ignoreFile in pairs(ignoreEnd) do
 			if string.sub(string, string.len(ignoreFile) * -1) == ignoreFile then
 				skip = true
 			end
 		end
 		if not skip then
-			local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.lua ']] .. string .. [[' ']] .. hs.processInfo.bundlePath .. [[/']]
+			local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. hs.processInfo.bundlePath .. [[/']]
 			local output, status = hs.execute(executeString)
 			if not status then
 				result = result .. string .. "\n"
