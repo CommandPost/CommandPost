@@ -15,17 +15,17 @@ osascript -e "tell application \"CommandPost\" to quit"
 echo "Removing Outdated Release, Archive & Build Files..."
 cd ../
 cd archive/
-rm -R "$1"
+rm -rf "$1"
 cd ../
 cd CommandPost-Releases/
-rm -R "$1"
+rm -rf "$1"
 cd ../
 
 # Go to CommandPost-App Directory:
 cd CommandPost-App/
 
 # Trash the Build folder:
-rm -R build
+rm -rf build
 mkdir build
 
 set -eu
