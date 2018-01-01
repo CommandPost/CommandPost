@@ -265,8 +265,23 @@ function generate_appcast() {
 		<item>
 			<title>Version ${VERSION}</title>
 			<description><![CDATA[
-				<h2>New Features</h2>
-				<p>- Example.</p>
+				<h2>New Features:</h2>
+				<ul><li></li>
+				<li></li>
+				<li></li>
+				<li></li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li></li>
+				<li></li>
+				<li></li>
+				<li></li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li></li>
+				<li></li>
+				<li></li>
+				<li></li></ul>
 			]]>
 			</description>
 			<pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
