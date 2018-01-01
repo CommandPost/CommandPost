@@ -47,6 +47,36 @@ _fcp				= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- FIND UNUSED LANGUAGES STRINGS:
+--------------------------------------------------------------------------------
+function _findUnusedLanguageStrings()
+	local translations = require("cp.resources.languages.en")["en"]
+	local result = "\nUNUSED STRINGS IN EN.LUA:\n"
+	local stringCount = 0
+	local ignore = {"_action", "_label", "_title"}
+	for string, _ in pairs(translations) do
+		local skip = false
+		for _, ignoreFile in pairs(ignore) do
+			if string.sub(string, string.len(ignoreFile) * -1) == ignoreFile then
+				skip = true
+			end
+		end
+		if not skip then
+			local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.lua ']] .. string .. [[' ']] .. hs.processInfo.bundlePath .. [[/']]
+			local output, status = hs.execute(executeString)
+			if not status then
+				result = result .. string .. "\n"
+				stringCount = stringCount + 1
+			end
+		end
+	end
+	if stringCount == 0 then
+		result = result .. "None"
+	end
+	log.df(result)
+end
+
+--------------------------------------------------------------------------------
 -- FIND TEXT:
 --------------------------------------------------------------------------------
 function _findString(string)

@@ -72,6 +72,17 @@ return {
 			success								=			"Success",
 			unknownError						=			"Unknown Error",
 
+			--------------------------------------------------------------------------------
+			-- Generic Final Cut Pro Strings:
+			--------------------------------------------------------------------------------
+			colorBoard							=			"Color Board",
+			percentage							=			"Percentage",
+			angle								=			"Angle",
+			puck								=			"Puck",
+			color								=			"Color",
+			saturation							=			"Saturation",
+			exposure							=			"Exposure",
+
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
 		--------------------------------------------------------------------------------
@@ -983,6 +994,7 @@ return {
 	--------------------------------------------------------------------------------
 	midiTimelineZoom					=			"MIDI Timeline Zoom",
 	midiTimelineZoomDescription			=			"Allows you to control timeline zoom via MIDI controls.",
+	midiColorBoardDescription			=			"Controls the Color Board via MIDI Controls",
 
 	--------------------------------------------------------------------------------
 	-- TANGENT SUPPORT:
@@ -1264,7 +1276,7 @@ return {
 		cpPuckMouse_customTitle									=	"Mouse Control Puck %{count}",
 		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
 		cpPuck_customTitle										=	"Select %{panel} Puck %{count}",
-		cpPuckDirection_customTitle								=	"Select  %{panel} Puck %{count} & %{direction}",
+		cpPuckDirection_customTitle								=	"Select %{panel} Puck %{count} & %{direction}",
 
 		cpToggleColorBoard_title								=	"Toggle Color Board Panel",
 
