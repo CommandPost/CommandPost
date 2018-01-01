@@ -6,6 +6,24 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.19</title>
+			<description><![CDATA[
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed bug in AppleScript Support (issue #923)</li>
+				<li>Fixed bug where Tangent Plugin failed to create Hide File (issue #925)</li>
+				<li>Fixed bug where MIDI Color Board Angle controls wouldn't allow a zero value (issue #928)</li>
+				<li>Fixed URL Handler Documentation on Developers Guide</li></ul>
+			]]>
+			</description>
+			<pubDate>Tue,  2 Jan 2018 01:40:28 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.19/CommandPost_1.0.0-beta.19.dmg"
+				sparkle:version="1.0.0-beta.19"
+				sparkle:dsaSignature="MC0CFHQdCE6wBf+bSvpzkb/vPEfvLXxqAhUAg/7+ratFUlfTY7cL1G9rmpSxzJo="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.18</title>
 			<description><![CDATA[
 				<h2>New Feature:</h2>
