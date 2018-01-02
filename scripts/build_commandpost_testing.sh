@@ -13,7 +13,7 @@ export HAMMERSPOON_HOME
 
 # SCRIPT_NAME="$(basename "$0")"
 SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")" # fully qualified directory of this script
-HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")" # fully qualified directory of the parent directiry of the script location
+HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../../CommandPost-App")" # fully qualified directory of the CommandPost-App repository
 
 # Import our function library
 # shellcheck source=scripts/inc/librelease.sh disable=SC1091
