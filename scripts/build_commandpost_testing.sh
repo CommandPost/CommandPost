@@ -16,7 +16,7 @@ SCRIPT_HOME="$(dirname "$(greadlink -f "$0")")" # fully qualified directory of t
 HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")" # fully qualified directory of the parent directiry of the script location
 
 # Import our function library
-# shellcheck source=scripts/librelease.sh disable=SC1091
+# shellcheck source=scripts/inc/librelease.sh disable=SC1091
 source "${SCRIPT_HOME}/inc/librelease.sh"
 
 build # run the build function from librelease
