@@ -17,7 +17,7 @@ HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")" # fully qualified direct
 
 # Import our function library
 # shellcheck source=scripts/librelease.sh disable=SC1091
-source "../CommandPost/scripts/inc/librelease.sh"
+source "${SCRIPT_HOME}/inc/librelease.sh"
 
 build # run the build function from librelease
 
