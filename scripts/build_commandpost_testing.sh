@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# failsafes
+set -eu
+set -o pipefail
 #
 # Compile CommandPost:
 #
