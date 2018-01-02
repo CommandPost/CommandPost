@@ -6,7 +6,8 @@
 
 cd ../CommandPost-App/ ||  echo "Couldn't cd, exiting" && exit
 
-make clean
+
+make clean || echo "Make failed, exiting" && exit
 make release
 make docs
 
