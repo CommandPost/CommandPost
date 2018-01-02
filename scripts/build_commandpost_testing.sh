@@ -4,7 +4,9 @@
 # Compile CommandPost:
 #
 
-cd ../CommandPost-App/ ||  echo "Couldn't cd, exiting" && exit
+cd ..
+cd ..
+cd CommandPost-App/ ||  echo "Couldn't cd, exiting" && exit
 
 
 make clean || echo "Make failed, exiting" && exit
