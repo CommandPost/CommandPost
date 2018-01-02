@@ -22,7 +22,7 @@ source "${SCRIPT_HOME}/inc/librelease.sh"
 build_hammerspoon_dev # run the build-dev function from librelease
 
 # clean up the unsigned build
-rm -fr "$(xcodebuild -workspace ${HAMMERSPOON_HOME}/Hammerspoon.xcworkspace -scheme Hammerspoon -configuration Release -showBuildSettings | sort | uniq | grep " BUILT_PRODUCTS_DIR =" | awk '{ print $3 }')/CommandPost.app"
+rm -fr "$(xcodebuild -workspace "${HAMMERSPOON_HOME}/Hammerspoon.xcworkspace" -scheme Hammerspoon -configuration Release -showBuildSettings | sort | uniq | grep " BUILT_PRODUCTS_DIR =" | awk '{ print $3 }')/CommandPost.app"
 
 #
 # Sign App with self-signed certificate:
