@@ -30,3 +30,5 @@ rm -fr "$(xcodebuild -workspace ${HAMMERSPOON_HOME}/Hammerspoon.xcworkspace -sch
 codesign --verbose --sign "Internal Code Signing" "${HAMMERSPOON_HOME}/build/CommandPost.app/Contents/Frameworks/Sparkle.framework/Versions/A"
 codesign --verbose --sign "Internal Code Signing" "${HAMMERSPOON_HOME}/build/CommandPost.app/Contents/Frameworks/LuaSkin.framework/Versions/A"
 codesign --verbose --sign "Internal Code Signing" "${HAMMERSPOON_HOME}/build/CommandPost.app"
+
+echo "Dev build complete. Launch from ${HAMMERSPOON_HOME}/build/"
