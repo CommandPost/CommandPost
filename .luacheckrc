@@ -1,5 +1,2 @@
-std.commandpost = {
-  globals = {"hs", "rawrequire", "i18n"}
-}
-std = "min+commandpost"
+globals = {"hs", "rawrequire", "i18n"}
 ignore = {"631"}
