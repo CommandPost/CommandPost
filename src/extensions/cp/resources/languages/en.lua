@@ -72,6 +72,17 @@ return {
 			success								=			"Success",
 			unknownError						=			"Unknown Error",
 
+			--------------------------------------------------------------------------------
+			-- Generic Final Cut Pro Strings:
+			--------------------------------------------------------------------------------
+			colorBoard							=			"Color Board",
+			percentage							=			"Percentage",
+			angle								=			"Angle",
+			puck								=			"Puck",
+			color								=			"Color",
+			saturation							=			"Saturation",
+			exposure							=			"Exposure",
+
 		--------------------------------------------------------------------------------
 		-- DIALOG BOXES:
 		--------------------------------------------------------------------------------
@@ -111,7 +122,6 @@ return {
 			setupTitle							=			"CommandPost Setup",
 			introTagLine						=			"Workflow Toolkit for Professional Editors",
 			introText							=			"Thank you for installing CommandPost. This guide will help you set things up.",
-			scanFinalCutProText					=			"CommandPost now needs to open <strong>Final Cut Pro</strong>, and search for all the Effects, Transitions, Generators & Titles you have installed so that it can build a list of them for use later.<br /><br />This process takes about a minute to complete. If you need to update this list later, you can do so via the <strong>Scan Final Cut Pro</strong> button in the Preferences.",
 			scanFinalCutPro						=			"Scan Final Cut Pro",
 			finalcutproUnsupportedVersionTitle	=			"Unsupported Version",
 			finalcutproUnsupportedVersionText	=			"CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
@@ -127,7 +137,6 @@ return {
 			-- Feedback Module:
 			--------------------------------------------------------------------------------
 			bugReport							=			"Bug Report",
-			featureRequest						=			"Feature Request",
 			support								=			"Support",
 			whatWentWrong						=			"What went wrong?",
 			whatDidYouExpectToHappen			=			"What did you expect to happen?",
@@ -146,7 +155,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Notifications:
 			--------------------------------------------------------------------------------
-			keyboardShortcutsUpdated			=			"Keyboard Shortcuts Updated",
 			keywordPresetsSaved					=			"Your Keywords have been saved to Preset",
 			keywordPresetsRestored				=			"Your Keywords have been restored to Preset",
 			scrollingTimelineDeactivated		=			"Scrolling Timeline Deactivated",
@@ -168,37 +176,17 @@ return {
 			--------------------------------------------------------------------------------
 			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			scanFinalCutProDone					=			"Final Cut Pro was scanned successfully.",
-			scanFinalCutProErrors				=			"The scan completed with errors. Please check the Error Log for details.",
 
 			updateEffectsListFailed				=			"Unfortunately the Effects List was not successfully updated.",
-			updateTransitionsListFailed			=			"Unfortunately the Transitions List was not successfully updated.",
-			updateTitlesListFailed				=			"Unfortunately the Titles List was not successfully updated.",
-			updateGeneratorsListFailed			=			"Unfortunately the Generators List was not successfully updated.",
-
-			--------------------------------------------------------------------------------
-			-- Assign Shortcut Errors:
-			--------------------------------------------------------------------------------
-			assignEffectsShortcutError			=			"The Effects List doesn't appear to be up-to-date.\n\nPlease update the Effects List and try again.",
-			assignTransitionsShortcutError		=			"The Transitions List doesn't appear to be up-to-date.\n\nPlease update the Transitions List and try again.",
-			assignTitlesShortcutError			=			"The Titles List doesn't appear to be up-to-date.\n\nPlease update the Titles List and try again.",
-			assignGeneratorsShortcutError		=			"The Generators List doesn't appear to be up-to-date.\n\nPlease update the Generators List and try again.",
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
 			--------------------------------------------------------------------------------
 			noSupportedVersionsOfFCPX			= 			"No supported versions of Final Cut Pro were detected.",
 
-			customKeyboardShortcutsFailed		=			"Something went wrong when we were reading your custom keyboard shortcuts.\n\nAs a fail-safe, we are going back to use using the default keyboard shortcuts, sorry!",
-
-			newKeyboardShortcuts				=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password.",
-			newKeyboardShortcutsRestart			=			"This latest version of CommandPost may contain new keyboard shortcuts.\n\nFor these shortcuts to appear in the Final Cut Pro Command Editor, we'll need to update the shortcut files.\n\nYou will need to enter your Administrator password and restart Final Cut Pro.",
-
 			sharedClipboardRootFolder			=			"Shared Clipboard Root Folder",
-			sharedClipboardFileNotFound			=			"The Shared Clipboard file could not be found.",
-			sharedClipboardNotRead				=			"The Shared Clipboard file could not be read.",
 			sharedClipboardPathMissing			=			"The Shared Clipboard path no longer exists. Would you like to select a new location?",
 
-			restartFinalCutProFailed			=			"We weren't able to restart Final Cut Pro.\n\nPlease restart Final Cut Pro manually.",
 			loadFinalCutProFailed				=			"Failed to load Final Cut Pro. Please try again.",
 
 			keywordEditorAlreadyOpen			=			"This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.",
@@ -208,9 +196,7 @@ return {
 
 			noPluginFound						=			"Unable to find a ${plugin} called '${name}'.",
 			noPluginShortcut					=			"There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
-			noTransitionShortcut				=			"There is no Transition assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
-			noVideoEffectShortcut				=			"There is no Video Effect assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
-			noAudioEffectShortcut				=			"There is no Audio Effect assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+
 			noTitleShortcut						=			"There is no Title assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 			noGeneratorShortcut					=			"There is no Generator assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
@@ -226,15 +212,12 @@ return {
 			batchExportNoDestination			=			"It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
 			batchExportEnableBrowser			=			"Please ensure that the browser is enabled before exporting.",
 			batchExportCheckPath				=			"Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
-			batchExportCheckPathSidebar			=			"Final Cut Pro will export all items in the selected containers to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
 			batchExportReplaceYes				=			"Exports with duplicate filenames will be replaced.",
 			batchExportReplaceNo				=			"Exports with duplicate filenames will be incremented.",
 			batchExportNoClipsSelected			=			"Please ensure that at least one clip is selected for export.",
 			batchExportComplete					=			"Batch Export is now complete. The selected clips have been added to your render queue.",
 			batchExportFinalCutProClosed		=			"Final Cut Pro needs to be running to set a destination preset.\n\nPlease open Final Cut Pro and try again.",
-			activeCommandSetError				= 			"Something went wrong whilst attempting to read the Active Command Set.",
 			failedToWriteToPreferences			=			"Failed to write to the Final Cut Pro Preferences file.",
-			failedToReadFCPPreferences			=			"Failed to read Final Cut Pro Preferences",
 			failedToChangeLanguage				=			"Unable to change Final Cut Pro's language.",
 			failedToRestart						=			"Failed to restart Final Cut Pro. You will need to restart manually.",
 
@@ -250,20 +233,20 @@ return {
 			-- Yes/No Dialog Boxes:
 			--------------------------------------------------------------------------------
 			changeFinalCutProLanguage 			=			"Changing Final Cut Pro's language requires Final Cut Pro to restart.",
-			changeBackupIntervalMessage			=			"Changing the Backup Interval requires Final Cut Pro to restart.",
 			changeSmartCollectionsLabel			=			"Changing the Smart Collections Label requires Final Cut Pro to restart.",
 
 			hacksEnabling						=			"Enabling",
 			hacksDisabling						=			"Disabling",
-			hacksShortcutsEditorText			=			"Please use the Final Cut Pro <strong>Command Editor</strong> to edit these shortcuts.",
+			hacksShortcutsEditorText			=			[[Please use the Final Cut Pro <strong>Command Editor</strong> to edit these shortcuts.<br />
+															<br />
+															This feature can be disabled by unchecking the <strong>Control CommandPost Shortcuts within Final Cut Pro</strong><br/>
+															option in the Final Cut Pro tab.
+															]],
 			hacksShortcutsRestart				=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
 			hacksShortcutAdminPassword			=			"CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
 
 			togglingMovingMarkersRestart		=			"Toggling Moving Markers requires Final Cut Pro to restart.",
-			togglingBackgroundTasksRestart 		=			"Toggling the ability to perform Background Tasks during playback requires Final Cut Pro to restart.",
-			togglingTimecodeOverlayRestart		=			"Toggling Timecode Overlays requires Final Cut Pro to restart.",
 			togglingWaveformsRestart			=			"Toggling Waveform Drawings requires Final Cut Pro to restart.",
-			togglingShowTimelineInPlayerRestart =			"Toggling Show Timeline In Player requires Final Cut Pro to restart.",
 			trashPreferencesConfirmation		=			"Are you sure you want to trash the CommandPost Preferences?",
 
 			--------------------------------------------------------------------------------
@@ -309,7 +292,6 @@ return {
 			-- Pushover:
 			--------------------------------------------------------------------------------
 			pushover							=			"Pushover",
-			pushoverEnterUserAPI				=			"Please enter your Pushover User API key below, or press the 'Register with Pushover' button to :",
 			enablePushoverNotifications			=			"Enable Pushover Notifications",
 			pushoverNotifications				=			"Pushover Notifications",
 			userAPIKey							=			"User API Key",
@@ -355,7 +337,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Keyboard Shortcuts:
 			--------------------------------------------------------------------------------
-			displayKeyboardShortcuts			=			"Display Keyboard Shortcuts",
 			openCommandEditor					=			"Open Command Editor",
 
 			--------------------------------------------------------------------------------
@@ -397,53 +378,13 @@ return {
 
 			pluginShortcutTitle					=			"%{number}: %{title}",
 
-				--------------------------------------------------------------------------------
-				-- Effects Shortcuts:
-				--------------------------------------------------------------------------------
-				updateVideoEffectsList			=			"Update Video Effects List",
-				videoEffectShortcut				=			"Video Effect Shortcut",
-				videoEffectShortcutTitle		=			"%{number}: %{title}",
-				applyVideoEffectsShortcut		=			"Apply Video Effect Shortcut %{count}",
-
-				--------------------------------------------------------------------------------
-				-- Effects Shortcuts:
-				--------------------------------------------------------------------------------
-				updateAudioEffectsList			=			"Update Audio Effects List",
-				audioEffectShortcut				=			"Audio Effect Shortcut",
-				audioEffectShortcutTitle		=			"%{number}: %{title}",
-				applyAudioEffectsShortcut		=			"Apply Audio Effect Shortcut %{count}",
-
-				--------------------------------------------------------------------------------
-				-- Transitions Shortcuts:
-				--------------------------------------------------------------------------------
-				updateTransitionsList			=			"Update Transitions List",
-				transitionShortcut				=			"Transition Shortcut",
-				transitionShortcutTitle			=			"%{number}: %{title}",
-				applyTransitionsShortcut		=			"Apply Transitions Shortcut %{count}",
-
-				--------------------------------------------------------------------------------
-				-- Titles Shortcuts:
-				--------------------------------------------------------------------------------
-				updateTitlesList				=			"Update Titles List",
-				titleShortcut					=			"Title Shortcut",
-				titleShortcutTitle				=			"%{number}: %{title}",
-				applyTitlesShortcut				=			"Apply Titles Shortcut %{count}",
-
-				--------------------------------------------------------------------------------
-				-- Generators Shortcuts:
-				--------------------------------------------------------------------------------
-				updateGeneratorsList			=			"Update Generators List",
-				generatorShortcut				=			"Generator Shortcut",
-				generatorShortcutTitle			=			"%{number}: %{title}",
-				applyGeneratorsShortcut			=			"Apply Generators Shortcut %{count}",
-
-				--------------------------------------------------------------------------------
-				-- Automation Options:
-				--------------------------------------------------------------------------------
-				enableScrollingTimeline			=			"Enable Scrolling Timeline",
-				enableTimelinePlayheadLock		=			"Enable Timeline Playhead Lock",
-				enableShortcutsDuringFullscreen =			"Enable Shortcuts During Fullscreen Playback",
-				ignoreInsertedCameraCards		=			"Ignore Inserted Camera Cards",
+			--------------------------------------------------------------------------------
+			-- Automation Options:
+			--------------------------------------------------------------------------------
+			enableScrollingTimeline			=			"Enable Scrolling Timeline",
+			enableTimelinePlayheadLock		=			"Enable Timeline Playhead Lock",
+			enableShortcutsDuringFullscreen =			"Enable Shortcuts During Fullscreen Playback",
+			ignoreInsertedCameraCards		=			"Ignore Inserted Camera Cards",
 
 			--------------------------------------------------------------------------------
 			-- Clipboard:
@@ -456,7 +397,6 @@ return {
 			-- Tools:
 			--------------------------------------------------------------------------------
 			tools								=			"Tools",
-			mobileNotifications					=			"Mobile Notifications",
 			sharedXMLFiles						=			"Shared XML Files",
 			voiceCommands						=			"Voice Commands",
 			finalCutProLanguage					=			"Final Cut Pro Language",
@@ -516,7 +456,6 @@ return {
     	helpAndSupport							=			"Help & Support",
     	preferences								=			"Preferences",
     	credits									=			"Credits",
-    	helpCentre								=			"Help Centre",
     	userGuide								=			"User Guide",
     	developerGuide							=			"Developer Guide",
 
@@ -552,11 +491,9 @@ return {
 			--------------------------------------------------------------------------------
 			-- Preferences:
 			--------------------------------------------------------------------------------
-			menubarOptions						=			"Menubar Options",
 			hudOptions							=			"HUD Options",
 			language							=			"Language",
 			provideFeedback						=			"Provide Feedback",
-			createdBy							=			"Created by",
 			appVersion							=			"Version",
 
 			--------------------------------------------------------------------------------
@@ -621,6 +558,9 @@ return {
 			notificationsPanelLabel				=			"Notifications",
 			notificationsPanelTooltip			=			"Notifications Preferences",
 
+			tangentPanelLabel					=			"Tangent",
+			tangentPanelTooltip					=			"Tangent Preferences",
+
 			menubarPanelLabel					=			"Menubar",
 			menubarPanelTooltip					=			"Menubar Preferences",
 
@@ -648,9 +588,8 @@ return {
 			pluginsRestart						=			"If you continue, CommandPost will need to restart.",
 
 			pluginsUnableToDisable				=			"Unable to disable the '%{pluginName}' plugin.",
-			pluginsUnableToEnsable				=			"Unable to enable the '%{pluginName}' plugin.",
+			pluginsUnableToEnable				=			"Unable to enable the '%{pluginName}' plugin.",
 
-			setupHeading						=			"Setup",
 			menubarHeading						=			"Menubar",
 
 			languageHeading						=			"Language",
@@ -658,7 +597,6 @@ return {
 
 			shortcutsPanelLabel					=			"Shortcuts",
 			shortcutsPanelTooltip				=			"Keyboard Shortcuts",
-			shortcutsControl					=			"Shortcuts are currently being controlled by",
 
 			touchbarPanelLabel					=			"Touch Bar",
 			touchbarPanelTooltip				=			"Touch Bar Preferences",
@@ -686,8 +624,6 @@ return {
 			--------------------------------------------------------------------------------
 			errorLog							=			"Error Log",
 			openErrorLog						=			"Open Error Log",
-			showDockIcon						=			"Show Dock Icon",
-			showMenuIcon						=			"Show Menu Icon",
 			launchAtStartup						=			"Launch at Startup",
 			checkForUpdates						=			"Check for Updates",
 
@@ -771,7 +707,6 @@ return {
 	proxy								=			"Proxy",
 	hudDropZoneText						=			"Drag from Browser to Here",
 	hudDropZoneError					=			"Ah, I'm not sure what you dragged here, but it didn't look like FCPXML?",
-	hudButtonError						=			"There is currently no action assigned to this button.\n\nYou can allocate a function to this button via the CommandPost menubar.",
 	hudXMLNameDialog					=			"How would you like to label this XML file?",
 	hudXMLNameError						=			"The label you entered has special characters that cannot be used.\n\nPlease try again.",
 	hudXMLSharingDisabled				=			"XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
@@ -782,7 +717,6 @@ return {
 	--------------------------------------------------------------------------------
 	-- ACTIVATORS:
 	--------------------------------------------------------------------------------
-	activatorConfig						=			"Configure",
 	activatorUnfavoriteAction			=			"Unfavourite",
 	activatorFavoriteAction				=			"Favourite",
 	activatorHideAction					=			"Hide",
@@ -793,7 +727,6 @@ return {
 	-- CONSOLE:
 	--------------------------------------------------------------------------------
 	console								=			"Console",
-	enableConsole						=			"Enable Console",
 	highlightedItem						=			"Highlighted Item",
 
 	actionHiddenText					=			"%{text} [Hidden]",
@@ -805,27 +738,17 @@ return {
 	removeFromList						=			"Remove from List",
 	mode								=			"Mode",
 	normal								=			"Normal",
-	restoreToList						=			"Restore to List",
-	displayOptions						=			"Display Options",
-	showNone							=			"Show None",
+
+
 	showAll								=			"Show All",
-	showAutomation						=			"Show Automation",
-	showHacks							=			"Show Hacks",
-	showShortcuts						=			"Show Shortcuts",
-	showVideoEffects					=			"Show Video Effects",
-	showAudioEffects					=			"Show Audio Effects",
+
+
 	showTransitions						=			"Show Transitions",
 	showTitles							=			"Show Titles",
 	showGenerators						=			"Show Generators",
-	showMenuItems						=			"Show Menu Items",
 	rememberLastQuery					=			"Remember Last Query",
 	searchSubtext						=			"Search Subtext",
 	update								=			"Update",
-	effectsShortcuts					=			"Effects Shortcuts",
-	transitionsShortcuts				=			"Transitions Shortcuts",
-	titlesShortcuts						=			"Titles Shortcuts",
-	generatorsShortcuts					=			"Generators Shortcuts",
-	menuItems							=			"Menu Items",
 	commandEditorShortcut				= 			"Command Editor Shortcut",
 
 	--------------------------------------------------------------------------------
@@ -841,16 +764,18 @@ return {
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
-		fcpx_cmds_action					=			"Commands",
-		fcpx_menu_action					=			"Menu Items",
-		fcpx_videoEffect_action				=			"Video Effects",
 		fcpx_audioEffect_action				=			"Audio Effects",
+		fcpx_cmds_action					=			"Commands",
+		fcpx_colorInspector_action			=			"Color Inspector",
+		fcpx_timeline_action				=			"Timeline",
 		fcpx_generator_action				=			"Generators",
-		fcpx_title_action					=			"Titles",
-		fcpx_transition_action				=			"Transitions",
-		fcpx_widgets_action					=			"Touch Bar Widgets",
+		fcpx_menu_action					=			"Menu Items",
 		fcpx_midicontrols_action			=			"MIDI Controls",
 		fcpx_shortcuts_action				=			"Command Editor Shortcuts",
+		fcpx_title_action					=			"Titles",
+		fcpx_transition_action				=			"Transitions",
+		fcpx_videoEffect_action				=			"Video Effects",
+		fcpx_widgets_action					=			"Touch Bar Widgets",
 
 	--------------------------------------------------------------------------------
 	-- COMMAND URL EXECUTION:
@@ -906,7 +831,6 @@ return {
 	shortcutsKey						=			"Key",
 	resetShortcuts						=			"Reset to Default Shortcuts",
 	shortcutsResetConfirmation			=			"This will reset all modified shortcuts to the default values.",
-	shortcutsResetComplete				=			"All shortcuts have been successfully reset to their default values. CommandPost will now restart.",
 	resetShortcutsAllToNone				=			"Set All Shortcuts to None",
 	shortcutsSetNoneConfirmation		=			"This will reset all of the shortcuts to None.",
 	shortcutAlreadyInUse				= 			"This shortcut is already in use.",
@@ -958,8 +882,6 @@ return {
 	refreshMidi							=			"Refresh MIDI Devices",
 	midiResetConfirmation				=			"This will reset all modified MIDI items to the default values.",
 	enableMIDI							=			"Enable MIDI Controls",
-	badMIDIIcon							=			"Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as MIDI icons.",
-	commmandType						=			"Type",
 	channel								=			"Channel",
 	value								=			"Value",
 	learn								=			"Learn",
@@ -974,6 +896,28 @@ return {
 	--------------------------------------------------------------------------------
 	midiTimelineZoom					=			"MIDI Timeline Zoom",
 	midiTimelineZoomDescription			=			"Allows you to control timeline zoom via MIDI controls.",
+	midiColorBoardDescription			=			"Controls the Color Board via MIDI Controls",
+
+	--------------------------------------------------------------------------------
+	-- TANGENT SUPPORT:
+	--------------------------------------------------------------------------------
+	tangentPanelSupport					=			"Tangent Panel Support",
+	tangentPreferencesInfo				=			[[CommandPost offers native support of the entire range of Tangent's panels, including the <strong>Element</strong>, <strong>Wave</strong>, <strong>Ripple</strong>, the <strong>Element-Vs iPad app</strong>, and any future panels.<br />
+													<br />
+													All actions within CommandPost can be assigned to any Tangent panel button/wheel using <strong>Tangent's Mapper</strong> application. This allows you to create your own layouts and modes.<br />
+													<br />
+													If you add a new effect or plugin in Final Cut Pro, or change Languages, you can use the <strong>Rebuild Control Map</strong> button below to make these new items appear in <strong>Tangent Mapper</strong>. Please be aware that when you rebuild the Control Map this may affect your custom layouts in Tangent Mapper as plugins/effects may have been added, removed or renamed.<br />
+													<br />]],
+	enableTangentPanelSupport			=			"Enable Tangent Panel Support",
+	mustInstallTangentMapper			=			"You must install the Tangent Mapper & Hub to enable Tangent Panel support.",
+	enablingTangentPanelSupport			=			"Enabling Tangent Panel Support",
+	rebuildControlMap					=			"Rebuild Control Map",
+	rebuildControlMapMessage			=			"Just a heads up, it can take a few minutes to re-build the Control Map once you click OK.",
+	openTangentMapper					=			"Open Tangent Mapper",
+	tangentMapperNotFound				=			"Tangent Mapper Not Found",
+	tangentMapperNotFoundMessage		=			"The Tangent Mapper application could not be found.\n\nPlease download the latest version from the Tangent website and try again.",
+	downloadTangentHub					=			"Download Tangent Hub",
+	visitTangentWebsite					=			"Visit Tangent Website",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN GROUPS:
@@ -1024,6 +968,7 @@ return {
 		core_preferences_panels_plugins_label					=	"Preferences Panel: Plugins",
 		core_preferences_panels_shortcuts_label					=	"Preferences Panel: Shortcuts",
 		core_preferences_panels_streamdeck_label				=	"Preferences Panel: Stream Deck",
+		core_preferences_panels_tangent_label					=	"Preferences Panel: Tangent",
 		core_preferences_panels_touchbar_label					=	"Preferences: Touch Bar",
 		core_preferences_panels_webapp_label					=	"Preferences Panel: WebApp",
 		core_preferences_updates_label							=	"Preferences: Updates",
@@ -1093,6 +1038,7 @@ return {
 		finalcutpro_setup_unsupportedversion_label				=	"Setup: Unsupported Version Check",
 		finalcutpro_sharing_xml_label							=	"XML Sharing",
 		finalcutpro_streamdeck_label							=	"Stream Deck",
+		finalcutpro_tangent_manager_label						=	"Manager: Tangent",
 		finalcutpro_text2speech_label							=	"Text to Speech",
 		finalcutpro_timeline_audioeffects_label					=	"Timeline: Audio Effects",
 		finalcutpro_timeline_colorboard_label					=	"Timeline: Color Board",
@@ -1232,7 +1178,7 @@ return {
 		cpPuckMouse_customTitle									=	"Mouse Control Puck %{count}",
 		cpPuckMousePanel_customTitle							=	"Mouse Control %{panel} Puck %{count}",
 		cpPuck_customTitle										=	"Select %{panel} Puck %{count}",
-		cpPuckDirection_customTitle								=	"Select  %{panel} Puck %{count} & %{direction}",
+		cpPuckDirection_customTitle								=	"Select %{panel} Puck %{count} & %{direction}",
 
 		cpToggleColorBoard_title								=	"Toggle Color Board Panel",
 

@@ -65,9 +65,16 @@ function mod.init()
 			end
 		end)
 		:onExecute(function(action)
+			if type(action) == "table" then
+				--------------------------------------------------------------------------------
+				-- Used by URL Handler:
+				--------------------------------------------------------------------------------
+				action = action.id
+			end
 			local result = fcp:performShortcut(action)
 			if not result then
 				dialog.displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
+				log.ef("Failed to trigger shortcut with action: %s", action and hs.inspect(action))
 			end
 		end)
 		:onActionId(function(action)

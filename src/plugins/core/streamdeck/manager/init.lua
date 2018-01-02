@@ -294,7 +294,7 @@ end
 function convertButtonID(buttonID)
 
 	--------------------------------------------------------------------------------
-	-- Lazy programming (sorry David)
+	-- TODO: Fix lazy programming (sorry David)
 	--------------------------------------------------------------------------------
 	if tonumber(buttonID) == 1 then whichButton = 5 end
 	if tonumber(buttonID) == 2 then whichButton = 4 end

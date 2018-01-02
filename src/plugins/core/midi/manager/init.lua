@@ -336,7 +336,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 	if items[activeGroup] then
 		for _, item in pairs(items[activeGroup]) do
 			if deviceName == item.device and item.channel == metadata.channel then
-				if commandType == "noteOff" or commandType == "noteOn" then
+				if commandType == "noteOn" and metadata.velocity ~= 0 then
 					if tostring(item.number) == tostring(metadata.note) then
 						if item.handlerID and item.action then
 							local handler = mod._actionmanager.getHandler(item.handlerID)

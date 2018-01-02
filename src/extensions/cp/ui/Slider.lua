@@ -63,7 +63,7 @@ Slider.value = prop.new(
 		if ui then
 			ui:setAttributeValue("AXValue", value)
 		end
-	end	
+	end
 ):bind(Slider)
 
 -- TODO: Add documentation
@@ -74,6 +74,13 @@ end
 -- TODO: Add documentation
 function Slider:setValue(value)
 	self.value:set(value)
+	return self
+end
+
+-- TODO: Add documentation
+function Slider:shiftValue(value)
+	local currentValue = self:value()
+	self.value:set(currentValue - value)
 	return self
 end
 

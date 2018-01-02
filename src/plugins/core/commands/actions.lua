@@ -150,10 +150,11 @@ end
 
 function plugin.postInit(deps)
 
-	--
-	-- TO-DO: Moving `mod.init()` from `plugin.init()` to `plugin.postInit()` is just a temporary fix
-	--        until David comes up with a better fix in issue #897
-	--
+	--------------------------------------------------------------------------------
+	-- TODO: Moving `mod.init()` from `plugin.init()` to `plugin.postInit()`
+	--       is just a temporary fix until David comes up with a better fix in
+	--       issue #897.
+	--------------------------------------------------------------------------------
 
 	mod.init(deps.actionmanager, deps.cmds)
 	return mod

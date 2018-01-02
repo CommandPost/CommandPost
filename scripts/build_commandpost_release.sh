@@ -5,8 +5,28 @@ if [ "$1" == "" ]; then
     exit 1
 fi
 
+echo "******** PREPPING:"
+
+# Quit CommandPost:
+echo "Quitting CommandPost..."
+osascript -e "tell application \"CommandPost\" to quit"
+
+# Remove Old Files:
+echo "Removing Outdated Release, Archive & Build Files..."
+cd ../
+cd archive/
+rm -rf "$1"
+cd ../
+cd CommandPost-Releases/
+rm -rf "$1"
+cd ../
+
 # Go to CommandPost-App Directory:
-cd ../CommandPost-App/
+cd CommandPost-App/
+
+# Trash the Build folder:
+rm -rf build
+mkdir build
 
 set -eu
 set -o pipefail
