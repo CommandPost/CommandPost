@@ -214,7 +214,7 @@ local function streamDeckPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Bad Icon File Extension:
 			--------------------------------------------------------------------------------
-			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badstreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badStreamDeckIcon"), i18n("pleaseTryAgain"), i18n("ok"))
 		elseif params["type"] == "updateIcon" then
 			--------------------------------------------------------------------------------
 			-- Update Icon:

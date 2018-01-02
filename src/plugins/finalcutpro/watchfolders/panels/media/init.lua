@@ -900,7 +900,7 @@ function mod.init(deps, env)
 				placeholder = i18n("enterImageTag"),
 			})
 		--------------------------------------------------------------------------------
-		-- NOTE: Yes (David), this would be better with CSS, but "focus" doesn't seem
+		-- TODO: Yes (David), this would be better with CSS, but "focus" doesn't seem
 		-- to work in a webview for some reason?
 		--------------------------------------------------------------------------------
 		local uniqueUUID = string.gsub(uuid(), "-", "")

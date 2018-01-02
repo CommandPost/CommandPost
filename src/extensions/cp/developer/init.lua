@@ -23,6 +23,8 @@ end)
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log			= require("hs.logger").new("develop")
+
 local ax 			= require("hs._asm.axuielement")
 local drawing		= require("hs.drawing")
 local geometry		= require("hs.geometry")
@@ -30,17 +32,67 @@ local inspect		= require("hs.inspect")
 local mouse			= require("hs.mouse")
 local timer			= require("hs.timer")
 
+local fcp			= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
--- PLUGINS AVAILABLE AT _plugins
+-- SHORTCUTS:
 --------------------------------------------------------------------------------
 _plugins			= require("cp.plugins")
+_fcp				= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- FIND UNUSED LANGUAGES STRINGS:
+--------------------------------------------------------------------------------
+function _findUnusedLanguageStrings()
+	local translations = require("cp.resources.languages.en")["en"]
+	local result = "\nUNUSED STRINGS IN EN.LUA:\n"
+	local stringCount = 0
+	local ignoreStart = {"plugin_group_", "shareDetails_", "plugin_status_", "plugin_action_", "shortcut_group_"}
+	local ignoreEnd = {"_action", "_label", "_title", "_customTitle", "_group"}
+	for string, _ in pairs(translations) do
+		local skip = false
+		for _, ignoreFile in pairs(ignoreStart) do
+			if string.sub(string, 1, string.len(ignoreFile)) == ignoreFile then
+				skip = true
+			end
+		end
+		for _, ignoreFile in pairs(ignoreEnd) do
+			if string.sub(string, string.len(ignoreFile) * -1) == ignoreFile then
+				skip = true
+			end
+		end
+		if not skip then
+			local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. hs.processInfo.bundlePath .. [[/']]
+			local output, status = hs.execute(executeString)
+			if not status then
+				result = result .. string .. "\n"
+				stringCount = stringCount + 1
+			end
+		end
+	end
+	if stringCount == 0 then
+		result = result .. "None"
+	end
+	log.df(result)
+end
+
+--------------------------------------------------------------------------------
+-- FIND TEXT:
+--------------------------------------------------------------------------------
+function _findString(string)
+	local output, status = hs.execute([[grep -r ']] .. string .. [[' ']] .. fcp:getPath() .. [[/']])
+	if status then
+		log.df("Output: %s", output)
+	else
+		log.ef("An error occurred in _findString")
+	end
+end
 
 --------------------------------------------------------------------------------
 -- ELEMENT AT MOUSE:

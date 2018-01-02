@@ -103,9 +103,13 @@ function mod.apply(action)
 	-- Make sure "Installed Effects" is selected:
 	--------------------------------------------------------------------------------
 	local group = effects:group():UI()
-	local groupValue = group:attributeValue("AXValue")
-	if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
-		effects:showInstalledEffects()
+	if group then
+		local groupValue = group:attributeValue("AXValue")
+		if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
+			effects:showInstalledEffects()
+		end
+	else
+		log.ef("Failed to find Effects Group UI.")
 	end
 
 	--------------------------------------------------------------------------------
