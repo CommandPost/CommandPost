@@ -4,7 +4,7 @@
 # Compile CommandPost:
 #
 
-cd ../CommandPost-App/
+cd ../CommandPost-App/ ||  echo "Couldn't cd, exiting" && exit
 
 make clean
 make release
