@@ -19,7 +19,7 @@ HAMMERSPOON_HOME="$(greadlink -f "${SCRIPT_HOME}/../")" # fully qualified direct
 # shellcheck source=scripts/inc/librelease.sh disable=SC1091
 source "${SCRIPT_HOME}/inc/librelease.sh"
 
-build # run the build function from librelease
+build_hammerspoon_dev # run the build-dev function from librelease
 
 # clean up the unsigned build
 rm -fr "$(xcodebuild -workspace Hammerspoon.xcworkspace -scheme Hammerspoon -configuration Release -showBuildSettings | sort | uniq | grep " BUILT_PRODUCTS_DIR =" | awk '{ print $3 }')/CommandPost.app"
