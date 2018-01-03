@@ -133,6 +133,11 @@ App.EARLIEST_SUPPORTED_VERSION = "10.3.2"
 --- Final Cut Pro's Bundle ID
 App.BUNDLE_ID = "com.apple.FinalCut"
 
+--- cp.apple.finalcutpro.BUNDLE_ID_TRIAL
+--- Constant
+--- Final Cut Pro's Bundle ID for trial version
+App.BUNDLE_ID_TRIAL = "com.apple.FinalCutTrial"
+
 --- cp.apple.finalcutpro.PASTEBOARD_UTI
 --- Constant
 --- Final Cut Pro's Pasteboard UTI
@@ -147,6 +152,11 @@ App.PREFS_PATH = "~/Library/Preferences/"
 --- Constant
 --- Final Cut Pro's Preferences File
 App.PREFS_PLIST_FILE = "com.apple.FinalCut.plist"
+
+--- cp.apple.finalcutpro.PREFS_PLIST_FILE_TRIAL
+--- Constant
+--- Final Cut Pro's Preferences File for trial version
+App.PREFS_PLIST_FILE_TRIAL = "com.apple.FinalCutTrial.plist"
 
 --- cp.apple.finalcutpro.PREFS_PLIST_PATH
 --- Constant
