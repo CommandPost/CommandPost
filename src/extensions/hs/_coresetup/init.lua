@@ -16,10 +16,13 @@ return {setup=function(...)
 --- A string containing Hammerspoon's configuration directory. Typically `~/.hammerspoon/`
   hs.configdir = configdir
 
---- hs.hasinitfile
---- Constant
---- A boolean that returns true if loading local file or false
-  hs.hasinitfile = hasinitfile
+--- hs.dockIconClickCallback
+--- Variable
+--- An optional function that will be called when the Hammerspoon Dock Icon is clicked while the app is running
+---
+--- Notes:
+---  * If set, this callback will be called regardless of whether or not Hammerspoon shows its console window in response to a click (which can be enabled/disabled via `hs.openConsoleOnDockClick()`
+hs.dockIconClickCallback = nil
 
 --- hs.shutdownCallback
 --- Variable
@@ -35,8 +38,26 @@ return {setup=function(...)
 --- An optional function that will be called when the Accessibility State is changed.
 ---
 --- Notes:
---- * The function will not receive any arguments when called.  To check what the accessibility state has been changed to, you should call [hs.accessibilityState](#accessibilityState) from within your function.
+---  * The function will not receive any arguments when called.  To check what the accessibility state has been changed to, you should call [hs.accessibilityState](#accessibilityState) from within your function.
 hs.accessibilityStateCallback = nil
+
+--- hs.textDroppedToDockIconCallback
+--- Variable
+--- An optional function that will be called when text is dragged to the Hammerspoon Dock Icon or sent via the Services menu
+---
+--- Notes:
+---  * The function should accept a single parameter, which will be a string containing the text that was dragged to the dock icon
+hs.textDroppedToDockIconCallback = nil
+
+--- hs.fileDroppedToDockIconCallback
+--- Variable
+--- An optional function that will be called when a files are dragged to the Hammerspoon Dock Icon or sent via the Services menu
+---
+--- Notes:
+---  * The function should accept a single parameter, which will be a string containing the full path to the file that was dragged to the dock icon
+---  * If multiple files are sent, this callback will be called once for each file
+---  * This callback will be triggered when ANY file type is dragged onto the Hammerspoon Dock Icon, however certain filetypes are also processed seperately by Hammerspoon. For example, `hs.urlevent` will be triggered when the following filetypes are dropped onto the Dock Icon: HTML Documents (.html, .htm, .shtml, .jhtml), Plain text documents (.txt, .text), Web site locations (.url), XHTML documents (.xhtml, .xht, .xhtm, .xht).
+hs.fileDroppedToDockIconCallback = nil
 
 --- hs.docstrings_json_file
 --- Constant
@@ -153,7 +174,7 @@ hs.accessibilityStateCallback = nil
   local rawprint,logmessage = print,hs._logmessage
   hs.rawprint = rawprint
   function print(...)
-    rawprint(...)
+--    rawprint(...)
     local vals = pack(...)
 
     for k = 1, vals.n do
@@ -236,7 +257,7 @@ hs.accessibilityStateCallback = nil
 ---
 --- Parameters:
 ---  * name - The name of a Spoon (without the trailing `.spoon`)
----  * global - An optional boolean. If true, this function will insert the spoon into Lua's global namespace as `spoon.name`. Defaults to true.
+---  * global - An optional boolean. If true, this function will insert the spoon into Lua's global namespace as `spoon.NAME`. Defaults to true.
 ---
 --- Returns:
 ---  * The object provided by the Spoon (which can be ignored if you chose to make the Spoon global)
@@ -270,8 +291,7 @@ hs.accessibilityStateCallback = nil
         require("hs.fs")
         local docsPath = obj.spoonPath.."/docs.json"
         if hs.fs.attributes(docsPath) then
-          -- FIXME: Not sure quite what to do here to load this
-          print("loading docs would happen here")
+          require("hs.doc").registerJSONFile(docsPath, true)
         end
       end
     end
@@ -423,6 +443,22 @@ hs.accessibilityStateCallback = nil
       end
   end
 
+  hs.__appleScriptRunString = function(s)
+
+    --print("runstring")
+    local fn, err = load("return " .. s)
+    if not fn then fn, err = load(s) end
+    if not fn then return false, tostring(err) end
+
+    local str = ""
+    local results = pack(xpcall(fn,debug.traceback))
+    for i = 2,results.n do
+      if i > 2 then str = str .. "\t" end
+      str = str .. tostring(results[i])
+    end
+    return results[1], str
+  end
+
   -- load init.lua
 
   local function runstring(s)
@@ -550,7 +586,7 @@ hs.accessibilityStateCallback = nil
       mapJoiner = ":"
       src = src[mod]
       if type(src) == "userdata" then
-        src = getmetatable(src).__index
+        src = hs.getObjectMetatable(getmetatable(src).__name or "") or hs.getObjectMetatable(getmetatable(src).__type or "") or getmetatable(src).__index
       end
       completions = findCompletions(src, remnant)
     elseif mod and #parents > 0 then

@@ -6,6 +6,48 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.19</title>
+			<description><![CDATA[
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed bug in AppleScript Support (issue #923)</li>
+				<li>Fixed bug where Tangent Plugin failed to create Hide File (issue #925)</li>
+				<li>Fixed bug where MIDI Color Board Angle controls wouldn't allow a zero value (issue #928)</li>
+				<li>Fixed URL Handler Documentation on Developers Guide</li></ul>
+			]]>
+			</description>
+			<pubDate>Tue,  2 Jan 2018 01:40:28 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.19/CommandPost_1.0.0-beta.19.dmg"
+				sparkle:version="1.0.0-beta.19"
+				sparkle:dsaSignature="MC0CFHQdCE6wBf+bSvpzkb/vPEfvLXxqAhUAg/7+ratFUlfTY7cL1G9rmpSxzJo="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
+			<title>Version 1.0.0-beta.18</title>
+			<description><![CDATA[
+				<h2>New Feature:</h2>
+				<ul><li>CommandPost now offers native support of the entire range of Tangent's panels, including the Element, Wave, Ripple, the Element-Vs iPad app, and any future Tangent panels. All actions within CommandPost can be assigned to any Tangent panel button/wheel using Tangent's Mapper application. This allows you to create your own layouts and modes. Currently we only support controlling the Color Board and Timeline Zoom with the wheels, however full Color Inspector support will be added in a future beta. As this functionality is new, your feedback and testing is greatly appreciated (issue #906)</li></ul>
+
+				<h2>Improvements:</h2>
+				<ul><li>Toggling Developer Mode no longer requires restarting CommandPost (issue #899)</li>
+				<li>Add option to Advanced Preferences & Error Log button to Enable/Disable Auto-Reload (issue #910)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Global Commands not being correctly listed on some machines (issue #897)</li>
+				<li>MIDI Commands incorrectly triggering twice on some devices (issue #915)</li>
+				<li>"Control CommandPost Shortcuts within Final Cut Pro" now works with Final Cut Pro 10.4 (issue #896)</li></ul>
+			]]>
+			</description>
+			<pubDate>Sat, 30 Dec 2017 23:48:15 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.18/CommandPost_1.0.0-beta.18.dmg"
+				sparkle:version="1.0.0-beta.18"
+				sparkle:dsaSignature="MC4CFQDESBY7NADPCMqkY3y1HGXOByPDcgIVAI8mC8xctkWLNHE+pXBMX56gK8j9"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.17</title>
 			<description><![CDATA[
 				<h2>Improvements:</h2>
