@@ -17,6 +17,9 @@
 --------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("colorWheels")
 
+local drawing 							= require("hs.drawing")
+local inspect							= require("hs.inspect")
+
 local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
 local tools								= require("cp.tools")
@@ -87,10 +90,11 @@ ColorWheels.NUDGE_DIRECTIONS = {
 --
 -- Parameters:
 --  * value - A AXColorWell Value String (i.e. "rgb 0.5 0 1 0")
+--  * lowercase - Whether the case should be lowercase or should the first letter be uppercase, as a boolean
 --
 -- Returns:
 --  * A table or `nil` if an error occurred.
-local function colorWellValueToTable(value)
+local function colorWellValueToTable(value, lowercase)
     if type(value) ~= "string" then
         log.ef("Value to colorWellValueToTable was invalid: %s", value and inspect(value))
         return nil
@@ -99,10 +103,14 @@ local function colorWellValueToTable(value)
     if not valueToTable or #valueToTable ~= 5 then
         return nil
     end
+    local a, b, c = "Red", "Green", "Blue"
+    if lowercase then
+    	a, b, c = "red", "green", "blue"
+    end
     local result = {
-        ["Red"]     = tonumber(valueToTable[2]),
-        ["Green"]   = tonumber(valueToTable[3]),
-        ["Blue"]    = tonumber(valueToTable[4]),
+        [a] = tonumber(valueToTable[2]),
+        [b] = tonumber(valueToTable[3]),
+        [c] = tonumber(valueToTable[4]),
     }
     return result
 end
@@ -116,13 +124,28 @@ end
 --
 -- Returns:
 --  * A string or `nil` if an error occurred.
+--
+-- Notes:
+--  * The key values can be either all lowercase or the first letter can be uppercase (i.e. "Red" or "red").
 local function rgbTableToColorWellValue(value)
-    if type(value) ~= "table" or type(value["Red"]) ~= "number" or type(value["Green"]) ~= "number" or type(value["Blue"]) ~= "number" then
-        log.ef("Value to rgbTableToColorWellValue was invalid: %s", value and inspect(value))
-        return nil
-    else
-        return "rgb " .. value["Red"] .. " " .. value["Green"] .. " " .. value["Blue"] .. " 0"
-    end
+	if type(value) ~= "table"
+	or (type(value["Red"]) ~= "number" and type(value["red"]) ~= "number")
+	or (type(value["Green"]) ~= "number" and type(value["green"]) ~= "number")
+	or (type(value["Blue"]) ~= "number" and type(value["blue"]) ~= "number")
+	then
+		log.ef("Value to rgbTableToColorWellValue was invalid: %s", value and inspect(value))
+		return nil
+	else
+		local red 		= value["Red"] or value["red"]
+		local green 	= value["Green"] or value["green"]
+		local blue 		= value["Blue"] or value["blue"]
+
+		red = tools.round(red, 5)
+		green = tools.round(green, 5)
+		blue = tools.round(blue, 5)
+
+		return "rgb " .. red .. " " .. green .. " " .. blue .. " 0"
+	end
 end
 
 -- invertTable(t) -> table | nil
@@ -141,48 +164,6 @@ function invertTable(t)
    end
    return s
 end
-
---------------------------------------------------------------------------------
--- AXColorWell Notes:
---------------------------------------------------------------------------------
-
-    -- --------------------------------------------------------------------------
-    -- Value in FCP Interface | Value in Accessibility Framework
-    -- --------------------------------------------------------------------------
-    -- Red      Green   Blue    AXValue     R           G           B           A
-    -- --------------------------------------------------------------------------
-    -- 0        0       0       rgb         0           0           0           0
-    --
-    -- 255      0       0       rgb         0.183333    1           0           0
-    -- -255     0       0       rgb         0.816667    0           1           0
-    --
-    -- 0        255     0       rgb         0           0.183333    1           0
-    -- 0        -255    0       rgb         1           0.816667    0           0
-    --
-    -- 0        0       255     rgb         1           0           0.183333    0
-    -- 0        0       -255    rgb         0           1           0.816667    0
-    --
-    -- 255      255     0       rgb         0           1           0.816667    0
-    -- 0        255     255     rgb         0.816667    0           1           0
-    -- --------------------------------------------------------------------------
-
-    -- --------------------------------------------------------------------------
-    --                  Value in FCP Interface
-    -- --------------------------------------------------------------------------
-    --                  Red         Green       Blue
-    -- --------------------------------------------------------------------------
-    -- Far Left         208         255         0
-    -- Far Right        47          0           255
-    -- Far Top          255         0           81
-    -- Far Bottom       0           255         174
-    -- --------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
-    -- Color Wheel Limits:
-    --------------------------------------------------------------------------------
-    -- Final Cut Pro:       255 to -255
-    -- UI Scripting:        1   to -1
-    --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS & METHODS:
@@ -665,16 +646,16 @@ function ColorWheels:color(wheel, color, value)
     end
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:mix(wheel, [value]) -> number | nil
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControl(wheel, direction) -> boolean
 --- Method
---- Sets or gets a color wheel mix.
+--- Moves a Color Wheel puck/control in a specific direction.
 ---
 --- Parameters:
 ---  * wheel - Which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights")
 ---  * direction - Which direction you want to nudge the wheel control ("Up", "Down", "Left" or "Right")
 ---
 --- Returns:
----  * A number containing the mix value or `nil` if an error occurs.
+---  * `true` if successful otherwise `nil`
 function ColorWheels:nudgeControl(wheel, direction)
 
 	--------------------------------------------------------------------------------
@@ -704,6 +685,8 @@ function ColorWheels:nudgeControl(wheel, direction)
     elseif direction == "Right" then
     	self:app():performShortcut("ColorBoard-NudgePuckRight")
 	end
+
+	return true
 
 end
 
@@ -2210,6 +2193,12 @@ function ColorWheels:selectedWheel(wheel)
     end
 end
 
+--------------------------------------------------------------------------------
+--
+-- EXPERIMENTS:
+--
+--------------------------------------------------------------------------------
+
 --[[
 function ColorWheels:test()
 
@@ -2229,5 +2218,151 @@ function ColorWheels:test()
 	--local result = rgbTableToColorWellValue(rgb)
 end
 --]]
+
+--------------------------------------------------------------------------------
+-- AXColorWell Notes:
+--------------------------------------------------------------------------------
+
+    -- --------------------------------------------------------------------------
+    -- Value in FCP Interface | Value in Accessibility Framework
+    -- --------------------------------------------------------------------------
+    -- Red      Green   Blue    AXValue     R           G           B           A
+    -- --------------------------------------------------------------------------
+    -- 0        0       0       rgb         0           0           0           0
+    --
+    -- 255      0       0       rgb         0.183333    1           0           0
+    -- -255     0       0       rgb         0.816667    0           1           0
+    --
+    -- 0        255     0       rgb         0           0.183333    1           0
+    -- 0        -255    0       rgb         1           0.816667    0           0
+    --
+    -- 0        0       255     rgb         1           0           0.183333    0
+    -- 0        0       -255    rgb         0           1           0.816667    0
+    --
+    -- 255      255     0       rgb         0           1           0.816667    0
+    -- 0        255     255     rgb         0.816667    0           1           0
+    --
+    --
+    -- --------------------------------------------------------------------------
+
+	-- --------------------------------------------------------------------------
+	-- Moving Color Puck directly upwards using shortcut key:
+	-- --------------------------------------------------------------------------
+	-- rgb 	0 				0 				0	 			0
+	-- rgb 	0.000833333 	0.00166667 		0 				0
+	-- rgb 	0.00166667 		0.00333333 		0 				0
+	-- --------------------------------------------------------------------------
+
+	-- ------------------------------------------------------------------------------------------
+	--                  Value in FCP Interface
+	-- ------------------------------------------------------------------------------------------
+	--                  Red         Green       Blue		AXColorWell Value
+	-- ------------------------------------------------------------------------------------------
+	-- Far Left         208         255         0			rgb 0			0.999019 		1 	0
+	-- Far Right        47          0           255			rgb 1 			0.000980343 	0 	0
+	-- Far Top          255         0           81			rgb 0.50098    	1 				0 	0
+	-- Far Bottom       0           255         174			rgb 0.49902 	0 				1 	0
+	-- ------------------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Limits:
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro:       255 to -255
+    -- UI Scripting:        1   to -1
+    --------------------------------------------------------------------------------
+
+	--[[
+
+	Moving upwards:
+
+	x: 0.0, y: 0.0
+	x: -1.2566345481352e-06, y: 0.99999999999921
+	x: 1.5707978978147e-06, y: 0.99999999999877
+	x: 6.1232339957368e-17, y: 1.0
+	x: -7.8539777075812e-07, y: 0.99999999999969
+
+	--]]
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControlPrototype(wheel, direction) -> boolean
+--- Method
+--- Moves a Color Wheel puck/control in a specific direction.
+---
+--- Parameters:
+---  * wheel - Which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights")
+---  * direction - Which direction you want to nudge the wheel control ("Up", "Down", "Left" or "Right")
+---
+--- Returns:
+---  * `true` if successful otherwise `nil`
+function ColorWheels:nudgeControlPrototype(wheel, direction)
+
+	local console = require("hs.console")
+	console.clearConsole()
+
+	local ui = self:parent():UI()
+	local board = ui[3][2]
+
+	local currentValueAsString = board:attributeValue("AXValue")
+
+	log.df("currentValueAsString: %s", currentValueAsString)
+
+	local currentValueAsRGB = colorWellValueToTable(currentValueAsString, true)
+
+	log.df("currentValueAsRGB: %s", inspect(currentValueAsRGB))
+
+	local currentValueAsHSB = drawing.color.asHSB(currentValueAsRGB)
+
+	log.df("currentValueAsHSB: %s", inspect(currentValueAsHSB))
+
+	local sat = currentValueAsHSB["saturation"]
+	local hue = currentValueAsHSB["hue"]
+
+	log.df("sat: %s, hue: %s", sat, hue)
+
+	-- X is left/right
+	-- Y is up/down
+
+	-- hue is the angle
+	-- saturation is the distance from centre to edge
+
+	local x = sat * math.cos(math.rad(hue))
+	local y = sat * math.sin(math.rad(hue))
+
+	log.df("x: %s, y: %s", x, y)
+
+	log.df("-----------------------")
+
+	--if direction == "Up" then
+	x = x + 1
+	--end
+
+	log.df("x: %s, y: %s", x, y)
+
+	local sat = math.sqrt(x * x + y * y)
+	local hue = math.atan(y, x)
+
+	log.df("sat: %s, hue: %s", sat, hue)
+
+	currentValueAsHSB["hue"] = hue
+	currentValueAsHSB["saturation"] = sat
+
+	log.df("currentValueAsHSB: %s", inspect(currentValueAsHSB))
+
+	local currentValueAsRGB = drawing.color.asRGB(currentValueAsHSB)
+
+	log.df("currentValueAsRGB: %s", inspect(currentValueAsRGB))
+
+	local result = rgbTableToColorWellValue(currentValueAsRGB)
+
+	log.df("result: %s", result)
+
+	local setAttributeValueResult = board:setAttributeValue("AXValue", result)
+
+	log.df("setAttributeValueResult: %s", setAttributeValueResult)
+
+	local currentValueAsString = board:attributeValue("AXValue")
+
+	log.df("currentValueAsString: %s", currentValueAsString)
+
+end
 
 return ColorWheels
