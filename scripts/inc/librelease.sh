@@ -232,20 +232,6 @@ function build_hammerspoon_app() {
   fi
 }
 
-function build_hammerspoon_dev() {
-  echo "Building CommandPost.app for development..."
-  pushd "${HAMMERSPOON_HOME}" >/dev/null
-  make clean
-  make release
-  rm build/docs.json
-  # make docs
-  # make build/html/LuaSkin
-  popd >/dev/null
-  if [ ! -e "${HAMMERSPOON_HOME}"/build/CommandPost.app ]; then
-      fail "Looks like the build failed. sorry!"
-  fi
-}
-
 ############################ POST-BUILD FUNCTIONS #############################
 
 function build_dmgcanvas() {
@@ -275,37 +261,31 @@ function generate_appcast() {
   SPARKLE_DSA_SIGNATURE="$(../CommandPost/scripts/inc/sign_update "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" "../dsa_priv.pem")"
 
   touch "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
-  echo "
-		<item>
-			<title>Version ${VERSION}</title>
-			<description><![CDATA[
-				<h2>New Features:</h2>
-				<ul><li></li>
-				<li></li>
-				<li></li>
-				<li></li></ul>
+  echo "<?xml version="1.0" encoding="utf-8"?>
+		<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+			<channel>
+				<title>CommandPost Changelog</title>
+				<link>https://raw.githubusercontent.com/CommandPost/CommandPost-App/master/appcast.xml</link>
+				<description>Most recent changes with links to updates.</description>
+				<language>en</language>
+				<item>
+					<title>Version ${VERSION}</title>
+					<description><![CDATA[
+						<h2>New Features</h2>
+						<p>- Example.</p>
+					]]>
+					</description>
+					<pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
+					<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/${VERSION}/CommandPost_${VERSION}.dmg"
+						sparkle:version="${VERSION}"
+						sparkle:dsaSignature="${SPARKLE_DSA_SIGNATURE}"
+						type="application/octet-stream"
+					/>
+					<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+				</item>
+			</channel>
+		</rss>" >> "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
 
-				<h2>Improvements:</h2>
-				<ul><li></li>
-				<li></li>
-				<li></li>
-				<li></li></ul>
-
-				<h2>Bug Fixes:</h2>
-				<ul><li></li>
-				<li></li>
-				<li></li>
-				<li></li></ul>
-			]]>
-			</description>
-			<pubDate>$(date +"%a, %e %b %Y %H:%M:%S %z")</pubDate>
-			<enclosure url=\"https://github.com/CommandPost/CommandPost/releases/download/${VERSION}/CommandPost_${VERSION}.dmg\"
-				sparkle:version=\"${VERSION}\"
-				sparkle:dsaSignature=\"${SPARKLE_DSA_SIGNATURE}\"
-				type=\"application/octet-stream\"
-			/>
-			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
-		</item>" >> "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.txt"
 }
 
 function compress_hammerspoon_app() {
@@ -446,3 +426,4 @@ function release_tweet() {
   t update "Just released ${VERSION} - http://www.hammerspoon.org/releasenotes/"
   t set active "$CURRENT"
 }
+
