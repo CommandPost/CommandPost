@@ -163,6 +163,11 @@ App.PREFS_PLIST_FILE_TRIAL = "com.apple.FinalCutTrial.plist"
 --- Final Cut Pro's Preferences Path
 App.PREFS_PLIST_PATH = App.PREFS_PATH .. App.PREFS_PLIST_FILE
 
+--- cp.apple.finalcutpro.PREFS_PLIST_PATH_TRIAL
+--- Constant
+--- Final Cut Pro's Preferences Path for trial version
+App.PREFS_PLIST_PATH = App.PREFS_PATH .. App.PREFS_PLIST_FILE_TRIAL
+
 --- cp.apple.finalcutpro.SUPPORTED_LANGUAGES
 --- Constant
 --- Table of Final Cut Pro's supported Languages
@@ -306,8 +311,18 @@ end
 ---  * The hs.application, or `nil` if the application is not running.
 App.application = prop.new(function(self)
 	local app = self._application
-	if not app or app:bundleID() == nil or not app:isRunning() then
+	local appstorefcpx = application.applicationsForBundleID(App.BUNDLE_ID)
+	local trialfcpx = application.applicationsForBundleID(App.BUNDLE_ID_TRIAL)
+	if (not app or app:bundleID() == nil or not app:isRunning()) and appstorefcpx and #appstorefcpx > 0 then
 		local result = application.applicationsForBundleID(App.BUNDLE_ID)
+		if result and #result > 0 then
+			app = result[1] -- If there is at least one copy running, return the first one
+		else
+			app = nil
+		end
+		self._application = app
+	elseif trialfcpx and #trialfcpx > 0 then
+		local result = application.applicationsForBundleID(App.BUNDLE_ID_TRIAL)
 		if result and #result > 0 then
 			app = result[1] -- If there is at least one copy running, return the first one
 		else
