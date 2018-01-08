@@ -140,9 +140,13 @@ local function rgbTableToColorWellValue(value)
 		local green 	= value["Green"] or value["green"]
 		local blue 		= value["Blue"] or value["blue"]
 
-		red = tools.round(red, 5)
-		green = tools.round(green, 5)
-		blue = tools.round(blue, 5)
+		red = tools.round(red, 7)
+		green = tools.round(green, 7)
+		blue = tools.round(blue, 7)
+
+		if red == 0 then red = "0" end
+		if green == 0 then green = "0" end
+		if blue == 0 then blue = "0" end
 
 		return "rgb " .. red .. " " .. green .. " " .. blue .. " 0"
 	end
@@ -767,8 +771,16 @@ function ColorWheels:saturation(wheel, value)
 
 end
 
---[[
-function ColorWheels:buildBrightnessMap()
+-- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:_buildBrightnessMap() -> None
+-- Method
+-- Displays the code needed for the brightness map table in the Error Log. This is for developers use only.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function ColorWheels:_buildBrightnessMap()
 	local ui = self:parent():UI()
 	local brightnessUI = nil
 	local viewMode = self:viewMode()
@@ -783,7 +795,6 @@ function ColorWheels:buildBrightnessMap()
 	result = result .. "}"
 	log.df(result)
 end
---]]
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:brightness(wheel, [value]) -> number | nil
 --- Method
@@ -816,7 +827,7 @@ function ColorWheels:brightness(wheel, value)
 	--------------------------------------------------------------------------------
 	-- Hardcoded Value Map - which is far less than ideal.
 	--
-	-- TODO: David to replace this map with a formula.
+	-- TODO: David to replace this map with a formula if we can work it out.
 	--------------------------------------------------------------------------------
 	local map = {
 		[0.001] = -1,
@@ -2193,9 +2204,26 @@ function ColorWheels:selectedWheel(wheel)
     end
 end
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:reset(wheel) -> boolean | nil
+--- Method
+--- Resets the selected color wheel.
+---
+--- Parameters:
+---  * wheel - An optional value of which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights"). If no wheel is supplied then all wheels will be reset.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
+function ColorWheels:reset(wheel)
+
+	-- TODO: Finish this function.
+
+end
+
 --------------------------------------------------------------------------------
 --
 -- EXPERIMENTS:
+--
+-- The below code is a bunch of experiments and work-in-progress code.
 --
 --------------------------------------------------------------------------------
 
@@ -2283,6 +2311,47 @@ end
 
 	--]]
 
+--------------------------------------------------------------------------------------------------
+-- The below code is based on an example given to Chris - as discussed here:
+-- https://github.com/Hammerspoon/hammerspoon/issues/1642
+--
+-- Code Example:
+-- https://github.com/asmagill/hammerspoon-config-take2/blob/master/_scratch/hsbWheel.lua
+--------------------------------------------------------------------------------------------------
+
+local orientation = 0.25
+
+local toXY = function(c)
+    local h = 1 - c.hue - orientation -- modify hue to what I *think* is the orientation in FCP
+    return c.saturation * math.cos(h * math.pi * 2), c.saturation * math.sin(h * math.pi * 2)
+end
+
+local fromXY = function(x, y)
+    local hue, sat = math.atan(y, x) / ( math.pi * 2), math.sqrt(x * x + y * y)
+    local h = 1 - (hue + orientation) -- modify hue from what I *think* is the orientation in FCP
+    return h, sat
+end
+
+function clamp(val, min, max)
+    if val <= min then
+        val = min
+    elseif max <= val then
+        val = max
+    end
+    return val
+end
+
+
+--[[
+module.setXY = function(x, y)
+    x, y = clamp(x or 0, -1, 1), clamp(y or 0, -1, 1)
+    local h, s = fromXY(x, y)
+    _C.knob.fillColor = { hue = h, saturation = s, brightness = 1 }
+    _C.knob.center = { x = tostring((x + 1) / 2), y = tostring((y + 1) / 2) }
+    _C.text.text = string.format("X, Y = %.3f, %.3f", x, y)
+end
+--]]
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControlPrototype(wheel, direction) -> boolean
 --- Method
 --- Moves a Color Wheel puck/control in a specific direction.
@@ -2293,7 +2362,24 @@ end
 ---
 --- Returns:
 ---  * `true` if successful otherwise `nil`
+
+xcount = 0
 function ColorWheels:nudgeControlPrototype(wheel, direction)
+
+	--------------------------------------------------------------------------------
+	--
+	-- X is left/right
+	-- Y is up/down
+	--
+	-- hue is the angle
+	-- saturation is the distance from centre to edge
+	--
+	-- hue - the hue component of the color specified as a number from 0.0 to 1.0. (0-359)
+	-- saturation - the saturation component of the color specified as a number from 0.0 to 1.0. (0-100)
+	-- brightness - the brightness component of the color specified as a number from 0.0 to 1.0. (0-100)
+	-- alpha - the color transparency from 0.0 (completely transparent) to 1.0 (completely opaque)
+	--
+	--------------------------------------------------------------------------------
 
 	local console = require("hs.console")
 	console.clearConsole()
@@ -2302,32 +2388,112 @@ function ColorWheels:nudgeControlPrototype(wheel, direction)
 	local board = ui[3][2]
 
 	local currentValueAsString = board:attributeValue("AXValue")
-
-	log.df("currentValueAsString: %s", currentValueAsString)
+	log.df("currentValueAsString: %s", inspect(currentValueAsString))
 
 	local currentValueAsRGB = colorWellValueToTable(currentValueAsString, true)
-
 	log.df("currentValueAsRGB: %s", inspect(currentValueAsRGB))
 
 	local currentValueAsHSB = drawing.color.asHSB(currentValueAsRGB)
-
 	log.df("currentValueAsHSB: %s", inspect(currentValueAsHSB))
 
-	local sat = currentValueAsHSB["saturation"]
-	local hue = currentValueAsHSB["hue"]
+	local x, y = toXY(currentValueAsHSB)
+	log.df("x: %s, y: %s", x,y)
 
-	log.df("sat: %s, hue: %s", sat, hue)
+	x = x + 0.1
+	log.df("x: %s, y: %s", x,y)
 
-	-- X is left/right
-	-- Y is up/down
+	local hue, sat = fromXY(x, y)
+	log.df("hue: %s, sat: %s", hue ,sat)
 
-	-- hue is the angle
-	-- saturation is the distance from centre to edge
+	local modifiedHSB = currentValueAsHSB
+	modifiedHSB.hue = hue
+	modifiedHSB.sat = sat
+	log.df("modifiedHSB: %s", inspect(modifiedHSB))
 
-	local x = sat * math.cos(math.rad(hue))
-	local y = sat * math.sin(math.rad(hue))
+	local backToRGB = drawing.color.asRGB(modifiedHSB)
+	log.df("backToRGB: %s", inspect(backToRGB))
 
-	log.df("x: %s, y: %s", x, y)
+
+	local backToString = rgbTableToColorWellValue(backToRGB)
+	log.df("backToString: %s", inspect(backToString))
+
+	--[[
+	local r = tools.round(backToRGB.red * 256, 0)
+	local g = tools.round(backToRGB.green * 256, 0)
+	local b = tools.round(backToRGB.blue * 256, 0)
+
+	log.df("Red: %s, Green: %s, Blue: %s", r, g, b)
+	--]]
+
+	local setAttributeValueResult = board:setAttributeValue("AXValue", backToString)
+	log.df("setAttributeValueResult: %s", setAttributeValueResult)
+
+	local currentValueAsString = board:attributeValue("AXValue")
+	log.df("currentValueAsString: %s", currentValueAsString)
+
+	do return end
+
+
+
+
+
+
+
+
+
+
+
+	local x, y = xcount, 0.02
+	xcount = xcount - 0.0001
+
+	log.df("xcount: %s", xcount)
+
+	x, y = clamp(x or 0, -1, 1), clamp(y or 0, -1, 1)
+	local h, s = fromXY(x, y)
+
+	log.df("h: %s, s: %s", h, s)
+	log.df("-----------------------")
+
+	local c = currentValueAsHSB
+	c.hue = h
+	c.saturation = s
+
+	log.df("hsb: %s", inspect(c))
+
+	local rgb = drawing.color.asRGB(c)
+
+	log.df("rgb: %s", inspect(rgb))
+
+
+
+
+	local result = rgbTableToColorWellValue(rgb)
+
+	log.df("result: %s", result)
+
+	local setAttributeValueResult = board:setAttributeValue("AXValue", result)
+
+	log.df("setAttributeValueResult: %s", setAttributeValueResult)
+
+	local currentValueAsString = board:attributeValue("AXValue")
+
+	log.df("currentValueAsString: %s", currentValueAsString)
+
+
+
+
+	do return end
+
+
+
+	local x, y = toXY(currentValueAsHSB)
+
+	--local x = sat * math.cos(math.rad(hue))
+	--local y = sat * math.sin(math.rad(hue))
+
+	log.df("x: %s, y: %s", x,y)
+
+	do return end
 
 	log.df("-----------------------")
 
