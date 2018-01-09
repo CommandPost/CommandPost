@@ -242,11 +242,11 @@ function completeProcess()
 	-- Add Finder Tag(s):
 	--------------------------------------------------------------------------------
 	if mod.createRoleForVoice() then
-		if not fs.tagsAdd(savePath, {mod.tag(), firstToUpper(mod.voice())}) then		
+		if not fs.tagsAdd(savePath, {mod.tag(), firstToUpper(mod.voice())}) then
 			log.ef("Failed to add Finder Tags (%s & %s) to: %s", mod.tag(), firstToUpper(mod.voice()), savePath)
 		end
 	else
-		if not fs.tagsAdd(savePath, {mod.tag()}) then 
+		if not fs.tagsAdd(savePath, {mod.tag()}) then
 			log.ef("Failed to add Finder Tag (%s) to: %s", mod.tag(), savePath)
 		end
 	end
@@ -273,6 +273,22 @@ function completeProcess()
 		return nil
 	end
 
+    --------------------------------------------------------------------------------
+    -- Delay things until the data is actually successfully on the Clipboard:
+    --------------------------------------------------------------------------------
+    local result = just.doUntil(function()
+        local pasteboardCheck = pasteboard.readAllData()
+        if pasteboardCheck and pasteboardCheck["public.file-url"] and pasteboardCheck["public.file-url"] == safeSavePath then
+            return true
+        else
+            return false
+        end
+    end, 0.5)
+    if not result then
+        dialog.displayErrorMessage("The URL on the clipboard was not the same as what we wrote to the Pasteboard.")
+        return nil
+    end
+
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
 	--------------------------------------------------------------------------------
@@ -291,7 +307,7 @@ function completeProcess()
 	if result then
 		local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
 	else
-		dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut in the Text to Speech Plugin.")
+		dialog.displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
 		return nil
 	end
 
