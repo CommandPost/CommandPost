@@ -71,19 +71,6 @@ mod.insertIntoTimeline = config.prop("text2speechInsertIntoTimeline", true)
 --- Boolean that sets whether or not a tag should be added for the voice.
 mod.createRoleForVoice = config.prop("text2speechCreateRoleForVoice", true)
 
--- firstToUpper() -> string
--- Function
--- Makes the first letter in a word a capital letter.
---
--- Parameters:
---  * None
---
--- Returns:
---  * A string.
-function firstToUpper(str)
-    return (str:gsub("^%l", string.upper))
-end
-
 --- plugins.finalcutpro.text2speech.chooseFolder() -> string or false
 --- Function
 --- Prompts the user to choose a folder for the Text to Speech Tool.
@@ -242,8 +229,8 @@ function completeProcess()
 	-- Add Finder Tag(s):
 	--------------------------------------------------------------------------------
 	if mod.createRoleForVoice() then
-		if not fs.tagsAdd(savePath, {mod.tag(), firstToUpper(mod.voice())}) then
-			log.ef("Failed to add Finder Tags (%s & %s) to: %s", mod.tag(), firstToUpper(mod.voice()), savePath)
+		if not fs.tagsAdd(savePath, {mod.tag(), tools.firstToUpper(mod.voice())}) then
+			log.ef("Failed to add Finder Tags (%s & %s) to: %s", mod.tag(), tools.firstToUpper(mod.voice()), savePath)
 		end
 	else
 		if not fs.tagsAdd(savePath, {mod.tag()}) then
@@ -276,7 +263,7 @@ function completeProcess()
     --------------------------------------------------------------------------------
     -- Delay things until the data is actually successfully on the Clipboard:
     --------------------------------------------------------------------------------
-    local result = just.doUntil(function()
+    local pasteboardCheckResult = just.doUntil(function()
         local pasteboardCheck = pasteboard.readAllData()
         if pasteboardCheck and pasteboardCheck["public.file-url"] and pasteboardCheck["public.file-url"] == safeSavePath then
             return true
@@ -284,7 +271,7 @@ function completeProcess()
             return false
         end
     end, 0.5)
-    if not result then
+    if not pasteboardCheckResult then
         dialog.displayErrorMessage("The URL on the clipboard was not the same as what we wrote to the Pasteboard.")
         return nil
     end
@@ -409,7 +396,7 @@ local function rightClickCallback()
 	voicesMenu[2] = { title = "-" }
 	for i, v in ipairs(availableVoices) do
 		voicesMenu[#voicesMenu + 1] = {
-			title = firstToUpper(v),
+			title = tools.firstToUpper(v),
 			fn = function()
 				mod.voice(v)
 			end,
