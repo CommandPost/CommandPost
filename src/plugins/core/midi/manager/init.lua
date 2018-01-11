@@ -30,7 +30,6 @@ local midi										= require("hs.midi")
 local styledtext								= require("hs.styledtext")
 local timer										= require("hs.timer")
 
-local commands									= require("cp.commands")
 local config									= require("cp.config")
 local prop										= require("cp.prop")
 local tools										= require("cp.tools")
