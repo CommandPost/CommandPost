@@ -1303,7 +1303,7 @@ function App:getCommandShortcuts(id)
 				else
 					keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
 				end
-			elseif fcpxHacks["character"] ~= nil then
+			elseif fcpxCmd["character"] ~= nil then
 				if keypadModifier then
 					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])
 				else
