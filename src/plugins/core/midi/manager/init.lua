@@ -23,16 +23,17 @@ local application								= require("hs.application")
 local canvas 									= require("hs.canvas")
 local drawing									= require("hs.drawing")
 local eventtap									= require("hs.eventtap")
+local fnutils                                   = require("hs.fnutils")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local midi										= require("hs.midi")
 local styledtext								= require("hs.styledtext")
 local timer										= require("hs.timer")
 
+local commands									= require("cp.commands")
 local config									= require("cp.config")
 local prop										= require("cp.prop")
 local tools										= require("cp.tools")
-local commands									= require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
@@ -506,9 +507,9 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	-- Setup MIDI Device Callback:
 	--------------------------------------------------------------------------------
-	midi.deviceCallback(function(devices)
-		log.df("MIDI Devices Updated")
-		mod._deviceNames = devices or {}
+	midi.deviceCallback(function(devices, virtualDevices)
+		mod._deviceNames = fnutils.concat(devices, virtualDevices)
+		log.df("MIDI Devices Updated (%s devices)", #mod._deviceNames)
 	end)
 
 	--------------------------------------------------------------------------------
