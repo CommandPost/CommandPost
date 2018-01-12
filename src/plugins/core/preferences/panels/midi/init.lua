@@ -18,6 +18,7 @@ local log										= require("hs.logger").new("prefsMIDI")
 local application								= require("hs.application")
 local canvas									= require("hs.canvas")
 local dialog									= require("hs.dialog")
+local fnutils                                   = require("hs.fnutils")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local midi										= require("hs.midi")
@@ -192,6 +193,102 @@ local function setValue(groupID, buttonID, field, value)
 	]])
 end
 
+mod._currentlyLearning = false
+
+function mod._stopLearning(id, params)
+
+    mod._currentlyLearning = false
+
+    local maxItems = mod._midi.maxItems
+    local groupID = params["groupID"]
+    local buttonID = params["buttonID"]
+    local js = ""
+    for i=1,maxItems,1 do
+        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "visible";]] .. "\n"
+    end
+    js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").innerHTML = "]] .. i18n("learn") .. [[";]] .. "\n"
+    mod._manager.injectScript(js)
+
+    --------------------------------------------------------------------------------
+    -- Destroy the MIDI watchers:
+    --------------------------------------------------------------------------------
+    if mod.learningMidiDeviceNames and mod.learningMidiDevices then
+        for _, id in pairs(mod.learningMidiDeviceNames) do
+            if mod.learningMidiDevices[id] then
+                mod.learningMidiDevices[id] = nil
+            end
+        end
+    end
+    mod.learningMidiDevices = nil
+    mod.learningMidiDeviceNames = nil
+    collectgarbage()
+
+end
+
+function mod._startLearning(id, params)
+
+    mod._currentlyLearning = true
+
+    local maxItems = mod._midi.maxItems
+    local groupID = params["groupID"]
+    local buttonID = params["buttonID"]
+    local js = ""
+    for i=1,maxItems,1 do
+        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+    end
+    js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").style.visibility = "visible";]] .. "\n"
+    js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").innerHTML = "Stop";]] .. "\n"
+    mod._manager.injectScript(js)
+
+    --------------------------------------------------------------------------------
+    -- Setup MIDI watchers:
+    --------------------------------------------------------------------------------
+    mod.learningMidiDeviceNames = fnutils.concat(midi.devices(), midi.virtualSources())
+    mod.learningMidiDevices = {}
+    for _, deviceName in ipairs(mod.learningMidiDeviceNames) do
+        mod.learningMidiDevices[deviceName] = midi.new(deviceName)
+        if mod.learningMidiDevices[deviceName] then
+            mod.learningMidiDevices[deviceName]:callback(function(object, deviceName, commandType, description, metadata)
+                if commandType == "controlChange" or commandType == "noteOn" then
+                    --------------------------------------------------------------------------------
+                    -- Update the UI & Save Preferences:
+                    --------------------------------------------------------------------------------
+                    setValue(params["groupID"], params["buttonID"], "device", deviceName)
+                    mod._midi.setItem("device", params["buttonID"], params["groupID"], deviceName)
+
+                    setValue(params["groupID"], params["buttonID"], "channel", metadata.channel)
+                    mod._midi.setItem("channel", params["buttonID"], params["groupID"], metadata.channel)
+
+                    if commandType == "noteOff" or commandType == "noteOn" then
+
+                        setValue(params["groupID"], params["buttonID"], "number", metadata.note)
+                        mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.note)
+
+                        setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
+                        mod._midi.setItem("value", params["buttonID"], params["groupID"], i18n("none"))
+
+                    elseif commandType == "controlChange" then
+
+                        setValue(params["groupID"], params["buttonID"], "number", metadata.controllerNumber)
+                        mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.controllerNumber)
+
+                        setValue(params["groupID"], params["buttonID"], "value", metadata.controllerValue)
+                        mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.controllerValue)
+
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Stop Learning:
+                    --------------------------------------------------------------------------------
+                    mod._stopLearning(id, params)
+
+                end
+            end)
+        end
+    end
+end
+
 -- midiPanelCallback() -> none
 -- Function
 -- JavaScript Callback for the Preferences Panel
@@ -296,91 +393,11 @@ local function midiPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Learn Button:
 			--------------------------------------------------------------------------------
-			dialog.webviewAlert(mod._manager.getWebview(), function(result)
-				if result == i18n("yes") then
-
-					--------------------------------------------------------------------------------
-					-- Abort after 3 seconds:
-					--------------------------------------------------------------------------------
-					mod.learningTimer = timer.doAfter(3, function()
-						--------------------------------------------------------------------------------
-						-- Destroy the MIDI watchers:
-						--------------------------------------------------------------------------------
-						for _, id in pairs(mod.learningMidiDeviceNames) do
-							mod.learningMidiDevices[id] = nil
-						end
-						mod.learningMidiDevices = nil
-						collectgarbage()
-
-						--------------------------------------------------------------------------------
-						-- Show failed message:
-						--------------------------------------------------------------------------------
-						dialog.webviewAlert(mod._manager.getWebview(), function() end, "No MIDI commands were detected.", "Please try again.", "Close")
-					end)
-
-					--------------------------------------------------------------------------------
-					-- Setup MIDI watchers:
-					--------------------------------------------------------------------------------
-					mod.learningMidiDeviceNames = midi.devices()
-					mod.learningMidiDevices = {}
-					for _, deviceName in ipairs(mod.learningMidiDeviceNames) do
-						mod.learningMidiDevices[deviceName] = midi.new(deviceName)
-						if mod.learningMidiDevices[deviceName] then
-							mod.learningMidiDevices[deviceName]:callback(function(object, deviceName, commandType, description, metadata)
-								if commandType == "controlChange" or commandType == "noteOff" or commandType == "noteOn" then
-
-									--------------------------------------------------------------------------------
-									-- Stop the timer:
-									--------------------------------------------------------------------------------
-									if mod.learningTimer then
-										mod.learningTimer:stop()
-										mod.learningTimer = nil
-									end
-
-									--------------------------------------------------------------------------------
-									-- Update the UI & Save Preferences:
-									--------------------------------------------------------------------------------
-									setValue(params["groupID"], params["buttonID"], "device", deviceName)
-									mod._midi.setItem("device", params["buttonID"], params["groupID"], deviceName)
-
-									setValue(params["groupID"], params["buttonID"], "channel", metadata.channel)
-									mod._midi.setItem("channel", params["buttonID"], params["groupID"], metadata.channel)
-
-									if commandType == "noteOff" or commandType == "noteOn" then
-
-										setValue(params["groupID"], params["buttonID"], "number", metadata.note)
-										mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.note)
-
-										setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
-										mod._midi.setItem("value", params["buttonID"], params["groupID"], i18n("none"))
-
-									elseif commandType == "controlChange" then
-
-										setValue(params["groupID"], params["buttonID"], "number", metadata.controllerNumber)
-										mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.controllerNumber)
-
-										setValue(params["groupID"], params["buttonID"], "value", metadata.controllerValue)
-										mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.controllerValue)
-
-									end
-
-									--log.df("Device: %s\nCommand: %s\nMetadata: %s", deviceName, commandType, hs.inspect(metadata))
-
-									--------------------------------------------------------------------------------
-									-- Destroy the MIDI watchers:
-									--------------------------------------------------------------------------------
-									for _, id in pairs(mod.learningMidiDeviceNames) do
-										mod.learningMidiDevices[id] = nil
-									end
-									mod._learningMidiDevices = nil
-									collectgarbage()
-
-								end
-							end)
-						end
-					end
-				end
-			end, i18n("learnMIDIMessage"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+			if mod._currentlyLearning then
+    			mod._stopLearning(id, params)
+			else
+                mod._startLearning(id, params)
+            end
 		else
 			--------------------------------------------------------------------------------
 			-- Unknown Callback:

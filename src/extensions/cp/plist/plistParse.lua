@@ -112,6 +112,10 @@ function plp.dictionary(s, i)
 end
 
 local function plistParse(s)
+    if type(s) == "nil" then
+        return nil
+    end
+
     local i, ni, tag, version, empty = 0
 
     while label ~= "plist" do
