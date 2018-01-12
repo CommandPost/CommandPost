@@ -6,9 +6,27 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.20</title>
+			<description><![CDATA[
+				<h4>Improvement:</h4>
+				<ul><li>Added Support for Virtual MIDI Devices (issue #936)</li></ul>
+
+				<h4>Bug Fix:</h4>
+				<ul><li>Fixed Text to Speech Bug (issue #933)</li></ul>
+			]]>
+			</description>
+			<pubDate>Fri, 12 Jan 2018 16:47:35 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.20/CommandPost_1.0.0-beta.20.dmg"
+				sparkle:version="1.0.0-beta.20"
+				sparkle:dsaSignature="MCwCFBA8p6DwCdapGchkVCp+DM0Mk2ZPAhQ3ePt/0qJ02TWmWDHs17vSfPBYng=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.19</title>
 			<description><![CDATA[
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Fixed bug in AppleScript Support (issue #923)</li>
 				<li>Fixed bug where Tangent Plugin failed to create Hide File (issue #925)</li>
 				<li>Fixed bug where MIDI Color Board Angle controls wouldn't allow a zero value (issue #928)</li>
@@ -26,14 +44,14 @@
 		<item>
 			<title>Version 1.0.0-beta.18</title>
 			<description><![CDATA[
-				<h2>New Feature:</h2>
+				<h4>New Feature:</h4>
 				<ul><li>CommandPost now offers native support of the entire range of Tangent's panels, including the Element, Wave, Ripple, the Element-Vs iPad app, and any future Tangent panels. All actions within CommandPost can be assigned to any Tangent panel button/wheel using Tangent's Mapper application. This allows you to create your own layouts and modes. Currently we only support controlling the Color Board and Timeline Zoom with the wheels, however full Color Inspector support will be added in a future beta. As this functionality is new, your feedback and testing is greatly appreciated (issue #906)</li></ul>
 
-				<h2>Improvements:</h2>
+				<h4>Improvements:</h4>
 				<ul><li>Toggling Developer Mode no longer requires restarting CommandPost (issue #899)</li>
 				<li>Add option to Advanced Preferences & Error Log button to Enable/Disable Auto-Reload (issue #910)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Global Commands not being correctly listed on some machines (issue #897)</li>
 				<li>MIDI Commands incorrectly triggering twice on some devices (issue #915)</li>
 				<li>"Control CommandPost Shortcuts within Final Cut Pro" now works with Final Cut Pro 10.4 (issue #896)</li></ul>
@@ -50,10 +68,10 @@
 		<item>
 			<title>Version 1.0.0-beta.17</title>
 			<description><![CDATA[
-				<h2>Improvements:</h2>
+				<h4>Improvements:</h4>
 				<ul><li>All commands that appear in Final Cut Pro's Command Editor can now be assigned in the CommandPost Console (issue #889)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Update Logic Plugins List for Final Cut Pro 10.4 (issue #877)</li>
 				<li>`cp.apple.finalcutpro.ids` didn't take into account previous minor versions (issue #879)</li>
 				<li>`fcp:inspector():isShowing()` was broken in Final Cut Pro 10.4 (issue #882)</li>
@@ -64,7 +82,7 @@
 				<li>Added Missing Final Cut Pro 10.4 Effects (issue #893)</li>
 				<li>Added initial support for Final Cut Pro 10.4's new Color Inspector (issue #884)</li></ul>
 
-				<h2>Known Issues:</h2>
+				<h4>Known Issues:</h4>
 				<ul><li>Controlling CommandPost Shortcuts within Final Cut Pro's Command Editor doesn't currently work in Final Cut Pro 10.4 (issue #896)</li></ul>
 			]]>
 			</description>
@@ -79,11 +97,11 @@
 		<item>
 			<title>Version 1.0.0-beta.16</title>
 			<description><![CDATA[
-				<h2>Improvements:</h2>
+				<h4>Improvements:</h4>
 				<ul><li>Improved MIDI Control Responsiveness (issue #863)</li>
 				<li>Increased Custom Plugin Shortcuts from 5 to 9 (issue #867)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Fixed Fullscreen Shortcut Bug (issue #861)</li>
 				<li>Fixed Clipboard Manager Inconsistencies (issue #806)</li></ul>
 			]]>
@@ -99,10 +117,10 @@
 		<item>
 			<title>Version 1.0.0-beta.15</title>
 			<description><![CDATA[
-				<h2>Bug Fix:</h2>
+				<h4>Bug Fix:</h4>
 				<ul><li>Fixed Audio Units Cache (issue #858)</li></ul>
 
-				<h2>Known Issues:</h2>
+				<h4>Known Issues:</h4>
 				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
 			]]>
 			</description>
@@ -117,22 +135,22 @@
 		<item>
 			<title>Version 1.0.0-beta.14</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Added Shortcut to Add Stabilisation to Selected Clip in Timeline (issue #637)</li>
 				<li>Added MIDI Support (issue #638)</li>
 				<li>Added Color Board MIDI Controls (issue #847)</li>
 				<li>Added Pushover Notification Support (issue #218)</li>
 				<li>Added option to ignore offline/missing files when Batch Exporting (issue #853)</li></ul>
 
-				<h2>Improvements:</h2>
+				<h4>Improvements:</h4>
 				<ul><li>Audio Unit scan results are now cached for faster startup (issue #850)</li>
 				<li>CommandPost now remembers the last Touch Bar sub-group you used</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>OPTION + Mouse Zoom now works with original Magic Mouse (issue #837)</li>
 				<li>Fixed bug in primaryWindow():rightGroupUI() (issue #843)</li></ul>
 
-				<h2>Known Issues:</h2>
+				<h4>Known Issues:</h4>
 				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
 			]]>
 			</description>
@@ -147,10 +165,10 @@
 		<item>
 			<title>Version 1.0.0-beta.13</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>You can now have five different Touch Bars per application. To toggle between the different Touch Bars, use the CommandPost icon that's on the Touch Bar control strip. This means, for example, you could have one Touch Bar for Color Board control, another for audio shortcuts, another for video effects, etc.</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>The Color Board Touch Bar Widget has been improved.</li></ul>
 			]]>
 			</description>
@@ -168,7 +186,7 @@
 				This release fixes a bug in <strong>1.0.0-beta.11</strong> that caused CommandPost to fail to launch on macOS 10.11.
 				No new features or other bug fixes have been added since <strong>1.0.0-beta.11</strong>.
 
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Interface is now darker and streamlined (issue #717)</li>
 				<li>Added support for Elgato Stream Deck (issue #758)</li>
 				<li>Added Customisable Touch Bar Buttons (issue #748)</li>
@@ -180,7 +198,7 @@
 				<li>Generator & Title shortcuts speed improvements (issue #757)</li>
 				<li>Moved Virtual Touch Bar Preferences into Touch Bar Preferences Panel (issue #791)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Fixed Watch Folder Inconsistencies in High Sierra (issue #807)</li>
 				<li>Fixed bug with triggering plugin shortcuts (issue #743)</li>
 				<li>Fixed Documentation Bug (issue #741)</li>
@@ -211,7 +229,7 @@
 				<li>Color Board Touch Bar Widget Improvements (issue #828)</li>
 				<li>Fixed bug in Transition Shortcuts (issue #832)</li></ul>
 
-				<h2>Known Issues:</h2>
+				<h4>Known Issues:</h4>
 				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
 			]]>
 			</description>
@@ -227,11 +245,11 @@
 		<item>
 			<title>Version 1.0.0-beta.11</title>
 			<description><![CDATA[
-				<h2>IMPORTANT:</h2>
+				<h4>IMPORTANT:</h4>
 				We've accidentally broken support for macOS 10.11. Doh!
 				Please stick with Beta 10 if you're on macOS 10.11 and we'll try and fix ASAP.
 
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Interface is now darker and streamlined (issue #717)</li>
 				<li>Added support for Elgato Stream Deck (issue #758)</li>
 				<li>Added Customisable Touch Bar Buttons (issue #748)</li>
@@ -243,7 +261,7 @@
 				<li>Generator & Title shortcuts speed improvements (issue #757)</li>
 				<li>Moved Virtual Touch Bar Preferences into Touch Bar Preferences Panel (issue #791)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Fixed Watch Folder Inconsistencies in High Sierra (issue #807)</li>
 				<li>Fixed bug with triggering plugin shortcuts (issue #743)</li>
 				<li>Fixed Documentation Bug (issue #741)</li>
@@ -274,7 +292,7 @@
 				<li>Color Board Touch Bar Widget Improvements (issue #828)</li>
 				<li>Fixed bug in Transition Shortcuts (issue #832)</li></ul>
 
-				<h2>Known Issues:</h2>
+				<h4>Known Issues:</h4>
 				<ul><li>Clipboard Manager Inconsistencies (issue #806)</li></ul>
 			]]>
 			</description>
@@ -289,14 +307,14 @@
 		<item>
 			<title>Version 1.0.0-beta.10</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Scan Final Cut Pro Programatically instead of using GUI Scripting (issue #667)</li>
 				<li>Globally deactivate all audio waveforms (issue #625)</li>
 				<li>Report Final Cut Pro Bug to Apple (issue #700)</li>
 				<li>Added Touch Device Extension</li>
 				<li>Add an uninstall script that removes Preferences, Caches & Saved Keyboard Shortcuts (issue #733)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Final Cut Pro no longer requires a restart when toggling timecode overlays</li>
 				<li>Fixed bugs in Batch Export Tool (issue #694)</li>
 				<li>Prevent multiple CommandPost Feedback Forms from opening at once (issue #714)</li>
@@ -323,12 +341,12 @@
 		<item>
 			<title>Version 1.0.0-beta.9</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Console should also search subtext (issue #654)</li>
 				<li>Added Show Timeline in Player & Timecode Overlays (issue #682)</li>
 				<li>Zoom in FCPX by holding down OPTION and using your mouse scroll wheel</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Virtual Touch Bar - Release Touch Bar when feature disabled (issue #631)</li>
 				<li>Added back missing dialog require in Action Manager</li>
 				<li>Fixed Background Render Menu Item Bug (issue #640)</li>
@@ -342,7 +360,7 @@
 				<li>Bug in `hs.menubar:setMenu()` (issue #681)</li>
 				<li>Watch Folders Preferences default position is top left of screen <li>not centre (issue #689)</li></ul>
 
-				<h2>Improvements:</h2>
+				<h4>Improvements:</h4>
 				<ul><li>Improved reliability with FCPX in languages other than English (issue #636)</li>
 				<li>Added ‘unarchiveFile’ to `cp.plist.archiver`</li>
 				<li>Bring all Hacks Shortcut-specific code into the one plugin. (issue #546)</li>
@@ -360,11 +378,11 @@
 		<item>
 			<title>Version 1.0.0-beta.8</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Added Zoom to Selection Shortcut (issue #592)</li>
 				<li>Add Notification when Compressor Watch Folder Render is Complete (issue #600)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Fixed bug in tools.executeWithAdministratorPrivileges which prevented users from activating any feature which requires an Administrator password</li></ul>
 			]]>
 			</description>
@@ -379,7 +397,7 @@
 		<item>
 			<title>Version 1.0.0-beta.7</title>
 			<description><![CDATA[
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Watch Folders no longer trigger if a file is still being copied or rendered (issue #598)</li></ul>
 			]]>
 			</description>
@@ -394,12 +412,12 @@
 		<item>
 			<title>Version 1.0.0-beta.6</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Added Finder Tags support to "Text to Speech" plugin (issue #587)</li>
 				<li>Added Watch Folders for Final Cut Pro Media & XML (issue #583)</li>
 				<li>Added Watch Folders for Compressor (issue #10)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Improved the Text to Speech Tool (issue #590)</li>
 				<li>Added Documentation to `cp.dialog` and `cp.tools` (issue #590)</li>
 				<li>Preferences now remembers location and last open panel (issue #583)</li>
@@ -420,7 +438,7 @@
 		<item>
 			<title>Version 1.0.0-beta.5</title>
 			<description><![CDATA[
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>CommandPost now requires Final Cut Pro 10.3.2 or later</li>
 				<li>Fixed bug in getListOfUnavailableShortcuts() (issue #573)</li>
 				<li>Fixed bug in _coresetup (issue #572)</li>
@@ -441,11 +459,11 @@
 		<item>
 			<title>Version 1.0.0-beta.4</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Added a Preferences button to the Error Log (issue #549)</li>
 				<li>Added Initial Release of Text to Speech Plugin (issue #540)</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Replaced `getPathToApplicationFromPID()` with `app:path()` (issue #532)</li>
 				<li>Now only shows Welcome Panel Progress Dots if there’s more than one panel enabled</li>
 				<li>Only show FCPX Missing & Hacks Shortcuts Panel once</li>
@@ -479,7 +497,7 @@
 		<item>
 			<title>Version 1.0.0-beta.3</title>
 			<description><![CDATA[
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Fixed Version Checking (issue #524 & #522)</li>
 				<li>Preferences Window is no longer user resizable (issue #521)</li>
 				<li>Reset Shortcuts Button is now disabled when Hacks Shortcuts is enabled</li>
@@ -500,12 +518,12 @@
 		<item>
 			<title>Version 1.0.0-beta.2</title>
 			<description><![CDATA[
-				<h2>New Features:</h2>
+				<h4>New Features:</h4>
 				<ul><li>Added "Send to Compressor" to Batch Export Tool (issue #506)</li>
 				<li>Added Developer Guide Link in Help & Support Menu (issue #489)</li>
 				<li>Added "Open Error Log on Dock Icon Click" Option</li></ul>
 
-				<h2>Bug Fixes:</h2>
+				<h4>Bug Fixes:</h4>
 				<ul><li>Added Plugin Title for WebApp & WebApp Preferences (issue #490)</li>
 				<li>Final Cut Pro Preferences Panel will now only display if FCPX is installed (issue #493)</li>
 				<li>Removed cp.config.bugReportEmail</li>
@@ -537,7 +555,7 @@
 		<item>
 			<title>Version 1.0.0-beta.1</title>
 			<description><![CDATA[
-				<h2>First Beta Release of CommandPost</h2>
+				<h4>First Beta Release of CommandPost</h4>
 			]]>
 			</description>
 			<pubDate>Wed, 19 Apr 2017 02:42:13 +1000</pubDate>
