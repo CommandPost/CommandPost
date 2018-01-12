@@ -655,6 +655,7 @@ mod.enabled = config.prop("enableTangent", false)
 --- Returns:
 ---  * None
 function mod.updateMode()
+    log.df("Updating Tangent Mode")
 	if mod.active then
 		for id,metadata in pairs(mod.MODES) do
 			local active = metadata.active()
@@ -800,8 +801,12 @@ function mod.callback(id, metadata)
 		if fcp.isFrontmost() then
 			if metadata.jogValue == 1 then
 				fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
+				--fcp:performShortcut("JumpToNextFrame")
+				--hs.eventtap.keyStroke({}, "right", 10)
 			elseif metadata.jogValue == -1 then
 				fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
+				--fcp:performShortcut("JumpToPreviousFrame")
+				--hs.eventtap.keyStroke({}, "left", 10)
 			end
 		end
 	elseif id == "MENU_CHANGE" then
@@ -1052,24 +1057,24 @@ function plugin.init(deps, env)
 				<style>
 					.tangentButtonOne {
 						float:left;
-						width: 141px;
+						width: 200px;
 					}
 					.tangentButtonTwo {
 						float:left;
 						margin-left: 5px;
-						width: 141px;
+						width: 200px;
 					}
 					.tangentButtonThree {
 						clear:both;
 						float:left;
 						margin-top: 5px;
-						width: 141px;
+						width: 200px;
 					}
 					.tangentButtonFour {
 						float:left;
 						margin-top: 5px;
 						margin-left: 5px;
-						width: 141px;
+						width: 200px;
 					}
 				</style>
 			]], true)

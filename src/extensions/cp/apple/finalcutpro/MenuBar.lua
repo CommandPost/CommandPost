@@ -31,6 +31,32 @@ local MenuBar = {}
 
 MenuBar.ROLE										= "AXMenuBar"
 
+-- cp.apple.finalcutpro.MenuBar:new(App) -> MenuBar
+-- Function
+-- Constructs a new MenuBar for the specified App.
+--
+-- Parameters:
+--  * app - The App instance the MenuBar belongs to.
+--
+-- Returns:
+--  * a new MenuBar instance
+MenuBar._cache = {}
+
+-- clearCache() -> None
+-- Function
+-- Clears the Menu Bar Cache.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function clearCache()
+    --log.df("Clearing MenuBar Cache")
+    MenuBar._cache = nil
+    MenuBar._cache = {}
+end
+
 --- cp.apple.finalcutpro.MenuBar:new(App) -> MenuBar
 --- Function
 --- Constructs a new MenuBar for the specified App.
@@ -40,7 +66,6 @@ MenuBar.ROLE										= "AXMenuBar"
 ---
 --- Returns:
 ---  * a new MenuBar instance
----
 function MenuBar:new(app)
 	local o = {
 	  _app 			= app,
@@ -48,15 +73,43 @@ function MenuBar:new(app)
 	}
 	setmetatable(o, self)
 	self.__index = self
+
+    --------------------------------------------------------------------------------
+    -- Add Watchers for Cache:
+    --------------------------------------------------------------------------------
+	app:watch({
+		terminated  = clearCache,
+		active		= clearCache,
+		inactive	= clearCache,
+		show		= clearCache,
+		hide		= clearCache,
+	})
+
 	return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.MenuBar:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function MenuBar:app()
 	return self._app
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.MenuBar:UI() -> axuielementObject
+--- Method
+--- Returns the Final Cut Pro Menu Bar Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` on `nil`
 function MenuBar:UI()
 	return axutils.cache(self, "_ui", function()
 		local appUI = self:app():UI()
@@ -64,11 +117,28 @@ function MenuBar:UI()
 	end)
 end
 
+--- cp.apple.finalcutpro.MenuBar:isShowing() -> boolean
+--- Method
+--- Tells you if the Final Cut Pro Menu Bar is visible.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if showing, otherwise `false`
 function MenuBar:isShowing()
 	return self:UI() ~= nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.MenuBar:getMainMenu() -> table
+--- Method
+--- Returns a table of all the possible Menu Bar values for each language.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Menu Bar Values
 function MenuBar:getMainMenu()
 	if not MenuBar._mainMenu then
 		MenuBar._mainMenu = self:_loadMainMenu()
@@ -81,16 +151,18 @@ end
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
 --- Parameters:
----  * path - The list of menu items you'd like to activate, for example:
----            select({"View", "Browser", "as List"})
+---  * path - The list of menu items you'd like to activate.
 ---
 --- Returns:
 ---  * `true` if the press was successful.
+---
+--- Notes:
+---  * Example usage:
+---    `require("cp.apple.finalcutpro"):menuBar():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
 function MenuBar:selectMenu(path)
 	local menuItemUI = self:findMenuUI(path)
-
 	if menuItemUI then
-		return menuItemUI:doPress()
+		return menuItemUI:performAction("AXPress")
 	end
 	return false
 end
@@ -197,7 +269,17 @@ end
 --- Returns:
 ---  * The Menu UI, or `nil` if it could not be found.
 function MenuBar:findMenuUI(path, language)
-	-- Start at the top of the menu bar list
+
+    --------------------------------------------------------------------------------
+    -- Check Cache for MenuUI:
+    --------------------------------------------------------------------------------
+    local id = table.concat(path, "")
+    if self._cache[id] then
+        --log.df("Using MenuUI Cache: %s", id)
+        return self._cache[id]
+    end
+
+    -- Start at the top of the menu bar list
 	local menuMap = self:getMainMenu()
 	local menuUI = self:UI()
 	language = language or "en"
@@ -270,6 +352,13 @@ function MenuBar:findMenuUI(path, language)
 			return nil
 		end
 	end
+
+	--------------------------------------------------------------------------------
+	-- Cache the item:
+	--------------------------------------------------------------------------------
+	log.df("Added to MenuBar cache: %s", id)
+	self._cache[id] = menuItemUI
+
 	return menuItemUI
 end
 
