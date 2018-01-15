@@ -469,13 +469,13 @@ function mod.start()
 		if not mod._midiDevices[deviceName] then
 		    if fnutils.contains(usedDevices, deviceName) then
                 if string.sub(deviceName, 1, 8) == "virtual_" then
-                    log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
+                    --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)
                     end
                 else
-                    log.df("Creating new Physical MIDI Watcher: %s", deviceName)
+                    --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.new(deviceName)
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)

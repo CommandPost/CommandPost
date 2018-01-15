@@ -227,6 +227,17 @@ local function windowCallback(action, webview, frame)
 	if action == "closing" then
 		if not hs.shuttingDown then
 			mod.webview = nil
+
+			--------------------------------------------------------------------------------
+			-- Trigger Closing Callbacks:
+			--------------------------------------------------------------------------------
+			--log.df("Triggered Window Closing Callback")
+			for i, panel in ipairs(mod._panels) do
+                if panel.closeFn and type(panel.closeFn) == "function" then
+                    panel.closeFn()
+                end
+		    end
+
 		end
 	elseif action == "focusChange" then
 	elseif action == "frameChange" then
@@ -524,6 +535,7 @@ end
 ---  ** `label`			- The human-readable label for the panel icon.
 ---	 ** `image`			- The `hs.image` for the panel icon.
 ---  ** `tooltip`		- The human-readable details for the toolbar icon when the mouse is hovering over it.
+---  ** `closeFn`       - A callback function that's triggered when the Preferences window is closed.
 function mod.addPanel(params)
 
 	local newPanel = panel.new(params, mod)

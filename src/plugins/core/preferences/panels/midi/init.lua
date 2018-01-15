@@ -210,10 +210,20 @@ end
 --- Are we in learning mode?
 mod._currentlyLearning = false
 
+-- plugins.core.preferences.panels.midi._destroyMIDIWatchers() -> none
+-- Function
+-- Destroys any MIDI Watchers.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 function mod._destroyMIDIWatchers()
     --------------------------------------------------------------------------------
     -- Destroy the MIDI watchers:
     --------------------------------------------------------------------------------
+    --log.df("Destroying any MIDI Watchers")
     if mod.learningMidiDeviceNames and mod.learningMidiDevices then
         for _, id in pairs(mod.learningMidiDeviceNames) do
             if mod.learningMidiDevices[id] then
@@ -247,14 +257,19 @@ function mod._stopLearning(id, params)
     --------------------------------------------------------------------------------
     mod._currentlyLearning = false
 
+    --------------------------------------------------------------------------------
+    -- Update the UI:
+    --------------------------------------------------------------------------------
     local maxItems = mod._midi.maxItems
     local groupID = params["groupID"]
-    local buttonID = params["buttonID"]
     local js = ""
     for i=1,maxItems,1 do
-        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "visible";]] .. "\n"
+        if groupID then
+            js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "visible";]] .. "\n"
+            js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").innerHTML = "]] .. i18n("learn") .. [[";]] .. "\n"
+            js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
+        end
     end
-    js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").innerHTML = "]] .. i18n("learn") .. [[";]] .. "\n"
     mod._manager.injectScript(js)
 
     --------------------------------------------------------------------------------
@@ -316,7 +331,34 @@ function mod._startLearning(id, params)
         end
         if mod.learningMidiDevices[deviceName] then
             mod.learningMidiDevices[deviceName]:callback(function(object, deviceName, commandType, description, metadata)
-                if commandType == "controlChange" or commandType == "noteOff" or commandType == "noteOn" then
+                if commandType == "controlChange" or commandType == "noteOn" then
+
+                    --------------------------------------------------------------------------------
+                    -- Check it's not already in use:
+                    --------------------------------------------------------------------------------
+                    local items = mod._midi._items()
+                    if items[groupID] then
+                        for id, item in pairs(items[groupID]) do
+                            if (metadata.isVirtual and item.device == "virtual_" .. deviceName) or (not metadata.isVirtual and item.device == deviceName) then
+                                if commandType == "noteOn" or commandType == "controlChange" then
+                                    if (item.channel == metadata.channel and item.number == metadata.note) or (item.channel == metadata.channel and item.number == metadata.controllerNumber) then
+                                        --log.df("DUPLICATE DETECTED: %s", id)
+                                        mod._manager.injectScript([[
+                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. id .. [[].style.setProperty("-webkit-transition", "background-color 1s");
+                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. id .. [[].style.backgroundColor = "#cc5e53";
+                                        ]])
+                                        timer.doAfter(3, function()
+                                            mod._manager.injectScript([[
+                                                document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. id .. [[].style.backgroundColor = "";
+                                            ]])
+                                        end)
+                                        return
+                                    end
+                                end
+                            end
+                        end
+                    end
+
                     --------------------------------------------------------------------------------
                     -- Update the UI & Save Preferences:
                     --------------------------------------------------------------------------------
@@ -459,6 +501,7 @@ local function midiPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			-- Update Group:
 			--------------------------------------------------------------------------------
+			mod._stopLearning(id, params)
 			mod.lastGroup(params["groupID"])
 		elseif params["type"] == "learnButton" then
 			--------------------------------------------------------------------------------
@@ -549,6 +592,7 @@ function mod.init(deps, env)
 		image			= image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
 		tooltip			= i18n("midi"),
 		height			= 550,
+		closeFn         = mod._destroyMIDIWatchers,
 	})
 		:addHeading(6, i18n("midiControls"))
 		:addCheckbox(7,
