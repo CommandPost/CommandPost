@@ -231,10 +231,9 @@ local function windowCallback(action, webview, frame)
 			--------------------------------------------------------------------------------
 			-- Trigger Closing Callbacks:
 			--------------------------------------------------------------------------------
-			--log.df("Triggered Window Closing Callback")
-			for i, panel in ipairs(mod._panels) do
-                if panel.closeFn and type(panel.closeFn) == "function" then
-                    panel.closeFn()
+			for _, v in ipairs(mod._panels) do
+                if v.closeFn and type(v.closeFn) == "function" then
+                    v.closeFn()
                 end
 		    end
 

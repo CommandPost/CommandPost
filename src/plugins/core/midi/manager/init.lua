@@ -481,8 +481,6 @@ function mod.start()
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)
                     end
                 end
-            else
-                --log.df("Skipping: %s", deviceName)
             end
 		end
 	end

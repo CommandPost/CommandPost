@@ -18,7 +18,6 @@ local log										= require("hs.logger").new("prefsMIDI")
 local application								= require("hs.application")
 local canvas									= require("hs.canvas")
 local dialog									= require("hs.dialog")
-local fnutils                                   = require("hs.fnutils")
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local midi										= require("hs.midi")
@@ -250,7 +249,7 @@ end
 --
 -- Returns:
 --  * None
-function mod._stopLearning(id, params)
+function mod._stopLearning(_, params)
 
     --------------------------------------------------------------------------------
     -- We've stopped learning:
@@ -330,7 +329,7 @@ function mod._startLearning(id, params)
             mod.learningMidiDevices[deviceName] = midi.new(deviceName)
         end
         if mod.learningMidiDevices[deviceName] then
-            mod.learningMidiDevices[deviceName]:callback(function(object, deviceName, commandType, description, metadata)
+            mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, description, metadata)
                 if commandType == "controlChange" or commandType == "noteOn" then
 
                     --------------------------------------------------------------------------------
@@ -338,18 +337,18 @@ function mod._startLearning(id, params)
                     --------------------------------------------------------------------------------
                     local items = mod._midi._items()
                     if items[groupID] then
-                        for id, item in pairs(items[groupID]) do
-                            if (metadata.isVirtual and item.device == "virtual_" .. deviceName) or (not metadata.isVirtual and item.device == deviceName) then
+                        for i, item in pairs(items[groupID]) do
+                            if (metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName) or (not metadata.isVirtual and item.device == callbackDeviceName) then
                                 if commandType == "noteOn" or commandType == "controlChange" then
                                     if (item.channel == metadata.channel and item.number == metadata.note) or (item.channel == metadata.channel and item.number == metadata.controllerNumber) then
-                                        --log.df("DUPLICATE DETECTED: %s", id)
+                                        --log.df("DUPLICATE DETECTED: %s", i)
                                         mod._manager.injectScript([[
-                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. id .. [[].style.setProperty("-webkit-transition", "background-color 1s");
-                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. id .. [[].style.backgroundColor = "#cc5e53";
+                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
+                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "#cc5e53";
                                         ]])
                                         timer.doAfter(3, function()
                                             mod._manager.injectScript([[
-                                                document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. id .. [[].style.backgroundColor = "";
+                                                document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";
                                             ]])
                                         end)
                                         return
@@ -363,11 +362,11 @@ function mod._startLearning(id, params)
                     -- Update the UI & Save Preferences:
                     --------------------------------------------------------------------------------
                     if metadata.isVirtual then
-                        setValue(params["groupID"], params["buttonID"], "device", "virtual_" .. deviceName)
-                        mod._midi.setItem("device", params["buttonID"], params["groupID"], "virtual_" .. deviceName)
+                        setValue(params["groupID"], params["buttonID"], "device", "virtual_" .. callbackDeviceName)
+                        mod._midi.setItem("device", params["buttonID"], params["groupID"], "virtual_" .. callbackDeviceName)
                     else
-                        setValue(params["groupID"], params["buttonID"], "device", deviceName)
-                        mod._midi.setItem("device", params["buttonID"], params["groupID"], deviceName)
+                        setValue(params["groupID"], params["buttonID"], "device", callbackDeviceName)
+                        mod._midi.setItem("device", params["buttonID"], params["groupID"], callbackDeviceName)
                     end
 
                     setValue(params["groupID"], params["buttonID"], "channel", metadata.channel)
@@ -503,16 +502,16 @@ local function midiPanelCallback(id, params)
 			--------------------------------------------------------------------------------
 			mod._stopLearning(id, params)
 			mod.lastGroup(params["groupID"])
-		elseif params["type"] == "learnButton" then
+        elseif params["type"] == "learnButton" then
 			--------------------------------------------------------------------------------
 			-- Learn Button:
 			--------------------------------------------------------------------------------
-			if mod._currentlyLearning then
-    			mod._stopLearning(id, params)
+            if mod._currentlyLearning then
+    		    mod._stopLearning(id, params)
 			else
                 mod._startLearning(id, params)
             end
-		else
+        else
 			--------------------------------------------------------------------------------
 			-- Unknown Callback:
 			--------------------------------------------------------------------------------
