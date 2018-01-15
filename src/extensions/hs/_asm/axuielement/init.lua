@@ -16,25 +16,26 @@
 ---
 --- Where *action* and *attribute* can be the formal Accessibility version of the attribute or action name (a string usually prefixed with "AX") or without the "AX" prefix.  When the prefix is left off, the first letter of the action or attribute can be uppercase or lowercase.
 ---
----------------------------------------------------------------------------------
---
--- THE MODULE:
---
--------------------------------------------------------------------------------- also dynamically supports treating the axuielementObject useradata as an array, to access it's children (i.e. `#object` will return a number, indicating the number of direct children the object has, and `object[1]` is equivalent to `object:children()[1]` or, more formally, `object:attributeValue("AXChildren")[1]`).
+--- The module also dynamically supports treating the axuielementObject useradata as an array, to access it's children (i.e. `#object` will return a number, indicating the number of direct children the object has, and `object[1]` is equivalent to `object:children()[1]` or, more formally, `object:attributeValue("AXChildren")[1]`).
 ---
 --- You can also treat the axuielementObject userdata as a table of key-value pairs to generate a list of the dynamically generated functions: `for k, v in pairs(object) do print(k, v) end` (this is essentially what [hs._asm.axuielement:dynamicMethods](#dynamicMethods) does).
 ---
 ---
 --- Limited support for parameterized attributes is provided, but is not yet complete.  This is expected to see updates in the future.
----
---- An object observer is also expected to be added to receive notifications; however as this overlaps with `hs.uielement`, exactly how this will be done is still being considered.
----
---- Examples are (will be soon) provided in a separate document.
 
 local USERDATA_TAG = "hs._asm.axuielement"
 local module       = require(USERDATA_TAG..".internal")
-local log          = require("hs.logger").new(USERDATA_TAG,"warning")
-module.log         = log
+
+local basePath = package.searchpath(USERDATA_TAG, package.path)
+if basePath then
+    basePath = basePath:match("^(.+)/init.lua$")
+    if require"hs.fs".attributes(basePath .. "/docs.json") then
+        require"hs.doc".registerJSONFile(basePath .. "/docs.json")
+    end
+end
+
+local log  = require("hs.logger").new(USERDATA_TAG, require"hs.settings".get(USERDATA_TAG .. ".logLevel") or "warning")
+module.log = log
 
 local fnutils = require("hs.fnutils")
 local inspect = require("hs.inspect")
@@ -197,8 +198,9 @@ module.subroles                = _makeConstantsTable(module.subroles)
 module.parameterizedAttributes = _makeConstantsTable(module.parameterizedAttributes)
 module.actions                 = _makeConstantsTable(module.actions)
 module.attributes              = _makeConstantsTable(module.attributes)
-module.notifications           = _makeConstantsTable(module.notifications)
 module.directions              = _makeConstantsTable(module.directions)
+
+module.observer.notifications  = _makeConstantsTable(module.observer.notifications)
 
 --- hs._asm.axuielement.systemElementAtPosition(x, y | { x, y }) -> axuielementObject
 --- Constructor
