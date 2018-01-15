@@ -59,6 +59,7 @@ function panel.new(params, manager)
 		image		=	params.image,
 		tooltip		=	params.tooltip,
 		height		=	params.height,
+		closeFn     =   params.closeFn,
 		manager		=	manager,
 		_handlers	=	{},
 		_uiItems	=	{},

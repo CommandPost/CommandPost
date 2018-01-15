@@ -22,6 +22,9 @@
 						if device == none then selected = [[selected=""]] end
 						%}
 						<option {{selected}} value="">{{none}}</option>
+						<option disabled="disabled" value="">--------------------------</option>
+						<option disabled="disabled" value="">PHYSICAL:</option>
+						<option disabled="disabled" value="">--------------------------</option>
 						{%
 						for _, deviceName in ipairs(midi.devices()) do
 							local selected = ""
@@ -33,13 +36,33 @@
 							<option {{selected}} value="{{deviceName}}">{{deviceName}}</option>
 						{%
 						end
-						if device ~= i18n("none") and not foundDevice then
+						if device ~= i18n("none") and not foundDevice and not string.sub(device, 1, 8) == "virtual_" then
 						%}
 							<option selected="" value="{{device}}">{{device}} (Offline)</option>
 						{%
 						end
 						%}
-
+						<option disabled="disabled" value="">--------------------------</option>
+						<option disabled="disabled" value="">VIRTUAL:</option>
+						<option disabled="disabled" value="">--------------------------</option>
+						{%
+						local foundVirtualDevice = false
+						for _, deviceName in ipairs(midi.virtualDevices()) do
+							local selected = ""
+							if device == "virtual_" .. deviceName then
+								selected = [[selected=""]]
+								foundVirtualDevice = true
+							end
+						%}
+							<option {{selected}} value="virtual_{{deviceName}}">{{deviceName}}</option>
+						{%
+						end
+						if device ~= i18n("none") and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
+						%}
+							<option selected="" value="virtual_{{device}}">{{ string.sub(device, 9) }} (Offline)</option>
+						{%
+						end
+						%}
 					</select>
 				</td>
 				<td class="midiRowNumber">
@@ -64,8 +87,8 @@
 					<input style="width: 35px;" type="text" id="midi{{ group:id() }}_button{{ i }}_value" class="midiButtonLabel" value="{{ value }}">
 				</td>
 				<td class="midiRowLearn">
-					<a id="midi{{ group:id() }}_button{{ i }}_learnButton" href="#" class="button midiActionButton">{{ i18n("learn") }}</a>
 					<a id="midi{{ group:id() }}_button{{ i }}_clearButton" href="#" class="button midiActionButton">{{ i18n("clear") }}</a>
+					<a id="midi{{ group:id() }}_button{{ i }}_learnButton" href="#" class="button midiActionButton">{{ i18n("learn") }}</a>
 				</td>
 				<script>
 						/*
