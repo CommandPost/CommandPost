@@ -15,8 +15,6 @@
 --------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("prefsMIDI")
 
-local application                               = require("hs.application")
-local canvas                                    = require("hs.canvas")
 local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
 local inspect                                   = require("hs.inspect")
@@ -25,9 +23,6 @@ local timer                                     = require("hs.timer")
 
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
-local html                                      = require("cp.web.html")
-local plist                                     = require("cp.plist")
 local tools                                     = require("cp.tools")
 local ui                                        = require("cp.web.ui")
 
@@ -79,6 +74,7 @@ end
 --  * HTML content as string
 local function renderRows(context)
     if not mod._renderRows then
+        local err
         mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
         if err then
             error(err)
@@ -98,6 +94,7 @@ end
 --  * HTML content as string
 local function renderPanel(context)
     if not mod._renderPanel then
+        local err
         mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
         if err then
             error(err)
@@ -433,18 +430,19 @@ local function midiPanelCallback(id, params)
                     -- Restrict Allowed Handlers for Activator to current group (and global):
                     --------------------------------------------------------------------------------
                     local allowedHandlers = {}
-                    for _,id in pairs(handlerIds) do
-                        local handlerTable = tools.split(id, "_")
+                    for _,v in pairs(handlerIds) do
+                        local handlerTable = tools.split(v, "_")
                         if handlerTable[1] == groupID or handlerTable[1] == "global" then
                             --------------------------------------------------------------------------------
                             -- Don't include "widgets" (that are used for the Touch Bar):
                             --------------------------------------------------------------------------------
                             if handlerTable[2] ~= "widgets" then
-                                table.insert(allowedHandlers, id)
+                                table.insert(allowedHandlers, v)
                             end
                         end
                     end
-                    mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
+                    local unpack = table.unpack
+                    mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
                     mod.activator[groupID]:preloadChoices()
                 end
             end
@@ -516,8 +514,8 @@ local function midiPanelCallback(id, params)
             -- Unknown Callback:
             --------------------------------------------------------------------------------
             log.df("Unknown Callback in Stream Deck Preferences Panel:")
-            log.df("id: %s", hs.inspect(id))
-            log.df("params: %s", hs.inspect(params))
+            log.df("id: %s", inspect(id))
+            log.df("params: %s", inspect(params))
         end
     end
 end
@@ -598,7 +596,7 @@ function mod.init(deps, env)
             {
                 label       = i18n("enableMIDI"),
                 checked     = mod.enabled,
-                onchange    = function(id, params)
+                onchange    = function(_, params)
                     mod.enabled(params.checked)
                     mod._manager.injectScript([[
                         document.getElementById("midiEditor").style.display = "]] .. displayBooleanToString(params.checked) .. [["
