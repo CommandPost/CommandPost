@@ -187,16 +187,64 @@ local function generateContent()
 
 end
 
+-- setValue(groupID, buttonID, field, value) -> string
+-- Function
+-- Sets the value of a HTML field.
+--
+-- Parameters:
+--  * groupID - the group ID
+--  * buttonID - the button ID
+--  * field - the field
+--  * value - the value you want to set the field to
+--
+-- Returns:
+--  * None
 local function setValue(groupID, buttonID, field, value)
 	mod._manager.injectScript([[
 		document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_]] .. field .. [[").value = "]] .. value .. [["
 	]])
 end
 
+--- plugins.core.preferences.panels.midi._currentlyLearning -> boolean
+--- Variable
+--- Are we in learning mode?
 mod._currentlyLearning = false
 
+function mod._destroyMIDIWatchers()
+    --------------------------------------------------------------------------------
+    -- Destroy the MIDI watchers:
+    --------------------------------------------------------------------------------
+    if mod.learningMidiDeviceNames and mod.learningMidiDevices then
+        for _, id in pairs(mod.learningMidiDeviceNames) do
+            if mod.learningMidiDevices[id] then
+                mod.learningMidiDevices[id] = nil
+            end
+        end
+    end
+    mod.learningMidiDevices = nil
+    mod.learningMidiDeviceNames = nil
+
+    --------------------------------------------------------------------------------
+    -- Garbage Collection:
+    --------------------------------------------------------------------------------
+    collectgarbage()
+end
+
+-- plugins.core.preferences.panels.midi._stopLearning(id, params) -> none
+-- Function
+-- Sets the Group Editor
+--
+-- Parameters:
+--  * id - The ID of the callback
+--  * params - The paramaters from the callback
+--
+-- Returns:
+--  * None
 function mod._stopLearning(id, params)
 
+    --------------------------------------------------------------------------------
+    -- We've stopped learning:
+    --------------------------------------------------------------------------------
     mod._currentlyLearning = false
 
     local maxItems = mod._midi.maxItems
@@ -212,21 +260,30 @@ function mod._stopLearning(id, params)
     --------------------------------------------------------------------------------
     -- Destroy the MIDI watchers:
     --------------------------------------------------------------------------------
-    if mod.learningMidiDeviceNames and mod.learningMidiDevices then
-        for _, id in pairs(mod.learningMidiDeviceNames) do
-            if mod.learningMidiDevices[id] then
-                mod.learningMidiDevices[id] = nil
-            end
-        end
-    end
-    mod.learningMidiDevices = nil
-    mod.learningMidiDeviceNames = nil
-    collectgarbage()
+    mod._destroyMIDIWatchers()
 
 end
 
+-- plugins.core.preferences.panels.midi._startLearning(id, params) -> none
+-- Function
+-- Sets the Group Editor
+--
+-- Parameters:
+--  * id - The ID of the callback
+--  * params - The paramaters from the callback
+--
+-- Returns:
+--  * None
 function mod._startLearning(id, params)
 
+    --------------------------------------------------------------------------------
+    -- Destroy any leftover MIDI Watchers:
+    --------------------------------------------------------------------------------
+    mod._destroyMIDIWatchers()
+
+    --------------------------------------------------------------------------------
+    -- We're currently learning:
+    --------------------------------------------------------------------------------
     mod._currentlyLearning = true
 
     local maxItems = mod._midi.maxItems
@@ -244,18 +301,32 @@ function mod._startLearning(id, params)
     --------------------------------------------------------------------------------
     -- Setup MIDI watchers:
     --------------------------------------------------------------------------------
-    mod.learningMidiDeviceNames = fnutils.concat(midi.devices(), midi.virtualSources())
+    mod.learningMidiDeviceNames = midi.devices()
+    for _, v in pairs(midi.virtualSources()) do
+        table.insert(mod.learningMidiDeviceNames, "virtual_" .. v)
+    end
     mod.learningMidiDevices = {}
     for _, deviceName in ipairs(mod.learningMidiDeviceNames) do
-        mod.learningMidiDevices[deviceName] = midi.new(deviceName)
+        if string.sub(deviceName, 1, 8) == "virtual_" then
+            --log.df("Creating new Virtual MIDI Source Watcher: %s", string.sub(deviceName, 9))
+            mod.learningMidiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
+        else
+            --log.df("Creating new MIDI Device Watcher: %s", deviceName)
+            mod.learningMidiDevices[deviceName] = midi.new(deviceName)
+        end
         if mod.learningMidiDevices[deviceName] then
             mod.learningMidiDevices[deviceName]:callback(function(object, deviceName, commandType, description, metadata)
-                if commandType == "controlChange" or commandType == "noteOn" then
+                if commandType == "controlChange" or commandType == "noteOff" or commandType == "noteOn" then
                     --------------------------------------------------------------------------------
                     -- Update the UI & Save Preferences:
                     --------------------------------------------------------------------------------
-                    setValue(params["groupID"], params["buttonID"], "device", deviceName)
-                    mod._midi.setItem("device", params["buttonID"], params["groupID"], deviceName)
+                    if metadata.isVirtual then
+                        setValue(params["groupID"], params["buttonID"], "device", "virtual_" .. deviceName)
+                        mod._midi.setItem("device", params["buttonID"], params["groupID"], "virtual_" .. deviceName)
+                    else
+                        setValue(params["groupID"], params["buttonID"], "device", deviceName)
+                        mod._midi.setItem("device", params["buttonID"], params["groupID"], deviceName)
+                    end
 
                     setValue(params["groupID"], params["buttonID"], "channel", metadata.channel)
                     mod._midi.setItem("channel", params["buttonID"], params["groupID"], metadata.channel)
@@ -282,11 +353,13 @@ function mod._startLearning(id, params)
                     -- Stop Learning:
                     --------------------------------------------------------------------------------
                     mod._stopLearning(id, params)
-
                 end
             end)
+        else
+            log.ef("MIDI Device did not exist when trying to create watcher: %s", deviceName)
         end
     end
+
 end
 
 -- midiPanelCallback() -> none
@@ -302,7 +375,6 @@ end
 local function midiPanelCallback(id, params)
 	if params and params["type"] then
 		if params["type"] == "updateAction" then
-
 			--------------------------------------------------------------------------------
 			-- Setup Activators:
 			--------------------------------------------------------------------------------
@@ -388,7 +460,6 @@ local function midiPanelCallback(id, params)
 			-- Update Group:
 			--------------------------------------------------------------------------------
 			mod.lastGroup(params["groupID"])
-
 		elseif params["type"] == "learnButton" then
 			--------------------------------------------------------------------------------
 			-- Learn Button:
@@ -439,6 +510,14 @@ function mod.getGroupEditor(groupId)
 	return mod._groupEditors and mod._groupEditors[groupId]
 end
 
+local function displayBooleanToString(value)
+	if value then
+	    return "block"
+	else
+	    return "none"
+    end
+end
+
 --- plugins.core.preferences.panels.midi.init(deps, env) -> module
 --- Function
 --- Initialise the Module.
@@ -478,12 +557,15 @@ function mod.init(deps, env)
 				checked		= mod.enabled,
 				onchange	= function(id, params)
 					mod.enabled(params.checked)
+                    mod._manager.injectScript([[
+                        document.getElementById("midiEditor").style.display = "]] .. displayBooleanToString(params.checked) .. [["
+                    ]])
 				end,
 			}
 		)
-		:addContent(10, generateContent, true)
-
 	mod._panel
+		:addContent(8, [[<div id="midiEditor" style="display:]] .. displayBooleanToString(mod.enabled()) .. [[;">]], true)
+		:addContent(10, generateContent, true)
 		:addButton(20,
 			{
 				label		= i18n("midiReset"),
@@ -505,6 +587,7 @@ function mod.init(deps, env)
 				class		= "openAudioMIDISetup",
 			}
 		)
+        :addContent(23, [[</div>]], true)
 
 	--------------------------------------------------------------------------------
 	-- Setup Callback Manager:
