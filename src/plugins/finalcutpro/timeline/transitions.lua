@@ -143,7 +143,7 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	transitions:applyItem(transition)
 
-	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+	-- TODO: HACK: This timer exists to work around a mouse bug in Hammerspoon Sierra
 	timer.doAfter(0.1, function()
 		transitions:loadLayout(transitionsLayout)
 		if effectsLayout then effects:loadLayout(effectsLayout) end
