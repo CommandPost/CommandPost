@@ -204,7 +204,7 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	local currentItemsUI = generators:currentItemsUI()
 	local whichItem = nil
-	for i, v in ipairs(currentItemsUI) do
+	for _, v in ipairs(currentItemsUI) do
 		if v:attributeValue("AXTitle") == name then
 			whichItem = v
 		end
