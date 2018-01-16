@@ -528,6 +528,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID]:performAction("AXConfirm")
                     return tonumber(ui[startingID]:attributeValue("AXValue"))
                 elseif wheel == "Shadows" then
                     --------------------------------------------------------------------------------
@@ -537,6 +538,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID + 3 + offset]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID + 3 + offset]:performAction("AXConfirm")
                     return tonumber(ui[startingID + 3 + offset]:attributeValue("AXValue"))
                 elseif wheel == "Midtones" then
                     --------------------------------------------------------------------------------
@@ -547,6 +549,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID + 6 + offset]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID + 6 + offset]:performAction("AXConfirm")
                     return tonumber(ui[startingID + 6 + offset]:attributeValue("AXValue"))
                 elseif wheel == "Highlights" then
                     if showing["Master"] == true then offset = offset + offsetAmount end
@@ -555,6 +558,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID + 9 + offset]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID + 9 + offset]:performAction("AXConfirm")
                     return tonumber(ui[startingID + 9 + offset]:attributeValue("AXValue"))
                 end
 
@@ -623,12 +627,14 @@ function ColorWheels:color(wheel, color, value)
             if wheel == "Master" then
                 if value then
                     ui[startingID]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID]:attributeValue("AXValue"))
             elseif wheel == "Shadows" then
                 if showing["Master"] == true then offset = offset + offsetAmount end
                 if value then
                     ui[startingID + 3 + offset]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID + 3 + offset]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID + 3 + offset]:attributeValue("AXValue"))
             elseif wheel == "Midtones" then
@@ -636,6 +642,7 @@ function ColorWheels:color(wheel, color, value)
                 if showing["Shadows"] == true then offset = offset + offsetAmount end
                 if value then
                     ui[startingID + 6 + offset]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID + 6 + offset]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID + 6 + offset]:attributeValue("AXValue"))
             elseif wheel == "Highlights" then
@@ -644,6 +651,7 @@ function ColorWheels:color(wheel, color, value)
                 if showing["Midtones"] == true then offset = offset + offsetAmount end
                 if value then
                     ui[startingID + 9 + offset]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID + 9 + offset]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID + 9 + offset]:attributeValue("AXValue"))
             end

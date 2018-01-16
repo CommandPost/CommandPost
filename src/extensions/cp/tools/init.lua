@@ -1123,7 +1123,7 @@ function tools.numberToWord(number)
 	return nil
 end
 
---- cp.tools.numberToWord(str) -> string
+--- cp.tools.firstToUpper(str) -> string
 --- Function
 --- Makes the first letter of a string uppercase.
 ---

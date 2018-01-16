@@ -71,6 +71,7 @@ return {
 			validate							=			"Validate",
 			success								=			"Success",
 			unknownError						=			"Unknown Error",
+			color                               =           "Color",
 
 			--------------------------------------------------------------------------------
 			-- Generic Final Cut Pro Strings:
@@ -901,6 +902,7 @@ return {
 	midiTimelineZoom					=			"MIDI Timeline Zoom",
 	midiTimelineZoomDescription			=			"Allows you to control timeline zoom via MIDI controls.",
 	midiColorBoardDescription			=			"Controls the Color Board via MIDI Controls",
+	midiColorWheelDescription			=			"Controls the Color Wheels via MIDI Controls",
 
 	--------------------------------------------------------------------------------
 	-- TANGENT SUPPORT:
