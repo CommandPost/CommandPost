@@ -107,18 +107,22 @@ function ScrollArea:childrenUI(filterFn)
 		if children then
 			table.sort(children,
 				function(a, b)
-					local aFrame = a:frame()
-					local bFrame = b:frame()
-					if aFrame.y < bFrame.y then -- a is above b
-						return true
-					elseif aFrame.y == bFrame.y then
-						if aFrame.x < bFrame.x then -- a is left of b
-							return true
-						elseif aFrame.x == bFrame.x
-						   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
-							return true
-						end
-					end
+				    if a and b then -- Added in this to try and solve issue #950
+                        local aFrame = a:frame()
+                        local bFrame = b:frame()
+                        if aFrame and bFrame then
+                            if aFrame.y < bFrame.y then -- a is above b
+                                return true
+                            elseif aFrame.y == bFrame.y then
+                                if aFrame.x < bFrame.x then -- a is left of b
+                                    return true
+                                elseif aFrame.x == bFrame.x
+                                   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
+                                    return true
+                                end
+                            end
+                        end
+                    end
 					return false -- b is first
 				end
 			)
