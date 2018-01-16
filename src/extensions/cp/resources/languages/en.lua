@@ -692,6 +692,10 @@ return {
 	openEmbeddedSpeechCommandsHelp 		=			"Speech Commands Help",
 	openVoiceOverUtility				=			"Open Voice Over Utility",
 	createRoleForVoice					=			"Assign Voice Role",
+	enableFilenamePrefix                =           "Enable Filename Prefix",
+	setFilenamePrefix                   =           "Set Filename Prefix",
+	pleaseEnterAPrefix                  =           "Please enter a prefix",
+	useUnderscore                       =           "Use Underscore",
 
 	--------------------------------------------------------------------------------
 	-- HUD:
