@@ -66,6 +66,21 @@ mod.tag = config.prop("text2speechTag", "Generated Voice Over")
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
 mod.insertIntoTimeline = config.prop("text2speechInsertIntoTimeline", true)
 
+--- plugins.finalcutpro.text2speech.enableCustomPrefix
+--- Variable
+--- Boolean that sets whether or not a custom prefix for the generated filename is enabled.
+mod.enableCustomPrefix = config.prop("text2speechEnableCustomPrefix", false)
+
+--- plugins.finalcutpro.text2speech.customPrefix
+--- Variable
+--- String which contains the custom prefix.
+mod.customPrefix = config.prop("text2speechCustomPrefix", "Custom Prefix")
+
+--- plugins.finalcutpro.text2speech.useUnderscore
+--- Variable
+--- If `true` then an underscore will be used in the Custom Prefix filename otherwise a dash will be used.
+mod.useUnderscore = config.prop("text2speechUseUnderscore", false)
+
 --- plugins.finalcutpro.text2speech.createRoleForVoice
 --- Variable
 --- Boolean that sets whether or not a tag should be added for the voice.
@@ -174,16 +189,41 @@ local function completionFn(result)
 	--------------------------------------------------------------------------------
 	-- Determine Filename from Result:
 	--------------------------------------------------------------------------------
-	local textToSpeak = result["text"]
-	local filename = tools.safeFilename(textToSpeak, "Generated Voice Over")
-	local savePath = mod.path() .. filename .. ".aif"
-	if tools.doesFileExist(savePath) then
-		local newPathCount = 0
-		repeat
-			newPathCount = newPathCount + 1
-			savePath = mod.path() .. filename .. " " .. tostring(newPathCount) .. ".aif"
-		until not tools.doesFileExist(savePath)
-	end
+	local textToSpeak, filename, savePath
+	local prefix = mod.customPrefix()
+    if mod.enableCustomPrefix() == true and prefix and tools.trim(prefix) ~= "" then
+        --------------------------------------------------------------------------------
+        -- Enable Custom Prefix:
+        --------------------------------------------------------------------------------
+        local seperator = " - "
+        if mod.useUnderscore() then
+            seperator = "_"
+        end
+        textToSpeak = result["text"]
+        filename = tools.safeFilename(textToSpeak, "Generated Voice Over")
+        savePath = mod.path() .. prefix .. seperator .. "0001" .. seperator .. filename .. ".aif"
+        if tools.doesFileExist(savePath) then
+            local newPathCount = 1
+            repeat
+                newPathCount = newPathCount + 1
+                savePath = mod.path() .. prefix .. seperator .. string.format("%04d", newPathCount) .. seperator .. filename .. ".aif"
+            until not tools.doesFileExist(savePath)
+        end
+    else
+        --------------------------------------------------------------------------------
+        -- No Custom Prefix:
+        --------------------------------------------------------------------------------
+        textToSpeak = result["text"]
+        filename = tools.safeFilename(textToSpeak, "Generated Voice Over")
+        savePath = mod.path() .. filename .. ".aif"
+        if tools.doesFileExist(savePath) then
+            local newPathCount = 0
+            repeat
+                newPathCount = newPathCount + 1
+                savePath = mod.path() .. filename .. " " .. string.format("%04d", newPathCount) .. ".aif"
+            until not tools.doesFileExist(savePath)
+        end
+    end
 
 	--------------------------------------------------------------------------------
 	-- Save Synthesised Voice to File:
@@ -429,6 +469,24 @@ local function rightClickCallback()
 			fn = function()
 				mod.chooseFolder()
 				mod.chooser:show()
+			end,
+		},
+		{ title = "-" },
+		{ title = i18n("enableFilenamePrefix"),
+		    checked = mod.enableCustomPrefix(),
+			fn = function()
+				mod.enableCustomPrefix:toggle()
+			end,
+		},
+		{ title = i18n("setFilenamePrefix"),
+			fn = function()
+                mod.customPrefix(dialog.displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", "", mod.customPrefix(), nil))
+			end,
+		},
+		{ title = i18n("useUnderscore"),
+		    checked = mod.useUnderscore(),
+			fn = function()
+				mod.useUnderscore:toggle()
 			end,
 		},
 		{ title = "-" },
