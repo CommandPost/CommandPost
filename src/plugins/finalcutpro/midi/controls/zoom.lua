@@ -24,6 +24,15 @@ local fcp				= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.midi.controls.zoom.control() -> nil
+--- Function
+--- Final Cut Pro MIDI Zoom Control
+---
+--- Parameters:
+---  * metadata - table of metadata from the MIDI callback
+---
+--- Returns:
+---  * None
 function mod.control(metadata)
 	if metadata.controllerValue then
 		local appearance = fcp:timeline():toolbar():appearance()

@@ -373,7 +373,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 									else
 										timer.doAfter(0.0001, function()
 											if metadata.timestamp == mod._lastTimestamp then
-												params.fn(metadata)
+												params.fn(metadata, deviceName)
 												mod._alreadyProcessingCallback = false
 											end
 										end)
