@@ -2338,16 +2338,17 @@ end
 --
 --------------------------------------------------------------------------------------------------
 
-local orientation = 0.25
+local HUE_SHIFT = 4183333/6000000
+local HUE_ORIENTATION = 0
 
 local toXY = function(c)
-    local h = 1 - c.hue - orientation -- modify hue to what I *think* is the orientation in FCP
+    local h = 1 - c.hue - HUE_ORIENTATION
     return c.saturation * math.cos(h * math.pi * 2), c.saturation * math.sin(h * math.pi * 2)
 end
 
 local fromXY = function(x, y)
     local hue, sat = math.atan(y, x) / ( math.pi * 2), math.sqrt(x * x + y * y)
-    local h = 1 - (hue + orientation) -- modify hue from what I *think* is the orientation in FCP
+    local h = 1 - (hue + HUE_ORIENTATION)
     return h, sat
 end
 
@@ -2360,9 +2361,9 @@ function clamp(val, min, max)
     return vals
 end
 
-local HUE_SHIFT = 4183333/6000000
-
---- Corrects the color coming from the AXColorWell to the actual color
+--------------------------------------------------------------------------------
+--- Corrects the color coming from the AXColorWell to the actual color:
+--------------------------------------------------------------------------------
 function shiftColorToFCPX(originalColor)
     local shiftedColor = color.asHSB(originalColor)
     local theHue = shiftedColor.hue
@@ -2394,7 +2395,10 @@ function ColorWheels:nudgeControlPrototype(wheel, direction)
 	console.clearConsole()
 
 	local ui = self:parent():UI()
+	log.df("ui: %s", inspect(ui))
+
 	local board = ui[3][2]
+	log.df("board: %s", inspect(board))
 
 	local currentValueAsString = board:attributeValue("AXValue")
 	log.df("currentValueAsString: %s", inspect(currentValueAsString))
@@ -2402,7 +2406,13 @@ function ColorWheels:nudgeControlPrototype(wheel, direction)
 	local currentValueAsRGB = colorWellValueToTable(currentValueAsString, true)
 	log.df("currentValueAsRGB: %s", inspect(currentValueAsRGB))
 
-	local currentValueAsHSB = drawing.color.asHSB(shiftColorToFCPX(currentValueAsRGB))
+    --------------------------------------------------------------------------------
+	--- Corrects the color coming from the AXColorWell to the actual color:
+	--------------------------------------------------------------------------------
+	local realColors = shiftColorToFCPX(currentValueAsRGB)
+	log.df("realColors: %s", inspect(realColors))
+
+	local currentValueAsHSB = drawing.color.asHSB(realColors)
 	log.df("currentValueAsHSB: %s", inspect(currentValueAsHSB))
 
 	local x, y = toXY(currentValueAsHSB)
