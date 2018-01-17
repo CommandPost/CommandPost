@@ -10,13 +10,20 @@
 ---
 --- Requires Final Cut Pro 10.4 or later.
 
---------------------------------------------------------------------------------
--- TODO:
---  * Add API for "Add Shape Mask", "Add Color Mask" and "Invert Masks".
---  * Add API for "Save Effects Preset".
---  * Add API for "Mask Inside/Output".
---  * Add API for "View Masks".
---------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+-- DAVID'S TODO LIST:
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+--
+--  [ ] `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControl` should use GUI Scripting instead of shortcuts
+--  [ ] `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:color` should use GUI Scripting on AXColorWell instead of the RGB text boxes
+--  [ ] Replace the map in `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:brightness` with a mathematical formula
+--
+--  [ ] Add API for "Add Shape Mask", "Add Color Mask" and "Invert Masks".
+--  [ ] Add API for "Save Effects Preset".
+--  [ ] Add API for "Mask Inside/Output".
+--  [ ] Add API for "View Masks".
+--
+-----------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 --
