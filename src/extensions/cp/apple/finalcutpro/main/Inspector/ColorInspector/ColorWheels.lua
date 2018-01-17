@@ -2372,7 +2372,7 @@ local HUE_SHIFT = 4183333/6000000
 function shiftColorToFCPX(originalColor)
     local shiftedColor = color.asHSB(originalColor)
     local theHue = shiftedColor.hue
-    theHue = theHue - HUE_SHIFT
+    theHue = theHue + HUE_SHIFT
     theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
     shiftedColor.hue = theHue
     return color.asRGB(shiftedColor)
