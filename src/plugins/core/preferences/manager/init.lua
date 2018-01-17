@@ -227,6 +227,16 @@ local function windowCallback(action, webview, frame)
 	if action == "closing" then
 		if not hs.shuttingDown then
 			mod.webview = nil
+
+			--------------------------------------------------------------------------------
+			-- Trigger Closing Callbacks:
+			--------------------------------------------------------------------------------
+			for _, v in ipairs(mod._panels) do
+                if v.closeFn and type(v.closeFn) == "function" then
+                    v.closeFn()
+                end
+		    end
+
 		end
 	elseif action == "focusChange" then
 	elseif action == "frameChange" then
@@ -263,7 +273,13 @@ end
 function mod.maxPanelHeight()
 	local max = mod.defaultHeight
 	for _,panel in ipairs(mod._panels) do
-		max = panel.height ~= nil and panel.height < max and max or panel.height
+	    local height
+	    if type("panel.height") == "function" then
+	        height = panel.height()
+	    else
+	        height = panel.height
+	    end
+		max = height ~= nil and height < max and max or height
 	end
 	return max
 end
@@ -474,7 +490,13 @@ function mod.selectPanel(id)
 		-- Resize Panel:
 		--------------------------------------------------------------------------------
 		if panel.id == id and panel.height then
-			mod.webview:size({w = mod.defaultWidth, h = panel.height })
+		    local height
+		    if type(panel.height) == "function" then
+		        height = panel.height()
+		    else
+		        height = panel.height
+		    end
+			mod.webview:size({w = mod.defaultWidth, h = height })
 		end
 
 		local style = panel.id == id and "block" or "none"
@@ -524,6 +546,7 @@ end
 ---  ** `label`			- The human-readable label for the panel icon.
 ---	 ** `image`			- The `hs.image` for the panel icon.
 ---  ** `tooltip`		- The human-readable details for the toolbar icon when the mouse is hovering over it.
+---  ** `closeFn`       - A callback function that's triggered when the Preferences window is closed.
 function mod.addPanel(params)
 
 	local newPanel = panel.new(params, mod)

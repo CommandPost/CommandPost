@@ -11,6 +11,14 @@
 --- Requires Final Cut Pro 10.4 or later.
 
 --------------------------------------------------------------------------------
+-- TODO:
+--  * Add API for "Add Shape Mask", "Add Color Mask" and "Invert Masks".
+--  * Add API for "Save Effects Preset".
+--  * Add API for "Mask Inside/Output".
+--  * Add API for "View Masks".
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
@@ -21,7 +29,6 @@ local drawing 							= require("hs.drawing")
 local color								= require("hs.drawing.color")
 local inspect							= require("hs.inspect")
 
-local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
 local tools								= require("cp.tools")
 
@@ -309,7 +316,7 @@ function ColorWheels:viewMode(value)
                         return "Single Wheels"
                     end
                 end
-                log.df("Failed to determine which View Mode was selected")
+                log.ef("Failed to determine which View Mode was selected")
                 return nil
             end
         else
@@ -522,6 +529,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID]:performAction("AXConfirm")
                     return tonumber(ui[startingID]:attributeValue("AXValue"))
                 elseif wheel == "Shadows" then
                     --------------------------------------------------------------------------------
@@ -531,6 +539,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID + 3 + offset]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID + 3 + offset]:performAction("AXConfirm")
                     return tonumber(ui[startingID + 3 + offset]:attributeValue("AXValue"))
                 elseif wheel == "Midtones" then
                     --------------------------------------------------------------------------------
@@ -541,6 +550,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID + 6 + offset]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID + 6 + offset]:performAction("AXConfirm")
                     return tonumber(ui[startingID + 6 + offset]:attributeValue("AXValue"))
                 elseif wheel == "Highlights" then
                     if showing["Master"] == true then offset = offset + offsetAmount end
@@ -549,6 +559,7 @@ function ColorWheels:color(wheel, color, value)
                     if value then
                         ui[startingID + 9 + offset]:setAttributeValue("AXValue", tostring(value))
                     end
+                    ui[startingID + 9 + offset]:performAction("AXConfirm")
                     return tonumber(ui[startingID + 9 + offset]:attributeValue("AXValue"))
                 end
 
@@ -617,12 +628,14 @@ function ColorWheels:color(wheel, color, value)
             if wheel == "Master" then
                 if value then
                     ui[startingID]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID]:attributeValue("AXValue"))
             elseif wheel == "Shadows" then
                 if showing["Master"] == true then offset = offset + offsetAmount end
                 if value then
                     ui[startingID + 3 + offset]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID + 3 + offset]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID + 3 + offset]:attributeValue("AXValue"))
             elseif wheel == "Midtones" then
@@ -630,6 +643,7 @@ function ColorWheels:color(wheel, color, value)
                 if showing["Shadows"] == true then offset = offset + offsetAmount end
                 if value then
                     ui[startingID + 6 + offset]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID + 6 + offset]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID + 6 + offset]:attributeValue("AXValue"))
             elseif wheel == "Highlights" then
@@ -638,6 +652,7 @@ function ColorWheels:color(wheel, color, value)
                 if showing["Midtones"] == true then offset = offset + offsetAmount end
                 if value then
                     ui[startingID + 9 + offset]:setAttributeValue("AXValue", tostring(value))
+                    ui[startingID + 9 + offset]:performAction("AXConfirm")
                 end
                 return tonumber(ui[startingID + 9 + offset]:attributeValue("AXValue"))
             end
@@ -649,50 +664,6 @@ function ColorWheels:color(wheel, color, value)
         log.ef("Failed to detect view mode. This shouldn't happen.")
         return nil
     end
-end
-
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControl(wheel, direction) -> boolean
---- Method
---- Moves a Color Wheel puck/control in a specific direction.
----
---- Parameters:
----  * wheel - Which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights")
----  * direction - Which direction you want to nudge the wheel control ("Up", "Down", "Left" or "Right")
----
---- Returns:
----  * `true` if successful otherwise `nil`
-function ColorWheels:nudgeControl(wheel, direction)
-
-	--------------------------------------------------------------------------------
-    -- TODO: We're currently using the Color Board shortcuts, however this is less
-    --       than ideal, as the shortcuts aren't assigned by default. Instead we
-    --       should be using GUI Scripting on the AXColorWell.
-    --------------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if type(wheel) ~= "string" or not self.WHEELS[wheel] then
-        log.ef("Invalid Wheel: %s", wheel)
-        return nil
-    end
-    if type(direction) ~= "string" or not self.NUDGE_DIRECTIONS[direction] then
-        log.ef("Invalid Direction: %s", direction)
-        return nil
-    end
-
-    if direction == "Up" then
-    	self:app():performShortcut("ColorBoard-NudgePuckUp")
-    elseif direction == "Down" then
-	    self:app():performShortcut("ColorBoard-NudgePuckDown")
-    elseif direction == "Left" then
-    	self:app():performShortcut("ColorBoard-NudgePuckLeft")
-    elseif direction == "Right" then
-    	self:app():performShortcut("ColorBoard-NudgePuckRight")
-	end
-
-	return true
-
 end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:saturation(wheel, [value]) -> number | nil
@@ -1884,25 +1855,20 @@ function ColorWheels:brightness(wheel, value)
 
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:mix(wheel, [value]) -> number | nil
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:mix([value]) -> number | nil
 --- Method
 --- Sets or gets a color wheel mix.
 ---
 --- Parameters:
----  * wheel - Which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights")
 ---  * [value] - An optional value you want to set the mix value to as number (0 to 1).
 ---
 --- Returns:
 ---  * A number containing the mix value or `nil` if an error occurs.
-function ColorWheels:mix(wheel, value)
+function ColorWheels:mix(value)
 
 	--------------------------------------------------------------------------------
     -- Validation:
     --------------------------------------------------------------------------------
-    if type(wheel) ~= "string" or not self.WHEELS[wheel] then
-        log.ef("Invalid Wheel: %s", wheel)
-        return nil
-    end
     if value then
         if type(value) ~= "number" then
             log.ef("Invalid Mix Value Type: %s", type(value))
@@ -1914,6 +1880,10 @@ function ColorWheels:mix(wheel, value)
             log.ef("Invalid Mix Value: %s", value)
             return nil
         end
+    end
+    if not self:isShowing() then
+        log.ef("Color Wheels not active.")
+        return nil
     end
 
 	--------------------------------------------------------------------------------
@@ -1970,6 +1940,10 @@ function ColorWheels:temperature(value)
             log.ef("Invalid Temperature Value: %s", value)
             return nil
         end
+    end
+    if not self:isShowing() then
+        log.ef("Color Wheels not active.")
+        return nil
     end
 
 	local ui = self:parent():UI()
@@ -2028,6 +2002,10 @@ function ColorWheels:tint(value)
             return nil
         end
     end
+    if not self:isShowing() then
+        log.ef("Color Wheels not active.")
+        return nil
+    end
 
 	local ui = self:parent():UI()
     local viewMode = self:viewMode()
@@ -2085,6 +2063,10 @@ function ColorWheels:hue(value)
             return nil
         end
     end
+    if not self:isShowing() then
+        log.ef("Color Wheels not active.")
+        return nil
+    end
 
 	local ui = self:parent():UI()
     local viewMode = self:viewMode()
@@ -2137,14 +2119,31 @@ function ColorWheels:selectedWheel(wheel)
     end
 
    local viewMode = self:viewMode()
-   	if wheel then
+   if wheel then
    		--------------------------------------------------------------------------------
    		-- Setter:
    		--------------------------------------------------------------------------------
 		if viewMode == "Single Wheels" then
 			self:visibleWheel(wheel)
+			local ui = self:parent():UI()
+			if ui and ui[3] and ui[3][2] and ui[3][2]:attributeValue("AXRole") == "AXColorWell" then
+			    local result = ui[3][2]:setAttributeValue("AXFocused", true)
+				if result then
+					return wheel
+				else
+					log.ef("Failed to set focus.")
+					return nil
+				end
+			else
+			    log.ef("Failed to find Color Well.")
+			    return nil
+			end
 		elseif viewMode == "All Wheels" then
 			local ui = self:parent():UI()
+			if not ui then
+			    log.ef("Failed to find UI.")
+			    return nil
+			end
 			if wheel == "Master" then
 				local result = ui[2]:setAttributeValue("AXFocused", true)
 				if result then
@@ -2205,6 +2204,62 @@ function ColorWheels:selectedWheel(wheel)
     end
 end
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControl(wheel, direction) -> boolean
+--- Method
+--- Moves a Color Wheel puck/control in a specific direction.
+---
+--- Parameters:
+---  * wheel - Which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights")
+---  * direction - Which direction you want to nudge the wheel control ("Up", "Down", "Left" or "Right")
+---
+--- Returns:
+---  * `true` if successful otherwise `nil`
+function ColorWheels:nudgeControl(wheel, direction)
+
+	--------------------------------------------------------------------------------
+    -- TODO: We're currently using the Color Board shortcuts, however this is less
+    --       than ideal, as the shortcuts aren't assigned by default. Instead we
+    --       should be using GUI Scripting on the AXColorWell.
+    --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- Validation:
+    --------------------------------------------------------------------------------
+    if type(wheel) ~= "string" or not self.WHEELS[wheel] then
+        log.ef("Invalid Wheel: %s", wheel)
+        return nil
+    end
+    if type(direction) ~= "string" or not self.NUDGE_DIRECTIONS[direction] then
+        log.ef("Invalid Direction: %s", direction)
+        return nil
+    end
+
+    --------------------------------------------------------------------------------
+    -- Change wheel if required:
+    --------------------------------------------------------------------------------
+    local result = self:selectedWheel(wheel)
+    if not result then
+        log.ef("Failed to change Wheel.")
+        return nil
+    end
+
+    --------------------------------------------------------------------------------
+    -- Trigger the required shortcut:
+    --------------------------------------------------------------------------------
+    if direction == "Up" then
+    	self:app():performShortcut("ColorBoard-NudgePuckUp")
+    elseif direction == "Down" then
+	    self:app():performShortcut("ColorBoard-NudgePuckDown")
+    elseif direction == "Left" then
+    	self:app():performShortcut("ColorBoard-NudgePuckLeft")
+    elseif direction == "Right" then
+    	self:app():performShortcut("ColorBoard-NudgePuckRight")
+	end
+
+	return true
+
+end
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:reset(wheel) -> boolean | nil
 --- Method
 --- Resets the selected color wheel.
@@ -2216,15 +2271,71 @@ end
 ---  * `true` if successful otherwise `false`
 function ColorWheels:reset(wheel)
 
-	-- TODO: Finish this function.
+	--------------------------------------------------------------------------------
+    -- Validation:
+    --------------------------------------------------------------------------------
+    if wheel then
+	    if type(wheel) ~= "string" or not self.WHEELS[wheel] then
+			log.ef("Invalid Wheel: %s", wheel)
+			return nil
+		end
+    end
 
+    local viewMode = self:viewMode()
+    if viewMode == "Single Wheels" then
+			self:visibleWheel(wheel)
+			local ui = self:parent():UI()
+			if ui and ui[3] and ui[3][1] and ui[3][1]:attributeValue("AXRole") == "AXButton" then
+			    local result = ui[3][1]:performAction("AXPress")
+			    return result ~= nil
+			else
+			    return false
+			end
+		elseif viewMode == "All Wheels" then
+            local ui = self:parent():UI()
+            if wheel == "Master" then
+                if ui and ui[2] and ui[2][1] and ui[2][1]:attributeValue("AXRole") == "AXButton" then
+                    local result = ui[2][1]:performAction("AXPress")
+                    return result ~= nil
+                else
+                    return false
+                end
+            elseif wheel == "Shadows" then
+                if ui and ui[3] and ui[3][1] and ui[2][1]:attributeValue("AXRole") == "AXButton" then
+                    local result = ui[3][1]:performAction("AXPress")
+                    return result ~= nil
+                else
+                    return false
+                end
+            elseif wheel == "Midtones" then
+                if ui and ui[4] and ui[4][1] and ui[2][1]:attributeValue("AXRole") == "AXButton" then
+                    local result = ui[4][1]:performAction("AXPress")
+                    return result ~= nil
+                else
+                    return false
+                end
+            elseif wheel == "Highlights" then
+                if ui and ui[5] and ui[5][1] and ui[2][1]:attributeValue("AXRole") == "AXButton" then
+                    local result = ui[5][1]:performAction("AXPress")
+                    return result ~= nil
+                else
+                    return false
+                end
+            end
+		else
+			log.ef("Failed to detect view mode. This shouldn't happen.")
+			return nil
+		end
 end
 
 --------------------------------------------------------------------------------
 --
 -- EXPERIMENTS:
 --
--- The below code is a bunch of experiments and work-in-progress code.
+-- The below code is a bunch of experiments and work-in-progress code as
+-- Chris madly attempts to work out how to make the Color Wheel pucks/controls
+-- move left/right/up/down via GUI Scripting. Help me David, you're my only
+-- hope...
 --
 --------------------------------------------------------------------------------
 

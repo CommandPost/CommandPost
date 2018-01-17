@@ -267,6 +267,7 @@ end
 --- Returns a specific Touch Bar Icon.
 ---
 --- Parameters:
+---  * item - The item you want to get.
 ---  * button - Button ID as string
 ---  * group - Group ID as string
 ---
@@ -333,6 +334,13 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 	local activeGroup = mod.activeGroup()
 	local items = mod._items()
 
+    --------------------------------------------------------------------------------
+    -- Prefix Virtual Devices:
+    --------------------------------------------------------------------------------
+    if metadata.isVirtual == true then
+        deviceName = "virtual_" .. deviceName
+    end
+
 	if items[activeGroup] then
 		for _, item in pairs(items[activeGroup]) do
 			if deviceName == item.device and item.channel == metadata.channel then
@@ -366,7 +374,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 									else
 										timer.doAfter(0.0001, function()
 											if metadata.timestamp == mod._lastTimestamp then
-												params.fn(metadata)
+												params.fn(metadata, deviceName)
 												mod._alreadyProcessingCallback = false
 											end
 										end)
@@ -392,6 +400,32 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 
 end
 
+--- plugins.core.midi.manager.devices() -> table
+--- Function
+--- Gets a table of Physical MIDI Device Names.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Physical MIDI Device Names.
+function mod.devices()
+	return mod._deviceNames
+end
+
+--- plugins.core.midi.manager.virtualDevices() -> table
+--- Function
+--- Gets a table of Virtual MIDI Source Names.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of Virtual MIDI Source Names.
+function mod.virtualDevices()
+    return mod._virtualDevices
+end
+
 --- plugins.core.midi.manager.start() -> boolean
 --- Function
 --- Starts the MIDI Plugin
@@ -406,12 +440,49 @@ function mod.start()
 		log.df("Starting MIDI Watchers")
 		mod._midiDevices = {}
 	end
-	for _, deviceName in ipairs(mod._deviceNames) do
+
+    --------------------------------------------------------------------------------
+    -- For performance, we only use watchers for USED devices:
+    --------------------------------------------------------------------------------
+    local items = mod._items()
+    local usedDevices = {}
+    for _, v in pairs(items) do
+        for _, vv in pairs(v) do
+            table.insert(usedDevices, vv.device)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Create a table of both Physical & Virtual MIDI Devices:
+    --------------------------------------------------------------------------------
+    local devices = {}
+    for _, v in pairs(mod.devices()) do
+        table.insert(devices, v)
+    end
+    for _, v in pairs(mod.virtualDevices()) do
+        table.insert(devices, "virtual_" .. v)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Create MIDI Watchers for MIDI Devices that have actions assigned to them:
+    --------------------------------------------------------------------------------
+	for _, deviceName in ipairs(devices) do
 		if not mod._midiDevices[deviceName] then
-			mod._midiDevices[deviceName] = midi.new(deviceName)
-			if mod._midiDevices[deviceName] then
-				mod._midiDevices[deviceName]:callback(mod.midiCallback)
-			end
+		    if fnutils.contains(usedDevices, deviceName) then
+                if string.sub(deviceName, 1, 8) == "virtual_" then
+                    --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
+                    mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
+                    if mod._midiDevices[deviceName] then
+                        mod._midiDevices[deviceName]:callback(mod.midiCallback)
+                    end
+                else
+                    --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
+                    mod._midiDevices[deviceName] = midi.new(deviceName)
+                    if mod._midiDevices[deviceName] then
+                        mod._midiDevices[deviceName]:callback(mod.midiCallback)
+                    end
+                end
+            end
 		end
 	end
 end
@@ -474,10 +545,6 @@ function mod.init(deps, env)
 	return mod
 end
 
-function mod.devices()
-	return mod._deviceNames
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -507,8 +574,9 @@ function plugin.init(deps, env)
 	-- Setup MIDI Device Callback:
 	--------------------------------------------------------------------------------
 	midi.deviceCallback(function(devices, virtualDevices)
-		mod._deviceNames = fnutils.concat(devices, virtualDevices)
-		log.df("MIDI Devices Updated (%s devices)", #mod._deviceNames)
+		mod._deviceNames = devices
+		mod._virtualDevices = virtualDevices
+		log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
 	end)
 
 	--------------------------------------------------------------------------------

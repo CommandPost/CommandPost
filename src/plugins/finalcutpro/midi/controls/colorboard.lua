@@ -164,7 +164,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.midi.controls.color",
+	id				= "finalcutpro.midi.controls.colorboard",
 	group			= "finalcutpro",
 	dependencies	= {
 		["core.midi.manager"] = "manager",
