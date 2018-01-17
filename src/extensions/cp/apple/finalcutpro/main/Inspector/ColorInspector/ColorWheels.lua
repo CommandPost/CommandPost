@@ -18,6 +18,7 @@
 local log                               = require("hs.logger").new("colorWheels")
 
 local drawing 							= require("hs.drawing")
+local color								= require("hs.drawing.color")
 local inspect							= require("hs.inspect")
 
 local axutils                           = require("cp.ui.axutils")
@@ -2364,6 +2365,19 @@ end
 ---  * `true` if successful otherwise `nil`
 
 xcount = 0
+
+local HUE_SHIFT = 4183333/6000000
+
+--- corrects the color coming from the AXColorWell to the actual color
+function shiftColorToFCPX(originalColor)
+    local shiftedColor = color.asHSB(originalColor)
+    local theHue = shiftedColor.hue
+    theHue = theHue - HUE_SHIFT
+    theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
+    shiftedColor.hue = theHue
+    return color.asRGB(shiftedColor)
+end
+
 function ColorWheels:nudgeControlPrototype(wheel, direction)
 
 	--------------------------------------------------------------------------------
@@ -2393,7 +2407,7 @@ function ColorWheels:nudgeControlPrototype(wheel, direction)
 	local currentValueAsRGB = colorWellValueToTable(currentValueAsString, true)
 	log.df("currentValueAsRGB: %s", inspect(currentValueAsRGB))
 
-	local currentValueAsHSB = drawing.color.asHSB(currentValueAsRGB)
+	local currentValueAsHSB = drawing.color.asHSB(shiftColorToFCPX(currentValueAsRGB))
 	log.df("currentValueAsHSB: %s", inspect(currentValueAsHSB))
 
 	local x, y = toXY(currentValueAsHSB)
