@@ -267,6 +267,7 @@ end
 --- Returns a specific Touch Bar Icon.
 ---
 --- Parameters:
+---  * item - The item you want to get.
 ---  * button - Button ID as string
 ---  * group - Group ID as string
 ---
