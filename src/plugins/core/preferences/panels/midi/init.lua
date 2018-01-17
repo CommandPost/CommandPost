@@ -45,22 +45,42 @@ mod.enabled = config.prop("enableMIDI", false)
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("midiPreferencesLastGroup", nil)
 
--- resetMIDI() -> none
+-- plugins.core.preferences.panels.midi.resetMIDI() -> none
 -- Function
--- Prompts to reset shortcuts to default.
+-- Prompts to reset shortcuts to default for all groups.
 --
 -- Parameters:
 --  * None
 --
 -- Returns:
 --  * None
-local function resetMIDI()
+function mod._resetMIDI()
     dialog.webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             mod._midi.clear()
             mod._manager.refresh()
         end
-    end, i18n("midiResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    end, i18n("midiResetAllConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
+-- plugins.core.preferences.panels.midi.resetMIDIGroup() -> none
+-- Function
+-- Prompts to reset shortcuts to default for the selected group.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._resetMIDIGroup()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            local items = mod._midi._items()
+            items[mod.lastGroup()] = nil
+            mod._midi._items(items)
+            mod._manager.refresh()
+        end
+    end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
 -- renderRows(context) -> none
@@ -125,6 +145,7 @@ local function generateContent()
         groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
     end
     table.sort(groupOptions, function(a, b) return a.label < b.label end)
+    mod.lastGroup(defaultGroup)
 
     local midiGroupSelect = ui.select({
         id          = "midiGroupSelect",
@@ -337,7 +358,7 @@ function mod._startLearning(id, params)
                         for i, item in pairs(items[groupID]) do
                             if (metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName) or (not metadata.isVirtual and item.device == callbackDeviceName) then
                                 if commandType == "noteOn" or commandType == "controlChange" then
-                                    if (item.channel == metadata.channel and item.number == metadata.note) or (item.channel == metadata.channel and item.number == metadata.controllerNumber) then
+                                    if (item.channel == metadata.channel and item.number == metadata.note) or (item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == metadata.controllerValue) then
                                         --log.df("DUPLICATE DETECTED: %s", i)
                                         mod._manager.injectScript([[
                                             document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
@@ -476,23 +497,27 @@ local function midiPanelCallback(id, params)
 
         elseif params["type"] == "updateNumber" then
             --------------------------------------------------------------------------------
-            -- Update Command Type:
+            -- Update Number:
             --------------------------------------------------------------------------------
+            --log.df("Updating Device: %s", params["number"])
             mod._midi.setItem("number", params["buttonID"], params["groupID"], params["number"])
         elseif params["type"] == "updateDevice" then
             --------------------------------------------------------------------------------
             -- Update Device:
             --------------------------------------------------------------------------------
+            --log.df("Updating Device: %s", params["device"])
             mod._midi.setItem("device", params["buttonID"], params["groupID"], params["device"])
         elseif params["type"] == "updateChannel" then
             --------------------------------------------------------------------------------
             -- Update Channel:
             --------------------------------------------------------------------------------
+            --log.df("Updating Channel: %s", params["channel"])
             mod._midi.setItem("channel", params["buttonID"], params["groupID"], params["channel"])
         elseif params["type"] == "updateValue" then
             --------------------------------------------------------------------------------
-            -- Update Device:
+            -- Update Value:
             --------------------------------------------------------------------------------
+            --log.df("Updating Value: %s", params["value"])
             mod._midi.setItem("value", params["buttonID"], params["groupID"], params["value"])
         elseif params["type"] == "updateGroup" then
             --------------------------------------------------------------------------------
@@ -550,12 +575,63 @@ function mod.getGroupEditor(groupId)
     return mod._groupEditors and mod._groupEditors[groupId]
 end
 
-local function displayBooleanToString(value)
+-- plugins.core.preferences.panels.midi._displayBooleanToString(value) -> none
+-- Function
+-- Converts a boolean to a string for use in the CSS block style value.
+--
+-- Parameters:
+--  * value - a boolean value
+--
+-- Returns:
+--  * A string
+function mod._displayBooleanToString(value)
     if value then
         return "block"
     else
         return "none"
     end
+end
+
+-- plugins.core.preferences.panels.midi._calculateHeight() -> none
+-- Function
+-- Returns the correct WebView height based on whether MIDI is enabled or not.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * A number
+function mod._calculateHeight()
+    if mod.enabled() then
+        return 650
+    else
+        return 210
+    end
+end
+
+-- plugins.core.preferences.panels.midi._applyTopDeviceToAll() -> none
+-- Function
+-- Applies the Top Group to all the subsequent groups.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._applyTopDeviceToAll()
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            local currentGroup = mod.lastGroup()
+            local value = mod._midi.getItem("device", "1", currentGroup)
+            if value then
+                local maxItems = mod._midi.maxItems
+                for i=1, maxItems do
+                    mod._midi.setItem("device", tostring(i), currentGroup, value)
+                end
+                mod._manager.refresh()
+            end
+        end
+    end, i18n("midiTopDeviceToAll"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
 --- plugins.core.preferences.panels.midi.init(deps, env) -> module
@@ -588,7 +664,7 @@ function mod.init(deps, env)
         label           = i18n("midi"),
         image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
         tooltip         = i18n("midi"),
-        height          = 550,
+        height          = mod._calculateHeight,
         closeFn         = mod._destroyMIDIWatchers,
     })
         :addHeading(6, i18n("midiControls"))
@@ -597,37 +673,65 @@ function mod.init(deps, env)
                 label       = i18n("enableMIDI"),
                 checked     = mod.enabled,
                 onchange    = function(_, params)
+                    --------------------------------------------------------------------------------
+                    -- Toggle Preference:
+                    --------------------------------------------------------------------------------
                     mod.enabled(params.checked)
+
+                    --------------------------------------------------------------------------------
+                    -- Resize Window:
+                    --------------------------------------------------------------------------------
+                    local currentSize = mod._manager.webview:size()
+                    currentSize["h"] = mod._calculateHeight()
+                    mod._manager.webview:size(currentSize)
+
+                    --------------------------------------------------------------------------------
+                    -- Update UI:
+                    --------------------------------------------------------------------------------
                     mod._manager.injectScript([[
-                        document.getElementById("midiEditor").style.display = "]] .. displayBooleanToString(params.checked) .. [["
+                        document.getElementById("midiEditor").style.display = "]] .. mod._displayBooleanToString(params.checked) .. [["
                     ]])
                 end,
             }
         )
-    mod._panel
-        :addContent(8, [[<div id="midiEditor" style="display:]] .. displayBooleanToString(mod.enabled()) .. [[;">]], true)
-        :addContent(10, generateContent, true)
-        :addButton(20,
-            {
-                label       = i18n("midiReset"),
-                onclick     = resetMIDI,
-                class       = "resetShortcuts",
-            }
-        )
-        :addButton(21,
-            {
-                label       = i18n("refreshMidi"),
-                onclick     = mod._manager.refresh,
-                class       = "refreshMidi",
-            }
-        )
-        :addButton(22,
+        :addButton(7.1,
             {
                 label       = i18n("openAudioMIDISetup"),
                 onclick     = function() hs.open("/Applications/Utilities/Audio MIDI Setup.app") end,
                 class       = "openAudioMIDISetup",
             }
         )
+        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod.enabled()) .. [[;">]], true)
+        :addContent(10, generateContent, true)
+        :addButton(11,
+            {
+                label       = i18n("refreshMidi"),
+                onclick     = mod._manager.refresh,
+                class       = "refreshMidi",
+            }
+        )
+        :addButton(12,
+            {
+                label       = i18n("applyTopDeviceToAll"),
+                onclick     = mod._applyTopDeviceToAll,
+                class       = "applyTopDeviceToAll",
+            }
+        )
+        :addButton(13,
+            {
+                label       = i18n("midiResetGroup"),
+                onclick     = mod._resetMIDIGroup,
+                class       = "midiResetGroup",
+            }
+        )
+        :addButton(14,
+            {
+                label       = i18n("midiResetAll"),
+                onclick     = mod._resetMIDI,
+                class       = "midiResetAll",
+            }
+        )
+
         :addContent(23, [[</div>]], true)
 
     --------------------------------------------------------------------------------

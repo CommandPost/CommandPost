@@ -7,7 +7,7 @@
 	%}
 			{* editor(group) *}
 	{%	else %}
-		<table class="midi">
+		<table class="midi" style="{% if not midi.enabled() then %}display:none;{% end %}">
 			<thead>
 				<tr>
 					<th class="midiRowAction">{{ i18n("action") }}</th>

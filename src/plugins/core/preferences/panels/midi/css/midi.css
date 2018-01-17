@@ -94,22 +94,39 @@
 	color: white;
 }
 
-.resetShortcuts {
+.refreshMidi {
 	margin: 10px 0px;
-	text-align: left;
+	text-align: center;
 	float: left;
+	width: 140px;
 }
 
-.refreshMidi {
-	margin: 10px -15px;
-	text-align: left;
+.applyTopDeviceToAll {
+	margin: 10px 0px;
+	text-align: center;
 	float: left;
+	width: 140px;
+	margin-left: 5px;
+}
+
+.midiResetGroup {
+	clear: both;
+	margin: -5px 0px;
+	text-align: center;
+	float: left;
+	width: 140px;
+}
+
+.midiResetAll {
+	margin: -5px 0px;
+	text-align: center;
+	float: left;
+	width: 140px;
+	margin-left: 5px;
 }
 
 .openAudioMIDISetup {
 	margin: 10px 0px;
-	text-align: left;
-	float: left;
 }
 
 .resetShortcutsToNone {

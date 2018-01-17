@@ -273,7 +273,13 @@ end
 function mod.maxPanelHeight()
 	local max = mod.defaultHeight
 	for _,panel in ipairs(mod._panels) do
-		max = panel.height ~= nil and panel.height < max and max or panel.height
+	    local height
+	    if type("panel.height") == "function" then
+	        height = panel.height()
+	    else
+	        height = panel.height
+	    end
+		max = height ~= nil and height < max and max or height
 	end
 	return max
 end
@@ -484,7 +490,13 @@ function mod.selectPanel(id)
 		-- Resize Panel:
 		--------------------------------------------------------------------------------
 		if panel.id == id and panel.height then
-			mod.webview:size({w = mod.defaultWidth, h = panel.height })
+		    local height
+		    if type(panel.height) == "function" then
+		        height = panel.height()
+		    else
+		        height = panel.height
+		    end
+			mod.webview:size({w = mod.defaultWidth, h = height })
 		end
 
 		local style = panel.id == id and "block" or "none"
