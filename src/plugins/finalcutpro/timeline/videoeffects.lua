@@ -13,10 +13,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("videofx")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local timer				= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 
@@ -144,7 +154,7 @@ function mod.apply(action)
 	effects:applyItem(effect)
 
 	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.1, function()		
+	timer.doAfter(0.1, function()
 		effects:loadLayout(effectsLayout)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
