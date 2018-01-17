@@ -13,10 +13,21 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("titles")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local timer				= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config            = require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
@@ -28,7 +39,10 @@ local just				= require("cp.just")
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.cache = {}
+-- plugins.finalcutpro.timeline.titles._cache <cp.prop: table>
+-- Field
+-- Titles cache.
+mod._cache = config.prop("titlesCache", {})
 
 --- plugins.finalcutpro.timeline.titles.apply(action) -> boolean
 --- Function
@@ -60,7 +74,7 @@ function mod.apply(action)
 		action = { name = action }
 	end
 
-	local name, category = action.name, action.category
+	local name, category, theme = action.name, action.category, action.theme
 
 	if name == nil then
 		dialog.displayMessage(i18n("noTitleShortcut"))
@@ -72,12 +86,17 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	fcp:launch()
 
+    --------------------------------------------------------------------------------
+    -- Build a Cache ID:
+    --------------------------------------------------------------------------------
+	local cacheID = name
+	if theme then cacheID = cacheID .. "-" .. theme end
+	if category then cacheID = cacheID .. "-" .. name end
+
 	--------------------------------------------------------------------------------
 	-- Restore from Cache:
 	--------------------------------------------------------------------------------
-	local cacheID = name
-	if category then cacheID = category .. name end
-	if mod.cache[cacheID] then
+	if mod._cache()[cacheID] then
 
 		--------------------------------------------------------------------------------
 		-- Stop Watching Clipboard:
@@ -93,7 +112,7 @@ function mod.apply(action)
 		--------------------------------------------------------------------------------
 		-- Add Cached Item to Clipboard:
 		--------------------------------------------------------------------------------
-		local cachedItem = mod.cache[cacheID]
+		local cachedItem = mod._cache()[cacheID]
 		local result = clipboard.writeFCPXData(cachedItem)
 		if not result then
 			dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
@@ -200,19 +219,27 @@ function mod.apply(action)
 	end
 
 	--------------------------------------------------------------------------------
-	-- Find the requested Generator:
+	-- Find the requested Title:
 	--------------------------------------------------------------------------------
 	local currentItemsUI = generators:currentItemsUI()
 	local whichItem = nil
 	for _, v in ipairs(currentItemsUI) do
-		if v:attributeValue("AXTitle") == name then
+	    local title = name
+	    if theme then
+	        title = theme .. " - " .. name
+	    end
+		if v:attributeValue("AXTitle") == title then
 			whichItem = v
 		end
     end
+    if whichItem == nil then
+        dialog.displayErrorMessage("Failed to get whichItem in plugins.finalcutpro.timeline.titles.apply.")
+        return false
+    end
     local grid = currentItemsUI[1]:attributeValue("AXParent")
     if not grid then
-        log.ef("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
-        return nil
+        dialog.displayErrorMessage("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
+        return false
     end
 
   	--------------------------------------------------------------------------------
@@ -261,7 +288,7 @@ function mod.apply(action)
 		menuBar:selectMenu({"Edit", "Copy"})
 		return false
 
-	end, 5)
+	end)
 
 	if newClipboard == nil then
 		dialog.displayErrorMessage("Failed to copy Generator.")
@@ -272,7 +299,9 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	-- Cache the item for faster recall next time:
 	--------------------------------------------------------------------------------
-	mod.cache[cacheID] = newClipboard
+	local cache = mod._cache()
+	cache[cacheID] = newClipboard
+	mod._cache(cache)
 
 	--------------------------------------------------------------------------------
 	-- Make sure Timeline has focus:

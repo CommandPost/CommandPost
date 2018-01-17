@@ -164,11 +164,11 @@ end)
 -- Returns:
 -- * Nothing
 function handler.mt:_onChoices(choices)
-	error("unimplmemented: handler:onChoices(choicesFn)")
+	--log.df("unimplmemented: handler:onChoices(choicesFn)")
 end
 
 function handler.mt:_onActionId(action)
-	error("unimplemented: handler:onActionId(actionFn)")
+	--log.df("unimplemented: handler:onActionId(actionFn)")
 end
 
 --- plugins.core.action.handler:actionId(action) -> string

@@ -207,7 +207,7 @@ function Browser:_startEndRowsUI(startLabel, endLabel)
 	return self:sidebar():rowsUI(function(row)
 		local label = row[1][1]
 		local value = label and label:attributeValue("AXValue")
-		log.df("checking row value: %s", value)
+		--log.df("checking row value: %s", value)
 
 		local isStartLabel = value == startLabel
 		if not started and isStartLabel then

@@ -13,10 +13,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("audiofx")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local timer				= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp				= require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
 
@@ -121,10 +131,10 @@ function mod.apply(action)
 	-- Click 'All':
 	--------------------------------------------------------------------------------
 	if category then
-		log.df("Showing audio category '%s'", category)
+		--log.df("Showing audio category '%s'", category)
 		effects:showAudioCategory(category)
 	else
-		log.df("Showing all audio categories")
+		--log.df("Showing all audio categories")
 		effects:showAllAudioEffects()
 	end
 
