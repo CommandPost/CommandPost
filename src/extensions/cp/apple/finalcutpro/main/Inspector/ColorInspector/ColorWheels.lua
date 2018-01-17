@@ -2328,107 +2328,14 @@ function ColorWheels:reset(wheel)
 		end
 end
 
---------------------------------------------------------------------------------
---
--- EXPERIMENTS:
---
--- The below code is a bunch of experiments and work-in-progress code as
--- Chris madly attempts to work out how to make the Color Wheel pucks/controls
--- move left/right/up/down via GUI Scripting. Help me David, you're my only
--- hope...
---
---------------------------------------------------------------------------------
-
---[[
-function ColorWheels:test()
-
-	local ui = self:parent():UI()
-	local board = ui[3][2]
-
-	local result = ""
-	for i=1, 5, 1 do
-		self:selectedWheel("Master")
-		self:nudgeControl("Master", "Up")
-		local rgb = colorWellValueToTable(board:attributeValue("AXValue"))
-		result = result .. string.format("R: %s   G: %s   B: %s", rgb["Red"], rgb["Green"], rgb["Blue"]) .. "\n"
-	end
-
-	log.df(result)
-
-	--local result = rgbTableToColorWellValue(rgb)
-end
---]]
-
---------------------------------------------------------------------------------
--- AXColorWell Notes:
---------------------------------------------------------------------------------
-
-    -- --------------------------------------------------------------------------
-    -- Value in FCP Interface | Value in Accessibility Framework
-    -- --------------------------------------------------------------------------
-    -- Red      Green   Blue    AXValue     R           G           B           A
-    -- --------------------------------------------------------------------------
-    -- 0        0       0       rgb         0           0           0           0
-    --
-    -- 255      0       0       rgb         0.183333    1           0           0
-    -- -255     0       0       rgb         0.816667    0           1           0
-    --
-    -- 0        255     0       rgb         0           0.183333    1           0
-    -- 0        -255    0       rgb         1           0.816667    0           0
-    --
-    -- 0        0       255     rgb         1           0           0.183333    0
-    -- 0        0       -255    rgb         0           1           0.816667    0
-    --
-    -- 255      255     0       rgb         0           1           0.816667    0
-    -- 0        255     255     rgb         0.816667    0           1           0
-    --
-    --
-    -- --------------------------------------------------------------------------
-
-	-- --------------------------------------------------------------------------
-	-- Moving Color Puck directly upwards using shortcut key:
-	-- --------------------------------------------------------------------------
-	-- rgb 	0 				0 				0	 			0
-	-- rgb 	0.000833333 	0.00166667 		0 				0
-	-- rgb 	0.00166667 		0.00333333 		0 				0
-	-- --------------------------------------------------------------------------
-
-	-- ------------------------------------------------------------------------------------------
-	--                  Value in FCP Interface
-	-- ------------------------------------------------------------------------------------------
-	--                  Red         Green       Blue		AXColorWell Value
-	-- ------------------------------------------------------------------------------------------
-	-- Far Left         208         255         0			rgb 0			0.999019 		1 	0
-	-- Far Right        47          0           255			rgb 1 			0.000980343 	0 	0
-	-- Far Top          255         0           81			rgb 0.50098    	1 				0 	0
-	-- Far Bottom       0           255         174			rgb 0.49902 	0 				1 	0
-	-- ------------------------------------------------------------------------------------------
-
-    --------------------------------------------------------------------------------
-    -- Color Wheel Limits:
-    --------------------------------------------------------------------------------
-    -- Final Cut Pro:       255 to -255
-    -- UI Scripting:        1   to -1
-    --------------------------------------------------------------------------------
-
-	--[[
-
-	Moving upwards:
-
-	x: 0.0, y: 0.0
-	x: -1.2566345481352e-06, y: 0.99999999999921
-	x: 1.5707978978147e-06, y: 0.99999999999877
-	x: 6.1232339957368e-17, y: 1.0
-	x: -7.8539777075812e-07, y: 0.99999999999969
-
-	--]]
-
 --------------------------------------------------------------------------------------------------
+--
+-- NUDGE CONTROL PROTOTYPE:
+--
 -- The below code is based on an example given to Chris - as discussed here:
 -- https://github.com/Hammerspoon/hammerspoon/issues/1642
---
--- Code Example:
 -- https://github.com/asmagill/hammerspoon-config-take2/blob/master/_scratch/hsbWheel.lua
+--
 --------------------------------------------------------------------------------------------------
 
 local orientation = 0.25
@@ -2450,19 +2357,20 @@ function clamp(val, min, max)
     elseif max <= val then
         val = max
     end
-    return val
+    return vals
 end
 
+local HUE_SHIFT = 4183333/6000000
 
---[[
-module.setXY = function(x, y)
-    x, y = clamp(x or 0, -1, 1), clamp(y or 0, -1, 1)
-    local h, s = fromXY(x, y)
-    _C.knob.fillColor = { hue = h, saturation = s, brightness = 1 }
-    _C.knob.center = { x = tostring((x + 1) / 2), y = tostring((y + 1) / 2) }
-    _C.text.text = string.format("X, Y = %.3f, %.3f", x, y)
+--- Corrects the color coming from the AXColorWell to the actual color
+function shiftColorToFCPX(originalColor)
+    local shiftedColor = color.asHSB(originalColor)
+    local theHue = shiftedColor.hue
+    theHue = theHue + HUE_SHIFT
+    theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
+    shiftedColor.hue = theHue
+    return color.asRGB(shiftedColor)
 end
---]]
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControlPrototype(wheel, direction) -> boolean
 --- Method
@@ -2474,37 +2382,13 @@ end
 ---
 --- Returns:
 ---  * `true` if successful otherwise `nil`
-
-xcount = 0
-
-local HUE_SHIFT = 4183333/6000000
-
---- corrects the color coming from the AXColorWell to the actual color
-function shiftColorToFCPX(originalColor)
-    local shiftedColor = color.asHSB(originalColor)
-    local theHue = shiftedColor.hue
-    theHue = theHue + HUE_SHIFT
-    theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
-    shiftedColor.hue = theHue
-    return color.asRGB(shiftedColor)
-end
-
+---
+--- Notes:
+---  * Example Usage:
+---    ```lua
+---    _fcp:inspector():colorInspector():colorWheels():nudgeControlPrototype("Master", "Up")
+---    ```
 function ColorWheels:nudgeControlPrototype(wheel, direction)
-
-	--------------------------------------------------------------------------------
-	--
-	-- X is left/right
-	-- Y is up/down
-	--
-	-- hue is the angle
-	-- saturation is the distance from centre to edge
-	--
-	-- hue - the hue component of the color specified as a number from 0.0 to 1.0. (0-359)
-	-- saturation - the saturation component of the color specified as a number from 0.0 to 1.0. (0-100)
-	-- brightness - the brightness component of the color specified as a number from 0.0 to 1.0. (0-100)
-	-- alpha - the color transparency from 0.0 (completely transparent) to 1.0 (completely opaque)
-	--
-	--------------------------------------------------------------------------------
 
 	local console = require("hs.console")
 	console.clearConsole()
@@ -2538,120 +2422,13 @@ function ColorWheels:nudgeControlPrototype(wheel, direction)
 	local backToRGB = drawing.color.asRGB(modifiedHSB)
 	log.df("backToRGB: %s", inspect(backToRGB))
 
-
 	local backToString = rgbTableToColorWellValue(backToRGB)
 	log.df("backToString: %s", inspect(backToString))
-
-	--[[
-	local r = tools.round(backToRGB.red * 256, 0)
-	local g = tools.round(backToRGB.green * 256, 0)
-	local b = tools.round(backToRGB.blue * 256, 0)
-
-	log.df("Red: %s, Green: %s, Blue: %s", r, g, b)
-	--]]
 
 	local setAttributeValueResult = board:setAttributeValue("AXValue", backToString)
 	log.df("setAttributeValueResult: %s", setAttributeValueResult)
 
 	local currentValueAsString = board:attributeValue("AXValue")
-	log.df("currentValueAsString: %s", currentValueAsString)
-
-	do return end
-
-
-
-
-
-
-
-
-
-
-
-	local x, y = xcount, 0.02
-	xcount = xcount - 0.0001
-
-	log.df("xcount: %s", xcount)
-
-	x, y = clamp(x or 0, -1, 1), clamp(y or 0, -1, 1)
-	local h, s = fromXY(x, y)
-
-	log.df("h: %s, s: %s", h, s)
-	log.df("-----------------------")
-
-	local c = currentValueAsHSB
-	c.hue = h
-	c.saturation = s
-
-	log.df("hsb: %s", inspect(c))
-
-	local rgb = drawing.color.asRGB(c)
-
-	log.df("rgb: %s", inspect(rgb))
-
-
-
-
-	local result = rgbTableToColorWellValue(rgb)
-
-	log.df("result: %s", result)
-
-	local setAttributeValueResult = board:setAttributeValue("AXValue", result)
-
-	log.df("setAttributeValueResult: %s", setAttributeValueResult)
-
-	local currentValueAsString = board:attributeValue("AXValue")
-
-	log.df("currentValueAsString: %s", currentValueAsString)
-
-
-
-
-	do return end
-
-
-
-	local x, y = toXY(currentValueAsHSB)
-
-	--local x = sat * math.cos(math.rad(hue))
-	--local y = sat * math.sin(math.rad(hue))
-
-	log.df("x: %s, y: %s", x,y)
-
-	do return end
-
-	log.df("-----------------------")
-
-	--if direction == "Up" then
-	x = x + 1
-	--end
-
-	log.df("x: %s, y: %s", x, y)
-
-	local sat = math.sqrt(x * x + y * y)
-	local hue = math.atan(y, x)
-
-	log.df("sat: %s, hue: %s", sat, hue)
-
-	currentValueAsHSB["hue"] = hue
-	currentValueAsHSB["saturation"] = sat
-
-	log.df("currentValueAsHSB: %s", inspect(currentValueAsHSB))
-
-	local currentValueAsRGB = drawing.color.asRGB(currentValueAsHSB)
-
-	log.df("currentValueAsRGB: %s", inspect(currentValueAsRGB))
-
-	local result = rgbTableToColorWellValue(currentValueAsRGB)
-
-	log.df("result: %s", result)
-
-	local setAttributeValueResult = board:setAttributeValue("AXValue", result)
-
-	log.df("setAttributeValueResult: %s", setAttributeValueResult)
-
-	local currentValueAsString = board:attributeValue("AXValue")
-
 	log.df("currentValueAsString: %s", currentValueAsString)
 
 end
