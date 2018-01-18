@@ -46,6 +46,16 @@ local mod = {}
 --- Table of recent items in Text to Speech Search.
 mod.history = config.prop("textToSpeechHistory", {})
 
+--- plugins.finalcutpro.text2speech.currentIncrementalNumber
+--- Variable
+--- Current Incremental Number as number
+mod.currentIncrementalNumber = config.prop("textToSpeechCurrentIncrementalNumber", 1)
+
+--- plugins.finalcutpro.text2speech.replaceSpaceWithUnderscore
+--- Variable
+--- Replace Space with Underscore
+mod.replaceSpaceWithUnderscore = config.prop("replaceSpaceWithUnderscore", false)
+
 --- plugins.finalcutpro.text2speech.path
 --- Variable
 --- Text to Speech Path for generated files.
@@ -59,7 +69,7 @@ mod.voice = config.prop("text2speechVoice", speech.defaultVoice())
 --- plugins.finalcutpro.text2speech.tag
 --- Variable
 --- Tag that will be added to generated voice overs.
-mod.tag = config.prop("text2speechTag", "Generated Voice Over")
+mod.tag = config.prop("text2speechTag", i18n("generatedVoiceOver"))
 
 --- plugins.finalcutpro.text2speech.insertIntoTimeline
 --- Variable
@@ -200,21 +210,31 @@ local function completionFn(result)
             seperator = "_"
         end
         textToSpeak = result["text"]
-        filename = tools.safeFilename(textToSpeak, "Generated Voice Over")
-        savePath = mod.path() .. prefix .. seperator .. "0001" .. seperator .. filename .. ".aif"
+        if textToSpeak and mod.replaceSpaceWithUnderscore() then
+            textToSpeak = string.gsub(textToSpeak, " ", "_")
+        end
+        filename = tools.safeFilename(textToSpeak, i18n("generatedVoiceOver"))
+        savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. seperator .. filename .. ".aif"
         if tools.doesFileExist(savePath) then
             local newPathCount = 1
             repeat
+                local currentIncrementalNumber = mod.currentIncrementalNumber()
+                mod.currentIncrementalNumber(currentIncrementalNumber + 1)
                 newPathCount = newPathCount + 1
-                savePath = mod.path() .. prefix .. seperator .. string.format("%04d", newPathCount) .. seperator .. filename .. ".aif"
+                savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount) .. ".aif"
             until not tools.doesFileExist(savePath)
         end
+        local currentIncrementalNumber = mod.currentIncrementalNumber()
+        mod.currentIncrementalNumber(currentIncrementalNumber + 1)
     else
         --------------------------------------------------------------------------------
         -- No Custom Prefix:
         --------------------------------------------------------------------------------
         textToSpeak = result["text"]
-        filename = tools.safeFilename(textToSpeak, "Generated Voice Over")
+        if textToSpeak and mod.replaceSpaceWithUnderscore() then
+            textToSpeak = string.gsub(textToSpeak, " ", "_")
+        end
+        filename = tools.safeFilename(textToSpeak, i18n("generatedVoiceOver"))
         savePath = mod.path() .. filename .. ".aif"
         if tools.doesFileExist(savePath) then
             local newPathCount = 0
@@ -472,21 +492,52 @@ local function rightClickCallback()
 			end,
 		},
 		{ title = "-" },
+        { title = string.format(string.upper(i18n("currentIncrementalNumber")) .. ": %s", string.format("%04d",mod.currentIncrementalNumber())),
+		    disabled = true,
+		},
+        { title = string.format(string.upper(i18n("prefix")) .. ": %s", mod.customPrefix()),
+		    disabled = true,
+		},
+		{ title = "-" },
 		{ title = i18n("enableFilenamePrefix"),
 		    checked = mod.enableCustomPrefix(),
 			fn = function()
 				mod.enableCustomPrefix:toggle()
 			end,
 		},
-		{ title = i18n("setFilenamePrefix"),
-			fn = function()
-                mod.customPrefix(dialog.displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", "", mod.customPrefix(), nil))
-			end,
-		},
 		{ title = i18n("useUnderscore"),
 		    checked = mod.useUnderscore(),
 			fn = function()
 				mod.useUnderscore:toggle()
+			end,
+		},
+		{ title = i18n("replaceSpaceWithUnderscore"),
+		    checked = mod.replaceSpaceWithUnderscore(),
+			fn = function()
+				mod.replaceSpaceWithUnderscore:toggle()
+			end,
+		},
+		{ title = "-" },
+		{ title = i18n("setIncrementalNumber"),
+			fn = function()
+				local result = dialog.displaySmallNumberTextBoxMessage(i18n("setIncrementalNumberMessage"), i18n("setIncrementalNumberError"), mod.currentIncrementalNumber())
+				if type(result) == "number" then
+				    mod.currentIncrementalNumber(result)
+				end
+			end,
+		},
+		{ title = i18n("setFilenamePrefix"),
+			fn = function()
+                local result = mod.customPrefix(dialog.displayTextBoxMessage(i18n("pleaseEnterAPrefix") .. ":", i18n("customPrefixError"), mod.customPrefix(), function(value)
+                    if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
+                        return true
+                    else
+                        return false
+                    end
+                end))
+                if type(result) == "string" then
+                    mod.customPrefix(result)
+                end
 			end,
 		},
 		{ title = "-" },
