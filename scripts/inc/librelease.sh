@@ -232,6 +232,20 @@ function build_hammerspoon_app() {
   fi
 }
 
+function build_hammerspoon_dev() {
+  echo "Building CommandPost.app for development..."
+  pushd "${HAMMERSPOON_HOME}" >/dev/null || return
+  make clean
+  make release
+  rm build/docs.json
+  # make docs
+  # make build/html/LuaSkin
+  popd >/dev/null || return
+  if [ ! -e "${HAMMERSPOON_HOME}"/build/CommandPost.app ]; then
+      fail "Looks like the build failed. sorry!"
+  fi
+}
+
 ############################ POST-BUILD FUNCTIONS #############################
 
 function build_dmgcanvas() {
@@ -432,4 +446,3 @@ function release_tweet() {
   t update "Just released ${VERSION} - http://www.hammerspoon.org/releasenotes/"
   t set active "$CURRENT"
 }
-
