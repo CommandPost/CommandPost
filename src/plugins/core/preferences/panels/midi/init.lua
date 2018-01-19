@@ -395,10 +395,7 @@ function mod._startLearning(id, params)
                     local items = mod._midi._items()
                     if items[groupID] then
                         for i, item in pairs(items[groupID]) do
-                            if i == buttonID then
-                                --log.df("Skipping: %s", i)
-                            else
-
+                            if buttonID and i ~= tonumber(buttonID) then
                                 --------------------------------------------------------------------------------
                                 -- Check for matching devices:
                                 --------------------------------------------------------------------------------
