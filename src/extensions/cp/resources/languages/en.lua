@@ -906,6 +906,7 @@ return {
 	controlChange						=			"Control Change",
 	learnMIDIMessage					=			"If you press the 'Yes' button below you'll have 3 seconds to trigger any button or controller on any of your connected MIDI devices.",
 	openAudioMIDISetup					=			"Open Audio MIDI Setup",
+	noteCC                              =           "Note/CC",
 
 	--------------------------------------------------------------------------------
 	-- MIDI CONTROLS:
