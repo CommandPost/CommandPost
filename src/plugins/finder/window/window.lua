@@ -133,7 +133,7 @@ end
 function mod.undo()
     local cwin = window.focusedWindow()
     local cwinid = cwin:id()
-    for idx,val in ipairs(mod.history) do
+    for _,val in ipairs(mod.history) do
         --------------------------------------------------------------------------------
         -- Has this window been stored previously?
         --------------------------------------------------------------------------------
@@ -181,20 +181,20 @@ end
 ---
 --- Returns:
 ---  * None
-local function windowStash(window)
-    local winid = window:id()
-    local winf = window:frame()
+local function windowStash(theWindow)
+    local windowID = theWindow:id()
+    local windowFrame = theWindow:frame()
     if #mod.history > 50 then
         --------------------------------------------------------------------------------
         -- Make sure the history doesn't reach the maximum (50 items).
         --------------------------------------------------------------------------------
         table.remove(mod.history) -- Remove the last item
     end
-    local winstru = {winid, winf}
+    local result = {windowID, windowFrame}
     --------------------------------------------------------------------------------
     -- Insert new item of window history:
     --------------------------------------------------------------------------------
-    table.insert(mod.history, winstru)
+    table.insert(mod.history, result)
 end
 
 --- plugins.finder.window.moveAndResize(option)
