@@ -943,6 +943,7 @@ return {
 	plugin_group_core					=			"Core",
 	plugin_group_finalcutpro			=			"Final Cut Pro",
 	plugin_group_plugin					=			"Plugin",
+	plugin_group_finder                 =           "Finder",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
@@ -998,6 +999,11 @@ return {
 		core_watchfolders_manager_label							= 	"Manger: Watch Folders",
 		core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 		core_webapp_label										=	"WebApp",
+
+        --------------------------------------------------------------------------------
+        -- Finder:
+        --------------------------------------------------------------------------------
+        finder_window_label                                     =   "Window Management",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
@@ -1118,6 +1124,39 @@ return {
 		cpMIDI_title											=	"Toggle MIDI Controls",
 		cpCredits_title											=	"Credits",
 		cpGlobalConsole_title									=	"Activate Global Console",
+
+		--------------------------------------------------------------------------------
+		-- Finder:
+		--------------------------------------------------------------------------------
+        cpShowGrid_title                                        =   "Show Window Grid",
+        cpCenterCursor_title                                    =   "Center Cursor on Focussed Window",
+        cpWindowHints_title                                     =   "Show Window Hints",
+        cpMoveWindowLeft_title                                  =   "Move Focussed Window: One Screen Left",
+        cpMoveWindowRight_title                                 =   "Move Focussed Window: One Screen Right",
+        cpMoveWindowUp_title                                    =   "Move Focussed Window: One Screen Up",
+        cpMoveWindowDown_title                                  =   "Move Focussed Window: One Screen Down",
+        cpMoveWindowNext_title                                  =   "Move Focussed Window: Next Screen",
+        cpMoveAndResizeHalfLeft_title                           =   "Move & Resize Focussed Window: Half Left",
+        cpMoveAndResizeHalfRight_title                          =   "Move & Resize Focussed Window: Half Right",
+        cpMoveAndResizeHalfUp_title                             =   "Move & Resize Focussed Window: Half Up",
+        cpMoveAndResizeHalfDown_title                           =   "Move & Resize Focussed Window: Half Down",
+        cpMoveAndResizeCornerNorthWest_title                    =   "Move & Resize Focussed Window: Top Left Corner",
+        cpMoveAndResizeCornerNorthEast_title                    =   "Move & Resize Focussed Window: Top Right Corner",
+        cpMoveAndResizeCornerSouthWest_title                    =   "Move & Resize Focussed Window: Bottom Left Corner",
+        cpMoveAndResizeCornerSouthEast_title                    =   "Move & Resize Focussed Window: Bottom Right Corner",
+        cpMoveAndResizeFullscreen_title                         =   "Move & Resize Focussed Window: Fullscreen",
+        cpMoveAndResizeCenter_title                             =   "Move & Resize Focussed Window: Center",
+        cpMoveAndResizeExpand_title                             =   "Move & Resize Focussed Window: Expand",
+        cpMoveAndResizeShrink_title                             =   "Move & Resize Focussed Window: Shrink",
+        cpMoveAndResizeUndo_title                               =   "Undo Last Move & Resize",
+        cpStepResizeLeft_title                                  =   "Step Resize Focussed Window: Left",
+        cpStepResizeRight_title                                 =   "Step Resize Focussed Window: Right",
+        cpStepResizeUp_title                                    =   "Step Resize Focussed Window: Up",
+        cpStepResizeDown_title                                  =   "Step Resize Focussed Window: Down",
+        cpStepMoveLeft_title                                    =   "Step Move Focussed Window: Left",
+        cpStepMoveRight_title                                   =   "Step Move Focussed Window: Right",
+        cpStepMoveUp_title                                      =   "Step Move Focussed Window: Up",
+        cpStepMoveDown_title                                    =   "Step Move Focussed Window: Down",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
