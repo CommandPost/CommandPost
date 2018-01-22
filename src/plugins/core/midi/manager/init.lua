@@ -361,13 +361,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 				--------------------------------------------------------------------------------
 				elseif commandType == "controlChange" then
 					if tostring(item.number) == tostring(metadata.controllerNumber) then
-						if tostring(item.value) == tostring(metadata.controllerValue) then
-							if item.handlerID and item.action then
-								local handler = mod._actionmanager.getHandler(item.handlerID)
-								handler:execute(item.action)
-							end
-							return
-						elseif item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
+						if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
 							--------------------------------------------------------------------------------
 							-- MIDI Controls:
 							--------------------------------------------------------------------------------
@@ -376,7 +370,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 							local params = control:params()
 							if mod._alreadyProcessingCallback then
 								if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
-									if mod._lastControllerValue == metadata.controllerValue then
+									if mod._lastControllerValue == metadata.fourteenBitValue then
 										return
 									else
 										timer.doAfter(0.0001, function()
@@ -391,13 +385,19 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 							else
 								mod._alreadyProcessingCallback = true
 								timer.doAfter(0.000000000000000000001, function()
-									params.fn(metadata)
+									params.fn(metadata, deviceName)
 									mod._alreadyProcessingCallback = false
 								end)
 								mod._lastControllerNumber = metadata and metadata.controllerNumber
-								mod._lastControllerValue = metadata and metadata.controllerValue
+								mod._lastControllerValue = metadata and metadata.fourteenBitValue
 								mod._lastControllerChannel = metadata and metadata.channel
 							end
+						elseif tostring(item.value) == tostring(metadata.fourteenBitValue) then
+							if item.handlerID and item.action then
+								local handler = mod._actionmanager.getHandler(item.handlerID)
+								handler:execute(item.action)
+							end
+							return
 						end
 					end
 				--------------------------------------------------------------------------------
@@ -428,7 +428,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                         else
                             mod._alreadyProcessingCallback = true
                             timer.doAfter(0.000000000000000000001, function()
-                                params.fn(metadata)
+                                params.fn(metadata, deviceName)
                                 mod._alreadyProcessingCallback = false
                             end)
                             mod._lastPitchChange = metadata and metadata.pitchChange
