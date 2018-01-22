@@ -135,15 +135,12 @@ end
 --
 -- Returns:
 --  * None
-function mod._speechCallback(object, result, a, b, c)
-    if result == "willSpeakWord" then
-    --elseif result == "willSpeakPhoneme" then
-    elseif result == "didEncounterError" then
+function mod._speechCallback(_, result, a, b, c)
+    if result == "didEncounterError" then
         log.df("Speech Callback Received: didEncounterError")
         log.df("Index: %s", a)
         log.df("Text: %s", b)
         log.df("Error: %s", c)
-    --elseif result == "didEncounterSync" then
     elseif result == "didFinish" then
         if a then
             mod._completeProcess()
@@ -384,13 +381,13 @@ function mod._completeProcess()
     -- Remove from Timeline if appropriate:
     --------------------------------------------------------------------------------
     if not mod.insertIntoTimeline() then
-        local result = just.doUntil(function()
+        result = just.doUntil(function()
             return fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
         end, 3)
         if result then
-            local result = fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
+            result = fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
             if result then
-                local result = fcp:selectMenu({"Edit", "Undo Paste"})
+                fcp:selectMenu({"Edit", "Undo Paste"})
             else
                 log.wf("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
                 return nil
@@ -485,7 +482,7 @@ function mod._rightClickCallback()
         checked = (speech.defaultVoice() == mod.voice()),
     }
     voicesMenu[2] = { title = "-" }
-    for i, v in ipairs(availableVoices) do
+    for _, v in ipairs(availableVoices) do
         voicesMenu[#voicesMenu + 1] = {
             title = tools.firstToUpper(v),
             fn = function()
