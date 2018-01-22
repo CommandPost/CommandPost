@@ -626,7 +626,7 @@ hs.fileDroppedToDockIconCallback = nil
       --      hscrash.crashLog("  Candidate CLIBS match: "..v)
       --    end
       --  end
-      end
+      --end
       if string.sub(modulename, 1, 8) == "mjolnir." then
         -- Reasonably certain that we're dealing with a Mjolnir module
         local mjolnirmod = string.sub(modulename, 9, -1)
