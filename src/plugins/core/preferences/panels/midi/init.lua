@@ -385,6 +385,14 @@ function mod._startLearning(id, params)
                 if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
 
                     --------------------------------------------------------------------------------
+                    -- Support 14bit Control Change Messages:
+                    --------------------------------------------------------------------------------
+                    local controllerValue = metadata.controllerValue
+                    if metadata.fourteenBitCommand then
+                        controllerValue = metadata.fourteenBitValue
+                    end
+
+                    --------------------------------------------------------------------------------
                     -- Ignore NoteOff Commands:
                     --------------------------------------------------------------------------------
                     if commandType == "noteOn" and metadata.velocity == 0 then return end
@@ -413,7 +421,7 @@ function mod._startLearning(id, params)
                                     end
                                 end
                                 if commandType == "controlChange" then
-                                    if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == metadata.controllerValue then
+                                    if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
                                         match = true
                                     end
                                 end
@@ -488,8 +496,8 @@ function mod._startLearning(id, params)
                         setValue(params["groupID"], params["buttonID"], "number", metadata.controllerNumber)
                         mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.controllerNumber)
 
-                        setValue(params["groupID"], params["buttonID"], "value", metadata.controllerValue)
-                        mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.controllerValue)
+                        setValue(params["groupID"], params["buttonID"], "value", controllerValue)
+                        mod._midi.setItem("value", params["buttonID"], params["groupID"], controllerValue)
 
                     elseif commandType == "pitchWheelChange" then
 

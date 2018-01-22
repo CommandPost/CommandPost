@@ -342,6 +342,14 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
         deviceName = "virtual_" .. deviceName
     end
 
+    --------------------------------------------------------------------------------
+    -- Support 14bit Control Change Messages:
+    --------------------------------------------------------------------------------
+    local controllerValue = metadata.controllerValue
+    if metadata.fourteenBitCommand then
+        controllerValue = metadata.fourteenBitValue
+    end
+
 	if items[activeGroup] then
 		for _, item in pairs(items[activeGroup]) do
 			if deviceName == item.device and item.channel == metadata.channel then
@@ -370,7 +378,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 							local params = control:params()
 							if mod._alreadyProcessingCallback then
 								if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
-									if mod._lastControllerValue == metadata.fourteenBitValue then
+									if mod._lastControllerValue == controllerValue then
 										return
 									else
 										timer.doAfter(0.0001, function()
@@ -389,10 +397,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 									mod._alreadyProcessingCallback = false
 								end)
 								mod._lastControllerNumber = metadata and metadata.controllerNumber
-								mod._lastControllerValue = metadata and metadata.fourteenBitValue
+								mod._lastControllerValue = metadata and controllerValue
 								mod._lastControllerChannel = metadata and metadata.channel
 							end
-						elseif tostring(item.value) == tostring(metadata.fourteenBitValue) then
+						elseif tostring(item.value) == tostring(controllerValue) then
 							if item.handlerID and item.action then
 								local handler = mod._actionmanager.getHandler(item.handlerID)
 								handler:execute(item.action)
