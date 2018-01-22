@@ -18,7 +18,6 @@ local log                               = require("hs.logger").new("text2speech"
 local application                       = require("hs.application")
 local chooser                           = require("hs.chooser")
 local drawing                           = require("hs.drawing")
-local fnutils                           = require("hs.fnutils")
 local fs                                = require("hs.fs")
 local http                              = require("hs.http")
 local menubar                           = require("hs.menubar")
@@ -123,7 +122,7 @@ function mod.chooseFolder()
     return result
 end
 
--- speechCallback() -> none
+-- plugins.finalcutpro.text2speech._speechCallback() -> none
 -- Function
 -- Callback function for the speech tool.
 --
@@ -136,25 +135,25 @@ end
 --
 -- Returns:
 --  * None
-local function speechCallback(object, result, a, b, c)
+function mod._speechCallback(object, result, a, b, c)
     if result == "willSpeakWord" then
-    elseif result == "willSpeakPhoneme" then
+    --elseif result == "willSpeakPhoneme" then
     elseif result == "didEncounterError" then
         log.df("Speech Callback Received: didEncounterError")
         log.df("Index: %s", a)
         log.df("Text: %s", b)
         log.df("Error: %s", c)
-    elseif result == "didEncounterSync" then
+    --elseif result == "didEncounterSync" then
     elseif result == "didFinish" then
         if a then
-            completeProcess()
+            mod._completeProcess()
         else
-            speechError()
+            mod._speechError()
         end
     end
 end
 
--- speechError() -> none
+-- plugins.finalcutpro.text2speech._speechError() -> none
 -- Function
 -- Error message when something goes wrong.
 --
@@ -163,11 +162,11 @@ end
 --
 -- Returns:
 --  * None
-local function speechError()
+function mod._speechError()
     dialog.displayErrorMessage("Something went wrong whilst trying to generate the generated voice over.")
 end
 
--- completionFn() -> none
+-- plugins.finalcutpro.text2speech._completionFn() -> none
 -- Function
 -- Completion Function for the Chooser
 --
@@ -176,7 +175,7 @@ end
 --
 -- Returns:
 --  * None
-local function completionFn(result)
+function mod._completionFn(result)
 
     --------------------------------------------------------------------------------
     -- If cancelled then stop here:
@@ -261,8 +260,8 @@ local function completionFn(result)
     local talker = speech.new()
     local defaultVoice = speech.defaultVoice()
     if mod.voice() ~= "" then
-        local result = talker:voice(mod.voice())
-        if not result then
+        local talkerResult = talker:voice(mod.voice())
+        if not talkerResult then
             talker:voice(defaultVoice)
             mod.voice(defaultVoice)
         end
@@ -270,12 +269,12 @@ local function completionFn(result)
 
     mod._lastSavePath = savePath
 
-    talker:setCallback(speechCallback)
+    talker:setCallback(mod._speechCallback)
         :speakToFile(textToSpeak, savePath)
 
 end
 
--- completeProcess() -> none
+-- plugins.finalcutpro.text2speech.completeProcess() -> none
 -- Function
 -- Completes the Text to Speech Process.
 --
@@ -284,7 +283,7 @@ end
 --
 -- Returns:
 --  * None
-function completeProcess()
+function mod._completeProcess()
 
     --------------------------------------------------------------------------------
     -- Cache Preferences:
@@ -354,9 +353,9 @@ function completeProcess()
     --------------------------------------------------------------------------------
     -- Check if Timeline can be enabled:
     --------------------------------------------------------------------------------
-    local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
+    result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
     if result then
-        local result = fcp:selectMenu({"Window", "Go To", "Timeline"})
+        fcp:selectMenu({"Window", "Go To", "Timeline"})
     else
         dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
         return nil
@@ -365,16 +364,16 @@ function completeProcess()
     --------------------------------------------------------------------------------
     -- Perform Paste:
     --------------------------------------------------------------------------------
-    local result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
+    result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
     if result then
-        local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
+        fcp:selectMenu({"Edit", "Paste as Connected Clip"})
     else
         --------------------------------------------------------------------------------
         -- Try one more time...
         --------------------------------------------------------------------------------
         local takeTwo = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
         if takeTwo then
-            local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
+            fcp:selectMenu({"Edit", "Paste as Connected Clip"})
         else
             dialog.displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
             return nil
@@ -420,7 +419,7 @@ function completeProcess()
 
 end
 
--- queryChangedCallback() -> none
+-- plugins.finalcutpro.text2speech._queryChangedCallback() -> none
 -- Function
 -- Callback for when the Chooser Query is Changed.
 --
@@ -429,7 +428,7 @@ end
 --
 -- Returns:
 --  * None
-local function queryChangedCallback()
+function mod._queryChangedCallback()
     --------------------------------------------------------------------------------
     -- Chooser Query Changed by User:
     --------------------------------------------------------------------------------
@@ -446,7 +445,7 @@ local function queryChangedCallback()
     mod.chooser:choices(currentQueryTable)
 end
 
--- tagValidation() -> string
+-- plugins.finalcutpro.text2speech._tagValidation() -> string
 -- Function
 -- Checks to see if a tag is valid.
 --
@@ -455,14 +454,14 @@ end
 --
 -- Returns:
 --  * `true` if valid otherwise `false`
-local function tagValidation(value)
+function mod._tagValidation(value)
     if string.find(value, ":") then
         return false
     end
     return true
 end
 
--- rightClickCallback() -> none
+-- plugins.finalcutpro.text2speech._rightClickCallback() -> none
 -- Function
 -- Callback for when you right click on the Chooser.
 --
@@ -471,7 +470,7 @@ end
 --
 -- Returns:
 --  * None
-local function rightClickCallback()
+function mod._rightClickCallback()
     --------------------------------------------------------------------------------
     -- Right Click Menu:
     --------------------------------------------------------------------------------
@@ -483,7 +482,7 @@ local function rightClickCallback()
         fn = function()
             mod.voice(hs.speech.defaultVoice())
         end,
-        checked = (v == mod.voice()),
+        checked = (speech.defaultVoice() == mod.voice()),
     }
     voicesMenu[2] = { title = "-" }
     for i, v in ipairs(availableVoices) do
@@ -492,7 +491,7 @@ local function rightClickCallback()
             fn = function()
                 mod.voice(v)
             end,
-            checked = (v == mod.voice()),
+            checked = (v == mod.voice() and v ~= speech.defaultVoice()),
         }
     end
     local rightClickMenu = {
@@ -510,7 +509,7 @@ local function rightClickCallback()
         },
         { title = "-" },
         { title = i18n("customiseFinderTag"), fn = function()
-                local result = dialog.displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), tagValidation)
+                local result = dialog.displayTextBoxMessage(i18n("enterFinderTag"), i18n("enterFinderTagError"), mod.tag(), mod._tagValidation)
                 if result then
                     mod.tag(result)
                 end
@@ -635,8 +634,8 @@ function mod.show()
     -- If directory doesn't exist then prompt user to select a new folder:
     --------------------------------------------------------------------------------
     if not tools.doesDirectoryExist(mod.path()) then
-        local result = mod.chooseFolder()
-        if not result then
+        local folderResult = mod.chooseFolder()
+        if not folderResult then
             return nil
         else
             mod.path(result)
@@ -646,10 +645,10 @@ function mod.show()
     --------------------------------------------------------------------------------
     -- Setup Chooser:
     --------------------------------------------------------------------------------
-    mod.chooser = chooser.new(completionFn)
+    mod.chooser = chooser.new(mod._completionFn)
         :bgDark(true)
-        :queryChangedCallback(queryChangedCallback)
-        :rightClickCallback(rightClickCallback)
+        :queryChangedCallback(mod._queryChangedCallback)
+        :rightClickCallback(mod._rightClickCallback)
         :choices(mod.history())
 
     --------------------------------------------------------------------------------
