@@ -41,6 +41,11 @@ local tools								= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.text2speech.COPY_TO_MEDIA_FOLDER
+--- Constant
+--- Copy to Media Folder Preferences Key
+mod.COPY_TO_MEDIA_FOLDER = "FFImportCopyToMediaFolder"
+
 --- plugins.finalcutpro.text2speech.recentText
 --- Variable
 --- Table of recent items in Text to Speech Search.
@@ -55,6 +60,11 @@ mod.currentIncrementalNumber = config.prop("textToSpeechCurrentIncrementalNumber
 --- Variable
 --- Replace Space with Underscore
 mod.replaceSpaceWithUnderscore = config.prop("replaceSpaceWithUnderscore", false)
+
+--- plugins.finalcutpro.text2speech.deleteFileAfterImport
+--- Variable
+--- Delete File After Import
+mod.deleteFileAfterImport = config.prop("deleteFileAfterImport", false)
 
 --- plugins.finalcutpro.text2speech.path
 --- Variable
@@ -276,6 +286,11 @@ end
 --  * None
 function completeProcess()
 
+    --------------------------------------------------------------------------------
+    -- Cache Preferences:
+    --------------------------------------------------------------------------------
+    local copyToMediaFolder = fcp:getPreference(mod.COPY_TO_MEDIA_FOLDER, true)
+
 	--------------------------------------------------------------------------------
 	-- Get the last Save Path:
 	--------------------------------------------------------------------------------
@@ -354,8 +369,16 @@ function completeProcess()
 	if result then
 		local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
 	else
-		dialog.displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
-		return nil
+	    --------------------------------------------------------------------------------
+	    -- Try one more time...
+    	--------------------------------------------------------------------------------
+    	local takeTwo = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
+    	if takeTwo then
+    	    local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
+    	else
+    		dialog.displayErrorMessage("Failed to trigger the 'Paste as Connected Clip' Shortcut in the Text to Speech Plugin.")
+	    	return nil
+	    end
 	end
 
 	--------------------------------------------------------------------------------
@@ -385,6 +408,15 @@ function completeProcess()
 			mod.clipboardManager.startWatching()
 		end
 	end)
+
+	--------------------------------------------------------------------------------
+	-- Delete File After Import:
+	--------------------------------------------------------------------------------
+	if copyToMediaFolder and mod.deleteFileAfterImport() then
+        timer.doAfter(5, function()
+            os.remove(savePath)
+        end)
+    end
 
 end
 
@@ -492,6 +524,14 @@ local function rightClickCallback()
 			end,
 		},
 		{ title = "-" },
+		{ title = i18n("deleteFileAfterImport"),
+		    disabled = not fcp:getPreference(mod.COPY_TO_MEDIA_FOLDER, true),
+		    checked = fcp:getPreference(mod.COPY_TO_MEDIA_FOLDER, true) and mod.deleteFileAfterImport(),
+			fn = function()
+				mod.deleteFileAfterImport:toggle()
+			end,
+		},
+		{ title = "-" },
         { title = string.format(string.upper(i18n("currentIncrementalNumber")) .. ": %s", string.format("%04d",mod.currentIncrementalNumber())),
 		    disabled = true,
 		},
@@ -518,6 +558,11 @@ local function rightClickCallback()
 			end,
 		},
 		{ title = "-" },
+        { title = i18n("resetIncrementalNumber"),
+			fn = function()
+                mod.currentIncrementalNumber(1)
+			end,
+		},
 		{ title = i18n("setIncrementalNumber"),
 			fn = function()
 				local result = dialog.displaySmallNumberTextBoxMessage(i18n("setIncrementalNumberMessage"), i18n("setIncrementalNumberError"), mod.currentIncrementalNumber())

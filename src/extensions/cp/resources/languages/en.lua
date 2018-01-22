@@ -698,12 +698,14 @@ return {
 	useUnderscore                       =           "Use Underscore Seperator",
 	currentIncrementalNumber            =           "Incremental Number",
 	prefix                              =           "Prefix",
+	resetIncrementalNumber              =           "Reset Incremental Number",
 	setIncrementalNumber                =           "Set Incremental Number",
 	setIncrementalNumberMessage         =           "What would you like to set the Incremental Number to?",
 	setIncrementalNumberError           =           "This value looks incorrect. Please enter a number and try again.",
 	customPrefixError                   =           "This prefix looks invalid. Please try again.",
 	generatedVoiceOver                  =           "Generated Voice Over",
 	replaceSpaceWithUnderscore          =           "Replace Spaces with Underscores",
+	deleteFileAfterImport               =           "Delete Generated File After Import",
 
 	--------------------------------------------------------------------------------
 	-- HUD:
