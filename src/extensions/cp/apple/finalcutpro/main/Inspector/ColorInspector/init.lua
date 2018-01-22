@@ -23,10 +23,13 @@ local tools								= require("cp.tools")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
 
+local CorrectionsBar						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.CorrectionsBar")
 local ColorBoard						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard")
 local ColorWheels						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels")
 local ColorCurves						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves")
 local HueSaturationCurves				= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves")
+
+local v									= require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -44,6 +47,26 @@ ColorInspector.CORRECTION_TYPES = {
 	["Color Curves"] 			= "PAEColorCurvesEffectDisplayName",
 	["Hue/Saturation Curves"] 	= "PAEHSCurvesEffectDisplayName",
 }
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.matches(element)
+--- Function
+--- Checks if the specified element is the Color Inspector element.
+---
+--- Parameters:
+--- * element	- The element to check
+---
+--- Returns:
+--- * `true` if the element is the Color Inspector.
+function ColorInspector.matches(element)
+	if element and element:attributeValue("AXRole") == "AXSplitGroup" and #element == 3 then
+		local top = axutils.childFromTop(element, 1)
+		if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
+			-- check it's the correction bar.
+			return CorrectionsBar.matches(top[1])
+		end
+	end
+	return false
+end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector:new(parent) -> ColorInspector object
 --- Method
@@ -89,11 +112,47 @@ function ColorInspector:app()
 	return self:parent():app()
 end
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.isSupported <cp.prop: boolean; read-only>
+--- Field
+--- Is the Color Inspector supported in the installed version of Final Cut Pro?
+ColorInspector.isSupported = prop.new(function(self)
+	local version = self:app():getVersion()
+	return version and v(version) >= v("10.4")
+end):bind(ColorInspector)
+
 -----------------------------------------------------------------------
 --
 -- COLOR INSPECTOR UI:
 --
 -----------------------------------------------------------------------
+
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:UI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
+function ColorInspector:UI()
+	return axutils.cache(self, "_ui",
+		function()
+			local properties = self:parent():propertiesUI()
+			return ColorInspector.matches(properties) and properties or nil
+		end,
+		ColorInspector.matches
+	)
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:corrections() -> CorrectionsBar
+function ColorInspector:corrections()
+	if not self._corrections then
+		self._corrections = CorrectionsBar:new(self)
+	end
+	return self._corrections
+end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector:colorInspectorBarUI() -> hs._asm.axuielement object
 --- Method
@@ -109,7 +168,7 @@ function ColorInspector:colorInspectorBarUI()
 	-----------------------------------------------------------------------
 	-- Check that we're running Final Cut Pro 10.4:
 	-----------------------------------------------------------------------
-	if not self:app():isColorInspectorSupported() then
+	if not self:isSupported() then
 		log.ef("colorInspectorBarUI is only supported in Final Cut Pro 10.4 or later.")
 		return nil
 	end
@@ -135,26 +194,6 @@ function ColorInspector:colorInspectorBarUI()
 	end
 	return nil
 
-end
-
---- cp.apple.finalcutpro.main.Inspector.ColorInspector:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
-function ColorInspector:UI()
-	local colorInspectorBarUI = self:colorInspectorBarUI()
-	return colorInspectorBarUI
-		and colorInspectorBarUI:attributeValue("AXParent")
-		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")
-		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")[1]
-		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")[1][1]
-		and colorInspectorBarUI:attributeValue("AXParent"):attributeValue("AXParent")[1][1][1]
-		or nil
 end
 
 --------------------------------------------------------------------------------

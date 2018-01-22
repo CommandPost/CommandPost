@@ -233,7 +233,7 @@ end
 ---    * Green
 ---    * Blue
 ---  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():colorInspector():colorCurves():visibleCurve("Luma")`
+---    `require("cp.apple.finalcutpro"):inspector():color():colorCurves():visibleCurve("Luma")`
 function ColorCurves:visibleCurve(value)
     --------------------------------------------------------------------------------
     -- Validation:

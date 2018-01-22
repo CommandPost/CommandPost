@@ -226,7 +226,28 @@ function Inspector:hide()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector:selectTab([tab]) -> boolean or nil
+function Inspector:topBarUI()
+	return axutils.cache(self, "_topBar", function()
+		local ui = self:UI()
+		return ui and #ui == 3 and axutils.childFromTop(ui, 1)
+	end)
+end
+
+function Inspector:propertiesUI()
+	return axutils.cache(self, "_properties", function()
+		local ui = self:UI()
+		return ui and #ui == 3 and axutils.childFromTop(ui, 2)[1]
+	end)
+end
+
+function Inspector:bottomBarUI()
+	return axutils.cache(self, "_bottomBar", function()
+		local ui = self:UI()
+		return ui and #ui == 3 and axutils.childFromBottom(ui, 1)
+	end)
+end
+
+--- cp.apple.finalcutpro.main.Inspector:selectTab([tab]) -> boolean
 --- Method
 --- Selects a tab in the inspector.
 ---
@@ -250,57 +271,26 @@ end
 ---    * Transition
 ---    * Video
 function Inspector:selectTab(value)
-	if not value and not Inspector.INSPECTOR_TABS[value] then
+	local code = Inspector.INSPECTOR_TABS[value]
+	if not code then
 		log.ef("selectTab requires a valid tab string: %s", value)
-		return nil
+		return false
 	end
+	self:show()
 	if not self.isShowing() then
-		self:show()
-		if not self.isShowing() then
-			log.ef("Failed to open Inspector")
-			return nil
+		log.ef("Failed to open Inspector")
+		return false
+	end
+	local ui = self:topBarUI()
+	local app = self:app()
+	local valueTitle = app:string(code)
+	for _,subChild in ipairs(ui) do
+		local title = subChild:attributeValue("AXTitle")
+		if title == valueTitle then
+			return subChild:performAction("AXPress")
 		end
 	end
-	local ui = self:UI()
-	if ui then
-		for _,child in ipairs(ui) do
-			local app = self:app()
-			for _,subChild in ipairs(child) do
-				local title = subChild:attributeValue("AXTitle")
-				local result = false
-				if title == app:string("FFInspectorTabMotionEffectVideo") and value == "Video" then
-					result = true
-				elseif title == app:string("FFInspectorTabGenerator") and value == "Generator" then
-					result = true
-				elseif title == app:string("FFInspectorTabMetadata") and value == "Info" then
-					result = true
-				elseif title == app:string("FFInspectorTabMotionEffectEffect") and value == "Effect" then
-					result = true
-				elseif title == app:string("FFInspectorTabMotionEffectText") and value == "Text" then
-					result = true
-				elseif title == app:string("FFInspectorTabMotionEffectTitle") and value == "Title" then
-					result = true
-				elseif title == app:string("FFInspectorTabMotionEffectTransition") and value == "Transition" then
-					result = true
-				elseif title == app:string("FFInspectorTabAudio") and value == "Audio" then
-					result = true
-				elseif title == app:string("FFInspectorTabShare") and value == "Share" then
-					result = true
-				elseif title == app:string("FFInspectorTabColor") and value == "Color" then
-					result = true
-				end
-				if result then
-					local actionResult = subChild:performAction("AXPress")
-					if actionResult then
-						return true
-					else
-						return nil
-					end
-				end
-			end
-		end
-	end
-	return nil
+	return false
 end
 
 --- cp.apple.finalcutpro.main.Inspector:selectedTab() -> string or nil
@@ -326,34 +316,18 @@ end
 ---    * Transition
 ---    * Video
 function Inspector:selectedTab()
-	local ui = self:UI()
+	local ui = self:topBarUI()
 	if ui then
+		local app = self:app()
 		for _,child in ipairs(ui) do
-			local app = self:app()
-			for _,subChild in ipairs(child) do
-				local title = subChild:attributeValue("AXTitle")
-				local value = subChild:attributeValue("AXValue")
-				if title and value == 1 then
-					if title == app:string("FFInspectorTabMotionEffectVideo") then
-						return "Video"
-					elseif title == app:string("FFInspectorTabGenerator") then
-						return "Generator"
-					elseif title == app:string("FFInspectorTabMetadata") then
-						return "Info"
-					elseif title == app:string("FFInspectorTabMotionEffectEffect") then
-						return "Effect"
-					elseif title == app:string("FFInspectorTabMotionEffectText") then
-						return "Text"
-					elseif title == app:string("FFInspectorTabMotionEffectTitle") then
-						return "Title"
-					elseif title == app:string("FFInspectorTabMotionEffectTransition") then
-						return "Transition"
-					elseif title == app:string("FFInspectorTabAudio") then
-						return "Audio"
-					elseif title == app:string("FFInspectorTabShare") then
-						return "Share"
-					elseif title == app:string("FFInspectorTabColor") then
-						return "Color"
+			if child:attributeValue("AXValue") == 1 then
+				local title = child:attributeValue("AXTitle")
+				if title then
+					for value,code in pairs(Inspector.INSPECTOR_TABS) do
+						local codeTitle = app:string(code)
+						if codeTitle == title then
+							return value
+						end
 					end
 				end
 			end
@@ -368,7 +342,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:videoInspector() -> VideoInspector
+--- cp.apple.finalcutpro.main.Inspector:video() -> VideoInspector
 --- Method
 --- Gets the VideoInspector object.
 ---
@@ -377,7 +351,7 @@ end
 ---
 --- Returns:
 ---  * ColorInspector
-function Inspector:videoInspector()
+function Inspector:video()
 	if not self._videoInspector then
 		self._videoInspector = VideoInspector:new(self)
 	end
@@ -390,7 +364,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:generatorInspector() -> GeneratorInspector
+--- cp.apple.finalcutpro.main.Inspector:generator() -> GeneratorInspector
 --- Method
 --- Gets the GeneratorInspector object.
 ---
@@ -399,7 +373,7 @@ end
 ---
 --- Returns:
 ---  * GeneratorInspector
-function Inspector:generatorInspector()
+function Inspector:generator()
 	if not self._generatorInspector then
 		self._generatorInspector = GeneratorInspector:new(self)
 	end
@@ -412,7 +386,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:infoInspector() -> InfoInspector
+--- cp.apple.finalcutpro.main.Inspector:info() -> InfoInspector
 --- Method
 --- Gets the InfoInspector object.
 ---
@@ -421,7 +395,7 @@ end
 ---
 --- Returns:
 ---  * InfoInspector
-function Inspector:infoInspector()
+function Inspector:info()
 	if not self._infoInspector then
 		self._infoInspector = InfoInspector:new(self)
 	end
@@ -434,7 +408,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:effectInspector() -> EffectInspector
+--- cp.apple.finalcutpro.main.Inspector:effect() -> EffectInspector
 --- Method
 --- Gets the EffectInspector object.
 ---
@@ -443,7 +417,7 @@ end
 ---
 --- Returns:
 ---  * EffectInspector
-function Inspector:effectInspector()
+function Inspector:effect()
 	if not self._effectInspector then
 		self._effectInspector = EffectInspector:new(self)
 	end
@@ -456,7 +430,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:textInspector() -> TextInspector
+--- cp.apple.finalcutpro.main.Inspector:text() -> TextInspector
 --- Method
 --- Gets the TextInspector object.
 ---
@@ -465,7 +439,7 @@ end
 ---
 --- Returns:
 ---  * TextInspector
-function Inspector:textInspector()
+function Inspector:text()
 	if not self._textInspector then
 		self._textInspector = TextInspector:new(self)
 	end
@@ -478,7 +452,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:titleInspector() -> TitleInspector
+--- cp.apple.finalcutpro.main.Inspector:title() -> TitleInspector
 --- Method
 --- Gets the TitleInspector object.
 ---
@@ -487,7 +461,7 @@ end
 ---
 --- Returns:
 ---  * TitleInspector
-function Inspector:titleInspector()
+function Inspector:title()
 	if not self._titleInspector then
 		self._titleInspector = TitleInspector:new(self)
 	end
@@ -500,7 +474,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:transitionInspector() -> TransitionInspector
+--- cp.apple.finalcutpro.main.Inspector:transition() -> TransitionInspector
 --- Method
 --- Gets the TransitionInspector object.
 ---
@@ -509,7 +483,7 @@ end
 ---
 --- Returns:
 ---  * TransitionInspector
-function Inspector:transitionInspector()
+function Inspector:transition()
 	if not self._transitionInspector then
 		self._transitionInspector = TransitionInspector:new(self)
 	end
@@ -522,7 +496,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:audioInspector() -> AudioInspector
+--- cp.apple.finalcutpro.main.Inspector:audio() -> AudioInspector
 --- Method
 --- Gets the AudioInspector object.
 ---
@@ -531,7 +505,7 @@ end
 ---
 --- Returns:
 ---  * AudioInspector
-function Inspector:audioInspector()
+function Inspector:audio()
 	if not self._audioInspector then
 		self._audioInspector = AudioInspector:new(self)
 	end
@@ -544,7 +518,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:shareInspector() -> ShareInspector
+--- cp.apple.finalcutpro.main.Inspector:share() -> ShareInspector
 --- Method
 --- Gets the ShareInspector object.
 ---
@@ -553,7 +527,7 @@ end
 ---
 --- Returns:
 ---  * ShareInspector
-function Inspector:shareInspector()
+function Inspector:share()
 	if not self._shareInspector then
 		self._shareInspector = ShareInspector:new(self)
 	end
@@ -566,7 +540,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:colorInspector() -> ColorInspector
+--- cp.apple.finalcutpro.main.Inspector:color() -> ColorInspector
 --- Method
 --- Gets the ColorInspector object.
 ---
@@ -575,7 +549,7 @@ end
 ---
 --- Returns:
 ---  * ColorInspector
-function Inspector:colorInspector()
+function Inspector:color()
 	if not self._colorInspector then
 		self._colorInspector = ColorInspector:new(self)
 	end

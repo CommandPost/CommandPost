@@ -575,18 +575,6 @@ App.isSupported = App.getVersion:mutate(function(version)
 	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
 end):bind(App)
 
---- cp.apple.finalcutpro:colorInspectorSupported <cp.prop: boolean; read-only>
---- Field
---- Is the Color Inspector supported in the installed version of Final Cut Pro?
-App.isColorInspectorSupported = prop.new(function(self)
-	local version = self:getVersion()
-	if version and v(version) >= v("10.4") then
-		return true
-	else
-		return false
-	end
-end):bind(App)
-
 --- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
 --- Field
 --- Is any version of Final Cut Pro Installed?
@@ -1026,7 +1014,7 @@ function App:colorBoard()
 	return self:primaryWindow():colorBoard()
 end
 
---- cp.apple.finalcutpro:colorInspector() -> ColorInspector
+--- cp.apple.finalcutpro:color() -> ColorInspector
 --- Method
 --- Returns the ColorInspector instance from the primary window
 ---
@@ -1035,8 +1023,8 @@ end
 ---
 --- Returns:
 ---  * the ColorInspector
-function App:colorInspector()
-	return self:primaryWindow():colorInspector()
+function App:color()
+	return self:primaryWindow():color()
 end
 
 ----------------------------------------------------------------------------------------

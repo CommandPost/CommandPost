@@ -104,7 +104,7 @@ function mod.init(deps)
 					local colorBoard = fcp:colorBoard()
 					if colorBoard then
 						local angle = 360
-						if fcp.isColorInspectorSupported() then
+						if fcp:inspector():color():isSupported() then
 							angle = 359
 						end
 						local value = tools.round(metadata.controllerValue / (127/angle))

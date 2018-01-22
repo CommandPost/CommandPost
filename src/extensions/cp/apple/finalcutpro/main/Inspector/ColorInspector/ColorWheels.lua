@@ -280,7 +280,7 @@ end
 ---    * All Wheels
 ---    * Single Wheels
 ---  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():colorInspector():colorWheels():viewMode("All Wheels")`
+---    `require("cp.apple.finalcutpro"):inspector():color():colorWheels():viewMode("All Wheels")`
 function ColorWheels:viewMode(value)
     --------------------------------------------------------------------------------
     -- Validation:
@@ -356,7 +356,7 @@ end
 ---    * Midtones
 ---    * Highlights
 ---  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():colorInspector():colorWheels():visibleWheel("Shadows")`
+---    `require("cp.apple.finalcutpro"):inspector():color():colorWheels():visibleWheel("Shadows")`
 function ColorWheels:visibleWheel(value)
     --------------------------------------------------------------------------------
     -- Validation:
@@ -429,7 +429,7 @@ end
 ---
 --- Notes:
 ---  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():colorInspector():colorWheels():color("Master", "Red", 255)`
+---    `require("cp.apple.finalcutpro"):inspector():color():colorWheels():color("Master", "Red", 255)`
 function ColorWheels:color(wheel, color, value)
 
     --------------------------------------------------------------------------------
@@ -2272,7 +2272,7 @@ end
 --- Resets the selected color wheel.
 ---
 --- Parameters:
----  * wheel - An optional value of which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights"). If no wheel is supplied then all wheels will be reset.
+---  * wheel - An optional value of which wheel you want to set/get ("Master, "Shadows", "Midtones" or "Highlights"). If no wheel is supplied then all colorWheels will be reset.
 ---
 --- Returns:
 ---  * `true` if successful otherwise `false`
@@ -2394,7 +2394,7 @@ end
 --- Notes:
 ---  * Example Usage:
 ---    ```lua
----    _fcp:inspector():colorInspector():colorWheels():nudgeControlPrototype("Master", "Up")
+---    _fcp:inspector():color():colorWheels():nudgeControlPrototype("Master", "Up")
 ---    ```
 function ColorWheels:nudgeControlPrototype(wheel, direction)
 

@@ -234,7 +234,7 @@ end
 ---    * SvS
 ---    * Orange
 ---  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():colorInspector():hueSaturationCurves():visibleCurve("HvH")`
+---    `require("cp.apple.finalcutpro"):inspector():color():hueSaturationCurves():visibleCurve("HvH")`
 function HueSaturationCurves:visibleCurve(value)
     --------------------------------------------------------------------------------
     -- Validation:

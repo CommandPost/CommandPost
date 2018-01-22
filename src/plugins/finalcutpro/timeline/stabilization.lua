@@ -29,7 +29,7 @@ function mod.stabilization(value)
 	--------------------------------------------------------------------------------
 	-- Set Stabilization:
 	--------------------------------------------------------------------------------
-	local inspector = fcp:inspector():videoInspector()
+	local inspector = fcp:inspector():video()
 	if type(value) == "boolean" then
 		inspector:stabilization(value)
 	else

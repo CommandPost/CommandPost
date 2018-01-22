@@ -125,8 +125,14 @@ function ColorBoard:new(parent)
 		_parent = parent,
 		_child = {}
 	}
+	prop.extend(o, ColorBoard)
 
-	return prop.extend(o, ColorBoard)
+--- cp.apple.finalcutpro.main.ColorBoard.isColorInspectorSupported <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the Color Inspector (from 10.4) is supported.
+	o.isColorInspectorSupported = parent:app():inspector():color().isSupported:wrap(o)
+
+	return o
 end
 
 --- cp.apple.finalcutpro.main.ColorBoard:parent() -> table
@@ -183,7 +189,7 @@ function ColorBoard:UI()
 			-- It's in the right panel (full-height):
 			-----------------------------------------------------------------------
 			if ColorBoard.isColorBoard(ui) then
-				if self:app():isColorInspectorSupported() then
+				if self:isColorInspectorSupported() then
 					-----------------------------------------------------------------------
 					-- Final Cut Pro 10.4:
 					----------------------------------------------------------------------
@@ -213,7 +219,7 @@ function ColorBoard:UI()
 			end
 			for i,child in ipairs(top) do
 				if ColorBoard.isColorBoard(child) then
-					if self:app():isColorInspectorSupported() then
+					if self:isColorInspectorSupported() then
 						-----------------------------------------------------------------------
 						-- Final Cut Pro 10.4:
 						----------------------------------------------------------------------
@@ -250,7 +256,7 @@ end
 --- Returns:
 ---  * A `hs._asm.axuielement` object
 function ColorBoard:colorInspectorBarUI()
-	return self:app():inspector():colorInspector():colorInspectorBarUI()
+	return self:app():inspector():color():colorInspectorBarUI()
 end
 
 --- cp.apple.finalcutpro.main.ColorBoard:isShowing() -> boolean
@@ -263,11 +269,11 @@ end
 --- Returns:
 ---  * `true` if the Color Board is showing, otherwise `false`
 ColorBoard.isShowing = prop.new(function(self)
-	if self:app():isColorInspectorSupported() then
+	if self:isColorInspectorSupported() then
 		-----------------------------------------------------------------------
 		-- Final Cut Pro 10.4:
 		-----------------------------------------------------------------------
-		return self:app():inspector():colorInspector():colorBoard():isShowing()
+		return self:app():inspector():color():colorBoard():isShowing()
 	else
 		-----------------------------------------------------------------------
 		-- Final Cut Pro 10.3:
@@ -302,11 +308,11 @@ end):bind(ColorBoard)
 ---  * ColorBoard object
 function ColorBoard:show()
 	if not self:isShowing() then
-		if self:app():isColorInspectorSupported() then
+		if self:isColorInspectorSupported() then
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.4:
 			-----------------------------------------------------------------------
-			self:app():inspector():colorInspector():colorBoard():show()
+			self:app():inspector():color():colorBoard():show()
 		else
 			-----------------------------------------------------------------------
 			-- Final Cut Pro 10.3:

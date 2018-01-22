@@ -62,7 +62,7 @@ function mod.init(deps)
                 subText = i18n("midiColorWheelDescription"),
                 fn = function(metadata)
                     if metadata.controllerValue then
-                        local colorWheels = fcp:inspector():colorInspector():colorWheels()
+                        local colorWheels = fcp:inspector():color():colorWheels()
                         if colorWheels then
                             local value = tools.round(metadata.controllerValue / 127*255*2-255)
                             if metadata.controllerValue == 128/2 then value = 0 end
