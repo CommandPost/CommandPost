@@ -835,7 +835,7 @@ return {
 	--------------------------------------------------------------------------------
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
-	shortcut_group_global				=			"Global",
+	shortcut_group_global				=			"Finder",
 	shortcut_group_fcpx					=			"Final Cut Pro",
 
 	customiseShortcuts					=			"Customise Shortcuts",
@@ -1006,6 +1006,7 @@ return {
         -- Finder:
         --------------------------------------------------------------------------------
         finder_window_label                                     =   "Window Management",
+        finder_texttools_label                                  =   "Text Tools",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
@@ -1106,8 +1107,8 @@ return {
 		--------------------------------------------------------------------------------
 		-- Groups:
 		--------------------------------------------------------------------------------
-		fcpx_command_group										=	"FCPX",
-		global_command_group									=	"Global",
+		fcpx_command_group										=	"Final Cut Pro",
+		global_command_group									=	"Finder",
 
 		--------------------------------------------------------------------------------
 		-- Global:
@@ -1130,35 +1131,50 @@ return {
 		--------------------------------------------------------------------------------
 		-- Finder:
 		--------------------------------------------------------------------------------
-        cpShowGrid_title                                        =   "Show Window Grid",
-        cpCenterCursor_title                                    =   "Center Cursor on Focussed Window",
-        cpWindowHints_title                                     =   "Show Window Hints",
-        cpMoveWindowLeft_title                                  =   "Move Focussed Window: One Screen Left",
-        cpMoveWindowRight_title                                 =   "Move Focussed Window: One Screen Right",
-        cpMoveWindowUp_title                                    =   "Move Focussed Window: One Screen Up",
-        cpMoveWindowDown_title                                  =   "Move Focussed Window: One Screen Down",
-        cpMoveWindowNext_title                                  =   "Move Focussed Window: Next Screen",
-        cpMoveAndResizeHalfLeft_title                           =   "Move & Resize Focussed Window: Half Left",
-        cpMoveAndResizeHalfRight_title                          =   "Move & Resize Focussed Window: Half Right",
-        cpMoveAndResizeHalfUp_title                             =   "Move & Resize Focussed Window: Half Up",
-        cpMoveAndResizeHalfDown_title                           =   "Move & Resize Focussed Window: Half Down",
-        cpMoveAndResizeCornerNorthWest_title                    =   "Move & Resize Focussed Window: Top Left Corner",
-        cpMoveAndResizeCornerNorthEast_title                    =   "Move & Resize Focussed Window: Top Right Corner",
-        cpMoveAndResizeCornerSouthWest_title                    =   "Move & Resize Focussed Window: Bottom Left Corner",
-        cpMoveAndResizeCornerSouthEast_title                    =   "Move & Resize Focussed Window: Bottom Right Corner",
-        cpMoveAndResizeFullscreen_title                         =   "Move & Resize Focussed Window: Fullscreen",
-        cpMoveAndResizeCenter_title                             =   "Move & Resize Focussed Window: Center",
-        cpMoveAndResizeExpand_title                             =   "Move & Resize Focussed Window: Expand",
-        cpMoveAndResizeShrink_title                             =   "Move & Resize Focussed Window: Shrink",
-        cpMoveAndResizeUndo_title                               =   "Undo Last Move & Resize",
-        cpStepResizeLeft_title                                  =   "Step Resize Focussed Window: Left",
-        cpStepResizeRight_title                                 =   "Step Resize Focussed Window: Right",
-        cpStepResizeUp_title                                    =   "Step Resize Focussed Window: Up",
-        cpStepResizeDown_title                                  =   "Step Resize Focussed Window: Down",
-        cpStepMoveLeft_title                                    =   "Step Move Focussed Window: Left",
-        cpStepMoveRight_title                                   =   "Step Move Focussed Window: Right",
-        cpStepMoveUp_title                                      =   "Step Move Focussed Window: Up",
-        cpStepMoveDown_title                                    =   "Step Move Focussed Window: Down",
+
+            --------------------------------------------------------------------------------
+            -- Windows Management:
+            --------------------------------------------------------------------------------
+            cpShowGrid_title                                        =   "Show Window Grid",
+            cpCenterCursor_title                                    =   "Center Cursor on Focussed Window",
+            cpWindowHints_title                                     =   "Show Window Hints",
+            cpMoveWindowLeft_title                                  =   "Move Focussed Window: One Screen Left",
+            cpMoveWindowRight_title                                 =   "Move Focussed Window: One Screen Right",
+            cpMoveWindowUp_title                                    =   "Move Focussed Window: One Screen Up",
+            cpMoveWindowDown_title                                  =   "Move Focussed Window: One Screen Down",
+            cpMoveWindowNext_title                                  =   "Move Focussed Window: Next Screen",
+            cpMoveAndResizeHalfLeft_title                           =   "Move & Resize Focussed Window: Half Left",
+            cpMoveAndResizeHalfRight_title                          =   "Move & Resize Focussed Window: Half Right",
+            cpMoveAndResizeHalfUp_title                             =   "Move & Resize Focussed Window: Half Up",
+            cpMoveAndResizeHalfDown_title                           =   "Move & Resize Focussed Window: Half Down",
+            cpMoveAndResizeCornerNorthWest_title                    =   "Move & Resize Focussed Window: Top Left Corner",
+            cpMoveAndResizeCornerNorthEast_title                    =   "Move & Resize Focussed Window: Top Right Corner",
+            cpMoveAndResizeCornerSouthWest_title                    =   "Move & Resize Focussed Window: Bottom Left Corner",
+            cpMoveAndResizeCornerSouthEast_title                    =   "Move & Resize Focussed Window: Bottom Right Corner",
+            cpMoveAndResizeFullscreen_title                         =   "Move & Resize Focussed Window: Fullscreen",
+            cpMoveAndResizeCenter_title                             =   "Move & Resize Focussed Window: Center",
+            cpMoveAndResizeExpand_title                             =   "Move & Resize Focussed Window: Expand",
+            cpMoveAndResizeShrink_title                             =   "Move & Resize Focussed Window: Shrink",
+            cpMoveAndResizeUndo_title                               =   "Undo Last Move & Resize",
+            cpStepResizeLeft_title                                  =   "Step Resize Focussed Window: Left",
+            cpStepResizeRight_title                                 =   "Step Resize Focussed Window: Right",
+            cpStepResizeUp_title                                    =   "Step Resize Focussed Window: Up",
+            cpStepResizeDown_title                                  =   "Step Resize Focussed Window: Down",
+            cpStepMoveLeft_title                                    =   "Step Move Focussed Window: Left",
+            cpStepMoveRight_title                                   =   "Step Move Focussed Window: Right",
+            cpStepMoveUp_title                                      =   "Step Move Focussed Window: Up",
+            cpStepMoveDown_title                                    =   "Step Move Focussed Window: Down",
+
+            --------------------------------------------------------------------------------
+            -- Text Tools:
+            --------------------------------------------------------------------------------
+            cpMakeClipboardTextUppercase_title                      =   "Make Clipboard Text Uppercase",
+            cpMakeClipboardTextLowercase_title                      =   "Make Clipboard Text Lowercase",
+            cpMakeClipboardTextCamelcase_title                      =   "Make Clipboard Text Camelcase",
+
+            cpMakeSelectedTextUppercase_title                       =   "Make Selected Text Uppercase",
+            cpMakeSelectedTextLowercase_title                       =   "Make Selected Text Lowercase",
+            cpMakeSelectedTextCamelcase_title                       =   "Make Selected Text Camelcase",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
