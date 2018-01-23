@@ -30,208 +30,95 @@ local tools 							= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.save(whichButton)
+function mod.save(preset)
 
-	--------------------------------------------------------------------------------
-	-- Check to see if the Keyword Editor is already open:
-	--------------------------------------------------------------------------------
-	local fcpx = fcp:application()
-	local fcpxElements = ax.applicationElement(fcpx)
-	local whichWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:247" then --"_NS:264" then
-				whichWindow = i
-			end
-		end
-	end
-	if whichWindow == nil then
-		dialog.displayMessage(i18n("keywordEditorAlreadyOpen"))
-		return
-	end
-	fcpxElements = fcpxElements[whichWindow]
+    --------------------------------------------------------------------------------
+    -- Open the Keyword Editor:
+    --------------------------------------------------------------------------------
+    local keywordEditor = fcp:keywordEditor()
+    keywordEditor:show()
+    if not keywordEditor:isShowing() then
+        dialog.displayMessage("The Keyword Editor could not be opened.")
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Get Starting Textfield:
-	--------------------------------------------------------------------------------
-	local startTextField = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if startTextField == nil then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:176" then --"_NS:102" then
-				startTextField = i
-				goto startTextFieldDone
-			end
-		end
-	end
-	::startTextFieldDone::
-	if startTextField == nil then
-		--------------------------------------------------------------------------------
-		-- Keyword Shortcuts Buttons isn't down:
-		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then --"_NS:276" then
-				keywordDisclosureTriangle = i
-				goto keywordDisclosureTriangleDone
-			end
-		end
-		::keywordDisclosureTriangleDone::
-		if fcpxElements[keywordDisclosureTriangle] == nil then
-			dialog.displayMessage(i18n("keywordShortcutsVisibleError"))
-			return "Failed"
-		else
-			local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
-			if keywordDisclosureTriangleResult == nil then
-				dialog.displayMessage(i18n("keywordShortcutsVisibleError"))
-				return "Failed"
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Get Values from the Keyword Editor:
-	--------------------------------------------------------------------------------
-	local savedKeywordValues = {}
-	local favoriteCount = 1
-	local skipFirst = true
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXTextField" then
-			if skipFirst then
-				skipFirst = false
-			else
-				savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
-				favoriteCount = favoriteCount + 1
-			end
-		end
-	end
+    --------------------------------------------------------------------------------
+    -- Open the Keyboard Shortcuts dropdown:
+    --------------------------------------------------------------------------------
+    local keyboardShortcuts = keywordEditor:keyboardShortcuts()
+    keyboardShortcuts:show()
+    if not keyboardShortcuts:isShowing() then
+        dialog.displayMessage("The Keyword Editor's Keyboard Shortcuts dropdown could not be opened.")
+        return nil
+    end
 
 	--------------------------------------------------------------------------------
 	-- Save Values to Settings:
 	--------------------------------------------------------------------------------
-	local savedKeywords = config.get("savedKeywords")
-	if savedKeywords == nil then savedKeywords = {} end
+	local savedKeywords = config.get("savedKeywords", {})
+	if not savedKeywords[preset] then
+	    savedKeywords[preset] = {}
+	end
 	for i=1, 9 do
-		if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
-			savedKeywords['Preset ' .. tostring(whichButton)] = {}
-		end
-		savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
+	    savedKeywords[preset][i] = keyboardShortcuts:keyword(i)
 	end
 	config.set("savedKeywords", savedKeywords)
 
 	--------------------------------------------------------------------------------
 	-- Saved:
 	--------------------------------------------------------------------------------
-	dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(whichButton))
+	dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
 
 end
 
-function mod.restore(whichButton)
+function mod.restore(preset)
 
 	--------------------------------------------------------------------------------
 	-- Get Values from Settings:
 	--------------------------------------------------------------------------------
 	local savedKeywords = config.get("savedKeywords")
-	local restoredKeywordValues = {}
 
 	if savedKeywords == nil then
 		dialog.displayMessage(i18n("noKeywordPresetsError"))
 		return "Fail"
 	end
-	if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
+
+	if savedKeywords[preset] == nil then
 		dialog.displayMessage(i18n("noKeywordPresetError"))
 		return "Fail"
 	end
-	for i=1, 9 do
-		restoredKeywordValues[i] = savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)]
-	end
 
-	--------------------------------------------------------------------------------
-	-- Check to see if the Keyword Editor is already open:
-	--------------------------------------------------------------------------------
-	local fcpx = fcp:application()
-	local fcpxElements = ax.applicationElement(fcpx)
-	local whichWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:247" then --"_NS:264" then
-				whichWindow = i
-			end
-		end
-	end
-	if whichWindow == nil then
-		dialog.displayMessage(i18n("keywordEditorAlreadyOpen"))
-		return
-	end
-	fcpxElements = fcpxElements[whichWindow]
+    --------------------------------------------------------------------------------
+    -- Open the Keyword Editor:
+    --------------------------------------------------------------------------------
+    local keywordEditor = fcp:keywordEditor()
+    keywordEditor:show()
+    if not keywordEditor:isShowing() then
+        dialog.displayMessage("The Keyword Editor could not be opened.")
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Get Starting Textfield:
-	--------------------------------------------------------------------------------
-	local startTextField = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if startTextField == nil then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:176" then --"_NS:102" then
-				startTextField = i
-				goto startTextFieldDone
-			end
-		end
-	end
-	::startTextFieldDone::
-	if startTextField == nil then
-		--------------------------------------------------------------------------------
-		-- Keyword Shortcuts Buttons isn't down:
-		--------------------------------------------------------------------------------
-		local keywordDisclosureTriangle = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then --"_NS:276" then
-				keywordDisclosureTriangle = i
-				goto keywordDisclosureTriangleDone
-			end
-		end
-		::keywordDisclosureTriangleDone::
-
-		if fcpxElements[keywordDisclosureTriangle] ~= nil then
-			local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
-			if keywordDisclosureTriangleResult == nil then
-				dialog.displayMessage(i18n("keywordShortcutsVisibleError"))
-				return "Failed"
-			end
-		else
-			dialog.displayErrorMessage("Could not find keyword disclosure triangle.\n\nError occurred in restoreKeywordSearches().")
-			return "Failed"
-		end
-	end
+    --------------------------------------------------------------------------------
+    -- Open the Keyboard Shortcuts dropdown:
+    --------------------------------------------------------------------------------
+    local keyboardShortcuts = keywordEditor:keyboardShortcuts()
+    keyboardShortcuts:show()
+    if not keyboardShortcuts:isShowing() then
+        dialog.displayMessage("The Keyword Editor's Keyboard Shortcuts dropdown could not be opened.")
+        return nil
+    end
 
 	--------------------------------------------------------------------------------
 	-- Restore Values to Keyword Editor:
 	--------------------------------------------------------------------------------
-	local favoriteCount = 1
-	local skipFirst = true
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXTextField" then
-			if skipFirst then
-				skipFirst = false
-			else
-				currentKeywordSelection = fcpxElements[i]
-
-				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-				eventtap.keyStroke({""}, "return")
-
-                -- For some reason you have to do this twice. Probably a timing issue?
-				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-				eventtap.keyStroke({""}, "return")
-
-				favoriteCount = favoriteCount + 1
-			end
-		end
+	for i=1, 9 do
+		keyboardShortcuts:keyword(i, savedKeywords[preset][i])
 	end
 
 	--------------------------------------------------------------------------------
 	-- Successfully Restored:
 	--------------------------------------------------------------------------------
-	dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(whichButton))
+	dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
 
 end
 

@@ -139,22 +139,30 @@ function KeywordEditor:keyword(value)
                 table.insert(result, child:attributeValue("AXValue"))
             end
             return result
-        else
-            log.ef("Could not get Keyword.")
-            return nil
         end
+        log.ef("Could not get Keyword.")
+        return nil
     else
         --------------------------------------------------------------------------------
         -- Setter:
         --------------------------------------------------------------------------------
         if ui and ui[1] then
-            ui[1]:setAttributeValue("AXValue", value)
-            ui[1]:performAction("AXConfirm")
-            return value
-        else
-            log.ef("Could not set Keyword.")
-            return nil
+            if type(value) == "string" then
+                ui[1]:setAttributeValue("AXValue", value)
+                ui[1]:performAction("AXConfirm")
+                return value
+            elseif type(value) == "table" then
+                local result = ""
+                for i, v in pairs(value) do
+                    result = result .. v .. ", "
+                end
+                ui[1]:setAttributeValue("AXValue", result)
+                ui[1]:performAction("AXConfirm")
+                return value
+            end
         end
+        log.ef("Could not set Keyword.")
+        return nil
     end
 end
 
@@ -240,11 +248,21 @@ function KeyboardShortcuts:keyword(item, value)
                     log.ef("Could not get Keyword for Keyboard Shortcut %s", item)
                     return nil
                 end
-            else
+            elseif type(value) == "string" then
                 --------------------------------------------------------------------------------
-                -- Setter:
+                -- String Setter:
                 --------------------------------------------------------------------------------
-                textfields[item]:attributeValue("AXValue", value)
+                textfields[item]:setAttributeValue("AXValue", value)
+                textfields[item]:performAction("AXConfirm")
+            elseif type(value) == "table" then
+                --------------------------------------------------------------------------------
+                -- String Setter:
+                --------------------------------------------------------------------------------
+                local result = ""
+                for i, v in pairs(value) do
+                    result = result .. v .. ", "
+                end
+                textfields[item]:setAttributeValue("AXValue", result)
                 textfields[item]:performAction("AXConfirm")
             end
         end
