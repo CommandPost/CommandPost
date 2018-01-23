@@ -101,6 +101,7 @@ local watcher									= require("cp.watcher")
 local axutils									= require("cp.ui.axutils")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
 local destinations								= require("cp.apple.finalcutpro.export.destinations")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
@@ -816,6 +817,22 @@ function App:commandEditor()
 		self._commandEditor = CommandEditor:new(self)
 	end
 	return self._commandEditor
+end
+
+--- cp.apple.finalcutpro:keywordEditor() -> keywordEditor object
+--- Method
+--- Returns the Final Cut Pro Keyword Editor
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro Keyword Editor
+function App:keywordEditor()
+	if not self._keywordEditor then
+		self._keywordEditor = KeywordEditor:new(self)
+	end
+	return self._keywordEditor
 end
 
 --- cp.apple.finalcutpro:mediaImport() -> mediaImport object

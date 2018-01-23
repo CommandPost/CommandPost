@@ -16,6 +16,7 @@
 local log								= require("hs.logger").new("addnote")
 
 local ax 								= require("hs._asm.axuielement")
+local eventtap                          = require("hs.eventtap")
 
 local dialog 							= require("cp.dialog")
 local fcp								= require("cp.apple.finalcutpro")
@@ -39,7 +40,7 @@ function mod.save(whichButton)
 	local whichWindow = nil
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
 		if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then
+			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:247" then --"_NS:264" then
 				whichWindow = i
 			end
 		end
@@ -56,7 +57,7 @@ function mod.save(whichButton)
 	local startTextField = nil
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
 		if startTextField == nil then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:102" then
+			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:176" then --"_NS:102" then
 				startTextField = i
 				goto startTextFieldDone
 			end
@@ -69,7 +70,7 @@ function mod.save(whichButton)
 		--------------------------------------------------------------------------------
 		fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:276" then
+			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then --"_NS:276" then
 				keywordDisclosureTriangle = i
 				goto keywordDisclosureTriangleDone
 			end
@@ -152,7 +153,7 @@ function mod.restore(whichButton)
 	local whichWindow = nil
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
 		if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then
+			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:247" then --"_NS:264" then
 				whichWindow = i
 			end
 		end
@@ -169,7 +170,7 @@ function mod.restore(whichButton)
 	local startTextField = nil
 	for i=1, fcpxElements:attributeValueCount("AXChildren") do
 		if startTextField == nil then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:102" then
+			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:176" then --"_NS:102" then
 				startTextField = i
 				goto startTextFieldDone
 			end
@@ -182,7 +183,7 @@ function mod.restore(whichButton)
 		--------------------------------------------------------------------------------
 		local keywordDisclosureTriangle = nil
 		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:276" then
+			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then --"_NS:276" then
 				keywordDisclosureTriangle = i
 				goto keywordDisclosureTriangleDone
 			end
@@ -217,14 +218,10 @@ function mod.restore(whichButton)
 				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
 				eventtap.keyStroke({""}, "return")
 
-				--------------------------------------------------------------------------------
-				-- If at first you don't succeed, try, oh try, again!
-				--------------------------------------------------------------------------------
-				if fcpxElements[i][1]:attributeValue("AXValue") ~= restoredKeywordValues[favoriteCount] then
-					setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-					keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-					eventtap.keyStroke({""}, "return")
-				end
+                -- For some reason you have to do this twice. Probably a timing issue?
+				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
+				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
+				eventtap.keyStroke({""}, "return")
 
 				favoriteCount = favoriteCount + 1
 			end
