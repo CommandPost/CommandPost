@@ -714,7 +714,6 @@ return {
 	media								=			"Media",
 	quality								=			"Quality",
 	backgroundRender					=			"Background Render",
-	xmlSharing							=			"XML Sharing",
 	originalOptimised					=			"Original/Optimised",
 	betterQuality						=			"Better Quality",
 	betterPerformance					=			"Better Performance",
@@ -727,6 +726,12 @@ return {
 	hudButtonItem						=			"Button %{count} (%{title})",
 
 	menuChoiceSubText					=			"Menu: %{path}",
+
+	--------------------------------------------------------------------------------
+	-- XML SHARING:
+	--------------------------------------------------------------------------------
+	xmlSharing							=			"XML Sharing",
+	xmlSharingWhichFolder               =           "Which folder would you like to use for XML Sharing?",
 
 	--------------------------------------------------------------------------------
 	-- ACTIVATORS:
@@ -753,9 +758,7 @@ return {
 	mode								=			"Mode",
 	normal								=			"Normal",
 
-
 	showAll								=			"Show All",
-
 
 	showTransitions						=			"Show Transitions",
 	showTitles							=			"Show Titles",
