@@ -208,9 +208,14 @@ function mod._completionFn(result)
     mod.history(history)
 
     --------------------------------------------------------------------------------
+    -- Text to Speak:
+    --------------------------------------------------------------------------------
+    local textToSpeak = result["text"]
+
+    --------------------------------------------------------------------------------
     -- Determine Filename from Result:
     --------------------------------------------------------------------------------
-    local textToSpeak, filename, savePath
+    local filename, savePath
     local prefix = mod.customPrefix()
     if mod.enableCustomPrefix() == true and prefix and tools.trim(prefix) ~= "" then
         --------------------------------------------------------------------------------
@@ -220,11 +225,12 @@ function mod._completionFn(result)
         if mod.useUnderscore() then
             seperator = "_"
         end
-        textToSpeak = result["text"]
-        if textToSpeak and mod.replaceSpaceWithUnderscore() then
-            textToSpeak = string.gsub(textToSpeak, " ", "_")
+
+        local customTextToSpeak = textToSpeak
+        if customTextToSpeak and mod.replaceSpaceWithUnderscore() then
+            customTextToSpeak = string.gsub(customTextToSpeak, " ", "_")
         end
-        filename = tools.safeFilename(textToSpeak, i18n("generatedVoiceOver"))
+        filename = tools.safeFilename(customTextToSpeak, i18n("generatedVoiceOver"))
         savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. seperator .. filename .. ".aif"
         if tools.doesFileExist(savePath) then
             local newPathCount = 1
@@ -241,11 +247,11 @@ function mod._completionFn(result)
         --------------------------------------------------------------------------------
         -- No Custom Prefix:
         --------------------------------------------------------------------------------
-        textToSpeak = result["text"]
-        if textToSpeak and mod.replaceSpaceWithUnderscore() then
-            textToSpeak = string.gsub(textToSpeak, " ", "_")
+        local noCustomTextToSpeak = textToSpeak
+        if noCustomTextToSpeak and mod.replaceSpaceWithUnderscore() then
+            noCustomTextToSpeak = string.gsub(noCustomTextToSpeak, " ", "_")
         end
-        filename = tools.safeFilename(textToSpeak, i18n("generatedVoiceOver"))
+        filename = tools.safeFilename(noCustomTextToSpeak, i18n("generatedVoiceOver"))
         savePath = mod.path() .. filename .. ".aif"
         if tools.doesFileExist(savePath) then
             local newPathCount = 0
@@ -269,8 +275,14 @@ function mod._completionFn(result)
         end
     end
 
+    --------------------------------------------------------------------------------
+    -- Save last Save Path:
+    --------------------------------------------------------------------------------
     mod._lastSavePath = savePath
 
+    --------------------------------------------------------------------------------
+    -- Trigger the Talker:
+    --------------------------------------------------------------------------------
     talker:setCallback(mod._speechCallback)
         :speakToFile(textToSpeak, savePath)
 
