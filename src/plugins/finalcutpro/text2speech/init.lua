@@ -40,9 +40,14 @@ local tools                             = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.text2speech.DELETE_DELAY
+--- Constant
+--- How long before a file is deleted in seconds.
+mod.DELETE_DELAY = 30
+
 --- plugins.finalcutpro.text2speech.COPY_TO_MEDIA_FOLDER
 --- Constant
---- Copy to Media Folder Preferences Key
+--- Copy to Media Folder Preferences Key.
 mod.COPY_TO_MEDIA_FOLDER = "FFImportCopyToMediaFolder"
 
 --- plugins.finalcutpro.text2speech.recentText
@@ -409,7 +414,7 @@ function mod._completeProcess()
     -- Delete File After Import:
     --------------------------------------------------------------------------------
     if copyToMediaFolder and mod.deleteFileAfterImport() then
-        timer.doAfter(5, function()
+        timer.doAfter(mod.DELETE_DELAY, function()
             os.remove(savePath)
         end)
     end
