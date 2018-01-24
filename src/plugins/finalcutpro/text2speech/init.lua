@@ -13,11 +13,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("text2speech")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application                       = require("hs.application")
 local chooser                           = require("hs.chooser")
 local drawing                           = require("hs.drawing")
+local eventtap							= require("hs.eventtap")
 local fs                                = require("hs.fs")
 local http                              = require("hs.http")
 local menubar                           = require("hs.menubar")
@@ -27,6 +35,10 @@ local screen                            = require("hs.screen")
 local speech                            = require("hs.speech")
 local timer                             = require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils 							= require("cp.ui.axutils")
 local config                            = require("cp.config")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
@@ -60,10 +72,20 @@ mod.history = config.prop("textToSpeechHistory", {})
 --- Current Incremental Number as number
 mod.currentIncrementalNumber = config.prop("textToSpeechCurrentIncrementalNumber", 1)
 
+--- plugins.finalcutpro.text2speech.includeTextInFilename
+--- Variable
+--- Includes the entered text in the filename
+mod.includeTextInFilename = config.prop("includeTextInFilename", true)
+
 --- plugins.finalcutpro.text2speech.replaceSpaceWithUnderscore
 --- Variable
 --- Replace Space with Underscore
 mod.replaceSpaceWithUnderscore = config.prop("replaceSpaceWithUnderscore", false)
+
+--- plugins.finalcutpro.text2speech.addTextToNotesFieldAfterImport
+--- Variable
+--- Option to Add Text to Notes Field After Importing
+mod.addTextToNotesFieldAfterImport = config.prop("addTextToNotesFieldAfterImport", false)
 
 --- plugins.finalcutpro.text2speech.deleteFileAfterImport
 --- Variable
@@ -190,7 +212,9 @@ function mod._completionFn(result)
     --------------------------------------------------------------------------------
     -- Hide Chooser:
     --------------------------------------------------------------------------------
-    mod.chooser:hide()
+    if mod.chooser then
+        mod.chooser:hide()
+    end
 
     --------------------------------------------------------------------------------
     -- Return to Final Cut Pro:
@@ -200,12 +224,14 @@ function mod._completionFn(result)
     --------------------------------------------------------------------------------
     -- Save last result to history:
     --------------------------------------------------------------------------------
-    local selectedRow = mod.chooser:selectedRow()
-    local history = mod.history()
-    if selectedRow == 1 then
-        table.insert(history, 1, result)
+    if mod.chooser then
+        local selectedRow = mod.chooser:selectedRow()
+        local history = mod.history()
+        if selectedRow == 1 then
+            table.insert(history, 1, result)
+        end
+        mod.history(history)
     end
-    mod.history(history)
 
     --------------------------------------------------------------------------------
     -- Text to Speak:
@@ -230,15 +256,21 @@ function mod._completionFn(result)
         if customTextToSpeak and mod.replaceSpaceWithUnderscore() then
             customTextToSpeak = string.gsub(customTextToSpeak, " ", "_")
         end
-        filename = tools.safeFilename(customTextToSpeak, i18n("generatedVoiceOver"))
-        savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. seperator .. filename .. ".aif"
+        if mod.includeTextInFilename() then
+            filename = seperator .. customTextToSpeak or i18n("generatedVoiceOver")
+        else
+            filename = ""
+        end
+        savePath = mod.path() .. tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. filename) .. ".aif"
+        mod._lastFilename = tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. filename)
         if tools.doesFileExist(savePath) then
             local newPathCount = 1
             repeat
                 local currentIncrementalNumber = mod.currentIncrementalNumber()
                 mod.currentIncrementalNumber(currentIncrementalNumber + 1)
                 newPathCount = newPathCount + 1
-                savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount) .. ".aif"
+                savePath = mod.path() .. tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount)) .. ".aif"
+                mod._lastFilename = tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount))
             until not tools.doesFileExist(savePath)
         end
         local currentIncrementalNumber = mod.currentIncrementalNumber()
@@ -251,13 +283,15 @@ function mod._completionFn(result)
         if noCustomTextToSpeak and mod.replaceSpaceWithUnderscore() then
             noCustomTextToSpeak = string.gsub(noCustomTextToSpeak, " ", "_")
         end
-        filename = tools.safeFilename(noCustomTextToSpeak, i18n("generatedVoiceOver"))
-        savePath = mod.path() .. filename .. ".aif"
+        filename = noCustomTextToSpeak or i18n("generatedVoiceOver")
+        savePath = mod.path() .. tools.safeFilename(filename) .. ".aif"
+        mod._lastFilename = tools.safeFilename(filename)
         if tools.doesFileExist(savePath) then
             local newPathCount = 0
             repeat
                 newPathCount = newPathCount + 1
-                savePath = mod.path() .. filename .. " " .. string.format("%04d", newPathCount) .. ".aif"
+                savePath = mod.path() .. tools.safeFilename(filename .. " " .. string.format("%04d", newPathCount)) .. ".aif"
+                mod._lastFilename = tools.safeFilename(filename .. " " .. string.format("%04d", newPathCount))
             until not tools.doesFileExist(savePath)
         end
     end
@@ -276,9 +310,10 @@ function mod._completionFn(result)
     end
 
     --------------------------------------------------------------------------------
-    -- Save last Save Path:
+    -- Save values for later:
     --------------------------------------------------------------------------------
     mod._lastSavePath = savePath
+    mod._lastTextToSpeak = textToSpeak
 
     --------------------------------------------------------------------------------
     -- Trigger the Talker:
@@ -395,21 +430,202 @@ function mod._completeProcess()
     end
 
     --------------------------------------------------------------------------------
-    -- Remove from Timeline if appropriate:
+    -- Add Text to Notes Field After Import:
     --------------------------------------------------------------------------------
-    if not mod.insertIntoTimeline() then
-        result = just.doUntil(function()
-            return fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
-        end, 3)
-        if result then
-            result = fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
-            if result then
-                fcp:selectMenu({"Edit", "Undo Paste"})
-            else
-                log.wf("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
-                return nil
+    if mod.addTextToNotesFieldAfterImport() then
+
+        --------------------------------------------------------------------------------
+        -- Go back two frames:
+        --------------------------------------------------------------------------------
+        fcp:selectMenu({"Mark", "Previous", "Frame"})
+        fcp:selectMenu({"Mark", "Previous", "Frame"})
+
+        --------------------------------------------------------------------------------
+        -- Get timeline contents:
+        --------------------------------------------------------------------------------
+        local content = fcp:timeline():contents()
+        local playheadX = content:playhead():getPosition()
+
+        local clips = content:clipsUI(false, function(clip)
+            local frame = clip:frame()
+            return playheadX >= frame.x and playheadX < (frame.x + frame.w)
+        end)
+
+        if clips == nil then
+            dialog.displayErrorMessage("No clips detected.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Sort the table:
+        --------------------------------------------------------------------------------
+        table.sort(clips, function(a, b) return a:position().y > b:position().y end)
+
+        --------------------------------------------------------------------------------
+        -- Find our clip:
+        --------------------------------------------------------------------------------
+        local clip
+        if #clips > 0 then
+            for _, v in ipairs(clips) do
+                local description = v:attributeValue("AXDescription")
+                if description and description == "Audio-Clip:" .. mod._lastFilename then
+                    clip = v
+                    break
+                end
             end
         end
+        if not clip then
+            dialog.displayErrorMessage("No clip found.")
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Select clip:
+        --------------------------------------------------------------------------------
+        content:selectClip(clip)
+
+        --------------------------------------------------------------------------------
+        -- Reveal in Browser:
+        --------------------------------------------------------------------------------
+        fcp:selectMenu({"File", "Reveal in Browser"})
+
+        --------------------------------------------------------------------------------
+        -- Make sure the Browser is visible:
+        --------------------------------------------------------------------------------
+        local libraries = fcp:browser():libraries()
+        if not libraries:isShowing() then
+            dialog.displayErrorMessage("Library Panel is closed.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get number of Selected Browser Clips:
+        --------------------------------------------------------------------------------
+        clips = libraries:selectedClipsUI()
+        if #clips ~= 1 then
+            dialog.displayErrorMessage("Wrong number of clips selected.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Check to see if we're in Filmstrip or List View:
+        --------------------------------------------------------------------------------
+        local filmstripView = false
+        if libraries:isFilmstripView() then
+            filmstripView = true
+            libraries:toggleViewMode():press()
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get Selected Clip & Selected Clip's Parent:
+        --------------------------------------------------------------------------------
+        local selectedClip = libraries:selectedClipsUI()[1]
+        local selectedClipParent = selectedClip:attributeValue("AXParent")
+
+        --------------------------------------------------------------------------------
+        -- Get the AXGroup:
+        --------------------------------------------------------------------------------
+        local listHeadingGroup = axutils.childWithRole(selectedClipParent, "AXGroup")
+
+        --------------------------------------------------------------------------------
+        -- Find the 'Notes' column:
+        --------------------------------------------------------------------------------
+        local notesFieldID = nil
+        for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
+            local title = listHeadingGroup[i]:attributeValue("AXTitle")
+            if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
+                notesFieldID = i
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- If the 'Notes' column is missing:
+        --------------------------------------------------------------------------------
+        local notesPressed = false
+        if notesFieldID == nil then
+            listHeadingGroup:performAction("AXShowMenu")
+            local menu = axutils.childWithRole(listHeadingGroup, "AXMenu")
+            for i=1, menu:attributeValueCount("AXChildren") do
+                if not notesPressed then
+                    local title = menu[i]:attributeValue("AXTitle")
+                    if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
+                        menu[i]:performAction("AXPress")
+                        notesPressed = true
+                        for a=1, listHeadingGroup:attributeValueCount("AXChildren") do
+                            local titleA = listHeadingGroup[i]:attributeValue("AXTitle")
+                            if titleA == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
+                                notesFieldID = a
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- If the 'Notes' column is missing then error:
+        --------------------------------------------------------------------------------
+        if notesFieldID == nil then
+            dialog.displayErrorMessage("Could not find the Notes Column.")
+            return
+        end
+
+        local selectedNotesField = selectedClip[notesFieldID][1]
+        selectedNotesField:setAttributeValue("AXFocused", true)
+        selectedNotesField:setAttributeValue("AXValue", mod._lastTextToSpeak)
+        selectedNotesField:setAttributeValue("AXFocused", false)
+        if not filmstripView then
+            eventtap.keyStroke({}, "return") -- List view requires an "return" key press
+        end
+
+        --------------------------------------------------------------------------------
+        -- Restore Filmstrip View:
+        --------------------------------------------------------------------------------
+		if filmstripView then
+			libraries:toggleViewMode():press()
+		end
+
+        --------------------------------------------------------------------------------
+        -- Remove from Timeline if appropriate:
+        --------------------------------------------------------------------------------
+        if not mod.insertIntoTimeline() then
+
+            --------------------------------------------------------------------------------
+            -- Check if Timeline can be enabled:
+            --------------------------------------------------------------------------------
+            if fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"}) then
+                fcp:selectMenu({"Window", "Go To", "Timeline"})
+            else
+                dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
+                return nil
+            end
+
+            --------------------------------------------------------------------------------
+            -- Delete the clip:
+            --------------------------------------------------------------------------------
+            fcp:selectMenu({"Edit", "Delete"})
+
+        end
+
+    else
+
+        --------------------------------------------------------------------------------
+        -- Remove from Timeline if appropriate:
+        --------------------------------------------------------------------------------
+        if not mod.insertIntoTimeline() then
+            result = just.doUntil(function()
+                return fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
+            end, 3)
+            if result then
+                if fcp:menuBar():isEnabled({"Edit", "Undo Paste"}) then
+                    fcp:selectMenu({"Edit", "Undo Paste"})
+                else
+                    dialog.displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
+                    return nil
+                end
+            end
+        end
+
     end
 
     --------------------------------------------------------------------------------
@@ -511,9 +727,16 @@ function mod._rightClickCallback()
     local rightClickMenu = {
         { title = i18n("selectVoice"), menu = voicesMenu },
         { title = "-" },
-        { title = i18n("insertIntoTimeline"), checked = mod.insertIntoTimeline(),
+        { title = i18n("insertIntoTimeline"),
+            checked = mod.insertIntoTimeline(),
             fn = function()
                 mod.insertIntoTimeline:toggle()
+            end,
+        },
+        { title = i18n("addTextToNotesFieldAfterImport"),
+            checked = mod.addTextToNotesFieldAfterImport(),
+            fn = function()
+                mod.addTextToNotesFieldAfterImport:toggle()
             end,
         },
         { title = i18n("createRoleForVoice"), checked = mod.createRoleForVoice(),
@@ -556,6 +779,13 @@ function mod._rightClickCallback()
             checked = mod.enableCustomPrefix(),
             fn = function()
                 mod.enableCustomPrefix:toggle()
+            end,
+        },
+        { title = i18n("includeTextInFilename"),
+            disabled = not mod.enableCustomPrefix(),
+            checked = not mod.enableCustomPrefix() or mod.includeTextInFilename(),
+            fn = function()
+                mod.includeTextInFilename:toggle()
             end,
         },
         { title = i18n("useUnderscore"),
@@ -683,6 +913,38 @@ function mod.show()
 
 end
 
+--- plugins.finalcutpro.text2speech.insertFromClipboard() -> none
+--- Function
+--- Inserts Text to Speech by reading the Clipboard.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.insertFromClipboard()
+    local clipboard = pasteboard.readString()
+    if clipboard then
+        --------------------------------------------------------------------------------
+        -- Build table:
+        --------------------------------------------------------------------------------
+        local result = {}
+        result.text = clipboard
+
+        --------------------------------------------------------------------------------
+        -- Add to history:
+        --------------------------------------------------------------------------------
+        local history = mod.history()
+        table.insert(history, 1, result)
+        mod.history(history)
+
+        --------------------------------------------------------------------------------
+        -- Trigger Completion Function:
+        --------------------------------------------------------------------------------
+        mod._completionFn(result)
+    end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -711,8 +973,13 @@ function plugin.init(deps, env)
     -- Commands:
     --------------------------------------------------------------------------------
     deps.fcpxCmds:add("cpText2Speech")
-        :whenActivated(function() mod.show() end)
+        :whenActivated(mod.show)
         :activatedBy():cmd():option():ctrl("u")
+
+    deps.fcpxCmds:add("cpText2SpeechFromClipboard")
+        :whenActivated(mod.insertFromClipboard)
+        :activatedBy():cmd():option():ctrl():shift("u")
+
 
     return mod
 end

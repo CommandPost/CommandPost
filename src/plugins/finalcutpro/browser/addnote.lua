@@ -106,15 +106,7 @@ function mod.addNoteToSelectedClip()
 	local notesFieldID = nil
 	for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
 		local title = listHeadingGroup[i]:attributeValue("AXTitle")
-		--------------------------------------------------------------------------------
-		-- English: 		Notes
-		-- German:			Notizen
-		-- Spanish:			Notas
-		-- French:			Notes
-		-- Japanese:		メモ
-		-- Chinese:			注释
-		--------------------------------------------------------------------------------
-		if title == "Notes" or title == "Notizen" or title == "Notas" or title == "メモ" or title == "注释" then
+		if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
 			notesFieldID = i
 		end
 	end
@@ -129,12 +121,12 @@ function mod.addNoteToSelectedClip()
 		for i=1, menu:attributeValueCount("AXChildren") do
 			if not notesPressed then
 				local title = menu[i]:attributeValue("AXTitle")
-				if title == "Notes" or title == "Notizen" or title == "Notas" or title == "メモ" or title == "注释" then
+				if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
 					menu[i]:performAction("AXPress")
 					notesPressed = true
 					for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
 						local title = listHeadingGroup[i]:attributeValue("AXTitle")
-						if title == "Notes" or title == "Notizen" or title == "Notas" or title == "メモ" or title == "注释" then
+						if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
 							notesFieldID = i
 						end
 					end
