@@ -466,7 +466,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         local clip
         if #clips > 0 then
-            for i, v in ipairs(clips) do
+            for _, v in ipairs(clips) do
                 local description = v:attributeValue("AXDescription")
                 if description and description == "Audio-Clip:" .. mod._lastFilename then
                     clip = v
@@ -501,7 +501,7 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Get number of Selected Browser Clips:
         --------------------------------------------------------------------------------
-        local clips = libraries:selectedClipsUI()
+        clips = libraries:selectedClipsUI()
         if #clips ~= 1 then
             dialog.displayErrorMessage("Wrong number of clips selected.")
             return false
@@ -551,10 +551,10 @@ function mod._completeProcess()
                     if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
                         menu[i]:performAction("AXPress")
                         notesPressed = true
-                        for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
-                            local title = listHeadingGroup[i]:attributeValue("AXTitle")
-                            if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
-                                notesFieldID = i
+                        for a=1, listHeadingGroup:attributeValueCount("AXChildren") do
+                            local titleA = listHeadingGroup[i]:attributeValue("AXTitle")
+                            if titleA == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
+                                notesFieldID = a
                             end
                         end
                     end
@@ -593,8 +593,7 @@ function mod._completeProcess()
             --------------------------------------------------------------------------------
             -- Check if Timeline can be enabled:
             --------------------------------------------------------------------------------
-            local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
-            if result then
+            if fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"}) then
                 fcp:selectMenu({"Window", "Go To", "Timeline"})
             else
                 dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
@@ -618,8 +617,7 @@ function mod._completeProcess()
                 return fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
             end, 3)
             if result then
-                result = fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
-                if result then
+                if fcp:menuBar():isEnabled({"Edit", "Undo Paste"}) then
                     fcp:selectMenu({"Edit", "Undo Paste"})
                 else
                     dialog.displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
