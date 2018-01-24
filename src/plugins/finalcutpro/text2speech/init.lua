@@ -60,10 +60,20 @@ mod.history = config.prop("textToSpeechHistory", {})
 --- Current Incremental Number as number
 mod.currentIncrementalNumber = config.prop("textToSpeechCurrentIncrementalNumber", 1)
 
+--- plugins.finalcutpro.text2speech.includeTextInFilename
+--- Variable
+--- Includes the entered text in the filename
+mod.includeTextInFilename = config.prop("includeTextInFilename", true)
+
 --- plugins.finalcutpro.text2speech.replaceSpaceWithUnderscore
 --- Variable
 --- Replace Space with Underscore
 mod.replaceSpaceWithUnderscore = config.prop("replaceSpaceWithUnderscore", false)
+
+--- plugins.finalcutpro.text2speech.addTextToNotesFieldAfterImport
+--- Variable
+--- Option to Add Text to Notes Field After Importing
+mod.addTextToNotesFieldAfterImport = config.prop("addTextToNotesFieldAfterImport", false)
 
 --- plugins.finalcutpro.text2speech.deleteFileAfterImport
 --- Variable
@@ -230,15 +240,19 @@ function mod._completionFn(result)
         if customTextToSpeak and mod.replaceSpaceWithUnderscore() then
             customTextToSpeak = string.gsub(customTextToSpeak, " ", "_")
         end
-        filename = tools.safeFilename(customTextToSpeak, i18n("generatedVoiceOver"))
-        savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. seperator .. filename .. ".aif"
+        if mod.includeTextInFilename() then
+            filename = seperator .. customTextToSpeak or i18n("generatedVoiceOver")
+        else
+            filename = ""
+        end
+        savePath = mod.path() .. tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber())  .. filename) .. ".aif"
         if tools.doesFileExist(savePath) then
             local newPathCount = 1
             repeat
                 local currentIncrementalNumber = mod.currentIncrementalNumber()
                 mod.currentIncrementalNumber(currentIncrementalNumber + 1)
                 newPathCount = newPathCount + 1
-                savePath = mod.path() .. prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount) .. ".aif"
+                savePath = mod.path() .. tools.safeFilename(prefix .. seperator .. string.format("%04d", mod.currentIncrementalNumber()) .. seperator .. filename .. seperator .. string.format("%04d", newPathCount)) .. ".aif"
             until not tools.doesFileExist(savePath)
         end
         local currentIncrementalNumber = mod.currentIncrementalNumber()
@@ -251,13 +265,13 @@ function mod._completionFn(result)
         if noCustomTextToSpeak and mod.replaceSpaceWithUnderscore() then
             noCustomTextToSpeak = string.gsub(noCustomTextToSpeak, " ", "_")
         end
-        filename = tools.safeFilename(noCustomTextToSpeak, i18n("generatedVoiceOver"))
-        savePath = mod.path() .. filename .. ".aif"
+        filename = noCustomTextToSpeak or i18n("generatedVoiceOver")
+        savePath = mod.path() .. tools.safeFilename(filename) .. ".aif"
         if tools.doesFileExist(savePath) then
             local newPathCount = 0
             repeat
                 newPathCount = newPathCount + 1
-                savePath = mod.path() .. filename .. " " .. string.format("%04d", newPathCount) .. ".aif"
+                savePath = mod.path() .. tools.safeFilename(filename .. " " .. string.format("%04d", newPathCount)) .. ".aif"
             until not tools.doesFileExist(savePath)
         end
     end
@@ -395,6 +409,90 @@ function mod._completeProcess()
     end
 
     --------------------------------------------------------------------------------
+    -- Add Text to Notes Field After Import:
+    --------------------------------------------------------------------------------
+    if mod.addTextToNotesFieldAfterImport() then
+
+        --------------------------------------------------------------------------------
+        -- Go back a frame:
+        --------------------------------------------------------------------------------
+        fcp:selectMenu({"Mark", "Previous", "Frame"})
+
+        --------------------------------------------------------------------------------
+        -- Get timeline contents:
+        --------------------------------------------------------------------------------
+        local content = fcp:timeline():contents()
+        local playheadX = content:playhead():getPosition()
+
+        local clips = content:clipsUI(false, function(clip)
+            local frame = clip:frame()
+            return playheadX >= frame.x and playheadX < (frame.x + frame.w)
+        end)
+
+        if clips == nil then
+            log.d("No clips detected in selectClipAtLane().")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Sort the table:
+        --------------------------------------------------------------------------------
+        table.sort(clips, function(a, b) return a:position().y > b:position().y end)
+
+        log.df("clips: %s", hs.inspect(clips))
+
+        if #clips > 0 then
+            for i, v in ipairs(clips) do
+                log.df("Value: %s", v:attributeValue("AXDescription"))
+            end
+        end
+
+--Audio-Clip:THis_is_a_test 0002
+
+        --content:selectClip(clips[whichLane])
+
+
+
+        --[[
+
+        --------------------------------------------------------------------------------
+        -- Make sure the Browser is visible:
+        --------------------------------------------------------------------------------
+        local libraries = fcp:browser():libraries()
+        if not libraries:isShowing() then
+            log.ef("Library Panel is closed.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get number of Selected Browser Clips:
+        --------------------------------------------------------------------------------
+        local clips = libraries:selectedClipsUI()
+        if #clips ~= 1 then
+            log.ef("Wrong number of clips selected.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Check to see if we're in Filmstrip or List View:
+        --------------------------------------------------------------------------------
+        local filmstripView = false
+        if libraries:isFilmstripView() then
+            filmstripView = true
+            libraries:toggleViewMode():press()
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get Selected Clip & Selected Clip's Parent:
+        --------------------------------------------------------------------------------
+        local selectedClip = libraries:selectedClipsUI()[1]
+        local selectedClipParent = selectedClip:attributeValue("AXParent")
+
+        --]]
+
+    end
+
+    --------------------------------------------------------------------------------
     -- Remove from Timeline if appropriate:
     --------------------------------------------------------------------------------
     if not mod.insertIntoTimeline() then
@@ -511,9 +609,16 @@ function mod._rightClickCallback()
     local rightClickMenu = {
         { title = i18n("selectVoice"), menu = voicesMenu },
         { title = "-" },
-        { title = i18n("insertIntoTimeline"), checked = mod.insertIntoTimeline(),
+        { title = i18n("insertIntoTimeline"),
+            checked = mod.insertIntoTimeline(),
             fn = function()
                 mod.insertIntoTimeline:toggle()
+            end,
+        },
+        { title = i18n("addTextToNotesFieldAfterImport"),
+            checked = mod.addTextToNotesFieldAfterImport(),
+            fn = function()
+                mod.addTextToNotesFieldAfterImport:toggle()
             end,
         },
         { title = i18n("createRoleForVoice"), checked = mod.createRoleForVoice(),
@@ -556,6 +661,13 @@ function mod._rightClickCallback()
             checked = mod.enableCustomPrefix(),
             fn = function()
                 mod.enableCustomPrefix:toggle()
+            end,
+        },
+        { title = i18n("includeTextInFilename"),
+            disabled = not mod.enableCustomPrefix(),
+            checked = not mod.enableCustomPrefix() or mod.includeTextInFilename(),
+            fn = function()
+                mod.includeTextInFilename:toggle()
             end,
         },
         { title = i18n("useUnderscore"),

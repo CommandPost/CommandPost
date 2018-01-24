@@ -708,6 +708,8 @@ return {
 	generatedVoiceOver                  =           "Generated Voice Over",
 	replaceSpaceWithUnderscore          =           "Replace Spaces with Underscores",
 	deleteFileAfterImport               =           "Delete Generated File After Import",
+	includeTextInFilename               =           "Include Entered Text in Filename",
+	addTextToNotesFieldAfterImport      =           "Add to Notes Field After Import",
 
 	--------------------------------------------------------------------------------
 	-- HUD:
