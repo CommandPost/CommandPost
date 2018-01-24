@@ -1191,6 +1191,7 @@ return {
 		cpStabilizationDisable_title							=	"Disable Stabilization",
 
 		cpText2Speech_title										=	"Activate Text to Speech Tool",
+		cpText2SpeechFromClipboard_title                        =   "Apply Text to Speech from Clipboard",
 
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 		cpLockPlayhead_title									=	"Toggle Playhead Lock",
