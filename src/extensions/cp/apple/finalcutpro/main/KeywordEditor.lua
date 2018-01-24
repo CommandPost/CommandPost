@@ -13,8 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("keywordEditor")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
 
@@ -137,7 +139,7 @@ end
 -- Returns:
 --  * A `hs._asm.axuielement` object if succesful otherwise `nil`
 function KeywordEditor:_findWindowUI(windows)
-    for i,window in ipairs(windows) do
+    for _,window in ipairs(windows) do
         if KeywordEditor.matches(window) then return window end
     end
     return nil
@@ -232,7 +234,7 @@ function KeywordEditor:keyword(value)
                 end
             elseif type(value) == "table" and #value >= 1 then
                 local result = ""
-                for i, v in pairs(value) do
+                for _, v in pairs(value) do
                     result = result .. v .. ", "
                 end
                 if ui[1]:setAttributeValue("AXValue", result) then
@@ -398,7 +400,7 @@ function KeyboardShortcuts:keyword(item, value)
                 -- String Setter:
                 --------------------------------------------------------------------------------
                 local result = ""
-                for i, v in pairs(value) do
+                for _, v in pairs(value) do
                     result = result .. v .. ", "
                 end
                 if textfields[item]:setAttributeValue("AXValue", result) then

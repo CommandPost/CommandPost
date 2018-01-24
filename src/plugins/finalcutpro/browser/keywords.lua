@@ -123,7 +123,7 @@ function mod.restore(preset)
     local keyboardShortcuts = keywordEditor:keyboardShortcuts()
     keyboardShortcuts:show()
     if not keyboardShortcuts:isShowing() then
-        dialog.displayMessage(i18("keywordKeyboardShortcutsNotOpened"))
+        dialog.displayMessage(i18n("keywordKeyboardShortcutsNotOpened"))
         return nil
     end
 
