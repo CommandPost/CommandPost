@@ -38,6 +38,11 @@ local inspect							= require("hs.inspect")
 
 local prop                              = require("cp.prop")
 local tools								= require("cp.tools")
+local axutils							= require("cp.ui.axutils")
+local MenuButton						= require("cp.ui.MenuButton")
+local RadioGroup						= require("cp.ui.RadioGroup")
+
+local ColorWell							= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell")
 
 --------------------------------------------------------------------------------
 --
@@ -188,6 +193,36 @@ end
 -- PUBLIC FUNCTIONS & METHODS:
 --------------------------------------------------------------------------------
 
+local ALL_WHEELS_COUNT = 51
+local SINGLE_WHEELS_COUNT = 49
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.matches(element)
+--- Function
+--- Checks if the specified element is the Color Wheels element.
+---
+--- Parameters:
+--- * element	- The element to check
+---
+--- Returns:
+--- * `true` if the element is the Color Wheels.
+function ColorWheels.matches(element)
+	if element and element:attributeValue("AXRole") == "AXGroup"
+	and #element == 1 and element[1]:attributeValue("AXRole") == "AXScrollArea" then
+		local scroll = element[1]
+		local childCount = #scroll
+		local colorWell = nil
+		if childCount == ALL_WHEELS_COUNT then
+			colorWell = axutils.childFromTop(scroll, 3)
+		elseif childCount == SINGLE_WHEELS_COUNT then
+			colorWell = axutils.childFromTop(scroll, 4)
+		else
+			return false
+		end
+		return ColorWell.matches(colorWell)
+	end
+	return false
+end
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:new(parent) -> ColorInspector object
 --- Method
 --- Creates a new ColorWheels object
@@ -198,12 +233,12 @@ end
 --- Returns:
 ---  * A ColorInspector object
 function ColorWheels:new(parent)
-    local o = {
+    local o = prop.extend({
         _parent = parent,
         _child = {}
-    }
+    }, ColorWheels)
 
-    return prop.extend(o, ColorWheels)
+    return o
 end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:parent() -> table
@@ -238,6 +273,22 @@ end
 --
 --------------------------------------------------------------------------------
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:UI() -> axuielement
+--- Method
+--- Returns  the the `axuielement` representing the ColorWheels corrector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The ColorWheels `axuielement`
+function ColorWheels:UI()
+	return axutils.cache(self, "_ui", function()
+		local ui = self:parent():correctorUI()
+		return ColorWheels.matches(ui) and ui or nil
+	end, ColorWheels.matches)
+end
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
@@ -262,80 +313,84 @@ end
 --- Returns:
 ---  * `true` if showing, otherwise `false`
 function ColorWheels:isShowing()
-    return self:parent():isShowing(CORRECTION_TYPE)
+    return self:UI() ~= nil
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:viewMode([value]) -> string | nil
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:viewMode() -> MenuButton
 --- Method
---- Sets or gets the View Mode for the Color Wheels.
+--- Returns the `MenuButton` for the View menu button.
 ---
 --- Parameters:
----  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.VIEW_MODES`.
+--- * None
 ---
 --- Returns:
----  * A string containing the View Mode or `nil` if an error occurs.
----
---- Notes:
----  * Value can be:
----    * All Wheels
----    * Single Wheels
----  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():color():colorWheels():viewMode("All Wheels")`
-function ColorWheels:viewMode(value)
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value and not self.VIEW_MODES[value] then
-        log.ef("Invalid Mode: %s", value)
-        return nil
-    end
-    if not self:isShowing() then
-        log.ef("Color Wheels not active.")
-        return nil
-    end
-    --------------------------------------------------------------------------------
-    -- Check that the Color Inspector UI is available:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    if ui and ui[2] then
-        --------------------------------------------------------------------------------
-        -- Determine wheel mode based on whether or not the Radio Group exists:
-        --------------------------------------------------------------------------------
-        local selectedValue = "All Wheels"
-        if ui[2]:attributeValue("AXRole") == "AXRadioGroup" then
-            selectedValue = "Single Wheels"
-        end
-        if value and selectedValue ~= value then
-            --------------------------------------------------------------------------------
-            -- Setter:
-            --------------------------------------------------------------------------------
-            ui[1]:performAction("AXPress") -- Press the "View" button
-            if ui[1][1] then
-                for _, child in ipairs(ui[1][1]) do
-                    local title = child:attributeValue("AXTitle")
-                    local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
-                    local app = self:app()
-                    if title == app:string(self.VIEW_MODES["All Wheels"]) and value == "All Wheels" then
-                        child:performAction("AXPress") -- Close the popup
-                        return "All Wheels"
-                    elseif title == app:string(self.VIEW_MODES["Single Wheels"]) and value == "Single Wheels" then
-                        child:performAction("AXPress") -- Close the popup
-                        return "Single Wheels"
-                    end
-                end
-                log.ef("Failed to determine which View Mode was selected")
-                return nil
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- Getter:
-            --------------------------------------------------------------------------------
-            return selectedValue
-        end
-    else
-        log.ef("Could not find Color Inspector UI.")
-    end
-    return nil
+--- * The `MenuButton` for the View mode.
+function ColorWheels:viewMode()
+	if not self._viewMode then
+		self._viewMode = MenuButton:new(self, function()
+			local ui = self:UI()
+			if ui and ui[1] then
+				return axutils.childWithRole(ui[1], "AXMenuButton")
+			end
+			return nil
+		end)
+	end
+	return self._viewMode
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:viewingAllWheels <cp.prop: boolean>
+--- Field
+--- Reports and modifies whether the ColorWheels corrector is showing "All Wheels" (`true`) or "Single Wheels" (`false`).
+ColorWheels.viewingAllWheels = prop(
+	function(self)
+		local ui = self:UI()
+		if ui then
+			local scrollArea = ui[1]
+			return scrollArea and #scrollArea == ALL_WHEELS_COUNT
+		end
+		return false
+	end,
+	function(allWheels, self, prop)
+		local current = prop:get()
+		if allWheels and not current then
+			self:viewMode():selectItem(1)
+		elseif not allWheels and current then
+			self:viewMode():selectItem(2)
+		end
+	end
+):bind(ColorWheels)
+
+function ColorWheels:wheelType()
+	if not self._wheelType then
+		self._wheelType = RadioGroup:new(self,
+			function()
+				if not self:viewingAllWheels() then
+					local ui = self:UI()
+					return ui and ui[1] and axutils.childWithRole(ui[1], "AXRadioGroup") or nil
+				end
+				return nil
+			end
+		)
+	end
+	return self._wheelType
+end
+
+function ColorWheels:master()
+	if not self._master then
+		self._master = ColorWell:new(self, function()
+			local ui = self:UI()
+			if ui then
+				local scrollArea = ui[1]
+				if self:viewingAllWheels() then
+					return axutils.childFromTop(scrollArea, 3)
+				elseif self:wheelType():selectedItem() == 1 then
+					return axutils.childFromTop(scrollArea, 4)
+				end
+			end
+			return nil
+		end)
+	end
+	return self._master
 end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:visibleWheel([value]) -> string | nil

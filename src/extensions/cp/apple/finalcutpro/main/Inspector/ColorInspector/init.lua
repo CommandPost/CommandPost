@@ -83,12 +83,21 @@ function ColorInspector:new(parent)
 		_child = {}
 	}
 
-	return prop.extend(o, ColorInspector)
+	prop.extend(o, ColorInspector)
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.isSupported <cp.prop: boolean; read-only>
+--- Field
+--- Is the Color Inspector supported in the installed version of Final Cut Pro?
+	o.isSupported = parent:app().getVersion:mutate(function(version, self)
+		return version and v(version) >= v("10.4")
+	end):bind(o)
+
+	return o
 end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector:parent() -> table
 --- Method
---- Returns the ColorInspector's parent table
+--- Returns the ColorInspector's parent table.
 ---
 --- Parameters:
 ---  * None
@@ -111,14 +120,6 @@ end
 function ColorInspector:app()
 	return self:parent():app()
 end
-
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.isSupported <cp.prop: boolean; read-only>
---- Field
---- Is the Color Inspector supported in the installed version of Final Cut Pro?
-ColorInspector.isSupported = prop.new(function(self)
-	local version = self:app():getVersion()
-	return version and v(version) >= v("10.4")
-end):bind(ColorInspector)
 
 -----------------------------------------------------------------------
 --
@@ -146,7 +147,43 @@ function ColorInspector:UI()
 	)
 end
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector:correctorUI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object representing the currently-selected corrector panel.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
+function ColorInspector:correctorUI()
+	return axutils.cache(self, "_corrector",
+		function()
+			local ui = self:UI()
+			if ui then
+				local bottomPanel = axutils.childAtIndex(ui, 1,
+					function(a, b)
+						local aFrame, bFrame = a:frame(), b:frame()
+						local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
+						return aBottom > bBottom
+					end)
+				return bottomPanel and bottomPanel[1] or nil
+			end
+			return nil
+		end
+	)
+end
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector:corrections() -> CorrectionsBar
+--- Method
+--- Returns the `CorrectionsBar` instance representing the available corrections,
+--- and currently selected correction type.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `CorrectionsBar` instance.
 function ColorInspector:corrections()
 	if not self._corrections then
 		self._corrections = CorrectionsBar:new(self)
