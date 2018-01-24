@@ -217,12 +217,15 @@ function KeywordEditor:keyword(value)
         -- Getter:
         --------------------------------------------------------------------------------
         local result = {}
-        if ui and ui[1] and #ui[1]:attributeValue("AXChildren") > 0 then
-            local children = ui[1]:attributeValue("AXChildren")
-            for _, child in ipairs(children) do
-                table.insert(result, child:attributeValue("AXValue"))
+        if ui then
+            local textbox = axutils.childWithRole(ui, "AXTextField")
+            if textbox then
+                local children = textbox:attributeValue("AXChildren")
+                for _, child in ipairs(children) do
+                    table.insert(result, child:attributeValue("AXValue"))
+                end
+                return result
             end
-            return result
         end
         log.ef("Could not get Keyword.")
         return false
@@ -230,21 +233,24 @@ function KeywordEditor:keyword(value)
         --------------------------------------------------------------------------------
         -- Setter:
         --------------------------------------------------------------------------------
-        if ui and ui[1] then
-            if type(value) == "string" then
-                if ui[1]:setAttributeValue("AXValue", value) then
-                    if ui[1]:performAction("AXConfirm") then
-                        return value
+        if ui then
+            local textbox = axutils.childWithRole(ui, "AXTextField")
+            if textbox then
+                if type(value) == "string" then
+                    if textbox:setAttributeValue("AXValue", value) then
+                        if textbox:performAction("AXConfirm") then
+                            return value
+                        end
                     end
-                end
-            elseif type(value) == "table" and #value >= 1 then
-                local result = ""
-                for _, v in pairs(value) do
-                    result = result .. v .. ", "
-                end
-                if ui[1]:setAttributeValue("AXValue", result) then
-                    if ui[1]:performAction("AXConfirm") then
-                        return value
+                elseif type(value) == "table" and #value >= 1 then
+                    local result = ""
+                    for _, v in pairs(value) do
+                        result = result .. v .. ", "
+                    end
+                    if textbox:setAttributeValue("AXValue", result) then
+                        if textbox:performAction("AXConfirm") then
+                            return value
+                        end
                     end
                 end
             end
