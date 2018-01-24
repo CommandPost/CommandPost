@@ -6,22 +6,26 @@
 
 --- === plugins.finalcutpro.browser.keywords ===
 ---
---- Browser Keywords
+--- Browser Keywords Presets.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("addnote")
 
-local ax 								= require("hs._asm.axuielement")
-local eventtap                          = require("hs.eventtap")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                               = require("hs.logger").new("keywords")
 
-local dialog 							= require("cp.dialog")
-local fcp								= require("cp.apple.finalcutpro")
-local config							= require("cp.config")
-local tools 							= require("cp.tools")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog                            = require("cp.dialog")
+local fcp                               = require("cp.apple.finalcutpro")
+local config                            = require("cp.config")
+local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -30,6 +34,20 @@ local tools 							= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS -> number
+--- Constant
+--- The number of presets available.
+mod.NUMBER_OF_PRESETS = 9
+
+--- plugins.finalcutpro.browser.keywords.save(preset) -> none
+--- Function
+--- Saves a Keyword preset.
+---
+--- Parameters:
+---  * preset - A preset number between 1 and the value of `plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS`.
+---
+--- Returns:
+---  * None
 function mod.save(preset)
 
     --------------------------------------------------------------------------------
@@ -38,55 +56,56 @@ function mod.save(preset)
     local keywordEditor = fcp:keywordEditor()
     keywordEditor:show()
     if not keywordEditor:isShowing() then
-        dialog.displayMessage("The Keyword Editor could not be opened.")
+        dialog.displayMessage(i18n("keywordEditorNotOpened"))
         return nil
     end
 
     --------------------------------------------------------------------------------
-    -- Open the Keyboard Shortcuts dropdown:
+    -- Open the Keyboard Shortcuts section:
     --------------------------------------------------------------------------------
     local keyboardShortcuts = keywordEditor:keyboardShortcuts()
     keyboardShortcuts:show()
     if not keyboardShortcuts:isShowing() then
-        dialog.displayMessage("The Keyword Editor's Keyboard Shortcuts dropdown could not be opened.")
+        dialog.displayMessage(i18n("keywordKeyboardShortcutsNotOpened"))
         return nil
     end
 
-	--------------------------------------------------------------------------------
-	-- Save Values to Settings:
-	--------------------------------------------------------------------------------
-	local savedKeywords = config.get("savedKeywords", {})
-	if not savedKeywords[preset] then
-	    savedKeywords[preset] = {}
-	end
-	for i=1, 9 do
-	    savedKeywords[preset][i] = keyboardShortcuts:keyword(i)
-	end
-	config.set("savedKeywords", savedKeywords)
+    --------------------------------------------------------------------------------
+    -- Save Values to Settings:
+    --------------------------------------------------------------------------------
+    local savedKeywords = {}
+    for i=1, mod.NUMBER_OF_PRESETS do
+        local keywords = keyboardShortcuts:keyword(i) or {}
+        table.insert(savedKeywords, keywords)
+    end
+    config.set("savedKeywords" .. tostring(preset), savedKeywords)
 
-	--------------------------------------------------------------------------------
-	-- Saved:
-	--------------------------------------------------------------------------------
-	dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
+    --------------------------------------------------------------------------------
+    -- Display Notification:
+    --------------------------------------------------------------------------------
+    dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
 
 end
 
+--- plugins.finalcutpro.browser.keywords.restore(preset) -> none
+--- Function
+--- Restores a Keyword preset.
+---
+--- Parameters:
+---  * preset - A preset number between 1 and the value of `plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS`.
+---
+--- Returns:
+---  * None
 function mod.restore(preset)
 
-	--------------------------------------------------------------------------------
-	-- Get Values from Settings:
-	--------------------------------------------------------------------------------
-	local savedKeywords = config.get("savedKeywords")
-
-	if savedKeywords == nil then
-		dialog.displayMessage(i18n("noKeywordPresetsError"))
-		return "Fail"
-	end
-
-	if savedKeywords[preset] == nil then
-		dialog.displayMessage(i18n("noKeywordPresetError"))
-		return "Fail"
-	end
+    --------------------------------------------------------------------------------
+    -- Get Values from Settings:
+    --------------------------------------------------------------------------------
+    local savedKeywords = config.get("savedKeywords" .. tostring(preset))
+    if type(savedKeywords) ~= "table" or #savedKeywords == 0 then
+        dialog.displayMessage(i18n("noKeywordPresetsError"))
+        return false
+    end
 
     --------------------------------------------------------------------------------
     -- Open the Keyword Editor:
@@ -94,31 +113,31 @@ function mod.restore(preset)
     local keywordEditor = fcp:keywordEditor()
     keywordEditor:show()
     if not keywordEditor:isShowing() then
-        dialog.displayMessage("The Keyword Editor could not be opened.")
+        dialog.displayMessage(i18n("keywordEditorNotOpened"))
         return nil
     end
 
     --------------------------------------------------------------------------------
-    -- Open the Keyboard Shortcuts dropdown:
+    -- Open the Keyboard Shortcuts section:
     --------------------------------------------------------------------------------
     local keyboardShortcuts = keywordEditor:keyboardShortcuts()
     keyboardShortcuts:show()
     if not keyboardShortcuts:isShowing() then
-        dialog.displayMessage("The Keyword Editor's Keyboard Shortcuts dropdown could not be opened.")
+        dialog.displayMessage(i18("keywordKeyboardShortcutsNotOpened"))
         return nil
     end
 
-	--------------------------------------------------------------------------------
-	-- Restore Values to Keyword Editor:
-	--------------------------------------------------------------------------------
-	for i=1, 9 do
-		keyboardShortcuts:keyword(i, savedKeywords[preset][i])
-	end
+    --------------------------------------------------------------------------------
+    -- Restore Values to Keyword Editor:
+    --------------------------------------------------------------------------------
+    for i=1, mod.NUMBER_OF_PRESETS do
+        keyboardShortcuts:keyword(i, savedKeywords[i])
+    end
 
-	--------------------------------------------------------------------------------
-	-- Successfully Restored:
-	--------------------------------------------------------------------------------
-	dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
+    --------------------------------------------------------------------------------
+    -- Display Notification:
+    --------------------------------------------------------------------------------
+    dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
 
 end
 
@@ -128,31 +147,29 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.browser.keywords",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.commands"]	= "fcpxCmds",
-	}
+    id              = "finalcutpro.browser.keywords",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.commands"]    = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+    for i=1, mod.NUMBER_OF_PRESETS do
+        deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
+            :activatedBy():ctrl():option():cmd(tostring(i))
+            :titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
+            :whenActivated(function() mod.restore(i) end)
 
-	for i=1, 9 do
-		deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
-			:activatedBy():ctrl():option():cmd(tostring(i))
-			:titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
-			:whenActivated(function() mod.restore(i) end)
-
-		deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
-			:activatedBy():ctrl():option():shift():cmd(tostring(i))
-			:titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
-			:whenActivated(function() mod.save(i) end)
-	end
-
-	return mod
+        deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
+            :activatedBy():ctrl():option():shift():cmd(tostring(i))
+            :titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
+            :whenActivated(function() mod.save(i) end)
+    end
+    return mod
 end
 
 return plugin

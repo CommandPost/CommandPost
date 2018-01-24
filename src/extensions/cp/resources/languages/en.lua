@@ -189,11 +189,6 @@ return {
 
 			loadFinalCutProFailed				=			"Failed to load Final Cut Pro. Please try again.",
 
-			keywordEditorAlreadyOpen			=			"This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.",
-			keywordShortcutsVisibleError		=			"Please make sure that the Keyboard Shortcuts are visible before using this feature.",
-			noKeywordPresetsError				=			"It doesn't look like you've saved any keyword presets yet?",
-			noKeywordPresetError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
-
 			noPluginFound						=			"Unable to find a ${plugin} called '${name}'.",
 			noPluginShortcut					=			"There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
@@ -656,6 +651,13 @@ return {
 	enterImageTag						=			"Enter a Image Tag Here",
 	watchFolderFCPMediaTooltip			=			"Final Cut Pro Media Watch Folder Preferences",
 	incomingFile						=			"Incoming File...",
+
+    --------------------------------------------------------------------------------
+    -- KEYWORD PRESETS PLUGIN:
+    --------------------------------------------------------------------------------
+    keywordEditorNotOpened              =           "The Keyword Editor could not be opened.",
+    keywordKeyboardShortcutsNotOpened   =           "The Keyword Editor's Keyboard Shortcuts section could not be opened.",
+    noKeywordPresetsError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
 
 	--------------------------------------------------------------------------------
 	-- FCPXML WATCH FOLDER PLUGIN:
