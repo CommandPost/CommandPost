@@ -86,7 +86,7 @@ function axutils.childWithDescription(element, value)
 	return axutils.childWith(element, "AXDescription", value)
 end
 
---- cp.ui.axutils.childMatching(element, matcherFn) -> axuielement
+--- cp.ui.axutils.childMatching(element, matcherFn[, index]) -> axuielement
 --- Function
 --- This searches for the first child of the specified element for which the provided function returns `true`.
 --- The function will receive one parameter - the current child.
@@ -94,10 +94,12 @@ end
 --- Parameters:
 ---  * element		- the axuielement
 ---  * matcherFn	- the function which checks if the child matches the requirements.
+---  * index		- the number of matching child to return. Defaults to `1`.
 ---
 --- Returns:
 ---  * The first matching child, or nil if none was found
-function axutils.childMatching(element, matcherFn)
+function axutils.childMatching(element, matcherFn, index)
+	index = index or 1
 	if element then
 		local children = element
 		-- Try to get the children array directly, if present, to optimise the loop.
@@ -106,9 +108,13 @@ function axutils.childMatching(element, matcherFn)
 			children = element:attributeValue("AXChildren") or element
 		end
 		if #children > 0 then
+			local count = 0
 			for i,child in ipairs(children) do
 				if matcherFn(child) then
-					return child
+					count = count + 1
+					if count == index then
+						return child
+					end
 				end
 			end
 		end
@@ -288,7 +294,7 @@ end
 --- cp.ui.axutils.childrenMatching(element, matcherFn) -> { axuielement }
 --- Function
 --- This searches for all children of the specified element for which the provided
---- function returns true. The function will receive one parameter - the current child.
+--- function returns `true`. The function will receive one parameter - the current child.
 ---
 --- Parameters:
 ---  * element	- the axuielement

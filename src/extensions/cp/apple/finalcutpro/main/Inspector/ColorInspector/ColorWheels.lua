@@ -42,7 +42,7 @@ local axutils							= require("cp.ui.axutils")
 local MenuButton						= require("cp.ui.MenuButton")
 local RadioGroup						= require("cp.ui.RadioGroup")
 
-local ColorWell							= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell")
+local ColorWheel						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel")
 
 --------------------------------------------------------------------------------
 --
@@ -193,9 +193,6 @@ end
 -- PUBLIC FUNCTIONS & METHODS:
 --------------------------------------------------------------------------------
 
-local ALL_WHEELS_COUNT = 51
-local SINGLE_WHEELS_COUNT = 49
-
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.matches(element)
 --- Function
 --- Checks if the specified element is the Color Wheels element.
@@ -209,16 +206,7 @@ function ColorWheels.matches(element)
 	if element and element:attributeValue("AXRole") == "AXGroup"
 	and #element == 1 and element[1]:attributeValue("AXRole") == "AXScrollArea" then
 		local scroll = element[1]
-		local childCount = #scroll
-		local colorWell = nil
-		if childCount == ALL_WHEELS_COUNT then
-			colorWell = axutils.childFromTop(scroll, 3)
-		elseif childCount == SINGLE_WHEELS_COUNT then
-			colorWell = axutils.childFromTop(scroll, 4)
-		else
-			return false
-		end
-		return ColorWell.matches(colorWell)
+		return axutils.childMatching(scroll, ColorWheel.matches) ~= nil
 	end
 	return false
 end
@@ -289,6 +277,23 @@ function ColorWheels:UI()
 	end, ColorWheels.matches)
 end
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:contentUI() -> axuielement
+--- Method
+--- Returns  the the `axuielement` representing the content element of the ColorWheels corrector.
+--- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The ColorWheels content `axuielement`
+function ColorWheels:contentUI()
+	return axutils.cache(self, "_content", function()
+		local ui = self:UI()
+		return ui and #ui == 1 and ui[1] or nil
+	end)
+end
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
@@ -328,9 +333,9 @@ end
 function ColorWheels:viewMode()
 	if not self._viewMode then
 		self._viewMode = MenuButton:new(self, function()
-			local ui = self:UI()
-			if ui and ui[1] then
-				return axutils.childWithRole(ui[1], "AXMenuButton")
+			local ui = self:contentUI()
+			if ui then
+				return axutils.childWithRole(ui, "AXMenuButton")
 			end
 			return nil
 		end)
@@ -343,10 +348,10 @@ end
 --- Reports and modifies whether the ColorWheels corrector is showing "All Wheels" (`true`) or "Single Wheels" (`false`).
 ColorWheels.viewingAllWheels = prop(
 	function(self)
-		local ui = self:UI()
+		local ui = self:contentUI()
 		if ui then
-			local scrollArea = ui[1]
-			return scrollArea and #scrollArea == ALL_WHEELS_COUNT
+			-- 'all wheels' mode has at least 2 color wheels, 'single wheels' does not.
+			return axutils.childMatching(ui, ColorWheel.matches, 2) ~= nil
 		end
 		return false
 	end,
@@ -360,37 +365,94 @@ ColorWheels.viewingAllWheels = prop(
 	end
 ):bind(ColorWheels)
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:wheelType() -> RadioGroup
+--- Method
+--- Returns the `RadioGroup` that allows selection of the wheel type. Only available when
+--- `viewingAllWheels` is `true`.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `RadioGroup`.
 function ColorWheels:wheelType()
 	if not self._wheelType then
 		self._wheelType = RadioGroup:new(self,
 			function()
 				if not self:viewingAllWheels() then
-					local ui = self:UI()
-					return ui and ui[1] and axutils.childWithRole(ui[1], "AXRadioGroup") or nil
+					local ui = self:contentUI()
+					return ui and axutils.childWithRole(ui, "AXRadioGroup") or nil
 				end
 				return nil
-			end
+			end,
+			false -- not cached
 		)
 	end
 	return self._wheelType
 end
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:master() -> ColorWheel
+--- Method
+--- Returns a `ColorWheel` that allows control of the 'master' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorWheel`.
 function ColorWheels:master()
 	if not self._master then
-		self._master = ColorWell:new(self, function()
-			local ui = self:UI()
-			if ui then
-				local scrollArea = ui[1]
-				if self:viewingAllWheels() then
-					return axutils.childFromTop(scrollArea, 3)
-				elseif self:wheelType():selectedItem() == 1 then
-					return axutils.childFromTop(scrollArea, 4)
-				end
-			end
-			return nil
-		end)
+		self._master = ColorWheel:new(self, ColorWheel.TYPE.MASTER)
 	end
 	return self._master
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:shadows() -> ColorWheel
+--- Method
+--- Returns a `ColorWheel` that allows control of the 'shadows' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorWheel`.
+function ColorWheels:shadows()
+	if not self._shadows then
+		self._shadows = ColorWheel:new(self, ColorWheel.TYPE.SHADOWS)
+	end
+	return self._shadows
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:midtones() -> ColorWheel
+--- Method
+--- Returns a `ColorWheel` that allows control of the 'midtones' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorWheel`.
+function ColorWheels:midtones()
+	if not self._midtones then
+		self._midtones = ColorWheel:new(self, ColorWheel.TYPE.MIDTONES)
+	end
+	return self._midtones
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:highlights() -> ColorWheel
+--- Method
+--- Returns a `ColorWheel` that allows control of the 'highlights' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorWheel`.
+function ColorWheels:highlights()
+	if not self._highlights then
+		self._highlights = ColorWheel:new(self, ColorWheel.TYPE.HIGHLIGHTS)
+	end
+	return self._highlights
 end
 
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:visibleWheel([value]) -> string | nil

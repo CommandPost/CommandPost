@@ -32,13 +32,22 @@ function RadioGroup.matches(element)
 	return element and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup:new(axuielement, table) -> RadioGroup
---- Function
---- Creates a new RadioGroup
-function RadioGroup:new(parent, finderFn)
+--- cp.ui.RadioGroup:new(parent, finderFn[, cached]) -> RadioGroup
+--- Method
+--- Creates a new RadioGroup.
+---
+--- Parameters:
+--- * parent	- The parent table.
+--- * finderFn	- The function which will find the `axuielement` representing the RadioGroup.
+--- * cached	- If set to `false`, the `axuielement` will not be cached. Defaults to `true`.
+---
+--- Returns:
+--- * The new `RadioGroup` instance.
+function RadioGroup:new(parent, finderFn, cached)
 	local o = prop.extend({
 		_parent = parent,
-		_finder = finderFn
+		_finder = finderFn,
+		_cached = cached ~= false and true or false,
 	}, RadioGroup)
 	return o
 end
@@ -54,10 +63,14 @@ end
 
 -- TODO: Add documentation
 function RadioGroup:UI()
-	return axutils.cache(self, "_ui", function()
+	if self._cached then
+		return axutils.cache(self, "_ui", function()
+			return self._finder()
+		end,
+		RadioGroup.matches)
+	else
 		return self._finder()
-	end,
-	RadioGroup.matches)
+	end
 end
 
 -- TODO: Add documentation
