@@ -75,6 +75,17 @@ function ColorWheel:new(parent, type)
 --- The current color value, as a `hs.drawing.color` table.
 	o.colorValue = o:colorWell().value:wrap(o)
 
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel.colorPosition <cp.prop: point>
+--- Field
+--- X/Y position for the current color value of the Color Well. This ignores the bounds of the
+--- actual Color Well circle, which only extends to 85 out of 255 values.
+	o.colorPosition = o:colorWell().colorPosition:wrap(o)
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel.puckPosition <cp.prop: point>
+--- Field
+--- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+	o.puckPosition = o:colorWell().puckPosition:wrap(o)
+
 --- cp.apple.finalcutpro.main.Inspector.ColorInspetor.ColorWheel.saturationValue <cp.prop: number>
 --- Field
 --- The current saturation value, as a number between 0 and 10.
@@ -227,6 +238,22 @@ end
 --- * The ColorWheel instance.
 function ColorWheel:reset()
 	return self:resetButton():press()
+end
+
+--- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:nudgeColor(x, y) -> self
+--- Method
+--- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
+--- positive `y` values shift down. Only integer values have an effect.
+---
+--- Parameters:
+--- * x		- The number of pixels to shift horizontally.
+--- * y		- The number of pixels to shift vertically.
+---
+--- Returns:
+--- * The `ColorWheel` instance.
+function ColorWheel:nudgeColor(x, y)
+	self:colorWell():nudge(x, y)
+	return self
 end
 
 return ColorWheel

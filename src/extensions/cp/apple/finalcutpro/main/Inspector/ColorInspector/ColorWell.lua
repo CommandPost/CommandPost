@@ -326,7 +326,14 @@ ColorWell.puckPosition = prop(
 --- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell:nudge(x, y) -> self
 --- Method
 --- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
---- positive `y` values shift down.
+--- positive `y` values shift down. Only integer values have an effect.
+---
+--- Parameters:
+--- * x		- The number of pixels to shift horizontally.
+--- * y		- The number of pixels to shift vertically.
+---
+--- Returns:
+--- * The `ColorWell` instance.
 function ColorWell:nudge(x, y)
 	local pos = self:colorPosition()
 	pos.x, pos.y = pos.x + x, pos.y + y
