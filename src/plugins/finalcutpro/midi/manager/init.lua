@@ -13,8 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("streamDeck")
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("fcpMIDI")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp										= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -36,11 +43,13 @@ local plugin = {
 function plugin.init(deps)
 
 	--------------------------------------------------------------------------------
-	-- Update Touch Bar Buttons when FCPX is active:
+	-- Update MIDI Commands when Final Cut Pro is shown or hidden:
 	--------------------------------------------------------------------------------
 	fcp:watch({
 		active		= function() deps.manager.groupStatus("fcpx", true) end,
 		inactive	= function() deps.manager.groupStatus("fcpx", false) end,
+		show		= function() deps.manager.groupStatus("fcpx", true) end,
+		hide    	= function() deps.manager.groupStatus("fcpx", false) end,
 	})
 
 end
