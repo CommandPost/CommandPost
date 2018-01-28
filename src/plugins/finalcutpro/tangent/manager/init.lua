@@ -19,8 +19,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log										= require("hs.logger").new("tangentMan")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local dialog									= require("hs.dialog")
 local fs										= require("hs.fs")
 local inspect									= require("hs.inspect")
@@ -28,11 +35,17 @@ local json										= require("hs.json")
 local tangent									= require("hs.tangent")
 local timer										= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local commands									= require("cp.commands")
 local config									= require("cp.config")
 local fcp										= require("cp.apple.finalcutpro")
 local tools										= require("cp.tools")
 
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local moses										= require("moses")
 
 --------------------------------------------------------------------------------
@@ -635,11 +648,6 @@ end
 -- MODULE METHODS & FUNCTIONS:
 --------------------------------------------------------------------------------
 
---- plugins.finalcutpro.tangent.manager.active -> boolean
---- Variable
---- Returns `true` if plugin is active, otherwise `false`.
-mod.active = false
-
 --- plugins.finalcutpro.tangent.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disables the Tangent Manager.
@@ -655,7 +663,7 @@ mod.enabled = config.prop("enableTangent", false)
 --- Returns:
 ---  * None
 function mod.updateMode()
-	if mod.active then
+	if mod.enabled() then
 		for id,metadata in pairs(mod.MODES) do
 			local active = metadata.active()
 			if active == true then
@@ -951,8 +959,16 @@ function mod.start(resetControlMap)
 		log.df("Connecting to Tangent Hub...")
 		local result, errorMessage = tangent.connect("CommandPost", mod._configPath)
 		if result then
+			--------------------------------------------------------------------------------
+            -- Setup Final Cut Pro Watchers:
+            --------------------------------------------------------------------------------
+            fcp:watch({
+                active		= mod.updateMode,
+                inactive	= mod.updateMode,
+                show		= mod.updateMode,
+                hide		= mod.updateMode,
+            })
 			tangent.callback(mod.callback)
-			mod.active = true
 			return true
 		else
 			log.ef("Failed to start Tangent Support: %s", errorMessage)
@@ -973,8 +989,19 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
+	--------------------------------------------------------------------------------
+	-- Disable Final Cut Pro Watchers:
+	--------------------------------------------------------------------------------
+	fcp:watch({
+		active		= nil,
+		inactive	= nil,
+		show		= nil,
+		hide		= nil,
+	})
+	--------------------------------------------------------------------------------
+	-- Disconnect from Tangent:
+	--------------------------------------------------------------------------------
 	tangent.disconnect()
-	mod.active = false
 	log.df("Disconnected from Tangent Hub.")
 end
 
@@ -1032,16 +1059,6 @@ function plugin.init(deps, env)
 	--------------------------------------------------------------------------------
 	mod._pluginPath = env:pathToAbsolute("/defaultmap")
 	mod._configPath = config.userConfigRootPath .. "/Tangent Settings"
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Watchers:
-	--------------------------------------------------------------------------------
-	fcp:watch({
-		active		= mod.updateMode,
-		inactive	= mod.updateMode,
-		show		= mod.updateMode,
-		hide		= mod.updateMode,
-	})
 
 	--------------------------------------------------------------------------------
 	-- Setup Preferences Panel:
