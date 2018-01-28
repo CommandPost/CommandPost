@@ -458,7 +458,7 @@ end
 --- * `newValue`	- The new value to set. May be `nil`.
 ---
 --- Returns:
---- * The new value.
+--- * The current value of the prop. May not be the same as `newValue`.
 function prop.mt:set(newValue)
 	if not self._set then
 		error("This property cannot be modified.")
@@ -467,15 +467,15 @@ function prop.mt:set(newValue)
 	if self._notifying then -- defer the update
 		self._doSet = true
 		self._newValue = newValue
+		return newValue
 	else -- update now
 		if self._cached then
 			self._cachedValue = newValue
 		end
 		self._set(newValue, self._owner, self)
 		self:_notify(newValue)
-		return newValue
+		return self:get()
 	end
-	return newValue
 end
 
 --- cp.prop:clear() -> nil
