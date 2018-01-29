@@ -203,14 +203,25 @@ local function generateContent()
         midiGroupSelect         = midiGroupSelect,
         groups                  = commands.groups(),
         defaultGroup            = defaultGroup,
-
-        groupEditor             = mod.getGroupEditor,
-
         webviewLabel            = mod._manager.getLabel(),
-
         maxItems                = mod._midi.maxItems,
-        midi                    = mod._midi,
-        i18n                    = i18n,
+        midiDevices             = mod._midi.devices(),
+        virtualMidiDevices      = mod._midi.virtualDevices(),
+        items                   = mod._midi.getItems(),
+        i18nSelect 	            = i18n("select"),
+        i18nClear 	            = i18n("clear"),
+        i18nNone 		        = i18n("none"),
+        i18nLearn 	            = i18n("learn"),
+        i18nPhysical	        = i18n("physical"),
+        i18nVirtual	            = i18n("virtual"),
+        i18nOffline	            = i18n("offline"),
+        i18nApplication         = i18n("application"),
+        i18nMidiEditor          = i18n("midiEditor"),
+        i18nAction              = i18n("action"),
+        i18nDevice              = i18n("device"),
+        i18nNoteCC              = i18n("noteCC"),
+        i18nChannel             = i18n("channel"),
+        i18nValue               = i18n("value"),
     }
 
     return renderPanel(context)
@@ -661,36 +672,6 @@ local function midiPanelCallback(id, params)
             log.df("params: %s", inspect(params))
         end
     end
-end
-
---- plugins.core.preferences.panels.midi.setGroupEditor(groupId, editorFn) -> none
---- Function
---- Sets the Group Editor
----
---- Parameters:
----  * groupId - Group ID
----  * editorFn - Editor Function
----
---- Returns:
----  * None
-function mod.setGroupEditor(groupId, editorFn)
-    if not mod._groupEditors then
-        mod._groupEditors = {}
-    end
-    mod._groupEditors[groupId] = editorFn
-end
-
---- plugins.core.preferences.panels.midi.getGroupEditor(groupId) -> none
---- Function
---- Gets the Group Editor
----
---- Parameters:
----  * groupId - Group ID
----
---- Returns:
----  * Group Editor
-function mod.getGroupEditor(groupId)
-    return mod._groupEditors and mod._groupEditors[groupId]
 end
 
 -- plugins.core.preferences.panels.midi._displayBooleanToString(value) -> none
