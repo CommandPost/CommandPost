@@ -374,7 +374,7 @@ end
 --- Function
 --- Returns the path to the named shortcut set.
 function commands.getShortcutsPath(name)
-	shortcutsPath = config.userConfigRootPath .. "/Shortcuts/"
+	local shortcutsPath = config.userConfigRootPath .. "/Shortcuts/"
 
 	--------------------------------------------------------------------------------
 	-- Create Shortcuts Directory if it doesn't already exist:

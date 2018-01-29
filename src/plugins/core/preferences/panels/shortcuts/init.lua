@@ -68,18 +68,18 @@ mod.lastGroup = config.prop("shortcutPreferencesLastGroup", nil)
 --  * None
 local function restoreDefaultShortcuts()
 
-	for groupID, group in pairs(mod.defaultShortcuts) do	
-		for cmdID,cmd in pairs(group) do			
+	for groupID, group in pairs(mod.defaultShortcuts) do
+		for cmdID,cmd in pairs(group) do
 			for shortcutID,shortcut in pairs(cmd) do
 				local tempGroup = commands.group(groupID)
-				local tempCommand = tempGroup:get(cmdID)				
+				local tempCommand = tempGroup:get(cmdID)
 				if tempCommand then
 					tempCommand:deleteShortcuts()
 					tempCommand:activatedBy(shortcut["modifiers"], shortcut["keycode"])
-				end		
+				end
 			end
-		end 
-	
+		end
+
 	end
 
 end
@@ -94,7 +94,7 @@ end
 -- Returns:
 --  * None
 local function cacheShortcuts()
-	
+
 	log.df("Caching Default Shortcuts.")
 
 	mod.defaultShortcuts = {}
@@ -103,38 +103,38 @@ local function cacheShortcuts()
 	for _, groupID in ipairs(groupIDs) do
 
 		local group = commands.group(groupID)
-		
+
 		if not mod.defaultShortcuts[groupID] then
 			mod.defaultShortcuts[groupID] = {}
 		end
-					
+
 		local cmds = group:getAll()
 
 		for cmdID,cmd in pairs(cmds) do
-		
+
 			if not mod.defaultShortcuts[groupID][cmdID] then
 				mod.defaultShortcuts[groupID][cmdID] = {}
 			end
-			
+
 			local shortcuts = cmd:getShortcuts()
-			
+
 			for shortcutID,shortcut in pairs(shortcuts) do
-			
-				local tempShortcuts = {}							
+
+				local tempShortcuts = {}
 				local tempModifiers = shortcut:getModifiers()
 				local tempKeycode = shortcut:getKeyCode()
-				
-				tempShortcuts = { 
+
+				tempShortcuts = {
 					["modifiers"] = tempModifiers,
 					["keycode"] = tempKeycode
 				}
-				
+
 				mod.defaultShortcuts[groupID][cmdID][shortcutID] = tempShortcuts
-			
-			end			
+
+			end
 		end
-	end	
-	
+	end
+
 end
 
 -- resetShortcutsToNone() -> none
@@ -147,12 +147,12 @@ end
 -- Returns:
 --  * None
 local function resetShortcutsToNone()
-	
+
 	dialog.webviewAlert(mod._manager.getWebview(), function(result)
-		if result == i18n("yes") then		
+		if result == i18n("yes") then
 			local groupIDs = commands.groupIds()
 			for _, groupID in ipairs(groupIDs) do
-	  
+
 				local group = commands.group(groupID)
 				local cmds = group:getAll()
 
@@ -160,11 +160,11 @@ local function resetShortcutsToNone()
 					cmd:deleteShortcuts()
 				end
 			end
-	
+
 			commands.saveToFile(mod.DEFAULT_SHORTCUTS)
-	
-			mod._manager.refresh()		
-		end 
+
+			mod._manager.refresh()
+		end
 	end, i18n("shortcutsSetNoneConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
 end
@@ -180,11 +180,11 @@ end
 --  * None
 local function resetShortcuts()
 
-	dialog.webviewAlert(mod._manager.getWebview(), function(result) 
-		if result == i18n("yes") then		
+	dialog.webviewAlert(mod._manager.getWebview(), function(result)
+		if result == i18n("yes") then
 			restoreDefaultShortcuts()
 			commands.saveToFile(mod.DEFAULT_SHORTCUTS)
-			mod._manager.refresh()					
+			mod._manager.refresh()
 		end
 	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
@@ -205,7 +205,7 @@ config.watch({
 -- Returns:
 --  * `true` if already in use, otherwise `false`.
 local function shortcutAlreadyInUse(modifiers, keycode)
-	
+
 	local groupIDs = commands.groupIds()
 	for _, groupID in ipairs(groupIDs) do
 
@@ -213,13 +213,13 @@ local function shortcutAlreadyInUse(modifiers, keycode)
 		local cmds = group:getAll()
 
 		for id,cmd in pairs(cmds) do
-		
+
 			local shortcuts = cmd:getShortcuts()
-			
+
 			for _,shortcut in pairs(shortcuts) do
 				local tempModifiers = shortcut:getModifiers()
 				local tempKeycode = shortcut:getKeyCode()
-				
+
 				local modifierMatch = true
 				if #modifiers ~= #tempModifiers then
 					modifierMatch = false
@@ -230,15 +230,15 @@ local function shortcutAlreadyInUse(modifiers, keycode)
 						end
 					end
 				end
-				
-				if keycode == tempKeycode and modifierMatch then		
+
+				if keycode == tempKeycode and modifierMatch then
 					return true
-				end								
-			end			
+				end
+			end
 		end
 	end
 	return false
-	
+
 end
 
 -- updateShortcut(id, params) -> none
@@ -252,15 +252,15 @@ end
 -- Returns:
 --  * None
 local function updateShortcut(id, params)
-	
+
 	--------------------------------------------------------------------------------
 	-- Save Selected Group:
-	--------------------------------------------------------------------------------	
+	--------------------------------------------------------------------------------
 	if params and params["type"] == "updateGroup" then
 		mod.lastGroup(params["groupID"])
 		return
 	end
-	
+
 	--------------------------------------------------------------------------------
 	-- Values from Callback:
 	--------------------------------------------------------------------------------
@@ -277,7 +277,7 @@ local function updateShortcut(id, params)
 	local theCommand = group:get(params.command)
 
 	if theCommand then
-	
+
 		--------------------------------------------------------------------------------
 		-- Clear Previous Shortcuts:
 		--------------------------------------------------------------------------------
@@ -287,25 +287,25 @@ local function updateShortcut(id, params)
 		-- Setup New Shortcut:
 		--------------------------------------------------------------------------------
 		if params.keyCode and params.keyCode ~= "" and params.keyCode ~= "none" and params.modifiers and params.modifiers ~= "none" then
-									
+
 			--------------------------------------------------------------------------------
 			-- Check to see that the shortcut isn't already being used already by macOS:
 			--------------------------------------------------------------------------------
 			local assignable = hotkey.assignable(modifiers, params.keyCode)
 			local systemAssigned = hotkey.systemAssigned(modifiers, params.keyCode)
-			if assignable and not systemAssigned then 			
+			if assignable and not systemAssigned then
 				--------------------------------------------------------------------------------
 				-- Check to see that the shortcut isn't already being used by CommandPost:
 				--------------------------------------------------------------------------------
-				if shortcutAlreadyInUse(modifiers, params.keyCode) then 	
-					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUse"), i18n("shortcutDuplicateError") .. "\n\n" .. i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")					
+				if shortcutAlreadyInUse(modifiers, params.keyCode) then
+					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUse"), i18n("shortcutDuplicateError") .. "\n\n" .. i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")
 				else
 					theCommand:activatedBy(modifiers, params.keyCode)
 				end
 			else
 				dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("shortcutAlreadyInUseByMacOS"), i18n("shortcutPleaseTryAgain"), i18n("continue"), "", "informational")
 			end
-						
+
 		end
 
 		--------------------------------------------------------------------------------
@@ -327,7 +327,7 @@ end
 --
 -- Returns:
 --  * Table
-function getAllKeyCodes()
+local function getAllKeyCodes()
 
 	--------------------------------------------------------------------------------
 	-- TODO: Work out a way to ONLY display keyboard shortcuts that the system
@@ -342,7 +342,7 @@ function getAllKeyCodes()
 			shortcuts[#shortcuts + 1] = k
 		end
 	end
-	
+
 	table.sort(shortcuts, function(a, b) return a < b end)
 
 	return shortcuts
@@ -430,7 +430,7 @@ end
 --------------------------------------------------------------------------------
 local function generateContent()
 
-	--------------------------------------------------------------------------------	
+	--------------------------------------------------------------------------------
 	-- The Group Select:
 	--------------------------------------------------------------------------------
 	local groupOptions = {}
@@ -450,7 +450,7 @@ local function generateContent()
 	}) .. ui.javascript([[
 		var groupSelect = document.getElementById("shortcutsGroupSelect")
 		groupSelect.onchange = function() {
-		
+
 			//
 			// Change Group Callback:
 			//
@@ -466,8 +466,8 @@ local function generateContent()
 			} catch(err) {
 				console.log("Error: " + err)
 				alert('An error has occurred. Does the controller exist yet?');
-			}	
-		
+			}
+
 			console.log("shortcutsGroupSelect changed");
 			var groupControls = document.getElementById("shortcutsGroupControls");
 			var value = groupSelect.options[groupSelect.selectedIndex].value;
@@ -611,14 +611,14 @@ function plugin.postInit(deps)
 
 	--------------------------------------------------------------------------------
 	-- Cache all the default shortcuts:
-	--------------------------------------------------------------------------------	
+	--------------------------------------------------------------------------------
 	cacheShortcuts()
-	
+
 	--------------------------------------------------------------------------------
 	-- Load Shortcuts From File:
 	--------------------------------------------------------------------------------
 	local result = commands.loadFromFile(mod.DEFAULT_SHORTCUTS)
-	
+
 	--------------------------------------------------------------------------------
 	-- If no Default Shortcut File Exists, lets create one:
 	--------------------------------------------------------------------------------
@@ -627,7 +627,7 @@ function plugin.postInit(deps)
 		log.df("Creating new shortcut file: '%s'", filePath)
 		commands.saveToFile(mod.DEFAULT_SHORTCUTS)
 	end
-	
+
 end
 
 return plugin

@@ -286,15 +286,15 @@ end
 --
 -- Returns:
 --  * table
-function timeOptions()
- 	local timeOptions = {}
+local function timeOptions()
+ 	local timeOptionsTable = {}
 	for i=1, 10 do
-		timeOptions[#timeOptions + 1] = {
+		timeOptionsTable[#timeOptionsTable + 1] = {
 			label = i18n(string.lower(tools.numberToWord(i))) .. " " .. i18n("secs", {count=i}),
 			value = i,
 		}
 	end
-	return timeOptions
+	return timeOptionsTable
 end
 
 --------------------------------------------------------------------------------

@@ -130,7 +130,7 @@ end
 --- Returns:
 ---  * The localized name, or `name` if not available.
 ---  * The original name, minus `.localized`
-function getLocalizedName(path, language)
+local function getLocalizedName(path, language)
 	local file = match(path, "^.-([^/]+)%.localized$")
 	if file then -- it's localized
 		return readLocalizedName(path, file, language), file

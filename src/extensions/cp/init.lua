@@ -276,7 +276,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
 	--------------------------------------------------------------------------------
-	consoleLoadingContent = console.getConsole()
+	local consoleLoadingContent = console.getConsole()
 	console.clearConsole()
 
 	--------------------------------------------------------------------------------

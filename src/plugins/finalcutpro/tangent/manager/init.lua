@@ -443,7 +443,7 @@ end
 --
 -- Returns:
 --  * None
-function writeControlsXML()
+local function writeControlsXML()
 
 	--------------------------------------------------------------------------------
 	-- Create folder if it doesn't exist:
