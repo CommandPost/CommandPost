@@ -241,7 +241,7 @@ end
 --
 -- Returns:
 --  * table
-function endsWith(str, ending)
+local function endsWith(str, ending)
 	local len = #ending
 	return str:len() >= len and str:sub(len * -1) == ending
 end

@@ -7,13 +7,13 @@
 	%}
 			{* editor(group) *}
 	{%	else %}
-		<table class="midi" style="{% if not midi.enabled() then %}display:none;{% end %}">
+		<table class="midi">
 			<thead>
 				<tr>
 					<th class="midiRowAction">{{ i18n("action") }}</th>
 					<th class="midiRowActionButton"></th>
 					<th class="midiRowDevice">{{ i18n("device") }}</th>
-					<th class="midiRowCommandType">{{ i18n("number") }}</th>
+					<th class="midiRowCommandType">{{ i18n("noteCC") }}</th>
 					<th class="midiRowChannel">{{ i18n("channel") }}</th>
 					<th class="midiRowValue">{{ i18n("value") }}</th>
 					<th class="midiRowLearn"></th>

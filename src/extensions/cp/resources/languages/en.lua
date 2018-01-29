@@ -190,11 +190,6 @@ return {
 
 			loadFinalCutProFailed				=			"Failed to load Final Cut Pro. Please try again.",
 
-			keywordEditorAlreadyOpen			=			"This shortcut should only be used when the Keyword Editor is already open.\n\nPlease open the Keyword Editor and try again.",
-			keywordShortcutsVisibleError		=			"Please make sure that the Keyboard Shortcuts are visible before using this feature.",
-			noKeywordPresetsError				=			"It doesn't look like you've saved any keyword presets yet?",
-			noKeywordPresetError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
-
 			noPluginFound						=			"Unable to find a ${plugin} called '${name}'.",
 			noPluginShortcut					=			"There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
@@ -658,6 +653,13 @@ return {
 	watchFolderFCPMediaTooltip			=			"Final Cut Pro Media Watch Folder Preferences",
 	incomingFile						=			"Incoming File...",
 
+    --------------------------------------------------------------------------------
+    -- KEYWORD PRESETS PLUGIN:
+    --------------------------------------------------------------------------------
+    keywordEditorNotOpened              =           "The Keyword Editor could not be opened.",
+    keywordKeyboardShortcutsNotOpened   =           "The Keyword Editor's Keyboard Shortcuts section could not be opened.",
+    noKeywordPresetsError				=			"It doesn't look like you've saved anything to this keyword preset yet?",
+
 	--------------------------------------------------------------------------------
 	-- FCPXML WATCH FOLDER PLUGIN:
 	--------------------------------------------------------------------------------
@@ -696,7 +698,19 @@ return {
 	enableFilenamePrefix                =           "Enable Filename Prefix",
 	setFilenamePrefix                   =           "Set Filename Prefix",
 	pleaseEnterAPrefix                  =           "Please enter a prefix",
-	useUnderscore                       =           "Use Underscore",
+	useUnderscore                       =           "Use Underscore Seperator",
+	currentIncrementalNumber            =           "Incremental Number",
+	prefix                              =           "Prefix",
+	resetIncrementalNumber              =           "Reset Incremental Number",
+	setIncrementalNumber                =           "Set Incremental Number",
+	setIncrementalNumberMessage         =           "What would you like to set the Incremental Number to?",
+	setIncrementalNumberError           =           "This value looks incorrect. Please enter a number and try again.",
+	customPrefixError                   =           "This prefix looks invalid. Please try again.",
+	generatedVoiceOver                  =           "Generated Voice Over",
+	replaceSpaceWithUnderscore          =           "Replace Spaces with Underscores",
+	deleteFileAfterImport               =           "Delete Generated File After Import",
+	includeTextInFilename               =           "Include Entered Text in Filename",
+	addTextToNotesFieldAfterImport      =           "Add to Notes Field After Import",
 
 	--------------------------------------------------------------------------------
 	-- HUD:
@@ -705,7 +719,6 @@ return {
 	media								=			"Media",
 	quality								=			"Quality",
 	backgroundRender					=			"Background Render",
-	xmlSharing							=			"XML Sharing",
 	originalOptimised					=			"Original/Optimised",
 	betterQuality						=			"Better Quality",
 	betterPerformance					=			"Better Performance",
@@ -718,6 +731,12 @@ return {
 	hudButtonItem						=			"Button %{count} (%{title})",
 
 	menuChoiceSubText					=			"Menu: %{path}",
+
+	--------------------------------------------------------------------------------
+	-- XML SHARING:
+	--------------------------------------------------------------------------------
+	xmlSharing							=			"XML Sharing",
+	xmlSharingWhichFolder               =           "Which folder would you like to use for XML Sharing?",
 
 	--------------------------------------------------------------------------------
 	-- ACTIVATORS:
@@ -744,9 +763,7 @@ return {
 	mode								=			"Mode",
 	normal								=			"Normal",
 
-
 	showAll								=			"Show All",
-
 
 	showTransitions						=			"Show Transitions",
 	showTitles							=			"Show Titles",
@@ -826,7 +843,7 @@ return {
 	--------------------------------------------------------------------------------
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
-	shortcut_group_global				=			"Global",
+	shortcut_group_global				=			"Finder",
 	shortcut_group_fcpx					=			"Final Cut Pro",
 
 	customiseShortcuts					=			"Customise Shortcuts",
@@ -899,6 +916,7 @@ return {
 	controlChange						=			"Control Change",
 	learnMIDIMessage					=			"If you press the 'Yes' button below you'll have 3 seconds to trigger any button or controller on any of your connected MIDI devices.",
 	openAudioMIDISetup					=			"Open Audio MIDI Setup",
+	noteCC                              =           "Note/CC",
 
 	--------------------------------------------------------------------------------
 	-- MIDI CONTROLS:
@@ -936,6 +954,7 @@ return {
 	plugin_group_core					=			"Core",
 	plugin_group_finalcutpro			=			"Final Cut Pro",
 	plugin_group_plugin					=			"Plugin",
+	plugin_group_finder                 =           "Finder",
 
 	--------------------------------------------------------------------------------
 	-- PLUGIN LABELS:
@@ -991,6 +1010,12 @@ return {
 		core_watchfolders_manager_label							= 	"Manger: Watch Folders",
 		core_watchfolders_menuitem_label						=   "Watch Folder Menu Item",
 		core_webapp_label										=	"WebApp",
+
+        --------------------------------------------------------------------------------
+        -- Finder:
+        --------------------------------------------------------------------------------
+        finder_window_label                                     =   "Window Management",
+        finder_texttools_label                                  =   "Text Tools",
 
 		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
@@ -1091,8 +1116,8 @@ return {
 		--------------------------------------------------------------------------------
 		-- Groups:
 		--------------------------------------------------------------------------------
-		fcpx_command_group										=	"FCPX",
-		global_command_group									=	"Global",
+		fcpx_command_group										=	"Final Cut Pro",
+		global_command_group									=	"Finder",
 
 		--------------------------------------------------------------------------------
 		-- Global:
@@ -1113,6 +1138,54 @@ return {
 		cpGlobalConsole_title									=	"Activate Global Console",
 
 		--------------------------------------------------------------------------------
+		-- Finder:
+		--------------------------------------------------------------------------------
+
+            --------------------------------------------------------------------------------
+            -- Windows Management:
+            --------------------------------------------------------------------------------
+            cpShowGrid_title                                        =   "Show Window Grid",
+            cpCenterCursor_title                                    =   "Center Cursor on Focussed Window",
+            cpWindowHints_title                                     =   "Show Window Hints",
+            cpMoveWindowLeft_title                                  =   "Move Focussed Window: One Screen Left",
+            cpMoveWindowRight_title                                 =   "Move Focussed Window: One Screen Right",
+            cpMoveWindowUp_title                                    =   "Move Focussed Window: One Screen Up",
+            cpMoveWindowDown_title                                  =   "Move Focussed Window: One Screen Down",
+            cpMoveWindowNext_title                                  =   "Move Focussed Window: Next Screen",
+            cpMoveAndResizeHalfLeft_title                           =   "Move & Resize Focussed Window: Half Left",
+            cpMoveAndResizeHalfRight_title                          =   "Move & Resize Focussed Window: Half Right",
+            cpMoveAndResizeHalfUp_title                             =   "Move & Resize Focussed Window: Half Up",
+            cpMoveAndResizeHalfDown_title                           =   "Move & Resize Focussed Window: Half Down",
+            cpMoveAndResizeCornerNorthWest_title                    =   "Move & Resize Focussed Window: Top Left Corner",
+            cpMoveAndResizeCornerNorthEast_title                    =   "Move & Resize Focussed Window: Top Right Corner",
+            cpMoveAndResizeCornerSouthWest_title                    =   "Move & Resize Focussed Window: Bottom Left Corner",
+            cpMoveAndResizeCornerSouthEast_title                    =   "Move & Resize Focussed Window: Bottom Right Corner",
+            cpMoveAndResizeFullscreen_title                         =   "Move & Resize Focussed Window: Fullscreen",
+            cpMoveAndResizeCenter_title                             =   "Move & Resize Focussed Window: Center",
+            cpMoveAndResizeExpand_title                             =   "Move & Resize Focussed Window: Expand",
+            cpMoveAndResizeShrink_title                             =   "Move & Resize Focussed Window: Shrink",
+            cpMoveAndResizeUndo_title                               =   "Undo Last Move & Resize",
+            cpStepResizeLeft_title                                  =   "Step Resize Focussed Window: Left",
+            cpStepResizeRight_title                                 =   "Step Resize Focussed Window: Right",
+            cpStepResizeUp_title                                    =   "Step Resize Focussed Window: Up",
+            cpStepResizeDown_title                                  =   "Step Resize Focussed Window: Down",
+            cpStepMoveLeft_title                                    =   "Step Move Focussed Window: Left",
+            cpStepMoveRight_title                                   =   "Step Move Focussed Window: Right",
+            cpStepMoveUp_title                                      =   "Step Move Focussed Window: Up",
+            cpStepMoveDown_title                                    =   "Step Move Focussed Window: Down",
+
+            --------------------------------------------------------------------------------
+            -- Text Tools:
+            --------------------------------------------------------------------------------
+            cpMakeClipboardTextUppercase_title                      =   "Make Clipboard Text Uppercase",
+            cpMakeClipboardTextLowercase_title                      =   "Make Clipboard Text Lowercase",
+            cpMakeClipboardTextCamelcase_title                      =   "Make Clipboard Text Camelcase",
+
+            cpMakeSelectedTextUppercase_title                       =   "Make Selected Text Uppercase",
+            cpMakeSelectedTextLowercase_title                       =   "Make Selected Text Lowercase",
+            cpMakeSelectedTextCamelcase_title                       =   "Make Selected Text Camelcase",
+
+		--------------------------------------------------------------------------------
 		-- Final Cut Pro:
 		--------------------------------------------------------------------------------
 		cpStabilizationToggle_title								=	"Toggle Stabilization",
@@ -1120,6 +1193,7 @@ return {
 		cpStabilizationDisable_title							=	"Disable Stabilization",
 
 		cpText2Speech_title										=	"Activate Text to Speech Tool",
+		cpText2SpeechFromClipboard_title                        =   "Apply Text to Speech from Clipboard",
 
 		cpScrollingTimeline_title								=	"Toggle Scrolling Timeline",
 		cpLockPlayhead_title									=	"Toggle Playhead Lock",

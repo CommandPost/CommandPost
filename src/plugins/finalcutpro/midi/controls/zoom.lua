@@ -33,16 +33,19 @@ local mod = {}
 ---
 --- Returns:
 ---  * None
-function mod.control(metadata)
-	if metadata.controllerValue then
+function mod.control(metadata, deviceName)
+	if type(metadata.fourteenBitValue) == "number" then
 		local appearance = fcp:timeline():toolbar():appearance()
 		if appearance then
 			--------------------------------------------------------------------------------
-			-- MIDI Controller Value: 		0 to 127
-			-- Zoom Slider:					0 to 10
+			-- MIDI Controller Value (7bit): 		0 to 127
+			-- MIDI Controller Value (14bit):       0 to 16383
+			-- Zoom Slider:					        0 to 10
 			--------------------------------------------------------------------------------
-			appearance:show():zoomAmount():setValue(metadata.controllerValue / (127/10) )
+			appearance:show():zoomAmount():setValue(metadata.fourteenBitValue / (16383/10))
 		end
+	else
+	    log.ef("Unexpected type: %s", type(metadata.fourteenBitValue))
 	end
 end
 
@@ -55,7 +58,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.init(deps)
+function mod.init()
 
 	local params = {
 		group = "fcpx",
@@ -63,7 +66,7 @@ function mod.init(deps)
 		subText = i18n("midiTimelineZoomDescription"),
 		fn = mod.control,
 	}
-	deps.manager.controls:new("zoomSlider", params)
+	mod._manager.controls:new("zoomSlider", params)
 
 	return mod
 
@@ -86,7 +89,8 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod.init(deps)
+    mod._manager = deps.manager
+	return mod.init()
 end
 
 return plugin

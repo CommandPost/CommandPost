@@ -1,4 +1,13 @@
 {%
+	--
+	-- Store these values locally to speed things up:
+	--
+	local midiDevices = midi.devices()
+	local virtualMidiDevices = midi.virtualDevices()
+
+	--
+	-- Begin the loop of hell...
+	--
 	for i=1,maxItems,1 do
 		local none			= i18n("none")
 		local actionTitle 	= midi.getItem("actionTitle", tostring(i), group:id()) or none
@@ -26,7 +35,7 @@
 						<option disabled="disabled" value="">PHYSICAL:</option>
 						<option disabled="disabled" value="">--------------------------</option>
 						{%
-						for _, deviceName in ipairs(midi.devices()) do
+						for _, deviceName in ipairs(midiDevices) do
 							local selected = ""
 							if device == deviceName then
 								selected = [[selected=""]]
@@ -47,7 +56,7 @@
 						<option disabled="disabled" value="">--------------------------</option>
 						{%
 						local foundVirtualDevice = false
-						for _, deviceName in ipairs(midi.virtualDevices()) do
+						for _, deviceName in ipairs(virtualMidiDevices) do
 							local selected = ""
 							if device == "virtual_" .. deviceName then
 								selected = [[selected=""]]

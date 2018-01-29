@@ -8,17 +8,20 @@
 ---
 --- MIDI Manager Plugin.
 
---- === plugins.core.midi.manager.controls ===
----
---- MIDI Manager Controls.
-
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("midi")
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("midiManager")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application								= require("hs.application")
 local canvas 									= require("hs.canvas")
 local drawing									= require("hs.drawing")
@@ -30,6 +33,9 @@ local midi										= require("hs.midi")
 local styledtext								= require("hs.styledtext")
 local timer										= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config									= require("cp.config")
 local prop										= require("cp.prop")
 local tools										= require("cp.tools")
@@ -39,6 +45,10 @@ local tools										= require("cp.tools")
 -- THE MODULE - CONTROLS:
 --
 --------------------------------------------------------------------------------
+
+--- === plugins.core.midi.manager.controls ===
+---
+--- MIDI Manager Controls.
 
 local mod = {}
 
@@ -172,11 +182,12 @@ mod._lastControllerNumber 		= nil
 mod._lastControllerValue 		= nil
 mod._lastControllerChannel 		= nil
 mod._lastTimestamp 				= nil
+mod._lastPitchChange            = nil
 
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of Touch Bar items per group.
-mod.maxItems = 100
+mod.maxItems = 150
 
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
@@ -341,9 +352,20 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
         deviceName = "virtual_" .. deviceName
     end
 
+    --------------------------------------------------------------------------------
+    -- Support 14bit Control Change Messages:
+    --------------------------------------------------------------------------------
+    local controllerValue = metadata.controllerValue
+    if metadata.fourteenBitCommand then
+        controllerValue = metadata.fourteenBitValue
+    end
+
 	if items[activeGroup] then
 		for _, item in pairs(items[activeGroup]) do
 			if deviceName == item.device and item.channel == metadata.channel then
+			    --------------------------------------------------------------------------------
+			    -- Note On:
+			    --------------------------------------------------------------------------------
 				if commandType == "noteOn" and metadata.velocity ~= 0 then
 					if tostring(item.number) == tostring(metadata.note) then
 						if item.handlerID and item.action then
@@ -352,15 +374,12 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 						end
 						return
 					end
+				--------------------------------------------------------------------------------
+				-- Control Change:
+				--------------------------------------------------------------------------------
 				elseif commandType == "controlChange" then
 					if tostring(item.number) == tostring(metadata.controllerNumber) then
-						if tostring(item.value) == tostring(metadata.controllerValue) then
-							if item.handlerID and item.action then
-								local handler = mod._actionmanager.getHandler(item.handlerID)
-								handler:execute(item.action)
-							end
-							return
-						elseif item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
+						if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
 							--------------------------------------------------------------------------------
 							-- MIDI Controls:
 							--------------------------------------------------------------------------------
@@ -369,7 +388,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 							local params = control:params()
 							if mod._alreadyProcessingCallback then
 								if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
-									if mod._lastControllerValue == metadata.controllerValue then
+									if mod._lastControllerValue == controllerValue then
 										return
 									else
 										timer.doAfter(0.0001, function()
@@ -384,15 +403,63 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 							else
 								mod._alreadyProcessingCallback = true
 								timer.doAfter(0.000000000000000000001, function()
-									params.fn(metadata)
+									params.fn(metadata, deviceName)
 									mod._alreadyProcessingCallback = false
 								end)
 								mod._lastControllerNumber = metadata and metadata.controllerNumber
-								mod._lastControllerValue = metadata and metadata.controllerValue
+								mod._lastControllerValue = metadata and controllerValue
 								mod._lastControllerChannel = metadata and metadata.channel
 							end
+						elseif tostring(item.value) == tostring(controllerValue) then
+							if item.handlerID and item.action then
+								local handler = mod._actionmanager.getHandler(item.handlerID)
+								handler:execute(item.action)
+							end
+							return
 						end
 					end
+				--------------------------------------------------------------------------------
+				-- Pitch Wheel Change:
+				--------------------------------------------------------------------------------
+				elseif commandType == "pitchWheelChange" and item.number == "Pitch" then
+                    if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
+                        --------------------------------------------------------------------------------
+                        -- MIDI Controls for Pitch Wheel:
+                        --------------------------------------------------------------------------------
+                        local id = item.action.id
+                        local control = controls:get(id)
+                        local params = control:params()
+                        if mod._alreadyProcessingCallback then
+                            if mod._lastControllerChannel == metadata.channel then
+                                if mod._lastPitchChange == metadata.pitchChange then
+                                    return
+                                else
+                                    timer.doAfter(0.0001, function()
+                                        if metadata.timestamp == mod._lastTimestamp then
+                                            params.fn(metadata, deviceName)
+                                            mod._alreadyProcessingCallback = false
+                                        end
+                                    end)
+                                end
+                            end
+                            mod._lastTimestamp = metadata and metadata.timestamp
+                        else
+                            mod._alreadyProcessingCallback = true
+                            timer.doAfter(0.000000000000000000001, function()
+                                params.fn(metadata, deviceName)
+                                mod._alreadyProcessingCallback = false
+                            end)
+                            mod._lastPitchChange = metadata and metadata.pitchChange
+                            mod._lastControllerChannel = metadata and metadata.channel
+                        end
+                    elseif item.handlerID and item.action and item.number == "Pitch" then
+                        --------------------------------------------------------------------------------
+                        -- Just trigger the handler if Pitch Wheel value changes at all:
+                        --------------------------------------------------------------------------------
+                        local handler = mod._actionmanager.getHandler(item.handlerID)
+                        handler:execute(item.action)
+                        return
+                    end
 				end
 			end
 		end

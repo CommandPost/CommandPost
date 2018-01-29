@@ -464,29 +464,29 @@ end)
 --
 -- Returns:
 --  * A table of visibilities
-function visibilityOptions()
- 	local visibilityOptions = {}
-	visibilityOptions[#visibilityOptions + 1] = {
+local function visibilityOptions()
+ 	local visibilityOptionsTable = {}
+	visibilityOptionsTable[#visibilityOptionsTable + 1] = {
 		label = i18n("always"),
 		value = mod.virtual.VISIBILITY_ALWAYS,
 	}
-	visibilityOptions[#visibilityOptions + 1] = {
+	visibilityOptionsTable[#visibilityOptionsTable + 1] = {
 		label = i18n("finalCutPro"),
 		value = mod.virtual.VISIBILITY_FCP,
 	}
-	return visibilityOptions
+	return visibilityOptionsTable
 end
 
--- visibilityOptions() -> none
+-- locationOptions() -> none
 -- Function
--- Generates a list of visibilities for the Preferences dropdown
+-- Generates a list of location options for the Preferences dropdown
 --
 -- Parameters:
 --  * None
 --
 -- Returns:
---  * A table of visibilities
-function locationOptions()
+--  * A table of locations
+local function locationOptions()
 	local locationOptions = {}
 	locationOptions[#locationOptions + 1] = {
 		label = i18n("topCentreOfTimeline"),

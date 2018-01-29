@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local logger					= require("hs.logger"); logger.defaultLogLevel = 'debug'
 local log						= logger.new("cp")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application				= require("hs.application")
 local console                   = require("hs.console")
 local fs                        = require("hs.fs")
@@ -27,12 +34,17 @@ local notify					= require("hs.notify")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config					= require("cp.config")
 local plugins					= require("cp.plugins")
 local tools                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
+--
 -- SETUP I18N LANGUAGES:
+--
 --------------------------------------------------------------------------------
 i18n = require("i18n")
 local languagePath = config.scriptPath .. "/cp/resources/languages/"
@@ -50,7 +62,9 @@ end
 i18n.setLocale(userLocale)
 
 --------------------------------------------------------------------------------
+--
 -- EXTENSIONS (THAT REQUIRE i18N):
+--
 --------------------------------------------------------------------------------
 local fcp                       = require("cp.apple.finalcutpro")
 local feedback					= require("cp.feedback")
@@ -262,7 +276,7 @@ function mod.init()
 	--------------------------------------------------------------------------------
 	-- Clear The Console:
 	--------------------------------------------------------------------------------
-	consoleLoadingContent = console.getConsole()
+	local consoleLoadingContent = console.getConsole()
 	console.clearConsole()
 
 	--------------------------------------------------------------------------------

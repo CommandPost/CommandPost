@@ -6,6 +6,29 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.21</title>
+			<description><![CDATA[
+				<h2>Improvements:</h2>
+				<ul><li>Improved MIDI Preferences Panel (issue #940)</li>
+				<li>Added Custom Filenames in Text to Speech Plugin (issue #949)</li>
+				<li>Improvements with Text to Speech Filename Prefix (issue #956)</li>
+				<li>Added support for 14-bit MIDI Control Change Commands (issue #945)</li></ul>
+
+				<h2>Bug Fixes:</h2>
+				<ul><li>Fixed bug where Titles failed to apply from Console (issue #950)</li>
+				<li>Fixed bug where Effects with theme names would fail to apply from Console (issue #954)</li>
+				<li>Fixed bug where CommandPost would reload when you open a Lua file in High Sierra (issue #942)</li></ul>
+			]]>
+			</description>
+			<pubDate>Sat, 20 Jan 2018 01:20:28 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.21/CommandPost_1.0.0-beta.21.dmg"
+				sparkle:version="1.0.0-beta.21"
+				sparkle:dsaSignature="MC4CFQCKR/FubjIiyjB4n37HSYeaB/M4tQIVANTFMuDPm7t0ajvcv1TV56P4kaR4"
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.20</title>
 			<description><![CDATA[
 				<h4>Improvement:</h4>

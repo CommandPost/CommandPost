@@ -13,8 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("fcpwatch")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application		= require("hs.application")
 local axuielement 		= require("hs._asm.axuielement")
 local eventtap			= require("hs.eventtap")
@@ -29,6 +36,9 @@ local task				= require("hs.task")
 local timer				= require("hs.timer")
 local uuid				= require("hs.host").uuid
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local compressor		= require("cp.apple.compressor")
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
@@ -97,7 +107,7 @@ mod.watchFolders = config.prop("compressorWatchFolders", {})
 --
 -- Returns:
 --  * String
-function shortPath(input)
+local function shortPath(input)
 	local maxLength = 22
 	if input:len() <= maxLength then
 		return input
@@ -202,27 +212,6 @@ function mod.refreshTable()
 	mod.manager.injectScript(result)
 end
 
-
--- removeFromTable(table, element) -> table
--- Function
--- Removes a string from a table of strings
---
--- Parameters:
---  * table - the table you want to check
---  * element - the string you want to remove
---
--- Returns:
---  * A table
-function removeFromTable(table, element)
-	local result = {}
-	for value, contents in pairs(table) do
-		if value ~= element then
-			result[value] = contents
-		end
-	end
-	return result
-end
-
 --- plugins.compressor.watchfolders.panels.media.controllerCallback(id, params) -> none
 --- Function
 --- Callback Controller
@@ -235,7 +224,7 @@ end
 ---  * None
 function mod.controllerCallback(id, params)
 	if params and params.action and params.action == "remove" then
-		mod.watchFolders(removeFromTable(mod.watchFolders(), params.path))
+		mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
 		mod.removeWatcher(params.path)
 		mod.refreshTable()
 	elseif params and params.action and params.action == "refresh" then

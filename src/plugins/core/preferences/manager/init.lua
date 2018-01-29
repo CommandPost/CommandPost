@@ -13,22 +13,39 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsMgr")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local geometry									= require("hs.geometry")
+local inspect                                   = require("hs.inspect")
 local screen									= require("hs.screen")
 local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config									= require("cp.config")
 local dialog									= require("cp.dialog")
 local just										= require("cp.just")
 local tools										= require("cp.tools")
 
-local panel										= require("panel")
-
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local _											= require("moses")
+
+--------------------------------------------------------------------------------
+-- Module Extensions:
+--------------------------------------------------------------------------------
+local panel										= require("panel")
 
 --------------------------------------------------------------------------------
 --
@@ -279,7 +296,11 @@ function mod.maxPanelHeight()
 	    else
 	        height = panel.height
 	    end
-		max = height ~= nil and height < max and max or height
+	    if type("height") == "number" then
+	        if height > max then max = height end
+	    else
+	        log.ef("panel.height in plugins.core.preferences.manager.maxPanelHeight is invalid: %s", inspect(height))
+	    end
 	end
 	return max
 end

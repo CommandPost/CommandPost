@@ -663,7 +663,12 @@ mod.enabled = config.prop("enableTangent", false)
 --- Returns:
 ---  * None
 function mod.updateMode()
+<<<<<<< HEAD
+    log.df("Updating Tangent Mode")
+	if mod.active then
+=======
 	if mod.enabled() then
+>>>>>>> develop
 		for id,metadata in pairs(mod.MODES) do
 			local active = metadata.active()
 			if active == true then
@@ -808,8 +813,12 @@ function mod.callback(id, metadata)
 		if fcp.isFrontmost() then
 			if metadata.jogValue == 1 then
 				fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
+				--fcp:performShortcut("JumpToNextFrame")
+				--hs.eventtap.keyStroke({}, "right", 10)
 			elseif metadata.jogValue == -1 then
 				fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
+				--fcp:performShortcut("JumpToPreviousFrame")
+				--hs.eventtap.keyStroke({}, "left", 10)
 			end
 		end
 	elseif id == "MENU_CHANGE" then

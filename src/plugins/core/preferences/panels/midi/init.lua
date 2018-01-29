@@ -13,19 +13,32 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("prefsMIDI")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
 local inspect                                   = require("hs.inspect")
 local midi                                      = require("hs.midi")
 local timer                                     = require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
 local ui                                        = require("cp.web.ui")
 
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local _                                         = require("moses")
 
 --------------------------------------------------------------------------------
@@ -267,12 +280,29 @@ end
 --
 -- Returns:
 --  * None
-function mod._stopLearning(_, params)
+function mod._stopLearning(_, params, cancel)
 
     --------------------------------------------------------------------------------
     -- We've stopped learning:
     --------------------------------------------------------------------------------
     mod._currentlyLearning = false
+
+    --------------------------------------------------------------------------------
+    -- Reset the current line item:
+    --------------------------------------------------------------------------------
+    if cancel then
+        setValue(params["groupID"], params["buttonID"], "device", "")
+        mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+
+        setValue(params["groupID"], params["buttonID"], "channel", "")
+        mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
+
+        setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
+        mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
+
+        setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
+        mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
+    end
 
     --------------------------------------------------------------------------------
     -- Update the UI:
@@ -295,6 +325,8 @@ function mod._stopLearning(_, params)
     mod._destroyMIDIWatchers()
 
 end
+
+mod._midiCallbackInProgress = {}
 
 -- plugins.core.preferences.panels.midi._startLearning(id, params) -> none
 -- Function
@@ -331,6 +363,21 @@ function mod._startLearning(id, params)
     mod._manager.injectScript(js)
 
     --------------------------------------------------------------------------------
+    -- Reset the current line item:
+    --------------------------------------------------------------------------------
+    setValue(params["groupID"], params["buttonID"], "device", "")
+    mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+
+    setValue(params["groupID"], params["buttonID"], "channel", "")
+    mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
+
+    setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
+    mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
+
+    setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
+    mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
+
+    --------------------------------------------------------------------------------
     -- Setup MIDI watchers:
     --------------------------------------------------------------------------------
     mod.learningMidiDeviceNames = midi.devices()
@@ -348,7 +395,20 @@ function mod._startLearning(id, params)
         end
         if mod.learningMidiDevices[deviceName] then
             mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
-                if commandType == "controlChange" or commandType == "noteOn" then
+                if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
+
+                    --------------------------------------------------------------------------------
+                    -- Support 14bit Control Change Messages:
+                    --------------------------------------------------------------------------------
+                    local controllerValue = metadata.controllerValue
+                    if metadata.fourteenBitCommand then
+                        controllerValue = metadata.fourteenBitValue
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Ignore NoteOff Commands:
+                    --------------------------------------------------------------------------------
+                    if commandType == "noteOn" and metadata.velocity == 0 then return end
 
                     --------------------------------------------------------------------------------
                     -- Check it's not already in use:
@@ -356,21 +416,67 @@ function mod._startLearning(id, params)
                     local items = mod._midi._items()
                     if items[groupID] then
                         for i, item in pairs(items[groupID]) do
-                            if (metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName) or (not metadata.isVirtual and item.device == callbackDeviceName) then
-                                if commandType == "noteOn" or commandType == "controlChange" then
-                                    if (item.channel == metadata.channel and item.number == metadata.note) or (item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == metadata.controllerValue) then
-                                        --log.df("DUPLICATE DETECTED: %s", i)
-                                        mod._manager.injectScript([[
-                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
-                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "#cc5e53";
-                                        ]])
-                                        timer.doAfter(3, function()
-                                            mod._manager.injectScript([[
-                                                document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";
-                                            ]])
-                                        end)
-                                        return
+                            if buttonID and i ~= tonumber(buttonID) then
+                                --------------------------------------------------------------------------------
+                                -- Check for matching devices:
+                                --------------------------------------------------------------------------------
+                                local deviceMatch = false
+                                if metadata.isVirtual and item.device == "virtual_" .. callbackDeviceName then deviceMatch = true end
+                                if not metadata.isVirtual and item.device == callbackDeviceName then deviceMatch = true end
+
+                                --------------------------------------------------------------------------------
+                                -- Check for matching metadata:
+                                --------------------------------------------------------------------------------
+                                local match = false
+                                if commandType == "noteOn" then
+                                    if item.channel == metadata.channel and item.number == metadata.note then
+                                        match = true
                                     end
+                                end
+                                if commandType == "controlChange" then
+                                    if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
+                                        match = true
+                                    end
+                                end
+                                if commandType == "pitchWheelChange" then
+                                    if item.number == metadata.pitchChange then
+                                        match = true
+                                    end
+                                end
+
+                                --------------------------------------------------------------------------------
+                                -- Duplicate Found:
+                                --------------------------------------------------------------------------------
+                                if deviceMatch and match then
+                                    --------------------------------------------------------------------------------
+                                    -- Reset the current line item:
+                                    --------------------------------------------------------------------------------
+                                    setValue(params["groupID"], params["buttonID"], "device", "")
+                                    mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+
+                                    setValue(params["groupID"], params["buttonID"], "channel", "")
+                                    mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
+
+                                    setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
+                                    mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
+
+                                    setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
+                                    mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
+
+
+                                    mod._manager.injectScript([[
+                                        document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
+                                        document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "#cc5e53";
+                                    ]])
+                                    timer.doAfter(3, function()
+                                        mod._manager.injectScript([[
+                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";
+                                        ]])
+                                    end)
+                                    --------------------------------------------------------------------------------
+                                    -- Exit the callback:
+                                    --------------------------------------------------------------------------------
+                                    return
                                 end
                             end
                         end
@@ -403,8 +509,16 @@ function mod._startLearning(id, params)
                         setValue(params["groupID"], params["buttonID"], "number", metadata.controllerNumber)
                         mod._midi.setItem("number", params["buttonID"], params["groupID"], metadata.controllerNumber)
 
-                        setValue(params["groupID"], params["buttonID"], "value", metadata.controllerValue)
-                        mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.controllerValue)
+                        setValue(params["groupID"], params["buttonID"], "value", controllerValue)
+                        mod._midi.setItem("value", params["buttonID"], params["groupID"], controllerValue)
+
+                    elseif commandType == "pitchWheelChange" then
+
+                        setValue(params["groupID"], params["buttonID"], "number", "Pitch")
+                        mod._midi.setItem("number", params["buttonID"], params["groupID"], "Pitch")
+
+                        setValue(params["groupID"], params["buttonID"], "value", metadata.pitchChange)
+                        mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.pitchChange)
 
                     end
 
@@ -487,13 +601,17 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Clear:
             --------------------------------------------------------------------------------
-            mod._midi.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
-
-            setValue(params["groupID"], params["buttonID"], "action", i18n("none"))
             setValue(params["groupID"], params["buttonID"], "device", "")
-            setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
+            mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+
             setValue(params["groupID"], params["buttonID"], "channel", "")
+            mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
+
+            setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
+            mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
+
             setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
+            mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
 
         elseif params["type"] == "updateNumber" then
             --------------------------------------------------------------------------------
@@ -530,7 +648,7 @@ local function midiPanelCallback(id, params)
             -- Learn Button:
             --------------------------------------------------------------------------------
             if mod._currentlyLearning then
-                mod._stopLearning(id, params)
+                mod._stopLearning(id, params, true)
             else
                 mod._startLearning(id, params)
             end

@@ -291,7 +291,7 @@ function mod.groupStatus(groupID, status)
 	mod.update()
 end
 
-function convertButtonID(buttonID)
+local function convertButtonID(buttonID)
 
 	--------------------------------------------------------------------------------
 	-- TODO: Fix lazy programming (sorry David)
