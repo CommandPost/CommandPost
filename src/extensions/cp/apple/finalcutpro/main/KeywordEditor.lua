@@ -172,14 +172,17 @@ end
 ---  * None
 ---
 --- Returns:
+---  * KeywordEditor object
 ---  * `true` if successful otherwise `false`
 function KeywordEditor:show()
     local checkBox = self:toolbarCheckBoxUI()
     if checkBox and checkBox:attributeValue("AXValue") == 0 then
         local result = checkBox:performAction("AXPress")
-        if result then return true end
+        if result then
+            return self, true
+        end
     end
-    return false
+    return self, false
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor:hide() -> boolean
@@ -190,15 +193,16 @@ end
 ---  * None
 ---
 --- Returns:
+---  * KeywordEditor object
 ---  * `true` if successful otherwise `false`
 function KeywordEditor:hide()
     local checkBox = self:toolbarCheckBoxUI()
     if checkBox and checkBox:attributeValue("AXValue") == 1 then
         if checkBox:performAction("AXPress") then
-            return true
+            return self, true
         end
     end
-    return false
+    return self, false
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor:keyword(value) -> string | table | nil
@@ -243,11 +247,8 @@ function KeywordEditor:keyword(value)
                         end
                     end
                 elseif type(value) == "table" and #value >= 1 then
-                    local result = ""
-                    for _, v in pairs(value) do
-                        result = result .. v .. ", "
-                    end
-                    if textbox:setAttributeValue("AXValue", result) then
+                    local result = table.concat(value, ", ")
+                    if result and textbox:setAttributeValue("AXValue", result) then
                         if textbox:performAction("AXConfirm") then
                             return value
                         end
@@ -258,6 +259,52 @@ function KeywordEditor:keyword(value)
         log.ef("Could not set Keyword.")
         return false
     end
+end
+
+--- cp.apple.finalcutpro.main.KeywordEditor:removeKeyword(keyword) -> boolean
+--- Method
+--- Removes a keyword from the main Keyword Textbox.
+---
+--- Parameters:
+---  * keyword - The keyword you want to remove as a string.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
+function KeywordEditor:removeKeyword(keyword)
+    if type(keyword) ~= "string" then
+        log.ef("Keyword is invalid.")
+        return false
+    end
+    local ui = self:UI()
+    local result = {}
+    if ui then
+        local textbox = axutils.childWithRole(ui, "AXTextField")
+        if textbox then
+            local children = textbox:attributeValue("AXChildren")
+            local found = false
+            for _, child in ipairs(children) do
+                local value = child:attributeValue("AXValue")
+                if keyword ~= value then
+                    table.insert(result, value)
+                else
+                    found = true
+                end
+            end
+            if not found then
+                log.ef("Could not find keyword to remove: %s", keyword)
+                return false
+            end
+            local resultString = table.concat(result, ", ")
+            log.df("resultString: %s", resultString)
+            if resultString and textbox:setAttributeValue("AXValue", resultString) then
+                if textbox:performAction("AXConfirm") then
+                    return true
+                end
+            end
+        end
+    end
+    log.ef("Could not find UI.")
+    return false
 end
 
 --------------------------------------------------------------------------------
