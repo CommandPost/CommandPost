@@ -8,17 +8,20 @@
 ---
 --- MIDI Manager Plugin.
 
---- === plugins.core.midi.manager.controls ===
----
---- MIDI Manager Controls.
-
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("midi")
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("midiManager")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application								= require("hs.application")
 local canvas 									= require("hs.canvas")
 local drawing									= require("hs.drawing")
@@ -30,6 +33,9 @@ local midi										= require("hs.midi")
 local styledtext								= require("hs.styledtext")
 local timer										= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config									= require("cp.config")
 local prop										= require("cp.prop")
 local tools										= require("cp.tools")
@@ -39,6 +45,10 @@ local tools										= require("cp.tools")
 -- THE MODULE - CONTROLS:
 --
 --------------------------------------------------------------------------------
+
+--- === plugins.core.midi.manager.controls ===
+---
+--- MIDI Manager Controls.
 
 local mod = {}
 
@@ -177,7 +187,7 @@ mod._lastPitchChange            = nil
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of Touch Bar items per group.
-mod.maxItems = 100
+mod.maxItems = 150
 
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
