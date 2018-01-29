@@ -1,38 +1,30 @@
 {%
-	--
-	-- Store these values locally to speed things up:
-	--
-	local midiDevices = midi.devices()
-	local virtualMidiDevices = midi.virtualDevices()
-
-	--
-	-- Begin the loop of hell...
-	--
+	local groupID = group:id()
 	for i=1,maxItems,1 do
-		local none			= i18n("none")
-		local actionTitle 	= midi.getItem("actionTitle", tostring(i), group:id()) or none
-		local device 		= midi.getItem("device", tostring(i), group:id()) or none
-		local number 		= midi.getItem("number", tostring(i), group:id()) or none
-		local channel	 	= midi.getItem("channel", tostring(i), group:id()) or none
-		local value		 	= midi.getItem("value", tostring(i), group:id()) or none
+		local buttonID 		= tostring(i)
+		local actionTitle 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["actionTitle"] or i18nNone
+		local device 		= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["device"] or i18nNone
+		local number 		= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["number"] or i18nNone
+		local channel	 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["channel"] or i18nNone
+		local value		 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["value"] or i18nNone
 %}
 			<tr>
 				<td class="midiRowAction">
-					<input type="text" id="midi{{ group:id() }}_button{{ i }}_action" class="midiActionTextbox" value="{{ actionTitle }}" disabled>
+					<input type="text" id="midi{{ groupID }}_button{{ buttonID }}_action" class="midiActionTextbox" value="{{ actionTitle }}" disabled>
 				</td>
 				<td class="midiRowActionButton">
-					<a id="midi{{ group:id() }}_button{{ i }}_actionButton" href="#" class="button midiActionButton">{{ i18n("select") }}</a>
+					<a id="midi{{ groupID }}_button{{ buttonID }}_actionButton" href="#" class="button midiActionButton">{{ i18nSelect }}</a>
 				</td>
 				<td class="midiRowDevice">
-					<select id="midi{{ group:id() }}_button{{ i }}_device" style="width:100px;">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_device" style="width:100px;">
 						{%
 						local foundDevice = false
 						local selected = ""
-						if device == none then selected = [[selected=""]] end
+						if device == i18nNone then selected = [[selected=""]] end
 						%}
-						<option {{selected}} value="">{{none}}</option>
+						<option {{selected}} value="">{{i18nNone}}</option>
 						<option disabled="disabled" value="">--------------------------</option>
-						<option disabled="disabled" value="">PHYSICAL:</option>
+						<option disabled="disabled" value="">{{ string.upper(i18nPhysical) }}:</option>
 						<option disabled="disabled" value="">--------------------------</option>
 						{%
 						for _, deviceName in ipairs(midiDevices) do
@@ -45,14 +37,14 @@
 							<option {{selected}} value="{{deviceName}}">{{deviceName}}</option>
 						{%
 						end
-						if device ~= i18n("none") and not foundDevice and not string.sub(device, 1, 8) == "virtual_" then
+						if device ~= i18nNone and not foundDevice and not string.sub(device, 1, 8) == "virtual_" then
 						%}
 							<option selected="" value="{{device}}">{{device}} (Offline)</option>
 						{%
 						end
 						%}
 						<option disabled="disabled" value="">--------------------------</option>
-						<option disabled="disabled" value="">VIRTUAL:</option>
+						<option disabled="disabled" value="">{{ string.upper(i18nVirtual) }}:</option>
 						<option disabled="disabled" value="">--------------------------</option>
 						{%
 						local foundVirtualDevice = false
@@ -66,7 +58,7 @@
 							<option {{selected}} value="virtual_{{deviceName}}">{{deviceName}}</option>
 						{%
 						end
-						if device ~= i18n("none") and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
+						if device ~= i18nNone and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
 						%}
 							<option selected="" value="virtual_{{device}}">{{ string.sub(device, 9) }} (Offline)</option>
 						{%
@@ -75,15 +67,15 @@
 					</select>
 				</td>
 				<td class="midiRowNumber">
-					<input style="width: 35px;" type="text" id="midi{{ group:id() }}_button{{ i }}_number" class="midiButtonLabel" value="{{ number }}">
+					<input style="width: 35px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_number" class="midiButtonLabel" value="{{ number }}">
 				</td>
 				<td class="midiRowChannel">
-					<select id="midi{{ group:id() }}_button{{ i }}_channel">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_channel">
 						{%
 						local selected = ""
-						if channel == none then selected = [[selected=""]] end
+						if channel == i18nNone then selected = [[selected=""]] end
 						%}
-						<option {{selected}} value="">{{none}}</option>
+						<option {{selected}} value="">{{i18nNone}}</option>
 						{% for channelValue=0, 15 do
 							local selected = ""
 							if tostring(channel) == tostring(channelValue) then selected = [[selected=""]] end
@@ -93,11 +85,11 @@
 					</select>
 				</td>
 				<td class="midiRowValue">
-					<input style="width: 35px;" type="text" id="midi{{ group:id() }}_button{{ i }}_value" class="midiButtonLabel" value="{{ value }}">
+					<input style="width: 35px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_value" class="midiButtonLabel" value="{{ value }}">
 				</td>
 				<td class="midiRowLearn">
-					<a id="midi{{ group:id() }}_button{{ i }}_clearButton" href="#" class="button midiActionButton">{{ i18n("clear") }}</a>
-					<a id="midi{{ group:id() }}_button{{ i }}_learnButton" href="#" class="button midiActionButton">{{ i18n("learn") }}</a>
+					<a id="midi{{ groupID }}_button{{ buttonID }}_clearButton" href="#" class="button midiActionButton">{{ i18nClear }}</a>
+					<a id="midi{{ groupID }}_button{{ buttonID }}_learnButton" href="#" class="button midiActionButton">{{ i18nLearn }}</a>
 				</td>
 				<script>
 						/*
@@ -105,16 +97,16 @@
 						DEVICE DROP DOWN:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_device = document.getElementById("midi{{ group:id() }}_button{{ i }}_device");
-						midi{{ group:id() }}_button{{ i }}_device.onchange = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_device = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_device");
+						midi{{ groupID }}_button{{ buttonID }}_device.onchange = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "updateDevice",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
-										device: midi{{ group:id() }}_button{{ i }}_device.value,
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										device: midi{{ groupID }}_button{{ buttonID }}_device.value,
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -128,16 +120,16 @@
 						NUMBER TEXT BOX:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_number = document.getElementById("midi{{ group:id() }}_button{{ i }}_number");
-						midi{{ group:id() }}_button{{ i }}_number.onchange = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_number = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_number");
+						midi{{ groupID }}_button{{ buttonID }}_number.onchange = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "updateNumber",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
-										number: midi{{ group:id() }}_button{{ i }}_number.value,
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										number: midi{{ groupID }}_button{{ buttonID }}_number.value,
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -151,16 +143,16 @@
 						CHANNEL DROP DOWN:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_channel = document.getElementById("midi{{ group:id() }}_button{{ i }}_channel");
-						midi{{ group:id() }}_button{{ i }}_channel.onchange = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_channel = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_channel");
+						midi{{ groupID }}_button{{ buttonID }}_channel.onchange = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "updateChannel",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
-										channel: midi{{ group:id() }}_button{{ i }}_channel.value,
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										channel: midi{{ groupID }}_button{{ buttonID }}_channel.value,
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -174,16 +166,16 @@
 						VALUE TEXT BOX:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_value = document.getElementById("midi{{ group:id() }}_button{{ i }}_value");
-						midi{{ group:id() }}_button{{ i }}_value.onchange = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_value = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_value");
+						midi{{ groupID }}_button{{ buttonID }}_value.onchange = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "updateValue",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
-										value: midi{{ group:id() }}_button{{ i }}_value.value,
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										value: midi{{ groupID }}_button{{ buttonID }}_value.value,
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -197,15 +189,15 @@
 						ACTION BUTTON:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_actionButton = document.getElementById("midi{{ group:id() }}_button{{ i }}_actionButton");
-						midi{{ group:id() }}_button{{ i }}_actionButton.onclick = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_actionButton = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_actionButton");
+						midi{{ groupID }}_button{{ buttonID }}_actionButton.onclick = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "updateAction",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -219,15 +211,15 @@
 						CLEAR BUTTON:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_clearButton = document.getElementById("midi{{ group:id() }}_button{{ i }}_clearButton");
-						midi{{ group:id() }}_button{{ i }}_clearButton.onclick = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_clearButton = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_clearButton");
+						midi{{ groupID }}_button{{ buttonID }}_clearButton.onclick = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "clear",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
@@ -241,15 +233,15 @@
 						LEARN BUTTON:
 						--------------------------------------------------------------------------------
 						*/
-						var midi{{ group:id() }}_button{{ i }}_learnButton= document.getElementById("midi{{ group:id() }}_button{{ i }}_learnButton");
-						midi{{ group:id() }}_button{{ i }}_learnButton.onclick = function(e) {
+						var midi{{ groupID }}_button{{ buttonID }}_learnButton= document.getElementById("midi{{ groupID }}_button{{ buttonID }}_learnButton");
+						midi{{ groupID }}_button{{ buttonID }}_learnButton.onclick = function(e) {
 							try {
 								var result = {
 									id: "midiPanelCallback",
 									params: {
 										type: "learnButton",
-										groupID: "{{ group:id() }}",
-										buttonID: "{{ i }}",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);

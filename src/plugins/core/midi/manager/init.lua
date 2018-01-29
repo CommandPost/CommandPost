@@ -186,12 +186,12 @@ mod._lastPitchChange            = nil
 
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
---- The maximum number of Touch Bar items per group.
+--- The maximum number of MIDI items per group.
 mod.maxItems = 150
 
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
---- Contains all the saved Touch Bar Buttons
+--- Contains all the saved MIDI items
 mod._items = config.prop("midiControls", {})
 
 --- plugins.core.midi.manager.defaultGroup -> string
@@ -201,7 +201,7 @@ mod.defaultGroup = "global"
 
 --- plugins.core.midi.manager.clear() -> none
 --- Function
---- Clears the Touch Bar items.
+--- Clears the MIDI items.
 ---
 --- Parameters:
 ---  * None
@@ -213,14 +213,16 @@ function mod.clear()
 	mod.update()
 end
 
---- plugins.core.midi.manager.updateAction(button, group, action) -> none
+--- plugins.core.midi.manager.updateAction(button, group, actionTitle, handlerID, action) -> none
 --- Function
---- Updates a Touch Bar action.
+--- Updates a MIDI action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
 ---  * group - Group ID as string
----  * action - Action as string
+---  * actionTitle - Action Title as string
+---  * handlerID - Handler ID as string
+---  * action - Action in a table
 ---
 --- Returns:
 ---  * None
@@ -246,7 +248,7 @@ end
 
 --- plugins.core.midi.manager.setItem(item, button, group, value) -> none
 --- Function
---- Stores a MIDI value in Preferences.
+--- Stores a MIDI item in Preferences.
 ---
 --- Parameters:
 ---  * item - The item you want to set.
@@ -273,9 +275,9 @@ function mod.setItem(item, button, group, value)
 	mod.update()
 end
 
---- plugins.core.midi.manager.getIcon(button, group) -> string
+--- plugins.core.midi.manager.getItem(item, button, group) -> table
 --- Function
---- Returns a specific Touch Bar Icon.
+--- Gets a MIDI item from Preferences.
 ---
 --- Parameters:
 ---  * item - The item you want to get.
@@ -283,7 +285,7 @@ end
 ---  * group - Group ID as string
 ---
 --- Returns:
----  * Icon data as string
+---  * A table otherwise `nil`
 function mod.getItem(item, button, group)
 	local items = mod._items()
 	if items[group] and items[group][button] and items[group][button][item] then
@@ -291,6 +293,19 @@ function mod.getItem(item, button, group)
 	else
 		return nil
 	end
+end
+
+--- plugins.core.midi.manager.getItems() -> tables
+--- Function
+--- Gets all the MIDI items in a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table
+function mod.getItems()
+    return mod._items()
 end
 
 --- plugins.core.midi.manager.activeGroup() -> none
