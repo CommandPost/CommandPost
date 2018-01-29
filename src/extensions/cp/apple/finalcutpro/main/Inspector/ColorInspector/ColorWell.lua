@@ -37,8 +37,6 @@ local HUE_SHIFT = 4183333/6000000
 -- anything below this value is considered to be 0
 local COLOR_THRESHOLD = 1/25500
 
-local HUE_ORIENTATION = 0
-
 local function toColorValue(value)
 	value = tonumber(value)
 	if value < COLOR_THRESHOLD then
