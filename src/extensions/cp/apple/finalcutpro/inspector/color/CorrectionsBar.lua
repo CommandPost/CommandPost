@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.CorrectionsBar ===
+--- === cp.apple.finalcutpro.inspector.color.CorrectionsBar ===
 ---
 --- The Correction selection/management bar at the top of the ColorInspector
 ---

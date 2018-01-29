@@ -4,16 +4,16 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.InfoInspector ===
+--- === cp.apple.finalcutpro.inspector.title.TitleInspector ===
 ---
---- Video Inspector Module.
+--- Title Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("infoInspect")
+local log								= require("hs.logger").new("videoInspect")
 
 local prop								= require("cp.prop")
 
@@ -22,39 +22,39 @@ local prop								= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local InfoInspector = {}
+local TitleInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.InfoInspector:new(parent) -> InfoInspector object
+--- cp.apple.finalcutpro.inspector.title.TitleInspector:new(parent) -> TitleInspector object
 --- Method
---- Creates a new InfoInspector object
+--- Creates a new TitleInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A InfoInspector object
-function InfoInspector:new(parent)
+---  * A TitleInspector object
+function TitleInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-	return prop.extend(o, InfoInspector)
+	return prop.extend(o, TitleInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.InfoInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.title.TitleInspector:parent() -> table
 --- Method
---- Returns the InfoInspector's parent table
+--- Returns the TitleInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function InfoInspector:parent()
+function TitleInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.InfoInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.title.TitleInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -63,14 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function InfoInspector:app()
+function TitleInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- INFO INSPECTOR:
+-- TITLE INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
-return InfoInspector
+return TitleInspector

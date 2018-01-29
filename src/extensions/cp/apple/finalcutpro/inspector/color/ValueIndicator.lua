@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.ui.ValueIndicator ===
+--- === cp.apple.finalcutpro.inspector.color.ValueIndicator ===
 ---
 --- ValueIndicator Module.
 
@@ -28,7 +28,7 @@ function ValueIndicator.matches(element)
 	return element:attributeValue("AXRole") == "AXValueIndicator"
 end
 
---- cp.ui.ValueIndicator:new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -> ValueIndicator
+--- cp.apple.finalcutpro.inspector.color.ValueIndicator:new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -> ValueIndicator
 --- Method
 --- Creates a new ValueIndicator.
 ---

@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel ===
+--- === cp.apple.finalcutpro.inspector.color.ColorWheel ===
 ---
 --- Represents a single Color Well in the Color Wheels Inspector.
 ---
@@ -22,13 +22,13 @@ local log                               = require("hs.logger").new("colorWheel")
 local prop                              = require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local ColorWell							= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell")
-local ValueIndicator					= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ValueIndicator")
+local ColorWell							= require("cp.apple.finalcutpro.inspector.color.ColorWell")
+local ValueIndicator					= require("cp.apple.finalcutpro.inspector.color.ValueIndicator")
 local Button							= require("cp.ui.Button")
 
 local ColorWheel = {}
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel.TYPE
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.TYPE
 --- Constant
 --- The possible types of ColorWheels: MASTER, SHADOWS, MIDTONES, HIGHLIGHTS.
 ColorWheel.TYPE = {
@@ -38,7 +38,7 @@ ColorWheel.TYPE = {
 	HIGHLIGHTS = { single = 4, all = 2 },
 }
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel.matches(element)
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.matches(element)
 --- Function
 --- Checks if the specified element is a Color Well.
 ---
@@ -54,7 +54,7 @@ function ColorWheel.matches(element)
 	return false
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:new(parent, type) -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:new(parent, type) -> ColorWheel
 --- Method
 --- Creates a new `ColorWheel` instance, with the specified parent and type.
 ---
@@ -70,28 +70,28 @@ function ColorWheel:new(parent, type)
 		_type = type,
 	}, ColorWheel)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspetor.ColorWheel.colorValue <cp.prop: hs.drawing.color>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.colorValue <cp.prop: hs.drawing.color>
 --- Field
 --- The current color value, as a `hs.drawing.color` table.
 	o.colorValue = o:colorWell().value:wrap(o)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel.colorPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.colorPosition <cp.prop: point>
 --- Field
 --- X/Y position for the current color value of the Color Well. This ignores the bounds of the
 --- actual Color Well circle, which only extends to 85 out of 255 values.
 	o.colorPosition = o:colorWell().colorPosition:wrap(o)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel.puckPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
 --- Field
 --- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
 	o.puckPosition = o:colorWell().puckPosition:wrap(o)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspetor.ColorWheel.saturationValue <cp.prop: number>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.saturationValue <cp.prop: number>
 --- Field
 --- The current saturation value, as a number between 0 and 10.
 	o.saturationValue = o:saturation().value:wrap(o)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspetor.ColorWheel.brightnessValue <cp.prop: number>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.brightnessValue <cp.prop: number>
 --- Field
 --- The current brightness value, as a number between -12 and 10.
 	o.brightnessValue = o:brightness().value:wrap(o)
@@ -137,7 +137,7 @@ function ColorWheel:show()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:colorWell() -> ColorWell
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:colorWell() -> ColorWell
 --- Method
 --- Returns the `ColorWell` for this ColorWheel.
 ---
@@ -155,7 +155,7 @@ function ColorWheel:colorWell()
 	return self._colorWell
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:saturation() -> ValueIndicator
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:saturation() -> ValueIndicator
 --- Method
 --- Returns the saturation `ValueIndicator` for this ColorWheel.
 ---
@@ -182,7 +182,7 @@ function ColorWheel:saturation()
 	return self._saturation
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:brightness() -> ValueIndicator
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:brightness() -> ValueIndicator
 --- Method
 --- Returns the brightness `ValueIndicator` for this ColorWheel.
 ---
@@ -209,7 +209,7 @@ function ColorWheel:brightness()
 	return self._brightness
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:resetButton() -> Button
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:resetButton() -> Button
 --- Method
 --- Returns the `Button` that triggers a value reset.
 ---
@@ -227,7 +227,7 @@ function ColorWheel:resetButton()
 	return self._resetButton
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:reset() -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:reset() -> ColorWheel
 --- Method
 --- Resets the color wheel values, if the ColorWheel is showing.
 ---
@@ -240,7 +240,7 @@ function ColorWheel:reset()
 	return self:resetButton():press()
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel:nudgeColor(x, y) -> self
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(x, y) -> self
 --- Method
 --- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
 --- positive `y` values shift down. Only integer values have an effect.

@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves ===
+--- === cp.apple.finalcutpro.inspector.color.HueSaturationCurves ===
 ---
 --- Hue/Saturation Curves Module.
 ---
@@ -46,7 +46,7 @@ local CORRECTION_TYPE					= "Hue/Saturation Curves"
 --------------------------------------------------------------------------------
 local HueSaturationCurves = {}
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves.VIEW_MODES -> table
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.VIEW_MODES -> table
 --- Constant
 --- View Modes for Color Curves
 HueSaturationCurves.VIEW_MODES = {
@@ -54,7 +54,7 @@ HueSaturationCurves.VIEW_MODES = {
     ["Single Curves"]   = "PAECurvesViewControllerSingleControl",
 }
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves.CURVES -> table
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.CURVES -> table
 --- Constant
 --- Table containing all the different types of Color Curves
 HueSaturationCurves.CURVES = {
@@ -66,7 +66,7 @@ HueSaturationCurves.CURVES = {
     ["Orange"]          = "FFConsumerSolidOrange",
 }
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:new(parent) -> HueSaturationCurves object
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:new(parent) -> HueSaturationCurves object
 --- Method
 --- Creates a new HueSaturationCurves object
 ---
@@ -84,7 +84,7 @@ function HueSaturationCurves:new(parent)
 	return prop.extend(o, HueSaturationCurves)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:parent() -> table
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:parent() -> table
 --- Method
 --- Returns the HueSaturationCurves's parent table
 ---
@@ -97,7 +97,7 @@ function HueSaturationCurves:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:app() -> table
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -116,7 +116,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:isShowing() -> boolean
 --- Method
 --- Is the Hue/Saturation Curves panel currently showing?
 ---
@@ -129,7 +129,7 @@ function HueSaturationCurves:isShowing()
     return self:parent():isShowing(CORRECTION_TYPE)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:show() -> boolean
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
 ---
@@ -143,12 +143,12 @@ function HueSaturationCurves:show()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:viewMode([value]) -> string | nil
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:viewMode([value]) -> string | nil
 --- Method
 --- Sets or gets the View Mode for the Hue/Saturation Curves.
 ---
 --- Parameters:
----  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves.VIEW_MODES`.
+---  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.inspector.color.HueSaturationCurves.VIEW_MODES`.
 ---
 --- Returns:
 ---  * A string containing the View Mode or `nil` if an error occurs.
@@ -214,12 +214,12 @@ function HueSaturationCurves:viewMode(value)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:visibleCurve([value]) -> string | nil
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:visibleCurve([value]) -> string | nil
 --- Method
 --- Sets or gets the selected hue/saturation curve.
 ---
 --- Parameters:
----  * [value] - An optional value to set the visible curve, as defined in `cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves.CURVES`.
+---  * [value] - An optional value to set the visible curve, as defined in `cp.apple.finalcutpro.inspector.color.HueSaturationCurves.CURVES`.
 ---
 --- Returns:
 ---  * A string containing the selected color curve or `nil` if an error occurs.
@@ -301,7 +301,7 @@ function HueSaturationCurves:visibleCurve(value)
     end
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.HueSaturationCurves:mix([value]) -> number | nil
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:mix([value]) -> number | nil
 --- Method
 --- Sets or gets the Hue/Saturation Curves mix value.
 ---

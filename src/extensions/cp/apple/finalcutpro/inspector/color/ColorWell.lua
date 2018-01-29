@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell ===
+--- === cp.apple.finalcutpro.inspector.color.ColorWell ===
 ---
 --- Represents a single Color Well in the Color Wheels Inspector.
 ---
@@ -107,7 +107,7 @@ local function colorToColorWellValue(value)
 	return ""
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell.matches(element)
+--- cp.apple.finalcutpro.inspector.color.ColorWell.matches(element)
 --- Function
 --- Checks if the specified element is a Color Well.
 ---
@@ -120,7 +120,7 @@ function ColorWell.matches(element)
 	return axutils.isValid(element) and element:attributeValue("AXRole") == "AXColorWell"
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell:new(parent, finderFn) -> ColorWell
+--- cp.apple.finalcutpro.inspector.color.ColorWell:new(parent, finderFn) -> ColorWell
 --- Method
 --- Creates a new `ColorWell` instance, with the specified parent and finder function.
 --- The finder function should return the specific color well UI element that this instance represents.
@@ -282,7 +282,7 @@ local fromXY = function(pos, frame)
     return asRGB({hue=h, saturation=1, brightness=b})
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell.colorPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWell.colorPosition <cp.prop: point>
 --- Field
 --- X/Y position for the current color value of the Color Well. This ignores the bounds of the
 --- actual Color Well circle, which only extends to 85 out of 255 values.
@@ -302,7 +302,7 @@ ColorWell.colorPosition = prop(
 	end
 ):bind(ColorWell)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell.puckPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: point>
 --- Field
 --- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
 ColorWell.puckPosition = prop(
@@ -321,7 +321,7 @@ ColorWell.puckPosition = prop(
 	end
 ):bind(ColorWell)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWell:nudge(x, y) -> self
+--- cp.apple.finalcutpro.inspector.color.ColorWell:nudge(x, y) -> self
 --- Method
 --- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
 --- positive `y` values shift down. Only integer values have an effect.

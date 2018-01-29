@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels ===
+--- === cp.apple.finalcutpro.inspector.color.ColorWheels ===
 ---
 --- Color Wheels Module.
 ---
@@ -14,9 +14,9 @@
 -- DAVID'S TODO LIST:
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 --
---  [ ] `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:nudgeControl` should use GUI Scripting instead of shortcuts
---  [ ] `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:color` should use GUI Scripting on AXColorWell instead of the RGB text boxes
---  [ ] Replace the map in `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:brightness` with a mathematical formula
+--  [ ] `cp.apple.finalcutpro.inspector.color.ColorWheels:nudgeControl` should use GUI Scripting instead of shortcuts
+--  [ ] `cp.apple.finalcutpro.inspector.color.ColorWheels:color` should use GUI Scripting on AXColorWell instead of the RGB text boxes
+--  [ ] Replace the map in `cp.apple.finalcutpro.inspector.color.ColorWheels:brightness` with a mathematical formula
 --
 --  [ ] Add API for "Add Shape Mask", "Add Color Mask" and "Invert Masks".
 --  [ ] Add API for "Save Effects Preset".
@@ -44,7 +44,7 @@ local RadioGroup						= require("cp.ui.RadioGroup")
 local Slider							= require("cp.ui.Slider")
 local PropertyRow						= require("cp.ui.PropertyRow")
 
-local ColorWheel						= require("cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheel")
+local ColorWheel						= require("cp.apple.finalcutpro.inspector.color.ColorWheel")
 
 --------------------------------------------------------------------------------
 --
@@ -65,7 +65,7 @@ local ColorWheels = {}
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.WHEELS -> table
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.WHEELS -> table
 --- Constant
 --- Table containing all the different types of Color Wheels
 -- ColorWheels.WHEELS = {
@@ -79,7 +79,7 @@ local ColorWheels = {}
 -- PUBLIC FUNCTIONS & METHODS:
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.matches(element)
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.matches(element)
 --- Function
 --- Checks if the specified element is the Color Wheels element.
 ---
@@ -97,7 +97,7 @@ function ColorWheels.matches(element)
 	return false
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:new(parent) -> ColorInspector object
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:new(parent) -> ColorInspector object
 --- Method
 --- Creates a new ColorWheels object
 ---
@@ -112,23 +112,23 @@ function ColorWheels:new(parent)
         _child = {}
 	}, ColorWheels)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.mix <cp.prop: number>
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.mix <cp.prop: number>
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
 	o.mix = o:mixSlider().value:wrap(o)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.temperature <cp.prop: number>
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.temperature <cp.prop: number>
 --- Field
 --- The color temperature for this corrector. A number from 2500 to 10000.
 	o.temperature = o:temperatureSlider().value:wrap(o)
 
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.tint <cp.prop: number>
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.tint <cp.prop: number>
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
 	o.tint = o:tintSlider().value:wrap(o)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels.hue <cp.prop: number>
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
 --- Field
 --- The hue for the corrector. A number from `0` to `50`.
 	o.hue = o:hueSlider().value:wrap(o)
@@ -136,7 +136,7 @@ function ColorWheels:new(parent)
     return o
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:parent() -> table
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:parent() -> table
 --- Method
 --- Returns the ColorWheels's parent table
 ---
@@ -149,7 +149,7 @@ function ColorWheels:parent()
     return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:app() -> table
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -168,7 +168,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:UI() -> axuielement
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:UI() -> axuielement
 --- Method
 --- Returns  the the `axuielement` representing the ColorWheels corrector.
 ---
@@ -184,7 +184,7 @@ function ColorWheels:UI()
 	end, ColorWheels.matches)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:contentUI() -> axuielement
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:contentUI() -> axuielement
 --- Method
 --- Returns  the the `axuielement` representing the content element of the ColorWheels corrector.
 --- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.
@@ -201,7 +201,7 @@ function ColorWheels:contentUI()
 	end)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:show() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
 ---
@@ -215,7 +215,7 @@ function ColorWheels:show()
     return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:isShowing() -> boolean
 --- Method
 --- Is the Color Wheels currently showing?
 ---
@@ -228,7 +228,7 @@ function ColorWheels:isShowing()
     return self:UI() ~= nil
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:viewMode() -> MenuButton
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:viewMode() -> MenuButton
 --- Method
 --- Returns the `MenuButton` for the View menu button.
 ---
@@ -250,7 +250,7 @@ function ColorWheels:viewMode()
 	return self._viewMode
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:viewingAllWheels <cp.prop: boolean>
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:viewingAllWheels <cp.prop: boolean>
 --- Field
 --- Reports and modifies whether the ColorWheels corrector is showing "All Wheels" (`true`) or "Single Wheels" (`false`).
 ColorWheels.viewingAllWheels = prop(
@@ -272,7 +272,7 @@ ColorWheels.viewingAllWheels = prop(
 	end
 ):bind(ColorWheels)
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:wheelType() -> RadioGroup
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:wheelType() -> RadioGroup
 --- Method
 --- Returns the `RadioGroup` that allows selection of the wheel type. Only available when
 --- `viewingAllWheels` is `true`.
@@ -298,7 +298,7 @@ function ColorWheels:wheelType()
 	return self._wheelType
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:master() -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:master() -> ColorWheel
 --- Method
 --- Returns a `ColorWheel` that allows control of the 'master' color settings.
 ---
@@ -314,7 +314,7 @@ function ColorWheels:master()
 	return self._master
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:shadows() -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:shadows() -> ColorWheel
 --- Method
 --- Returns a `ColorWheel` that allows control of the 'shadows' color settings.
 ---
@@ -330,7 +330,7 @@ function ColorWheels:shadows()
 	return self._shadows
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:midtones() -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:midtones() -> ColorWheel
 --- Method
 --- Returns a `ColorWheel` that allows control of the 'midtones' color settings.
 ---
@@ -346,7 +346,7 @@ function ColorWheels:midtones()
 	return self._midtones
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:highlights() -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:highlights() -> ColorWheel
 --- Method
 --- Returns a `ColorWheel` that allows control of the 'highlights' color settings.
 ---
@@ -366,7 +366,7 @@ end
 -- PROPERTIES:
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:mixRow() -> cp.ui.PropertyRow
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:mixRow() -> cp.ui.PropertyRow
 --- Method
 --- Returns a `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
 --- values for that row.
@@ -383,7 +383,7 @@ function ColorWheels:mixRow()
 	return self._mixRow
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:mixSlider() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:mixSlider() -> cp.ui.Slider
 --- Method
 --- Returns a `Slider` that provides access to the 'Mix' slider.
 ---
@@ -404,7 +404,7 @@ function ColorWheels:mixSlider()
 	return self._mixSlider
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:temperatureRow() -> cp.ui.PropertyRow
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:temperatureRow() -> cp.ui.PropertyRow
 --- Method
 --- Returns a `PropertyRow` that provides access to the 'Temperatures' parameter, and `axuielement`
 --- values for that row.
@@ -421,7 +421,7 @@ function ColorWheels:temperatureRow()
 	return self._temperatureRow
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:temperatureSlider() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:temperatureSlider() -> cp.ui.Slider
 --- Method
 --- Returns a `Slider` that provides access to the 'Temperatures' slider.
 ---
@@ -442,7 +442,7 @@ function ColorWheels:temperatureSlider()
 	return self._temperatureSlider
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:tintRow() -> cp.ui.PropertyRow
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:tintRow() -> cp.ui.PropertyRow
 --- Method
 --- Returns a `PropertyRow` that provides access to the 'Tint' parameter, and `axuielement`
 --- values for that row.
@@ -459,7 +459,7 @@ function ColorWheels:tintRow()
 	return self._tintRow
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:tintSlider() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:tintSlider() -> cp.ui.Slider
 --- Method
 --- Returns a `Slider` that provides access to the 'Tint' slider.
 ---
@@ -480,7 +480,7 @@ function ColorWheels:tintSlider()
 	return self._tintSlider
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:hueRow() -> cp.ui.PropertyRow
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:hueRow() -> cp.ui.PropertyRow
 --- Method
 --- Returns a `PropertyRow` that provides access to the 'Hue' parameter, and `axuielement`
 --- values for that row.
@@ -497,7 +497,7 @@ function ColorWheels:hueRow()
 	return self._hueRow
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorWheels:hueSlider() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:hueSlider() -> cp.ui.Slider
 --- Method
 --- Returns a `Slider` that provides access to the 'Hue' slider.
 ---

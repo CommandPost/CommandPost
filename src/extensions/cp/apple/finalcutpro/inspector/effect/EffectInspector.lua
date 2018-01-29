@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.EffectInspector ===
+--- === cp.apple.finalcutpro.inspector.effect.EffectInspector ===
 ---
 --- Effect Inspector Module.
 
@@ -24,7 +24,7 @@ local prop								= require("cp.prop")
 --------------------------------------------------------------------------------
 local EffectInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.EffectInspector:new(parent) -> EffectInspector object
+--- cp.apple.finalcutpro.inspector.effect.EffectInspector:new(parent) -> EffectInspector object
 --- Method
 --- Creates a new EffectInspector object
 ---
@@ -41,7 +41,7 @@ function EffectInspector:new(parent)
 	return prop.extend(o, EffectInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.EffectInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.effect.EffectInspector:parent() -> table
 --- Method
 --- Returns the EffectInspector's parent table
 ---
@@ -54,7 +54,7 @@ function EffectInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.EffectInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.effect.EffectInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---

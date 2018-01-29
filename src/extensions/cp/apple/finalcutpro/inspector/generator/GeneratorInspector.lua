@@ -4,16 +4,16 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ShareInspector ===
+--- === cp.apple.finalcutpro.inspector.generator.GeneratorInspector ===
 ---
---- Share Inspector Module.
+--- Generator Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("shareInspect")
+local log								= require("hs.logger").new("generatorInspect")
 
 local prop								= require("cp.prop")
 
@@ -22,39 +22,39 @@ local prop								= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ShareInspector = {}
+local GeneratorInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.ShareInspector:new(parent) -> ShareInspector object
+--- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:new(parent) -> GeneratorInspector object
 --- Method
---- Creates a new ShareInspector object
+--- Creates a new GeneratorInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A ShareInspector object
-function ShareInspector:new(parent)
+---  * A GeneratorInspector object
+function GeneratorInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-	return prop.extend(o, ShareInspector)
+	return prop.extend(o, GeneratorInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ShareInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:parent() -> table
 --- Method
---- Returns the ShareInspector's parent table
+--- Returns the GeneratorInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function ShareInspector:parent()
+function GeneratorInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.ShareInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -63,14 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function ShareInspector:app()
+function GeneratorInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- SHARE INSPECTOR:
+-- GENERATOR INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
-return ShareInspector
+return GeneratorInspector

@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.VideoInspector ===
+--- === cp.apple.finalcutpro.inspector.video.VideoInspector ===
 ---
 --- Video Inspector Module.
 
@@ -27,7 +27,7 @@ local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 --------------------------------------------------------------------------------
 local VideoInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.VideoInspector:new(parent) -> VideoInspector object
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:new(parent) -> VideoInspector object
 --- Method
 --- Creates a new VideoInspector object
 ---
@@ -44,7 +44,7 @@ function VideoInspector:new(parent)
 	return prop.extend(o, VideoInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.VideoInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:parent() -> table
 --- Method
 --- Returns the VideoInspector's parent table
 ---
@@ -57,7 +57,7 @@ function VideoInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.VideoInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -76,7 +76,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.VideoInspector:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:isShowing() -> boolean
 --- Method
 --- Returns `true` if the Video Inspector is showing otherwise `false`
 ---
@@ -89,7 +89,7 @@ function VideoInspector:isShowing()
 	return self:parent():selectedTab() == "Video" or false
 end
 
---- cp.apple.finalcutpro.main.Inspector.VideoInspector:show() -> VideoInspector
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:show() -> VideoInspector
 --- Method
 --- Show's the Video Inspector
 ---
@@ -103,7 +103,7 @@ function VideoInspector:show()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.VideoInspector:stabilization([value]) -> boolean
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:stabilization([value]) -> boolean
 --- Method
 --- Sets or returns the stabilization setting for a clip.
 ---

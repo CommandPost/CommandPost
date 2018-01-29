@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector ===
+--- === cp.apple.finalcutpro.inspector.Inspector ===
 ---
 --- Inspector
 
@@ -20,16 +20,16 @@ local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local AudioInspector					= require("cp.apple.finalcutpro.main.Inspector.AudioInspector")
-local ColorInspector					= require("cp.apple.finalcutpro.main.Inspector.ColorInspector")
-local EffectInspector					= require("cp.apple.finalcutpro.main.Inspector.EffectInspector")
-local GeneratorInspector				= require("cp.apple.finalcutpro.main.Inspector.GeneratorInspector")
-local InfoInspector						= require("cp.apple.finalcutpro.main.Inspector.InfoInspector")
-local ShareInspector					= require("cp.apple.finalcutpro.main.Inspector.ShareInspector")
-local TextInspector						= require("cp.apple.finalcutpro.main.Inspector.TextInspector")
-local TitleInspector					= require("cp.apple.finalcutpro.main.Inspector.TitleInspector")
-local TransitionInspector				= require("cp.apple.finalcutpro.main.Inspector.TransitionInspector")
-local VideoInspector					= require("cp.apple.finalcutpro.main.Inspector.VideoInspector")
+local AudioInspector					= require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
+local ColorInspector					= require("cp.apple.finalcutpro.inspector.color.ColorInspector")
+local EffectInspector					= require("cp.apple.finalcutpro.inspector.effect.EffectInspector")
+local GeneratorInspector				= require("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
+local InfoInspector						= require("cp.apple.finalcutpro.inspector.info.InfoInspector")
+local ShareInspector					= require("cp.apple.finalcutpro.inspector.share.ShareInspector")
+local TextInspector						= require("cp.apple.finalcutpro.inspector.text.TextInspector")
+local TitleInspector					= require("cp.apple.finalcutpro.inspector.title.TitleInspector")
+local TransitionInspector				= require("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
+local VideoInspector					= require("cp.apple.finalcutpro.inspector.video.VideoInspector")
 
 local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 
@@ -40,7 +40,7 @@ local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 --------------------------------------------------------------------------------
 local Inspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.INSPECTOR_TABS -> table
+--- cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS -> table
 --- Constant
 --- Table of supported Inspector Tabs
 Inspector.INSPECTOR_TABS = {
@@ -56,7 +56,7 @@ Inspector.INSPECTOR_TABS = {
 	["Video"] 		= "FFInspectorTabMotionEffectVideo",
 }
 
---- cp.apple.finalcutpro.main.Inspector.matches(element) -> boolean
+--- cp.apple.finalcutpro.inspector.Inspector.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
 ---
@@ -70,7 +70,7 @@ function Inspector.matches(element)
 		or axutils.childWith(element, "AXIdentifier", id "NothingToInspect") ~= nil 	-- nothing to inspect
 end
 
---- cp.apple.finalcutpro.main.Inspector:new(parent) -> Inspector
+--- cp.apple.finalcutpro.inspector.Inspector:new(parent) -> Inspector
 --- Method
 --- Creates a new Inspector.
 ---
@@ -84,7 +84,7 @@ function Inspector:new(parent)
 	return prop.extend(o, Inspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector:parent() -> Parent
+--- cp.apple.finalcutpro.inspector.Inspector:parent() -> Parent
 --- Method
 --- Returns the parent of the Inspector.
 ---
@@ -97,7 +97,7 @@ function Inspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector:app() -> App
+--- cp.apple.finalcutpro.inspector.Inspector:app() -> App
 --- Method
 --- Returns the app instance representing Final Cut Pro.
 ---
@@ -116,7 +116,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:UI() -> axuielementObject
+--- cp.apple.finalcutpro.inspector.Inspector:UI() -> axuielementObject
 --- Method
 --- Returns the Inspectors Accessibility Object
 ---
@@ -155,7 +155,7 @@ function Inspector:UI()
 	Inspector.matches)
 end
 
---- cp.apple.finalcutpro.main.Inspector.isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.Inspector.isShowing() -> boolean
 --- Function
 --- Returns `true` if the Inspector is showing otherwise `false`
 ---
@@ -169,12 +169,12 @@ Inspector.isShowing = prop.new(function(self)
 	return ui ~= nil
 end):bind(Inspector)
 
---- cp.apple.finalcutpro.main.Inspector:show([tab]) -> Inspector
+--- cp.apple.finalcutpro.inspector.Inspector:show([tab]) -> Inspector
 --- Method
 --- Shows the inspector.
 ---
 --- Parameters:
----  * [tab] - A string from the `cp.apple.finalcutpro.main.Inspector.INSPECTOR_TABS` table
+---  * [tab] - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
 ---
 --- Returns:
 ---  * The `Inspector` instance.
@@ -210,7 +210,7 @@ function Inspector:show(tab)
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector:hide() -> Inspector
+--- cp.apple.finalcutpro.inspector.Inspector:hide() -> Inspector
 --- Method
 --- Hides the inspector.
 ---
@@ -247,12 +247,12 @@ function Inspector:bottomBarUI()
 	end)
 end
 
---- cp.apple.finalcutpro.main.Inspector:selectTab([tab]) -> boolean
+--- cp.apple.finalcutpro.inspector.Inspector:selectTab([tab]) -> boolean
 --- Method
 --- Selects a tab in the inspector.
 ---
 --- Parameters:
----  * [tab] - A string from the `cp.apple.finalcutpro.main.Inspector.INSPECTOR_TABS` table
+---  * [tab] - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
 ---
 --- Returns:
 ---  * A string of the selected tab, otherwise `nil` if an error occurred.
@@ -293,7 +293,7 @@ function Inspector:selectTab(value)
 	return false
 end
 
---- cp.apple.finalcutpro.main.Inspector:selectedTab() -> string or nil
+--- cp.apple.finalcutpro.inspector.Inspector:selectedTab() -> string or nil
 --- Method
 --- Returns the name of the selected inspector tab otherwise `nil`.
 ---
@@ -342,7 +342,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:video() -> VideoInspector
+--- cp.apple.finalcutpro.inspector.Inspector:video() -> VideoInspector
 --- Method
 --- Gets the VideoInspector object.
 ---
@@ -364,7 +364,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:generator() -> GeneratorInspector
+--- cp.apple.finalcutpro.inspector.Inspector:generator() -> GeneratorInspector
 --- Method
 --- Gets the GeneratorInspector object.
 ---
@@ -386,7 +386,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:info() -> InfoInspector
+--- cp.apple.finalcutpro.inspector.Inspector:info() -> InfoInspector
 --- Method
 --- Gets the InfoInspector object.
 ---
@@ -408,7 +408,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:effect() -> EffectInspector
+--- cp.apple.finalcutpro.inspector.Inspector:effect() -> EffectInspector
 --- Method
 --- Gets the EffectInspector object.
 ---
@@ -430,7 +430,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:text() -> TextInspector
+--- cp.apple.finalcutpro.inspector.Inspector:text() -> TextInspector
 --- Method
 --- Gets the TextInspector object.
 ---
@@ -452,7 +452,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:title() -> TitleInspector
+--- cp.apple.finalcutpro.inspector.Inspector:title() -> TitleInspector
 --- Method
 --- Gets the TitleInspector object.
 ---
@@ -474,7 +474,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:transition() -> TransitionInspector
+--- cp.apple.finalcutpro.inspector.Inspector:transition() -> TransitionInspector
 --- Method
 --- Gets the TransitionInspector object.
 ---
@@ -496,7 +496,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:audio() -> AudioInspector
+--- cp.apple.finalcutpro.inspector.Inspector:audio() -> AudioInspector
 --- Method
 --- Gets the AudioInspector object.
 ---
@@ -518,7 +518,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:share() -> ShareInspector
+--- cp.apple.finalcutpro.inspector.Inspector:share() -> ShareInspector
 --- Method
 --- Gets the ShareInspector object.
 ---
@@ -540,7 +540,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector:color() -> ColorInspector
+--- cp.apple.finalcutpro.inspector.Inspector:color() -> ColorInspector
 --- Method
 --- Gets the ColorInspector object.
 ---

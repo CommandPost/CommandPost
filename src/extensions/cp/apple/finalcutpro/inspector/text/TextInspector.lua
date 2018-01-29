@@ -4,16 +4,16 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.GeneratorInspector ===
+--- === cp.apple.finalcutpro.inspector.text.TextInspector ===
 ---
---- Generator Inspector Module.
+--- Text Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("generatorInspect")
+local log								= require("hs.logger").new("videoInspect")
 
 local prop								= require("cp.prop")
 
@@ -22,39 +22,39 @@ local prop								= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local GeneratorInspector = {}
+local TextInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.GeneratorInspector:new(parent) -> GeneratorInspector object
+--- cp.apple.finalcutpro.inspector.text.TextInspector:new(parent) -> TextInspector object
 --- Method
---- Creates a new GeneratorInspector object
+--- Creates a new TextInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A GeneratorInspector object
-function GeneratorInspector:new(parent)
+---  * A TextInspector object
+function TextInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-	return prop.extend(o, GeneratorInspector)
+	return prop.extend(o, TextInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.GeneratorInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.text.TextInspector:parent() -> table
 --- Method
---- Returns the GeneratorInspector's parent table
+--- Returns the TextInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function GeneratorInspector:parent()
+function TextInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.GeneratorInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.text.TextInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -63,14 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function GeneratorInspector:app()
+function TextInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- GENERATOR INSPECTOR:
+-- TEXT INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
-return GeneratorInspector
+return TextInspector

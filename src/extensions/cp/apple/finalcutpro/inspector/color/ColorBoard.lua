@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard ===
+--- === cp.apple.finalcutpro.inspector.color.ColorBoard ===
 ---
 --- Color Board Module.
 ---
@@ -34,7 +34,7 @@ local CORRECTION_TYPE					= "Color Board"
 --------------------------------------------------------------------------------
 local ColorBoard = {}
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard:new(parent) -> ColorBoard object
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:new(parent) -> ColorBoard object
 --- Method
 --- Creates a new ColorBoard object
 ---
@@ -52,7 +52,7 @@ function ColorBoard:new(parent)
 	return prop.extend(o, ColorBoard)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard:parent() -> table
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:parent() -> table
 --- Method
 --- Returns the ColorBoard's parent table
 ---
@@ -65,7 +65,7 @@ function ColorBoard:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard:app() -> table
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -84,7 +84,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard:show() -> ColorBoard object
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:show() -> ColorBoard object
 --- Method
 --- Show's the Color Board within the Color Inspector.
 ---
@@ -98,7 +98,7 @@ function ColorBoard:show()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard:hide() -> ColorBoard object
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:hide() -> ColorBoard object
 --- Method
 --- Hide's the Color Board, by hiding the entire Inspector.
 ---
@@ -112,7 +112,7 @@ function ColorBoard:hide()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorBoard:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:isShowing() -> boolean
 --- Method
 --- Is the Color Board currently showing?
 ---

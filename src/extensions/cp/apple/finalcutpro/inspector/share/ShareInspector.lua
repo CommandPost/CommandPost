@@ -4,16 +4,16 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.TextInspector ===
+--- === cp.apple.finalcutpro.inspector.share.ShareInspector ===
 ---
---- Text Inspector Module.
+--- Share Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("videoInspect")
+local log								= require("hs.logger").new("shareInspect")
 
 local prop								= require("cp.prop")
 
@@ -22,39 +22,39 @@ local prop								= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextInspector = {}
+local ShareInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.TextInspector:new(parent) -> TextInspector object
+--- cp.apple.finalcutpro.inspector.share.ShareInspector:new(parent) -> ShareInspector object
 --- Method
---- Creates a new TextInspector object
+--- Creates a new ShareInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A TextInspector object
-function TextInspector:new(parent)
+---  * A ShareInspector object
+function ShareInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-	return prop.extend(o, TextInspector)
+	return prop.extend(o, ShareInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.TextInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.share.ShareInspector:parent() -> table
 --- Method
---- Returns the TextInspector's parent table
+--- Returns the ShareInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function TextInspector:parent()
+function ShareInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.TextInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.share.ShareInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -63,14 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function TextInspector:app()
+function ShareInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- TEXT INSPECTOR:
+-- SHARE INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
-return TextInspector
+return ShareInspector

@@ -4,16 +4,16 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.AudioInspector ===
+--- === cp.apple.finalcutpro.inspector.transition.TransitionInspector ===
 ---
---- Audio Inspector Module.
+--- Transition Inspector Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("audioInspect")
+local log								= require("hs.logger").new("transInspect")
 
 local prop								= require("cp.prop")
 
@@ -22,39 +22,39 @@ local prop								= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local AudioInspector = {}
+local TransitionInspector = {}
 
---- cp.apple.finalcutpro.main.Inspector.AudioInspector:new(parent) -> AudioInspector object
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector:new(parent) -> TransitionInspector object
 --- Method
---- Creates a new AudioInspector object
+--- Creates a new TransitionInspector object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A AudioInspector object
-function AudioInspector:new(parent)
+---  * A TransitionInspector object
+function TransitionInspector:new(parent)
 	local o = {
 		_parent = parent,
 		_child = {}
 	}
-	return prop.extend(o, AudioInspector)
+	return prop.extend(o, TransitionInspector)
 end
 
---- cp.apple.finalcutpro.main.Inspector.AudioInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector:parent() -> table
 --- Method
---- Returns the AudioInspector's parent table
+--- Returns the TransitionInspector's parent table
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The parent object as a table
-function AudioInspector:parent()
+function TransitionInspector:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.AudioInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -63,14 +63,14 @@ end
 ---
 --- Returns:
 ---  * The application object as a table
-function AudioInspector:app()
+function TransitionInspector:app()
 	return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
 --
--- AUDIO INSPECTOR:
+-- TRANSITION INSPECTOR:
 --
 --------------------------------------------------------------------------------
 
-return AudioInspector
+return TransitionInspector

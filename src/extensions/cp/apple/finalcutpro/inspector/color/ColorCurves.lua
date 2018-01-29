@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves ===
+--- === cp.apple.finalcutpro.inspector.color.ColorCurves ===
 ---
 --- Color Curves Module.
 ---
@@ -49,7 +49,7 @@ local ColorCurves = {}
 -- CONSTANTS:
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves.VIEW_MODES -> table
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.VIEW_MODES -> table
 --- Constant
 --- View Modes for Color Curves
 ColorCurves.VIEW_MODES = {
@@ -57,7 +57,7 @@ ColorCurves.VIEW_MODES = {
     ["Single Curves"]   = "PAECurvesViewControllerSingleControl",
 }
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves.CURVES -> table
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.CURVES -> table
 --- Constant
 --- Table containing all the different types of Color Curves
 ColorCurves.CURVES = {
@@ -67,7 +67,7 @@ ColorCurves.CURVES = {
     ["Blue"]            = "Primatte::Blue",
 }
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:new(parent) -> ColorCurves object
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:new(parent) -> ColorCurves object
 --- Method
 --- Creates a new ColorCurves object
 ---
@@ -85,7 +85,7 @@ function ColorCurves:new(parent)
 	return prop.extend(o, ColorCurves)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:parent() -> table
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:parent() -> table
 --- Method
 --- Returns the ColorCurves's parent table
 ---
@@ -98,7 +98,7 @@ function ColorCurves:parent()
 	return self._parent
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:app() -> table
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -117,7 +117,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:show() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
 ---
@@ -131,7 +131,7 @@ function ColorCurves:show()
 	return self
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:isShowing() -> boolean
 --- Method
 --- Is the Color Curves panel currently showing?
 ---
@@ -144,12 +144,12 @@ function ColorCurves:isShowing()
     return self:parent():isShowing(CORRECTION_TYPE)
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:viewMode([value]) -> string | nil
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:viewMode([value]) -> string | nil
 --- Method
 --- Sets or gets the View Mode for the Color Curves.
 ---
 --- Parameters:
----  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves.VIEW_MODES`.
+---  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.inspector.color.ColorCurves.VIEW_MODES`.
 ---
 --- Returns:
 ---  * A string containing the View Mode or `nil` if an error occurs.
@@ -215,12 +215,12 @@ function ColorCurves:viewMode(value)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:visibleCurve([value]) -> string | nil
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:visibleCurve([value]) -> string | nil
 --- Method
 --- Sets or gets the selected color curve.
 ---
 --- Parameters:
----  * [value] - An optional value to set the visible curve, as defined in `cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves.CURVES`.
+---  * [value] - An optional value to set the visible curve, as defined in `cp.apple.finalcutpro.inspector.color.ColorCurves.CURVES`.
 ---
 --- Returns:
 ---  * A string containing the selected color curve or `nil` if an error occurs.
@@ -292,7 +292,7 @@ function ColorCurves:visibleCurve(value)
     end
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:mix([value]) -> number | nil
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:mix([value]) -> number | nil
 --- Method
 --- Sets or gets the color curves mix value.
 ---
@@ -352,7 +352,7 @@ function ColorCurves:mix(value)
 
 end
 
---- cp.apple.finalcutpro.main.Inspector.ColorInspector.ColorCurves:preserveLuma([value]) -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorCurves:preserveLuma([value]) -> boolean
 --- Method
 --- Sets or gets whether or not Preserve Luma is active.
 ---
