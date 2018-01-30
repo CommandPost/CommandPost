@@ -21,6 +21,17 @@ local logger					= require("hs.logger"); logger.defaultLogLevel = 'debug'
 local log						= logger.new("cp")
 
 --------------------------------------------------------------------------------
+-- Display startup screen:
+--------------------------------------------------------------------------------
+local alert                     = require("hs.alert")
+local config					= require("cp.config")
+local alertUUID
+if not config.get("hasRunOnce", false) then
+    hs.dockIcon(true)
+    alertUUID = alert.show("Please wait while CommandPost scans your system for plugins...")
+end
+
+--------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local application				= require("hs.application")
@@ -37,7 +48,6 @@ local toolbar                   = require("hs.webview.toolbar")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config					= require("cp.config")
 local plugins					= require("cp.plugins")
 local tools                     = require("cp.tools")
 
@@ -175,7 +185,7 @@ function mod.init()
 	---------------------------------------------------------------------------------
 	-- Kill any existing Notifications:
 	--------------------------------------------------------------------------------
-	notify.withdrawAll()
+	notify.withdrawAll() -- TODO: Eventually we need to remove this. See: #844
 
 	--------------------------------------------------------------------------------
 	-- Open Error Log:
@@ -321,6 +331,14 @@ function mod.init()
 	log.df("Loading Plugins...")
 	plugins.init(config.pluginPaths)
 	log.df("Plugins Loaded.")
+
+    --------------------------------------------------------------------------------
+    -- Close Welcome Alert:
+    --------------------------------------------------------------------------------
+    if alertUUID then
+        alert.closeSpecific(alertUUID)
+        hs.dockIcon(false)
+    end
 
 	return mod
 
