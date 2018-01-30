@@ -141,7 +141,7 @@ local function windowCallback(action, webview, frame)
 			mod.webview = nil
 		end
 	elseif action == "focusChange" then
-		if frame then
+		if frame and mod.toolbar then
 			local id = mod.toolbar:selectedItem()
 			for i, v in ipairs(mod._panels) do
 				if v.id == id then

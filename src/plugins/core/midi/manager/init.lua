@@ -168,6 +168,7 @@ end
 -- MIDI Device Names:
 --
 mod._deviceNames = {}
+mod._virtualDevices = {}
 
 --
 -- Group Statuses:
@@ -523,6 +524,15 @@ function mod.start()
 		mod._midiDevices = {}
 	end
 
+	--------------------------------------------------------------------------------
+	-- Setup MIDI Device Callback:
+	--------------------------------------------------------------------------------
+	midi.deviceCallback(function(devices, virtualDevices)
+		mod._deviceNames = devices
+		mod._virtualDevices = virtualDevices
+		log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
+	end)
+
     --------------------------------------------------------------------------------
     -- For performance, we only use watchers for USED devices:
     --------------------------------------------------------------------------------
@@ -579,11 +589,23 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
+    --------------------------------------------------------------------------------
+    -- Destroy MIDI Watchers:
+    --------------------------------------------------------------------------------
 	log.df("Stopping MIDI Watchers")
 	for _, id in pairs(mod._midiDevices) do
 		mod._midiDevices[id] = nil
 	end
 	mod._midiDevices = nil
+
+	--------------------------------------------------------------------------------
+	-- Destroy MIDI Device Callback:
+	--------------------------------------------------------------------------------
+	midi.deviceCallback(nil)
+
+    --------------------------------------------------------------------------------
+    -- Garbage Collection:
+    --------------------------------------------------------------------------------
 	collectgarbage()
 end
 
@@ -651,15 +673,6 @@ function plugin.init(deps, env)
 	-- Get list of MIDI devices:
 	--------------------------------------------------------------------------------
 	mod._deviceNames = midi.devices() or {}
-
-	--------------------------------------------------------------------------------
-	-- Setup MIDI Device Callback:
-	--------------------------------------------------------------------------------
-	midi.deviceCallback(function(devices, virtualDevices)
-		mod._deviceNames = devices
-		mod._virtualDevices = virtualDevices
-		log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
-	end)
 
 	--------------------------------------------------------------------------------
 	-- Commands:
