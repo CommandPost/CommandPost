@@ -252,7 +252,6 @@ local function windowCallback(action, webview, frame)
             end
 
         end
-    --elseif action == "focusChange" then
     elseif action == "frameChange" then
         if frame then
             mod.position(frame)
