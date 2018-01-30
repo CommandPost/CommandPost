@@ -22,7 +22,7 @@
 --- ```
 ---
 --- This will load all plugins in the current user's `Library/Application Support/CommandPost/Plugins` folder.
---- 
+---
 --- ### `cp.plugins.getPluginModule(id)`
 ---
 --- Once the plugins have been loaded, the module can be accessed by their ID via the `getPluginModule(id)` function. It will return the module returned by the plugin's `init` function. This can also be done via the default function for the library. Eg:
@@ -36,13 +36,13 @@
 --- Plugins typically have two parts:
 --- 1. The plugin table, which defines details about the plugin, and
 --- 2. The module, or result, which could be anything, which is returned from the `init` function.
---- 
---- 
+---
+---
 --- A plugin file should return a `plugin` table that allows the plugin to be initialised. The table will look something like this:
 ---
 --- ```lua
 --- local module = {}
---- 
+---
 --- local module.init(otherPlugin)
 ---     -- do stuff with otherPlugin here
 --- end
@@ -60,7 +60,7 @@
 ---    module.init(dependencies.otherPlugin)
 ---    return module
 --- }
---- 
+---
 --- function plugin.postInit(dependencies)
 ---    -- do stuff that will happen after all plugins have been initialised.
 --- end
@@ -76,7 +76,7 @@
 ---
 --- ### `plugin.required`
 --- This optional property can be specified for plugins which should never be disabled. This should only be set for plugins which will break the application if disabled.
---- 
+---
 --- ### `plugin.dependencies`
 ---
 --- This is a table with the list of other plugins that this plugin requires to be loaded prior to this plugin. Be careful of creating infinite loops of dependencies - we don't check for them currently!
@@ -145,7 +145,7 @@
 --- ```
 ---
 --- You do not have to know anything about where the plugin folder is stored, or use the plugin ID. Just use the local file path within the plugin. If you have another file in a `foo` folder called `bar.lua`, it can be loaded via:
---- 
+---
 --- ```lua
 --- local fooBar = require("foo.bar")
 --- ```
@@ -177,6 +177,8 @@ local env							= require("cp.plugins.env")
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+mod.SLOW_PLUGIN_WARNING_THRESHOLD = 0.05
 
 mod.CACHE	= {}
 mod.IDS		= {}
@@ -272,7 +274,13 @@ end
 ---
 function mod.initPlugins()
 	for _,id in ipairs(mod.IDS) do
+	    local startTime = os.clock()
 		mod.initPlugin(id)
+		local finishTime = os.clock()
+		local loadingTime = finishTime-startTime
+		if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
+    		log.df("Detected Slow Plugin: %s (%s)", id, finishTime-startTime)
+    	end
 	end
 end
 
@@ -504,7 +512,13 @@ end
 ---
 function mod.postInitPlugins()
 	for _,id in pairs(mod.IDS) do
+	    local startTime = os.clock()
 		mod.postInitPlugin(id)
+		local finishTime = os.clock()
+		local loadingTime = finishTime-startTime
+		if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
+    		log.df("Detected Slow Post Plugin: %s (%s)", id, finishTime-startTime)
+    	end
 	end
 end
 
@@ -712,7 +726,7 @@ end
 --- Complex plugins can also have other resources, accessible via an `cp.plugins.env` parameter
 --- passed to the `init()` function. For example, an image stored in the `images` folder
 --- inside the plugin can be accessed via:
---- 
+---
 --- ```lua
 --- function plugin.init(dependencies, env)
 --- 	local imagePath = env:pathToAbsolute("image/example.jpg")
