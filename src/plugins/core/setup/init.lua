@@ -260,7 +260,6 @@ local function windowCallback(action, webview, frame)
         if not hs.shuttingDown then
             mod.webview = nil
         end
-    elseif action == "focusChange" then
     elseif action == "frameChange" then
         if frame then
             mod.position(frame)
