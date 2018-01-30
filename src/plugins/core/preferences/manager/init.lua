@@ -22,10 +22,8 @@ local log                                       = require("hs.logger").new("pref
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local geometry                                  = require("hs.geometry")
 local inspect                                   = require("hs.inspect")
 local screen                                    = require("hs.screen")
-local timer                                     = require("hs.timer")
 local toolbar                                   = require("hs.webview.toolbar")
 local webview                                   = require("hs.webview")
 
@@ -52,7 +50,6 @@ local panel                                     = require("panel")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY                                  = 8888889
 local WEBVIEW_LABEL                             = "preferences"
 
 --------------------------------------------------------------------------------
@@ -178,7 +175,7 @@ end
 -- Returns:
 --  * Boolean
 local function isPanelIDValid(whichID)
-    for i, v in ipairs(mod._panels) do
+    for _, v in ipairs(mod._panels) do
         if v.id == whichID then
             return true
         end
@@ -255,7 +252,7 @@ local function windowCallback(action, webview, frame)
             end
 
         end
-    elseif action == "focusChange" then
+    --elseif action == "focusChange" then
     elseif action == "frameChange" then
         if frame then
             mod.position(frame)
@@ -366,10 +363,9 @@ function mod.new()
             end)
 
         local toolbar = mod.toolbar
-        for _,panel in ipairs(mod._panels) do
-            local item = panel:getToolbarItem()
+        for _,thePanel in ipairs(mod._panels) do
+            local item = thePanel:getToolbarItem()
             toolbar:addItems(item)
-            -- toolbar:insertItem(item.id, index)
             if not toolbar:selectedItem() then
                 toolbar:selectedItem(item.id)
             end
@@ -506,23 +502,23 @@ function mod.selectPanel(id)
 
     local js = ""
 
-    for i, panel in ipairs(mod._panels) do
+    for _, thePanel in ipairs(mod._panels) do
         --------------------------------------------------------------------------------
         -- Resize Panel:
         --------------------------------------------------------------------------------
-        if panel.id == id and panel.height then
+        if thePanel.id == id and thePanel.height then
             local height
-            if type(panel.height) == "function" then
-                height = panel.height()
+            if type(thePanel.height) == "function" then
+                height = thePanel.height()
             else
-                height = panel.height
+                height = thePanel.height
             end
             mod.webview:size({w = mod.defaultWidth, h = height })
         end
 
-        local style = panel.id == id and "block" or "none"
+        local style = thePanel.id == id and "block" or "none"
         js = js .. [[
-            document.getElementById(']] .. panel.id .. [[').style.display = ']] .. style .. [[';
+            document.getElementById(']] .. thePanel.id .. [[').style.display = ']] .. style .. [[';
         ]]
     end
 

@@ -30,7 +30,6 @@ local webview                                   = require("hs.webview")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
@@ -115,7 +114,7 @@ mod.visible = prop.new(function() return mod.webview and mod.webview:hswindow() 
 --- Constant
 --- Set to `true` if the manager is enabled. Defaults to `false`.
 --- Panels can be added while disabled. Once enabled, the window will appear and display the panels.
-mod.enabled = prop.FALSE():watch(function(enabled)
+mod.enabled = prop.FALSE():watch(function()
     --------------------------------------------------------------------------------
     -- Show the welcome window, if any panels are registered:
     --------------------------------------------------------------------------------
@@ -311,8 +310,8 @@ function mod.new()
                 local body = message.body
                 local id = body.id
                 local params = body.params
-                local panel = mod.currentPanel()
-                local handler = panel and panel:getHandler(id)
+                local thePanel = mod.currentPanel()
+                local handler = thePanel and thePanel:getHandler(id)
                 if handler then
                     return handler(id, params)
                 end
