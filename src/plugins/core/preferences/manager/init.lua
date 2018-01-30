@@ -286,12 +286,12 @@ end
 ---  * The maximum panel height.
 function mod.maxPanelHeight()
     local max = mod.defaultHeight
-    for _,panel in ipairs(mod._panels) do
+    for _,thePanel in ipairs(mod._panels) do
         local height
-        if type(panel.height) == "function" then
-            height = panel.height()
+        if type(thePanel.height) == "function" then
+            height = thePanel.height()
         else
-            height = panel.height
+            height = thePanel.height
         end
         if type(height) == "number" then
             if height > max then max = height end
@@ -358,16 +358,16 @@ function mod.new()
         mod.toolbar = toolbar.new(WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
-            :setCallback(function(toolbar, webview, id)
+            :setCallback(function(_, _, id)
                 mod.selectPanel(id)
             end)
 
-        local toolbar = mod.toolbar
+        local theToolbar = mod.toolbar
         for _,thePanel in ipairs(mod._panels) do
             local item = thePanel:getToolbarItem()
-            toolbar:addItems(item)
-            if not toolbar:selectedItem() then
-                toolbar:selectedItem(item.id)
+            theToolbar:addItems(item)
+            if not theToolbar:selectedItem() then
+                theToolbar:selectedItem(item.id)
             end
         end
     end
