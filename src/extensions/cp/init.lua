@@ -271,7 +271,22 @@ function mod.init()
 	-- Enable "Launch at Startup" by default:
 	--------------------------------------------------------------------------------
 	if not config.get("hasRunOnce", false) then
+	    --------------------------------------------------------------------------------
+	    -- Disabled plugins by default:
+	    --------------------------------------------------------------------------------
+	    config.set("plugins.disabled", {
+	        ["core.webapp"] = true,
+            ["core.preferences.panels.webapp"] = true,
+        })
+
+        --------------------------------------------------------------------------------
+        -- Enable Automatic Launch by default:
+        --------------------------------------------------------------------------------
 		hs.autoLaunch(true)
+
+		--------------------------------------------------------------------------------
+		-- Don't do this again unless you trash preferences:
+		--------------------------------------------------------------------------------
 		config.set("hasRunOnce", true)
 	end
 
