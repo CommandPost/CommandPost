@@ -26,13 +26,12 @@ local log                                       = require("hs.logger").new("mana
 local canvas                                    = require("hs.canvas")
 local eventtap                                  = require("hs.eventtap")
 local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
+local dialog                                    = require("cp.dialog")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
@@ -148,7 +147,7 @@ end
 function widgets.allGroups()
     local result = {}
     local widgets = widgets:getAll()
-    for id, widget in pairs(widgets) do
+    for _, widget in pairs(widgets) do
         local params = widget:params()
         if params and params.group then
             if not tools.tableContains(result, params.group) then
@@ -457,32 +456,11 @@ function mod.start()
         -- Setup System Icon:
         --------------------------------------------------------------------------------
         mod._sysTrayIcon = touchbar.item.newButton(icon:imageFromCanvas(), "CommandPost")
-                             :callback(function(self)
-
-                                --[[
-                                log.df("visible: %s", mod._bar:isVisible())
-                                if mod._bar:isVisible() then
-                                    mod._bar:minimizeModalBar()
-                                else
-                                    mod._bar:presentModalBar()
-                                    --self:presentModalBar(mod._bar, mod.dismissButton)
-                                end
-                                --]]
-
+                             :callback(function()
                                 mod.incrementActiveSubGroup()
                                 mod.update()
-
-                                --self:addToSystemTray(false)
-                                --self:addToSystemTray(true)
                              end)
                              :addToSystemTray(true)
-
-                             --[[
-                             :visibilityCallback(function(object, visible)
-                                log.df("object: %s", object)
-                                log.df("visible: %s", visible)
-                             end)
-                             --]]
 
         --------------------------------------------------------------------------------
         -- Update Touch Bar:
@@ -934,11 +912,6 @@ function mod.virtual.updateLocation()
     --------------------------------------------------------------------------------
     if not mod._touchBar then return end
 
-    --------------------------------------------------------------------------------
-    -- Get Settings:
-    --------------------------------------------------------------------------------
-    local displayTouchBarLocation = mod.virtual.location()
-
     --------------------------------------------------=-----------------------------
     -- Put it back to last known position:
     --------------------------------------------------------------------------------
@@ -952,7 +925,7 @@ function mod.virtual.updateLocation()
     --------------------------------------------------------------------------------
     local updateLocationCallbacks = mod.virtual.updateLocationCallback:getAll()
     if updateLocationCallbacks and type(updateLocationCallbacks) == "table" then
-        for i, v in pairs(updateLocationCallbacks) do
+        for _, v in pairs(updateLocationCallbacks) do
             local fn = v:callbackFn()
             if fn and type(fn) == "function" then
                 fn()
@@ -1225,7 +1198,6 @@ function plugin.postInit(deps, env)
                 return choices
             end)
             :onExecute(function() end)
-            :onActionId(function() return id end)
     end
 
     --------------------------------------------------------------------------------
