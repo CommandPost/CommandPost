@@ -22,6 +22,7 @@ local log                                       = require("hs.logger").new("watc
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local inspect                                   = require("hs.inspect")
 local screen                                    = require("hs.screen")
 local timer                                     = require("hs.timer")
 local toolbar                                   = require("hs.webview.toolbar")
@@ -155,7 +156,7 @@ end
 -- Returns:
 --  * Boolean
 local function isPanelIDValid(whichID)
-    for i, v in ipairs(mod._panels) do
+    for _, v in ipairs(mod._panels) do
         if v.id == whichID then
             return true
         end
@@ -176,7 +177,6 @@ local function highestPriorityID()
     if mod.lastTab() and isPanelIDValid(mod.lastTab()) then
         return mod.lastTab()
     else
-        local sortedPanels = mod._panels
         return #mod._panels > 0 and mod._panels[1].id or nil
     end
 end
@@ -225,7 +225,7 @@ local function windowCallback(action, webview, frame)
     elseif action == "focusChange" then
         if frame and mod._toolbar then
             local id = mod._toolbar:selectedItem()
-            for i, v in ipairs(mod._panels) do
+            for _, v in ipairs(mod._panels) do
                 if v.id == id then
                     --log.df("Executing Load Function via manager.windowCallback.")
                     v.loadFn()
@@ -250,8 +250,8 @@ end
 --- * A number
 function mod.maxPanelHeight()
     local max = mod.DEFAULT_HEIGHT
-    for _,panel in ipairs(mod._panels) do
-        max = panel.height ~= nil and panel.height < max and max or panel.height
+    for _,v in ipairs(mod._panels) do
+        max = v.height ~= nil and v.height < max and max or v.height
     end
     return max
 end
@@ -295,7 +295,7 @@ function mod.new()
     if not mod._controller then
         mod._controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
             :setCallback(function(message)
-                --log.df("webview callback called: %s", hs.inspect(message))
+                --log.df("webview callback called: %s", inspect(message))
                 local body = message.body
                 local id = body.id
                 local params = body.params
@@ -408,9 +408,9 @@ end
 function mod.injectScript(script)
     if mod._webview and mod._webview:frame() then
         mod._webview:evaluateJavaScript(script,
-        function(result, theerror)
+        function(_, theerror)
             if theerror then
-                --log.df("Javascript Error: %s", hs.inspect(theerror))
+                log.df("Javascript Error: %s", inspect(theerror))
             end
         end)
     end
@@ -434,7 +434,7 @@ function mod.selectPanel(id)
     local js = ""
 
     local loadFn = nil
-    for i, v in ipairs(mod._panels) do
+    for _, v in ipairs(mod._panels) do
 
         --------------------------------------------------------------------------------
         -- Load Function for Panel:
