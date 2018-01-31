@@ -41,6 +41,10 @@
 						%}
 							<option selected="" value="{{device}}">{{device}} (Offline)</option>
 						{%
+						elseif #midiDevices == 0 then
+						%}
+							<option disabled="disabled" value="">{{i18nNoDevicesDetected}}</option>
+						{%
 						end
 						%}
 						<option disabled="disabled" value="">--------------------------</option>
@@ -62,6 +66,10 @@
 						%}
 							<option selected="" value="virtual_{{device}}">{{ string.sub(device, 9) }} (Offline)</option>
 						{%
+						elseif #virtualMidiDevices == 0 then
+						%}
+							<option disabled="disabled" value="">{{i18nNoDevicesDetected}}</option>
+						{%
 						end
 						%}
 					</select>
@@ -76,11 +84,15 @@
 						if channel == i18nNone then selected = [[selected=""]] end
 						%}
 						<option {{selected}} value="">{{i18nNone}}</option>
-						{% for channelValue=0, 15 do
+						{% for channelValue=0, 16 do
 							local selected = ""
 							if tostring(channel) == tostring(channelValue) then selected = [[selected=""]] end
+							local channelValueString = tostring(channelValue)
+							if channelValue == 0 then
+								channelValueString = i18nAll
+							end
 						%}
-							<option {{selected}} value="{{ channelValue }}">{{ channelValue }}</option>
+							<option {{selected}} value="{{ channelValue }}">{{ channelValueString }}</option>
 						{% end %}
 					</select>
 				</td>
