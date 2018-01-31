@@ -47,27 +47,45 @@ local panel                                     = require("panel")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local WEBVIEW_LABEL                             = "preferences"
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.manager.WEBVIEW_LABEL -> string
+--- Constant
+--- The WebView Label
+mod.WEBVIEW_LABEL = "preferences"
+
+--- plugins.core.preferences.manager.DEFAULT_WINDOW_STYLE
+--- Constant
+--- Default Webview Window Style of Preferences Window
+mod.DEFAULT_WINDOW_STYLE  = {"titled", "closable", "nonactivating"}
+
+--- plugins.core.preferences.manager.DEFAULT_HEIGHT
+--- Constant
+--- Default Height of Preferences Window
+mod.DEFAULT_HEIGHT = 338
+
+--- plugins.core.preferences.manager.DEFAULT_WIDTH
+--- Constant
+--- Default Width of Preferences Window
+mod.DEFAULT_WIDTH = 750
+
+--- plugins.core.preferences.manager.DEFAULT_TITLE
+--- Constant
+--- Default Title of Preferences Window
+mod.DEFAULT_TITLE = i18n("preferences")
+
 --- plugins.core.preferences.manager._panels
 --- Variable
 --- Table containing panels.
-mod._panels             = {}
+mod._panels = {}
 
 --- plugins.core.preferences.manager._handlers
 --- Variable
 --- Table containing handlers.
-mod._handlers           = {}
+mod._handlers = {}
 
 --- plugins.core.preferences.manager.position
 --- Constant
@@ -78,26 +96,6 @@ mod.position = config.prop("preferencesPosition", nil)
 --- Constant
 --- Returns the last tab saved in settings.
 mod.lastTab = config.prop("preferencesLastTab", nil)
-
---- plugins.core.preferences.manager.defaultWindowStyle
---- Variable
---- Default Webview Window Style of Preferences Window
-mod.defaultWindowStyle  = {"titled", "closable", "nonactivating"}
-
---- plugins.core.preferences.manager.defaultWidth
---- Variable
---- Default Width of Preferences Window
-mod.defaultWidth        = 750
-
---- plugins.core.preferences.manager.defaultHeight
---- Variable
---- Default Height of Preferences Window
-mod.defaultHeight       = 338
-
---- plugins.core.preferences.manager.defaultTitle
---- Variable
---- Default Title of Preferences Window
-mod.defaultTitle        = i18n("preferences")
 
 --- plugins.core.preferences.manager.getWebview() -> hs.webview
 --- Function
@@ -122,12 +120,12 @@ end
 --- Returns:
 ---  * The Webview label as a string.
 function mod.getLabel()
-    return WEBVIEW_LABEL
+    return mod.WEBVIEW_LABEL
 end
 
 --- plugins.core.preferences.manager.addHandler(id, handlerFn) -> string
 --- Function
---- Returns the Webview label.
+--- Adds a Handler
 ---
 --- Parameters:
 ---  * id - The ID
@@ -284,7 +282,7 @@ end
 --- Returns:
 ---  * The maximum panel height.
 function mod.maxPanelHeight()
-    local max = mod.defaultHeight
+    local max = mod.DEFAULT_HEIGHT
     for _,thePanel in ipairs(mod._panels) do
         local height
         if type(thePanel.height) == "function" then
@@ -312,7 +310,7 @@ end
 --  * Table
 local function centredPosition()
     local sf = screen.mainScreen():frame()
-    return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.defaultWidth, h = mod.defaultHeight}
+    return {x = sf.x + (sf.w/2) - (mod.DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
 end
 
 --- plugins.core.preferences.manager.new() -> none
@@ -337,7 +335,7 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Web View Controller:
     --------------------------------------------------------------------------------
-    mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
+    mod.controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
         :setCallback(function(message)
             local body = message.body
             local id = body.id
@@ -354,7 +352,7 @@ function mod.new()
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
     if not mod.toolbar then
-        mod.toolbar = toolbar.new(WEBVIEW_LABEL)
+        mod.toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
@@ -377,11 +375,11 @@ function mod.new()
     local prefs = {}
     prefs.developerExtrasEnabled = config.developerMode()
     mod.webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.defaultWindowStyle)
+        :windowStyle(mod.DEFAULT_WINDOW_STYLE)
         :shadow(true)
         :allowNewWindows(false)
         :allowTextEntry(true)
-        :windowTitle(mod.defaultTitle)
+        :windowTitle(mod.DEFAULT_TITLE)
         :attachedToolbar(mod.toolbar)
         :deleteOnClose(true)
         :windowCallback(windowCallback)
@@ -512,7 +510,7 @@ function mod.selectPanel(id)
             else
                 height = thePanel.height
             end
-            mod.webview:size({w = mod.defaultWidth, h = height })
+            mod.webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
         local style = thePanel.id == id and "block" or "none"
@@ -571,6 +569,7 @@ function mod.addPanel(params)
     table.insert(mod._panels, index, newPanel)
 
     if mod.toolbar then
+        local toolbar = mod.toolbar
         local item = panel:getToolbarItem()
 
         toolbar:addItems(item)
