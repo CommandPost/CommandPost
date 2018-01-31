@@ -47,27 +47,45 @@ local panel                                     = require("panel")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local WEBVIEW_LABEL                             = "preferences"
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.manager.WEBVIEW_LABEL -> string
+--- Constant
+--- The WebView Label
+mod.WEBVIEW_LABEL = "preferences"
+
+--- plugins.core.preferences.manager.DEFAULT_WINDOW_STYLE
+--- Constant
+--- Default Webview Window Style of Preferences Window
+mod.DEFAULT_WINDOW_STYLE  = {"titled", "closable", "nonactivating"}
+
+--- plugins.core.preferences.manager.DEFAULT_HEIGHT
+--- Constant
+--- Default Height of Preferences Window
+mod.DEFAULT_HEIGHT = 338
+
+--- plugins.core.preferences.manager.DEFAULT_WIDTH
+--- Constant
+--- Default Width of Preferences Window
+mod.DEFAULT_WIDTH = 750
+
+--- plugins.core.preferences.manager.DEFAULT_TITLE
+--- Constant
+--- Default Title of Preferences Window
+mod.DEFAULT_TITLE = i18n("preferences")
+
 --- plugins.core.preferences.manager._panels
 --- Variable
 --- Table containing panels.
-mod._panels             = {}
+mod._panels = {}
 
 --- plugins.core.preferences.manager._handlers
 --- Variable
 --- Table containing handlers.
-mod._handlers           = {}
+mod._handlers = {}
 
 --- plugins.core.preferences.manager.position
 --- Constant
@@ -79,26 +97,6 @@ mod.position = config.prop("preferencesPosition", nil)
 --- Returns the last tab saved in settings.
 mod.lastTab = config.prop("preferencesLastTab", nil)
 
---- plugins.core.preferences.manager.defaultWindowStyle
---- Variable
---- Default Webview Window Style of Preferences Window
-mod.defaultWindowStyle  = {"titled", "closable", "nonactivating"}
-
---- plugins.core.preferences.manager.defaultWidth
---- Variable
---- Default Width of Preferences Window
-mod.defaultWidth        = 750
-
---- plugins.core.preferences.manager.defaultHeight
---- Variable
---- Default Height of Preferences Window
-mod.defaultHeight       = 338
-
---- plugins.core.preferences.manager.defaultTitle
---- Variable
---- Default Title of Preferences Window
-mod.defaultTitle        = i18n("preferences")
-
 --- plugins.core.preferences.manager.getWebview() -> hs.webview
 --- Function
 --- Returns the Webview of the Preferences Window.
@@ -109,7 +107,7 @@ mod.defaultTitle        = i18n("preferences")
 --- Returns:
 ---  * A `hs.webview`
 function mod.getWebview()
-    return mod.webview
+    return mod._webview
 end
 
 --- plugins.core.preferences.manager.getLabel() -> string
@@ -122,12 +120,12 @@ end
 --- Returns:
 ---  * The Webview label as a string.
 function mod.getLabel()
-    return WEBVIEW_LABEL
+    return mod.WEBVIEW_LABEL
 end
 
 --- plugins.core.preferences.manager.addHandler(id, handlerFn) -> string
 --- Function
---- Returns the Webview label.
+--- Adds a Handler
 ---
 --- Parameters:
 ---  * id - The ID
@@ -240,7 +238,7 @@ end
 local function windowCallback(action, webview, frame)
     if action == "closing" then
         if not hs.shuttingDown then
-            mod.webview = nil
+            mod._webview = nil
 
             --------------------------------------------------------------------------------
             -- Trigger Closing Callbacks:
@@ -284,7 +282,7 @@ end
 --- Returns:
 ---  * The maximum panel height.
 function mod.maxPanelHeight()
-    local max = mod.defaultHeight
+    local max = mod.DEFAULT_HEIGHT
     for _,thePanel in ipairs(mod._panels) do
         local height
         if type(thePanel.height) == "function" then
@@ -312,7 +310,7 @@ end
 --  * Table
 local function centredPosition()
     local sf = screen.mainScreen():frame()
-    return {x = sf.x + (sf.w/2) - (mod.defaultWidth/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.defaultWidth, h = mod.defaultHeight}
+    return {x = sf.x + (sf.w/2) - (mod.DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (mod.maxPanelHeight()/2), w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
 end
 
 --- plugins.core.preferences.manager.new() -> none
@@ -337,31 +335,32 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Web View Controller:
     --------------------------------------------------------------------------------
-    mod.controller = webview.usercontent.new(WEBVIEW_LABEL)
-        :setCallback(function(message)
-            local body = message.body
-            local id = body.id
-            local params = body.params
+    if not mod._controller then
+        mod._controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
+            :setCallback(function(message)
+                local body = message.body
+                local id = body.id
+                local params = body.params
 
-            local handler = mod.getHandler(id)
-            if handler then
-                return handler(id, params)
-            end
-        end)
-
+                local handler = mod.getHandler(id)
+                if handler then
+                    return handler(id, params)
+                end
+            end)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
-    if not mod.toolbar then
-        mod.toolbar = toolbar.new(WEBVIEW_LABEL)
+    if not mod._toolbar then
+        mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
                 mod.selectPanel(id)
             end)
 
-        local theToolbar = mod.toolbar
+        local theToolbar = mod._toolbar
         for _,thePanel in ipairs(mod._panels) do
             local item = thePanel:getToolbarItem()
             theToolbar:addItems(item)
@@ -374,18 +373,20 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Web View:
     --------------------------------------------------------------------------------
-    local prefs = {}
-    prefs.developerExtrasEnabled = config.developerMode()
-    mod.webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.defaultWindowStyle)
-        :shadow(true)
-        :allowNewWindows(false)
-        :allowTextEntry(true)
-        :windowTitle(mod.defaultTitle)
-        :attachedToolbar(mod.toolbar)
-        :deleteOnClose(true)
-        :windowCallback(windowCallback)
-        :darkMode(true)
+    if not mod._webview then
+        local prefs = {}
+        prefs.developerExtrasEnabled = config.developerMode()
+        mod._webview = webview.new(defaultRect, prefs, mod._controller)
+            :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+            :shadow(true)
+            :allowNewWindows(false)
+            :allowTextEntry(true)
+            :windowTitle(mod.DEFAULT_TITLE)
+            :attachedToolbar(mod._toolbar)
+            :deleteOnClose(true)
+            :windowCallback(windowCallback)
+            :darkMode(true)
+    end
 
     return mod
 end
@@ -401,7 +402,7 @@ end
 ---  * True if successful or nil if an error occurred
 function mod.show()
 
-    if mod.webview == nil then
+    if mod._webview == nil then
         mod.new()
     end
 
@@ -410,8 +411,8 @@ function mod.show()
         return nil
     else
         mod.selectPanel(currentPanelID())
-        mod.webview:html(generateHTML())
-        mod.webview:show()
+        mod._webview:html(generateHTML())
+        mod._webview:show()
         mod.focus()
     end
 
@@ -429,7 +430,7 @@ end
 ---  * `true` if successful or otherwise `false`.
 function mod.focus()
     just.doUntil(function()
-        if mod.webview and mod.webview:hswindow() and mod.webview:hswindow():raise():focus() then
+        if mod._webview and mod._webview:hswindow() and mod._webview:hswindow():raise():focus() then
             return true
         else
             return false
@@ -447,9 +448,9 @@ end
 --- Returns:
 ---  * None
 function mod.hide()
-    if mod.webview then
-        mod.webview:delete()
-        mod.webview = nil
+    if mod._webview then
+        mod._webview:delete()
+        mod._webview = nil
     end
 end
 
@@ -463,9 +464,9 @@ end
 --- Returns:
 ---  * None
 function mod.refresh()
-    if mod.webview then
+    if mod._webview then
         mod.selectPanel(currentPanelID())
-        mod.webview:html(generateHTML())
+        mod._webview:html(generateHTML())
     end
 end
 
@@ -479,8 +480,8 @@ end
 --- Returns:
 ---  * None
 function mod.injectScript(script)
-    if mod.webview then
-        mod.webview:evaluateJavaScript(script)
+    if mod._webview then
+        mod._webview:evaluateJavaScript(script)
     end
 end
 
@@ -495,7 +496,7 @@ end
 ---  * None
 function mod.selectPanel(id)
 
-    if not mod.webview then
+    if not mod._webview then
         return
     end
 
@@ -512,7 +513,7 @@ function mod.selectPanel(id)
             else
                 height = thePanel.height
             end
-            mod.webview:size({w = mod.defaultWidth, h = height })
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
         local style = thePanel.id == id and "block" or "none"
@@ -521,8 +522,8 @@ function mod.selectPanel(id)
         ]]
     end
 
-    mod.webview:evaluateJavaScript(js)
-    mod.toolbar:selectedItem(id)
+    mod._webview:evaluateJavaScript(js)
+    mod._toolbar:selectedItem(id)
 
     --------------------------------------------------------------------------------
     -- Save Last Tab in Settings:
@@ -569,16 +570,6 @@ function mod.addPanel(params)
 
     local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
-
-    if mod.toolbar then
-        local item = panel:getToolbarItem()
-
-        toolbar:addItems(item)
-        toolbar:insertItem(item.id, index)
-        if not toolbar:selectedItem() then
-            toolbar:selectedItem(item.id)
-        end
-    end
 
     return newPanel
 end
