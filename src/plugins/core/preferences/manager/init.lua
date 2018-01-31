@@ -107,7 +107,7 @@ mod.lastTab = config.prop("preferencesLastTab", nil)
 --- Returns:
 ---  * A `hs.webview`
 function mod.getWebview()
-    return mod.webview
+    return mod._webview
 end
 
 --- plugins.core.preferences.manager.getLabel() -> string
@@ -238,7 +238,7 @@ end
 local function windowCallback(action, webview, frame)
     if action == "closing" then
         if not hs.shuttingDown then
-            mod.webview = nil
+            mod._webview = nil
 
             --------------------------------------------------------------------------------
             -- Trigger Closing Callbacks:
@@ -335,31 +335,32 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Web View Controller:
     --------------------------------------------------------------------------------
-    mod.controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
-        :setCallback(function(message)
-            local body = message.body
-            local id = body.id
-            local params = body.params
+    if not mod._controller then
+        mod._controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
+            :setCallback(function(message)
+                local body = message.body
+                local id = body.id
+                local params = body.params
 
-            local handler = mod.getHandler(id)
-            if handler then
-                return handler(id, params)
-            end
-        end)
-
+                local handler = mod.getHandler(id)
+                if handler then
+                    return handler(id, params)
+                end
+            end)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
-    if not mod.toolbar then
-        mod.toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+    if not mod._toolbar then
+        mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
             :canCustomize(true)
             :autosaves(true)
             :setCallback(function(_, _, id)
                 mod.selectPanel(id)
             end)
 
-        local theToolbar = mod.toolbar
+        local theToolbar = mod._toolbar
         for _,thePanel in ipairs(mod._panels) do
             local item = thePanel:getToolbarItem()
             theToolbar:addItems(item)
@@ -372,18 +373,20 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Web View:
     --------------------------------------------------------------------------------
-    local prefs = {}
-    prefs.developerExtrasEnabled = config.developerMode()
-    mod.webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.DEFAULT_WINDOW_STYLE)
-        :shadow(true)
-        :allowNewWindows(false)
-        :allowTextEntry(true)
-        :windowTitle(mod.DEFAULT_TITLE)
-        :attachedToolbar(mod.toolbar)
-        :deleteOnClose(true)
-        :windowCallback(windowCallback)
-        :darkMode(true)
+    if not mod._webview then
+        local prefs = {}
+        prefs.developerExtrasEnabled = config.developerMode()
+        mod._webview = webview.new(defaultRect, prefs, mod._controller)
+            :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+            :shadow(true)
+            :allowNewWindows(false)
+            :allowTextEntry(true)
+            :windowTitle(mod.DEFAULT_TITLE)
+            :attachedToolbar(mod._toolbar)
+            :deleteOnClose(true)
+            :windowCallback(windowCallback)
+            :darkMode(true)
+    end
 
     return mod
 end
@@ -399,7 +402,7 @@ end
 ---  * True if successful or nil if an error occurred
 function mod.show()
 
-    if mod.webview == nil then
+    if mod._webview == nil then
         mod.new()
     end
 
@@ -408,8 +411,8 @@ function mod.show()
         return nil
     else
         mod.selectPanel(currentPanelID())
-        mod.webview:html(generateHTML())
-        mod.webview:show()
+        mod._webview:html(generateHTML())
+        mod._webview:show()
         mod.focus()
     end
 
@@ -427,7 +430,7 @@ end
 ---  * `true` if successful or otherwise `false`.
 function mod.focus()
     just.doUntil(function()
-        if mod.webview and mod.webview:hswindow() and mod.webview:hswindow():raise():focus() then
+        if mod._webview and mod._webview:hswindow() and mod._webview:hswindow():raise():focus() then
             return true
         else
             return false
@@ -445,9 +448,9 @@ end
 --- Returns:
 ---  * None
 function mod.hide()
-    if mod.webview then
-        mod.webview:delete()
-        mod.webview = nil
+    if mod._webview then
+        mod._webview:delete()
+        mod._webview = nil
     end
 end
 
@@ -461,9 +464,9 @@ end
 --- Returns:
 ---  * None
 function mod.refresh()
-    if mod.webview then
+    if mod._webview then
         mod.selectPanel(currentPanelID())
-        mod.webview:html(generateHTML())
+        mod._webview:html(generateHTML())
     end
 end
 
@@ -477,8 +480,8 @@ end
 --- Returns:
 ---  * None
 function mod.injectScript(script)
-    if mod.webview then
-        mod.webview:evaluateJavaScript(script)
+    if mod._webview then
+        mod._webview:evaluateJavaScript(script)
     end
 end
 
@@ -493,7 +496,7 @@ end
 ---  * None
 function mod.selectPanel(id)
 
-    if not mod.webview then
+    if not mod._webview then
         return
     end
 
@@ -510,7 +513,7 @@ function mod.selectPanel(id)
             else
                 height = thePanel.height
             end
-            mod.webview:size({w = mod.DEFAULT_WIDTH, h = height })
+            mod._webview:size({w = mod.DEFAULT_WIDTH, h = height })
         end
 
         local style = thePanel.id == id and "block" or "none"
@@ -519,8 +522,8 @@ function mod.selectPanel(id)
         ]]
     end
 
-    mod.webview:evaluateJavaScript(js)
-    mod.toolbar:selectedItem(id)
+    mod._webview:evaluateJavaScript(js)
+    mod._toolbar:selectedItem(id)
 
     --------------------------------------------------------------------------------
     -- Save Last Tab in Settings:
@@ -567,17 +570,6 @@ function mod.addPanel(params)
 
     local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
-
-    if mod.toolbar then
-        local toolbar = mod.toolbar
-        local item = panel:getToolbarItem()
-
-        toolbar:addItems(item)
-        toolbar:insertItem(item.id, index)
-        if not toolbar:selectedItem() then
-            toolbar:selectedItem(item.id)
-        end
-    end
 
     return newPanel
 end

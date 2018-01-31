@@ -292,43 +292,58 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Web View Controller:
     --------------------------------------------------------------------------------
-    mod.controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
-        :setCallback(function(message)
-            --log.df("webview callback called: %s", hs.inspect(message))
-            local body = message.body
-            local id = body.id
-            local params = body.params
-            local handler = mod.getHandler(id)
-            if handler then
-                return handler(id, params)
-            end
-        end)
+    if not mod._controller then
+        mod._controller = webview.usercontent.new(mod.WEBVIEW_LABEL)
+            :setCallback(function(message)
+                --log.df("webview callback called: %s", hs.inspect(message))
+                local body = message.body
+                local id = body.id
+                local params = body.params
+                local handler = mod.getHandler(id)
+                if handler then
+                    return handler(id, params)
+                end
+            end)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
-    mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
-        :canCustomize(true)
-        :autosaves(true)
-        :setCallback(function(toolbar, webview, id)
-            mod.selectPanel(id)
-        end)
+    if not mod._toolbar then
+        mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+            :canCustomize(true)
+            :autosaves(true)
+            :setCallback(function(_, _, id)
+                mod.selectPanel(id)
+            end)
+
+        local theToolbar = mod._toolbar
+        for _,thePanel in ipairs(mod._panels) do
+            local item = thePanel:getToolbarItem()
+            theToolbar:addItems(item)
+            if not theToolbar:selectedItem() then
+                theToolbar:selectedItem(item.id)
+            end
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Web View:
     --------------------------------------------------------------------------------
-    local prefs = {}
-    if config.developerMode() then prefs = {developerExtrasEnabled = true} end
-    mod._webview = webview.new(defaultRect, prefs, mod.controller)
-        :windowStyle(mod.DEFAULT_WINDOW_STYLE)
-        :shadow(true)
-        :allowNewWindows(false)
-        :allowTextEntry(true)
-        :windowTitle(mod.DEFAULT_TITLE)
-        :attachedToolbar(mod._toolbar)
-        :deleteOnClose(true)
-        :windowCallback(windowCallback)
-        :darkMode(true)
+    if not mod._webview then
+        local prefs = {}
+        if config.developerMode() then prefs = {developerExtrasEnabled = true} end
+        mod._webview = webview.new(defaultRect, prefs, mod._controller)
+            :windowStyle(mod.DEFAULT_WINDOW_STYLE)
+            :shadow(true)
+            :allowNewWindows(false)
+            :allowTextEntry(true)
+            :windowTitle(mod.DEFAULT_TITLE)
+            :attachedToolbar(mod._toolbar)
+            :deleteOnClose(true)
+            :windowCallback(windowCallback)
+            :darkMode(true)
+    end
 
 end
 
@@ -360,7 +375,6 @@ function mod.show()
     --------------------------------------------------------------------------------
     -- Select Panel:
     --------------------------------------------------------------------------------
-    log.df("SELECTING PANEL... HOPEFULLY FOR THE FIRST TIME")
     mod.selectPanel(highestPriorityID())
 
     return true
@@ -412,9 +426,6 @@ end
 --- Returns:
 ---  * None
 function mod.selectPanel(id)
-
-    log.df("mod.selectPanel(id): %s", id)
-    log.df("items: %s", hs.inspect(mod._toolbar:items()))
 
     if not mod._webview or not mod._toolbar then
         return
@@ -499,17 +510,6 @@ function mod.addPanel(params)
 
     local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
-
-    if mod._toolbar then
-        local toolbar = mod._toolbar
-        local item = newPanel:getToolbarItem()
-
-        toolbar:addItems(item)
-        toolbar:insertItem(item.id, index)
-        if not toolbar:selectedItem() then
-            toolbar:selectedItem(item.id)
-        end
-    end
 
     return newPanel
 end
