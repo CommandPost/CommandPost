@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log           = require("hs.logger").new("lang")
+--local log           = require("hs.logger").new("lang")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -130,14 +130,13 @@ local function getCommandPostLanguagesMenu()
 
         if userLocale == nil then userLocale = host.locale.current() end
 
-        local basicUserLocale = nil
+        local basicUserLocale
         if string.find(userLocale, "_") ~= nil then
             basicUserLocale = string.sub(userLocale, 1, string.find(userLocale, "_") - 1)
         else
             basicUserLocale = userLocale
         end
 
-        local selectedLanguage = nil
         local settingsLanguage = {}
         local commandPostLanguages = mod.getCommandPostLanguages()
         for i,language in ipairs(commandPostLanguages) do
