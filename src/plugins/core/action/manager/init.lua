@@ -13,23 +13,32 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log						= require("hs.logger").new("actnmngr")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fnutils					= require("hs.fnutils")
 local timer						= require("hs.timer")
 local urlevent					= require("hs.urlevent")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config					= require("cp.config")
 local dialog					= require("cp.dialog")
-
 local prop						= require("cp.prop")
+local tools                     = require("cp.tools")
 
-local handler					= require("handler")
+--------------------------------------------------------------------------------
+-- Module Extensions:
+--------------------------------------------------------------------------------
 local activator					= require("activator")
-
-local insert, remove			= table.insert, table.remove
-local copy						= fnutils.copy
-local format					= string.format
+local handler					= require("handler")
 
 --------------------------------------------------------------------------------
 --
@@ -44,32 +53,22 @@ local mod = {
 	_cache		= {},
 }
 
+local insert, remove			= table.insert, table.remove
+local copy						= fnutils.copy
+local format					= string.format
+
 local ARRAY_DELIM = "||"
 local UNDEFINED = "_undefined"
 
-local function split(str, pat)
-   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
-   local fpat = "(.-)" .. pat
-   local last_end = 1
-   local s, e, cap = str:find(fpat, 1)
-   while s do
-      if s ~= 1 or cap ~= "" then
-         insert(t,cap)
-      end
-      last_end = e+1
-      s, e, cap = str:find(fpat, last_end)
-   end
-   if last_end <= #str then
-      cap = str:sub(last_end)
-      insert(t, cap)
-   end
-   return t
-end
-
-local function isNumberString(value)
-	return value:match("^[0-9\\.\\-]$") ~= nil
-end
-
+-- freezeParams(params) -> string
+-- Function
+-- Freezes a table of `params` into a string
+--
+-- Parameters:
+--  * `params` - A table of paramaters
+--
+-- Returns:
+--  * A string
 local function freezeParams(params)
 	local result = ""
 	if params then
@@ -86,13 +85,21 @@ local function freezeParams(params)
 	return result
 end
 
+-- thawParams(params) -> table
+-- Function
+-- Defrosts any arrays.
+--
+-- Parameters:
+--  * `params` - A table of paramaters
+--
+-- Returns:
+--  * The thawed result as a table
 local function thawParams(params)
-	-- defrost any arrays
 	local thawed = {}
 	for key,value in pairs(params) do
 		if value:find(ARRAY_DELIM) then
-			value = split(value, ARRAY_DELIM)
-		elseif isNumberString(value) then
+			value = tools.split(value, ARRAY_DELIM)
+		elseif tools.isNumberString(value) then
 			value = tonumber(value)
 		end
 		thawed[key] = value
@@ -100,15 +107,34 @@ local function thawParams(params)
 	return thawed
 end
 
--- TODO: Add documentation
+--- plugins.core.action.manager.init() -> none
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.init()
-	-- Unknown command handler
+    --------------------------------------------------------------------------------
+	-- Unknown command handler:
+	--------------------------------------------------------------------------------
 	urlevent.bind(UNDEFINED, function()
 		dialog.displayMessage(i18n("actionUndefinedError"))
 	end)
 end
 
--- TODO: Add documentation
+--- plugins.core.action.manager.getURL(handlerId, action) -> string
+--- Function
+--- Gets a URL based on the Handler ID & Action Table.
+---
+--- Parameters:
+---  * `handlerId` - The Handler ID
+---  * `action` The action table
+---
+--- Returns:
+--- * A string
 function mod.getURL(handlerId, action)
 	local handler = mod.getHandler(handlerId)
 	if handler and action then
@@ -136,7 +162,9 @@ function mod.addHandler(id)
 	local h = handler.new(id)
 	mod._handlers[id] = h
 
-	-- create a URL watcher for the handler.
+    --------------------------------------------------------------------------------
+	-- Create a URL watcher for the handler:
+	--------------------------------------------------------------------------------
 	urlevent.bind(id, function(eventName, params)
 		if eventName ~= id then
 			-- Mismatch!
@@ -212,9 +240,12 @@ end
 --------------------------------------------------------------------------------
 local plugin = {
 	id				= "core.action.manager",
-	group			= "finalcutpro",
+	group			= "core",
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 	mod.init()
 	return mod
