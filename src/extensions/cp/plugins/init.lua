@@ -85,8 +85,8 @@
 ---
 --- ```lua
 --- plugin.dependencies = {
---- 	"cp.plugins.myplugin",
---- 	["cp.plugins.otherplugin"] = "otherPlugin"
+---     "cp.plugins.myplugin",
+---     ["cp.plugins.otherplugin"] = "otherPlugin"
 --- }
 ---
 --- As you can see, there are two ways of declaring a dependency. The first is with just the plugin ID, the second has an alias.
@@ -113,17 +113,17 @@
 --- local plugin = {}
 ---
 --- plugin.dependencies = {
---- 	"cp.plugins.myplugin",
---- 	["cp.plugins.otherplugin"] = "otherplugin"
+---     "cp.plugins.myplugin",
+---     ["cp.plugins.otherplugin"] = "otherplugin"
 --- }
 ---
 --- function plugin.init(dependencies)
---- 	local myplugin = dependencies["cp.plugins.myplugin"]
---- 	local otherplugin = dependencies.otherplugin
+---     local myplugin = dependencies["cp.plugins.myplugin"]
+---     local otherplugin = dependencies.otherplugin
 ---
---- 	-- do other stuff with the dependencies
+---     -- do other stuff with the dependencies
 ---
---- 	return myinstance
+---     return myinstance
 --- end
 ---
 --- return plugin
@@ -157,19 +157,28 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("plugins")
 
-local console						= require("hs.console")
-local fs							= require("hs.fs")
-local inspect						= require("hs.inspect")
-local fnutils						= require("hs.fnutils")
-local timer							= require("hs.timer")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                           = require("hs.logger").new("plugins")
 
-local config						= require("cp.config")
-local tools							= require("cp.tools")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local console                       = require("hs.console")
+local fs                            = require("hs.fs")
+local inspect                       = require("hs.inspect")
+local fnutils                       = require("hs.fnutils")
+local timer                         = require("hs.timer")
 
-local plugin						= require("cp.plugins.plugin")
-local env							= require("cp.plugins.env")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config                        = require("cp.config")
+local env                           = require("cp.plugins.env")
+local plugin                        = require("cp.plugins.plugin")
+local tools                         = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -178,37 +187,65 @@ local env							= require("cp.plugins.env")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- cp.plugins.SLOW_PLUGIN_WARNING_THRESHOLD -> number
+--- Constant
+--- Slow Plugin Warning Threshold
 mod.SLOW_PLUGIN_WARNING_THRESHOLD = 0.05
 
-mod.CACHE	= {}
-mod.IDS		= {}
+--- cp.plugins.CACHE -> table
+--- Constant
+--- Plugin Cache
+mod.CACHE   = {}
 
+--- cp.plugins.IDS -> table
+--- Constant
+--- Plugin IDs
+mod.IDS     = {}
+
+--- cp.plugins.IDS -> table
+--- Variables
+--- Plugin Status Codes
 mod.status = {
-	loaded				= "loaded",
-	initialized			= "initialized",
-	active				= "active",
-	disabled			= "disabled",
-	error				= "error",
+    loaded              = "loaded",
+    initialized         = "initialized",
+    active              = "active",
+    disabled            = "disabled",
+    error               = "error",
 }
 
-mod.SETTINGS_DISABLED 	= "plugins.disabled"
+--- cp.plugins.SETTINGS_DISABLED -> string
+--- Constant
+--- Plugin Disabled Code
+mod.SETTINGS_DISABLED   = "plugins.disabled"
 
+-- cachePlugin(id, pluginTable, status, scriptFile) -> plugin | nil
+-- Function
+-- Caches a plugin.
+--
+-- Parameters:
+--  * id - The plugin ID
+--  * pluginTable - The plugin table
+--  * status - Status of the plugin
+--  * scriptFile - The script file
+--
+-- Returns:
+--  * Plugin is successfully cached or `nil` if a duplicate plugin already exists.
 local function cachePlugin(id, pluginTable, status, scriptFile)
-	local existing = mod.getPluginModule(id)
-	if not existing then
-		local thePlugin = plugin.init(pluginTable, status, scriptFile)
-		mod.CACHE[id] = thePlugin
-		mod.IDS[#mod.IDS + 1] = id
+    local existing = mod.getPluginModule(id)
+    if not existing then
+        local thePlugin = plugin.init(pluginTable, status, scriptFile)
+        mod.CACHE[id] = thePlugin
+        mod.IDS[#mod.IDS + 1] = id
 
-		-- log.df("Loaded plugin: %s", thePlugin.id)
-		return thePlugin
-	else
-		log.df([[Duplicate plugin with ID of '%s':
-				 			 existing: %s
-							duplicate: %s]],
-				id, existing.scriptFile, scriptFile)
-		return nil
-	end
+        -- log.df("Loaded plugin: %s", thePlugin.id)
+        return thePlugin
+    else
+        log.df([[Duplicate plugin with ID of '%s':
+                             existing: %s
+                            duplicate: %s]],
+                id, existing.scriptFile, scriptFile)
+        return nil
+    end
 end
 
 --- cp.plugins.getPluginModule(id) -> value
@@ -220,10 +257,9 @@ end
 ---
 --- Returns:
 ---  * the result of the plugin's `init(...)` function call.
----
 function mod.getPluginModule(id)
-	local plugin = mod.getPlugin(id)
-	return plugin and plugin:getModule()
+    local plugin = mod.getPlugin(id)
+    return plugin and plugin:getModule()
 end
 
 --- cp.plugins.getPluginIds() -> table
@@ -235,13 +271,21 @@ end
 ---
 --- Returns:
 ---  * the list of plugin IDs.
----
 function mod.getPluginIds()
-	return mod.IDS
+    return mod.IDS
 end
 
+--- cp.plugins.getPlugin(id) -> plugin
+--- Function
+--- Retrieves a plugin from the cache by ID.
+---
+--- Parameters:
+---  * id - The ID of the plugin you want to get
+---
+--- Returns:
+---  * The plugin
 function mod.getPlugin(id)
-	return mod.CACHE[id]
+    return mod.CACHE[id]
 end
 
 --- cp.plugins.getPlugins() -> table
@@ -253,16 +297,15 @@ end
 ---
 --- Returns:
 ---  * the list of plugins.
----
 function mod.getPlugins()
-	local pluginList = {}
-	for _,plugin in pairs(mod.CACHE) do
-		pluginList[#pluginList+1] = plugin
-	end
-	return pluginList
+    local pluginList = {}
+    for _,plugin in pairs(mod.CACHE) do
+        pluginList[#pluginList+1] = plugin
+    end
+    return pluginList
 end
 
---- cp.plugins.initPlugins() -> nothing
+--- cp.plugins.initPlugins() -> none
 --- Function
 --- Initialises all registered plugins.
 ---
@@ -270,18 +313,17 @@ end
 ---  * None
 ---
 --- Returns:
----  * Nothing
----
+---  * None
 function mod.initPlugins()
-	for _,id in ipairs(mod.IDS) do
-	    local startTime = os.clock()
-		mod.initPlugin(id)
-		local finishTime = os.clock()
-		local loadingTime = finishTime-startTime
-		if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
-    		log.wf("Detected Slow Plugin: %s (%s)", id, finishTime-startTime)
-    	end
-	end
+    for _,id in ipairs(mod.IDS) do
+        local startTime = os.clock()
+        mod.initPlugin(id)
+        local finishTime = os.clock()
+        local loadingTime = finishTime-startTime
+        if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
+            log.wf("Slow Plugin: %s (%s)", id, finishTime-startTime)
+        end
+    end
 end
 
 --- cp.plugins.initPlugin(id) -> module
@@ -301,68 +343,81 @@ end
 ---
 --- Returns:
 ---  * the result of the plugin's `init(...)` function call.
----
 function mod.initPlugin(id)
-	-- log.df("Loading plugin '%s'", id)
+    -- log.df("Loading plugin '%s'", id)
 
-	local plugin = mod.getPlugin(id)
-	if not plugin then
-		log.ef("Attempted to initialise non-existent plugin: %s", id)
-		return nil
-	end
+    local plugin = mod.getPlugin(id)
+    if not plugin then
+        log.ef("Attempted to initialise non-existent plugin: %s", id)
+        return nil
+    end
 
-	if plugin:getStatus() ~= mod.status.loaded or plugin:getModule() ~= nil then
-		-- we've already loaded it. Return the cache's module.
-		return plugin:getModule()
-	end
+    if plugin:getStatus() ~= mod.status.loaded or plugin:getModule() ~= nil then
+        --------------------------------------------------------------------------------
+        -- We've already loaded it. Return the cache's module:
+        --------------------------------------------------------------------------------
+        return plugin:getModule()
+    end
 
-	-- First, check the plugin is not disabled:
-	if mod.isDisabled(id) then
-		log.df("Plugin disabled: '%s'", id)
-		plugin:setStatus(mod.status.disabled)
-		return nil
-	end
+    --------------------------------------------------------------------------------
+    -- First, check the plugin is not disabled:
+    --------------------------------------------------------------------------------
+    if mod.isDisabled(id) then
+        log.df("Plugin disabled: '%s'", id)
+        plugin:setStatus(mod.status.disabled)
+        return nil
+    end
 
-	-- Ensure all dependencies are loaded
-	local dependencies = mod.loadDependencies(plugin)
-	if not dependencies then
-		plugin:setStatus(mod.status.error)
-		return nil
-	end
+    --------------------------------------------------------------------------------
+    -- Ensure all dependencies are loaded:
+    --------------------------------------------------------------------------------
+    local dependencies = mod.loadDependencies(plugin)
+    if not dependencies then
+        plugin:setStatus(mod.status.error)
+        return nil
+    end
 
-	plugin:setDependencies(dependencies)
+    plugin:setDependencies(dependencies)
 
-	-- initialise the plugin module
-	-- log.df("Initialising plugin '%s'.", id)
-	local module = nil
+    --------------------------------------------------------------------------------
+    -- Initialise the plugin module:
+    --------------------------------------------------------------------------------
+    -- log.df("Initialising plugin '%s'.", id)
+    local module = nil
 
-	if plugin.init then
-		local ok, result = xpcall(function()
-			return plugin.init(dependencies, env.new(plugin:getRootPath()))
-		end, debug.traceback)
+    if plugin.init then
+        local ok, result = xpcall(function()
+            return plugin.init(dependencies, env.new(plugin:getRootPath()))
+        end, debug.traceback)
 
-		if ok then
-			module = result
-		else
-			log.ef("Error while initialising plugin '%s':\n%s", id, result)
-			return nil
-		end
-	else
-		log.wf("No init function for plugin: %s", id)
-	end
+        if ok then
+            module = result
+        else
+            log.ef("Error while initialising plugin '%s':\n%s", id, result)
+            return nil
+        end
+    else
+        log.wf("No init function for plugin: %s", id)
+    end
 
-	-- Default the return value to 'true'
-	if module == nil then
-		module = true
-	end
+    --------------------------------------------------------------------------------
+    -- Default the return value to `true`:
+    --------------------------------------------------------------------------------
+    if module == nil then
+        module = true
+    end
 
-	-- cache it
-	plugin:setModule(module)
-	plugin:setStatus(mod.status.initialized)
+    --------------------------------------------------------------------------------
+    -- Cache it:
+    --------------------------------------------------------------------------------
+    plugin:setModule(module)
+    plugin:setStatus(mod.status.initialized)
 
-	-- return the module
-	-- log.df("Initialised plugin: %s", id)
-	return module
+    --------------------------------------------------------------------------------
+    -- Return the module:
+    --------------------------------------------------------------------------------
+    -- log.df("Initialised plugin: %s", id)
+    return module
 end
 
 --- cp.plugins.loadDependencies(plugin) -> table
@@ -374,50 +429,52 @@ end
 ---
 --- Returns:
 ---  * an array of the dependencies required by the plugin, or `nil` if any could not be loaded.
----
 function mod.loadDependencies(plugin)
-	local dependencies = {}
-	if plugin.dependencies then
-		for path,alias in pairs(plugin.dependencies) do
-			if type(path) == "number" then
-				-- no alias
-				path = alias
-				alias = nil
-			end
+    local dependencies = {}
+    if plugin.dependencies then
+        for path,alias in pairs(plugin.dependencies) do
+            if type(path) == "number" then
+                --------------------------------------------------------------------------------
+                -- No alias:
+                --------------------------------------------------------------------------------
+                path = alias
+                alias = nil
+            end
 
-			local dependency = mod.initPlugin(path)
-			if dependency then
-				dependencies[path] = dependency
-				if alias then
-					dependencies[alias] = dependency
-				end
-				mod.addDependent(path, plugin)
-			else
-				-- unable to load the dependency. Fail!
-				log.ef("Unable to load dependency for plugin '%s': %s", plugin.id, path)
-				return nil
-			end
-		end
-	end
-	return dependencies
+            local dependency = mod.initPlugin(path)
+            if dependency then
+                dependencies[path] = dependency
+                if alias then
+                    dependencies[alias] = dependency
+                end
+                mod.addDependent(path, plugin)
+            else
+                --------------------------------------------------------------------------------
+                -- Unable to load the dependency. Fail:
+                --------------------------------------------------------------------------------
+                log.ef("Unable to load dependency for plugin '%s': %s", plugin.id, path)
+                return nil
+            end
+        end
+    end
+    return dependencies
 end
 
---- cp.plugins.addDependent(id) -> nothing
+--- cp.plugins.addDependent(id) -> none
 --- Function
 --- Adds the `dependentPlugin` as a dependent of the plugin with the specified id.
 ---
 --- Parameters:
----  * `id`					- The plugin package ID.
----  * `dependentPlugin`	- The plugin which is a dependent
+---  * `id`                 - The plugin package ID.
+---  * `dependentPlugin`    - The plugin which is a dependent
 ---
 --- Returns:
----  * nothing
----
+---  * None
 function mod.addDependent(id, dependentPlugin)
-	local plugin = mod.getPlugin(id)
-	if plugin then
-		plugin.addDependent(dependentPlugin)
-	end
+    local plugin = mod.getPlugin(id)
+    if plugin then
+        plugin.addDependent(dependentPlugin)
+    end
 end
 
 --- cp.plugins.getDependents(pluginId)
@@ -425,13 +482,13 @@ end
 --- Retrieves the list of dependent plugins for the specified plugin id.
 ---
 --- Parameters:
---- * `id`		- The plugin ID.
+--- * `id`      - The plugin ID.
 ---
 --- Returns:
 ---  * The table of dependents.
 function mod.getDependents(id)
-	local plugin = mod.getPlugin(id)
-	return plugin and plugin:getDependents()
+    local plugin = mod.getPlugin(id)
+    return plugin and plugin:getDependents()
 end
 
 --- cp.plugins.disable(id) -> nothing
@@ -444,23 +501,25 @@ end
 --- Returns:
 ---  * `true` if the plugin was disabled, or `false` if it could not be disabled.
 function mod.disable(id)
-	local plugin = mod.getPlugin(id)
-	if plugin and not plugin.required then
-		-- first check with the plugin, if relevant
-		if type(plugin.disable) == "function" then
-			if not plugin.disable(plugin:getDependencies(), env.new(plugin:getRootPath())) then
-				return false
-			end
-		end
-		local disabled = config.get(mod.SETTINGS_DISABLED, {})
-		disabled[id] = true
-		config.set(mod.SETTINGS_DISABLED, disabled)
-		console.clearConsole()
-		-- reload CP after returning `true`
-		timer.doAfter(0.001, function() hs.reload() end)
-		return true
-	end
-	return false
+    local plugin = mod.getPlugin(id)
+    if plugin and not plugin.required then
+        --------------------------------------------------------------------------------
+        -- First check with the plugin, if relevant:
+        --------------------------------------------------------------------------------
+        if type(plugin.disable) == "function" then
+            if not plugin.disable(plugin:getDependencies(), env.new(plugin:getRootPath())) then
+                return false
+            end
+        end
+        local disabled = config.get(mod.SETTINGS_DISABLED, {})
+        disabled[id] = true
+        config.set(mod.SETTINGS_DISABLED, disabled)
+        console.clearConsole()
+        -- reload CP after returning `true`
+        timer.doAfter(0.001, function() hs.reload() end)
+        return true
+    end
+    return false
 end
 
 --- cp.plugins.enable(id) -> nothing
@@ -473,15 +532,15 @@ end
 --- Returns:
 ---  * `true` if the plugin had been disabled and is now enabled.
 function mod.enable(id)
-	local disabled = config.get(mod.SETTINGS_DISABLED, {})
-	if disabled[id] then
-		disabled[id] = false
-		config.set(mod.SETTINGS_DISABLED, disabled)
-		console.clearConsole()
-		timer.doAfter(0.001, function() hs.reload() end)
-		return true
-	end
-	return false
+    local disabled = config.get(mod.SETTINGS_DISABLED, {})
+    if disabled[id] then
+        disabled[id] = false
+        config.set(mod.SETTINGS_DISABLED, disabled)
+        console.clearConsole()
+        timer.doAfter(0.001, function() hs.reload() end)
+        return true
+    end
+    return false
 end
 
 --- cp.plugins.isDisabled(id) -> boolean
@@ -494,13 +553,12 @@ end
 ---
 --- Returns:
 ---  * `true` if the plugin is disabled.
----
 function mod.isDisabled(id)
-	local disabled = config.get(mod.SETTINGS_DISABLED, {})
-	return disabled[id] == true
+    local disabled = config.get(mod.SETTINGS_DISABLED, {})
+    return disabled[id] == true
 end
 
---- cp.plugins.postInitPlugins() -> nothing
+--- cp.plugins.postInitPlugins() -> none
 --- Function
 --- Performs any post-initialisation required for plugins.
 ---
@@ -508,18 +566,17 @@ end
 ---  * None
 ---
 --- Returns:
----  * Nothing
----
+---  * None
 function mod.postInitPlugins()
-	for _,id in pairs(mod.IDS) do
-	    local startTime = os.clock()
-		mod.postInitPlugin(id)
-		local finishTime = os.clock()
-		local loadingTime = finishTime-startTime
-		if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
-    		log.wf("Detected Slow Post Plugin: %s (%s)", id, finishTime-startTime)
-    	end
-	end
+    for _,id in pairs(mod.IDS) do
+        local startTime = os.clock()
+        mod.postInitPlugin(id)
+        local finishTime = os.clock()
+        local loadingTime = finishTime-startTime
+        if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
+            log.wf("Slow Plugin (Post): %s (%s)", id, finishTime-startTime)
+        end
+    end
 end
 
 --- cp.plugins.postInitPlugin(id) -> boolean
@@ -531,48 +588,53 @@ end
 ---  * `id` - The plugin package ID.
 ---
 --- Returns:
----  * `true` if the plugin ias successfully post-initialised.
----
+---  * `true` if the plugin is successfully post-initialised.
 function mod.postInitPlugin(id)
-	-- log.df("Post-initialising plugin: %s", id)
-	local plugin = mod.getPlugin(id)
-	if not plugin then
-		log.ef("Unable to post-initialise '%s': plugin not loaded", id)
-		return false
-	end
+    -- log.df("Post-initialising plugin: %s", id)
+    local plugin = mod.getPlugin(id)
+    if not plugin then
+        log.ef("Unable to post-initialise '%s': plugin not loaded", id)
+        return false
+    end
 
-	-- Check it exists and is initialized and ready to post-init
-	if plugin:getStatus() == mod.status.active then
-		-- already post-intialised successfully
-		return true
-	elseif plugin:getStatus() == mod.status.initialized then
-		if plugin.postInit then
-			local dependencies = plugin:getDependencies()
-			-- ensure dependecies are post-initialised first
-			if plugin.dependencies then
-				for key,value in pairs(plugin.dependencies) do
-					local depId = key
-					if type(key) == "number" then
-						depId = value
-					end
-					if not mod.postInitPlugin(depId) then
-						log.ef("Unable to post-initialise '%s': dependency failed to post-init: %s", id, depId)
-						plugin:setStatus(mod.status.error)
-						return false
-					end
-				end
-			end
+    --------------------------------------------------------------------------------
+    -- Check it exists and is initialized and ready to post-init:
+    --------------------------------------------------------------------------------
+    if plugin:getStatus() == mod.status.active then
+        --------------------------------------------------------------------------------
+        -- Already post-intialised successfully:
+        --------------------------------------------------------------------------------
+        return true
+    elseif plugin:getStatus() == mod.status.initialized then
+        if plugin.postInit then
+            local dependencies = plugin:getDependencies()
+            --------------------------------------------------------------------------------
+            -- Ensure dependecies are post-initialised first:
+            --------------------------------------------------------------------------------
+            if plugin.dependencies then
+                for key,value in pairs(plugin.dependencies) do
+                    local depId = key
+                    if type(key) == "number" then
+                        depId = value
+                    end
+                    if not mod.postInitPlugin(depId) then
+                        log.ef("Unable to post-initialise '%s': dependency failed to post-init: %s", id, depId)
+                        plugin:setStatus(mod.status.error)
+                        return false
+                    end
+                end
+            end
 
-			plugin.postInit(dependencies, env.new(plugin:getRootPath()))
-		end
-		plugin:setStatus(mod.status.active)
-		return true
-	elseif plugin:getStatus() ~= mod.status.disabled then
-		log.ef("Unable to post-initialise '%s': expected status of %s but is %s", id, inspect(mod.status.initialized), inspect(plugin:getStatus()))
-		plugin:setStatus(mod.status.error)
-		return false
-	end
-	return true
+            plugin.postInit(dependencies, env.new(plugin:getRootPath()))
+        end
+        plugin:setStatus(mod.status.active)
+        return true
+    elseif plugin:getStatus() ~= mod.status.disabled then
+        log.ef("Unable to post-initialise '%s': expected status of %s but is %s", id, inspect(mod.status.initialized), inspect(plugin:getStatus()))
+        plugin:setStatus(mod.status.error)
+        return false
+    end
+    return true
 end
 
 --- cp.plugins.init(paths) -> cp.plugins
@@ -583,7 +645,7 @@ end
 ---
 --- Eg:
 ---
---- ```
+--- ```lua
 --- plugins.init({"~/Library/Application Support/CommandPost/Plugins"})
 --- ```
 ---
@@ -594,26 +656,34 @@ end
 ---  * `cp.plugins` - The module.
 function mod.init(paths)
 
-	mod.paths = fnutils.copy(paths)
+    mod.paths = fnutils.copy(paths)
 
-	-- watch for future changes in the plugin paths.
-	mod.watchPluginPaths()
+    --------------------------------------------------------------------------------
+    -- Watch for future changes in the plugin paths:
+    --------------------------------------------------------------------------------
+    mod.watchPluginPaths()
 
-	-- First, scan all plugin paths
-	for _,path in ipairs(mod.paths) do
-		mod.scanDirectory(path)
-	end
+    --------------------------------------------------------------------------------
+    -- First, scan all plugin paths:
+    --------------------------------------------------------------------------------
+    for _,path in ipairs(mod.paths) do
+        mod.scanDirectory(path)
+    end
 
-	-- notify them of an `init`
-	mod.initPlugins()
+    --------------------------------------------------------------------------------
+    -- Notify them of an `init`:
+    --------------------------------------------------------------------------------
+    mod.initPlugins()
 
-	-- notify them of a `postInit`
-	mod.postInitPlugins()
+    --------------------------------------------------------------------------------
+    -- Notify them of a `postInit`:
+    --------------------------------------------------------------------------------
+    mod.postInitPlugins()
 
-	return mod
+    return mod
 end
 
---- cp.plugins.watchPluginPaths() -> nothing
+--- cp.plugins.watchPluginPaths() -> none
 --- Function
 --- Watches the plugin paths for changes and reloads the  application if any change.
 ---
@@ -621,15 +691,14 @@ end
 ---  * None
 ---
 --- Returns:
----  * Nothing
----
+---  * None
 function mod.watchPluginPaths()
-	--------------------------------------------------------------------------------
-	-- Watch for Script Updates:
-	--------------------------------------------------------------------------------
-	for _,path in ipairs(mod.paths) do
-		config.sourceWatcher:watchPath(path)
-	end
+    --------------------------------------------------------------------------------
+    -- Watch for Script Updates:
+    --------------------------------------------------------------------------------
+    for _,path in ipairs(mod.paths) do
+        config.sourceWatcher:watchPath(path)
+    end
 end
 
 --- cp.plugins.scanDirectory(directoryPath) -> cp.plugins
@@ -646,46 +715,52 @@ end
 --- Returns:
 ---  * boolean - `true` if the path was loaded successfully, false if there were any issues.
 function mod.scanDirectory(directoryPath)
-	-- log.df("Scanning directory: %s", directoryPath)
-	local path = fs.pathToAbsolute(directoryPath)
-	if not path then
-		log.wf("The provided path does not exist: '%s'", directoryPath)
-		return false
-	end
+    -- log.df("Scanning directory: %s", directoryPath)
+    local path = fs.pathToAbsolute(directoryPath)
+    if not path then
+        log.wf("The provided path does not exist: '%s'", directoryPath)
+        return false
+    end
 
-	local attrs = fs.attributes(path)
-	if not attrs or attrs.mode ~= "directory" then
-		log.ef("The provided path is not a directory: '%s'", directoryPath)
-		return false
-	end
+    local attrs = fs.attributes(path)
+    if not attrs or attrs.mode ~= "directory" then
+        log.ef("The provided path is not a directory: '%s'", directoryPath)
+        return false
+    end
 
-	-- Check if it's a 'complex plugin' directory
-	if fs.pathToAbsolute(path .. "/init.lua") then
-		-- log.df("It's a complex plugin folder...")
-		return mod.loadComplexPlugin(path) ~= nil
-	end
+    --------------------------------------------------------------------------------
+    -- Check if it's a 'complex plugin' directory:
+    --------------------------------------------------------------------------------
+    if fs.pathToAbsolute(path .. "/init.lua") then
+        -- log.df("It's a complex plugin folder...")
+        return mod.loadComplexPlugin(path) ~= nil
+    end
 
-	-- Ok, let's process the contents of the directory
-	local files = tools.dirFiles(path)
-	local success = true
-	for i,file in ipairs(files) do
-		if file:sub(1,1) ~= "." then -- it's not a hidden directory/file
-			local filePath = fs.pathToAbsolute(path .. "/" .. file)
-			-- log.df("Checking '%s'...", filePath)
-
-			attrs = fs.attributes(filePath)
-			if attrs.mode == "directory" then
-				-- log.df("It's a directory...")
-				success = mod.scanDirectory(filePath) and success
-			elseif filePath:sub(-4) == ".lua" then
-				-- log.df("It's a file...")
-				success = mod.loadSimplePlugin(filePath) ~= nil and success
-			else
-				-- log.df("It's something else. Ignoring it.")
-			end
-		end
-	end
-	return success
+    --------------------------------------------------------------------------------
+    -- Ok, let's process the contents of the directory:
+    --------------------------------------------------------------------------------
+    local files = tools.dirFiles(path)
+    local success = true
+    for i,file in ipairs(files) do
+        --------------------------------------------------------------------------------
+        -- If it's not a hidden directory/file:
+        --------------------------------------------------------------------------------
+        if file:sub(1,1) ~= "." then
+            local filePath = fs.pathToAbsolute(path .. "/" .. file)
+            -- log.df("Checking '%s'...", filePath)
+            attrs = fs.attributes(filePath)
+            if attrs.mode == "directory" then
+                -- log.df("It's a directory...")
+                success = mod.scanDirectory(filePath) and success
+            elseif filePath:sub(-4) == ".lua" then
+                -- log.df("It's a file...")
+                success = mod.loadSimplePlugin(filePath) ~= nil and success
+            --else
+                -- log.df("It's something else. Ignoring it.")
+            end
+        end
+    end
+    return success
 end
 
 --- cp.plugins.loadSimplePlugin(id) -> plugin
@@ -696,28 +771,27 @@ end
 ---  * `path` - The plugin package ID.
 ---
 --- Returns:
----  * `true` if the plugin ias successfully post-initialised.
----
+---  * `true` if the plugin is successfully post-initialised.
 function mod.loadSimplePlugin(path)
-	-- load the plugin file, catching any errors
-	local ok, result = xpcall(function() return dofile(path) end, debug.traceback)
-	if ok then
-		local plugin = result
-		if plugin == nil or type(plugin) ~= "table" then
-			log.ef("Unable to load plugin '%s'.", path)
-			return nil
-		else
-			if not plugin.id then
-				log.ef("The plugin at '%s' does not have an ID.", path)
-				return nil
-			else
-				return cachePlugin(plugin.id, plugin, mod.status.loaded, path)
-			end
-		end
-	else
-		log.ef("Unable to load plugin '%s' due to the following error:\n\n%s", path, result)
-		return nil
-	end
+    -- load the plugin file, catching any errors
+    local ok, result = xpcall(function() return dofile(path) end, debug.traceback)
+    if ok then
+        local plugin = result
+        if plugin == nil or type(plugin) ~= "table" then
+            log.ef("Unable to load plugin '%s'.", path)
+            return nil
+        else
+            if not plugin.id then
+                log.ef("The plugin at '%s' does not have an ID.", path)
+                return nil
+            else
+                return cachePlugin(plugin.id, plugin, mod.status.loaded, path)
+            end
+        end
+    else
+        log.ef("Unable to load plugin '%s' due to the following error:\n\n%s", path, result)
+        return nil
+    end
 end
 
 --- cp.plugins.loadComplexPlugin(path) -> plugin
@@ -729,7 +803,7 @@ end
 ---
 --- ```lua
 --- function plugin.init(dependencies, env)
---- 	local imagePath = env:pathToAbsolute("image/example.jpg")
+---     local imagePath = env:pathToAbsolute("image/example.jpg")
 --- end
 --- ```
 ---
@@ -737,49 +811,60 @@ end
 ---  * `path` - The plugin package ID.
 ---
 --- Returns:
----  * `true` if the plugin ias successfully post-initialised.
----
+---  * `true` if the plugin is successfully post-initialised.
 function mod.loadComplexPlugin(path)
-	local initFile = fs.pathToAbsolute(path .. "/init.lua")
-	if not initFile then
-		log.ef("Unable to load the plugin '%s': Missing 'init.lua'", path)
-		return false
-	end
+    local initFile = fs.pathToAbsolute(path .. "/init.lua")
+    if not initFile then
+        log.ef("Unable to load the plugin '%s': Missing 'init.lua'", path)
+        return false
+    end
 
-	-- Local reference to 'require' function
-	local globalRequire = require
+    --------------------------------------------------------------------------------
+    -- Local reference to 'require' function:
+    --------------------------------------------------------------------------------
+    local globalRequire = require
 
-	-- Stores cached modules from the plugin
-	local cache = {}
-	local searchPath = path .. "/?.lua;" .. path .. "/?/init.lua"
+    --------------------------------------------------------------------------------
+    -- Stores cached modules from the plugin:
+    --------------------------------------------------------------------------------
+    local cache = {}
+    local searchPath = path .. "/?.lua;" .. path .. "/?/init.lua"
 
-	-- Alternate 'require' function that caches plugin resources locally.
-	local pluginRequire = function(name)
-		if cache[name] then
-			return cache[name]
-		end
-		local file = package.searchpath(name, searchPath)
-		if file then
-			local result = dofile(file)
-			cache[name] = result
-			return result
-		end
-		return globalRequire(name)
-	end
+    --------------------------------------------------------------------------------
+    -- Alternate 'require' function that caches plugin resources locally:
+    --------------------------------------------------------------------------------
+    local pluginRequire = function(name)
+        if cache[name] then
+            return cache[name]
+        end
+        local file = package.searchpath(name, searchPath)
+        if file then
+            local result = dofile(file)
+            cache[name] = result
+            return result
+        end
+        return globalRequire(name)
+    end
 
-	-- replace default 'require'
-	require = pluginRequire
+    --------------------------------------------------------------------------------
+    -- Replace default 'require':
+    --------------------------------------------------------------------------------
+    require = pluginRequire
 
-	-- load the plugin
-	local result = mod.loadSimplePlugin(initFile)
-	if result then
-		result:setRootPath(path)
-	end
+    --------------------------------------------------------------------------------
+    -- Load the plugin:
+    --------------------------------------------------------------------------------
+    local result = mod.loadSimplePlugin(initFile)
+    if result then
+        result:setRootPath(path)
+    end
 
-	-- Reset 'require' to the global require
-	require = globalRequire
+    --------------------------------------------------------------------------------
+    -- Reset 'require' to the global require:
+    --------------------------------------------------------------------------------
+    require = globalRequire
 
-	return result
+    return result
 end
 
 setmetatable(mod, {__call = function(_, ...) return mod.getPluginModule(...) end})
