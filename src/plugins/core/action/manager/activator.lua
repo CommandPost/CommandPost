@@ -41,6 +41,7 @@ local application               = require("hs.application")
 local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
+local inspect                   = require("hs.inspect")
 local menubar                   = require("hs.menubar")
 local mouse                     = require("hs.mouse")
 local screen                    = require("hs.screen")
@@ -49,13 +50,9 @@ local timer                     = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local bench                     = require("cp.bench")
 local config                    = require("cp.config")
-local fcp                       = require("cp.apple.finalcutpro")
 local idle                      = require("cp.idle")
-local just                      = require("cp.just")
 local prop                      = require("cp.prop")
-
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -71,9 +68,8 @@ local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
 
-local setmetatable              = setmetatable
 local sort, insert              = table.sort, table.insert
-local concat, filter            = fnutils.concat, fnutils.filter
+local concat                    = fnutils.concat
 local format                    = string.format
 
 local PACKAGE = "action.activator."
@@ -151,9 +147,9 @@ function activator.new(id, manager)
         local allowed = {}
         local allowedIds = o:_allowedHandlers()
 
-        for id,handler in pairs(handlers) do
-            if allowedIds == nil or allowedIds[id] then
-                allowed[id] = handler
+        for i,handler in pairs(handlers) do
+            if allowedIds == nil or allowedIds[i] then
+                allowed[i] = handler
             end
         end
 
@@ -181,9 +177,9 @@ function activator.new(id, manager)
         local result = {}
 
         local disabled = self._disabledHandlers()
-        for id,handler in pairs(handlers) do
-            if not disabled[id] then
-                result[id] = handler
+        for i,handler in pairs(handlers) do
+            if not disabled[i] then
+                result[i] = handler
             end
         end
 
@@ -556,8 +552,8 @@ function activator.mt:incPopularity(choice, id)
         index[id] = pop
         choice.popularity = pop
         self:popularChoices(index)
-        local choice = self:findChoice(id)
-        if choice then choice.popularity = pop end
+        local newChoice = self:findChoice(id)
+        if newChoice then newChoice.popularity = pop end
 
         --------------------------------------------------------------------------------
         -- Update the chooser list:
@@ -647,7 +643,7 @@ end
 --- Returns:
 ---  * Table of choices that can be displayed by an `hs.chooser`.
 function activator.mt:unhiddenChoices()
-    return _.filter(self:allChoices(), function(i,choice) return not choice.hidden end)
+    return _.filter(self:allChoices(), function(_,choice) return not choice.hidden end)
 end
 
 --- plugins.core.action.activator:activeChoices() -> table
@@ -664,7 +660,7 @@ function activator.mt:activeChoices()
     local showHidden = self:showHidden()
     local disabledHandlers = self:_disabledHandlers()
 
-    return _.filter(self:allChoices(), function(i,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
+    return _.filter(self:allChoices(), function(_,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
 end
 
 -- plugins.core.action.activator:_findChoices() -> nothing
@@ -679,7 +675,7 @@ function activator.mt:_findChoices()
     self._watched = true
 
     local result = {}
-    for id,handler in pairs(self:allowedHandlers()) do
+    for _,handler in pairs(self:allowedHandlers()) do
         local choices = handler:choices()
         if choices then
             concat(result, choices:getChoices())
@@ -809,8 +805,8 @@ end
 --- Returns:
 ---  * None
 function activator.mt:show()
-    local chooser = self:chooser()
-    if chooser and chooser:isVisible() then
+    local theChooser = self:chooser()
+    if theChooser and theChooser:isVisible() then
         return
     end
 
@@ -826,16 +822,16 @@ function activator.mt:show()
     --------------------------------------------------------------------------------
     local chooserRememberLast = self:lastQueryRemembered()
     if not chooserRememberLast then
-        chooser:query("")
+        theChooser:query("")
     else
-        chooser:query(self:lastQueryValue())
+        theChooser:query(self:lastQueryValue())
     end
 
     --------------------------------------------------------------------------------
     -- Show Console:
     --------------------------------------------------------------------------------
-    chooser:searchSubText(self:searchSubText())
-    chooser:show()
+    theChooser:searchSubText(self:searchSubText())
+    theChooser:show()
 
     return true
 end
@@ -850,19 +846,19 @@ end
 --- Returns:
 ---  * None
 function activator.mt:hide()
-    local chooser = self:chooser()
-    if chooser then
+    local theChooser = self:chooser()
+    if theChooser then
 
         --------------------------------------------------------------------------------
         -- Hide Chooser:
         --------------------------------------------------------------------------------
-        chooser:hide()
+        theChooser:hide()
 
         --------------------------------------------------------------------------------
         -- Save Last Query to Settings:
         --------------------------------------------------------------------------------
         if self:lastQueryRemembered() then
-            self.lastQueryValue:set(chooser:query())
+            self.lastQueryValue:set(theChooser:query())
         end
 
         if self._frontApp then
@@ -908,7 +904,7 @@ function activator.mt._onActivate(handler, action, text)
     if handler:execute(action) then
         return true
     else
-        log.wf("Action '%s' handled by '%s' could not execute: %s", text, hs.inspect(handlerId), hs.inspect(action))
+        log.wf("Action '%s' handled by '%s' could not execute: %s", text, hs.inspect(handler), hs.inspect(action))
     end
     return false
 end
@@ -966,12 +962,12 @@ end
 ---  * None
 function activator.mt:rightClickAction(index)
 
-    local chooser = self:chooser()
+    local theChooser = self:chooser()
 
     --------------------------------------------------------------------------------
     -- Settings:
     --------------------------------------------------------------------------------
-    local choice = chooser:selectedRowContents(index)
+    local choice = theChooser:selectedRowContents(index)
 
     --------------------------------------------------------------------------------
     -- Menubar:
@@ -992,7 +988,7 @@ function activator.mt:rightClickAction(index)
                     fn = function()
                         self:unfavoriteChoice(choice.id)
                         self:refreshChooser()
-                        chooser:show()
+                        theChooser:show()
                     end
                 }
             )
@@ -1004,7 +1000,7 @@ function activator.mt:rightClickAction(index)
                     fn = function()
                         self:favoriteChoice(choice.id)
                         self:refreshChooser()
-                        chooser:show()
+                        theChooser:show()
                     end
                 }
             )
@@ -1019,7 +1015,7 @@ function activator.mt:rightClickAction(index)
                     fn = function()
                         self:unhideChoice(choice.id)
                         self:refreshChooser()
-                        chooser:show()
+                        theChooser:show()
                     end
                 }
             )
@@ -1031,7 +1027,7 @@ function activator.mt:rightClickAction(index)
                     fn = function()
                         self:hideChoice(choice.id)
                         self:refreshChooser()
-                        chooser:show()
+                        theChooser:show()
                     end
                 }
             )
