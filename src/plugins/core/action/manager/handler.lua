@@ -35,7 +35,6 @@ local log               = require("hs.logger").new("actnhndlr")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local choices           = require("cp.choices")
-local config            = require("cp.config")
 local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
