@@ -790,8 +790,8 @@ end
 --- Returns:
 ---  * None
 function activator.mt:refreshChooser()
-    local chooser = self:chooser()
-    chooser:refreshChoicesCallback()
+    local theChooser = self:chooser()
+    theChooser:refreshChoicesCallback()
 end
 
 --- plugins.core.action.activator:show()
@@ -904,7 +904,7 @@ function activator.mt._onActivate(handler, action, text)
     if handler:execute(action) then
         return true
     else
-        log.wf("Action '%s' handled by '%s' could not execute: %s", text, hs.inspect(handler), hs.inspect(action))
+        log.wf("Action '%s' handled by '%s' could not execute: %s", text, inspect(handler), inspect(action))
     end
     return false
 end
@@ -933,7 +933,7 @@ function activator.mt:activate(result)
                 self:incPopularity(result, actionId)
             end
         else
-            error(format("No action handler with an ID of %s is registered.", hs.inspect(handlerId)))
+            error(format("No action handler with an ID of %s is registered.", inspect(handlerId)))
         end
     end
 end
@@ -1051,7 +1051,7 @@ function activator.mt:rightClickAction(index)
         local allEnabled = true
         local allDisabled = true
 
-        for id,handler in pairs(self:allowedHandlers()) do
+        for id,_ in pairs(self:allowedHandlers()) do
             local enabled = not self:isDisabledHandler(id)
             allEnabled = allEnabled and enabled
             allDisabled = allDisabled and not enabled
