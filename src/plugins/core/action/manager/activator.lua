@@ -41,7 +41,7 @@ local application               = require("hs.application")
 local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
-local inspect                   = require("hs.inspect")
+local inspect                   = require("hs.inspect") -- luacheck: ignore
 local menubar                   = require("hs.menubar")
 local mouse                     = require("hs.mouse")
 local screen                    = require("hs.screen")
@@ -272,7 +272,7 @@ end
 ---  * `true` if the handlers were found.
 function activator.mt:allowHandlers(...)
     local allowed = {}
-    for _,id in ipairs(table.pack(...)) do
+    for _,id in ipairs(table.pack(...)) do -- luacheck: ignore
         if self._manager.getHandler(id) then
             allowed[id] = true
         else

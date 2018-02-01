@@ -60,7 +60,7 @@ function mod.show()
                 table.insert(allowedHandlers, id)
             end
         end
-        mod.activator:allowHandlers(table.unpack(allowedHandlers))
+        mod.activator:allowHandlers(table.unpack(allowedHandlers)) -- luacheck: ignore
 
     end
     mod.activator:show()
