@@ -578,9 +578,9 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- New File Added to Watch Folder:
                 --------------------------------------------------------------------------------
-                if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemModified"] then
+                --if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemModified"] then
                     --log.df("New File Added: %s", file)
-                end
+                --end
 
                 --------------------------------------------------------------------------------
                 -- New File Added to Watch Folder, but still in transit:
@@ -617,9 +617,9 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- New File Moved into Watch Folder:
                 --------------------------------------------------------------------------------
-                if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
+                --if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
                     --log.df("File Moved or Renamed: %s", file)
-                end
+                --end
 
                 --------------------------------------------------------------------------------
                 -- Check Extensions:
@@ -710,7 +710,6 @@ function mod.addWatchFolder()
     --------------------------------------------------------------------------------
     -- Update Settings:
     --------------------------------------------------------------------------------
-    local watchFolders = mod.watchFolders()
     watchFolders[path] = {settingFile=settingFile, destinationPath=destinationPath }
     mod.watchFolders(watchFolders)
 
