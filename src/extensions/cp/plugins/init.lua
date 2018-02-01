@@ -501,13 +501,13 @@ end
 --- Returns:
 ---  * `true` if the plugin was disabled, or `false` if it could not be disabled.
 function mod.disable(id)
-    local plugin = mod.getPlugin(id)
-    if plugin and not plugin.required then
+    local thePlugin = mod.getPlugin(id)
+    if thePlugin and not thePlugin.required then
         --------------------------------------------------------------------------------
         -- First check with the plugin, if relevant:
         --------------------------------------------------------------------------------
-        if type(plugin.disable) == "function" then
-            if not plugin.disable(plugin:getDependencies(), env.new(plugin:getRootPath())) then
+        if type(thePlugin.disable) == "function" then
+            if not thePlugin.disable(thePlugin:getDependencies(), env.new(thePlugin:getRootPath())) then
                 return false
             end
         end
