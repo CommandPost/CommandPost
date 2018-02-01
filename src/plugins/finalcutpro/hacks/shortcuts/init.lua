@@ -304,7 +304,7 @@ end
 function private.updateHacksShortcuts(install)
 
 	if not mod.supported() then
-		dialog.webviewAlert(mod._manager.webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
+		dialog.webviewAlert(mod._manager._webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
 		mod._manager.refresh()
 		return false
 	end
