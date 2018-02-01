@@ -471,9 +471,9 @@ end
 --- Returns:
 ---  * None
 function mod.addDependent(id, dependentPlugin)
-    local plugin = mod.getPlugin(id)
-    if plugin then
-        plugin.addDependent(dependentPlugin)
+    local thePlugin = mod.getPlugin(id)
+    if thePlugin then
+        thePlugin.addDependent(dependentPlugin)
     end
 end
 
@@ -487,8 +487,8 @@ end
 --- Returns:
 ---  * The table of dependents.
 function mod.getDependents(id)
-    local plugin = mod.getPlugin(id)
-    return plugin and plugin:getDependents()
+    local thePlugin = mod.getPlugin(id)
+    return thePlugin and thePlugin:getDependents()
 end
 
 --- cp.plugins.disable(id) -> nothing
@@ -591,8 +591,8 @@ end
 ---  * `true` if the plugin is successfully post-initialised.
 function mod.postInitPlugin(id)
     -- log.df("Post-initialising plugin: %s", id)
-    local plugin = mod.getPlugin(id)
-    if not plugin then
+    local thePlugin = mod.getPlugin(id)
+    if not thePlugin then
         log.ef("Unable to post-initialise '%s': plugin not loaded", id)
         return false
     end
@@ -600,38 +600,38 @@ function mod.postInitPlugin(id)
     --------------------------------------------------------------------------------
     -- Check it exists and is initialized and ready to post-init:
     --------------------------------------------------------------------------------
-    if plugin:getStatus() == mod.status.active then
+    if thePlugin:getStatus() == mod.status.active then
         --------------------------------------------------------------------------------
         -- Already post-intialised successfully:
         --------------------------------------------------------------------------------
         return true
-    elseif plugin:getStatus() == mod.status.initialized then
-        if plugin.postInit then
-            local dependencies = plugin:getDependencies()
+    elseif thePlugin:getStatus() == mod.status.initialized then
+        if thePlugin.postInit then
+            local dependencies = thePlugin:getDependencies()
             --------------------------------------------------------------------------------
             -- Ensure dependecies are post-initialised first:
             --------------------------------------------------------------------------------
-            if plugin.dependencies then
-                for key,value in pairs(plugin.dependencies) do
+            if thePlugin.dependencies then
+                for key,value in pairs(thePlugin.dependencies) do
                     local depId = key
                     if type(key) == "number" then
                         depId = value
                     end
                     if not mod.postInitPlugin(depId) then
                         log.ef("Unable to post-initialise '%s': dependency failed to post-init: %s", id, depId)
-                        plugin:setStatus(mod.status.error)
+                        thePlugin:setStatus(mod.status.error)
                         return false
                     end
                 end
             end
 
-            plugin.postInit(dependencies, env.new(plugin:getRootPath()))
+            thePlugin.postInit(dependencies, env.new(thePlugin:getRootPath()))
         end
-        plugin:setStatus(mod.status.active)
+        thePlugin:setStatus(mod.status.active)
         return true
-    elseif plugin:getStatus() ~= mod.status.disabled then
-        log.ef("Unable to post-initialise '%s': expected status of %s but is %s", id, inspect(mod.status.initialized), inspect(plugin:getStatus()))
-        plugin:setStatus(mod.status.error)
+    elseif thePlugin:getStatus() ~= mod.status.disabled then
+        log.ef("Unable to post-initialise '%s': expected status of %s but is %s", id, inspect(mod.status.initialized), inspect(thePlugin:getStatus()))
+        thePlugin:setStatus(mod.status.error)
         return false
     end
     return true
