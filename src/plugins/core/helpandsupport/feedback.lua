@@ -13,15 +13,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local config			= require("cp.config")
-local feedback			= require("cp.feedback")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config            = require("cp.config")
+local feedback          = require("cp.feedback")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 2
+local PRIORITY          = 2
 
 --------------------------------------------------------------------------------
 --
@@ -40,7 +44,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	feedback.showFeedback()
+    feedback.showFeedback()
 end
 
 --------------------------------------------------------------------------------
@@ -49,12 +53,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.helpandsupport.feedback",
-	group			= "core",
-	dependencies	= {
-		["core.menu.helpandsupport.commandpost"]	= "helpandsupport",
-		["core.commands.global"] 		= "global",
-	}
+    id              = "core.helpandsupport.feedback",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
+        ["core.commands.global"]        = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -62,23 +66,23 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpFeedback")
-		:whenActivated(mod.show)
-		:groupedBy("helpandsupport")
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpFeedback")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
-	--------------------------------------------------------------------------------
-	-- Menubar:
-	--------------------------------------------------------------------------------
-	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("provideFeedback") .. "...",	fn = mod.show }
-	end)
-	:addSeparator(PRIORITY+0.1)
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    deps.helpandsupport:addItem(PRIORITY, function()
+        return { title = i18n("provideFeedback") .. "...",  fn = mod.show }
+    end)
+    :addSeparator(PRIORITY+0.1)
 
-	return mod
+    return mod
 end
 
 return plugin

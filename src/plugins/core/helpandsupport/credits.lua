@@ -13,14 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local config			= require("cp.config")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config            = require("cp.config")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 3
+local PRIORITY          = 3
 
 --------------------------------------------------------------------------------
 --
@@ -39,7 +43,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	os.execute('open "http://help.commandpost.io/getting_started/credits/"')
+    os.execute('open "http://help.commandpost.io/getting_started/credits/"')
 end
 
 --------------------------------------------------------------------------------
@@ -48,12 +52,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.helpandsupport.credits",
-	group			= "core",
-	dependencies	= {
-		["core.menu.helpandsupport.commandpost"]	= "helpandsupport",
-		["core.commands.global"] 					= "global",
-	}
+    id              = "core.helpandsupport.credits",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
+        ["core.commands.global"]                    = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -61,18 +65,18 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpCredits")
-		:whenActivated(mod.show)
-		:groupedBy("helpandsupport")
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpCredits")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
-	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("credits"),	fn = mod.show }
-	end)
-	return mod
+    deps.helpandsupport:addItem(PRIORITY, function()
+        return { title = i18n("credits"),   fn = mod.show }
+    end)
+    return mod
 
 end
 
