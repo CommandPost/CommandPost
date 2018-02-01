@@ -1,2 +1,10 @@
-globals = {"hs", "rawrequire", "i18n"}
-ignore = {"631"}
+globals = {
+	"hs", 
+	"rawrequire", 
+	"i18n",
+	"table",
+}
+		   
+ignore = {
+	"631",
+}
