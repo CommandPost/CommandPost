@@ -56,7 +56,7 @@ local mod = {
 local ARRAY_DELIM   = "||"
 local UNDEFINED     = "_undefined"
 
-local insert        = table.insert, table
+local insert        = table.insert
 local copy		    = fnutils.copy
 local format	    = string.format
 
