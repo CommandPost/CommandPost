@@ -53,12 +53,12 @@ local mod = {
 	_cache		= {},
 }
 
-local insert, remove			= table.insert, table.remove
-local copy						= fnutils.copy
-local format					= string.format
+local ARRAY_DELIM   = "||"
+local UNDEFINED     = "_undefined"
 
-local ARRAY_DELIM = "||"
-local UNDEFINED = "_undefined"
+local insert        = table.insert, table
+local copy		    = fnutils.copy
+local format	    = string.format
 
 -- freezeParams(params) -> string
 -- Function
