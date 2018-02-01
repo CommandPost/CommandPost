@@ -81,7 +81,7 @@ function plugin.init(dependencies)
     prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
         {
             label = i18n("show") .. " " .. i18n("helpAndSupport"),
-            onchange = function(id, params) sectionEnabled(params.checked) end,
+            onchange = function(_, params) sectionEnabled(params.checked) end,
             checked = sectionEnabled,
         }
     )
