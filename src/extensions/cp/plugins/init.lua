@@ -258,8 +258,8 @@ end
 --- Returns:
 ---  * the result of the plugin's `init(...)` function call.
 function mod.getPluginModule(id)
-    local plugin = mod.getPlugin(id)
-    return plugin and plugin:getModule()
+    local thePlugin = mod.getPlugin(id)
+    return thePlugin and thePlugin:getModule()
 end
 
 --- cp.plugins.getPluginIds() -> table
@@ -299,8 +299,8 @@ end
 ---  * the list of plugins.
 function mod.getPlugins()
     local pluginList = {}
-    for _,plugin in pairs(mod.CACHE) do
-        pluginList[#pluginList+1] = plugin
+    for _,thePlugin in pairs(mod.CACHE) do
+        pluginList[#pluginList+1] = thePlugin
     end
     return pluginList
 end
@@ -346,17 +346,17 @@ end
 function mod.initPlugin(id)
     -- log.df("Loading plugin '%s'", id)
 
-    local plugin = mod.getPlugin(id)
-    if not plugin then
+    local thePlugin = mod.getPlugin(id)
+    if not thePlugin then
         log.ef("Attempted to initialise non-existent plugin: %s", id)
         return nil
     end
 
-    if plugin:getStatus() ~= mod.status.loaded or plugin:getModule() ~= nil then
+    if thePlugin:getStatus() ~= mod.status.loaded or thePlugin:getModule() ~= nil then
         --------------------------------------------------------------------------------
         -- We've already loaded it. Return the cache's module:
         --------------------------------------------------------------------------------
-        return plugin:getModule()
+        return thePlugin:getModule()
     end
 
     --------------------------------------------------------------------------------
@@ -364,20 +364,20 @@ function mod.initPlugin(id)
     --------------------------------------------------------------------------------
     if mod.isDisabled(id) then
         log.df("Plugin disabled: '%s'", id)
-        plugin:setStatus(mod.status.disabled)
+        thePlugin:setStatus(mod.status.disabled)
         return nil
     end
 
     --------------------------------------------------------------------------------
     -- Ensure all dependencies are loaded:
     --------------------------------------------------------------------------------
-    local dependencies = mod.loadDependencies(plugin)
+    local dependencies = mod.loadDependencies(thePlugin)
     if not dependencies then
-        plugin:setStatus(mod.status.error)
+        thePlugin:setStatus(mod.status.error)
         return nil
     end
 
-    plugin:setDependencies(dependencies)
+    thePlugin:setDependencies(dependencies)
 
     --------------------------------------------------------------------------------
     -- Initialise the plugin module:
@@ -385,9 +385,9 @@ function mod.initPlugin(id)
     -- log.df("Initialising plugin '%s'.", id)
     local module = nil
 
-    if plugin.init then
+    if thePlugin.init then
         local ok, result = xpcall(function()
-            return plugin.init(dependencies, env.new(plugin:getRootPath()))
+            return thePlugin.init(dependencies, env.new(thePlugin:getRootPath()))
         end, debug.traceback)
 
         if ok then
@@ -410,8 +410,8 @@ function mod.initPlugin(id)
     --------------------------------------------------------------------------------
     -- Cache it:
     --------------------------------------------------------------------------------
-    plugin:setModule(module)
-    plugin:setStatus(mod.status.initialized)
+    thePlugin:setModule(module)
+    thePlugin:setStatus(mod.status.initialized)
 
     --------------------------------------------------------------------------------
     -- Return the module:
@@ -741,7 +741,7 @@ function mod.scanDirectory(directoryPath)
     --------------------------------------------------------------------------------
     local files = tools.dirFiles(path)
     local success = true
-    for i,file in ipairs(files) do
+    for _,file in ipairs(files) do
         --------------------------------------------------------------------------------
         -- If it's not a hidden directory/file:
         --------------------------------------------------------------------------------
@@ -776,16 +776,16 @@ function mod.loadSimplePlugin(path)
     -- load the plugin file, catching any errors
     local ok, result = xpcall(function() return dofile(path) end, debug.traceback)
     if ok then
-        local plugin = result
-        if plugin == nil or type(plugin) ~= "table" then
+        local thePlugin = result
+        if thePlugin == nil or type(thePlugin) ~= "table" then
             log.ef("Unable to load plugin '%s'.", path)
             return nil
         else
-            if not plugin.id then
+            if not thePlugin.id then
                 log.ef("The plugin at '%s' does not have an ID.", path)
                 return nil
             else
-                return cachePlugin(plugin.id, plugin, mod.status.loaded, path)
+                return cachePlugin(thePlugin.id, thePlugin, mod.status.loaded, path)
             end
         end
     else
@@ -837,7 +837,7 @@ function mod.loadComplexPlugin(path)
         if cache[name] then
             return cache[name]
         end
-        local file = package.searchpath(name, searchPath)
+        local file = package.searchpath(name, searchPath) -- luacheck: ignore
         if file then
             local result = dofile(file)
             cache[name] = result
@@ -849,7 +849,7 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Replace default 'require':
     --------------------------------------------------------------------------------
-    require = pluginRequire
+    require = pluginRequire -- luacheck: ignore
 
     --------------------------------------------------------------------------------
     -- Load the plugin:
@@ -862,7 +862,7 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Reset 'require' to the global require:
     --------------------------------------------------------------------------------
-    require = globalRequire
+    require = globalRequire -- luacheck: ignore
 
     return result
 end
