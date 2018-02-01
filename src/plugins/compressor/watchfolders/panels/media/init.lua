@@ -22,15 +22,9 @@ local log               = require("hs.logger").new("compressor")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local application       = require("hs.application")
-local axuielement       = require("hs._asm.axuielement")
-local eventtap          = require("hs.eventtap")
 local fnutils           = require("hs.fnutils")
-local fs                = require("hs.fs")
-local http              = require("hs.http")
 local image             = require("hs.image")
 local notify            = require("hs.notify")
-local pasteboard        = require("hs.pasteboard")
 local pathwatcher       = require("hs.pathwatcher")
 local task              = require("hs.task")
 local timer             = require("hs.timer")
@@ -42,8 +36,6 @@ local uuid              = require("hs.host").uuid
 local compressor        = require("cp.apple.compressor")
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
-local just              = require("cp.just")
-local prop              = require("cp.prop")
 local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -366,10 +358,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
     --log.df("Lets track the status of: %s", jobID)
     mod.statusTimer[jobID] = timer.doEvery(5, function()
         local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
-        local compressorStatusTask = hs.task.new(compressorPath, nil, function(task, stdOut, stdErr)
-            --log.df("task: %s", task)
-            --log.df("stdOut: %s", stdOut)
-            --log.df("stdErr: %s", stdErr)
+        local compressorStatusTask = hs.task.new(compressorPath, nil, function(_, stdOut)
             if stdOut and string.match(stdOut, [[status="([^%s]+)"]]) then
                 local status = string.match(stdOut, [[status="([^%s]+)"]])
                 --log.df("Status: %s", status)
@@ -398,7 +387,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                         :send()
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
-                elseif status and status == "Processing" then
+                --elseif status and status == "Processing" then
                     -- Do nothing
                 else
                     log.df("Unknown Status from Compressor: %s", status)
@@ -523,15 +512,8 @@ function mod.addFilesToCompressor(files)
 
         local filename = tools.getFilenameFromPath(file, true)
 
-        local compressorTask = task.new(compressorPath, function(exitCode, stdOut, stdErr)
-            --log.df("exitCode: %s", exitCode)
-            --log.df("stdOut: %s", stdOut)
-            --log.df("stdErr: %s", stdErr)
-        end, function(task, stdOut, stdErr)
-            --log.df("task: %s", task)
-            --log.df("stdOut: %s", stdOut)
-            --log.df("stdErr: %s", stdErr)
-
+        local compressorTask = task.new(compressorPath, function() end,
+        function(_, _, stdErr)
             local jobID = nil
             local jobIDPattern = "jobID ([^%s]+)"
             if stdErr and string.find(stdErr, jobIDPattern) then
@@ -596,10 +578,8 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- New File Added to Watch Folder:
                 --------------------------------------------------------------------------------
-                local newFile = false
                 if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemModified"] then
                     --log.df("New File Added: %s", file)
-                    newFile = true
                 end
 
                 --------------------------------------------------------------------------------
@@ -632,16 +612,13 @@ function mod.watchFolderTriggered(files, eventFlags)
                         mod.notifications[file]:withdraw()
                         mod.notifications[file] = nil
                     end
-                    newFile = true
                 end
 
                 --------------------------------------------------------------------------------
                 -- New File Moved into Watch Folder:
                 --------------------------------------------------------------------------------
-                local movedFile = false
                 if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
                     --log.df("File Moved or Renamed: %s", file)
-                    movedFile = true
                 end
 
                 --------------------------------------------------------------------------------
@@ -703,6 +680,7 @@ function mod.addWatchFolder()
     if not path then
         return
     end
+    local watchFolders = mod.watchFolders()
     if tools.tableContains(watchFolders, path) then
         dialog.displayMessage(i18n("alreadyWatched"))
         return
@@ -759,7 +737,7 @@ end
 ---  * None
 function mod.setupWatchers()
     local watchFolders = mod.watchFolders()
-    for i, v in pairs(watchFolders) do
+    for i, _ in pairs(watchFolders) do
         mod.newWatcher(i)
     end
 end
