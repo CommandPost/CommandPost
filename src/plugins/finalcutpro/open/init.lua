@@ -13,7 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local fcp			= require("cp.apple.finalcutpro")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp           = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -29,7 +33,7 @@ local PRIORITY = 3
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.open.openFinalCutPro() -> none
+--- plugins.finalcutpro.open.app() -> none
 --- Function
 --- Opens Final Cut Pro
 ---
@@ -38,8 +42,22 @@ local mod = {}
 ---
 --- Returns:
 ---  * None
-function mod.openFinalCutPro()
-	fcp:launch()
+function mod.app()
+    fcp:launch()
+end
+
+--- plugins.finalcutpro.open.commandEditor() -> none
+--- Function
+--- Opens the Final Cut Pro Command Editor
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.commandEditor()
+    fcp:launch()
+    fcp:commandEditor():show()
 end
 
 --------------------------------------------------------------------------------
@@ -48,12 +66,13 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.open",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.menu.top"] = "top",
-		["core.commands.global"] = "global",
-	}
+    id = "finalcutpro.open",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.menu.top"] = "top",
+        ["core.commands.global"] = "global",
+        ["finalcutpro.commands"] = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -61,26 +80,45 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Menubar:
-	--------------------------------------------------------------------------------
-	deps.top
-		:addItem(PRIORITY + 1, function()
-			if fcp:isInstalled() then
-				return { title = i18n("launch") .. " " .. i18n("finalCutPro"), fn = mod.openFinalCutPro }
-			end
-		end)
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    deps.top
+        :addItem(PRIORITY + 1, function()
+            if fcp:isInstalled() then
+                return {
+                    title = i18n("launch") .. " " .. i18n("finalCutPro"),
+                    fn = mod.app,
+                }
+            end
+        end)
+        :addItem(PRIORITY, function()
+            if fcp:isInstalled()  then
+                return {
+                    title = i18n("openCommandEditor"),
+                    fn = mod.commandEditor,
+                }
+            end
+        end)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpLaunchFinalCutPro")
-		:activatedBy():ctrl():alt():cmd("l")
-		:whenPressed(mod.openFinalCutPro)
-		:groupedBy("finalCutPro")
+    --------------------------------------------------------------------------------
+    -- Global Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpLaunchFinalCutPro")
+        :activatedBy():ctrl():alt():cmd("l")
+        :whenPressed(mod.app)
+        :groupedBy("finalCutPro")
 
-	return mod
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Commands:
+    --------------------------------------------------------------------------------
+    local fcpxCmds = deps.fcpxCmds
+    fcpxCmds:add("cpOpenCommandEditor")
+        :titled(i18n("openCommandEditor"))
+        :whenActivated(mod.commandEditor)
+
+    return mod
 end
 
 return plugin

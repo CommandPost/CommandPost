@@ -14,19 +14,32 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log			= require("hs.logger").new("shortcuts")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local dialog		= require("hs.dialog")
 local fs			= require("hs.fs")
 local image			= require("hs.image")
 local inspect		= require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local commands		= require("cp.commands")
 local config		= require("cp.config")
 local fcp			= require("cp.apple.finalcutpro")
 local prop			= require("cp.prop")
 local tools			= require("cp.tools")
 
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local v				= require("semver")
 
 --------------------------------------------------------------------------------
@@ -517,20 +530,6 @@ function mod.install(silently)
 	return private.updateFCPXCommands(true, silently)
 end
 
---- plugins.finalcutpro.hacks.shortcuts.editCommands() -> none
---- Function
---- Launch the Final Cut Pro Command Editor
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.editCommands()
-	fcp:launch()
-	fcp:commandEditor():show()
-end
-
 --- plugins.finalcutpro.hacks.shortcuts.supported <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the a supported version of FCPX is installed.
@@ -782,22 +781,6 @@ function plugin.init(deps, env)
 	mod._manager = deps.shortcuts._manager
 
 	--------------------------------------------------------------------------------
-	-- Add the menu item to the top section:
-	--------------------------------------------------------------------------------
-	deps.top:addItem(PRIORITY, function()
-		if fcp:isInstalled()  then
-			return { title = i18n("openCommandEditor"), fn = mod.editCommands, disabled = not fcp:isRunning() }
-		end
-	end)
-
-	--------------------------------------------------------------------------------
-	-- Add Commands:
-	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpOpenCommandEditor")
-		:titled(i18n("openCommandEditor"))
-		:whenActivated(mod.editCommands)
-
-	--------------------------------------------------------------------------------
 	-- Add Preferences:
 	--------------------------------------------------------------------------------
 	if deps.prefs.panel then
@@ -821,10 +804,16 @@ function plugin.init(deps, env)
 	return mod.init(deps, env)
 end
 
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.postInit(deps, env)
 	mod.update()
 end
 
+--------------------------------------------------------------------------------
+-- DISABLE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.disable()
 	return mod.uninstall()
 end

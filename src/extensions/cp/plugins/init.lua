@@ -279,7 +279,7 @@ function mod.initPlugins()
 		local finishTime = os.clock()
 		local loadingTime = finishTime-startTime
 		if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
-    		log.df("Detected Slow Plugin: %s (%s)", id, finishTime-startTime)
+    		log.wf("Detected Slow Plugin: %s (%s)", id, finishTime-startTime)
     	end
 	end
 end
@@ -517,7 +517,7 @@ function mod.postInitPlugins()
 		local finishTime = os.clock()
 		local loadingTime = finishTime-startTime
 		if loadingTime > mod.SLOW_PLUGIN_WARNING_THRESHOLD then
-    		log.df("Detected Slow Post Plugin: %s (%s)", id, finishTime-startTime)
+    		log.wf("Detected Slow Post Plugin: %s (%s)", id, finishTime-startTime)
     	end
 	end
 end
