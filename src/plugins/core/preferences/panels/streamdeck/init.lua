@@ -26,16 +26,12 @@ local application                               = require("hs.application")
 local canvas                                    = require("hs.canvas")
 local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
-local html                                      = require("cp.web.html")
-local plist                                     = require("cp.plist")
 local tools                                     = require("cp.tools")
 local ui                                        = require("cp.web.ui")
 
@@ -102,9 +98,11 @@ end
 --  * HTML content as string
 local function renderRows(context)
     if not mod._renderRows then
-        mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
-        if err then
-            error(err)
+        local errorMessage
+        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
         end
     end
     return mod._renderRows(context)
@@ -121,9 +119,11 @@ end
 --  * HTML content as string
 local function renderPanel(context)
     if not mod._renderPanel then
-        mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
-        if err then
-            error(err)
+        local errorMessage
+        mod._renderPanel, errorMessage = mod._env:compileTemplate("html/panel.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
         end
     end
     return mod._renderPanel(context)
@@ -254,10 +254,10 @@ local function streamDeckPanelCallback(id, params)
                     -- Restrict Allowed Handlers for Activator to current group (and global):
                     --------------------------------------------------------------------------------
                     local allowedHandlers = {}
-                    for _,id in pairs(handlerIds) do
-                        local handlerTable = tools.split(id, "_")
+                    for _,v in pairs(handlerIds) do
+                        local handlerTable = tools.split(v, "_")
                         if handlerTable[1] == groupID or handlerTable[1] == "global" then
-                            table.insert(allowedHandlers, id)
+                            table.insert(allowedHandlers, v)
                         end
                     end
                     mod.activator[groupID]:allowHandlers(table.unpack(allowedHandlers))
@@ -436,7 +436,7 @@ function mod.init(deps, env)
             {
                 label       = i18n("enableStreamDeck"),
                 checked     = mod.enabled,
-                onchange    = function(id, params)
+                onchange    = function(_, params)
                     if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
                         mod.enabled(params.checked)
                     else
