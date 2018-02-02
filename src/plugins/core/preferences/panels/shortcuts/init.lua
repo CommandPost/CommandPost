@@ -377,7 +377,7 @@ function _.combinations(list)
         -- Get all combinations of the remainder of the list:
         --------------------------------------------------------------------------------
         local combos = _.combinations(list)
-        result = result:append(_.map(combos, function(x,v) return _.append({first}, v) end))
+        result = result:append(_.map(combos, function(x,v) return _.append({first}, v) end)) -- luacheck: ignore
         --------------------------------------------------------------------------------
         -- Add the sub-combos at the end:
         --------------------------------------------------------------------------------
@@ -398,7 +398,7 @@ end
 -- Returns:
 --  * Table of reduced combinations
 function _.reduceCombinations(list, f, state)
-    return _.map(_.combinations(list), function(x,v) return _.reduce(v, f, state) end)
+    return _.map(_.combinations(list), function(x,v) return _.reduce(v, f, state) end) -- luacheck: ignore
 end
 
 -- iterateModifiers(list) -> table
