@@ -106,7 +106,7 @@ local function disablePlugin(id)
     dialog.webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             if not plugins.disable(id) then
-                dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))
+                dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("pluginsUnableToDisable", {pluginName = pluginShortName(id, true)}))
             end
         end
     end, i18n("pluginsDisableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")
@@ -125,35 +125,10 @@ local function enablePlugin(id)
     dialog.webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             if not plugins.enable(id) then
-                dialog.webviewAlert(mod._manager.getWebview(), function(result) end, i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))
+                dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("pluginsUnableToEnable", {pluginName = pluginShortName(id, true)}))
             end
         end
     end, i18n("pluginsEnableCheck"), i18n("pluginsRestart"), i18n("yes"), i18n("no"), "informational")
-end
-
--- controllerCallback(id, params) -> none
--- Function
--- Controller Callback
---
--- Parameters:
---  * id - The ID
---  * params - A table of parameters
---
--- Returns:
---  * None
-local function controllerCallback(id, params)
-    local action = params.action
-    if action == "errorLog" then
-        hs.openConsole()
-    elseif action == "pluginsFolder" then
-        openPluginsFolder()
-    elseif action == "disable" then
-        disablePlugin(id)
-    elseif action == "enable" then
-        enablePlugin(id)
-    else
-        log.ef("Unrecognised action: ", inspect(message))
-    end
 end
 
 -- openPluginsFolder() -> none
@@ -184,6 +159,31 @@ local function openPluginsFolder()
     log.df("Failed to Open Plugins Window.")
 end
 
+-- controllerCallback(id, params) -> none
+-- Function
+-- Controller Callback
+--
+-- Parameters:
+--  * id - The ID
+--  * params - A table of parameters
+--
+-- Returns:
+--  * None
+local function controllerCallback(id, params)
+    local action = params.action
+    if action == "errorLog" then
+        hs.openConsole()
+    elseif action == "pluginsFolder" then
+        openPluginsFolder()
+    elseif action == "disable" then
+        disablePlugin(id)
+    elseif action == "enable" then
+        enablePlugin(id)
+    else
+        log.ef("Unrecognised action: %s %s", id, inspect(params))
+    end
+end
+
 -- generateContent() -> none
 -- Function
 -- Generates the HTML content
@@ -206,7 +206,6 @@ local function generateContent()
         info.id = plugin.id
         info.group = plugin.group
         info.category = pluginCategory(plugin)
-        info.currentCategory = currentCategory
         info.status = pluginStatus(plugin)
         info.shortName = pluginShortName(plugin.id)
 

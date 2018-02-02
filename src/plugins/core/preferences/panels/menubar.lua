@@ -67,7 +67,7 @@ function plugin.init(deps)
     :addCheckbox(APPEARANCE_HEADING + 10,
         {
             label = i18n("displayThisMenuAsIcon"),
-            onchange = function(id, params) deps.menuMgr.displayMenubarAsIcon(params.checked) end,
+            onchange = function(_, params) deps.menuMgr.displayMenubarAsIcon(params.checked) end,
             checked = deps.menuMgr.displayMenubarAsIcon,
         }
     )
