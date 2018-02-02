@@ -15,11 +15,6 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("virtualTouchBar")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
@@ -53,6 +48,15 @@ mod.LOCATION_TIMELINE = "TimelineTopCentre"
 --- When should the Virtual Touch Bar be visible?
 mod.visibility = config.prop("virtualTouchBarVisibility", mod.VISIBILITY_FCP)
 
+-- plugins.finalcutpro.touchbar.virtual._checkVisibility(active) -> none
+-- Function
+-- Checks the visibility of the Virtual Touch Bar
+--
+-- Parameters:
+--  * active - A boolean
+--
+-- Returns:
+--  * None
 function mod._checkVisibility(active)
     if mod.visibility() == mod.VISIBILITY_ALWAYS then
         mod._manager.virtual.show()

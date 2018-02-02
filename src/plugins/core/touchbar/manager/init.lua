@@ -18,7 +18,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
- local log                                       = require("hs.logger").new("managerTouchBar")
+local log                                       = require("hs.logger").new("managerTouchBar")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -798,7 +798,7 @@ mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(functio
     -- Check for compatibility:
     --------------------------------------------------------------------------------
     if enabled and not mod.supported() then
-    dialog.displayMessage(i18n("touchBarError"))
+        dialog.displayMessage(i18n("touchBarError"))
         mod.enabled(false)
     end
     if not enabled then
@@ -835,7 +835,7 @@ function mod.virtual.start()
         mod._touchBar = touchbar.new()
 
         if mod._touchBar == nil then
-log.ef("There was an error initialising the Touch Bar.")
+            log.ef("There was an error initialising the Touch Bar.")
             return
         end
 
