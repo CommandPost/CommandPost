@@ -13,9 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsGeneral")
 
-local image										= require("hs.image")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local image                                     = require("hs.image")
 
 --------------------------------------------------------------------------------
 --
@@ -23,25 +25,25 @@ local image										= require("hs.image")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.panels.advanced",
-	group			= "core",
-	dependencies	= {
-		["core.preferences.manager"]	= "manager",
-	}
+    id              = "core.preferences.panels.advanced",
+    group           = "core",
+    dependencies    = {
+        ["core.preferences.manager"]    = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return deps.manager.addPanel({
-		priority 	= 2090,
-		id			= "advanced",
-		label		= i18n("advancedPanelLabel"),
-		image		= image.imageFromName("NSAdvanced"),
-		tooltip		= i18n("advancedPanelTooltip"),
-		height		= 530,
-	})
+    return deps.manager.addPanel({
+        priority    = 2090,
+        id          = "advanced",
+        label       = i18n("advancedPanelLabel"),
+        image       = image.imageFromName("NSAdvanced"),
+        tooltip     = i18n("advancedPanelTooltip"),
+        height      = 530,
+    })
 end
 
 return plugin
