@@ -27,7 +27,6 @@ local fnutils                                   = require("hs.fnutils")
 local hotkey                                    = require("hs.hotkey")
 local image                                     = require("hs.image")
 local keycodes                                  = require("hs.keycodes")
-local webview                                   = require("hs.webview")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -96,12 +95,10 @@ end
 local function deleteShortcuts()
     for groupID, group in pairs(mod.defaultShortcuts) do
         for cmdID,cmd in pairs(group) do
-            for _,shortcut in pairs(cmd) do
-                local tempGroup = commands.group(groupID)
-                local tempCommand = tempGroup:get(cmdID)
-                if tempCommand then
-                    tempCommand:deleteShortcuts()
-                end
+            local tempGroup = commands.group(groupID)
+            local tempCommand = tempGroup:get(cmdID)
+            if tempCommand then
+                tempCommand:deleteShortcuts()
             end
         end
     end
