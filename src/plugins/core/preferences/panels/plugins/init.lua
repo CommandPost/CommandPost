@@ -225,7 +225,6 @@ local function generateContent()
             info.actionLabel = i18n("plugin_action_" .. action,  {default = action})
         end
 
-        lastCategory = cachedCurrentCategory
         pluginInfo[#pluginInfo+1] = info
         mod.panel:addHandler("onclick", info.id, controllerCallback, { "action" })
 
@@ -235,14 +234,19 @@ local function generateContent()
         return a.category < b.category or a.category == b.category and a.shortName < b.shortName
     end)
 
-    -- Add a 'currentCategory' field that only list the category when it's different from the previous one.
+    --------------------------------------------------------------------------------
+    -- Add a 'currentCategory' field that only list the category when it's
+    -- different from the previous one.
+    --------------------------------------------------------------------------------
     local lastCategory = ""
     for _,info in ipairs(pluginInfo) do
         info.currentCategory = info.category == lastCategory and "" or info.category
         lastCategory = info.category
     end
 
-    -- handle 'open plugin folder' buttons
+    --------------------------------------------------------------------------------
+    -- Handle the 'Open Plugin Folder' button:
+    --------------------------------------------------------------------------------
     mod.panel:addHandler("onclick", "openPluginsFolder", openPluginsFolder)
 
     local env = {
