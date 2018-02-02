@@ -146,7 +146,7 @@ end
 ---  * Table
 function widgets.allGroups()
     local result = {}
-    local theWidgets = theWidgets:getAll()
+    local theWidgets = widgets:getAll()
     for _, widget in pairs(theWidgets) do
         local params = widget:params()
         if params and params.group then
