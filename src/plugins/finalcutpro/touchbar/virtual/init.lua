@@ -121,13 +121,13 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Disable/Enable the Touchbar when the Command Editor/etc is open:
         --------------------------------------------------------------------------------
-        fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(mod._checkVisibility)
+        mod._fcpCommandEditorWatcher = fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(mod._checkVisibility)
 
         --------------------------------------------------------------------------------
         -- Update the Virtual Touch Bar position if either of the main windows move:
         --------------------------------------------------------------------------------
-        fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
-        fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        mod._fcpPrimaryWindowWatcher = fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        mod._fcpSecondaryWindowWatcher = fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
 
         --------------------------------------------------------------------------------
         -- Start the Virtual Touch Bar:
@@ -155,9 +155,18 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
             fcp:unwatch(mod._fcpWatchID.id)
             mod._fcpWatchID = nil
         end
-        fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):unwatch(mod._checkVisibility)
-        fcp:primaryWindow().frame:unwatch(mod._manager.virtual.updateLocation)
-        fcp:secondaryWindow().frame:unwatch(mod._manager.virtual.updateLocation)
+        if mod._fcpCommandEditorWatcher then
+            mod._fcpCommandEditorWatcher:unwatch(mod._checkVisibility)
+            mod._fcpCommandEditorWatcher = nil
+        end
+        if mod._fcpPrimaryWindowWatcher then
+            mod._fcpPrimaryWindowWatcher:unwatch(mod._manager.virtual.updateLocation)
+            mod._fcpPrimaryWindowWatcher = nil
+        end
+        if mod._fcpSecondaryWindowWatcher then
+            fcp:secondaryWindow().frame:unwatch(mod._manager.virtual.updateLocation)
+            mod._fcpSecondaryWindowWatcher = nil
+        end
         if mod.updateLocationCallback then
             mod.updateLocationCallback:delete()
             mod.updateLocationCallback = nil
