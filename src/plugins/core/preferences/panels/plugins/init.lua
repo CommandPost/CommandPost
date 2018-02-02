@@ -140,7 +140,7 @@ end
 --
 -- Returns:
 --  * None
-local function openPluginsFolder()
+ local function openPluginsFolder()
     if not tools.doesDirectoryExist(config.userPluginsPath) then
         log.df("Creating Plugins directory.")
         local status, err = fs.mkdir(config.userPluginsPath)
@@ -174,7 +174,9 @@ local function controllerCallback(id, params)
     if action == "errorLog" then
         hs.openConsole()
     elseif action == "pluginsFolder" then
+
         openPluginsFolder()
+
     elseif action == "disable" then
         disablePlugin(id)
     elseif action == "enable" then
