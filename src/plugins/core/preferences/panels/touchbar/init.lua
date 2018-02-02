@@ -13,22 +13,35 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsTouchBar")
 
-local canvas									= require("hs.canvas")
-local dialog									= require("hs.dialog")
-local image										= require("hs.image")
-local inspect									= require("hs.inspect")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                                       = require("hs.logger").new("prefsTouchBar")
 
-local commands									= require("cp.commands")
-local config									= require("cp.config")
-local fcp										= require("cp.apple.finalcutpro")
-local html										= require("cp.web.html")
-local plist										= require("cp.plist")
-local tools										= require("cp.tools")
-local ui										= require("cp.web.ui")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local canvas                                    = require("hs.canvas")
+local dialog                                    = require("hs.dialog")
+local image                                     = require("hs.image")
+local inspect                                   = require("hs.inspect")
 
-local _											= require("moses")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local commands                                  = require("cp.commands")
+local config                                    = require("cp.config")
+local fcp                                       = require("cp.apple.finalcutpro")
+local html                                      = require("cp.web.html")
+local plist                                     = require("cp.plist")
+local tools                                     = require("cp.tools")
+local ui                                        = require("cp.web.ui")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local _                                         = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -72,12 +85,12 @@ mod.maxItems = 8
 -- Returns:
 --  * None
 local function resetTouchBar()
-	dialog.webviewAlert(mod._manager.getWebview(), function(result)
-		if result == i18n("yes") then
-			mod._tb.clear()
-			mod._manager.refresh()
-		end
-	end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+    dialog.webviewAlert(mod._manager.getWebview(), function(result)
+        if result == i18n("yes") then
+            mod._tb.clear()
+            mod._manager.refresh()
+        end
+    end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
 -- renderRows(context) -> none
@@ -90,13 +103,13 @@ end
 -- Returns:
 --  * HTML content as string
 local function renderRows(context)
-	if not mod._renderRows then
-		mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
-		if err then
-			error(err)
-		end
-	end
-	return mod._renderRows(context)
+    if not mod._renderRows then
+        mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
+        if err then
+            error(err)
+        end
+    end
+    return mod._renderRows(context)
 end
 
 -- renderPanel(context) -> none
@@ -109,13 +122,13 @@ end
 -- Returns:
 --  * HTML content as string
 local function renderPanel(context)
-	if not mod._renderPanel then
-		mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
-		if err then
-			error(err)
-		end
-	end
-	return mod._renderPanel(context)
+    if not mod._renderPanel then
+        mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
+        if err then
+            error(err)
+        end
+    end
+    return mod._renderPanel(context)
 end
 
 -- generateContent() -> string
@@ -129,78 +142,78 @@ end
 --  * HTML content as string
 local function generateContent()
 
-	--------------------------------------------------------------------------------
-	-- The Group Select:
-	--------------------------------------------------------------------------------
-	local groups = {}
-	local groupOptions = {}
-	local defaultGroup = nil
-	if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
-	for _,id in ipairs(commands.groupIds()) do
-		for subGroupID=1, mod._tb.numberOfSubGroups do
-			defaultGroup = defaultGroup or id .. subGroupID
-			groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bar " .. tostring(subGroupID) .. ")"}
-			groups[#groups + 1] = id .. subGroupID
-		end
-	end
-	table.sort(groupOptions, function(a, b) return a.label < b.label end)
+    --------------------------------------------------------------------------------
+    -- The Group Select:
+    --------------------------------------------------------------------------------
+    local groups = {}
+    local groupOptions = {}
+    local defaultGroup = nil
+    if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
+    for _,id in ipairs(commands.groupIds()) do
+        for subGroupID=1, mod._tb.numberOfSubGroups do
+            defaultGroup = defaultGroup or id .. subGroupID
+            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bar " .. tostring(subGroupID) .. ")"}
+            groups[#groups + 1] = id .. subGroupID
+        end
+    end
+    table.sort(groupOptions, function(a, b) return a.label < b.label end)
 
-	local touchBarGroupSelect = ui.select({
-		id			= "touchBarGroupSelect",
-		value		= defaultGroup,
-		options		= groupOptions,
-		required	= true,
-	}) .. ui.javascript([[
-		var touchBarGroupSelect = document.getElementById("touchBarGroupSelect")
-		touchBarGroupSelect.onchange = function(e) {
+    local touchBarGroupSelect = ui.select({
+        id          = "touchBarGroupSelect",
+        value       = defaultGroup,
+        options     = groupOptions,
+        required    = true,
+    }) .. ui.javascript([[
+        var touchBarGroupSelect = document.getElementById("touchBarGroupSelect")
+        touchBarGroupSelect.onchange = function(e) {
 
-			//
-			// Change Group Callback:
-			//
-			try {
-				var result = {
-					id: "touchBarPanelCallback",
-					params: {
-						type: "updateGroup",
-						groupID: this.value,
-					},
-				}
-				webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
-			} catch(err) {
-				console.log("Error: " + err)
-				alert('An error has occurred. Does the controller exist yet?');
-			}
+            //
+            // Change Group Callback:
+            //
+            try {
+                var result = {
+                    id: "touchBarPanelCallback",
+                    params: {
+                        type: "updateGroup",
+                        groupID: this.value,
+                    },
+                }
+                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
+            } catch(err) {
+                console.log("Error: " + err)
+                alert('An error has occurred. Does the controller exist yet?');
+            }
 
-			console.log("touchBarGroupSelect changed");
-			var groupControls = document.getElementById("touchbarGroupControls");
-			var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
-			var children = groupControls.children;
-			for (var i = 0; i < children.length; i++) {
-			  var child = children[i];
-			  if (child.id == "touchbarGroup_" + value) {
-				  child.classList.add("selected");
-			  } else {
-				  child.classList.remove("selected");
-			  }
-			}
-		}
-	]])
+            console.log("touchBarGroupSelect changed");
+            var groupControls = document.getElementById("touchbarGroupControls");
+            var value = touchBarGroupSelect.options[touchBarGroupSelect.selectedIndex].value;
+            var children = groupControls.children;
+            for (var i = 0; i < children.length; i++) {
+              var child = children[i];
+              if (child.id == "touchbarGroup_" + value) {
+                  child.classList.add("selected");
+              } else {
+                  child.classList.remove("selected");
+              }
+            }
+        }
+    ]])
 
-	local context = {
-		_						= _,
-		touchBarGroupSelect		= touchBarGroupSelect,
-		groups					= groups,
-		defaultGroup			= defaultGroup,
+    local context = {
+        _                       = _,
+        touchBarGroupSelect     = touchBarGroupSelect,
+        groups                  = groups,
+        defaultGroup            = defaultGroup,
 
-		groupEditor				= mod.getGroupEditor,
+        groupEditor             = mod.getGroupEditor,
 
-		webviewLabel 			= mod._manager.getLabel(),
+        webviewLabel            = mod._manager.getLabel(),
 
-		maxItems				= mod._tb.maxItems,
-		tb						= mod._tb,
-	}
+        maxItems                = mod._tb.maxItems,
+        tb                      = mod._tb,
+    }
 
-	return renderPanel(context)
+    return renderPanel(context)
 
 end
 
@@ -215,151 +228,151 @@ end
 -- Returns:
 --  * None
 local function touchBarPanelCallback(id, params)
-	if params and params["type"] then
-		if params["type"] == "badExtension" then
-			--------------------------------------------------------------------------------
-			-- Bad Icon File Extension:
-			--------------------------------------------------------------------------------
-			dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badTouchBarIcon"), i18n("pleaseTryAgain"), i18n("ok"))
-		elseif params["type"] == "updateIcon" then
-			--------------------------------------------------------------------------------
-			-- Update Icon:
-			--------------------------------------------------------------------------------
-			mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
-		elseif params["type"] == "updateAction" then
+    if params and params["type"] then
+        if params["type"] == "badExtension" then
+            --------------------------------------------------------------------------------
+            -- Bad Icon File Extension:
+            --------------------------------------------------------------------------------
+            dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("badTouchBarIcon"), i18n("pleaseTryAgain"), i18n("ok"))
+        elseif params["type"] == "updateIcon" then
+            --------------------------------------------------------------------------------
+            -- Update Icon:
+            --------------------------------------------------------------------------------
+            mod._tb.updateIcon(params["buttonID"], params["groupID"], params["icon"])
+        elseif params["type"] == "updateAction" then
 
-			--------------------------------------------------------------------------------
-			-- Setup Activators:
-			--------------------------------------------------------------------------------
-			if not mod.activator then
-				mod.activator = {}
-				local handlerIds = mod._actionmanager.handlerIds()
-				for _,groupID in ipairs(commands.groupIds()) do
-					for subGroupID=1, mod._tb.numberOfSubGroups do
-						--------------------------------------------------------------------------------
-						-- Create new Activator:
-						--------------------------------------------------------------------------------
-						mod.activator[groupID .. subGroupID] = mod._actionmanager.getActivator("touchbarPreferences" .. groupID .. subGroupID)
+            --------------------------------------------------------------------------------
+            -- Setup Activators:
+            --------------------------------------------------------------------------------
+            if not mod.activator then
+                mod.activator = {}
+                local handlerIds = mod._actionmanager.handlerIds()
+                for _,groupID in ipairs(commands.groupIds()) do
+                    for subGroupID=1, mod._tb.numberOfSubGroups do
+                        --------------------------------------------------------------------------------
+                        -- Create new Activator:
+                        --------------------------------------------------------------------------------
+                        mod.activator[groupID .. subGroupID] = mod._actionmanager.getActivator("touchbarPreferences" .. groupID .. subGroupID)
 
-						--------------------------------------------------------------------------------
-						-- Restrict Allowed Handlers for Activator to current group (and global):
-						--------------------------------------------------------------------------------
-						local allowedHandlers = {}
-						for _,id in pairs(handlerIds) do
-							local handlerTable = tools.split(id, "_")
-							if handlerTable[1] == groupID or handlerTable[1] == "global" then
-								table.insert(allowedHandlers, id)
-							end
-						end
-						mod.activator[groupID .. subGroupID]:allowHandlers(table.unpack(allowedHandlers))
-						mod.activator[groupID .. subGroupID]:preloadChoices()
-					end
-				end
-			end
+                        --------------------------------------------------------------------------------
+                        -- Restrict Allowed Handlers for Activator to current group (and global):
+                        --------------------------------------------------------------------------------
+                        local allowedHandlers = {}
+                        for _,id in pairs(handlerIds) do
+                            local handlerTable = tools.split(id, "_")
+                            if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                                table.insert(allowedHandlers, id)
+                            end
+                        end
+                        mod.activator[groupID .. subGroupID]:allowHandlers(table.unpack(allowedHandlers))
+                        mod.activator[groupID .. subGroupID]:preloadChoices()
+                    end
+                end
+            end
 
-			--------------------------------------------------------------------------------
-			-- Setup Activator Callback:
-			--------------------------------------------------------------------------------
-			local groupID = params["groupID"]
+            --------------------------------------------------------------------------------
+            -- Setup Activator Callback:
+            --------------------------------------------------------------------------------
+            local groupID = params["groupID"]
 
-			mod.activator[groupID]:onActivate(function(handler, action, text)
-				local actionTitle = text
-				local handlerID = handler:id()
+            mod.activator[groupID]:onActivate(function(handler, action, text)
+                local actionTitle = text
+                local handlerID = handler:id()
 
-				mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
-				mod._manager.refresh()
-			end)
+                mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+                mod._manager.refresh()
+            end)
 
-			--------------------------------------------------------------------------------
-			-- Show Activator:
-			--------------------------------------------------------------------------------
-			mod.activator[groupID]:show()
+            --------------------------------------------------------------------------------
+            -- Show Activator:
+            --------------------------------------------------------------------------------
+            mod.activator[groupID]:show()
 
-		elseif params["type"] == "clearAction" then
-			mod._tb.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
-			mod._manager.refresh()
-		elseif params["type"] == "updateLabel" then
-			--------------------------------------------------------------------------------
-			-- Update Label:
-			--------------------------------------------------------------------------------
-			mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
-		elseif params["type"] == "iconClicked" then
-			--------------------------------------------------------------------------------
-			-- Icon Clicked:
-			--------------------------------------------------------------------------------
-			local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)
-			local failed = false
-			if result and result["1"] then
-				local path = result["1"]
-				local icon = image.imageFromPath(path)
-				if icon then
-					if string.sub(path, 1, string.len(mod.defaultIconPath)) == mod.defaultIconPath then
-						--------------------------------------------------------------------------------
-						-- One of our pre-supplied images:
-						--------------------------------------------------------------------------------
-						local originalImage = image.imageFromPath(path):template(false)
-						if originalImage then
+        elseif params["type"] == "clearAction" then
+            mod._tb.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
+            mod._manager.refresh()
+        elseif params["type"] == "updateLabel" then
+            --------------------------------------------------------------------------------
+            -- Update Label:
+            --------------------------------------------------------------------------------
+            mod._tb.updateLabel(params["buttonID"], params["groupID"], params["label"])
+        elseif params["type"] == "iconClicked" then
+            --------------------------------------------------------------------------------
+            -- Icon Clicked:
+            --------------------------------------------------------------------------------
+            local result = dialog.chooseFileOrFolder(i18n("pleaseSelectAnIcon"), mod.defaultIconPath, true, false, false, mod.supportedExtensions, true)
+            local failed = false
+            if result and result["1"] then
+                local path = result["1"]
+                local icon = image.imageFromPath(path)
+                if icon then
+                    if string.sub(path, 1, string.len(mod.defaultIconPath)) == mod.defaultIconPath then
+                        --------------------------------------------------------------------------------
+                        -- One of our pre-supplied images:
+                        --------------------------------------------------------------------------------
+                        local originalImage = image.imageFromPath(path):template(false)
+                        if originalImage then
 
-							local a = canvas.new{x = 0, y = 0, w = 512, h = 512 }
-							a[1] = {
-							  type="image",
-							  image = originalImage,
-							  frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
-							}
-							a[2] = {
-							  type = "rectangle",
-							  action = "fill",
-							  fillColor = { white = 1 },
-							  compositeRule = "sourceAtop",
-							}
-							local newImage = a:imageFromCanvas()
+                            local a = canvas.new{x = 0, y = 0, w = 512, h = 512 }
+                            a[1] = {
+                              type="image",
+                              image = originalImage,
+                              frame = { x = "10%", y = "10%", h = "80%", w = "80%" },
+                            }
+                            a[2] = {
+                              type = "rectangle",
+                              action = "fill",
+                              fillColor = { white = 1 },
+                              compositeRule = "sourceAtop",
+                            }
+                            local newImage = a:imageFromCanvas()
 
-							local encodedIcon = newImage:encodeAsURLString()
+                            local encodedIcon = newImage:encodeAsURLString()
 
-							mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
-							mod._manager.refresh()
-						else
-							failed = true
-						end
-					else
-						--------------------------------------------------------------------------------
-						-- An image from outside the pre-supplied image path:
-						--------------------------------------------------------------------------------
-						local encodedIcon = icon:encodeAsURLString()
-						if encodedIcon then
-							mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
-							mod._manager.refresh()
-						else
-							failed = true
-						end
-					end
-				else
-					failed = true
-				end
-				if failed then
-					dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
-				end
-			else
-				--------------------------------------------------------------------------------
-				-- Clear Icon:
-				--------------------------------------------------------------------------------
-				mod._tb.updateIcon(params["buttonID"], params["groupID"], nil)
-				mod._manager.refresh()
-			end
-		elseif params["type"] == "updateGroup" then
-			--------------------------------------------------------------------------------
-			-- Update Group:
-			--------------------------------------------------------------------------------
-			mod.lastGroup(params["groupID"])
-		else
-			--------------------------------------------------------------------------------
-			-- Unknown Callback:
-			--------------------------------------------------------------------------------
-			log.df("Unknown Callback in Touch Bar Preferences Panel:")
-			log.df("id: %s", hs.inspect(id))
-			log.df("params: %s", hs.inspect(params))
-		end
-	end
+                            mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+                            mod._manager.refresh()
+                        else
+                            failed = true
+                        end
+                    else
+                        --------------------------------------------------------------------------------
+                        -- An image from outside the pre-supplied image path:
+                        --------------------------------------------------------------------------------
+                        local encodedIcon = icon:encodeAsURLString()
+                        if encodedIcon then
+                            mod._tb.updateIcon(params["buttonID"], params["groupID"], encodedIcon)
+                            mod._manager.refresh()
+                        else
+                            failed = true
+                        end
+                    end
+                else
+                    failed = true
+                end
+                if failed then
+                    dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("fileCouldNotBeRead"), i18n("pleaseTryAgain"), i18n("ok"))
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- Clear Icon:
+                --------------------------------------------------------------------------------
+                mod._tb.updateIcon(params["buttonID"], params["groupID"], nil)
+                mod._manager.refresh()
+            end
+        elseif params["type"] == "updateGroup" then
+            --------------------------------------------------------------------------------
+            -- Update Group:
+            --------------------------------------------------------------------------------
+            mod.lastGroup(params["groupID"])
+        else
+            --------------------------------------------------------------------------------
+            -- Unknown Callback:
+            --------------------------------------------------------------------------------
+            log.df("Unknown Callback in Touch Bar Preferences Panel:")
+            log.df("id: %s", hs.inspect(id))
+            log.df("params: %s", hs.inspect(params))
+        end
+    end
 end
 
 --- plugins.core.preferences.panels.touchbar.setGroupEditor(groupId, editorFn) -> none
@@ -373,10 +386,10 @@ end
 --- Returns:
 ---  * None
 function mod.setGroupEditor(groupId, editorFn)
-	if not mod._groupEditors then
-		mod._groupEditors = {}
-	end
-	mod._groupEditors[groupId] = editorFn
+    if not mod._groupEditors then
+        mod._groupEditors = {}
+    end
+    mod._groupEditors[groupId] = editorFn
 end
 
 --- plugins.core.preferences.panels.touchbar.getGroupEditor(groupId) -> none
@@ -389,7 +402,7 @@ end
 --- Returns:
 ---  * Group Editor
 function mod.getGroupEditor(groupId)
-	return mod._groupEditors and mod._groupEditors[groupId]
+    return mod._groupEditors and mod._groupEditors[groupId]
 end
 
 --------------------------------------------------------------------------------
@@ -404,39 +417,39 @@ mod.virtual = {}
 --- Field
 --- Is `true` if the plugin is enabled.
 mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enabled)
-	--------------------------------------------------------------------------------
-	-- Check for compatibility:
-	--------------------------------------------------------------------------------
-	if enabled and not mod._tb.supported() then
-		dialog.displayMessage(i18n("touchBarError"))
-		mod.enabled(false)
-	end
-	if enabled then
-		mod._tb.virtual.start()
-	else
-		mod._tb.virtual.stop()
-	end
+    --------------------------------------------------------------------------------
+    -- Check for compatibility:
+    --------------------------------------------------------------------------------
+    if enabled and not mod._tb.supported() then
+        dialog.displayMessage(i18n("touchBarError"))
+        mod.enabled(false)
+    end
+    if enabled then
+        mod._tb.virtual.start()
+    else
+        mod._tb.virtual.stop()
+    end
 end)
 
 --- plugins.finalcutpro.touchbar.virtual.VISIBILITY_ALWAYS -> string
 --- Constant
 --- Virtual Touch Bar is Always Visible
-mod.virtual.VISIBILITY_ALWAYS		= "Always"
+mod.virtual.VISIBILITY_ALWAYS       = "Always"
 
 --- plugins.finalcutpro.touchbar.virtual.VISIBILITY_FCP -> string
 --- Constant
 --- Virtual Touch Bar is only visible when Final Cut Pro is active.
-mod.virtual.VISIBILITY_FCP			= "Final Cut Pro"
+mod.virtual.VISIBILITY_FCP          = "Final Cut Pro"
 
 --- plugins.finalcutpro.touchbar.virtual.VISIBILITY_DEFAULT -> string
 --- Constant
 --- The default visibility.
-mod.virtual.VISIBILITY_DEFAULT		= mod.virtual.VISIBILITY_FCP
+mod.virtual.VISIBILITY_DEFAULT      = mod.virtual.VISIBILITY_FCP
 
 --- plugins.finalcutpro.touchbar.virtual.LOCATION_TIMELINE -> string
 --- Constant
 --- Virtual Touch Bar is displayed in the top centre of the Final Cut Pro timeline
-mod.virtual.LOCATION_TIMELINE		= "TimelineTopCentre"
+mod.virtual.LOCATION_TIMELINE       = "TimelineTopCentre"
 
 -- TODO: This Final Cut Pro stuff shouldn't really be in a Core plugin.
 
@@ -444,15 +457,15 @@ mod.virtual.LOCATION_TIMELINE		= "TimelineTopCentre"
 --- Field
 --- When should the Virtual Touch Bar be visible?
 mod.virtual.visibility = config.prop("virtualTouchBarVisibility", mod.virtual.VISIBILITY_DEFAULT):watch(function(status)
-	if status == mod.virtual.VISIBILITY_ALWAYS then
-		mod._tb.virtual.show()
-	elseif status == mod.virtual.VISIBILITY_FCP then
-		if fcp.isFrontmost() then
-			mod._tb.virtual.show()
-		else
-			mod._tb.virtual.hide()
-		end
-	end
+    if status == mod.virtual.VISIBILITY_ALWAYS then
+        mod._tb.virtual.show()
+    elseif status == mod.virtual.VISIBILITY_FCP then
+        if fcp.isFrontmost() then
+            mod._tb.virtual.show()
+        else
+            mod._tb.virtual.hide()
+        end
+    end
 end)
 
 -- visibilityOptions() -> none
@@ -465,16 +478,16 @@ end)
 -- Returns:
 --  * A table of visibilities
 local function visibilityOptions()
- 	local visibilityOptionsTable = {}
-	visibilityOptionsTable[#visibilityOptionsTable + 1] = {
-		label = i18n("always"),
-		value = mod.virtual.VISIBILITY_ALWAYS,
-	}
-	visibilityOptionsTable[#visibilityOptionsTable + 1] = {
-		label = i18n("finalCutPro"),
-		value = mod.virtual.VISIBILITY_FCP,
-	}
-	return visibilityOptionsTable
+    local visibilityOptionsTable = {}
+    visibilityOptionsTable[#visibilityOptionsTable + 1] = {
+        label = i18n("always"),
+        value = mod.virtual.VISIBILITY_ALWAYS,
+    }
+    visibilityOptionsTable[#visibilityOptionsTable + 1] = {
+        label = i18n("finalCutPro"),
+        value = mod.virtual.VISIBILITY_FCP,
+    }
+    return visibilityOptionsTable
 end
 
 -- locationOptions() -> none
@@ -487,20 +500,20 @@ end
 -- Returns:
 --  * A table of locations
 local function locationOptions()
-	local locationOptions = {}
-	locationOptions[#locationOptions + 1] = {
-		label = i18n("topCentreOfTimeline"),
-		value = mod.virtual.LOCATION_TIMELINE,
-	}
-	locationOptions[#locationOptions + 1] = {
-		label = i18n("mouseLocation"),
-		value = mod._tb.virtual.LOCATION_MOUSE,
-	}
-	locationOptions[#locationOptions + 1] = {
-		label = i18n("draggable"),
-		value = mod._tb.virtual.LOCATION_DRAGGABLE,
-	}
-	return locationOptions
+    local locationOptions = {}
+    locationOptions[#locationOptions + 1] = {
+        label = i18n("topCentreOfTimeline"),
+        value = mod.virtual.LOCATION_TIMELINE,
+    }
+    locationOptions[#locationOptions + 1] = {
+        label = i18n("mouseLocation"),
+        value = mod._tb.virtual.LOCATION_MOUSE,
+    }
+    locationOptions[#locationOptions + 1] = {
+        label = i18n("draggable"),
+        value = mod._tb.virtual.LOCATION_DRAGGABLE,
+    }
+    return locationOptions
 end
 
 --- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
@@ -515,89 +528,89 @@ end
 ---  * The Module
 function mod.init(deps, env)
 
-	--------------------------------------------------------------------------------
-	-- Inter-plugin Connectivity:
-	--------------------------------------------------------------------------------
-	mod._tb				= deps.tb
-	mod._manager		= deps.manager
-	mod._webviewLabel	= deps.manager.getLabel()
-	mod._actionmanager	= deps.actionmanager
-	mod._env			= env
+    --------------------------------------------------------------------------------
+    -- Inter-plugin Connectivity:
+    --------------------------------------------------------------------------------
+    mod._tb             = deps.tb
+    mod._manager        = deps.manager
+    mod._webviewLabel   = deps.manager.getLabel()
+    mod._actionmanager  = deps.actionmanager
+    mod._env            = env
 
-	--------------------------------------------------------------------------------
-	-- Setup Preferences Panel:
-	--------------------------------------------------------------------------------
-	mod._panel 			=  deps.manager.addPanel({
-		priority 		= 2031,
-		id				= "touchbar",
-		label			= i18n("touchbarPanelLabel"),
-		image			= image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
-		tooltip			= i18n("touchbarPanelTooltip"),
-		height			= 760,
-	})
-		--------------------------------------------------------------------------------
-		-- Virtual Touch Bar
-		--------------------------------------------------------------------------------
-		:addHeading(1, i18n("virtualTouchBar"))
-		:addCheckbox(2,
-			{
-				label		= i18n("enableVirtualTouchBar"),
-				checked		= mod.virtual.enabled,
-				onchange	= function(id, params) mod.virtual.enabled(params.checked) end,
-			}
-		)
-		:addParagraph(2.1, "<br />", true)
-		:addSelect(3,
-			{
-				label		= i18n("visibility"),
-				value		= mod.virtual.visibility,
-				options		= visibilityOptions(),
-				required	= true,
-				class		= "touchbarDropdown",
-				onchange	= function(id, params) mod.virtual.visibility(params.value) end,
-			}
-		)
-		:addSelect(4,
-			{
-				label		= i18n("location"),
-				value		= mod._tb.virtual.location,
-				options		= locationOptions(),
-				required	= true,
-				class		= "touchbarDropdown",
-				onchange	= function(id, params) mod._tb.virtual.location(params.value) end,
-			}
-		)
-		:addParagraph(5, [[<span style="float: left" class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarDragTip") .. "</span>\n\n", true)
+    --------------------------------------------------------------------------------
+    -- Setup Preferences Panel:
+    --------------------------------------------------------------------------------
+    mod._panel          =  deps.manager.addPanel({
+        priority        = 2031,
+        id              = "touchbar",
+        label           = i18n("touchbarPanelLabel"),
+        image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
+        tooltip         = i18n("touchbarPanelTooltip"),
+        height          = 760,
+    })
+        --------------------------------------------------------------------------------
+        -- Virtual Touch Bar
+        --------------------------------------------------------------------------------
+        :addHeading(1, i18n("virtualTouchBar"))
+        :addCheckbox(2,
+            {
+                label       = i18n("enableVirtualTouchBar"),
+                checked     = mod.virtual.enabled,
+                onchange    = function(id, params) mod.virtual.enabled(params.checked) end,
+            }
+        )
+        :addParagraph(2.1, "<br />", true)
+        :addSelect(3,
+            {
+                label       = i18n("visibility"),
+                value       = mod.virtual.visibility,
+                options     = visibilityOptions(),
+                required    = true,
+                class       = "touchbarDropdown",
+                onchange    = function(id, params) mod.virtual.visibility(params.value) end,
+            }
+        )
+        :addSelect(4,
+            {
+                label       = i18n("location"),
+                value       = mod._tb.virtual.location,
+                options     = locationOptions(),
+                required    = true,
+                class       = "touchbarDropdown",
+                onchange    = function(id, params) mod._tb.virtual.location(params.value) end,
+            }
+        )
+        :addParagraph(5, [[<span style="float: left" class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarDragTip") .. "</span>\n\n", true)
 
-		--------------------------------------------------------------------------------
-		-- Customise Touch Bar:
-		--------------------------------------------------------------------------------
-		:addParagraph(5.1, [[<div style="clear: both;"></div>]], true)
-		:addHeading(6, i18n("customTouchBar"))
-		:addCheckbox(7,
-			{
-				label		= i18n("enableCustomisedTouchBar"),
-				checked		= mod.enabled,
-				onchange	= function(id, params) mod.enabled(params.checked) end,
-			}
-		)
-		:addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarSetupTip") .. "</span>\n\n", true)
-		:addContent(10, generateContent, true)
+        --------------------------------------------------------------------------------
+        -- Customise Touch Bar:
+        --------------------------------------------------------------------------------
+        :addParagraph(5.1, [[<div style="clear: both;"></div>]], true)
+        :addHeading(6, i18n("customTouchBar"))
+        :addCheckbox(7,
+            {
+                label       = i18n("enableCustomisedTouchBar"),
+                checked     = mod.enabled,
+                onchange    = function(id, params) mod.enabled(params.checked) end,
+            }
+        )
+        :addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarSetupTip") .. "</span>\n\n", true)
+        :addContent(10, generateContent, true)
 
-	mod._panel:addButton(20,
-		{
-			label		= i18n("touchBarReset"),
-			onclick		= resetTouchBar,
-			class		= "resetShortcuts",
-		}
-	)
+    mod._panel:addButton(20,
+        {
+            label       = i18n("touchBarReset"),
+            onclick     = resetTouchBar,
+            class       = "resetShortcuts",
+        }
+    )
 
-	--------------------------------------------------------------------------------
-	-- Setup Callback Manager:
-	--------------------------------------------------------------------------------
-	mod._panel:addHandler("onchange", "touchBarPanelCallback", touchBarPanelCallback)
+    --------------------------------------------------------------------------------
+    -- Setup Callback Manager:
+    --------------------------------------------------------------------------------
+    mod._panel:addHandler("onchange", "touchBarPanelCallback", touchBarPanelCallback)
 
-	return mod
+    return mod
 
 end
 
@@ -607,22 +620,22 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.panels.touchbar",
-	group			= "core",
-	dependencies	= {
-		["core.preferences.manager"]		= "manager",
-		["core.touchbar.manager"]			= "tb",
-		["core.action.manager"]				= "actionmanager",
-	}
+    id              = "core.preferences.panels.touchbar",
+    group           = "core",
+    dependencies    = {
+        ["core.preferences.manager"]        = "manager",
+        ["core.touchbar.manager"]           = "tb",
+        ["core.action.manager"]             = "actionmanager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	if deps.tb.supported() then
-		return mod.init(deps, env)
-	end
+    if deps.tb.supported() then
+        return mod.init(deps, env)
+    end
 end
 
 return plugin
