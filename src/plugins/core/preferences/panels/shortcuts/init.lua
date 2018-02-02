@@ -13,8 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log										= require("hs.logger").new("prefsShortcuts")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local dialog									= require("hs.dialog")
 local fnutils									= require("hs.fnutils")
 local fs										= require("hs.fs")
@@ -26,6 +33,9 @@ local timer										= require("hs.timer")
 local toolbar                  					= require("hs.webview.toolbar")
 local webview									= require("hs.webview")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local commands									= require("cp.commands")
 local config									= require("cp.config")
 local fcp										= require("cp.apple.finalcutpro")
@@ -34,6 +44,9 @@ local plist										= require("cp.plist")
 local tools										= require("cp.tools")
 local ui										= require("cp.web.ui")
 
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local _											= require("moses")
 
 --------------------------------------------------------------------------------
@@ -50,6 +63,9 @@ local DEFAULT_PRIORITY 							= 0
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.preferences.panels.shortcuts.DEFAULT_SHORTCUTS -> string
+--- Constant
+--- Default Shortcuts File Name
 mod.DEFAULT_SHORTCUTS							= "Default Shortcuts"
 
 --- plugins.core.preferences.panels.shortcuts.lastGroup <cp.prop: string>
@@ -67,7 +83,6 @@ mod.lastGroup = config.prop("shortcutPreferencesLastGroup", nil)
 -- Returns:
 --  * None
 local function restoreDefaultShortcuts()
-
 	for groupID, group in pairs(mod.defaultShortcuts) do
 		for cmdID,cmd in pairs(group) do
 			for shortcutID,shortcut in pairs(cmd) do
@@ -81,7 +96,6 @@ local function restoreDefaultShortcuts()
 		end
 
 	end
-
 end
 
 -- cacheShortcuts() -> boolean
@@ -189,10 +203,6 @@ local function resetShortcuts()
 	end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
 end
-
-config.watch({
-	reset = deleteShortcuts,
-})
 
 -- shortcutAlreadyInUse(modifiers, keycode) -> none
 -- Function
@@ -349,6 +359,9 @@ local function getAllKeyCodes()
 
 end
 
+-- baseModifiers -> table
+-- Variable
+-- Table of modifiers
 local baseModifiers = {
 	{ value = "command",	label = "⌘" },
 	{ value = "shift",		label = "⇧" },
@@ -356,36 +369,83 @@ local baseModifiers = {
 	{ value = "control",	label = "⌃" },
 }
 
+-- _.combinations(list) -> none
+-- Function
+-- Creates a table of every possible combination of list items
+--
+-- Parameters:
+--  * list - Table of options
+--
+-- Returns:
+--  * None
 function _.combinations(list)
 	if _.isEmpty(list) then
 		return {}
 	end
-	-- work with a copy of the list
+	--------------------------------------------------------------------------------
+	-- Work with a copy of the list:
+	--------------------------------------------------------------------------------
 	list = _.clone(list)
 	local first = _.pop(list)
 	local result = _({{first}})
 	if not _.isEmpty(list) then
-		-- get all combinations of the remainder of the list
+	    --------------------------------------------------------------------------------
+		-- Get all combinations of the remainder of the list:
+		--------------------------------------------------------------------------------
 		local combos = _.combinations(list)
 		result = result:append(_.map(combos, function(i,v) return _.append({first}, v) end))
-		-- add the sub-combos at the end
+		--------------------------------------------------------------------------------
+		-- Add the sub-combos at the end:
+		--------------------------------------------------------------------------------
 		result = result:append(combos)
 	end
 	return result:value()
 end
 
+-- _.reduceCombinations(list, f, state) -> table
+-- Function
+-- Reduces combinations of modifiers
+--
+-- Parameters:
+--  * list - The list
+--  * f - The function
+--  * state - The state
+--
+-- Returns:
+--  * Table of reduced combinations
 function _.reduceCombinations(list, f, state)
 	return _.map(_.combinations(list), function(i,v) return _.reduce(v, f, state) end)
 end
 
+-- iterateModifiers(list) -> table
+-- Function
+-- Iterates the modifiers list
+--
+-- Parameters:
+--  * list - The list of options
+--
+-- Returns:
+--  * Table of modifiers
 local function iterateModifiers(list)
 	return _.reduceCombinations(list, function(memo, v)
 		return { value = v.value .. ":" .. memo.value, label = v.label .. memo.label}
 	end)
 end
 
+-- allModifiers -> table
+-- Variable
+-- All modifiers in a table.
 local allModifiers = iterateModifiers(baseModifiers)
 
+-- modifierOptions(shortcut) -> none
+-- Function
+-- Returns the modifier option HTML of a shortcut
+--
+-- Parameters:
+--  * shortcut - The shortcut
+--
+-- Returns:
+--  * HTML as string
 local function modifierOptions(shortcut)
 	local out = ""
 	for i,modifiers in ipairs(allModifiers) do
@@ -395,6 +455,15 @@ local function modifierOptions(shortcut)
 	return out
 end
 
+-- keyCodeOptions(shortcut) -> none
+-- Function
+-- Returns the keycode option HTML of a shortcut
+--
+-- Parameters:
+--  * shortcut - The shortcut
+--
+-- Returns:
+--  * HTML as string
 local function keyCodeOptions(shortcut)
 	local keyCodeOptions = ""
 	local keyCode = shortcut and shortcut:getKeyCode()
@@ -405,6 +474,15 @@ local function keyCodeOptions(shortcut)
 	return keyCodeOptions
 end
 
+-- renderRows(context) -> string
+-- Function
+-- Gets the HTML render of the row
+--
+-- Parameters:
+--  * context - The context of the panel
+--
+-- Returns:
+--  * The rendered HTML as string
 local function renderRows(context)
 	if not mod._renderRows then
 		mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
@@ -415,6 +493,15 @@ local function renderRows(context)
 	return mod._renderRows(context)
 end
 
+-- renderPanel(context) -> string
+-- Function
+-- Gets the HTML render of the panel
+--
+-- Parameters:
+--  * context - The context of the panel
+--
+-- Returns:
+--  * The rendered HTML as string
 local function renderPanel(context)
 	if not mod._renderPanel then
 		mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
@@ -425,9 +512,15 @@ local function renderPanel(context)
 	return mod._renderPanel(context)
 end
 
---------------------------------------------------------------------------------
--- GENERATE CONTENT:
---------------------------------------------------------------------------------
+-- generateContent() -> string
+-- Function
+-- Generates the Preference Panel HTML Content.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * HTML content as string
 local function generateContent()
 
 	--------------------------------------------------------------------------------
@@ -604,9 +697,20 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+
+    --------------------------------------------------------------------------------
+    -- Reset Watcher:
+    --------------------------------------------------------------------------------
+    config.watch({
+    	reset = deleteShortcuts,
+    })
+
 	return mod.init(deps, env)
 end
 
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.postInit(deps)
 
 	--------------------------------------------------------------------------------
