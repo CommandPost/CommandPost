@@ -835,7 +835,7 @@ function mod.virtual.start()
         mod._touchBar = touchbar.new()
 
         if mod._touchBar == nil then
-            log.ef("There was an error initialising the Touch Bar.")
+log.ef("There was an error initialising the Touch Bar.")
             return
         end
 
