@@ -25,7 +25,6 @@ local log                                       = require("hs.logger").new("pref
 local canvas                                    = require("hs.canvas")
 local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -33,8 +32,6 @@ local inspect                                   = require("hs.inspect")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
-local html                                      = require("cp.web.html")
-local plist                                     = require("cp.plist")
 local tools                                     = require("cp.tools")
 local ui                                        = require("cp.web.ui")
 
@@ -104,9 +101,11 @@ end
 --  * HTML content as string
 local function renderRows(context)
     if not mod._renderRows then
-        mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
-        if err then
-            error(err)
+        local errorMessage
+        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
         end
     end
     return mod._renderRows(context)
@@ -123,9 +122,11 @@ end
 --  * HTML content as string
 local function renderPanel(context)
     if not mod._renderPanel then
-        mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
-        if err then
-            error(err)
+        local errorMessage
+        mod._renderPanel, errorMessage = mod._env:compileTemplate("html/panel.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
         end
     end
     return mod._renderPanel(context)
@@ -258,10 +259,10 @@ local function touchBarPanelCallback(id, params)
                         -- Restrict Allowed Handlers for Activator to current group (and global):
                         --------------------------------------------------------------------------------
                         local allowedHandlers = {}
-                        for _,id in pairs(handlerIds) do
-                            local handlerTable = tools.split(id, "_")
+                        for _,v in pairs(handlerIds) do
+                            local handlerTable = tools.split(v, "_")
                             if handlerTable[1] == groupID or handlerTable[1] == "global" then
-                                table.insert(allowedHandlers, id)
+                                table.insert(allowedHandlers, v)
                             end
                         end
                         mod.activator[groupID .. subGroupID]:allowHandlers(table.unpack(allowedHandlers))
@@ -500,20 +501,20 @@ end
 -- Returns:
 --  * A table of locations
 local function locationOptions()
-    local locationOptions = {}
-    locationOptions[#locationOptions + 1] = {
+    local options = {}
+    options[#options + 1] = {
         label = i18n("topCentreOfTimeline"),
         value = mod.virtual.LOCATION_TIMELINE,
     }
-    locationOptions[#locationOptions + 1] = {
+    options[#options + 1] = {
         label = i18n("mouseLocation"),
         value = mod._tb.virtual.LOCATION_MOUSE,
     }
-    locationOptions[#locationOptions + 1] = {
+    options[#options + 1] = {
         label = i18n("draggable"),
         value = mod._tb.virtual.LOCATION_DRAGGABLE,
     }
-    return locationOptions
+    return options
 end
 
 --- plugins.core.preferences.panels.touchbar.init(deps, env) -> module
@@ -556,7 +557,7 @@ function mod.init(deps, env)
             {
                 label       = i18n("enableVirtualTouchBar"),
                 checked     = mod.virtual.enabled,
-                onchange    = function(id, params) mod.virtual.enabled(params.checked) end,
+                onchange    = function(_, params) mod.virtual.enabled(params.checked) end,
             }
         )
         :addParagraph(2.1, "<br />", true)
@@ -567,7 +568,7 @@ function mod.init(deps, env)
                 options     = visibilityOptions(),
                 required    = true,
                 class       = "touchbarDropdown",
-                onchange    = function(id, params) mod.virtual.visibility(params.value) end,
+                onchange    = function(_, params) mod.virtual.visibility(params.value) end,
             }
         )
         :addSelect(4,
@@ -577,7 +578,7 @@ function mod.init(deps, env)
                 options     = locationOptions(),
                 required    = true,
                 class       = "touchbarDropdown",
-                onchange    = function(id, params) mod._tb.virtual.location(params.value) end,
+                onchange    = function(_, params) mod._tb.virtual.location(params.value) end,
             }
         )
         :addParagraph(5, [[<span style="float: left" class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarDragTip") .. "</span>\n\n", true)
@@ -591,7 +592,7 @@ function mod.init(deps, env)
             {
                 label       = i18n("enableCustomisedTouchBar"),
                 checked     = mod.enabled,
-                onchange    = function(id, params) mod.enabled(params.checked) end,
+                onchange    = function(_, params) mod.enabled(params.checked) end,
             }
         )
         :addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarSetupTip") .. "</span>\n\n", true)
