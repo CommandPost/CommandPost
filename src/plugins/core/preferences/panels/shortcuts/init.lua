@@ -435,7 +435,7 @@ local allModifiers = iterateModifiers(baseModifiers)
 --  * HTML as string
 local function modifierOptions(shortcut)
     local out = ""
-    for i,modifiers in ipairs(allModifiers) do
+    for _,modifiers in ipairs(allModifiers) do
         local selected = shortcut and _.same(shortcut:getModifiers(), tools.split(modifiers.value, ":")) and " selected" or ""
         out = out .. ([[<option value="%s"%s>%s</option>]]):format(modifiers.value, selected, modifiers.label)
     end
@@ -686,7 +686,7 @@ function plugin.init(deps, env)
     -- Reset Watcher:
     --------------------------------------------------------------------------------
     config.watch({
-        reset = deleteShortcuts,
+    reset = deleteShortcuts,
     })
 
     return mod.init(deps, env)
