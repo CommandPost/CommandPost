@@ -24,13 +24,9 @@ local log                                       = require("hs.logger").new("pref
 --------------------------------------------------------------------------------
 local dialog                                    = require("hs.dialog")
 local fnutils                                   = require("hs.fnutils")
-local fs                                        = require("hs.fs")
 local hotkey                                    = require("hs.hotkey")
 local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
 local keycodes                                  = require("hs.keycodes")
-local timer                                     = require("hs.timer")
-local toolbar                                   = require("hs.webview.toolbar")
 local webview                                   = require("hs.webview")
 
 --------------------------------------------------------------------------------
@@ -38,9 +34,6 @@ local webview                                   = require("hs.webview")
 --------------------------------------------------------------------------------
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
-local html                                      = require("cp.web.html")
-local plist                                     = require("cp.plist")
 local tools                                     = require("cp.tools")
 local ui                                        = require("cp.web.ui")
 
@@ -48,13 +41,6 @@ local ui                                        = require("cp.web.ui")
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
 local _                                         = require("moses")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local DEFAULT_PRIORITY                          = 0
 
 --------------------------------------------------------------------------------
 --
@@ -73,7 +59,7 @@ mod.DEFAULT_SHORTCUTS                           = "Default Shortcuts"
 --- Last group used in the Preferences Drop Down.
 mod.lastGroup = config.prop("shortcutPreferencesLastGroup", nil)
 
--- restoreDefaultShortcuts() -> boolean
+-- restoreDefaultShortcuts() -> none
 -- Function
 -- Restores the Default Shortcuts from the Cache.
 --
@@ -85,7 +71,7 @@ mod.lastGroup = config.prop("shortcutPreferencesLastGroup", nil)
 local function restoreDefaultShortcuts()
     for groupID, group in pairs(mod.defaultShortcuts) do
         for cmdID,cmd in pairs(group) do
-            for shortcutID,shortcut in pairs(cmd) do
+            for _,shortcut in pairs(cmd) do
                 local tempGroup = commands.group(groupID)
                 local tempCommand = tempGroup:get(cmdID)
                 if tempCommand then
@@ -95,6 +81,29 @@ local function restoreDefaultShortcuts()
             end
         end
 
+    end
+end
+
+-- deleteShortcuts() -> none
+-- Function
+-- Deletes all shortcuts
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function deleteShortcuts()
+    for groupID, group in pairs(mod.defaultShortcuts) do
+        for cmdID,cmd in pairs(group) do
+            for _,shortcut in pairs(cmd) do
+                local tempGroup = commands.group(groupID)
+                local tempCommand = tempGroup:get(cmdID)
+                if tempCommand then
+                    tempCommand:deleteShortcuts()
+                end
+            end
+        end
     end
 end
 
@@ -108,47 +117,31 @@ end
 -- Returns:
 --  * None
 local function cacheShortcuts()
-
     log.df("Caching Default Shortcuts.")
-
     mod.defaultShortcuts = {}
-
     local groupIDs = commands.groupIds()
     for _, groupID in ipairs(groupIDs) do
-
         local group = commands.group(groupID)
-
         if not mod.defaultShortcuts[groupID] then
             mod.defaultShortcuts[groupID] = {}
         end
-
         local cmds = group:getAll()
-
         for cmdID,cmd in pairs(cmds) do
-
             if not mod.defaultShortcuts[groupID][cmdID] then
                 mod.defaultShortcuts[groupID][cmdID] = {}
             end
-
             local shortcuts = cmd:getShortcuts()
-
             for shortcutID,shortcut in pairs(shortcuts) do
-
-                local tempShortcuts = {}
                 local tempModifiers = shortcut:getModifiers()
                 local tempKeycode = shortcut:getKeyCode()
-
-                tempShortcuts = {
+                local tempShortcuts = {
                     ["modifiers"] = tempModifiers,
                     ["keycode"] = tempKeycode
                 }
-
                 mod.defaultShortcuts[groupID][cmdID][shortcutID] = tempShortcuts
-
             end
         end
     end
-
 end
 
 -- resetShortcutsToNone() -> none
@@ -161,7 +154,6 @@ end
 -- Returns:
 --  * None
 local function resetShortcutsToNone()
-
     dialog.webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local groupIDs = commands.groupIds()
@@ -170,7 +162,7 @@ local function resetShortcutsToNone()
                 local group = commands.group(groupID)
                 local cmds = group:getAll()
 
-                for id,cmd in pairs(cmds) do
+                for _,cmd in pairs(cmds) do
                     cmd:deleteShortcuts()
                 end
             end
@@ -180,7 +172,6 @@ local function resetShortcutsToNone()
             mod._manager.refresh()
         end
     end, i18n("shortcutsSetNoneConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-
 end
 
 -- resetShortcuts() -> none
@@ -193,7 +184,6 @@ end
 -- Returns:
 --  * None
 local function resetShortcuts()
-
     dialog.webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             restoreDefaultShortcuts()
@@ -201,7 +191,6 @@ local function resetShortcuts()
             mod._manager.refresh()
         end
     end, i18n("shortcutsResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-
 end
 
 -- shortcutAlreadyInUse(modifiers, keycode) -> none
@@ -215,14 +204,13 @@ end
 -- Returns:
 --  * `true` if already in use, otherwise `false`.
 local function shortcutAlreadyInUse(modifiers, keycode)
-
     local groupIDs = commands.groupIds()
     for _, groupID in ipairs(groupIDs) do
 
         local group = commands.group(groupID)
         local cmds = group:getAll()
 
-        for id,cmd in pairs(cmds) do
+        for _,cmd in pairs(cmds) do
 
             local shortcuts = cmd:getShortcuts()
 
@@ -234,8 +222,8 @@ local function shortcutAlreadyInUse(modifiers, keycode)
                 if #modifiers ~= #tempModifiers then
                     modifierMatch = false
                 else
-                    for _, mod in pairs(tempModifiers) do
-                        if not fnutils.contains(modifiers, mod) then
+                    for _, v in pairs(tempModifiers) do
+                        if not fnutils.contains(modifiers, v) then
                             modifierMatch = false
                         end
                     end
@@ -248,7 +236,6 @@ local function shortcutAlreadyInUse(modifiers, keycode)
         end
     end
     return false
-
 end
 
 -- updateShortcut(id, params) -> none
@@ -393,7 +380,7 @@ function _.combinations(list)
         -- Get all combinations of the remainder of the list:
         --------------------------------------------------------------------------------
         local combos = _.combinations(list)
-        result = result:append(_.map(combos, function(i,v) return _.append({first}, v) end))
+        result = result:append(_.map(combos, function(_,v) return _.append({first}, v) end))
         --------------------------------------------------------------------------------
         -- Add the sub-combos at the end:
         --------------------------------------------------------------------------------
@@ -414,7 +401,7 @@ end
 -- Returns:
 --  * Table of reduced combinations
 function _.reduceCombinations(list, f, state)
-    return _.map(_.combinations(list), function(i,v) return _.reduce(v, f, state) end)
+    return _.map(_.combinations(list), function(_,v) return _.reduce(v, f, state) end)
 end
 
 -- iterateModifiers(list) -> table
@@ -465,13 +452,13 @@ end
 -- Returns:
 --  * HTML as string
 local function keyCodeOptions(shortcut)
-    local keyCodeOptions = ""
+    local options = ""
     local keyCode = shortcut and shortcut:getKeyCode()
     for _,kc in ipairs(mod.allKeyCodes) do
         local selected = keyCode == kc and " selected" or ""
-        keyCodeOptions = keyCodeOptions .. ("<option%s>%s</option>"):format(selected, kc)
+        options = options .. ("<option%s>%s</option>"):format(selected, kc)
     end
-    return keyCodeOptions
+    return options
 end
 
 -- renderRows(context) -> string
@@ -485,9 +472,11 @@ end
 --  * The rendered HTML as string
 local function renderRows(context)
     if not mod._renderRows then
-        mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
-        if err then
-            error(err)
+        local errorMessage
+        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
         end
     end
     return mod._renderRows(context)
@@ -504,9 +493,11 @@ end
 --  * The rendered HTML as string
 local function renderPanel(context)
     if not mod._renderPanel then
-        mod._renderPanel, err = mod._env:compileTemplate("html/panel.html")
-        if err then
-            error(err)
+        local errorMessage
+        mod._renderPanel, errorMessage = mod._env:compileTemplate("html/panel.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
         end
     end
     return mod._renderPanel(context)
@@ -585,7 +576,6 @@ local function generateContent()
         groupEditor             = mod.getGroupEditor,
         modifierOptions         = modifierOptions,
         keyCodeOptions          = keyCodeOptions,
-        checkModifier           = checkModifier,
 
         webviewLabel            = mod._manager.getLabel(),
     }
@@ -622,29 +612,23 @@ function mod.init(deps, env)
         tooltip         = i18n("shortcutsPanelTooltip"),
         height          = 490,
     })
-
-    mod._panel:addContent(10, generateContent, true)
-
-    local shortcutsEnabledClass  = ""
-    if shortcutsEnabled then shortcutsEnabledClass = "  buttonDisabled" end
-
-    mod._panel:addButton(20,
-        {
-            label       = i18n("resetShortcuts"),
-            onclick     = resetShortcuts,
-            class       = "resetShortcuts" .. shortcutsEnabledClass,
-        }
-    )
-
-    mod._panel:addButton(21,
-        {
-            label       = i18n("resetShortcutsAllToNone"),
-            onclick     = resetShortcutsToNone,
-            class       = "resetShortcutsToNone" .. shortcutsEnabledClass,
-        }
-    )
-
-    mod._panel:addHandler("onchange", "updateShortcut", updateShortcut)
+    mod._panel
+        :addContent(10, generateContent, true)
+        :addButton(20,
+            {
+                label       = i18n("resetShortcuts"),
+                onclick     = resetShortcuts,
+                class       = "resetShortcuts",
+            }
+        )
+        :addButton(21,
+            {
+                label       = i18n("resetShortcutsAllToNone"),
+                onclick     = resetShortcutsToNone,
+                class       = "resetShortcutsToNone",
+            }
+        )
+        :addHandler("onchange", "updateShortcut", updateShortcut)
 
     return mod
 
