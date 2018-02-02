@@ -222,6 +222,8 @@ local function generateContent()
         i18nNoteCC              = i18n("noteCC"),
         i18nChannel             = i18n("channel"),
         i18nValue               = i18n("value"),
+        i18nAll                 = i18n("all"),
+        i18nNoDevicesDetected   = i18n("noDevicesDetected"),
     }
 
     return renderPanel(context)
