@@ -15,11 +15,6 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefPanel")
-
---------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local uuid                                      = require("hs.host").uuid
@@ -114,7 +109,7 @@ end
 function panel:generateContent()
     local result = ""
     table.sort(self._uiItems, function(a, b) return a.priority < b.priority end)
-    for i,item in ipairs(self._uiItems) do
+    for _,item in ipairs(self._uiItems) do
         if item.html then
             result = result .. "\n" .. tostring(item.html)
         end
