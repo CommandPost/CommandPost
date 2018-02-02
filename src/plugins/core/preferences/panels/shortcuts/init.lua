@@ -94,7 +94,7 @@ end
 --  * None
 local function deleteShortcuts()
     for groupID, group in pairs(mod.defaultShortcuts) do
-        for cmdID,cmd in pairs(group) do
+        for cmdID,_ in pairs(group) do
             local tempGroup = commands.group(groupID)
             local tempCommand = tempGroup:get(cmdID)
             if tempCommand then
