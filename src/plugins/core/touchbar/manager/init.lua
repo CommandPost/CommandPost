@@ -18,7 +18,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("managerTouchBar")
+ local log                                       = require("hs.logger").new("managerTouchBar")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -146,8 +146,8 @@ end
 ---  * Table
 function widgets.allGroups()
     local result = {}
-    local widgets = widgets:getAll()
-    for _, widget in pairs(widgets) do
+    local theWidgets = theWidgets:getAll()
+    for _, widget in pairs(theWidgets) do
         local params = widget:params()
         if params and params.group then
             if not tools.tableContains(result, params.group) then
@@ -798,7 +798,7 @@ mod.virtual.enabled = config.prop("displayVirtualTouchBar", false):watch(functio
     -- Check for compatibility:
     --------------------------------------------------------------------------------
     if enabled and not mod.supported() then
-        dialog.displayMessage(i18n("touchBarError"))
+    dialog.displayMessage(i18n("touchBarError"))
         mod.enabled(false)
     end
     if not enabled then
