@@ -199,7 +199,7 @@ end
 function mod.init(manager)
     mod._manager = manager
     mod.update()
-    return self
+    return mod
 end
 
 --------------------------------------------------------------------------------

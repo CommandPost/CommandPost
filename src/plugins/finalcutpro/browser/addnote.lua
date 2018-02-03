@@ -36,6 +36,7 @@ local timer                             = require("hs.timer")
 local axutils                           = require("cp.ui.axutils")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
+local dialog                            = require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
@@ -92,7 +93,7 @@ function mod.addNoteToSelectedClip()
     timer.usleep(100000)
     local playheadCheck4 = playhead:getPosition()
     timer.usleep(100000)
-    local wasPlaying = false
+    local wasPlaying
     if playheadCheck1 == playheadCheck2 and playheadCheck2 == playheadCheck3 and playheadCheck3 == playheadCheck4 then
         log.df("Playhead is static.")
         wasPlaying = false
@@ -146,10 +147,10 @@ function mod.addNoteToSelectedClip()
                 if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
                     menu[i]:performAction("AXPress")
                     notesPressed = true
-                    for i=1, listHeadingGroup:attributeValueCount("AXChildren") do
-                        local title = listHeadingGroup[i]:attributeValue("AXTitle")
-                        if title == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
-                            notesFieldID = i
+                    for ii=1, listHeadingGroup:attributeValueCount("AXChildren") do
+                        local xtitle = listHeadingGroup[ii]:attributeValue("AXTitle")
+                        if xtitle == fcp:string("FFInspectorModuleProjectPropertiesNotes") then
+                            notesFieldID = ii
                         end
                     end
                 end
@@ -161,7 +162,7 @@ function mod.addNoteToSelectedClip()
     -- If the 'Notes' column is missing then error:
     --------------------------------------------------------------------------------
     if notesFieldID == nil then
-        errorMessage(config.appName .. " could not find the Notes Column." .. errorFunction)
+        dialog.errorMessage(config.appName .. " could not find the Notes Column." .. errorFunction)
         return
     end
 

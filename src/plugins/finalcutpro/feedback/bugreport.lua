@@ -15,20 +15,13 @@
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("bugreport")
 
-local geometry			= require("hs.geometry")
-local host				= require("hs.host")
-local osascript			= require("hs.osascript")
 local screen			= require("hs.screen")
 local webview			= require("hs.webview")
 
 local config			= require("cp.config")
-local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local just				= require("cp.just")
-local prop				= require("cp.prop")
 local tools				= require("cp.tools")
-
-local v					= require("semver")
 
 --------------------------------------------------------------------------------
 --

@@ -33,7 +33,6 @@ local json                                      = require("hs.json")
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
-local plist                                     = require("cp.plist")
 local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -42,7 +41,6 @@ local tools                                     = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local TOOLS_PRIORITY        = 2000
-local OPTIONS_PRIORITY      = 2000
 local HISTORY_EXTENSION     = ".sharedClipboard"
 
 --------------------------------------------------------------------------------
@@ -123,7 +121,7 @@ local function watchUpdate(data, name)
         local sharedClipboardPath = mod.getRootPath()
         if sharedClipboardPath ~= nil then
 
-            local folderName = nil
+            local folderName
             if mod._overrideFolder ~= nil then
                 folderName = mod._overrideFolder
                 mod._overrideFolder = nil
@@ -321,7 +319,7 @@ end
 function mod.setHistory(folderName, history)
     local filePath = mod.getHistoryPath(folderName)
     if history and #history > 0 then
-        file = io.open(filePath, "w")
+        local file = io.open(filePath, "w")
         if file then
             file:write(json.encode(history))
             file:close()
@@ -365,7 +363,7 @@ function mod.copyWithCustomClipNameAndFolder()
         if result == false then return end
         mod._manager.overrideNextClipName(result)
 
-        local result = dialog.displayTextBoxMessage(i18n("overrideFolderNamePrompt"), i18n("overrideValueInvalid"), "")
+        result = dialog.displayTextBoxMessage(i18n("overrideFolderNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
         mod.overrideNextFolderName(result)
 
@@ -438,7 +436,7 @@ function mod.init(manager)
     mod.enabled(setEnabledValue)
     mod.enabled:watch(mod.update)
 
-    return self
+    return mod
 end
 
 --- plugins.finalcutpro.clipboard.shared.generateSharedClipboardMenu() -> table
@@ -456,7 +454,7 @@ function mod.generateSharedClipboardMenu()
         local fcpxRunning = fcp:isRunning()
 
         local sharedClipboardFolderModified = fs.attributes(mod.getRootPath(), "modification")
-        local folderNames = nil
+        local folderNames
         if sharedClipboardFolderModified ~= mod._sharedClipboardFolderModified or mod._folderNames == nil then
             folderNames = mod.getFolderNames()
             mod._folderNames = folderNames
@@ -471,7 +469,7 @@ function mod.generateSharedClipboardMenu()
             for _,folder in ipairs(folderNames) do
                 local historyItems = {}
 
-                local history = nil
+                local history
                 local historyFolderModified = fs.attributes(mod.getHistoryPath(folder), "modification")
 
                 if mod._historyFolderModified == nil or mod._historyFolderModified[folder] == nil or historyFolderModified ~= mod._historyFolderModified[folder] or mod._history == nil or mod._history[folder] == nil then
@@ -538,21 +536,20 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    local menu = deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
-
-    :addItem(1000, function()
-        return { title = i18n("enableSharedClipboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
-    end)
-
-    :addSeparator(2000)
-
-    :addItems(3000, mod.generateSharedClipboardMenu)
+    deps.menu
+      :addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
+      :addItem(1000, function()
+          return { title = i18n("enableSharedClipboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
+      end)
+      :addSeparator(2000)
+      :addItems(3000, mod.generateSharedClipboardMenu)
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.fcpxCmds:add("cpCopyWithCustomLabelAndFolder")
-        :whenActivated(mod.copyWithCustomClipNameAndFolder)
+    deps.fcpxCmds
+      :add("cpCopyWithCustomLabelAndFolder")
+      :whenActivated(mod.copyWithCustomClipNameAndFolder)
 
     return mod
 end

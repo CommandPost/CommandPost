@@ -23,7 +23,6 @@ local log               = require("hs.logger").new("webapp")
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local hsminweb          = require("hs.httpserver.hsminweb")
-local inspect           = require("hs.inspect")
 local pasteboard        = require("hs.pasteboard")
 local timer             = require("hs.timer")
 

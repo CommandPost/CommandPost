@@ -153,7 +153,7 @@ function mod.processArray(data)
     local name = nil
     local count = 0
     for _,v in ipairs(data) do
-        local n,c = mod.processObject(v, objects)
+        local n,c = mod.processObject(v, data)
         if name == nil then
             name = n
         end
@@ -200,7 +200,7 @@ end
 ---  * The primary clip name as a string.
 ---  * The number of clips as number.
 function mod.processContent(data)
-    if not mod.isClassnameSupported(classname) then
+    if not mod.isClassnameSupported(data) then
         return nil, 0
     end
 
@@ -219,6 +219,7 @@ function mod.processContent(data)
         count = 0
     end
 
+    local n, c
     if mod.supportsContainedItems(data) then
         n, c = mod.processObject(data.containedItems)
         count = count + c
@@ -471,7 +472,7 @@ function mod.startWatching()
             -- Notify watchers
             --------------------------------------------------------------------------------
             if data then
-                local name = nil
+                local name
                 -- An override was set
                 if mod._overrideName ~= nil then
                     -- apply it
