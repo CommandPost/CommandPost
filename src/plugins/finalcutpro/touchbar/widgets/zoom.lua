@@ -19,8 +19,6 @@
 --------------------------------------------------------------------------------
 local canvas            = require("hs.canvas")
 local eventtap          = require("hs.eventtap")
-local screen            = require("hs.screen")
-local window            = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -96,7 +94,7 @@ function mod.widget()
     }
 
     widgetCanvas:canvasMouseEvents(true, true, false, true)
-        :mouseCallback(function(o,m,i,x,y)
+        :mouseCallback(function(_,m,__,x,___)
 
             if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 

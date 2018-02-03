@@ -13,7 +13,6 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("colorWidget")
 
 local canvas   			= require("hs.canvas")
 local eventtap			= require("hs.eventtap")

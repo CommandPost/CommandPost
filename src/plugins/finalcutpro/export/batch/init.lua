@@ -93,7 +93,7 @@ local function sendClipsToCompressor(libraries, clips, exportPath, destinationPr
         end
     end
 
-    for i,clip in ipairs(clips) do
+    for _,clip in ipairs(clips) do
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
@@ -150,7 +150,7 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
 
     local errorFunction = " Error occurred in batchExportClips()."
     local firstTime = true
-    for i,clip in ipairs(clips) do
+    for _,clip in ipairs(clips) do
 
         --------------------------------------------------------------------------------
         -- Select Item:
@@ -413,7 +413,7 @@ function mod.batchExport()
         clips = libraries:clips()
     end
 
-    local batchExportSucceeded = false
+    local batchExportSucceeded
     if clips and #clips > 0 then
 
         --------------------------------------------------------------------------------
@@ -421,7 +421,7 @@ function mod.batchExport()
         --------------------------------------------------------------------------------
         local countText = " "
         if #clips > 1 then countText = " " .. tostring(#clips) .. " " end
-        local replaceFilesMessage = ""
+        local replaceFilesMessage
         if replaceExisting then
             replaceFilesMessage = i18n("batchExportReplaceYes")
         else
