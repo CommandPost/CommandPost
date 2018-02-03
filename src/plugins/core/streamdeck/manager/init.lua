@@ -24,20 +24,13 @@ local log                                       = require("hs.logger").new("stre
 --------------------------------------------------------------------------------
 local application                               = require("hs.application")
 local canvas                                    = require("hs.canvas")
-local drawing                                   = require("hs.drawing")
-local eventtap                                  = require("hs.eventtap")
 local image                                     = require("hs.image")
-local inspect                                   = require("hs.inspect")
 local streamdeck                                = require("hs.streamdeck")
-local styledtext                                = require("hs.styledtext")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -314,28 +307,41 @@ end
 -- Returns:
 --  * A number
 local function convertButtonID(buttonID)
-
     --------------------------------------------------------------------------------
     -- TODO: Fix lazy programming (sorry David)
     --------------------------------------------------------------------------------
-    if tonumber(buttonID) == 1 then whichButton = 5 end
-    if tonumber(buttonID) == 2 then whichButton = 4 end
-    if tonumber(buttonID) == 3 then whichButton = 3 end
-    if tonumber(buttonID) == 4 then whichButton = 2 end
-    if tonumber(buttonID) == 5 then whichButton = 1 end
-
-    if tonumber(buttonID) == 6 then whichButton = 10 end
-    if tonumber(buttonID) == 7 then whichButton = 9 end
-    if tonumber(buttonID) == 8 then whichButton = 8 end
-    if tonumber(buttonID) == 9 then whichButton = 7 end
-    if tonumber(buttonID) == 10 then whichButton = 6 end
-
-    if tonumber(buttonID) == 11 then whichButton = 15 end
-    if tonumber(buttonID) == 12 then whichButton = 14 end
-    if tonumber(buttonID) == 13 then whichButton = 13 end
-    if tonumber(buttonID) == 14 then whichButton = 12 end
-    if tonumber(buttonID) == 15 then whichButton = 11 end
-
+    buttonID = tonumber(buttonID)
+    if buttonID == 1 then
+        return 5
+    elseif buttonID == 2 then
+        return 4
+    elseif buttonID == 3 then
+        return 3
+    elseif buttonID == 4 then
+        return 2
+    elseif buttonID == 5 then
+        return 1
+    elseif buttonID == 6 then
+        return 10
+    elseif buttonID == 7 then
+        return 9
+    elseif buttonID == 8 then
+        return 8
+    elseif buttonID == 9 then
+        return 7
+    elseif buttonID == 10 then
+        return 6
+    elseif buttonID == 11
+        return 15
+    elseif buttonID == 12 then
+        return 14
+    elseif buttonID == 13 then
+        return 13
+    elseif buttonID == 14
+        return 12
+    elseif buttonID == 15 then
+        return 11
+    end
     return whichButton
 end
 
@@ -382,7 +388,7 @@ function mod.update()
     --------------------------------------------------------------------------------
     -- Reset Stream Deck:
     --------------------------------------------------------------------------------
-    for serial, streamDeck in pairs(mod._streamDeck) do
+    for _, streamDeck in pairs(mod._streamDeck) do
         streamDeck:reset()
     end
 
@@ -395,11 +401,9 @@ function mod.update()
         if groupID == mod.activeGroup() then
             for buttonID, button in pairs(group) do
                 if button["action"] then
-                    local action        = button["action"] or nil
                     local label         = button["label"] or nil
                     local icon          = button["icon"] or nil
-                    local id            = groupID .. "_" .. buttonID
-                    for serial, streamDeck in pairs(mod._streamDeck) do
+                    for _, streamDeck in pairs(mod._streamDeck) do
                         if icon then
                             icon = image.imageFromURL(icon) --:setSize({w=36,h=36})
                             streamDeck:setButtonImage(convertButtonID(buttonID), icon)
@@ -513,7 +517,7 @@ end
 function mod.stop()
     log.df("Stopping Stream Deck Support...")
     if mod._streamDeck then
-        for i, v in pairs(mod._streamDeck) do
+        for i, _ in pairs(mod._streamDeck) do
             mod._streamDeck[i] = nil
         end
         mod._streamDeck = nil
