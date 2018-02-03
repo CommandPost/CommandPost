@@ -593,7 +593,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board (Grouped)",
 		subText = "Color Board Panel Toggle Button & 4 x Puck Controls.",
-		item = groupPuck("colorBoardGroup"),
+		item = function() groupPuck("colorBoardGroup") end,
 	}
 	deps.manager.widgets:new("colorBoardGroup", params)
 
@@ -604,7 +604,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Puck 1",
 		subText = "Allows you to control puck one of the Color Board.",
-		item = puckWidget("colorBoardPuck1", "*", "global"),
+		item = function() puckWidget("colorBoardPuck1", "*", "global") end,
 	}
 	deps.manager.widgets:new("colorBoardPuck1", params)
 
@@ -612,7 +612,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Puck 2",
 		subText = "Allows you to control puck two of the Color Board.",
-		item = puckWidget("colorBoardPuck2", "*", "shadows"),
+		item = function() puckWidget("colorBoardPuck2", "*", "shadows") end,
 	}
 	deps.manager.widgets:new("colorBoardPuck2", params)
 
@@ -620,7 +620,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Puck 3",
 		subText = "Allows you to control puck three of the Color Board.",
-		item = puckWidget("colorBoardPuck3", "*", "midtones"),
+		item = function() puckWidget("colorBoardPuck3", "*", "midtones") end,
 	}
 	deps.manager.widgets:new("colorBoardPuck3", params)
 
@@ -628,7 +628,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Puck 4",
 		subText = "Allows you to control puck four of the Color Board.",
-		item = puckWidget("colorBoardPuck4", "*", "highlights"),
+		item = function() puckWidget("colorBoardPuck4", "*", "highlights") end,
 	}
 	deps.manager.widgets:new("colorBoardPuck4", params)
 
@@ -639,7 +639,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Color Puck 1",
 		subText = "Allows you to the Color Panel of the Color Board.",
-		item = puckWidget("colorBoardColorPuck1", "color", "global"),
+		item = function() puckWidget("colorBoardColorPuck1", "color", "global") end,
 	}
 	deps.manager.widgets:new("colorBoardColorPuck1", params)
 
@@ -647,7 +647,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Color Puck 2",
 		subText = "Allows you to the Color Panel of the Color Board.",
-		item = puckWidget("colorBoardColorPuck2", "color", "shadows"),
+		item = function() puckWidget("colorBoardColorPuck2", "color", "shadows") end,
 	}
 	deps.manager.widgets:new("colorBoardColorPuck2", params)
 
@@ -655,7 +655,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Color Puck 3",
 		subText = "Allows you to the Color Panel of the Color Board.",
-		item = puckWidget("colorBoardColorPuck3", "color", "midtones"),
+		item = function() puckWidget("colorBoardColorPuck3", "color", "midtones") end,
 	}
 	deps.manager.widgets:new("colorBoardColorPuck3", params)
 
@@ -663,7 +663,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Color Puck 4",
 		subText = "Allows you to the Color Panel of the Color Board.",
-		item = puckWidget("colorBoardColorPuck4", "color", "highlights"),
+		item = function() puckWidget("colorBoardColorPuck4", "color", "highlights") end,
 	}
 	deps.manager.widgets:new("colorBoardColorPuck4", params)
 
@@ -674,7 +674,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Saturation Puck 1",
 		subText = "Allows you to the Saturation Panel of the Color Board.",
-		item = puckWidget("colorBoardSaturationPuck1", "saturation", "global"),
+		item = function() puckWidget("colorBoardSaturationPuck1", "saturation", "global") end,
 	}
 	deps.manager.widgets:new("colorBoardSaturationPuck1", params)
 
@@ -682,7 +682,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Saturation Puck 2",
 		subText = "Allows you to the Saturation Panel of the Color Board.",
-		item = puckWidget("colorBoardSaturationPuck2", "saturation", "shadows"),
+		item = function() puckWidget("colorBoardSaturationPuck2", "saturation", "shadows") end,
 	}
 	deps.manager.widgets:new("colorBoardSaturationPuck2", params)
 
@@ -690,7 +690,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Saturation Puck 3",
 		subText = "Allows you to the Saturation Panel of the Color Board.",
-		item = puckWidget("colorBoardSaturationPuck3", "saturation", "midtones"),
+		item = function() puckWidget("colorBoardSaturationPuck3", "saturation", "midtones") end,
 	}
 	deps.manager.widgets:new("colorBoardSaturationPuck3", params)
 
@@ -698,7 +698,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Saturation Puck 4",
 		subText = "Allows you to the Saturation Panel of the Color Board.",
-		item = puckWidget("colorBoardSaturationPuck4", "saturation", "highlights"),
+		item = function() puckWidget("colorBoardSaturationPuck4", "saturation", "highlights") end,
 	}
 	deps.manager.widgets:new("colorBoardSaturationPuck4", params)
 
@@ -709,7 +709,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Exposure Puck 1",
 		subText = "Allows you to the Exposure Panel of the Color Board.",
-		item = puckWidget("colorBoardExposurePuck1", "exposure", "global"),
+		item = function() puckWidget("colorBoardExposurePuck1", "exposure", "global") end,
 	}
 	deps.manager.widgets:new("colorBoardExposurePuck1", params)
 
@@ -717,7 +717,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Exposure Puck 2",
 		subText = "Allows you to the Exposure Panel of the Color Board.",
-		item = puckWidget("colorBoardExposurePuck2", "exposure", "shadows"),
+		item = function() puckWidget("colorBoardExposurePuck2", "exposure", "shadows") end,
 	}
 	deps.manager.widgets:new("colorBoardExposurePuck2", params)
 
@@ -725,7 +725,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Exposure Puck 3",
 		subText = "Allows you to the Exposure Panel of the Color Board.",
-		item = puckWidget("colorBoardExposurePuck3", "exposure", "midtones"),
+		item = function() puckWidget("colorBoardExposurePuck3", "exposure", "midtones") end,
 	}
 	deps.manager.widgets:new("colorBoardExposurePuck3", params)
 
@@ -733,7 +733,7 @@ function mod.init(deps)
 		group = "fcpx",
 		text = "Color Board Exposure Puck 4",
 		subText = "Allows you to the Exposure Panel of the Color Board.",
-		item = puckWidget("colorBoardExposurePuck4", "exposure", "highlights"),
+		item = function() puckWidget("colorBoardExposurePuck4", "exposure", "highlights") end,
 	}
 	deps.manager.widgets:new("colorBoardExposurePuck4", params)
 

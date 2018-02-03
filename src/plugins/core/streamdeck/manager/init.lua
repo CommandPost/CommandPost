@@ -331,7 +331,7 @@ local function convertButtonID(buttonID)
         return 7
     elseif buttonID == 10 then
         return 6
-    elseif buttonID == 11
+    elseif buttonID == 11 then
         return 15
     elseif buttonID == 12 then
         return 14
