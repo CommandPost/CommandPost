@@ -18,7 +18,6 @@
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local canvas            = require("hs.canvas")
-local eventtap          = require("hs.eventtap")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -94,7 +93,7 @@ function mod.widget()
     }
 
     widgetCanvas:canvasMouseEvents(true, true, false, true)
-        :mouseCallback(function(_,m,__,x,___)
+        :mouseCallback(function(o,m,i,x,y) -- luacheck: ignore
 
             if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 
