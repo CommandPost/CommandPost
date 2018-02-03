@@ -337,12 +337,13 @@ local function convertButtonID(buttonID)
         return 14
     elseif buttonID == 13 then
         return 13
-    elseif buttonID == 14
+    elseif buttonID == 14 then
         return 12
     elseif buttonID == 15 then
         return 11
+    else
+        return nil
     end
-    return whichButton
 end
 
 --- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
