@@ -131,7 +131,7 @@ end
 --- Returns:
 ---  * `true` if the class name is supported otherwise `false`.
 function mod.isClassnameSupported(classname)
-    for i,name in ipairs(mod.excludedClassnames) do
+    for _,name in ipairs(mod.excludedClassnames) do
         if name == classname then
             return false
         end
@@ -152,7 +152,7 @@ end
 function mod.processArray(data)
     local name = nil
     local count = 0
-    for i,v in ipairs(data) do
+    for _,v in ipairs(data) do
         local n,c = mod.processObject(v, objects)
         if name == nil then
             name = n
