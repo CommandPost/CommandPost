@@ -62,4 +62,8 @@ function CorrectionsBar:UI()
 	)
 end
 
+function CorrectionsBar:isShowing()
+	return self:UI() ~= nil
+end
+
 return CorrectionsBar

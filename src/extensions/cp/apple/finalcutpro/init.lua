@@ -450,7 +450,14 @@ end
 --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut visible on screen?
-App.isShowing = App.application:mutate(function(app) return app and not app:isHidden() end):bind(App)
+App.isShowing = App.application:mutate(
+	function(original)
+		-- log.df("isShowing: original = %s", _inspect(original))
+		log.df("isShowing: original type = %s", type(original))
+		local app = original()
+		return app and not app:isHidden()
+	end
+):bind(App)
 
 --- cp.apple.finalcutpro:hide() -> cp.apple.finalcutpro
 --- Method
@@ -531,10 +538,11 @@ end
 ---
 --- Notes:
 ---  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
-App.getVersion = App.application:mutate(function(app)
+App.getVersion = App.application:mutate(function(original)
 	----------------------------------------------------------------------------------------
 	-- FINAL CUT PRO IS CURRENTLY RUNNING:
 	----------------------------------------------------------------------------------------
+	local app = original()
 	if app and app:isRunning() then
 		local appPath = app:path()
 		if appPath then
@@ -572,14 +580,15 @@ end):bind(App)
 ---
 --- Note:
 ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
-App.isSupported = App.getVersion:mutate(function(version)
+App.isSupported = App.getVersion:mutate(function(original)
+	local version = original()
 	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
 end):bind(App)
 
 --- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
 --- Field
 --- Is any version of Final Cut Pro Installed?
-App.isInstalled = App.getVersion:mutate(function(version) return version ~= nil end):bind(App)
+App.isInstalled = App.getVersion:mutate(function(version) return version() ~= nil end):bind(App)
 
 --- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
 --- Field
@@ -592,7 +601,10 @@ App.isUnsupported = App.isInstalled:AND(App.isSupported:NOT())
 --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
 --- Field
 --- Is Final Cut Pro Frontmost?
-App.isFrontmost = App.application:mutate(function(app) return app ~= nil and app:isFrontmost() end):bind(App)
+App.isFrontmost = App.application:mutate(function(original)
+	local app = original()
+	return app ~= nil and app:isFrontmost()
+end):bind(App)
 
 --- cp.apple.finalcutpro:isModalDialogOpen <cp.prop: boolean; read-only>
 --- Field
@@ -683,11 +695,11 @@ function App:menuBar()
 		-- Add a finder for missing menus:
 		----------------------------------------------------------------------------------------
 		local missingMenuMap = {
-			{ path = {"Final Cut Pro"},					child = "Commands",		key = "CommandSubmenu" },
-			{ path = {"Final Cut Pro", "Commands"},		child = "Customize…",	key = "Customize" },
-			{ path = {"Clip"},							child = "Open Clip",	key = "FFOpenInTimeline" },
-			{ path = {"Window", "Show in Workspace"},	child = "Sidebar",		key = "PEEventsLibrary" },
-			{ path = {"Window", "Show in Workspace"},	child = "Timeline",		key = "PETimeline" },
+			{ path = {"Final Cut Pro"},					child = "Commands",			key = "CommandSubmenu" },
+			{ path = {"Final Cut Pro", "Commands"},		child = "Customize…",		key = "Customize" },
+			{ path = {"Clip"},							child = "Open Clip",		key = "FFOpenInTimeline" },
+			{ path = {"Window", "Show in Workspace"},	child = "Sidebar",			key = "PEEventsLibrary" },
+			{ path = {"Window", "Show in Workspace"},	child = "Timeline",			key = "PETimeline" },
 		}
 
 		menuBar:addMenuFinder(function(parentItem, path, childName, language)

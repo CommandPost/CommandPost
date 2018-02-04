@@ -795,28 +795,36 @@ end
 --- The `getFn` is a function with the following signature:
 ---
 --- ```lua
---- function(sourceValue, owner) --> mutantValue
+--- function(original, owner, prop) --> mutantValue
 --- ```
 ---
---- * `sourceValue`		- The current value of the original property being mutated.
+--- * `original`		- The original property being mutated.
 --- * `owner`			- The owner of the mutator property, if it has been bound.
+--- * `prop`			- The mutant property.
 --- * `mutantValue`		- The new value based off the original.
+---
+--- You can ignore any parameters that you don't need. Most simply use the `original` prop.
 ---
 --- The `setFn` is optional, and is a function with the following signature:
 ---
 --- ```lua
---- function(sourceValue, mutantValue, owner) --> result
+--- function(mutantValue, original, owner, prop) --> nil
 --- ```
 ---
---- * `sourceValue`		- The current value of the original property being mutated.
---- * `mutantValue`		- The new value being set.
+--- * `mutantValue`		- The new value being sent in.
+--- * `original`		- The current value of the original property being mutated.
 --- * `owner`			- The owner of the mutator property, if it has been bound.
+--- * `prop`			- The mutant property.
+---
+--- Again, you can ignore any parameters that you don't need.
+--- If you want to set a new value to the `original` property, you can do so.
+--- It's recommended that you use `original:set(...)`, which will allow setting `nil` values.
 ---
 --- For example:
 ---
 --- ```lua
 --- anyNumber	= prop.THIS(1)
---- isEven		= anyNumber:mutate(function(value) return value % 2 == 0 end)
+--- isEven		= anyNumber:mutate(function(original) return original() % 2 == 0 end)
 --- 	:watch(function(even)
 --- 		if even then
 --- 			print "even"
@@ -836,22 +844,28 @@ end
 --- Returns:
 ---  * A new `cp.prop` which will return a mutation of the property value.
 function prop.mt:mutate(getFn, setFn)
+	log.df("mutate: called")
 	-- create the mutant, which will pull from the original.
-	local mutantGetFn = function(owner, prop) return getFn(prop._original:get(), owner)	end
+	local mutantGetFn = function(owner, prop)
+		local result = getFn(prop._original, owner, prop)
+		return result
+	end
 	local mutantSetFn = nil
 	if setFn then
-		mutantSetFn = function(newValue, owner, prop) setFn(prop._original:get(), newValue, owner) end
+		mutantSetFn = function(newValue, owner, prop)
+			setFn(newValue, prop._original, owner, prop)
+		end
 	end
 
 	local mutant = prop.new(mutantGetFn, mutantSetFn)
 	mutant._original = self
 	self._mutated = true
 	-- watch for changes and notify with the mutation
-	self:watch(function(value, owner) mutant:_notify(getFn(value, owner)) end, false, true)
+	self:watch(function(value, owner, prop) mutant:_notify(getFn(self, mutant:owner(), mutant)) end, false, true)
 	return mutant
 end
 
---- cp.prop:mutate([owner]) -> cp.prop <anything>
+--- cp.prop:wrap([owner]) -> cp.prop <anything>
 --- Method
 --- Returns a new property that wraps this one. It will be able to get and set the same as this, and changes
 --- to this property will trigger updates in the wrapper.

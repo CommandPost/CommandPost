@@ -106,7 +106,8 @@ Window.UI = prop(
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
 Window.hsWindow = Window.UI:mutate(
-	function(ui, self)
+	function(original, self)
+		local ui = original()
 		return ui and ui:asHSWindow()
 	end
 ):bind(Window)
@@ -115,7 +116,8 @@ Window.hsWindow = Window.UI:mutate(
 --- Field
 --- The unique ID for the window.
 Window.id = Window.hsWindow:mutate(
-	function(window)
+	function(original)
+		local window = original()
 		return window ~= nil and window:id()
 	end
 ):bind(Window)
@@ -124,7 +126,8 @@ Window.id = Window.hsWindow:mutate(
 --- Field
 --- Returns `true` if the window is visible on a screen.
 Window.visible = Window.hsWindow:mutate(
-	function(window)
+	function(original)
+		local window = original()
 		return window ~= nil and window:isVisible()
 	end
 ):bind(Window)
@@ -134,10 +137,11 @@ Window.visible = Window.hsWindow:mutate(
 --- Is `true` if the window has mouse/keyboard focused.
 --- Note: Setting to `false` has no effect, since 'defocusing' isn't definable.
 Window.focused = Window.hsWindow:mutate(
-	function(window)
-		return window == hswindow.focusedWindow()
+	function(original)
+		return original() == hswindow.focusedWindow()
 	end,
-	function(window, focused)
+	function(focused, original)
+		local window = original()
 		if window and focused then
 			window:focus()
 		end
@@ -157,10 +161,12 @@ Window.exists = Window.UI:mutate(
 --- Field
 --- Returns `true` if the window exists and is minimised.
 Window.minimized = Window.hsWindow:mutate(
-	function(window)
+	function(original)
+		local window = original()
 		return window ~= nil and window:isMinimized()
 	end,
-	function(window, minimized)
+	function(minimized, original)
+		local window = original()
 		if window then
 			if minimized then
 				window:minimize()
@@ -175,13 +181,16 @@ Window.minimized = Window.hsWindow:mutate(
 --- Field
 --- The `hs.geometry` rect value describing the window's position.
 Window.frame = Window.hsWindow:mutate(
-	function(window)
+	function(original)
+		local window = original()
 		return window and window:frame()
 	end,
-	function(window, frame)
+	function(frame, original)
+		local window = original()
 		if window then
 			window:move(frame)
 		end
+		return window
 	end
 ):bind(Window)
 
@@ -189,13 +198,15 @@ Window.frame = Window.hsWindow:mutate(
 --- Field
 --- Returns `true` if the window is full-screen.
 Window.fullScreen = Window.hsWindow:mutate(
-	function(window)
+	function(original)
+		local window = original()
 		return window and window:isFullScreen()
 	end,
 	function(window, fullScreen)
 		if window then
 			window:setFullScreen(fullScreen)
 		end
+		return window
 	end
 ):bind(Window)
 

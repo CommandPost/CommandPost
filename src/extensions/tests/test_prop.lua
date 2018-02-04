@@ -553,8 +553,17 @@ return test.suite("cp.prop"):with(
 		local anyNumber = prop.THIS(1)
 
 		-- mutate to check if it's odd or even
-		local isEven	= anyNumber:mutate(function(value) return value % 2 == 0 end)
-			:watch(function(value) report[#report+1] = value end)
+		local isEven = anyNumber:mutate(
+			function(original)
+				-- log.df("prop mutation: original = %s", inspect(original))
+				-- log.df("prop mutation: original() = %s", inspect(original()))
+				return original() % 2 == 0
+			end
+		):watch(
+			function(value)
+				report[#report+1] = value
+			end
+		)
 
 		ok(isEven() == false)
 		ok(eq(report, {}))

@@ -7,6 +7,7 @@
 --- === cp.ui.PropertyRow ===
 ---
 --- Represents a list of property rows, typically in a Property Inspector.
+local log						= require("hs.logger").new("propertyRow")
 
 local prop						= require("cp.prop")
 
@@ -24,13 +25,20 @@ end
 function PropertyRow:new(parent, labelKey, propertiesUI)
 	local o = prop.extend({
 		_parent = parent,
-		_labelKey = labelKey,
+		_labelKeys = type(labelKey) == "string" and {labelKey} or labelKey,
 		_propertiesUI = propertiesUI or "UI",
 		_children = nil,
 	}, PropertyRow)
 
 	o.label = prop(function(self)
-		return self:app():string(self._labelKey)
+		local app = self:app()
+		for _,key in ipairs(self._labelKeys) do
+			local label = app:string(key)
+			if label then
+				return label
+			end
+		end
+		return nil
 	end):bind(o)
 
 	return o
@@ -48,8 +56,16 @@ function PropertyRow:UI()
 	return self:labelUI()
 end
 
-function PropertyRow:labelKey()
-	return self._labelKey()
+PropertyRow.isShowing = prop(function(self)
+	return self:UI() ~= nil
+end):bind(PropertyRow)
+
+function PropertyRow:show()
+	local ui = self:UI()
+end
+
+function PropertyRow:labelKeys()
+	return self._labelKeys()
 end
 
 function PropertyRow:propertiesUI()
@@ -64,7 +80,8 @@ function PropertyRow:labelUI()
 		if ui then
 			local label = self:label()
 			return axutils.childMatching(ui, function(child)
-				return child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == label
+				return child:attributeValue("AXRole") == "AXStaticText"
+					and child:attributeValue("AXValue") == label
 			end)
 		end
 		return nil
@@ -89,6 +106,7 @@ function PropertyRow:children()
 			-- match the children who are right of the label element (and not the AXScrollBar)
 			return labelFrame:intersect(child:frame()).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
 		end)
+		table.sort(children, axutils.compareLeftToRight)
 		self._children = children
 	end
 	return children

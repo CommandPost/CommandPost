@@ -324,10 +324,7 @@ end
 --- Returns:
 ---  * ColorBoard
 function PrimaryWindow:colorBoard()
-	if not self._colorBoard then
-		self._colorBoard = ColorBoard:new(self)
-	end
-	return self._colorBoard
+	return self:inspector():color():colorBoard()
 end
 
 -----------------------------------------------------------------------

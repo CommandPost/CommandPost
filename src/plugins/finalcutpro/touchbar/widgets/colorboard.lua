@@ -137,7 +137,7 @@ local function getWidgetText(id, aspect)
 
 	local spanStyle = [[<span style="font-family: -apple-system; font-size: 12px; color: #FFFFFF;">]]
 	if aspect == "*" then
-		local selectedPanel = colorBoard:selectedPanel()
+		local selectedPanel = colorBoard:selectedAspect()
 		if selectedPanel then
 			if aspectTitle[selectedPanel] and puckTitle[puckID] then
 				widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. aspectTitle[selectedPanel] .. ": </strong>" .. puckTitle[puckID] .. "</span>")
@@ -174,7 +174,7 @@ local function updateCanvas(widgetCanvas, id, aspect, property)
 		widgetCanvas.info.action = "skip"
 		widgetCanvas.circle.action = "skip"
 	else
-		if colorBoard:selectedPanel() == aspect or aspect == "*" then
+		if colorBoard:selectedAspect() == aspect or aspect == "*" then
 			local pct = colorBoard:getPercentage(aspect, property)
 			local angle	= colorBoard:getAngle(aspect, property)
 
@@ -194,7 +194,7 @@ local function updateCanvas(widgetCanvas, id, aspect, property)
 				widgetCanvas.negative.action = "skip"
 			end
 
-			if colorBoard:selectedPanel() == "color" and aspect == "*" then
+			if colorBoard:selectedAspect() == "color" and aspect == "*" then
 				widgetCanvas.arc.action = "strokeAndFill"
 			else
 				widgetCanvas.arc.action = "skip"
@@ -332,7 +332,7 @@ local function puckWidget(id, aspect, property)
 	-- Arc:
 	--------------------------------------------------------------------------------
 	local arcAction = "skip"
-	if colorBoard:selectedPanel() == "color" and aspect == "*" then
+	if colorBoard:selectedAspect() == "color" and aspect == "*" then
 		arcAction = "strokeAndFill"
 	end
 	widgetCanvas[#widgetCanvas + 1] = {
@@ -541,7 +541,7 @@ local function groupPuck(id)
 		:mouseCallback(function(o,m,i,x,y)
 			if m == "mouseDown" or m == "mouseMove" then
 				mod.stop()
-				fcp:colorBoard():togglePanel()
+				fcp:colorBoard():nextAspect()
 				mod.start(0.01)
 			end
 		end)

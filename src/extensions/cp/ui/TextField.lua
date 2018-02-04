@@ -13,7 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local log							= require("hs.logger").new("textField")
+
 local axutils						= require("cp.ui.axutils")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -27,14 +30,35 @@ function TextField.matches(element)
 	return element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.ui.TextField:new(axuielement, function) -> TextField
---- Function
---- Creates a new TextField
-function TextField:new(parent, finderFn)
-	local o = {_parent = parent, _finder = finderFn}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+--- cp.ui.TextField:new(parent, finderFn[, convertFn]) -> TextField
+--- Method
+--- Creates a new TextField. They have a parent and a finder function.
+--- Additionally, an optional `convert` function can be provided, with the following signature:
+---
+--- `function(textValue) -> anything`
+---
+--- The `value` will be passed to the function before being returned, if present. All values
+--- passed into `value(x)` will be converted to a `string` first via `tostring`.
+---
+--- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
+---
+--- ```lua
+--- local numberField = TextField:new(parent, function() return ... end, tonumber)
+--- ```
+---
+--- Parameters:
+--- * parent	- The parent object.
+--- * finderFn	- The function will return the `axuielement` for the TextField.
+--- * convertFn	- (optional) If provided, will be passed the `string` value when returning.
+---
+--- Returns:
+--- * The new `TextField`.
+function TextField:new(parent, finderFn, convertFn)
+	return prop.extend({
+		_parent = parent,
+		_finder = finderFn,
+		_convert = convertFn,
+	}, TextField)
 end
 
 -- TODO: Add documentation
@@ -55,25 +79,42 @@ function TextField:isShowing()
 	return self:UI() ~= nil and self:parent():isShowing()
 end
 
+--- cp.ui.TextField.value <cp.prop: anything>
+--- Field
+--- The current value of the text field.
+TextField.value = prop(
+	function(self)
+		local ui = self:UI()
+		local value = ui and ui:attributeValue("AXValue") or nil
+		if value and self._convert then
+			value = self._convert(value)
+		end
+		return value
+	end,
+	function(value, self)
+		local ui = self:UI()
+		if ui then
+			value = tostring(value)
+			ui:setAttributeValue("AXValue", value)
+			ui:performAction("AXConfirm")
+		end
+
+	end
+):bind(TextField)
+
 -- TODO: Add documentation
 function TextField:getValue()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXValue")
+	return self:value()
 end
 
 -- TODO: Add documentation
 function TextField:setValue(value)
-	local ui = self:UI()
-	if ui then
-		ui:setAttributeValue("AXValue", value)
-		ui:performAction("AXConfirm")
-	end
-	return self
+	self.value:set(value)
 end
 
 -- TODO: Add documentation
 function TextField:clear()
-	self:setValue("")
+	self.value:set("")
 end
 
 -- TODO: Add documentation
@@ -94,6 +135,13 @@ function TextField:loadLayout(layout)
 	if layout then
 		self:setValue(layout.value)
 	end
+end
+
+function TextField.__call(self, parent, value)
+	if parent and parent ~= self:parent() then
+		value = parent
+	end
+	return self:value(value)
 end
 
 return TextField

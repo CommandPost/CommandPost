@@ -23,7 +23,7 @@ local tools								= require("cp.tools")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
 
-local CorrectionsBar						= require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
+local CorrectionsBar					= require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
 local ColorBoard						= require("cp.apple.finalcutpro.inspector.color.ColorBoard")
 local ColorWheels						= require("cp.apple.finalcutpro.inspector.color.ColorWheels")
 local ColorCurves						= require("cp.apple.finalcutpro.inspector.color.ColorCurves")
@@ -58,11 +58,16 @@ ColorInspector.CORRECTION_TYPES = {
 --- Returns:
 --- * `true` if the element is the Color Inspector.
 function ColorInspector.matches(element)
-	if element and element:attributeValue("AXRole") == "AXSplitGroup" and #element == 3 then
-		local top = axutils.childFromTop(element, 1)
-		if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
-			-- check it's the correction bar.
-			return CorrectionsBar.matches(top[1])
+	if element then
+		local role = element:attributeValue("AXRole") -- 10.4+
+		if role == "AXSplitGroup" and #element == 3 then
+			local top = axutils.childFromTop(element, 1)
+			if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
+				-- check it's the correction bar.
+				return CorrectionsBar.matches(top[1])
+			end
+		else -- 10.3 Color Board
+			return ColorBoard.matchesOriginal(element)
 		end
 	end
 	return false
@@ -88,7 +93,8 @@ function ColorInspector:new(parent)
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.isSupported <cp.prop: boolean; read-only>
 --- Field
 --- Is the Color Inspector supported in the installed version of Final Cut Pro?
-	o.isSupported = parent:app().getVersion:mutate(function(version, self)
+	o.isSupported = parent:app().getVersion:mutate(function(original, self)
+		local version = original()
 		return version and v(version) >= v("10.4")
 	end):bind(o)
 
@@ -161,13 +167,12 @@ function ColorInspector:correctorUI()
 		function()
 			local ui = self:UI()
 			if ui then
-				local bottomPanel = axutils.childAtIndex(ui, 1,
-					function(a, b)
-						local aFrame, bFrame = a:frame(), b:frame()
-						local aBottom, bBottom = aFrame.y + aFrame.h, bFrame.y + bFrame.h
-						return aBottom > bBottom
-					end)
-				return bottomPanel and bottomPanel[1] or nil
+				if ColorBoard.matchesOriginal(ui) then -- 10.3 Color Board
+					return ui
+				else -- 10.4+ Color Inspector
+					local bottomPanel = axutils.childFromBottom(ui, 1)
+					return bottomPanel and bottomPanel[1] or nil
+				end
 			end
 			return nil
 		end
@@ -191,48 +196,6 @@ function ColorInspector:corrections()
 	return self._corrections
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:colorInspectorBarUI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector Bar (i.e. where you can add new Color Corrections from the dropdown)
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
-function ColorInspector:colorInspectorBarUI()
-
-	-----------------------------------------------------------------------
-	-- Check that we're running Final Cut Pro 10.4:
-	-----------------------------------------------------------------------
-	if not self:isSupported() then
-		log.ef("colorInspectorBarUI is only supported in Final Cut Pro 10.4 or later.")
-		return nil
-	end
-
-	-----------------------------------------------------------------------
-	-- Find the Color Inspector Bar:
-	-----------------------------------------------------------------------
-	local inspectorUI = self:app():inspector():UI()
-	if inspectorUI then
-		for _, child in ipairs(inspectorUI:attributeValue("AXChildren")) do
-			local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
-			if splitGroup then
-				for _, subchild in ipairs(splitGroup:attributeValue("AXChildren")) do
-					local group = axutils.childWith(subchild, "AXIdentifier", id "ChooseColorCorrectorsBar")
-					if group then
-						return group
-					end
-				end
-			end
-		end
-	else
-		--log.df("inspectorUI is nil")
-	end
-	return nil
-
-end
-
 --------------------------------------------------------------------------------
 --
 -- COLOR INSPECTOR:
@@ -249,10 +212,10 @@ end
 --- Returns:
 ---  * `true` if the Color Inspector is showing, otherwise `false`
 function ColorInspector:isShowing(correctionType)
-	local colorInspectorBarUI = self:colorInspectorBarUI()
+	local correctionsUI = self:corrections():UI()
 	if correctionType then
-		if colorInspectorBarUI then
-			local menuButton = axutils.childWith(colorInspectorBarUI, "AXRole", "AXMenuButton")
+		if correctionsUI then
+			local menuButton = axutils.childWith(correctionsUI, "AXRole", "AXMenuButton")
 			local colorBoardText = self:app():string(self.CORRECTION_TYPES[correctionType])
 			if menuButton and colorBoardText and string.find(menuButton:attributeValue("AXTitle"), colorBoardText) then
 				return true
@@ -263,7 +226,7 @@ function ColorInspector:isShowing(correctionType)
 			return false
 		end
 	else
-		return colorInspectorBarUI ~= nil or false
+		return correctionsUI ~= nil or false
 	end
 end
 
@@ -278,13 +241,23 @@ end
 ---  * ColorInspector object
 function ColorInspector:show(correctionType)
 	if not self:isShowing() then
-		self:app():menuBar():selectMenu({"Window", "Go To", "Color Inspector"})
+		if ColorBoard.matchesOriginal(self:UI()) then
+			-----------------------------------------------------------------------
+			-- Final Cut Pro 10.3:
+			-----------------------------------------------------------------------
+			self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
+		else
+			-----------------------------------------------------------------------
+			-- Final Cut Pro 10.4:
+			-----------------------------------------------------------------------
+			self:app():menuBar():selectMenu({"Window", "Go To", "Color Inspector"})
+		end
 	end
 	if correctionType then
 		if self.CORRECTION_TYPES[correctionType] then
-			local colorInspectorBarUI = self:colorInspectorBarUI()
-			if colorInspectorBarUI then
-				local menuButton = axutils.childWith(colorInspectorBarUI, "AXRole", "AXMenuButton")
+			local correctionsUI = self:corrections():UI()
+			if correctionsUI then
+				local menuButton = axutils.childWith(correctionsUI, "AXRole", "AXMenuButton")
 				local colorInspectorText = self:app():string(self.CORRECTION_TYPES[correctionType])
 				if menuButton then
 					if not string.find(menuButton:attributeValue("AXTitle"), colorInspectorText) then
@@ -329,7 +302,7 @@ function ColorInspector:show(correctionType)
 					end
 				end
 			else
-				--log.ef("Could not find colorInspectorBarUI.")
+				--log.ef("Could not find correctionsUI.")
 			end
 		else
 			log.ef("Invalid Correction Type: %s", correctionType)

@@ -6,7 +6,7 @@
 
 --- === cp.ui.RadioGroup ===
 ---
---- RadioGroup Module.
+--- Represents an `AXRadioGroup`, providing utility methods.
 
 --------------------------------------------------------------------------------
 --
@@ -27,7 +27,15 @@ local prop							= require("cp.prop")
 --------------------------------------------------------------------------------
 local RadioGroup = {}
 
--- TODO: Add documentation
+--- cp.ui.RadioGroup.matches(element) -> boolean
+--- Function
+--- Checks if the provided `axuielement` is a RadioGroup.
+---
+--- Parameters:
+--- * element	- The element to check.
+---
+--- Returns:
+--- * `true` if the element is a RadioGroup.
 function RadioGroup.matches(element)
 	return element and element:attributeValue("AXRole") == "AXRadioGroup"
 end
@@ -52,16 +60,41 @@ function RadioGroup:new(parent, finderFn, cached)
 	return o
 end
 
--- TODO: Add documentation
+--- cp.ui.RadioGroup:parent() -> table
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The parent object.
 function RadioGroup:parent()
 	return self._parent
 end
 
+--- cp.ui.RadioGroup:isShowing() -> boolean
+--- Method
+--- Checks if the RadioGroup is visible.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the RadioGroup is visible.
 function RadioGroup:isShowing()
 	return self:UI() ~= nil and self:parent():isShowing()
 end
 
--- TODO: Add documentation
+--- cp.ui.RadioGroup:UI() -> axuielement
+--- Method
+--- Returns the `axuielement` for the RadioGroup, or `nil` if not currently visible.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `asuielement` or `nil`.
 function RadioGroup:UI()
 	if self._cached then
 		return axutils.cache(self, "_ui", function()
@@ -73,20 +106,36 @@ function RadioGroup:UI()
 	end
 end
 
--- TODO: Add documentation
+--- cp.ui.RadioGroup:isEnabled()
+--- Method
+--- Checks if the RadioGroup is enabled.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the RadioGroup is showing and enabled.
 function RadioGroup:isEnabled()
 	local ui = self:UI()
 	return ui and ui:enabled()
 end
 
-RadioGroup.itemCount = prop(
+--- cp.ui.RadioGroup.optionCount <cp.prop: number; read-only>
+--- Field
+--- The number of options in the group.
+RadioGroup.optionCount = prop(
 	function(self)
 		local ui = self:UI()
 		return ui and #ui or 0
 	end
 ):bind(RadioGroup)
 
-RadioGroup.selectedItem = prop(
+
+
+--- cp.ui.RadioGroup.selectedOption <cp.prop: number>
+--- Field
+--- The currently selected option number.
+RadioGroup.selectedOption = prop(
 	function(self)
 		local ui = self:UI()
 		if ui then
@@ -112,5 +161,39 @@ RadioGroup.selectedItem = prop(
 		return nil
 	end
 ):bind(RadioGroup)
+
+--- cp.ui.RadioGroup:nextOption() -> self
+--- Method
+--- Selects the next option in the group. Cycles from the last to the first option.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `RadioGroup`.
+function RadioGroup:nextOption()
+	local selected = self:selectedOption()
+	local count = self:optionCount()
+	selected = selected >= count and 1 or selected + 1
+	self:selectedOption(selected)
+	return self
+end
+
+--- cp.ui.RadioGroup:previousOption() -> self
+--- Method
+--- Selects the previous option in the group. Cycles from the first to the last item.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `RadioGroup`.
+function RadioGroup:previousOption()
+	local selected = self:selectedOption()
+	local count = self:optionCount()
+	selected = selected <= 1 and count or selected - 1
+	self:selectedOption(selected)
+	return self
+end
 
 return RadioGroup

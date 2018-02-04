@@ -165,7 +165,7 @@ function mod.toggleColorBoard()
 		return "Failed"
 	end
 
-	colorBoard:togglePanel()
+	colorBoard:nextAspect()
 
 end
 

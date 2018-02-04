@@ -273,7 +273,7 @@ function MenuBar:findMenuUI(path, language)
     --------------------------------------------------------------------------------
     -- Check Cache for MenuUI:
     --------------------------------------------------------------------------------
-    local id = table.concat(path, "")
+    local id = table.concat(path, "|")
     if self._cache[id] then
         --log.df("Using MenuUI Cache: %s", id)
         return self._cache[id]
@@ -356,7 +356,6 @@ function MenuBar:findMenuUI(path, language)
 	--------------------------------------------------------------------------------
 	-- Cache the item:
 	--------------------------------------------------------------------------------
-	log.df("Added to MenuBar cache: %s", id)
 	self._cache[id] = menuItemUI
 
 	return menuItemUI

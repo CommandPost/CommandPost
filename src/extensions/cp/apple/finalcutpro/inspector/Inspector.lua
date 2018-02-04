@@ -22,6 +22,7 @@ local axutils							= require("cp.ui.axutils")
 
 local AudioInspector					= require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 local ColorInspector					= require("cp.apple.finalcutpro.inspector.color.ColorInspector")
+local ColorBoard						= require("cp.apple.finalcutpro.inspector.color.ColorBoard")
 local EffectInspector					= require("cp.apple.finalcutpro.inspector.effect.EffectInspector")
 local GeneratorInspector				= require("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
 local InfoInspector						= require("cp.apple.finalcutpro.inspector.info.InfoInspector")
@@ -32,6 +33,7 @@ local TransitionInspector				= require("cp.apple.finalcutpro.inspector.transitio
 local VideoInspector					= require("cp.apple.finalcutpro.inspector.video.VideoInspector")
 
 local id								= require("cp.apple.finalcutpro.ids") "Inspector"
+local colorBoardId						= require("cp.apple.finalcutpro.ids") "ColorBoard"
 
 --------------------------------------------------------------------------------
 --
@@ -66,8 +68,9 @@ Inspector.INSPECTOR_TABS = {
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function Inspector.matches(element)
-	return axutils.childWith(element, "AXIdentifier", id "DetailsPanel") ~= nil -- is inspecting
-		or axutils.childWith(element, "AXIdentifier", id "NothingToInspect") ~= nil 	-- nothing to inspect
+	return axutils.childWithID(element, id "DetailsPanel") ~= nil -- is inspecting
+		or axutils.childWithID(element, id "NothingToInspect") ~= nil 	-- nothing to inspect
+		or ColorBoard.matchesOriginal(element) ~= nil -- the 10.3 color board
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:new(parent) -> Inspector
@@ -80,8 +83,9 @@ end
 --- Returns:
 ---  * App
 function Inspector:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, Inspector)
+	local o = prop.extend({_parent = parent}, Inspector)
+
+	return o
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:parent() -> Parent
@@ -139,7 +143,7 @@ function Inspector:UI()
 			end
 		else
 			-----------------------------------------------------------------------
-			-- It's in the top-left panel (half-height):
+			-- It's in the top-right panel (half-height):
 			-----------------------------------------------------------------------
 			local top = parent:topGroupUI()
 			if top then
@@ -229,21 +233,28 @@ end
 function Inspector:topBarUI()
 	return axutils.cache(self, "_topBar", function()
 		local ui = self:UI()
-		return ui and #ui == 3 and axutils.childFromTop(ui, 1)
+		return ui and #ui == 3 and axutils.childFromTop(ui, 1) or nil
 	end)
 end
 
 function Inspector:propertiesUI()
 	return axutils.cache(self, "_properties", function()
 		local ui = self:UI()
-		return ui and #ui == 3 and axutils.childFromTop(ui, 2)[1]
+		if ui then
+			return (
+				(#ui == 3 and axutils.childFromTop(ui, 2)[1]) -- 10.4+ Inspector
+				or ColorBoard.matchesOriginal(ui) and ui  -- 10.3 Color Board
+				or nil -- not found
+			)
+		end
+		return nil
 	end)
 end
 
 function Inspector:bottomBarUI()
 	return axutils.cache(self, "_bottomBar", function()
 		local ui = self:UI()
-		return ui and #ui == 3 and axutils.childFromBottom(ui, 1)
+		return ui and #ui == 3 and axutils.childFromBottom(ui, 1) or nil
 	end)
 end
 

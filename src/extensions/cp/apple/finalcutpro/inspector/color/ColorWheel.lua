@@ -114,7 +114,7 @@ function ColorWheel:UI()
 			if ui then
 				if self:parent():viewingAllWheels() then
 					return axutils.childFromTop(ui, 2 + self._type.all)
-				elseif self:parent():wheelType():selectedItem() == self._type.single then
+				elseif self:parent():wheelType():selectedOption() == self._type.single then
 					return axutils.childFromTop(ui, 4)
 				end
 			end
@@ -132,7 +132,7 @@ function ColorWheel:show()
 	-- ensure the wheel type is correct, if visible.
 	local wheelType = self:parent():wheelType()
 	if wheelType:isShowing() then
-		wheelType:selectedItem(self._type.single)
+		wheelType:selectedOption(self._type.single)
 	end
 	return self
 end

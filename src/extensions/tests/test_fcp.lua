@@ -156,6 +156,47 @@ return test.suite("cp.apple.finalcutpro"):with(
 		ok(not inspector:isShowing())
 	end),
 
+	test("Color Inspector", function()
+		reset()
+
+		local color = fcp:inspector():color()
+		color:show()
+		just.doUntil(function() return color:isShowing() end, 1)
+		ok(color:isShowing())
+		ok(color:corrections():isShowing())
+
+		color:hide()
+		ok(not color:isShowing())
+
+	end),
+
+	test("Color Board", function()
+		reset()
+
+		local colorBoard = fcp:colorBoard()
+		colorBoard:show()
+		just.doUntil(function() return colorBoard:isShowing() end, 1)
+		ok(colorBoard:isShowing())
+
+		local aspect
+
+		aspect = colorBoard:color():show()
+
+		ok(aspect:isShowing())
+		ok(not colorBoard:saturation():isShowing())
+		ok(not colorBoard:exposure():isShowing())
+
+		-- check the pucks
+		local puck = aspect:master()
+		ok(puck:isShowing())
+		ok(puck:percent(15) == 15)
+		ok(puck:percent() == 15)
+
+		ok(colorBoard:saturation():show():isShowing())
+		ok(not colorBoard:color():isShowing())
+		ok(not colorBoard:exposure():isShowing())
+	end),
+
 	test("Libraries Browser", function()
 		reset()
 

@@ -74,6 +74,9 @@ mod.MODES = {
 	},
 }
 
+local colorBoard = fcp:colorBoard()
+local color, saturation, exposure = colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()
+
 --- plugins.finalcutpro.tangent.manager.customParameters
 --- Variable
 --- Table containing custom Tangent parameters.
@@ -94,11 +97,11 @@ mod.customParameters = {
 			["minValue"] = 0,
 			["maxValue"] = 359,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getAngle("color", "global") end,
+			["getValue"] = function() return color:globalAngle() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "global", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyAngle("color", "global", 110)
-				fcp:colorBoard():applyPercentage("color", "global", 0)
+				color:globalAngle(110)
+				color:globalPercent(0)
 			end,
 		},
 		["0x00030002"] = {
@@ -107,11 +110,11 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "global") end,
+			["getValue"] = function() return color:globalPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "global", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyAngle("color", "global", 110)
-				fcp:colorBoard():applyPercentage("color", "global", 0)
+				color:globalAngle(110)
+				color:globalPercent(0)
 			end,
 		},
 		["0x00030003"] = {
@@ -120,11 +123,11 @@ mod.customParameters = {
 			["minValue"] = 0,
 			["maxValue"] = 359,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getAngle("color", "shadows") end,
+			["getValue"] = function() return color:shadowsAngle() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "shadows", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyAngle("color", "shadows", 180)
-				fcp:colorBoard():applyPercentage("color", "shadows", 0)
+				color:shadowsAngle(180)
+				color:shadowsPercent(0)
 			end,
 		},
 		["0x00030004"] = {
@@ -133,11 +136,11 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "shadows") end,
+			["getValue"] = function() return color:shadowsPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "shadows", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyAngle("color", "shadows", 180)
-				fcp:colorBoard():applyPercentage("color", "shadows", 0)
+				color:shadowsAngle(180)
+				color:shadowsPercent(0)
 			end,
 		},
 		["0x00030005"] = {
@@ -146,11 +149,11 @@ mod.customParameters = {
 			["minValue"] = 0,
 			["maxValue"] = 359,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getAngle("color", "midtones") end,
+			["getValue"] = function() return color:midtonesAngle() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "midtones", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyAngle("color", "midtones", 215)
-				fcp:colorBoard():applyPercentage("color", "midtones", 0)
+				color:midtonesAngle(215)
+				color:midtonesPercent(0)
 			end,
 		},
 		["0x00030006"] = {
@@ -159,11 +162,11 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "midtones") end,
+			["getValue"] = function() return color:midtonesPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "midtones", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyAngle("color", "midtones", 215)
-				fcp:colorBoard():applyPercentage("color", "midtones", 0)
+				color:midtonesAngle(215)
+				color:midtonesPercent(0)
 			end,
 		},
 		["0x00030007"] = {
@@ -172,11 +175,11 @@ mod.customParameters = {
 			["minValue"] = 0,
 			["maxValue"] = 359,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getAngle("color", "highlights") end,
+			["getValue"] = function() return color:highlightsAngle() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftAngle("color", "highlights", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyPercentage("color", "highlights", 0)
-				fcp:colorBoard():applyAngle("color", "highlights", 250)
+				color:highlightsPercent(0)
+				color:highlightsAngle(250)
 			end,
 		},
 		["0x00030008"] = {
@@ -185,11 +188,11 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("color", "highlights") end,
+			["getValue"] = function() return color:highlightsPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("color", "highlights", value) end,
 			["resetValue"] = function()
-				fcp:colorBoard():applyPercentage("color", "highlights", 0)
-				fcp:colorBoard():applyAngle("color", "highlights", 250)
+				color:highlightsPercent(0)
+				color:highlightsAngle(250)
 			end,
 		},
 
@@ -202,9 +205,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "global") end,
+			["getValue"] = function() return saturation:masterPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "global", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "global", 0) end,
+			["resetValue"] = function() saturation:masterPercent(0) end,
 		},
 		["0x00030010"] = {
 			["name"] = "Color Board - Saturation - Shadows",
@@ -212,9 +215,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "shadows") end,
+			["getValue"] = function() return saturation:shadowsPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "shadows", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "shadows", 0) end,
+			["resetValue"] = function() saturation:shadowsPercent(0) end,
 		},
 		["0x00030011"] = {
 			["name"] = "Color Board - Saturation - Midtones",
@@ -222,9 +225,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "midtones") end,
+			["getValue"] = function() return saturation:midtonesPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "midtones", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "midtones", 0) end,
+			["resetValue"] = function() saturation:midtonesPercent(0) end,
 		},
 		["0x00030012"] = {
 			["name"] = "Color Board - Saturation - Highlights",
@@ -232,9 +235,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("saturation", "highlights") end,
+			["getValue"] = function() return saturation:highlightsPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("saturation", "highlights", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("saturation", "highlights", 0) end,
+			["resetValue"] = function() saturation:highlightsPercent(0) end,
 		},
 
 		--------------------------------------------------------------------------------
@@ -256,9 +259,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "shadows") end,
+			["getValue"] = function() return exposure:shadowsPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "shadows", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "shadows", 0) end,
+			["resetValue"] = function() exposure:shadowsPercent(0) end,
 		},
 		["0x00030015"] = {
 			["name"] = "Color Board - Exposure - Midtones",
@@ -266,9 +269,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "midtones") end,
+			["getValue"] = function() return exposure:midtonesPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "midtones", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "midtones", 0) end,
+			["resetValue"] = function() exposure:midtonesPercent(0) end,
 		},
 		["0x00030016"] = {
 			["name"] = "Color Board - Exposure - Highlights",
@@ -276,9 +279,9 @@ mod.customParameters = {
 			["minValue"] = -100,
 			["maxValue"] = 100,
 			["stepSize"] = 1,
-			["getValue"] = function() return fcp:colorBoard():getPercentage("exposure", "highlights") end,
+			["getValue"] = function() return exposure:highlightsPercent() end,
 			["shiftValue"] = function(value) return fcp:colorBoard():show():shiftPercentage("exposure", "highlights", value) end,
-			["resetValue"] = function() fcp:colorBoard():applyPercentage("exposure", "highlights", 0) end,
+			["resetValue"] = function() exposure:highlightsPercent(0) end,
 		},
 		["bindings"] = {
 			["name"] = "zzzzzzzzzzz", -- This is just to put the binding alphabetically last.

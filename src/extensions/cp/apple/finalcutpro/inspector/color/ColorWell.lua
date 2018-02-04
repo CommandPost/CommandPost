@@ -231,24 +231,31 @@ local function centre(frame)
 	return {x = floor(frame.x + frame.w/2), y = floor(frame.y + frame.h/2)}
 end
 
--- toXY(c, frame, clamp) -> table
+--- cp.apple.finalcutpro.inspector.color.ColorWell.centre <cp.prop: point; read-only>
+--- Field
+--- The center point of the ColorWell. A table with `{x=..., y=...}`.
+ColorWell.centre = prop(function(self)
+	return centre(self:frame())
+end):bind(ColorWell)
+
+-- toXY(c, frame, absolute, clamp) -> table
 -- Function
 -- Converts a color to a position to the centre of the provided color well frame.
 -- The color well only shows movement to 85 out of 255 possible values. If `clamp`
 -- is `true`, the returned XY position will be clamped inside the circle. If `false`,
--- the XY position will be where the
+-- the XY position will be where where it would be if not clamped.
 --
 -- Parameters:
--- * c		- The hs.drawing.color to position
--- * frame	- The frame for the outer boundary of the color well cirle.
--- * clamp	- If true, the returned position will be clamped to the color well circle.
+-- * c			- The hs.drawing.color to position
+-- * frame		- The frame for the outer boundary of the color well cirle.
+-- * absolute	- If `true`, the returned position will be the absolute screen position. Otherwise, it will be relative to the centre of the color well.
+-- * clamp		- If `true`, the returned position will be clamped to the color well circle.
 --
 -- Returns:
 -- * The position of the color, relative to the centre of the color well.
-local toXY = function(c, frame, clamp)
+local toXY = function(c, frame, absolute, clamp)
 	c = asHSB(c)
 
-	local ctr = centre(frame)
 	local radius = min(frame.w/2, frame.h/2) / (clamp and 1 or BRIGHTNESS_CLAMP)
 	local h = 1 - c.hue + HUE_SHIFT
 	local b = clamp and min(BRIGHTNESS_CLAMP, c.brightness)/BRIGHTNESS_CLAMP or c.brightness
@@ -256,7 +263,11 @@ local toXY = function(c, frame, clamp)
 	local x, y = b * cos(a), b * sin(a)
 
 	local pos = {x = round(ctr.x + x*radius), y = round(ctr.y + y*radius)}
-	-- _highlightPoint(pos)
+	if absolute then
+		local ctr = centre(frame)
+		pos.x, pos.y = pos.x + ctr.x, pos.y + ctr.y
+		-- _highlightPoint(pos)
+	end
 	return pos
 end
 
@@ -271,10 +282,13 @@ end
 --
 -- Returns:
 -- * The `hs.drawing.color` for the position, relative to the color well.
-local fromXY = function(pos, frame)
+local fromXY = function(pos, frame, absolute)
 	local radius = min(frame.w/2, frame.h/2) / BRIGHTNESS_CLAMP
-	local ctr = centre(frame)
-	local x, y = pos.x - ctr.x, pos.y - ctr.y
+	local x, y = pos.x, pos.y
+	if absolute then
+		local ctr = centre(frame)
+		x, y = x - ctr.x, y - ctr.y
+	end
 
 	local h, b = atan(y, x) / ( math.pi * 2), sqrt(x * x + y * y) / radius
 	_, h = modf(1 - h + HUE_SHIFT)

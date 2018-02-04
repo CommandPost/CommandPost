@@ -174,7 +174,8 @@ end
 --- Returns:
 --- * `true` if `a` is right of `b`.
 function axutils.compareRightToLeft(a, b)
-	return a:frame().x > b:frame().x
+	local aFrame, bFrame = a:frame(), b:frame()
+	return aFrame.x + aFrame.w > bFrame.x + bFrame.w
 end
 
 --- cp.ui.axutils.compareTopToBottom(a, b) -> boolean
@@ -203,7 +204,8 @@ end
 --- Returns:
 --- * `true` if `a` is below `b`.
 function axutils.compareBottomToTop(a, b)
-	return a:frame().y > b:frame().y
+	local aFrame, bFrame = a:frame(), b:frame()
+	return aFrame.y + aFrame.h > bFrame.y + bFrame.h
 end
 
 --- cp.ui.axutils.childFromLeft(element, index) -> axuielement

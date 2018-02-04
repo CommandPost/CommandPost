@@ -4,16 +4,16 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.main.ColorPucker ===
+--- === cp.apple.finalcutpro.inspector.color.ColorPuck ===
 ---
---- Color Pucker Module.
+--- Color Puck Module.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log									= require("hs.logger").new("colorPucker")
+local log									= require("hs.logger").new("colorPuck")
 
 local mouse									= require("hs.mouse")
 local geometry								= require("hs.geometry")
@@ -21,44 +21,101 @@ local drawing								= require("hs.drawing")
 local timer									= require("hs.timer")
 
 local prop									= require("cp.prop")
+local axutils								= require("cp.ui.axutils")
+local PropertyRow							= require("cp.ui.PropertyRow")
+local TextField								= require("cp.ui.TextField")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Pucker = {}
+local Puck = {}
 
-Pucker.naturalLength = 20
-Pucker.elasticity = Pucker.naturalLength/10
+Puck.range = {master=1, shadows=2, midtones=3, highlights=4}
+
+Puck.naturalLength = 20
+Puck.elasticity = Puck.naturalLength/10
+
+function Puck.matches(element)
+	return element and element:attributeValue("AXRole") == "AXButton"
+end
 
 -- TODO: Add documentation
-function Pucker:new(colorBoard, aspect, property)
-	local o = {
-		colorBoard = colorBoard,
-		aspect = aspect,
-		property = property,
+function Puck:new(parent, puckNumber, labelKeys)
+	assert(
+		puckNumber >= Puck.range.master and puckNumber <= Puck.range.highlights,
+		string.format("Please supply a puck number between %s and %s.", Puck.range.master, Puck.range.highlights)
+	)
+
+	local o = prop.extend({
+		_parent = parent,
+		_puckNumber = puckNumber,
+		_labelKeys = labelKeys,
 		xShift = 0,
 		yShift = 0
-	}
-	return prop.extend(o, Pucker)
+	}, Puck)
+
+	-- finds the 'row' for the property type
+	o.row = PropertyRow:new(o, o._labelKeys, "contentUI")
+
+	-- the 'percent' text field
+	o.percent = TextField:new(o, function()
+		local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
+		return fields and fields[#fields] or nil
+	end, tonumber)
+
+	-- the 'angle' text field (only present for the 'color' aspect)
+	o.angle = TextField:new(o, function()
+		local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
+		return fields and #fields > 1 and fields[1] or nil
+	end, tonumber)
+
+	return o
 end
 
-function Pucker:app()
-	return self.colorBoard:app()
+function Puck:parent()
+	return self._parent
 end
 
-Pucker.skimming = prop(function(self) 
-	return not self:app():getPreference("FFDisableSkimming", false) 
-end):bind(Pucker)
+function Puck:app()
+	return self:parent():app()
+end
+
+function Puck:UI()
+	return axutils.cache(self, "_ui", function()
+		local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
+		return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
+	end, Puck.matches)
+end
+
+function Puck:contentUI()
+	return self:parent():UI()
+end
+
+function Puck:isShowing()
+	return self:UI() ~= nil
+end
+
+function Puck:show()
+	self:parent():show()
+	return self
+end
+
+function Puck:select()
+	self:show()
+	local ui = self:UI()
+	if ui then ui:doPress() end
+	return self
+end
+
+Puck.skimming = prop(function(self)
+	return not self:app():getPreference("FFDisableSkimming", false)
+end):bind(Puck)
 
 -- TODO: Add documentation
-function Pucker:start()
-	-- find the percent and angle UIs
-	self.pctUI		= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'pct')
-	self.angleUI	= self.colorBoard:aspectPropertyPanelUI(self.aspect, self.property, 'angle')
-
-	-- disable skimming while the pucker is running
+function Puck:start()
+	-- disable skimming while the Puck is running
 	self.menuBar = self.colorBoard:app():menuBar()
 	if self.skimming() then
 		self.menuBar:checkMenu({"View", "Skimming"})
@@ -71,12 +128,12 @@ function Pucker:start()
 
 	-- start the timer
 	self.running = true
-	Pucker.loop(self)
+	Puck.loop(self)
 	return self
 end
 
 -- TODO: Add documentation
-function Pucker:getBrightness()
+function Puck:getBrightness()
 	if self.property == "global" then
 		return 0.25
 	elseif self.property == "shadows" then
@@ -91,7 +148,7 @@ function Pucker:getBrightness()
 end
 
 -- TODO: Add documentation
-function Pucker:getArc()
+function Puck:getArc()
 	if self.angleUI then
 		return 135, 315
 	elseif self.property == "global" then
@@ -102,8 +159,8 @@ function Pucker:getArc()
 end
 
 -- TODO: Add documentation
-function Pucker:drawMarker()
-	local d = Pucker.naturalLength*2
+function Puck:drawMarker()
+	local d = Puck.naturalLength*2
 	local oFrame = geometry.rect(self.origin.x-d/2, self.origin.y-d/2, d, d)
 
 	local brightness = self:getBrightness()
@@ -129,7 +186,7 @@ function Pucker:drawMarker()
 end
 
 -- TODO: Add documentation
-function Pucker:colorMarker(pct, angle)
+function Puck:colorMarker(pct, angle)
 	local solidColor = nil
 	local fillColor = nil
 
@@ -159,12 +216,12 @@ function Pucker:colorMarker(pct, angle)
 end
 
 -- TODO: Add documentation
-function Pucker:stop()
+function Puck:stop()
 	self.running = false
 end
 
 -- TODO: Add documentation
-function Pucker:cleanup()
+function Puck:cleanup()
 	self.running = false
 	if self.circle then
 		self.circle:delete()
@@ -178,18 +235,16 @@ function Pucker:cleanup()
 		self.negative:delete()
 		self.negative = nil
 	end
-	self.pctUI = nil
-	self.angleUI = nil
 	self.origin = nil
 	if self.skimming() and self.menuBar then
 		self.menuBar:checkMenu({"View", "Skimming"})
 	end
 	self.menuBar = nil
-	self.colorBoard.pucker = nil
+	self.colorBoard.Puck = nil
 end
 
 -- TODO: Add documentation
-function Pucker:accumulate(xShift, yShift)
+function Puck:accumulate(xShift, yShift)
 	if xShift < 1 and xShift > -1 then
 		self.xShift = self.xShift + xShift
 		if self.xShift > 1 or self.xShift < -1 then
@@ -212,39 +267,39 @@ function Pucker:accumulate(xShift, yShift)
 end
 
 -- TODO: Add documentation
-function Pucker.loop(pucker)
-	if not pucker.running then
-		pucker:cleanup()
+function Puck.loop(Puck)
+	if not Puck.running then
+		Puck:cleanup()
 		return
 	end
 
-	local pctUI = pucker.pctUI
-	local angleUI = pucker.angleUI
+	local pctUI = Puck.percent:UI()
+	local angleUI = Puck.angle:UI()
 
 	local current = mouse.getAbsolutePosition()
-	local xDiff = current.x - pucker.origin.x
-	local yDiff = pucker.origin.y - current.y
+	local xDiff = current.x - Puck.origin.x
+	local yDiff = Puck.origin.y - current.y
 
-	local xShift = Pucker.tension(xDiff)
-	local yShift = Pucker.tension(yDiff)
+	local xShift = Puck.tension(xDiff)
+	local yShift = Puck.tension(yDiff)
 
-	xShift, yShift = pucker:accumulate(xShift, yShift)
+	xShift, yShift = Puck:accumulate(xShift, yShift)
 
 	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
 	local angleValue = angleUI and (tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360
-	pucker:colorMarker(pctValue, angleValue)
+	Puck:colorMarker(pctValue, angleValue)
 
 	if yShift and pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
 	if xShift and angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
 
-	timer.doAfter(0.01, function() Pucker.loop(pucker) end)
+	timer.doAfter(0.01, function() Puck.loop(Puck) end)
 end
 
 -- TODO: Add documentation
-function Pucker.tension(diff)
+function Puck.tension(diff)
 	local factor = diff < 0 and -1 or 1
-	local tension = Pucker.elasticity * (diff*factor-Pucker.naturalLength) / Pucker.naturalLength
+	local tension = Puck.elasticity * (diff*factor-Puck.naturalLength) / Puck.naturalLength
 	return tension < 0 and 0 or tension * factor
 end
 
-return Pucker
+return Puck
