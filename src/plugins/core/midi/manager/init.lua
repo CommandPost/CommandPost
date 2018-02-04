@@ -530,7 +530,7 @@ function mod.start()
 	midi.deviceCallback(function(devices, virtualDevices)
 		mod._deviceNames = devices
 		mod._virtualDevices = virtualDevices
-		log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
+		--log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
 	end)
 
     --------------------------------------------------------------------------------
