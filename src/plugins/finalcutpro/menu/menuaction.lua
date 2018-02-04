@@ -14,26 +14,35 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("menuaction")
-local bench				= require("cp.bench")
 
-local choices			= require("cp.choices")
-local fcp				= require("cp.apple.finalcutpro")
-local fnutils			= require("hs.fnutils")
-local config			= require("cp.config")
-local prop				= require("cp.prop")
-local timer				= require("hs.timer")
-local idle				= require("cp.idle")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log               = require("hs.logger").new("menuaction")
 
-local insert, concat	= table.insert, table.concat
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config            = require("cp.config")
+local fcp               = require("cp.apple.finalcutpro")
+local fnutils           = require("hs.fnutils")
+local idle              = require("cp.idle")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local ID				= "menu"
-local GROUP				= "fcpx"
+
+-- ID -> string
+-- Constant
+-- The menu ID.
+local ID                = "menu"
+
+-- GROUP -> string
+-- Constant
+-- The group ID.
+local GROUP             = "fcpx"
 
 --------------------------------------------------------------------------------
 --
@@ -41,6 +50,8 @@ local GROUP				= "fcpx"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+local insert, concat = table.insert, table.concat
 
 --- plugins.finalcutpro.menu.menuaction.id() -> none
 --- Function
@@ -52,50 +63,86 @@ local mod = {}
 --- Returns:
 ---  * a string contains the menu ID
 function mod.id()
-	return ID
+    return ID
 end
 
+--- plugins.finalcutpro.menu.menuaction.reload() -> none
+--- Function
+--- Reloads the choices.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.reload()
-	local choices = {}
-	fcp:menuBar():visitMenuItems(function(path, menuItem)
-		local title = menuItem:title()
+    local choices = {}
+    fcp:menuBar():visitMenuItems(function(path, menuItem)
+        local title = menuItem:title()
 
-		if path[1] ~= "Apple" then
-			local params = {}
-			params.path	= fnutils.concat(fnutils.copy(path), { title })
+        if path[1] ~= "Apple" then
+            local params = {}
+            params.path = fnutils.concat(fnutils.copy(path), { title })
 
-			insert(choices, {
-				text = title,
-				subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
-				params = params,
-				id = mod.actionId(params),
-			})
-		end
-	end)
-	config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
-	mod._choices = choices
-	mod.reset()
+            insert(choices, {
+                text = title,
+                subText = i18n("menuChoiceSubText", {path = concat(path, " > ")}),
+                params = params,
+                id = mod.actionId(params),
+            })
+        end
+    end)
+    config.set("plugins.finalcutpro.menu.menuaction.choices", choices)
+    mod._choices = choices
+    mod.reset()
 end
 
+--- plugins.finalcutpro.menu.menuaction.onChoices(choices) -> none
+--- Function
+--- Add choices to the chooser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.onChoices(choices)
-	if not fcp:menuBar():isShowing() or not mod._choices then
-		return true
-	end
+    if not fcp:menuBar():isShowing() or not mod._choices then
+        return true
+    end
 
-	for _,choice in ipairs(mod._choices) do
-		choices:add(choice.text)
-			:subText(choice.subText)
-			:params(choice.params)
-			:id(choice.id)
-	end
+    for _,choice in ipairs(mod._choices) do
+        choices:add(choice.text)
+            :subText(choice.subText)
+            :params(choice.params)
+            :id(choice.id)
+    end
 end
 
+--- plugins.finalcutpro.menu.menuaction.reset() -> none
+--- Function
+--- Resets the handler.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.reset()
-	mod._handler:reset()
+    mod._handler:reset()
 end
 
+--- plugins.finalcutpro.menu.menuaction.actionId(params) -> string
+--- Function
+--- Gets the action ID from the parameters table.
+---
+--- Parameters:
+---  * params - Parameters table.
+---
+--- Returns:
+---  * Action ID as string.
 function mod.actionId(params)
-	return ID .. ":" .. concat(params.path, "||")
+    return ID .. ":" .. concat(params.path, "||")
 end
 
 --- plugins.finalcutpro.menu.menuaction.execute(action) -> boolean
@@ -103,19 +150,19 @@ end
 --- Executes the action with the provided parameters.
 ---
 --- Parameters:
---- * `action`	- A table of parameters, matching the following:
----		* `group`	- The Command Group ID
----		* `id`		- The specific Command ID within the group.
+--- * `action`  - A table of parameters, matching the following:
+---     * `group`   - The Command Group ID
+---     * `id`      - The specific Command ID within the group.
 ---
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
-	if action and action.path then
-		fcp:launch()
+    if action and action.path then
+        fcp:launch()
 
-		fcp:menuBar():selectMenu(action.path)
-		return true
-	end
-	return false
+        fcp:menuBar():selectMenu(action.path)
+        return true
+    end
+    return false
 end
 
 --- plugins.finalcutpro.menu.menuaction.init(actionmanager) -> none
@@ -128,22 +175,22 @@ end
 --- Returns:
 ---  * None
 function mod.init(actionmanager)
-	mod._manager = actionmanager
-	mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
-	:onChoices(mod.onChoices)
-	:onExecute(mod.onExecute)
-	:onActionId(mod.actionId)
+    mod._manager = actionmanager
+    mod._handler = actionmanager.addHandler(GROUP .. "_" .. ID, GROUP)
+    :onChoices(mod.onChoices)
+    :onExecute(mod.onExecute)
+    :onActionId(mod.actionId)
 
-	mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
-	local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
+    mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
+    local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
 
-	-- watch for restarts
-	fcp.isRunning:watch(function(running)
-		idle.queue(delay, function()
-			log.df("Reloading Final Cut Menu Items")
-			mod.reload()
-		end)
-	end, true)
+    -- watch for restarts
+    fcp.isRunning:watch(function()
+        idle.queue(delay, function()
+            log.df("Reloading Final Cut Menu Items")
+            mod.reload()
+        end)
+    end, true)
 end
 
 --------------------------------------------------------------------------------
@@ -152,19 +199,19 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.menuaction",
-	group			= "finalcutpro",
-	dependencies	= {
-		["core.action.manager"]	= "actionmanager",
-	}
+    id              = "finalcutpro.menu.menuaction",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.action.manager"] = "actionmanager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	mod.init(deps.actionmanager)
-	return mod
+    mod.init(deps.actionmanager)
+    return mod
 end
 
 return plugin
