@@ -110,7 +110,8 @@ function plugin.init(deps)
     -- Setup Menu Item:
     --------------------------------------------------------------------------------
     deps.menu:addItem(PRIORITY, function()
-        return { title = i18n("set") .. " (" .. tostring(mod.get()) .. " " .. i18n("mins") .. ")",   fn = mod.set }
+
+        return { title = i18n("changeBackupInterval") .. " (" .. tostring(mod.get()) .. " " .. i18n("mins") .. ")",   fn = mod.set }
     end)
 
     --------------------------------------------------------------------------------

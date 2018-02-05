@@ -217,7 +217,7 @@ function section:generateMenuTable()
 			local item = generator.itemFn()
 			local diff = timer.secondsSinceEpoch() - start
 			if diff > section.WARNING_LIMIT then
-				log.wf([[Generated "%s" menu in %f seconds]], item and item.title or "N/A", diff)
+				--log.wf([[Generated "%s" menu in %f seconds]], item and item.title or "N/A", diff)
 			end
 			if item then
 				menuTable[#menuTable + 1] = item
@@ -226,7 +226,7 @@ function section:generateMenuTable()
 			local items = generator.section:generateMenuTable()
 			local diff = timer.secondsSinceEpoch() - start
 			if diff > section.WARNING_LIMIT then
-				log.wf([[Generated "%s" menu in %f seconds]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+				--log.wf([[Generated "%s" menu in %f seconds]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
 			end
 			if items then
 				fnutils.concat(menuTable, items)
@@ -235,7 +235,7 @@ function section:generateMenuTable()
 			local items = generator.itemsFn()
 			local diff = timer.secondsSinceEpoch() - start
 			if diff > section.WARNING_LIMIT then
-				log.wf([[Generated "%s" menu in %f seconds.]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+				--log.wf([[Generated "%s" menu in %f seconds.]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
 			end
 			if items then
 				fnutils.concat(menuTable, items)
