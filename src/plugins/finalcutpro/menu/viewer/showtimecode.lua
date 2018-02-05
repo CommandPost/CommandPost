@@ -13,6 +13,10 @@
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
 local PRIORITY = 30000
 
 --------------------------------------------------------------------------------
@@ -21,18 +25,18 @@ local PRIORITY = 30000
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.viewer.showtimecode",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.menu.viewer"] = "viewer"
-	}
+    id              = "finalcutpro.menu.viewer.showtimecode",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.menu.viewer"] = "viewer"
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	return dependencies.viewer:addMenu(PRIORITY, function() return i18n("showTimecode") end)
+    return dependencies.viewer:addMenu(PRIORITY, function() return i18n("showTimecode") end)
 end
 
 return plugin

@@ -13,22 +13,24 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("streamDeck")
 
-local application								= require("hs.application")
-local canvas 									= require("hs.canvas")
-local drawing									= require("hs.drawing")
-local eventtap									= require("hs.eventtap")
-local image										= require("hs.image")
-local inspect									= require("hs.inspect")
-local styledtext								= require("hs.styledtext")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                                       = require("hs.logger").new("streamDeck")
 
-local streamdeck								= require("hs.streamdeck")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local application                               = require("hs.application")
+local canvas                                    = require("hs.canvas")
+local image                                     = require("hs.image")
+local streamdeck                                = require("hs.streamdeck")
 
-local config									= require("cp.config")
-local prop										= require("cp.prop")
-local tools										= require("cp.tools")
-local commands									= require("cp.commands")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config                                    = require("cp.config")
 
 --------------------------------------------------------------------------------
 --
@@ -38,10 +40,14 @@ local commands									= require("cp.commands")
 
 local mod = {}
 
--- Group Statuses:
+-- plugins.core.streamdeck.manager._groupStatus -> table
+-- Variable
+-- Group Statuses.
 mod._groupStatus = {}
 
--- Stream Deck Instances:
+-- plugins.core.streamdeck.manager._streamDeck -> table
+-- Variable
+-- Stream Deck Instances.
 mod._streamDeck = {}
 
 --- plugins.core.streamdeck.manager.maxItems -> number
@@ -69,8 +75,8 @@ mod.defaultGroup = "global"
 --- Returns:
 ---  * None
 function mod.clear()
-	mod._items({})
-	mod.update()
+    mod._items({})
+    mod.update()
 end
 
 --- plugins.core.streamdeck.manager.updateIcon(button, group, icon) -> none
@@ -85,20 +91,20 @@ end
 --- Returns:
 ---  * None
 function mod.updateIcon(button, group, icon)
-	local buttons = mod._items()
+    local buttons = mod._items()
 
-	button = tostring(button)
+    button = tostring(button)
 
-	if not buttons[group] then
-		buttons[group] = {}
-	end
-	if not buttons[group][button] then
-		buttons[group][button] = {}
-	end
-	buttons[group][button]["icon"] = icon
+    if not buttons[group] then
+        buttons[group] = {}
+    end
+    if not buttons[group][button] then
+        buttons[group][button] = {}
+    end
+    buttons[group][button]["icon"] = icon
 
-	mod._items(buttons)
-	mod.update()
+    mod._items(buttons)
+    mod.update()
 end
 
 --- plugins.core.streamdeck.manager.updateAction(button, group, action) -> none
@@ -114,21 +120,21 @@ end
 ---  * None
 function mod.updateAction(button, group, actionTitle, handlerID, action)
 
-	local buttons = mod._items()
+    local buttons = mod._items()
 
-	button = tostring(button)
-	if not buttons[group] then
-		buttons[group] = {}
-	end
-	if not buttons[group][button] then
-		buttons[group][button] = {}
-	end
-	buttons[group][button]["actionTitle"] = actionTitle
-	buttons[group][button]["handlerID"] = handlerID
-	buttons[group][button]["action"] = action
+    button = tostring(button)
+    if not buttons[group] then
+        buttons[group] = {}
+    end
+    if not buttons[group][button] then
+        buttons[group][button] = {}
+    end
+    buttons[group][button]["actionTitle"] = actionTitle
+    buttons[group][button]["handlerID"] = handlerID
+    buttons[group][button]["action"] = action
 
-	mod._items(buttons)
-	mod.update()
+    mod._items(buttons)
+    mod.update()
 
 end
 
@@ -144,20 +150,20 @@ end
 --- Returns:
 ---  * None
 function mod.updateLabel(button, group, label)
-	local buttons = mod._items()
+    local buttons = mod._items()
 
-	button = tostring(button)
+    button = tostring(button)
 
-	if not buttons[group] then
-		buttons[group] = {}
-	end
-	if not buttons[group][button] then
-		buttons[group][button] = {}
-	end
-	buttons[group][button]["label"] = label
+    if not buttons[group] then
+        buttons[group] = {}
+    end
+    if not buttons[group][button] then
+        buttons[group][button] = {}
+    end
+    buttons[group][button]["label"] = label
 
-	mod._items(buttons)
-	mod.update()
+    mod._items(buttons)
+    mod.update()
 end
 
 --- plugins.core.streamdeck.manager.getIcon(button, group) -> string
@@ -171,12 +177,12 @@ end
 --- Returns:
 ---  * Icon data as string
 function mod.getIcon(button, group)
-	local items = mod._items()
-	if items[group] and items[group][button] and items[group][button]["icon"] then
-		return items[group][button]["icon"]
-	else
-		return nil
-	end
+    local items = mod._items()
+    if items[group] and items[group][button] and items[group][button]["icon"] then
+        return items[group][button]["icon"]
+    else
+        return nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.getActionTitle(button, group) -> string
@@ -190,12 +196,12 @@ end
 --- Returns:
 ---  * Action as string
 function mod.getActionTitle(button, group)
-	local items = mod._items()
-	if items[group] and items[group][button] and items[group][button]["actionTitle"] then
-		return items[group][button]["actionTitle"]
-	else
-		return nil
-	end
+    local items = mod._items()
+    if items[group] and items[group][button] and items[group][button]["actionTitle"] then
+        return items[group][button]["actionTitle"]
+    else
+        return nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.getActionHandlerID(button, group) -> string
@@ -209,12 +215,12 @@ end
 --- Returns:
 ---  * Action as string
 function mod.getActionHandlerID(button, group)
-	local items = mod._items()
-	if items[group] and items[group][button] and items[group][button]["handlerID"] then
-		return items[group][button]["handlerID"]
-	else
-		return nil
-	end
+    local items = mod._items()
+    if items[group] and items[group][button] and items[group][button]["handlerID"] then
+        return items[group][button]["handlerID"]
+    else
+        return nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.getAction(button, group) -> string
@@ -228,12 +234,12 @@ end
 --- Returns:
 ---  * Action as string
 function mod.getAction(button, group)
-	local items = mod._items()
-	if items[group] and items[group][button] and items[group][button]["action"] then
-		return items[group][button]["action"]
-	else
-		return nil
-	end
+    local items = mod._items()
+    if items[group] and items[group][button] and items[group][button]["action"] then
+        return items[group][button]["action"]
+    else
+        return nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.getLabel(button, group) -> string
@@ -247,12 +253,12 @@ end
 --- Returns:
 ---  * Label as string
 function mod.getLabel(button, group)
-	local items = mod._items()
-	if items[group] and items[group][button] and items[group][button]["label"] then
-		return items[group][button]["label"]
-	else
-		return nil
-	end
+    local items = mod._items()
+    if items[group] and items[group][button] and items[group][button]["label"] then
+        return items[group][button]["label"]
+    else
+        return nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.activeGroup() -> none
@@ -266,13 +272,13 @@ end
 ---  * Returns the active group or `manager.defaultGroup` as a string.
 function mod.activeGroup()
 
-	local groupStatus = mod._groupStatus
-	for group, status in pairs(groupStatus) do
-		if status then
-			return group
-		end
-	end
-	return mod.defaultGroup
+    local groupStatus = mod._groupStatus
+    for group, status in pairs(groupStatus) do
+        if status then
+            return group
+        end
+    end
+    return mod.defaultGroup
 
 end
 
@@ -287,34 +293,57 @@ end
 --- Returns:
 ---  * None
 function mod.groupStatus(groupID, status)
-	mod._groupStatus[groupID] = status
-	mod.update()
+    mod._groupStatus[groupID] = status
+    mod.update()
 end
 
+-- convertButtonID(buttonID) -> number
+-- Function
+-- Converts the button ID to reflect Stream Deck numbering.
+--
+-- Parameters:
+--  * buttonID
+--
+-- Returns:
+--  * A number
 local function convertButtonID(buttonID)
-
-	--------------------------------------------------------------------------------
-	-- TODO: Fix lazy programming (sorry David)
-	--------------------------------------------------------------------------------
-	if tonumber(buttonID) == 1 then whichButton = 5 end
-	if tonumber(buttonID) == 2 then whichButton = 4 end
-	if tonumber(buttonID) == 3 then whichButton = 3 end
-	if tonumber(buttonID) == 4 then whichButton = 2 end
-	if tonumber(buttonID) == 5 then whichButton = 1 end
-
-	if tonumber(buttonID) == 6 then whichButton = 10 end
-	if tonumber(buttonID) == 7 then whichButton = 9 end
-	if tonumber(buttonID) == 8 then whichButton = 8 end
-	if tonumber(buttonID) == 9 then whichButton = 7 end
-	if tonumber(buttonID) == 10 then whichButton = 6 end
-
-	if tonumber(buttonID) == 11 then whichButton = 15 end
-	if tonumber(buttonID) == 12 then whichButton = 14 end
-	if tonumber(buttonID) == 13 then whichButton = 13 end
-	if tonumber(buttonID) == 14 then whichButton = 12 end
-	if tonumber(buttonID) == 15 then whichButton = 11 end
-
-	return whichButton
+    --------------------------------------------------------------------------------
+    -- TODO: Fix lazy programming (sorry David)
+    --------------------------------------------------------------------------------
+    buttonID = tonumber(buttonID)
+    if buttonID == 1 then
+        return 5
+    elseif buttonID == 2 then
+        return 4
+    elseif buttonID == 3 then
+        return 3
+    elseif buttonID == 4 then
+        return 2
+    elseif buttonID == 5 then
+        return 1
+    elseif buttonID == 6 then
+        return 10
+    elseif buttonID == 7 then
+        return 9
+    elseif buttonID == 8 then
+        return 8
+    elseif buttonID == 9 then
+        return 7
+    elseif buttonID == 10 then
+        return 6
+    elseif buttonID == 11 then
+        return 15
+    elseif buttonID == 12 then
+        return 14
+    elseif buttonID == 13 then
+        return 13
+    elseif buttonID == 14 then
+        return 12
+    elseif buttonID == 15 then
+        return 11
+    else
+        return nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.buttonCallback(object, buttonID, pressed) -> none
@@ -329,14 +358,14 @@ end
 --- Returns:
 ---  * None
 function mod.buttonCallback(object, buttonID, pressed)
-	if pressed then
-		local handlerID = mod.getActionHandlerID(tostring(convertButtonID(buttonID)), mod.activeGroup())
-		local action = mod.getAction(tostring(convertButtonID(buttonID)), mod.activeGroup())
-		if handlerID and action then
-			local handler = mod._actionmanager.getHandler(handlerID)
-			handler:execute(action)
-		end
-	end
+    if pressed then
+        local handlerID = mod.getActionHandlerID(tostring(convertButtonID(buttonID)), mod.activeGroup())
+        local action = mod.getAction(tostring(convertButtonID(buttonID)), mod.activeGroup())
+        if handlerID and action then
+            local handler = mod._actionmanager.getHandler(handlerID)
+            handler:execute(action)
+        end
+    end
 end
 
 --- plugins.core.streamdeck.manager.update() -> none
@@ -350,60 +379,58 @@ end
 ---  * None
 function mod.update()
 
-	if not mod._streamDeck then
-		--log.df("Update called, but no Stream Deck available.")
-		return
-	end
+    if not mod._streamDeck then
+        --log.df("Update called, but no Stream Deck available.")
+        return
+    end
 
-	--log.df("Updating Stream Deck...")
+    --log.df("Updating Stream Deck...")
 
-	--------------------------------------------------------------------------------
-	-- Reset Stream Deck:
-	--------------------------------------------------------------------------------
-	for serial, streamDeck in pairs(mod._streamDeck) do
-		streamDeck:reset()
-	end
+    --------------------------------------------------------------------------------
+    -- Reset Stream Deck:
+    --------------------------------------------------------------------------------
+    for _, streamDeck in pairs(mod._streamDeck) do
+        streamDeck:reset()
+    end
 
-	--------------------------------------------------------------------------------
-	-- Create new buttons and widgets:
-	--------------------------------------------------------------------------------
-	local items = mod._items()
+    --------------------------------------------------------------------------------
+    -- Create new buttons and widgets:
+    --------------------------------------------------------------------------------
+    local items = mod._items()
 
-	for groupID, group in pairs(items) do
-		if groupID == mod.activeGroup() then
-			for buttonID, button in pairs(group) do
-				if button["action"] then
-					local action 		= button["action"] or nil
-					local label 		= button["label"] or nil
-					local icon 			= button["icon"] or nil
-					local id 			= groupID .. "_" .. buttonID
-					for serial, streamDeck in pairs(mod._streamDeck) do
-						if icon then
-							icon = image.imageFromURL(icon) --:setSize({w=36,h=36})
-							streamDeck:setButtonImage(convertButtonID(buttonID), icon)
-						elseif label then
-							local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
-							imageHolder[1] = {
-								frame = { h = 100, w = 100, x = 0, y = 0 },
-								fillColor = { alpha = 0.5, green = 1.0  },
-								type = "rectangle",
-							}
-							imageHolder[2] = {
-								frame = { h = 100, w = 100, x = 0, y = 40 },
-								text = label,
-								textAlignment = "center",
-								textColor = { white = 1.0 },
-								textSize = 20,
-								type = "text",
-							}
-							local textIcon = imageHolder:imageFromCanvas()
-							streamDeck:setButtonImage(convertButtonID(buttonID), textIcon)
-						end
-					end
-				end
-			end
-		end
-	end
+    for groupID, group in pairs(items) do
+        if groupID == mod.activeGroup() then
+            for buttonID, button in pairs(group) do
+                if button["action"] then
+                    local label         = button["label"] or nil
+                    local icon          = button["icon"] or nil
+                    for _, streamDeck in pairs(mod._streamDeck) do
+                        if icon then
+                            icon = image.imageFromURL(icon) --:setSize({w=36,h=36})
+                            streamDeck:setButtonImage(convertButtonID(buttonID), icon)
+                        elseif label then
+                            local imageHolder = canvas.new{x = 0, y = 0, h = 100, w = 100}
+                            imageHolder[1] = {
+                                frame = { h = 100, w = 100, x = 0, y = 0 },
+                                fillColor = { alpha = 0.5, green = 1.0  },
+                                type = "rectangle",
+                            }
+                            imageHolder[2] = {
+                                frame = { h = 100, w = 100, x = 0, y = 40 },
+                                text = label,
+                                textAlignment = "center",
+                                textColor = { white = 1.0 },
+                                textSize = 20,
+                                type = "text",
+                            }
+                            local textIcon = imageHolder:imageFromCanvas()
+                            streamDeck:setButtonImage(convertButtonID(buttonID), textIcon)
+                        end
+                    end
+                end
+            end
+        end
+    end
 
 end
 
@@ -418,24 +445,24 @@ end
 --- Returns:
 ---  * None
 function mod.discoveryCallback(connected, object)
-	local serialNumber = object:serialNumber()
-	if serialNumber == nil then
-		log.ef("Failed to get Stream Deck's Serial Number. This normally means the Stream Deck App is running.")
-	else
-		if connected then
-			local streamDeck = object
-			streamDeck:buttonCallback(mod.buttonCallback)
-			mod._streamDeck[serialNumber] = streamDeck
-			mod.update()
-		else
-			if mod._streamDeck[serialNumber] then
-				--log.df("Disconnected Stream Deck: %s", serialNumber)
-				mod._streamDeck[serialNumber] = nil
-			else
-				log.ef("Disconnected Stream Deck wasn't previously registered.")
-			end
-		end
-	end
+    local serialNumber = object:serialNumber()
+    if serialNumber == nil then
+        log.ef("Failed to get Stream Deck's Serial Number. This normally means the Stream Deck App is running.")
+    else
+        if connected then
+            local streamDeck = object
+            streamDeck:buttonCallback(mod.buttonCallback)
+            mod._streamDeck[serialNumber] = streamDeck
+            mod.update()
+        else
+            if mod._streamDeck[serialNumber] then
+                --log.df("Disconnected Stream Deck: %s", serialNumber)
+                mod._streamDeck[serialNumber] = nil
+            else
+                log.ef("Disconnected Stream Deck wasn't previously registered.")
+            end
+        end
+    end
 end
 
 --- plugins.core.streamdeck.manager.appWatcherCallback(name, event, app) -> none
@@ -450,10 +477,10 @@ end
 --- Returns:
 ---  * None
 function mod.appWatcherCallback(name, event, app)
-	if app and app:bundleID() == "com.elgato.StreamDeck" then
-		log.ef("Stream Deck App is running. This must be closed to activate Stream Deck support in CommandPost.")
-		mod.enabled(false)
-	end
+    if app and app:bundleID() == "com.elgato.StreamDeck" then
+        log.ef("Stream Deck App is running. This must be closed to activate Stream Deck support in CommandPost.")
+        mod.enabled(false)
+    end
 end
 
 --- plugins.core.streamdeck.manager.start() -> boolean
@@ -466,17 +493,17 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-	if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
-		log.df("Starting Stream Deck Support...")
-		mod._streamDeck = {}
-		mod._appWatcher = application.watcher.new(mod.appWatcherCallback):start()
-		streamdeck.init(mod.discoveryCallback)
-		return true
-	else
-		log.ef("Stream Deck App is already running. This must be closed to activate Stream Deck support in CommandPost.")
-		mod.enabled(false)
-		return false
-	end
+    if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
+        log.df("Starting Stream Deck Support...")
+        mod._streamDeck = {}
+        mod._appWatcher = application.watcher.new(mod.appWatcherCallback):start()
+        streamdeck.init(mod.discoveryCallback)
+        return true
+    else
+        log.ef("Stream Deck App is already running. This must be closed to activate Stream Deck support in CommandPost.")
+        mod.enabled(false)
+        return false
+    end
 end
 
 --- plugins.core.streamdeck.manager.start() -> boolean
@@ -489,28 +516,28 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-	log.df("Stopping Stream Deck Support...")
-	if mod._streamDeck then
-		for i, v in pairs(mod._streamDeck) do
-			mod._streamDeck[i] = nil
-		end
-		mod._streamDeck = nil
-	end
-	if mod._appWatcher then
-		mod._appWatcher:stop()
-		mod._appWatcher = nil
-	end
+    log.df("Stopping Stream Deck Support...")
+    if mod._streamDeck then
+        for i, _ in pairs(mod._streamDeck) do
+            mod._streamDeck[i] = nil
+        end
+        mod._streamDeck = nil
+    end
+    if mod._appWatcher then
+        mod._appWatcher:stop()
+        mod._appWatcher = nil
+    end
 end
 
 --- plugins.core.streamdeck.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable Touch Bar Support.
 mod.enabled = config.prop("enableStreamDesk", false):watch(function(enabled)
-	if enabled then
-		mod.start()
-	else
-		mod.stop()
-	end
+    if enabled then
+        mod.start()
+    else
+        mod.stop()
+    end
 end)
 
 --- plugins.core.streamdeck.manager.init(deps, env) -> none
@@ -524,8 +551,8 @@ end)
 --- Returns:
 ---  * None
 function mod.init(deps, env)
-	mod._actionmanager = deps.actionmanager
-	return mod
+    mod._actionmanager = deps.actionmanager
+    return mod
 end
 
 --------------------------------------------------------------------------------
@@ -534,37 +561,40 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id			= "core.streamdeck.manager",
-	group		= "core",
-	required	= true,
-	dependencies	= {
-		["core.action.manager"]				= "actionmanager",
-		["core.commands.global"] 			= "global",
-	}
+    id          = "core.streamdeck.manager",
+    group       = "core",
+    required    = true,
+    dependencies    = {
+        ["core.action.manager"]             = "actionmanager",
+        ["core.commands.global"]            = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpStreamDeck")
+        :whenActivated(mod.toggle)
+        :groupedBy("commandPost")
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpStreamDeck")
-		:whenActivated(mod.toggle)
-		:groupedBy("commandPost")
-
-	return mod.init(deps, env)
+    --------------------------------------------------------------------------------
+    -- Initialise Module:
+    --------------------------------------------------------------------------------
+    return mod.init(deps, env)
 end
 
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.postInit(deps, env)
-
-	if mod.enabled() then
-		mod.start()
-	end
-
+    if mod.enabled() then
+        mod.start()
+    end
 end
 
 return plugin

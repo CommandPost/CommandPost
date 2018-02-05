@@ -10,24 +10,10 @@
 
 --------------------------------------------------------------------------------
 --
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local log				= require("hs.logger").new("updates")
-
-local application		= require("hs.application")
-local timer				= require("hs.timer")
-
-local config			= require("cp.config")
-
---------------------------------------------------------------------------------
---
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local UPDATE_BANNER_PRIORITY 			= 1
-local UPDATE_PREFERENCES_PRIORITY 		= 5000
-local CHECK_FOR_UPDATES_INTERVAL 		= 15 * 60
+local UPDATE_BANNER_PRIORITY            = 1
 
 --------------------------------------------------------------------------------
 --
@@ -46,13 +32,13 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.toggleCheckForUpdates()
-	local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
-	hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
-	mod.automaticallyCheckForUpdates = not automaticallyCheckForUpdates
+    local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
+    hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
+    mod.automaticallyCheckForUpdates = not automaticallyCheckForUpdates
 
-	if not automaticallyCheckForUpdates then
-		hs.checkForUpdates(true)
-	end
+    if not automaticallyCheckForUpdates then
+        hs.checkForUpdates(true)
+    end
 end
 
 --- plugins.core.preferences.updates.checkForUpdates() -> boolean
@@ -65,7 +51,7 @@ end
 --- Returns:
 ---  * `true` or `false`
 function mod.checkForUpdates()
-	hs.checkForUpdates()
+    hs.checkForUpdates()
 end
 
 --------------------------------------------------------------------------------
@@ -74,12 +60,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.updates",
-	group			= "core",
-	dependencies	= {
-		["core.menu.top"] 					= "menu",
-		["core.preferences.panels.general"]	= "general",
-	}
+    id              = "core.preferences.updates",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.top"]                   = "menu",
+        ["core.preferences.panels.general"] = "general",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -87,28 +73,28 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	mod.automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
+    mod.automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
 
-	if hs.automaticallyCheckForUpdates() then
-		hs.checkForUpdates(true)
-	end
+    if hs.automaticallyCheckForUpdates() then
+        hs.checkForUpdates(true)
+    end
 
-	deps.menu:addItem(UPDATE_BANNER_PRIORITY, function()
-		if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
-			return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",	fn = mod.checkForUpdates }
-		end
-	end)
-	:addSeparator(2)
+    deps.menu:addItem(UPDATE_BANNER_PRIORITY, function()
+        if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
+            return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",    fn = mod.checkForUpdates }
+        end
+    end)
+    :addSeparator(2)
 
-	if hs.canCheckForUpdates() then
-		deps.general:addCheckbox(3,
-			{
-				label = i18n("checkForUpdates"),
-				onchange = mod.toggleCheckForUpdates,
-				checked = hs.automaticallyCheckForUpdates,
-			}
-		)
-	end
+    if hs.canCheckForUpdates() then
+        deps.general:addCheckbox(3,
+            {
+                label = i18n("checkForUpdates"),
+                onchange = mod.toggleCheckForUpdates,
+                checked = hs.automaticallyCheckForUpdates,
+            }
+        )
+    end
 
 end
 

@@ -782,9 +782,9 @@ function mod.init(deps, env)
                     --------------------------------------------------------------------------------
                     -- Resize Window:
                     --------------------------------------------------------------------------------
-                    local currentSize = mod._manager.webview:size()
+                    local currentSize = mod._manager._webview:size()
                     currentSize["h"] = mod._calculateHeight()
-                    mod._manager.webview:size(currentSize)
+                    mod._manager._webview:size(currentSize)
 
                     --------------------------------------------------------------------------------
                     -- Update UI:

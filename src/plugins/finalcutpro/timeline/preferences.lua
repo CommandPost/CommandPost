@@ -13,16 +13,29 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local fcp					= require("cp.apple.finalcutpro")
-local prop					= require("cp.prop")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog                = require("cp.dialog")
+local fcp                   = require("cp.apple.finalcutpro")
+local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 				= 2000
-local BACKGROUND_RENDER		= "FFAutoStartBGRender"
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 2000
+
+-- BACKGROUND_RENDER -> number
+-- Constant
+-- The Preferences Key for the Background Render value.
+local BACKGROUND_RENDER = "FFAutoStartBGRender"
 
 --------------------------------------------------------------------------------
 --
@@ -31,35 +44,38 @@ local BACKGROUND_RENDER		= "FFAutoStartBGRender"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.preferences.backgroundRender <cp.prop: boolean>
+--- Variable
+--- Is Background Render enabled?
 mod.backgroundRender = prop.new(
-	function() return fcp:getPreference(BACKGROUND_RENDER, true) end,
-	function(value)
-		--------------------------------------------------------------------------------
-		-- Make sure it's active:
-		--------------------------------------------------------------------------------
-		fcp:launch()
+    function() return fcp:getPreference(BACKGROUND_RENDER, true) end,
+    function()
+        --------------------------------------------------------------------------------
+        -- Make sure it's active:
+        --------------------------------------------------------------------------------
+        fcp:launch()
 
-		--------------------------------------------------------------------------------
-		-- Define FCPX:
-		--------------------------------------------------------------------------------
-		local panel = fcp:preferencesWindow():playbackPanel()
+        --------------------------------------------------------------------------------
+        -- Define FCPX:
+        --------------------------------------------------------------------------------
+        local panel = fcp:preferencesWindow():playbackPanel()
 
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		if panel:show() then
-			panel:backgroundRender():toggle()
-		else
-			dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")
-			return false
-		end
+        --------------------------------------------------------------------------------
+        -- Toggle the checkbox:
+        --------------------------------------------------------------------------------
+        if panel:show() then
+            panel:backgroundRender():toggle()
+        else
+            dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")
+            return false
+        end
 
-		--------------------------------------------------------------------------------
-		-- Close the Preferences window:
-		--------------------------------------------------------------------------------
-		panel:hide()
-		return true
-	end
+        --------------------------------------------------------------------------------
+        -- Close the Preferences window:
+        --------------------------------------------------------------------------------
+        panel:hide()
+        return true
+    end
 )
 
 --- plugins.finalcutpro.timeline.preferences.getAutoRenderDelay() -> number
@@ -72,7 +88,7 @@ mod.backgroundRender = prop.new(
 --- Returns:
 ---  * 'FFAutoRenderDelay' value as number.
 function mod.getAutoRenderDelay()
-	return tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
+    return tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
 end
 
 ---------------------------------------------------------------------------------
@@ -81,34 +97,44 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.preferences",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.menu.mediaimport"] 	= "menu",
-		["finalcutpro.commands"]			= "fcpxCmds",
-	}
+    id = "finalcutpro.timeline.preferences",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.menu.mediaimport"]    = "menu",
+        ["finalcutpro.commands"]            = "fcpxCmds",
+    }
 }
 
 ---------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 ---------------------------------------------------------------------------------
 function plugin.init(deps)
-	deps.menu:addItems(PRIORITY, function()
-		local fcpxRunning = fcp:isRunning()
+    ---------------------------------------------------------------------------------
+    -- Add Menu:
+    ---------------------------------------------------------------------------------
+    if deps.menu then
+        deps.menu:addItems(PRIORITY, function()
+            local fcpxRunning = fcp:isRunning()
 
-		return {
-			{ title = i18n("enableBackgroundRender", {count = mod.getAutoRenderDelay()}),	fn = function() mod.backgroundRender:toggle() end,	checked = mod.backgroundRender(),	disabled = not fcpxRunning },
-		}
-	end)
+            return {
+                { title = i18n("enableBackgroundRender", {count = mod.getAutoRenderDelay()}),   fn = function() mod.backgroundRender:toggle() end,  checked = mod.backgroundRender(),   disabled = not fcpxRunning },
+            }
+        end)
+    end
 
-	deps.fcpxCmds:add("cpBackgroundRenderOn")
-		:groupedBy("timeline")
-		:whenActivated(function() mod.backgroundRender(true) end)
-	deps.fcpxCmds:add("cpBackgroundRenderOff")
-		:groupedBy("timeline")
-		:whenActivated(function() mod.backgroundRender(false) end)
+    ---------------------------------------------------------------------------------
+    -- Add Commands:
+    ---------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        deps.fcpxCmds:add("cpBackgroundRenderOn")
+            :groupedBy("timeline")
+            :whenActivated(function() mod.backgroundRender(true) end)
+        deps.fcpxCmds:add("cpBackgroundRenderOff")
+            :groupedBy("timeline")
+            :whenActivated(function() mod.backgroundRender(false) end)
+    end
 
-	return mod
+    return mod
 end
 
 return plugin

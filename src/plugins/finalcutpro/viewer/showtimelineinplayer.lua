@@ -13,13 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("showtimelineinplayer")
 
-local application		= require("hs.application")
-
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
-local config			= require("cp.config")
 local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -27,8 +26,20 @@ local prop				= require("cp.prop")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 20
-local DEFAULT_VALUE		= 0
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 20
+
+-- DEFAULT_VALUE -> number
+-- Constant
+-- The Default Value.
+local DEFAULT_VALUE = 0
+
+-- PREFERENCES_KEY -> number
+-- Constant
+-- The Preferences Key.
 local PREFERENCES_KEY 	= "FFPlayerDisplayedTimeline"
 
 --------------------------------------------------------------------------------
@@ -38,6 +49,9 @@ local PREFERENCES_KEY 	= "FFPlayerDisplayedTimeline"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.viewer.showtimelineinplayer.enabled <cp.prop: boolean>
+--- Variable
+--- Show Timeline in Player Enabled?
 mod.enabled = prop.new(
 	function()
 		local value = fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
@@ -64,7 +78,6 @@ mod.enabled = prop.new(
 			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
 			return
 		end
-		
 	end
 )
 
@@ -87,19 +100,25 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("showTimelineInPlayer"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
-	end)
+    --------------------------------------------------------------------------------
+    -- Setup Menu:
+    --------------------------------------------------------------------------------
+    if deps.menu then
+        deps.menu:addItem(PRIORITY, function()
+            return { title = i18n("showTimelineInPlayer"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
+        end)
+    end
 
 	--------------------------------------------------------------------------------
-	-- Commands:
+	-- Setup Commands:
 	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpShowTimelineInPlayer")
-		:groupedBy("hacks")
-		:whenActivated(function() mod.enabled:toggle() end)
+	if deps.fcpxCmds then
+        deps.fcpxCmds:add("cpShowTimelineInPlayer")
+            :groupedBy("hacks")
+            :whenActivated(function() mod.enabled:toggle() end)
+    end
 
 	return mod
-
 end
 
 return plugin

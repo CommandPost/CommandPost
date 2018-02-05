@@ -13,16 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local application		= require("hs.application")
 
-local config			= require("cp.config")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config            = require("cp.config")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 9999999
+local PRIORITY          = 9999999
 
 --------------------------------------------------------------------------------
 --
@@ -41,7 +43,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.quit()
-	config.application():kill()
+    config.application():kill()
 end
 
 --------------------------------------------------------------------------------
@@ -50,22 +52,22 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.quit",
-	group			= "core",
-	dependencies	= {
-		["core.menu.bottom"] = "bottom",
-	}
+    id              = "core.quit",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.bottom"] = "bottom",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	deps.bottom:addSeparator(9999998):addItem(PRIORITY, function()
-		return { title = i18n("quit"),	fn = mod.quit }
-	end)
+    deps.bottom:addSeparator(9999998):addItem(PRIORITY, function()
+        return { title = i18n("quit"),  fn = mod.quit }
+    end)
 
-	return mod
+    return mod
 end
 
 return plugin

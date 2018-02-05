@@ -16,32 +16,31 @@
 --
 --------------------------------------------------------------------------------
 
----------------------------------
--- LOGGER:
----------------------------------
-local log								= require("hs.logger").new("mousezoom")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                               = require("hs.logger").new("mousezoom")
 
----------------------------------
--- HAMMERSPOON EXTENSIONS:
----------------------------------
-local distributednotifications			= require("hs.distributednotifications")
-local eventtap							= require("hs.eventtap")
-local mouse								= require("hs.mouse")
-local pathwatcher						= require("hs.pathwatcher")
-local timer								= require("hs.timer")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local distributednotifications          = require("hs.distributednotifications")
+local eventtap                          = require("hs.eventtap")
+local mouse                             = require("hs.mouse")
+local pathwatcher                       = require("hs.pathwatcher")
 
----------------------------------
--- 3rd PARTY EXTENSIONS:
----------------------------------
-local semver							= require("semver")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config                            = require("cp.config")
+local fcp                               = require("cp.apple.finalcutpro")
+local tools                             = require("cp.tools")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local semver                            = require("semver")
 local touchdevice
-
----------------------------------
--- COMMANDPOST EXTENSIONS:
----------------------------------
-local config							= require("cp.config")
-local fcp								= require("cp.apple.finalcutpro")
-local tools 							= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -49,10 +48,10 @@ local tools 							= require("cp.tools")
 --
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- Should this plugin be enabled by default?
---------------------------------------------------------------------------------
-local ENABLED_DEFAULT 	= true
+-- ENABLED_DEFAULT -> number
+-- Constant
+-- Is this feature enabled by default?
+local ENABLED_DEFAULT = true
 
 --------------------------------------------------------------------------------
 --
@@ -101,11 +100,11 @@ mod.threshold = 0.005
 --- Returns:
 ---  * None
 function mod.update()
-	if mod.enabled() then
-		mod.start()
-	else
-		mod.stop()
-	end
+    if mod.enabled() then
+        mod.start()
+    else
+        mod.stop()
+    end
 end
 
 --- plugins.finalcutpro.timeline.mousezoom.enabled <cp.prop: boolean>
@@ -124,50 +123,50 @@ mod.enabled = config.prop("enablemousezoom", ENABLED_DEFAULT):watch(mod.update)
 ---  * None
 function mod.stop()
 
-	--------------------------------------------------------------------------------
-	-- Clear any existing existing Touch Devices:
-	--------------------------------------------------------------------------------
-	if mod.touchDevices then
-		for _, id in ipairs(mod.magicMouseIDs) do
-			if mod.touchDevices[id] then
-				mod.touchDevices[id]:stop()
-				mod.touchDevices[id] = nil
-			end
-		end
-		mod.touchDevices = nil
-	end
+    --------------------------------------------------------------------------------
+    -- Clear any existing existing Touch Devices:
+    --------------------------------------------------------------------------------
+    if mod.touchDevices then
+        for _, id in ipairs(mod.magicMouseIDs) do
+            if mod.touchDevices[id] then
+                mod.touchDevices[id]:stop()
+                mod.touchDevices[id] = nil
+            end
+        end
+        mod.touchDevices = nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Destroy Mouse Watcher:
-	--------------------------------------------------------------------------------
-	if mod.distributedObserver then
-		mod.distributedObserver:stop()
-		mod.distributedObserver = nil
-	end
+    --------------------------------------------------------------------------------
+    -- Destroy Mouse Watcher:
+    --------------------------------------------------------------------------------
+    if mod.distributedObserver then
+        mod.distributedObserver:stop()
+        mod.distributedObserver = nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Destroy Preferences Watcher:
-	--------------------------------------------------------------------------------
-	if mod.preferencesWatcher then
-		mod.preferencesWatcher:stop()
-		mod.preferencesWatcher = nil
-	end
+    --------------------------------------------------------------------------------
+    -- Destroy Preferences Watcher:
+    --------------------------------------------------------------------------------
+    if mod.preferencesWatcher then
+        mod.preferencesWatcher:stop()
+        mod.preferencesWatcher = nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Destory Mouse Scroll Wheel Watcher:
-	--------------------------------------------------------------------------------
-	if mod.mousetap then
-		mod.mousetap:stop()
-		mod.mousetap = nil
-	end
+    --------------------------------------------------------------------------------
+    -- Destory Mouse Scroll Wheel Watcher:
+    --------------------------------------------------------------------------------
+    if mod.mousetap then
+        mod.mousetap:stop()
+        mod.mousetap = nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Destroy Keyboard Watcher:
-	--------------------------------------------------------------------------------
-	if mod.keytap then
-		mod.keytap:stop()
-		mod.keytap = nil
-	end
+    --------------------------------------------------------------------------------
+    -- Destroy Keyboard Watcher:
+    --------------------------------------------------------------------------------
+    if mod.keytap then
+        mod.keytap:stop()
+        mod.keytap = nil
+    end
 
 end
 
@@ -182,57 +181,57 @@ end
 ---  * None
 function mod.findMagicMouses()
 
-	--------------------------------------------------------------------------------
-	-- Clear any existing existing Touch Devices:
-	--------------------------------------------------------------------------------
-	mod.stop()
-	mod.foundMagicMouse = false
+    --------------------------------------------------------------------------------
+    -- Clear any existing existing Touch Devices:
+    --------------------------------------------------------------------------------
+    mod.stop()
+    mod.foundMagicMouse = false
 
-	--------------------------------------------------------------------------------
-	-- Search for Magic Mouses:
-	--------------------------------------------------------------------------------
-	if touchdevice.available() then
-		mod.magicMouseIDs = {}
-		local devices = touchdevice.devices()
-		mod.numberOfTouchDevices = #devices
-		if devices then
-			for _, id in ipairs(devices) do
-				local selectedDevice = touchdevice.forDeviceID(id)
-				if selectedDevice then
+    --------------------------------------------------------------------------------
+    -- Search for Magic Mouses:
+    --------------------------------------------------------------------------------
+    if touchdevice.available() then
+        mod.magicMouseIDs = {}
+        local devices = touchdevice.devices()
+        mod.numberOfTouchDevices = #devices
+        if devices then
+            for _, id in ipairs(devices) do
+                local selectedDevice = touchdevice.forDeviceID(id)
+                if selectedDevice then
 
-					--------------------------------------------------------------------------------
-					-- First Generation:
-					--
-					-- The original Magic Mouse annoyingly returns the customisable mouse name as
-					-- the `productName`, so we need to detect it differently:
-					--------------------------------------------------------------------------------
-					if selectedDevice:details().builtin == false and
-					selectedDevice:details().driverType == 4 and
-					selectedDevice:details().familyID == 112 and
-					selectedDevice:details().sensorDimensions.h == 9056 and
-					selectedDevice:details().sensorDimensions.w == 5152 and
-					selectedDevice:details().sensorSurfaceDimensions.h == 9056 and
-					selectedDevice:details().sensorSurfaceDimensions.w == 5152 and
-					selectedDevice:details().supportsForce == false then
-						log.df("Found a first generation Magic Mouse with ID: %s", id)
-						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
-						mod.foundMagicMouse = true
-					end
+                    --------------------------------------------------------------------------------
+                    -- First Generation:
+                    --
+                    -- The original Magic Mouse annoyingly returns the customisable mouse name as
+                    -- the `productName`, so we need to detect it differently:
+                    --------------------------------------------------------------------------------
+                    if selectedDevice:details().builtin == false and
+                    selectedDevice:details().driverType == 4 and
+                    selectedDevice:details().familyID == 112 and
+                    selectedDevice:details().sensorDimensions.h == 9056 and
+                    selectedDevice:details().sensorDimensions.w == 5152 and
+                    selectedDevice:details().sensorSurfaceDimensions.h == 9056 and
+                    selectedDevice:details().sensorSurfaceDimensions.w == 5152 and
+                    selectedDevice:details().supportsForce == false then
+                        log.df("Found a first generation Magic Mouse with ID: %s", id)
+                        mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
+                        mod.foundMagicMouse = true
+                    end
 
-					--------------------------------------------------------------------------------
-					-- Second Generation:
-					--------------------------------------------------------------------------------
-					local selectedProductName = selectedDevice:details().productName
-					if selectedProductName == "Magic Mouse 2" then
-						log.df("Found a second generation Magic Mouse with ID: %s", id)
-						mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
-						mod.foundMagicMouse = true
-					end
+                    --------------------------------------------------------------------------------
+                    -- Second Generation:
+                    --------------------------------------------------------------------------------
+                    local selectedProductName = selectedDevice:details().productName
+                    if selectedProductName == "Magic Mouse 2" then
+                        log.df("Found a second generation Magic Mouse with ID: %s", id)
+                        mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
+                        mod.foundMagicMouse = true
+                    end
 
-				end
-			end
-		end
-	end
+                end
+            end
+        end
+    end
 end
 
 -- touchCallback(self, touches, time, frame) -> none
@@ -247,129 +246,125 @@ end
 --
 -- Returns:
 --  * None
-local function touchCallback(self, touches, time, frame)
+local function touchCallback(_, touches)
 
-	--------------------------------------------------------------------------------
-	-- Only do stuff if FCPX is active:
-	--------------------------------------------------------------------------------
- 	if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
+    --------------------------------------------------------------------------------
+    -- Only do stuff if FCPX is active:
+    --------------------------------------------------------------------------------
+    if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 
-	--------------------------------------------------------------------------------
-	-- Only allow when ONLY the OPTION modifier key is held down:
-	--------------------------------------------------------------------------------
-	local mods = eventtap.checkKeyboardModifiers()
-	if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
-		mod.altPressed = true
-	else
-		mod.altPressed = false
-		return
-	end
+    --------------------------------------------------------------------------------
+    -- Only allow when ONLY the OPTION modifier key is held down:
+    --------------------------------------------------------------------------------
+    local mods = eventtap.checkKeyboardModifiers()
+    if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        mod.altPressed = true
+    else
+        mod.altPressed = false
+        return
+    end
 
-	--------------------------------------------------------------------------------
-	-- Exit Callback if Mouse has been clicked:
-	--------------------------------------------------------------------------------
-	local mouseButtons = eventtap.checkMouseButtons()
-	if next(mouseButtons) then
-		mod.lastPosition = nil
-		if fcp:timeline():toolbar():appearance():isShowing() then
-			fcp:timeline():toolbar():appearance():hide()
-		end
-		return
-	end
+    --------------------------------------------------------------------------------
+    -- Exit Callback if Mouse has been clicked:
+    --------------------------------------------------------------------------------
+    local mouseButtons = eventtap.checkMouseButtons()
+    if next(mouseButtons) then
+        mod.lastPosition = nil
+        if fcp:timeline():toolbar():appearance():isShowing() then
+            fcp:timeline():toolbar():appearance():hide()
+        end
+        return
+    end
 
-	--------------------------------------------------------------------------------
-	-- Only single touch allowed:
-	--------------------------------------------------------------------------------
-	local numberOfTouches = #touches
-	if numberOfTouches == 1 then
-		--------------------------------------------------------------------------------
-		-- All good!
-		--------------------------------------------------------------------------------
-	else
-		--------------------------------------------------------------------------------
-		-- Abort:
-		--------------------------------------------------------------------------------
-		return
-	end
+    --------------------------------------------------------------------------------
+    -- Only single touch allowed:
+    --------------------------------------------------------------------------------
+    local numberOfTouches = #touches
+    if numberOfTouches ~= 1 then
+        --------------------------------------------------------------------------------
+        -- Abort:
+        --------------------------------------------------------------------------------
+        return
+    end
 
-	--------------------------------------------------------------------------------
-	-- Get Stage & Current Position:
-	--------------------------------------------------------------------------------
-	local stage = touches[1].stage
-	local currentPosition = touches[1].normalizedVector.position.y
+    --------------------------------------------------------------------------------
+    -- Get Stage & Current Position:
+    --------------------------------------------------------------------------------
+    local stage = touches[1].stage
+    local currentPosition = touches[1].normalizedVector.position.y
 
-	--------------------------------------------------------------------------------
-	-- User has broken contact with the Touch Device:
-	--------------------------------------------------------------------------------
-	if stage == "breakTouch" then
-		fcp:timeline():toolbar():appearance():hide()
-		return
-	end
+    --------------------------------------------------------------------------------
+    -- User has broken contact with the Touch Device:
+    --------------------------------------------------------------------------------
+    if stage == "breakTouch" then
+        fcp:timeline():toolbar():appearance():hide()
+        return
+    end
 
-	--------------------------------------------------------------------------------
-	-- User has made contact with the Touch Device:
-	--------------------------------------------------------------------------------
-	if stage == "makeTouch" then
-		fcp:timeline():toolbar():appearance():show()
-		mod.lastPosition = currentPosition
-	end
+    --------------------------------------------------------------------------------
+    -- User has made contact with the Touch Device:
+    --------------------------------------------------------------------------------
+    if stage == "makeTouch" then
+        fcp:timeline():toolbar():appearance():show()
+        mod.lastPosition = currentPosition
+    end
 
-	--------------------------------------------------------------------------------
-	-- User is touching the Touch Device:
-	--------------------------------------------------------------------------------
-	if stage == "touching" then
+    --------------------------------------------------------------------------------
+    -- User is touching the Touch Device:
+    --------------------------------------------------------------------------------
+    if stage == "touching" then
 
-		--------------------------------------------------------------------------------
-		-- Define the appearance popup:
-		--------------------------------------------------------------------------------
-		local appearance = fcp:timeline():toolbar():appearance()
+        --------------------------------------------------------------------------------
+        -- Define the appearance popup:
+        --------------------------------------------------------------------------------
+        local appearance = fcp:timeline():toolbar():appearance()
 
-		--------------------------------------------------------------------------------
-		-- If we can't get the appearance popup, then we give up:
-		--------------------------------------------------------------------------------
-		if not appearance then return end
+        --------------------------------------------------------------------------------
+        -- If we can't get the appearance popup, then we give up:
+        --------------------------------------------------------------------------------
+        if not appearance then return end
 
-		--------------------------------------------------------------------------------
-		-- Get current value of the zoom slider:
-		--------------------------------------------------------------------------------
-		local currentValue = appearance:zoomAmount():getValue()
+        --------------------------------------------------------------------------------
+        -- Get current value of the zoom slider:
+        --------------------------------------------------------------------------------
+        local currentValue = appearance:zoomAmount():getValue()
 
-		--------------------------------------------------------------------------------
-		-- If we can't get the zoom value, then we give up:
-		--------------------------------------------------------------------------------
-		if not currentValue then return end
+        --------------------------------------------------------------------------------
+        -- If we can't get the zoom value, then we give up:
+        --------------------------------------------------------------------------------
+        if not currentValue then return end
 
-		--------------------------------------------------------------------------------
-		-- Work out the difference between the last position and the current position:
-		--------------------------------------------------------------------------------
-		local difference = currentPosition
-		if mod.lastPosition then
-			difference = currentPosition - mod.lastPosition
-		end
+        --------------------------------------------------------------------------------
+        -- Work out the difference between the last position and the current position:
+        --------------------------------------------------------------------------------
+        local difference = currentPosition
+        if mod.lastPosition then
+            difference = currentPosition - mod.lastPosition
+        end
 
-		--------------------------------------------------------------------------------
-		-- Only allow differences of a certain threshold:
-		--------------------------------------------------------------------------------
-		if math.abs(difference) < mod.threshold then
-			mod.lastPosition = currentPosition
-			return
-		end
+        --------------------------------------------------------------------------------
+        -- Only allow differences of a certain threshold:
+        --------------------------------------------------------------------------------
+        if math.abs(difference) < mod.threshold then
+            mod.lastPosition = currentPosition
+            return
+        end
 
-		--------------------------------------------------------------------------------
-		-- Adjust the zoom slider:
-		--------------------------------------------------------------------------------
-		if mod.scrollDirection == "normal" then
-			appearance:zoomAmount():setValue(currentValue + (difference * mod.offset))
-		else
-			appearance:zoomAmount():setValue(currentValue - (difference * mod.offset))
-		end
+        --------------------------------------------------------------------------------
+        -- Adjust the zoom slider:
+        --------------------------------------------------------------------------------
+        if mod.scrollDirection == "normal" then
+            appearance:zoomAmount():setValue(currentValue + (difference * mod.offset))
+        else
+            appearance:zoomAmount():setValue(currentValue - (difference * mod.offset))
+        end
 
-		--------------------------------------------------------------------------------
-		-- Save the last position for next time:
-		--------------------------------------------------------------------------------
-		mod.lastPosition = currentPosition
+        --------------------------------------------------------------------------------
+        -- Save the last position for next time:
+        --------------------------------------------------------------------------------
+        mod.lastPosition = currentPosition
 
-	end
+    end
 
 end
 
@@ -384,133 +379,129 @@ end
 ---  * None
 function mod.start()
 
-	--------------------------------------------------------------------------------
-	-- Monitor Touch Devices:
-	--------------------------------------------------------------------------------
-	mod.findMagicMouses()
-	if not mod.touchDevices then mod.touchDevices = {} end
-	if mod.numberOfTouchDevices >= 1 then
-		for _, id in ipairs(mod.magicMouseIDs) do
-			mod.touchDevices[id] = touchdevice.forDeviceID(id):frameCallback(touchCallback):start()
-		end
-	end
+    --------------------------------------------------------------------------------
+    -- Monitor Touch Devices:
+    --------------------------------------------------------------------------------
+    mod.findMagicMouses()
+    if not mod.touchDevices then mod.touchDevices = {} end
+    if mod.numberOfTouchDevices >= 1 then
+        for _, id in ipairs(mod.magicMouseIDs) do
+            mod.touchDevices[id] = touchdevice.forDeviceID(id):frameCallback(touchCallback):start()
+        end
+    end
 
-	--------------------------------------------------------------------------------
-	-- Setup Mouse Watcher:
-	--------------------------------------------------------------------------------
-	mod.distributedObserver = distributednotifications.new(function(name)
-	    if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-	    	log.df("New Multi-touch Device Detected. Re-scanning...")
-	    	mod.stop()
-	    	mod.update()
-	    end
-	end):start()
+    --------------------------------------------------------------------------------
+    -- Setup Mouse Watcher:
+    --------------------------------------------------------------------------------
+    mod.distributedObserver = distributednotifications.new(function(name)
+        if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
+            log.df("New Multi-touch Device Detected. Re-scanning...")
+            mod.stop()
+            mod.update()
+        end
+    end):start()
 
-	--------------------------------------------------------------------------------
-	-- Setup Preferences Watcher:
-	--------------------------------------------------------------------------------
-	mod.preferencesWatcher = pathwatcher.new("~/Library/Preferences/", function(files)
-		local doReload = false
-		for _,file in pairs(files) do
-			if file:sub(-24) == ".GlobalPreferences.plist" then
-				doReload = true
-			end
-		end
-		if doReload then
-			--------------------------------------------------------------------------------
-			-- Cache Scroll Direction:
-			--------------------------------------------------------------------------------
-			log.df("Global Preferences Updated. Refreshing scroll direction cache.")
-			mod.scrollDirection = mouse.scrollDirection()
-		end
-	end):start()
+    --------------------------------------------------------------------------------
+    -- Setup Preferences Watcher:
+    --------------------------------------------------------------------------------
+    mod.preferencesWatcher = pathwatcher.new("~/Library/Preferences/", function(files)
+        local doReload = false
+        for _,file in pairs(files) do
+            if file:sub(-24) == ".GlobalPreferences.plist" then
+                doReload = true
+            end
+        end
+        if doReload then
+            --------------------------------------------------------------------------------
+            -- Cache Scroll Direction:
+            --------------------------------------------------------------------------------
+            log.df("Global Preferences Updated. Refreshing scroll direction cache.")
+            mod.scrollDirection = mouse.scrollDirection()
+        end
+    end):start()
 
-	--------------------------------------------------------------------------------
-	-- Setup Mouse Scroll Wheel Watcher:
-	--------------------------------------------------------------------------------
-	mod.mousetap = eventtap.new({eventtap.event.types.scrollWheel}, function(event)
+    --------------------------------------------------------------------------------
+    -- Setup Mouse Scroll Wheel Watcher:
+    --------------------------------------------------------------------------------
+    mod.mousetap = eventtap.new({eventtap.event.types.scrollWheel}, function(event)
 
-		--------------------------------------------------------------------------------
-		-- Block Horizontal Scrolling:
-		--------------------------------------------------------------------------------
-		if event:getProperty(eventtap.event.properties.scrollWheelEventPointDeltaAxis2) == 0 then
-			--------------------------------------------------------------------------------
-			-- All good!
-			--------------------------------------------------------------------------------
-		else
-			if mod.altPressed then
-				--------------------------------------------------------------------------------
-				-- Exit callback if OPTION is being held down:
-				--------------------------------------------------------------------------------
-				return true
-			end
-		end
+        --------------------------------------------------------------------------------
+        -- Block Horizontal Scrolling:
+        --------------------------------------------------------------------------------
+        if event:getProperty(eventtap.event.properties.scrollWheelEventPointDeltaAxis2) ~= 0 then
+            if mod.altPressed then
+                --------------------------------------------------------------------------------
+                -- Exit callback if OPTION is being held down:
+                --------------------------------------------------------------------------------
+                return true
+            end
+        end
 
-		--------------------------------------------------------------------------------
-		-- Setup Mouse & Keyword Checkers:
-		--------------------------------------------------------------------------------
-		local mods = eventtap.checkKeyboardModifiers()
-		local mouseButtons = eventtap.checkMouseButtons()
-		if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
-			mod.altPressed = true
-			if mod.foundMagicMouse then
-				--------------------------------------------------------------------------------
-				-- This prevents the Magic Mouse from scrolling horizontally or vertically:
-				--------------------------------------------------------------------------------
-				return true
-			else
-				--------------------------------------------------------------------------------
-				-- Code to handle MECHANICAL MOUSES (i.e. not Magic Mouse):
-				--------------------------------------------------------------------------------
-				local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
-				if fcp:timeline():isShowing() then
-					local zoomAmount = fcp:timeline():toolbar():appearance():show():zoomAmount()
-					if mod.scrollDirection == "normal" then
-						if direction >= 1 then
-							zoomAmount:increment()
-						else
-							zoomAmount:decrement()
-						end
-					else
-						if direction >= 1 then
-							zoomAmount:decrement()
-						else
-							zoomAmount:increment()
-						end
-					end
-					return true
-				end
-			end
-		else
-			--------------------------------------------------------------------------------
-			-- False alarm - OPTION isn't being pressed:
-			--------------------------------------------------------------------------------
-			mod.altPressed = false
-		end
-	end):start()
+        --------------------------------------------------------------------------------
+        -- Setup Mouse & Keyword Checkers:
+        --------------------------------------------------------------------------------
+        local mods = eventtap.checkKeyboardModifiers()
+        local mouseButtons = eventtap.checkMouseButtons()
+        if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
+            mod.altPressed = true
+            if mod.foundMagicMouse then
+                --------------------------------------------------------------------------------
+                -- This prevents the Magic Mouse from scrolling horizontally or vertically:
+                --------------------------------------------------------------------------------
+                return true
+            else
+                --------------------------------------------------------------------------------
+                -- Code to handle MECHANICAL MOUSES (i.e. not Magic Mouse):
+                --------------------------------------------------------------------------------
+                local direction = event:getProperty(eventtap.event.properties.scrollWheelEventDeltaAxis1)
+                if fcp:timeline():isShowing() then
+                    local zoomAmount = fcp:timeline():toolbar():appearance():show():zoomAmount()
+                    if mod.scrollDirection == "normal" then
+                        if direction >= 1 then
+                            zoomAmount:increment()
+                        else
+                            zoomAmount:decrement()
+                        end
+                    else
+                        if direction >= 1 then
+                            zoomAmount:decrement()
+                        else
+                            zoomAmount:increment()
+                        end
+                    end
+                    return true
+                end
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- False alarm - OPTION isn't being pressed:
+            --------------------------------------------------------------------------------
+            mod.altPressed = false
+        end
+    end):start()
 
-	--------------------------------------------------------------------------------
-	-- Detect when OPTION key is released:
-	--------------------------------------------------------------------------------
-	mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)
-		if mod.altPressed and tools.tableCount(event:getFlags()) == 0 then
+    --------------------------------------------------------------------------------
+    -- Detect when OPTION key is released:
+    --------------------------------------------------------------------------------
+    mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)
+        if mod.altPressed and tools.tableCount(event:getFlags()) == 0 then
 
-			--------------------------------------------------------------------------------
-			-- Reset everything:
-			--------------------------------------------------------------------------------
-			mod.altPressed = false
-			mod.lastPosition = nil
+            --------------------------------------------------------------------------------
+            -- Reset everything:
+            --------------------------------------------------------------------------------
+            mod.altPressed = false
+            mod.lastPosition = nil
 
-			--------------------------------------------------------------------------------
-			-- Hide the Appearance Popup:
-			--------------------------------------------------------------------------------
-			local appearance = fcp:timeline():toolbar():appearance()
-			if appearance and appearance:isShowing() then
-				appearance:hide()
-			end
+            --------------------------------------------------------------------------------
+            -- Hide the Appearance Popup:
+            --------------------------------------------------------------------------------
+            local appearance = fcp:timeline():toolbar():appearance()
+            if appearance and appearance:isShowing() then
+                appearance:hide()
+            end
 
-		end
-	end):start()
+        end
+    end):start()
 
 end
 
@@ -520,11 +511,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.mousezoom",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.preferences.app"]	= "prefs",
-	}
+    id = "finalcutpro.timeline.mousezoom",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.preferences.app"] = "prefs",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -532,62 +523,61 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Version Check:
-	--------------------------------------------------------------------------------
-	local disabled = false
-	local osVersion = tools.macOSVersion()
-	if semver(osVersion) >= semver("10.12") then
-		touchdevice = require("hs._asm.undocumented.touchdevice")
-	else
-		--------------------------------------------------------------------------------
-		-- Setup Menubar Preferences Panel:
-		--------------------------------------------------------------------------------
-		if deps.prefs.panel then
-			deps.prefs.panel
-				--------------------------------------------------------------------------------
-				-- Add Preferences Checkbox:
-				--------------------------------------------------------------------------------
-				:addCheckbox(101,
-				{
-					label = i18n("allowZoomingWithOptionKey") .. " (requires macOS 10.12 or greater)",
-					onchange = function() end,
-					checked = false,
-					disabled = true,
-				}
-			)
-		end
-		return false
-	end
+    --------------------------------------------------------------------------------
+    -- Version Check:
+    --------------------------------------------------------------------------------
+    local osVersion = tools.macOSVersion()
+    if semver(osVersion) >= semver("10.12") then
+        touchdevice = require("hs._asm.undocumented.touchdevice")
+    else
+        --------------------------------------------------------------------------------
+        -- Setup Menubar Preferences Panel:
+        --------------------------------------------------------------------------------
+        if deps.prefs.panel then
+            deps.prefs.panel
+                --------------------------------------------------------------------------------
+                -- Add Preferences Checkbox:
+                --------------------------------------------------------------------------------
+                :addCheckbox(101,
+                {
+                    label = i18n("allowZoomingWithOptionKey") .. " (requires macOS 10.12 or greater)",
+                    onchange = function() end,
+                    checked = false,
+                    disabled = true,
+                }
+            )
+        end
+        return false
+    end
 
-	--------------------------------------------------------------------------------
-	-- Cache Scroll Direction:
-	--------------------------------------------------------------------------------
-	mod.scrollDirection = mouse.scrollDirection()
+    --------------------------------------------------------------------------------
+    -- Cache Scroll Direction:
+    --------------------------------------------------------------------------------
+    mod.scrollDirection = mouse.scrollDirection()
 
-	--------------------------------------------------------------------------------
-	-- Update:
-	--------------------------------------------------------------------------------
-	mod.update()
+    --------------------------------------------------------------------------------
+    -- Update:
+    --------------------------------------------------------------------------------
+    mod.update()
 
-	--------------------------------------------------------------------------------
-	-- Setup Menubar Preferences Panel:
-	--------------------------------------------------------------------------------
-	if deps.prefs.panel then
-		deps.prefs.panel
-			--------------------------------------------------------------------------------
-			-- Add Preferences Checkbox:
-			--------------------------------------------------------------------------------
-			:addCheckbox(101,
-			{
-				label = i18n("allowZoomingWithOptionKey"),
-				onchange = function(_, params) mod.enabled(params.checked) end,
-				checked = mod.enabled,
-			}
-		)
-	end
+    --------------------------------------------------------------------------------
+    -- Setup Menubar Preferences Panel:
+    --------------------------------------------------------------------------------
+    if deps.prefs.panel then
+        deps.prefs.panel
+            --------------------------------------------------------------------------------
+            -- Add Preferences Checkbox:
+            --------------------------------------------------------------------------------
+            :addCheckbox(101,
+            {
+                label = i18n("allowZoomingWithOptionKey"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = mod.enabled,
+            }
+        )
+    end
 
-	return mod
+    return mod
 end
 
 return plugin

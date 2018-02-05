@@ -13,18 +13,27 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("iMessage")
 
-local messages									= require("hs.messages")
-local dialog									= require("hs.dialog")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local messages                                  = require("hs.messages")
+local dialog                                    = require("hs.dialog")
 
-local config									= require("cp.config")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config                                    = require("cp.config")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
 local PRIORITY = 300
 
 --------------------------------------------------------------------------------
@@ -44,19 +53,19 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.update()
-	if mod.enabled() then
-		if mod.target() ~= nil and mod.watchId == nil then
-			mod.watchId = mod.notifications.watch({
-				success	= mod.sendNotification,
-				failure = mod.sendNotification,
-			})
-		end
-	else
-		if mod.watchId ~= nil then
-			mod.notifications.unwatch(mod.watchId)
-			mod.watchId = nil
-		end
-	end
+    if mod.enabled() then
+        if mod.target() ~= nil and mod.watchId == nil then
+            mod.watchId = mod.notifications.watch({
+                success = mod.sendNotification,
+                failure = mod.sendNotification,
+            })
+        end
+    else
+        if mod.watchId ~= nil then
+            mod.notifications.unwatch(mod.watchId)
+            mod.watchId = nil
+        end
+    end
 end
 
 --- plugins.finalcutpro.notifications.imessage.enabled <cp.prop: boolean>
@@ -80,10 +89,10 @@ mod.target = config.prop("iMessageTarget")
 --- Returns:
 ---  * None
 function mod.sendNotification(message)
-	local iMessageTarget = mod.target()
-	if iMessageTarget then
-		messages.iMessage(iMessageTarget, message)
-	end
+    local iMessageTarget = mod.target()
+    if iMessageTarget then
+        messages.iMessage(iMessageTarget, message)
+    end
 end
 
 --- plugins.finalcutpro.notifications.imessage.init() -> none
@@ -96,8 +105,8 @@ end
 --- Returns:
 ---  * None
 function mod.init(notifications)
-	mod.notifications = notifications
-	mod.update()
+    mod.notifications = notifications
+    mod.update()
 end
 
 --------------------------------------------------------------------------------
@@ -106,107 +115,107 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.notifications.imessage",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.notifications.manager"]			= "manager",
-		["core.preferences.panels.notifications"]		= "prefs",
-		["core.preferences.manager"]					= "prefsManager",		
-	}
+    id = "finalcutpro.notifications.imessage",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.notifications.manager"]           = "manager",
+        ["core.preferences.panels.notifications"]       = "prefs",
+        ["core.preferences.manager"]                    = "prefsManager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	mod.init(deps.manager)
+    mod.init(deps.manager)
 
-	--------------------------------------------------------------------------------
-	-- Setup Preferences Panel:
-	--------------------------------------------------------------------------------
-	if deps.prefs then
-		deps.prefs
-			:addContent(PRIORITY+1, [[				
-				<style>
-					.iMessageEnable {
-						margin-bottom: 10px !important;
-					}
-					.testiMessage {		
-						float:left;										
-						margin-top: 5px;
-						margin-bottom: 10px;	
-						clear: both;					
-					}
-					.openMessages {		
-						float:left;										
-						margin-top: 5px;
-						margin-bottom: 10px;
-						margin-left:-15px;	
-					}
-				</style>	
-				<br />
-				<br />
-				<hr />		
-			]], true)
-			:addHeading(PRIORITY+2, i18n("iMessageNotifications"))
-			:addCheckbox(PRIORITY+3,
-				{
-					label = i18n("enableiMessageNotifications"),
-					onchange = function(_, params) 
-						if mod.target() and mod.target() ~= "" then 
-							mod.enabled(params.checked)
-						else
-							dialog.webviewAlert(deps.prefsManager.getWebview(), function() 
-								deps.prefsManager.injectScript([[
-									document.getElementById("iMessageEnable").checked = false;
-								]])
-							end, i18n("iMessageMissingDestination"), i18n("iMessageMissingMessage"), i18n("ok"))
-						end
-					end,
-					checked = mod.enabled,
-					id = "iMessageEnable",
-					class = "iMessageEnable",
-				}
-			)
-			:addTextbox(PRIORITY+4,
-				{
-					label = i18n("iMessageDestination") .. ":",
-					value = mod.target(),
-					class = "api",
-					onchange = function(_, params)
-						mod.target(params.value)
-					end,
-				}
-			)
-			:addButton(PRIORITY+5,
-				{
-					label = i18n("sendTestNotification"),
-					onclick = function(_, params)
-						mod.sendNotification(i18n("thisIsATest"))
-					end,
-					class = "testiMessage",
-				}
-			)			
-			:addButton(PRIORITY+6,
-				{
-					label = i18n("openMessages"),
-					onclick = function(_, params)
-						os.execute("open /Applications/Messages.app")
-					end,
-					class = "openMessages",
-				}
-			)			
-			:addButton(PRIORITY+7,
-				{
-					label = i18n("openContacts"),
-					onclick = function(_, params)
-						os.execute("open /Applications/Contacts.app")
-					end,
-					class = "openMessages",
-				}
-			)			
-	end
-	return mod
+    --------------------------------------------------------------------------------
+    -- Setup Preferences Panel:
+    --------------------------------------------------------------------------------
+    if deps.prefs then
+        deps.prefs
+            :addContent(PRIORITY+1, [[
+                <style>
+                    .iMessageEnable {
+                        margin-bottom: 10px !important;
+                    }
+                    .testiMessage {
+                        float:left;
+                        margin-top: 5px;
+                        margin-bottom: 10px;
+                        clear: both;
+                    }
+                    .openMessages {
+                        float:left;
+                        margin-top: 5px;
+                        margin-bottom: 10px;
+                        margin-left:-15px;
+                    }
+                </style>
+                <br />
+                <br />
+                <hr />
+            ]], true)
+            :addHeading(PRIORITY+2, i18n("iMessageNotifications"))
+            :addCheckbox(PRIORITY+3,
+                {
+                    label = i18n("enableiMessageNotifications"),
+                    onchange = function(_, params)
+                        if mod.target() and mod.target() ~= "" then
+                            mod.enabled(params.checked)
+                        else
+                            dialog.webviewAlert(deps.prefsManager.getWebview(), function()
+                                deps.prefsManager.injectScript([[
+                                    document.getElementById("iMessageEnable").checked = false;
+                                ]])
+                            end, i18n("iMessageMissingDestination"), i18n("iMessageMissingMessage"), i18n("ok"))
+                        end
+                    end,
+                    checked = mod.enabled,
+                    id = "iMessageEnable",
+                    class = "iMessageEnable",
+                }
+            )
+            :addTextbox(PRIORITY+4,
+                {
+                    label = i18n("iMessageDestination") .. ":",
+                    value = mod.target(),
+                    class = "api",
+                    onchange = function(_, params)
+                        mod.target(params.value)
+                    end,
+                }
+            )
+            :addButton(PRIORITY+5,
+                {
+                    label = i18n("sendTestNotification"),
+                    onclick = function()
+                        mod.sendNotification(i18n("thisIsATest"))
+                    end,
+                    class = "testiMessage",
+                }
+            )
+            :addButton(PRIORITY+6,
+                {
+                    label = i18n("openMessages"),
+                    onclick = function()
+                        os.execute("open /Applications/Messages.app")
+                    end,
+                    class = "openMessages",
+                }
+            )
+            :addButton(PRIORITY+7,
+                {
+                    label = i18n("openContacts"),
+                    onclick = function()
+                        os.execute("open /Applications/Contacts.app")
+                    end,
+                    class = "openMessages",
+                }
+            )
+    end
+    return mod
 end
 
 return plugin

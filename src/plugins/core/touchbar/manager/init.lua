@@ -45,17 +45,19 @@ local touchbar                                  = require("hs._asm.undocumented.
 -- THE MODULE - WIDGETS:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 --- === plugins.core.touchbar.manager.widgets ===
 ---
 --- Touch Bar Widgets Manager
 
-local mod = {}
-
 local widgets = {}
-widgets._items = {}
-
 mod.widgets = widgets
+
+-- plugins.core.touchbar.manager.widgets._items -> table
+-- Variable
+-- Touch Bar Widget Items
+widgets._items = {}
 
 --- plugins.core.touchbar.manager.widgets:new(id, params) -> table
 --- Method
@@ -164,16 +166,24 @@ end
 --
 --------------------------------------------------------------------------------
 
--- Touch Bar Items:
+-- plugins.core.touchbar.manager._tbItems -> table
+-- Variable
+-- Touch Bar Items.
 mod._tbItems = {}
 
--- Touch Bar Item IDs:
+-- plugins.core.touchbar.manager._tbItemIDs -> table
+-- Variable
+-- Touch Bar Item IDs.
 mod._tbItemIDs = {}
 
--- Group Statuses:
+-- plugins.core.touchbar.manager._groupStatus -> table
+-- Variable
+-- Group Statuses.
 mod._groupStatus = {}
 
--- Current Sub Group Statuses:
+-- plugins.core.touchbar.manager._currentSubGroup -> table
+-- Variable
+-- Current Touch Bar Sub Group Statuses.
 mod._currentSubGroup = config.prop("touchBarCurrentSubGroup", {})
 
 --- plugins.core.touchbar.manager.defaultGroup -> string
@@ -576,7 +586,11 @@ local function addWidget(icon, action, label, id)
             local params = widget:params()
             if params and params.item then
                 table.insert(mod._tbItemIDs, widget:id())
-                table.insert(mod._tbItems, params.item)
+                if type(params.item) == "function" then
+                    table.insert(mod._tbItems, params.item())
+                else
+                    table.insert(mod._tbItems, params.item)
+                end
                 mod._tbWidgetID[widget:id()] = id
             end
         end
@@ -1024,9 +1038,12 @@ end
 --- Virtual Touch Bar Update Location Callback
 
 local updateLocationCallback = {}
-updateLocationCallback._items = {}
-
 mod.virtual.updateLocationCallback = updateLocationCallback
+
+-- plugins.core.touchbar.manager.virtual.updateLocationCallback._items -> table
+-- Variable
+-- Items
+updateLocationCallback._items = {}
 
 --- plugins.core.touchbar.manager.virtual.updateLocationCallback:new(id, callbackFn) -> table
 --- Method

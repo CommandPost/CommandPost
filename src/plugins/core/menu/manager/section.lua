@@ -13,10 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log									= require("hs.logger").new("section")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fnutils 								= require("hs.fnutils")
 local inspect								= require("hs.inspect")
+local timer                                 = require("hs.timer")
 
 --------------------------------------------------------------------------------
 --
@@ -25,11 +33,22 @@ local inspect								= require("hs.inspect")
 --------------------------------------------------------------------------------
 local section = {}
 
+--- plugins.core.menu.manager.section.DEFAULT_PRIORITY -> number
+--- Constant
+--- The default priority
 section.DEFAULT_PRIORITY = 0
+
+--- plugins.core.menu.manager.section.WARNING_LIMIT -> number
+--- Constant
+--- The limit of how much time a menu item takes to load before we post warnings to the Error Log
+section.WARNING_LIMIT = 0.005
 
 --- plugins.core.menu.manager.section:new() -> section
 --- Method
 --- Creates a new menu section, which can have items and sub-menus added to it.
+---
+--- Parameters:
+---  * None
 ---
 --- Returns:
 ---  * section - The section that was created.
@@ -43,12 +62,28 @@ function section:new()
 	return o
 end
 
--- TODO: Add documentation
+--- plugins.core.menu.manager.section:setDisabledFn(disabledFn) -> none
+--- Method
+--- Sets the Disabled Function
+---
+--- Parameters:
+---  * disabledFn - The disabled function.
+---
+--- Returns:
+---  * None
 function section:setDisabledFn(disabledFn)
 	self._disabledFn = disabledFn
 end
 
--- TODO: Add documentation
+--- plugins.core.menu.manager.section:isDisabled() -> voolean
+--- Method
+--- Gets the disabled status
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the section is disabled, otherwise `false`
 function section:isDisabled()
 	return self._disabledFn and self._disabledFn()
 end
@@ -106,7 +141,15 @@ function section:addItems(priority, itemsFn)
 	return self
 end
 
--- TODO: Add documentation
+--- plugins.core.menu.manager.section:addSeparator(priority) -> section
+--- Method
+--- Adds a new seperator with specified priority.
+---
+--- Parameters:
+---  * `priority`	- The priority of the items within the section. Lower numbers appear first.
+---
+--- Returns:
+---  * section - The new section that was created.
 function section:addSeparator(priority)
 	return self:addItem(priority, function()
 		return { title = "-" }
@@ -167,47 +210,14 @@ function section:generateMenuTable()
 	if self:isDisabled() then
 		return nil
 	end
-
-	local menuTable = {}
-	for _,generator in ipairs(self._generators) do
-		if generator.itemFn then
-			local item = generator.itemFn()
-			if item then
-				menuTable[#menuTable + 1] = item
-			end
-		elseif generator.section then
-			local items = generator.section:generateMenuTable()
-			if items then
-				fnutils.concat(menuTable, items)
-			end
-		elseif generator.itemsFn then
-			local items = generator.itemsFn()
-			if items then
-				fnutils.concat(menuTable, items)
-			end
-		end
-	end
-	return menuTable
-end
-
--- TODO: Add documentation
-function section:generateMenuTableDEBUG()
-
-	local warningDiff = 0.005
-
-	if self:isDisabled() then
-		return nil
-	end
-
-	local timer = require("hs.timer")
 	local menuTable = {}
 	for _,generator in ipairs(self._generators) do
 		local start = timer.secondsSinceEpoch()
 		if generator.itemFn then
 			local item = generator.itemFn()
 			local diff = timer.secondsSinceEpoch() - start
-			if diff > warningDiff then
-				log.df("generated '%s' menu in %f seconds", item and item.title or "N/A", diff)
+			if diff > section.WARNING_LIMIT then
+				log.wf([[Generated "%s" menu in %f seconds]], item and item.title or "N/A", diff)
 			end
 			if item then
 				menuTable[#menuTable + 1] = item
@@ -215,8 +225,8 @@ function section:generateMenuTableDEBUG()
 		elseif generator.section then
 			local items = generator.section:generateMenuTable()
 			local diff = timer.secondsSinceEpoch() - start
-			if diff > warningDiff then
-				log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+			if diff > section.WARNING_LIMIT then
+				log.wf([[Generated "%s" menu in %f seconds]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
 			end
 			if items then
 				fnutils.concat(menuTable, items)
@@ -224,8 +234,8 @@ function section:generateMenuTableDEBUG()
 		elseif generator.itemsFn then
 			local items = generator.itemsFn()
 			local diff = timer.secondsSinceEpoch() - start
-			if diff > warningDiff then
-				log.df("generated '%s' menu in %f seconds", table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
+			if diff > section.WARNING_LIMIT then
+				log.wf([[Generated "%s" menu in %f seconds.]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
 			end
 			if items then
 				fnutils.concat(menuTable, items)

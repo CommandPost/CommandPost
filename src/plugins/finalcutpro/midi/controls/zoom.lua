@@ -13,8 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("zoomMIDI")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp				= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -33,7 +40,7 @@ local mod = {}
 ---
 --- Returns:
 ---  * None
-function mod.control(metadata, deviceName)
+function mod.control(metadata)
 	if type(metadata.fourteenBitValue) == "number" then
 		local appearance = fcp:timeline():toolbar():appearance()
 		if appearance then

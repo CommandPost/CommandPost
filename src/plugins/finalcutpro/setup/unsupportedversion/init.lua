@@ -1,11 +1,42 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.setup.unsupportedversion ===
+---
+--- Unsupported version setup panel.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp			= require("cp.apple.finalcutpro")
 local config		= require("cp.config")
-local prop			= require("cp.prop")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.setup.unsupportedversion.notifiedVersion <cp.prop: string>
+--- Variable
+--- Notified Version
 mod.notifiedVersion = config.prop("finalcutproUnsupportedVersionNotified", nil)
 
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
 	id				= "finalcutpro.setup.unsupportedversion",
 	group			= "finalcutpro",
@@ -14,12 +45,19 @@ local plugin = {
 	}
 }
 
-function plugin.init(deps, env)
-	-- The last version we notified about
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+	-- The last version we notified about:
+	--------------------------------------------------------------------------------
 	local notified = mod.notifiedVersion
 	local notNotified = notified:EQUALS(fcp.getVersion):NOT()
-
-	-- Require setup if FCP is unsupported and we have not notified about this version.
+    --------------------------------------------------------------------------------
+	-- Require setup if FCP is unsupported and we have not notified about
+	-- this version:
+	--------------------------------------------------------------------------------
 	fcp.isUnsupported:AND(notNotified):watch(function(unsupported)
 		if unsupported then
 			local setup = deps.setup
@@ -46,9 +84,7 @@ function plugin.init(deps, env)
 			setup.show()
 		end
 	end, true)
-
 	return mod
 end
-
 
 return plugin

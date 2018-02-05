@@ -24,7 +24,6 @@ local log                                       = require("hs.logger").new("shar
 --------------------------------------------------------------------------------
 local fs                                        = require("hs.fs")
 local host                                      = require("hs.host")
-local image                                     = require("hs.image")
 local notify                                    = require("hs.notify")
 local pathwatcher                               = require("hs.pathwatcher")
 
@@ -111,8 +110,6 @@ function mod.listFilesMenu()
         --------------------------------------------------------------------------------
         -- Get list of files:
         --------------------------------------------------------------------------------
-        local sharedXMLFiles = {}
-
         local emptySharedXMLFiles = true
         local xmlSharingPath = mod.sharingPath()
 
@@ -127,14 +124,14 @@ function mod.listFilesMenu()
 
                 if tools.doesDirectoryExist(xmlSharingPath .. "/" .. folder) and folder ~= "." and folder ~= ".." then
 
-                    submenu = {}
+                    local submenu = {}
                     for file in fs.dir(xmlSharingPath .. "/" .. folder) do
                         if file:sub(-7) == ".fcpxml" then
                             emptySharedXMLFiles = false
                             local xmlPath = xmlSharingPath .. folder .. "/" .. file
 
                             local attributes = fs.attributes(xmlPath)
-
+                            local creation
                             if attributes then
                                 creation = attributes["creation"]
                             end
@@ -197,7 +194,7 @@ local function sharedXMLFileWatcher(files)
 
                 if host.localizedName() ~= editorName then
                     local xmlSharingPath = mod.sharingPath()
-                    sharedXMLNotification = notify.new(function() fcp:importXML(file) end)
+                    notify.new(function() fcp:importXML(file) end)
                         --:setIdImage(image.imageFromPath(config.iconPath))
                         :title("Shared XML File Received")
                         :subTitle(file:sub(string.len(xmlSharingPath) + 1 + string.len(editorName) + 1, -8))

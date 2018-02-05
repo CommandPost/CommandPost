@@ -13,10 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("fcpwatch")
 
-local application		= require("hs.application")
-local axuielement 		= require("hs._asm.axuielement")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local eventtap			= require("hs.eventtap")
 local fnutils			= require("hs.fnutils")
 local fs				= require("hs.fs")
@@ -28,14 +33,13 @@ local pasteboard		= require("hs.pasteboard")
 local pathwatcher		= require("hs.pathwatcher")
 local timer				= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
-local just				= require("cp.just")
-local prop				= require("cp.prop")
 local tools				= require("cp.tools")
-
-local uuid				= host.uuid
 
 --------------------------------------------------------------------------------
 --
@@ -43,6 +47,11 @@ local uuid				= host.uuid
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- uuid -> string
+-- Variable
+-- A unique ID.
+local uuid = host.uuid
 
 --- plugins.finalcutpro.watchfolders.panels.media.filesInTransit
 --- Variable
@@ -133,7 +142,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.controllerCallback(id, params)
+function mod.controllerCallback(_, params)
 	if params and params.action and params.action == "remove" then
 		mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
 		mod.removeWatcher(params.path)
@@ -157,7 +166,7 @@ function mod.generateTable()
 	local watchFoldersHTML = ""
 	local watchFolders =  mod.watchFolders()
 
-	for i, v in ipairs(watchFolders) do
+	for _, v in ipairs(watchFolders) do
 		local uniqueUUID = string.gsub(uuid(), "-", "")
 		watchFoldersHTML = watchFoldersHTML .. [[
 				<tr>
@@ -182,7 +191,7 @@ function mod.generateTable()
 	end
 
     if watchFoldersHTML == "" then
-    	watchFoldersHTML = [[
+			watchFoldersHTML = [[
 				<tr>
 					<td class="rowPath">Empty</td>
 					<td class="rowRemove"></td>
@@ -372,7 +381,7 @@ function mod.insertFilesIntoFinalCutPro(files)
 	-- Add Tags:
 	--------------------------------------------------------------------------------
 	mod.disableImport = true
-	for i, file in pairs(files) do
+	for _, file in pairs(files) do
 		local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
 		local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
 		local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
@@ -418,7 +427,7 @@ function mod.insertFilesIntoFinalCutPro(files)
 	-- Write URL to Pasteboard:
 	--------------------------------------------------------------------------------
 	local objects = {}
-	for i, v in pairs(files) do
+	for _, v in pairs(files) do
 		objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
 	end
 	local result = pasteboard.writeObjects(objects)
@@ -430,9 +439,9 @@ function mod.insertFilesIntoFinalCutPro(files)
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
+	result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
 	if result then
-		local result = fcp:selectMenu({"Window", "Go To", "Timeline"})
+		fcp:selectMenu({"Window", "Go To", "Timeline"})
 	else
 		dialog.displayErrorMessage("Failed to activate timeline. Error occured in Final Cut Pro Media Watch Folder.")
 		return nil
@@ -441,9 +450,9 @@ function mod.insertFilesIntoFinalCutPro(files)
 	--------------------------------------------------------------------------------
 	-- Perform Paste:
 	--------------------------------------------------------------------------------
-	local result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
+	result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
 	if result then
-		local result = fcp:selectMenu({"Edit", "Paste as Connected Clip"})
+		fcp:selectMenu({"Edit", "Paste as Connected Clip"})
 	else
 		dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut. Error occured in Final Cut Pro Media Watch Folder.")
 		return nil
@@ -490,7 +499,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.importFile(file, tag)
+function mod.importFile(file)
 
 	--------------------------------------------------------------------------------
 	-- Check to see if Final Cut Pro is running:
@@ -514,7 +523,7 @@ function mod.importFile(file, tag)
 		-- Import All:
 		--------------------------------------------------------------------------------
 		importAll = true
-		for i, v in pairs(mod.notifications) do
+		for i, _ in pairs(mod.notifications) do
 			files[#files + 1] = i
 		end
 	else
@@ -534,7 +543,7 @@ function mod.importFile(file, tag)
 	--------------------------------------------------------------------------------
 	local savedNotifications = mod.savedNotifications()
 	if importAll then
-		for i, v in pairs(mod.notifications) do
+		for i, _ in pairs(mod.notifications) do
 			mod.notifications[i]:withdraw()
 			mod.notifications[i] = nil
 			savedNotifications[i] = nil
@@ -773,7 +782,7 @@ function mod.setupWatchers()
 	-- Setup Watchers:
 	--------------------------------------------------------------------------------
 	local watchFolders = mod.watchFolders()
-	for i, v in ipairs(watchFolders) do
+	for _, v in ipairs(watchFolders) do
 		mod.newWatcher(v)
 	end
 
@@ -781,7 +790,7 @@ function mod.setupWatchers()
 	-- Re-create any Un-clicked Notifications from Previous Session:
 	--------------------------------------------------------------------------------
 	local savedNotifications = mod.savedNotifications()
-	for file,tag in pairs(savedNotifications) do
+	for file,_ in pairs(savedNotifications) do
 		if tools.doesFileExist(file) then
 			mod.createNotification(file)
 		else
@@ -802,7 +811,7 @@ end
 ---
 --- Returns:
 ---  * Table of the module.
-function mod.init(deps, env)
+function mod.init(deps)
 
 	--------------------------------------------------------------------------------
 	-- Ignore Panel if Final Cut Pro isn't installed.
@@ -852,21 +861,21 @@ function mod.init(deps, env)
 			{
 				label		= i18n("importToTimeline"),
 				checked		= mod.insertIntoTimeline,
-				onchange	= function(id, params) mod.insertIntoTimeline(params.checked) end,
+				onchange	= function(_, params) mod.insertIntoTimeline(params.checked) end,
 			}
 		)
 		:addCheckbox(19,
 			{
 				label		= i18n("automaticallyImport"),
 				checked		= mod.automaticallyImport,
-				onchange	= function(id, params) mod.automaticallyImport(params.checked) end,
+				onchange	= function(_, params) mod.automaticallyImport(params.checked) end,
 			}
 		)
 		:addCheckbox(20,
 			{
 				label		= i18n("deleteAfterImport"),
 				checked		= mod.deleteAfterImport,
-				onchange	= function(id, params) mod.deleteAfterImport(params.checked) end,
+				onchange	= function(_, params) mod.deleteAfterImport(params.checked) end,
 			}
 		)
 		:addParagraph(21, i18n("deleteNote"), true, "deleteNote")
@@ -878,7 +887,7 @@ function mod.init(deps, env)
 				label		= "Video Files:",
 				class		= "watchFolderTextBox",
 				value		= mod.videoTag(),
-				onchange	= function(id, params) mod.videoTag(params.value) end,
+				onchange	= function(_, params) mod.videoTag(params.value) end,
 				placeholder = i18n("enterVideoTag"),
 			})
 		:addTextbox(25,
@@ -887,7 +896,7 @@ function mod.init(deps, env)
 				label		= "Audio Files:",
 				class		= "watchFolderTextBox",
 				value		= mod.audioTag(),
-				onchange	= function(id, params) mod.audioTag(params.value) end,
+				onchange	= function(_, params) mod.audioTag(params.value) end,
 				placeholder = i18n("enterAudioTag"),
 			})
 		:addTextbox(26,
@@ -896,7 +905,7 @@ function mod.init(deps, env)
 				label		= "Image Files:",
 				class		= "watchFolderTextBox",
 				value 		= mod.imageTag(),
-				onchange	= function(id, params) mod.imageTag(params.value) end,
+				onchange	= function(_, params) mod.imageTag(params.value) end,
 				placeholder = i18n("enterImageTag"),
 			})
 		--------------------------------------------------------------------------------

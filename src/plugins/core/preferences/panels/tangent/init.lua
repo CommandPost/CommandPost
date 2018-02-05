@@ -13,11 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsTangent")
 
-local image										= require("hs.image")
-
-local tools										= require("cp.tools")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local image                                     = require("hs.image")
 
 --------------------------------------------------------------------------------
 --
@@ -25,25 +25,25 @@ local tools										= require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.panels.tangent",
-	group			= "core",
-	dependencies	= {
-		["core.preferences.manager"]	= "manager",
-	}
+    id              = "core.preferences.panels.tangent",
+    group           = "core",
+    dependencies    = {
+        ["core.preferences.manager"]    = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	return deps.manager.addPanel({
-		priority 	= 2032.1,
-		id			= "tangent",
-		label		= i18n("tangentPanelLabel"),
-		image		= image.imageFromPath(env:pathToAbsolute("/tangent.icns")),
-		tooltip		= i18n("tangentPanelTooltip"),
-		height		= 430,
-	})
+    return deps.manager.addPanel({
+        priority    = 2032.1,
+        id          = "tangent",
+        label       = i18n("tangentPanelLabel"),
+        image       = image.imageFromPath(env:pathToAbsolute("/tangent.icns")),
+        tooltip     = i18n("tangentPanelTooltip"),
+        height      = 430,
+    })
 end
 
 return plugin

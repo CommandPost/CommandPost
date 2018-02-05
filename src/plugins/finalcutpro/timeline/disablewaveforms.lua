@@ -13,23 +13,34 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("disablewaveforms")
 
-local application		= require("hs.application")
-
-local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
-local config			= require("cp.config")
-local prop				= require("cp.prop")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog            = require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 10001
-local DEFAULT_VALUE		= false
-local PREFERENCES_KEY 	= "FFAudioDisableWaveformDrawing"
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 10001
+
+-- DEFAULT_VALUE -> boolean
+-- Constant
+-- Whether or not the feature is enabled by default.
+local DEFAULT_VALUE = false
+
+-- PREFERENCES_KEY -> number
+-- Constant
+-- Preferences key
+local PREFERENCES_KEY = "FFAudioDisableWaveformDrawing"
 
 --------------------------------------------------------------------------------
 --
@@ -38,40 +49,43 @@ local PREFERENCES_KEY 	= "FFAudioDisableWaveformDrawing"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.disablewaveforms.enabled <cp.prop: boolean>
+--- Variable
+--- Whether or not Waveforms are enabled.
 mod.enabled = prop.new(
-	function()
-		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-	end,
+    function()
+        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+    end,
 
-	function(value)
-		--------------------------------------------------------------------------------
-		-- If Final Cut Pro is running...
-		--------------------------------------------------------------------------------
-		local running = fcp:isRunning()
-		if running and not dialog.displayYesNoQuestion(i18n("togglingWaveformsRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
-			return
-		end
+    function(value)
+        --------------------------------------------------------------------------------
+        -- If Final Cut Pro is running...
+        --------------------------------------------------------------------------------
+        local running = fcp:isRunning()
+        if running and not dialog.displayYesNoQuestion(i18n("togglingWaveformsRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+            return
+        end
 
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-			return
-		end
+        --------------------------------------------------------------------------------
+        -- Update plist:
+        --------------------------------------------------------------------------------
+        if fcp:setPreference(PREFERENCES_KEY, value) == nil then
+            dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+            return
+        end
 
-		--------------------------------------------------------------------------------
-		-- Restart Final Cut Pro:
-		--------------------------------------------------------------------------------
-		if running and not fcp:restart() then
-			--------------------------------------------------------------------------------
-			-- Failed to restart Final Cut Pro:
-			--------------------------------------------------------------------------------
-			dialog.displayErrorMessage(i18n("failedToRestart"))
-			return
-		end
+        --------------------------------------------------------------------------------
+        -- Restart Final Cut Pro:
+        --------------------------------------------------------------------------------
+        if running and not fcp:restart() then
+            --------------------------------------------------------------------------------
+            -- Failed to restart Final Cut Pro:
+            --------------------------------------------------------------------------------
+            dialog.displayErrorMessage(i18n("failedToRestart"))
+            return
+        end
 
-	end
+    end
 )
 
 --------------------------------------------------------------------------------
@@ -80,12 +94,12 @@ mod.enabled = prop.new(
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.timeline.disablewaveforms",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.menu.timeline"]	= "menu",
-		["finalcutpro.commands"] 		= "fcpxCmds",
-	}
+    id              = "finalcutpro.timeline.disablewaveforms",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.menu.timeline"]   = "menu",
+        ["finalcutpro.commands"]        = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -93,18 +107,26 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableWaveformDrawing"),	fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
-	end)
+    --------------------------------------------------------------------------------
+    -- Setup Menu:
+    --------------------------------------------------------------------------------
+    if deps.menu then
+        deps.menu
+            :addItem(PRIORITY, function()
+                return { title = i18n("enableWaveformDrawing"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
+            end)
+    end
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpDisableWaveforms")
-		:groupedBy("hacks")
-		:whenActivated(function() mod.enabled:toggle() end)
+    --------------------------------------------------------------------------------
+    -- Setup Command:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        deps.fcpxCmds:add("cpDisableWaveforms")
+            :groupedBy("hacks")
+            :whenActivated(function() mod.enabled:toggle() end)
+    end
 
-	return mod
+    return mod
 
 end
 

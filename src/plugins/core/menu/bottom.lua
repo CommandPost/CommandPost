@@ -21,27 +21,27 @@ local PRIORITY = 9999999
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.menu.bottom",
-	group			= "core",
-	dependencies	= {
-		["core.menu.manager"]	= "manager",
-	},
+    id              = "core.menu.bottom",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.manager"]   = "manager",
+    },
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	local bottom = dependencies.manager.addSection(PRIORITY)
+    local bottom = dependencies.manager.addSection(PRIORITY)
 
-	--------------------------------------------------------------------------------
-	-- Add separator:
-	--------------------------------------------------------------------------------
-	bottom:addItem(0, function()
-		return { title = "-" }
-	end)
+    --------------------------------------------------------------------------------
+    -- Add separator:
+    --------------------------------------------------------------------------------
+    bottom:addItem(0, function()
+        return { title = "-" }
+    end)
 
-	return bottom
+    return bottom
 end
 
 return plugin

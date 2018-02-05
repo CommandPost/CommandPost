@@ -144,6 +144,19 @@ function tools.split(str, pat)
 	return t
 end
 
+--- cp.tools.isNumberString(value) -> boolean
+--- Function
+--- Returns whether or not value is a number string.
+---
+--- Parameters:
+---  * value - the string you want to check
+---
+--- Returns:
+---  * `true` if value is a number string, otherwise `false`.
+function tools.isNumberString(value)
+	return value:match("^[0-9\\.\\-]$") ~= nil
+end
+
 --- cp.tools.splitOnColumn() -> string
 --- Function
 --- Splits a string on a column.

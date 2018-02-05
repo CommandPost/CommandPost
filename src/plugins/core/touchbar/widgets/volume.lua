@@ -13,11 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("volume")
 
-local image				= require("hs.image")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local audiodevice		= require("hs.audiodevice")
-
+local image				= require("hs.image")
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 --------------------------------------------------------------------------------
@@ -25,7 +26,6 @@ local touchbar 			= require("hs._asm.undocumented.touchbar")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-
 local ID = "volume"
 
 --------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ function mod.init(deps)
 		group = "global",
 		text = "Volume Slider",
 		subText = "Adds a volume slider to the Touch Bar",
-		item = mod.widget(),
+		item = mod.widget,
 	}
 	deps.manager.widgets:new(id, params)
 

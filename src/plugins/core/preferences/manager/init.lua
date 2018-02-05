@@ -57,32 +57,32 @@ local mod = {}
 --- The WebView Label
 mod.WEBVIEW_LABEL = "preferences"
 
---- plugins.core.preferences.manager.DEFAULT_WINDOW_STYLE
+--- plugins.core.preferences.manager.DEFAULT_WINDOW_STYLE -> table
 --- Constant
 --- Default Webview Window Style of Preferences Window
 mod.DEFAULT_WINDOW_STYLE  = {"titled", "closable", "nonactivating"}
 
---- plugins.core.preferences.manager.DEFAULT_HEIGHT
+--- plugins.core.preferences.manager.DEFAULT_HEIGHT -> number
 --- Constant
 --- Default Height of Preferences Window
 mod.DEFAULT_HEIGHT = 338
 
---- plugins.core.preferences.manager.DEFAULT_WIDTH
+--- plugins.core.preferences.manager.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Width of Preferences Window
 mod.DEFAULT_WIDTH = 750
 
---- plugins.core.preferences.manager.DEFAULT_TITLE
+--- plugins.core.preferences.manager.DEFAULT_TITLE -> string
 --- Constant
 --- Default Title of Preferences Window
 mod.DEFAULT_TITLE = i18n("preferences")
 
---- plugins.core.preferences.manager._panels
+--- plugins.core.preferences.manager._panels -> table
 --- Variable
 --- Table containing panels.
 mod._panels = {}
 
---- plugins.core.preferences.manager._handlers
+--- plugins.core.preferences.manager._handlers -> table
 --- Variable
 --- Table containing handlers.
 mod._handlers = {}
@@ -234,7 +234,7 @@ end
 -- * frame - the frame of the `hs.webview`
 --
 -- Returns:
--- * Nothing
+-- * None
 local function windowCallback(action, webview, frame)
     if action == "closing" then
         if not hs.shuttingDown then

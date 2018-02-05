@@ -13,17 +13,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("globalConsole")
 
-local tools				= require("cp.tools")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local GROUP			= "global"
-local WIDGETS		= "widgets"
+local GROUP         = "global"
+local WIDGETS       = "widgets"
 
 --------------------------------------------------------------------------------
 --
@@ -32,30 +34,36 @@ local WIDGETS		= "widgets"
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- SHOW CONSOLE:
---------------------------------------------------------------------------------
+--- plugins.core.console.show() -> none
+--- Function
+--- Shows the Console
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.show()
 
-	if not mod.activator then
-		mod.activator = mod.actionmanager.getActivator("core.console")
-			:preloadChoices()
+    if not mod.activator then
+        mod.activator = mod.actionmanager.getActivator("core.console")
+            :preloadChoices()
 
-		--------------------------------------------------------------------------------
-		-- Restrict Allowed Handlers for Activator to current group:
-		--------------------------------------------------------------------------------
-		local allowedHandlers = {}
-		local handlerIds = mod.actionmanager.handlerIds()
-		for _,id in pairs(handlerIds) do
-			local handlerTable = tools.split(id, "_")
-			if handlerTable[2]~= WIDGETS and handlerTable[1] == GROUP then
-				table.insert(allowedHandlers, id)
-			end
-		end
-		mod.activator:allowHandlers(table.unpack(allowedHandlers))
+        --------------------------------------------------------------------------------
+        -- Restrict Allowed Handlers for Activator to current group:
+        --------------------------------------------------------------------------------
+        local allowedHandlers = {}
+        local handlerIds = mod.actionmanager.handlerIds()
+        for _,id in pairs(handlerIds) do
+            local handlerTable = tools.split(id, "_")
+            if handlerTable[2]~= WIDGETS and handlerTable[1] == GROUP then
+                table.insert(allowedHandlers, id)
+            end
+        end
+        mod.activator:allowHandlers(table.unpack(allowedHandlers)) -- luacheck: ignore
 
-	end
-	mod.activator:show()
+    end
+    mod.activator:show()
 
 end
 
@@ -65,30 +73,33 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.console",
-	group			= "core",
-	dependencies	= {
-		["core.commands.global"] 		= "global",
-		["core.action.manager"]			= "actionmanager",
-	}
+    id              = "core.console",
+    group           = "core",
+    dependencies    = {
+        ["core.commands.global"]        = "global",
+        ["core.action.manager"]         = "actionmanager",
+    }
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Initialise Module:
-	--------------------------------------------------------------------------------
-	mod.actionmanager = deps.actionmanager
+    --------------------------------------------------------------------------------
+    -- Initialise Module:
+    --------------------------------------------------------------------------------
+    mod.actionmanager = deps.actionmanager
 
-	--------------------------------------------------------------------------------
-	-- Add the command trigger:
-	--------------------------------------------------------------------------------
-	deps.global:add("cpGlobalConsole")
-		:groupedBy("commandPost")
-		:whenActivated(function() mod.show() end)
-		:activatedBy():ctrl():option():cmd("space")
+    --------------------------------------------------------------------------------
+    -- Add the command trigger:
+    --------------------------------------------------------------------------------
+    deps.global:add("cpGlobalConsole")
+        :groupedBy("commandPost")
+        :whenActivated(function() mod.show() end)
+        :activatedBy():ctrl():option():cmd("space")
 
-	return mod
+    return mod
 
 end
 
