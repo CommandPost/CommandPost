@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("prefPanel")
+--local log                                       = require("hs.logger").new("prefPanel")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -115,7 +115,7 @@ function panel:generateContent()
     local result = ""
 
     table.sort(self._uiItems, function(a, b) return a.priority < b.priority end)
-    for i,item in ipairs(self._uiItems) do
+    for _,item in ipairs(self._uiItems) do
         -- log.df("generating item %d:\n%s", i, item.html)
         if item.html then
             result = result .. "\n" .. tostring(item.html)
@@ -355,7 +355,7 @@ end
 ---  ** `label`     - The text label for the button. Defaults to the `value` if not provided.
 ---  ** `width`     - The width of the button in pixels.
 ---  ** `onclick`   - the function to execute when the button is clicked. The function should have the signature of `function(id, value)`, where `id` is the id of the button that was clicked, and `value` is the value of the button.
-function panel:addButton(priority, params, itemFn, customWidth)
+function panel:addButton(priority, params)
     params.id = params.id or uuid()
 
     if params.onclick then
