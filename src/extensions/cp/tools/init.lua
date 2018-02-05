@@ -588,7 +588,7 @@ end
 --- Returns:
 ---  * `true` if the directory exists otherwise `false`
 function tools.doesDirectoryExist(path)
-	if path then
+	if path and type(path) == "string" then
 	    local attr = fs.attributes(path)
     	return attr and attr.mode == 'directory'
     else
@@ -606,12 +606,15 @@ end
 --- Returns:
 ---  * `true` if the file exists otherwise `false`
 function tools.doesFileExist(path)
-	if path == nil then return nil end
-    local attr = fs.attributes(path)
-    if type(attr) == "table" then
-    	return true
+	if path and type(path) == "string" then
+        local attr = fs.attributes(path)
+        if type(attr) == "table" then
+            return true
+        else
+            return false
+        end
     else
-    	return false
+        return false
     end
 end
 
