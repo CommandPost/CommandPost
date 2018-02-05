@@ -36,7 +36,7 @@ local touchbar          = require("hs._asm.undocumented.touchbar")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.touchbar.widgets.touchbar.widget() -> `hs._asm.undocumented.touchbar.item`
+--- plugins.finalcutpro.touchbar.widgets.zoom.widget() -> `hs._asm.undocumented.touchbar.item`
 --- Function
 --- The Widget
 ---

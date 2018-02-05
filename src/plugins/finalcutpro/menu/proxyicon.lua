@@ -38,14 +38,14 @@ local ENABLED_DEFAULT = false
 --------------------------------------------------------------------------------
 local mod = {}
 
---- PROXY_ICON -> string
---- Constant
---- Proxy Icon
+-- PROXY_ICON -> string
+-- Constant
+-- Proxy Icon
 mod.PROXY_ICON = "🔴"
 
---- ORIGINAL_ICON -> string
---- Constant
---- Original Icon
+-- ORIGINAL_ICON -> string
+-- Constant
+-- Original Icon
 mod.ORIGINAL_ICON = "🔵"
 
 --- plugins.finalcutpro.menu.proxyicon.procyMenuIconEnabled <cp.prop: boolean>

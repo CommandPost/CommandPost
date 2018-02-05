@@ -203,7 +203,7 @@ mod.CACHE   = {}
 mod.IDS     = {}
 
 --- cp.plugins.IDS -> table
---- Variables
+--- Variable
 --- Plugin Status Codes
 mod.status = {
     loaded              = "loaded",

@@ -155,7 +155,7 @@ local function checkWatching()
     end
 end
 
---- plugins.finalcutpro.notifications.watchers -> watcher
+--- plugins.finalcutpro.notifications.manager.watchers -> watcher
 --- Variable
 --- Watchers
 mod.watchers = watcher.new(table.unpack(mod.EVENT_TYPES))

@@ -172,15 +172,15 @@ function mod.stepResize(direction)
     end
 end
 
--- plugins.finder.window.moveAndResize(option)
+-- windowStash(theWindow)
 -- Function
--- Move and resize the focused window.
+-- Saves the window in history.
 --
 -- Parameters:
---  * option - A string specifying the option, valid strings are: `halfleft`, `halfright`, `halfup`, `halfdown`, `cornerNW`, `cornerSW`, `cornerNE`, `cornerSE`, `center`, `fullscreen`, `expand`, `shrink`.
----
---- Returns:
----  * None
+--  * theWindow - The window to save.
+--
+-- Returns:
+--  * None
 local function windowStash(theWindow)
     local windowID = theWindow:id()
     local windowFrame = theWindow:frame()
