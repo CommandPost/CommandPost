@@ -555,9 +555,10 @@ function tools.safeFilename(value, defaultValue)
 	result = string.gsub(result, "\n", "")
 
 	--------------------------------------------------------------------------------
-	-- Limit to 255 characters (including extension):
+	-- Limit to 243 characters.
+	-- See: https://github.com/CommandPost/CommandPost/issues/1004#issuecomment-362986645
 	--------------------------------------------------------------------------------
-	result = string.sub(result, 1, 255 - 4)
+	result = string.sub(result, 1, 243)
 
 	return result
 
