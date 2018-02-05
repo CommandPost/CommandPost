@@ -64,17 +64,15 @@ end
 --- Alternatively, you can also supply a string with just the name.
 ---
 --- Parameters:
---- * `action`		- A table with the name/category/theme for the audio effect to apply, or a string with just the name.
+---  * `action`		- A table with the name/category/theme for the audio effect to apply, or a string with just the name.
 ---
 --- Returns:
---- * `true` if a matching audio effect was found and applied to the timeline.
+---  * `true` if a matching audio effect was found and applied to the timeline.
 function mod.apply(action)
 
 	--------------------------------------------------------------------------------
 	-- Get settings:
 	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:currentLanguage()
-
 	if type(action) == "string" then
 		action = { name = action }
 	end
@@ -144,7 +142,7 @@ function mod.apply(action)
 	effects:search():setValue(name)
 
 	--------------------------------------------------------------------------------
-	-- Get the list of matching effects
+	-- Get the list of matching effects:
 	--------------------------------------------------------------------------------
 	local matches = effects:currentItemsUI()
 	if not matches or #matches == 0 then
@@ -159,14 +157,19 @@ function mod.apply(action)
 	--------------------------------------------------------------------------------
 	effects:applyItem(effect)
 
-	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+    --------------------------------------------------------------------------------
+	-- TODO: HACK: This timer exists to  work around a mouse bug in
+	--       Hammerspoon Sierra
+	--------------------------------------------------------------------------------
 	timer.doAfter(0.1, function()
 		effects:loadLayout(effectsLayout)
 		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
 		if not effectsShowing then effects:hide() end
 	end)
 
-	-- Success!
+    --------------------------------------------------------------------------------
+	-- Success:
+	--------------------------------------------------------------------------------
 	return true
 end
 
@@ -182,11 +185,17 @@ local plugin = {
 	}
 }
 
-function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init()
 	return mod
 end
 
-function plugin.postInit(deps)
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit()
 	return mod.init()
 end
 

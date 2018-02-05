@@ -25,7 +25,7 @@ local log                               = require("hs.logger").new("text2speech"
 local application                       = require("hs.application")
 local chooser                           = require("hs.chooser")
 local drawing                           = require("hs.drawing")
-local eventtap							= require("hs.eventtap")
+local eventtap                          = require("hs.eventtap")
 local fs                                = require("hs.fs")
 local http                              = require("hs.http")
 local menubar                           = require("hs.menubar")
@@ -38,7 +38,7 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils 							= require("cp.ui.axutils")
+local axutils                           = require("cp.ui.axutils")
 local config                            = require("cp.config")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
@@ -581,9 +581,9 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Restore Filmstrip View:
         --------------------------------------------------------------------------------
-		if filmstripView then
-			libraries:toggleViewMode():press()
-		end
+        if filmstripView then
+            libraries:toggleViewMode():press()
+        end
 
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
@@ -962,7 +962,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Define Plugins:

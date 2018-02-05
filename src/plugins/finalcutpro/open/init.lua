@@ -24,6 +24,10 @@ local fcp           = require("cp.apple.finalcutpro")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
 local PRIORITY = 3
 
 --------------------------------------------------------------------------------

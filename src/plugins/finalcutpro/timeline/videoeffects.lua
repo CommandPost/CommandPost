@@ -15,20 +15,15 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log				= require("hs.logger").new("videofx")
-
---------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local timer				= require("hs.timer")
+local timer             = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp				= require("cp.apple.finalcutpro")
-local dialog			= require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local dialog            = require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
@@ -47,7 +42,7 @@ local mod = {}
 --- Returns:
 ---  * The Module
 function mod.init()
-	return mod
+    return mod
 end
 
 --- plugins.finalcutpro.timeline.videoeffects(action) -> boolean
@@ -64,104 +59,102 @@ end
 --- Alternatively, you can also supply a string with just the name.
 ---
 --- Parameters:
---- * `action`		- A table with the name/category/theme for the video effect to apply, or a string with just the name.
+---  * `action`     - A table with the name/category/theme for the video effect to apply, or a string with just the name.
 ---
 --- Returns:
---- * `true` if a matching video effect was found and applied to the timeline.
+---  * `true` if a matching video effect was found and applied to the timeline.
 function mod.apply(action)
 
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	local currentLanguage = fcp:currentLanguage()
+    --------------------------------------------------------------------------------
+    -- Get settings:
+    --------------------------------------------------------------------------------
+    if type(action) == "string" then
+        action = { name = action }
+    end
 
-	if type(action) == "string" then
-		action = { name = action }
-	end
+    local name, category = action.name, action.category
 
-	local name, category = action.name, action.category
+    if name == nil then
+        dialog.displayMessage(i18n("noEffectShortcut"))
+        return false
+    end
 
-	if name == nil then
-		dialog.displayMessage(i18n("noEffectShortcut"))
-		return false
-	end
+    --------------------------------------------------------------------------------
+    -- Save the Transitions Browser layout:
+    --------------------------------------------------------------------------------
+    local transitions = fcp:transitions()
+    local transitionsLayout = transitions:saveLayout()
 
-	--------------------------------------------------------------------------------
-	-- Save the Transitions Browser layout:
-	--------------------------------------------------------------------------------
-	local transitions = fcp:transitions()
-	local transitionsLayout = transitions:saveLayout()
+    --------------------------------------------------------------------------------
+    -- Get Effects Browser:
+    --------------------------------------------------------------------------------
+    local effects = fcp:effects()
+    local effectsShowing = effects:isShowing()
+    local effectsLayout = effects:saveLayout()
 
-	--------------------------------------------------------------------------------
-	-- Get Effects Browser:
-	--------------------------------------------------------------------------------
-	local effects = fcp:effects()
-	local effectsShowing = effects:isShowing()
-	local effectsLayout = effects:saveLayout()
+    --------------------------------------------------------------------------------
+    -- Make sure FCPX is at the front.
+    --------------------------------------------------------------------------------
+    fcp:launch()
 
-	--------------------------------------------------------------------------------
-	-- Make sure FCPX is at the front.
-	--------------------------------------------------------------------------------
-	fcp:launch()
+    --------------------------------------------------------------------------------
+    -- Make sure panel is open:
+    --------------------------------------------------------------------------------
+    effects:show()
 
-	--------------------------------------------------------------------------------
-	-- Make sure panel is open:
-	--------------------------------------------------------------------------------
-	effects:show()
+    --------------------------------------------------------------------------------
+    -- Make sure "Installed Effects" is selected:
+    --------------------------------------------------------------------------------
+    local group = effects:group():UI()
+    local groupValue = group:attributeValue("AXValue")
+    if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
+        effects:showInstalledEffects()
+    end
 
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Effects" is selected:
-	--------------------------------------------------------------------------------
-	local group = effects:group():UI()
-	local groupValue = group:attributeValue("AXValue")
-	if groupValue ~= fcp:string("PEMediaBrowserInstalledEffectsMenuItem") then
-		effects:showInstalledEffects()
-	end
+    --------------------------------------------------------------------------------
+    -- Make sure there's nothing in the search box:
+    --------------------------------------------------------------------------------
+    effects:search():clear()
 
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	effects:search():clear()
+    --------------------------------------------------------------------------------
+    -- Click 'All':
+    --------------------------------------------------------------------------------
+    if category then
+        effects:showVideoCategory(category)
+    else
+        effects:showAllVideoEffects()
+    end
 
-	--------------------------------------------------------------------------------
-	-- Click 'All':
-	--------------------------------------------------------------------------------
-	if category then
-		effects:showVideoCategory(category)
-	else
-		effects:showAllVideoEffects()
-	end
+    --------------------------------------------------------------------------------
+    -- Perform Search:
+    --------------------------------------------------------------------------------
+    effects:search():setValue(name)
 
-	--------------------------------------------------------------------------------
-	-- Perform Search:
-	--------------------------------------------------------------------------------
-	effects:search():setValue(name)
+    --------------------------------------------------------------------------------
+    -- Get the list of matching effects
+    --------------------------------------------------------------------------------
+    local matches = effects:currentItemsUI()
+    if not matches or #matches == 0 then
+        dialog.displayErrorMessage("Unable to find a video effect called '"..name.."'.")
+        return false
+    end
 
-	--------------------------------------------------------------------------------
-	-- Get the list of matching effects
-	--------------------------------------------------------------------------------
-	local matches = effects:currentItemsUI()
-	if not matches or #matches == 0 then
-		dialog.displayErrorMessage("Unable to find a video effect called '"..name.."'.")
-		return false
-	end
+    local effect = matches[1]
 
-	local effect = matches[1]
+    --------------------------------------------------------------------------------
+    -- Apply the selected Transition:
+    --------------------------------------------------------------------------------
+    effects:applyItem(effect)
 
-	--------------------------------------------------------------------------------
-	-- Apply the selected Transition:
-	--------------------------------------------------------------------------------
-	effects:applyItem(effect)
+    -- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
+    timer.doAfter(0.1, function()
+        effects:loadLayout(effectsLayout)
+        if transitionsLayout then transitions:loadLayout(transitionsLayout) end
+        if not effectsShowing then effects:hide() end
+    end)
 
-	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.1, function()
-		effects:loadLayout(effectsLayout)
-		if transitionsLayout then transitions:loadLayout(transitionsLayout) end
-		if not effectsShowing then effects:hide() end
-	end)
-
-	-- Success!
-	return true
+    -- Success!
+    return true
 end
 
 --------------------------------------------------------------------------------
@@ -170,18 +163,24 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.videoeffects",
-	group = "finalcutpro",
-	dependencies = {
-	}
+    id = "finalcutpro.timeline.videoeffects",
+    group = "finalcutpro",
+    dependencies = {
+    }
 }
 
-function plugin.init(deps)
-	return mod
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init()
+    return mod
 end
 
-function plugin.postInit(deps)
-	return mod.init()
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit()
+    return mod.init()
 end
 
 return plugin

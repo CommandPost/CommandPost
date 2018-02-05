@@ -17,13 +17,13 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log				    = require("hs.logger").new("textTools")
+local log                   = require("hs.logger").new("textTools")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap              = require("hs.eventtap")
-local pasteboard			= require("hs.pasteboard")
+local pasteboard            = require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
 --
@@ -71,11 +71,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finder.texttools",
-	group			= "finder",
-	dependencies	= {
-		["core.commands.global"]					= "global",
-	}
+    id              = "finder.texttools",
+    group           = "finder",
+    dependencies    = {
+        ["core.commands.global"]                    = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -83,33 +83,33 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
 
     --------------------------------------------------------------------------------
     -- Add Commands:
     --------------------------------------------------------------------------------
-	global:add("cpMakeClipboardTextUppercase")
-		:whenActivated(function() mod.processText("uppercase", false) end)
+    global:add("cpMakeClipboardTextUppercase")
+        :whenActivated(function() mod.processText("uppercase", false) end)
 
-	global:add("cpMakeClipboardTextLowercase")
-		:whenActivated(function() mod.processText("lowercase", false) end)
+    global:add("cpMakeClipboardTextLowercase")
+        :whenActivated(function() mod.processText("lowercase", false) end)
 
-	global:add("cpMakeClipboardTextCamelcase")
-		:whenActivated(function() mod.processText("camelcase", false) end)
+    global:add("cpMakeClipboardTextCamelcase")
+        :whenActivated(function() mod.processText("camelcase", false) end)
 
-	global:add("cpMakeSelectedTextUppercase")
-		:whenActivated(function() mod.processText("uppercase", true) end)
+    global:add("cpMakeSelectedTextUppercase")
+        :whenActivated(function() mod.processText("uppercase", true) end)
 
-	global:add("cpMakeSelectedTextLowercase")
-		:whenActivated(function() mod.processText("lowercase", true) end)
+    global:add("cpMakeSelectedTextLowercase")
+        :whenActivated(function() mod.processText("lowercase", true) end)
 
-	global:add("cpMakeSelectedTextCamelcase")
-		:whenActivated(function() mod.processText("camelcase", true) end)
+    global:add("cpMakeSelectedTextCamelcase")
+        :whenActivated(function() mod.processText("camelcase", true) end)
 
-	return mod
+    return mod
 end
 
 return plugin

@@ -13,9 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("streamDeck")
 
-local fcp										= require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp                                       = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -23,11 +25,11 @@ local fcp										= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.streamdeck",
-	group = "finalcutpro",
-	dependencies = {
-		["core.streamdeck.manager"]		= "manager",
-	}
+    id = "finalcutpro.streamdeck",
+    group = "finalcutpro",
+    dependencies = {
+        ["core.streamdeck.manager"]     = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -35,13 +37,13 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Update Touch Bar Buttons when FCPX is active:
-	--------------------------------------------------------------------------------
-	fcp:watch({
-		active		= function() deps.manager.groupStatus("fcpx", true) end,
-		inactive	= function() deps.manager.groupStatus("fcpx", false) end,
-	})
+    --------------------------------------------------------------------------------
+    -- Update Touch Bar Buttons when FCPX is active:
+    --------------------------------------------------------------------------------
+    fcp:watch({
+        active      = function() deps.manager.groupStatus("fcpx", true) end,
+        inactive    = function() deps.manager.groupStatus("fcpx", false) end,
+    })
 
 end
 

@@ -13,17 +13,28 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log								= require("hs.logger").new("lanes")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp								= require("cp.apple.finalcutpro")
 local tools								= require("cp.tools")
-
-local log								= require("hs.logger").new("lanes")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local MAX_LANES 						= 10
+
+-- MAX_LANES -> number
+-- Constant
+-- The maximum number of lanes.
+local MAX_LANES = 10
 
 --------------------------------------------------------------------------------
 --
@@ -32,7 +43,7 @@ local MAX_LANES 						= 10
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.lanes.selectClipAtLane() -> nil
+--- plugins.finalcutpro.timeline.lanes.selectClipAtLane(whichLane) -> boolean
 --- Function
 --- Select Clip at Lane in Final Cut Pro
 ---
@@ -82,14 +93,22 @@ local plugin = {
 	}
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	for i = 1, MAX_LANES do
-		deps.fcpxCmds:add("cpSelectClipAtLane" .. tools.numberToWord(i))
-			:groupedBy("timeline")
-			:titled(i18n("cpSelectClipAtLane_customTitle", {count = i}))
-			:whenActivated(function() mod.selectClipAtLane(i) end)
-	end
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        for i = 1, MAX_LANES do
+            deps.fcpxCmds:add("cpSelectClipAtLane" .. tools.numberToWord(i))
+                :groupedBy("timeline")
+                :titled(i18n("cpSelectClipAtLane_customTitle", {count = i}))
+                :whenActivated(function() mod.selectClipAtLane(i) end)
+        end
+    end
 
 	return mod
 end

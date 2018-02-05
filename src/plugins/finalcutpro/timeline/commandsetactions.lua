@@ -13,10 +13,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("commandsetactions")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local timer				= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
 local plist				= require("cp.plist")
@@ -26,6 +36,10 @@ local plist				= require("cp.plist")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- GROUP -> string
+-- Constant
+-- The group
 local GROUP 			= "fcpx"
 
 --------------------------------------------------------------------------------
@@ -35,6 +49,15 @@ local GROUP 			= "fcpx"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.commandsetactions.init() -> none
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.init()
 
 	--------------------------------------------------------------------------------
@@ -77,14 +100,14 @@ function mod.init()
 				log.ef("Failed to trigger shortcut with action: %s", action and hs.inspect(action))
 			end
 		end)
-		:onActionId(function(action)
+		:onActionId(function()
 			return "fcpxShortcuts"
 		end)
 
 	--------------------------------------------------------------------------------
 	-- Reset the handler choices when the Final Cut Pro language changes:
 	--------------------------------------------------------------------------------
-	fcp.currentLanguage:watch(function(value)
+	fcp.currentLanguage:watch(function()
 		mod._handler:reset()
 		timer.doAfter(0.01, function() mod._handler.choices:update() end)
 	end)

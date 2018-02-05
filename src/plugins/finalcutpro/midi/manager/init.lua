@@ -36,10 +36,10 @@ mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
         -- Update MIDI Commands when Final Cut Pro is shown or hidden:
         --------------------------------------------------------------------------------
         mod._fcpWatchID = fcp:watch({
-            active      = function() deps.manager.groupStatus("fcpx", true) end,
-            inactive    = function() deps.manager.groupStatus("fcpx", false) end,
-            show        = function() deps.manager.groupStatus("fcpx", true) end,
-            hide        = function() deps.manager.groupStatus("fcpx", false) end,
+            active      = function() mod._manager.groupStatus("fcpx", true) end,
+            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
+            show        = function() mod._manager.groupStatus("fcpx", true) end,
+            hide        = function() mod._manager.groupStatus("fcpx", false) end,
         })
     else
         --------------------------------------------------------------------------------
@@ -69,6 +69,8 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+    mod._manager = deps.manager
+    mod.enabled:update()
     return mod
 end
 

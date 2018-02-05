@@ -13,11 +13,17 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsGeneral")
 
-local image										= require("hs.image")
-local fcp										= require("cp.apple.finalcutpro")
-local tools										= require("cp.tools")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local image                                     = require("hs.image")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp                                       = require("cp.apple.finalcutpro")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -25,31 +31,31 @@ local tools										= require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.preferences.app",
-	group			= "finalcutpro",
-	dependencies	= {
-		["core.preferences.manager"]	= "manager",
-	}
+    id              = "finalcutpro.preferences.app",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.preferences.manager"]    = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	local mod = {}
+    local mod = {}
 
-	if fcp:isInstalled() then
-		mod.panel = deps.manager.addPanel({
-			priority 	= 2040,
-			id			= "finalcutpro",
-			label		= i18n("finalCutProPanelLabel"),
-			image		= image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
-			tooltip		= i18n("finalCutProPanelTooltip"),
-			height		= 410,
-		})
-	end
+    if fcp:isInstalled() then
+        mod.panel = deps.manager.addPanel({
+            priority    = 2040,
+            id          = "finalcutpro",
+            label       = i18n("finalCutProPanelLabel"),
+            image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
+            tooltip     = i18n("finalCutProPanelTooltip"),
+            height      = 410,
+        })
+    end
 
-	return mod
+    return mod
 end
 
 return plugin
