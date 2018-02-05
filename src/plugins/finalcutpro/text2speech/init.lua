@@ -503,8 +503,17 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         clips = libraries:selectedClipsUI()
         if #clips ~= 1 then
-            dialog.displayErrorMessage("Wrong number of clips selected.")
-            return false
+            --------------------------------------------------------------------------------
+            -- Maybe Reveal in Browser failed, so let's try again.
+            --------------------------------------------------------------------------------
+            log.df("Reveal in Browser might have failed, so let's try again.")
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            fcp:selectMenu({"File", "Reveal in Browser"})
+            clips = libraries:selectedClipsUI()
+            if #clips ~= 1 then
+                dialog.displayErrorMessage("Wrong number of clips selected.")
+                return false
+            end
         end
 
         --------------------------------------------------------------------------------
@@ -882,7 +891,7 @@ function mod.show()
         if not folderResult then
             return nil
         else
-            mod.path(result)
+            mod.path(folderResult)
         end
     end
 
