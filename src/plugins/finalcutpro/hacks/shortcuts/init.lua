@@ -616,7 +616,11 @@ mod.onboardingRequired  = config.prop("hacksShortcutsOnboardingRequired", true)
 --- If `true`, the user needs to configure Hacks Shortcuts.
 mod.setupRequired   = mod.supported:AND(mod.onboardingRequired:OR(mod.outdated)):watch(function(required)
     if required then
-        mod.setup.addPanel(mod.panel).show()
+        if mod.panel then
+            mod.setup.show()
+        else
+            mod.setup.addPanel(mod.panel).show()
+        end
     end
 end, true)
 
