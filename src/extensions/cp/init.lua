@@ -360,6 +360,11 @@ function mod.init()
         hs.dockIcon(false)
     end
 
+    --------------------------------------------------------------------------------
+    -- Global Variable to confirm CommandPost has successfully loaded:
+    --------------------------------------------------------------------------------
+    cpLoaded = true
+
     return mod
 
 end
