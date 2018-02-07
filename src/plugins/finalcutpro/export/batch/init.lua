@@ -44,6 +44,21 @@ local PRIORITY = 2000
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Replace Existing Files.
+mod.replaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
+
+--- plugins.finalcutpro.export.batch.ignoreMissingEffects <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Ignore Missing Effects.
+mod.ignoreMissingEffects = config.prop("batchExportIgnoreMissingEffects", false)
+
+--- plugins.finalcutpro.export.batch.ignoreProxies <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Ignore Proxies.
+mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
+
 -- selectShare() -> boolean
 -- Function
 -- Select Share Destination from the Final Cut Pro Menubar
@@ -169,11 +184,14 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
         -- Wait for Export Dialog to open:
         --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
-        if not just.doUntil(function() return exportDialog:isShowing() end) then
 
-            --------------------------------------------------------------------------------
-            -- "...has missing or offline titles, effects or generators."
-            --------------------------------------------------------------------------------
+        --------------------------------------------------------------------------------
+        -- Handle this dialog box:
+        --
+        -- This project is currently set to use proxy media.
+        -- FFShareProxyPlaybackEnabledMessageText
+        --------------------------------------------------------------------------------
+        if not just.doUntil(function() return exportDialog:isShowing() end) then
             local triggerError = true
             local windowUIs = fcp:windowsUI()
             if windowUIs then
@@ -181,12 +199,59 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
                     local sheets = axutils.childrenWithRole(windowUI, "AXSheet")
                     if sheets then
                         for _, sheet in pairs(sheets) do
-                            if axutils.childWithID(sheet, "_NS:76") and axutils.childWithID(sheet, "_NS:9") then
+                            local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
+                            if axutils.childrenMatching(sheet, function(child)
+                                if child:attributeValue("AXStaticText") and child:attributeValue("AXStaticText") == fcp:strings("FFShareProxyPlaybackEnabledMessageText") then
+                                    return child
+                                end
+                            end) and continueButton then
+                                if mod.ignoreProxies() then
+                                    --------------------------------------------------------------------------------
+                                    -- Press the 'Continue' button:
+                                    --------------------------------------------------------------------------------
+                                    local result = continueButton:performAction("AXPress")
+                                    if result ~= nil then
+                                        triggerError = false
+                                    end
+                                else
+                                    dialog.displayErrorMessage("Proxy files were detected, which has aborted the Batch Export.\n\nProxy files can be ignored via the Batch Export settings if required.")
+                                    return false
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if triggerError then
+                dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
+                return false
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Handle this dialog box:
+        --
+        -- “%@” has missing or offline titles, effects, generators, or media.
+        -- FFMissingMediaMessageText
+        --------------------------------------------------------------------------------
+        if not just.doUntil(function() return exportDialog:isShowing() end) then
+            local triggerError = true
+            local windowUIs = fcp:windowsUI()
+            if windowUIs then
+                for _, windowUI in pairs(windowUIs) do
+                    local sheets = axutils.childrenWithRole(windowUI, "AXSheet")
+                    if sheets then
+                        for _, sheet in pairs(sheets) do
+                            local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
+                            if axutils.childrenMatching(sheet, function(child)
+                                if child:attributeValue("AXStaticText") and string.gsub(child:attributeValue("AXStaticText"), [[“%@” ]], "") == fcp:strings("FFMissingMediaMessageText") then
+                                    return child
+                                end
+                            end) and continueButton then
                                 if mod.ignoreMissingEffects() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    local continueButton = axutils.childWithID(sheet, "_NS:9")
                                     local result = continueButton:performAction("AXPress")
                                     if result ~= nil then
                                         triggerError = false
@@ -204,7 +269,6 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
                 dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
                 return false
             end
-
         end
         exportDialog:pressNext()
 
@@ -293,8 +357,13 @@ function mod.changeExportDestinationPreset()
         local title = item:attributeValue("AXTitle")
         if title ~= nil then
             local value = string.sub(title, 1, -4)
-            if item:attributeValue("AXMenuItemCmdChar") then -- it's the default
+            --------------------------------------------------------------------------------
+            -- It's the default:
+            --------------------------------------------------------------------------------
+            if item:attributeValue("AXMenuItemCmdChar") then
+                --------------------------------------------------------------------------------
                 -- Remove (default) text:
+                --------------------------------------------------------------------------------
                 local firstBracket = string.find(value, " %(", 1)
                 if firstBracket == nil then
                     firstBracket = string.find(value, "（", 1)
@@ -462,16 +531,6 @@ function mod.batchExport()
 
 end
 
---- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
---- Field
---- Defines whether or not a Batch Export should Replace Existing Files.
-mod.replaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
-
---- plugins.finalcutpro.export.batch.ignoreMissingEffects <cp.prop: boolean>
---- Field
---- Defines whether or not a Batch Export should Ignore Missing Effects.
-mod.ignoreMissingEffects = config.prop("batchExportIgnoreMissingEffects", false)
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -521,6 +580,7 @@ function plugin.init(deps)
             { title = "-" },
             { title = i18n("replaceExistingFiles"), fn = function() mod.replaceExistingFiles:toggle() end, checked = mod.replaceExistingFiles() },
             { title = i18n("ignoreMissingEffects"), fn = function() mod.ignoreMissingEffects:toggle() end, checked = mod.ignoreMissingEffects() },
+            { title = i18n("ignoreProxies"), fn = function() mod.ignoreProxies:toggle() end, checked = mod.ignoreProxies() },
         }
     end)
 

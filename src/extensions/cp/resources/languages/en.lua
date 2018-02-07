@@ -499,6 +499,7 @@ return {
 			setDestinationFolder				=			"Set Destination Folder",
 			replaceExistingFiles				=			"Replace Existing Files",
 			ignoreMissingEffects				=			"Ignore Missing & Offline Files",
+			ignoreProxies                       =           "Ignore Proxies",
 			sendToCompressor					=			"Send to Compressor",
 
 			--------------------------------------------------------------------------------
