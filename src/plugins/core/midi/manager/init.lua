@@ -593,10 +593,12 @@ function mod.stop()
     -- Destroy MIDI Watchers:
     --------------------------------------------------------------------------------
 	log.df("Stopping MIDI Watchers")
-	for _, id in pairs(mod._midiDevices) do
-		mod._midiDevices[id] = nil
-	end
-	mod._midiDevices = nil
+	if mod._midiDevices then
+        for _, id in pairs(mod._midiDevices) do
+            mod._midiDevices[id] = nil
+        end
+        mod._midiDevices = nil
+    end
 
 	--------------------------------------------------------------------------------
 	-- Destroy MIDI Device Callback:

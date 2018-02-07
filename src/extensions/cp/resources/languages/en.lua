@@ -105,7 +105,9 @@ return {
 			--------------------------------------------------------------------------------
 			-- Common Error Messages:
 			--------------------------------------------------------------------------------
-			unexpectedError						=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
+			somethingHasGoneWrong               =           "Opps! Something has gone wrong!",
+			unexpectedFatalError				=			"I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
+			unexpectedError                     =           "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?",
 			commonErrorMessageStart				=			"The following error has occurred:",
 			commonErrorMessageEnd				=			"Would you like to submit a bug report?",
 			sendBugReport						=			"Send Bug Report",
@@ -843,7 +845,7 @@ return {
 	--------------------------------------------------------------------------------
 	-- SHORTCUT PANEL:
 	--------------------------------------------------------------------------------
-	shortcut_group_global				=			"Finder",
+	shortcut_group_global				=			"All Applications",
 	shortcut_group_fcpx					=			"Final Cut Pro",
 
 	customiseShortcuts					=			"Customise Shortcuts",
@@ -1120,7 +1122,7 @@ return {
 		-- Groups:
 		--------------------------------------------------------------------------------
 		fcpx_command_group										=	"Final Cut Pro",
-		global_command_group									=	"Finder",
+		global_command_group									=	"All Applications",
 
 		--------------------------------------------------------------------------------
 		-- Global:
