@@ -3,6 +3,7 @@ globals = {
 	"rawrequire", 
 	"i18n",
 	"table",
+	"cpLoaded",
 }
 		   
 ignore = {
