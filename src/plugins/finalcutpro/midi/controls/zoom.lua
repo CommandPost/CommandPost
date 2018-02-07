@@ -41,7 +41,13 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.control(metadata)
-	if type(metadata.fourteenBitValue) == "number" then
+    local value
+    if metadata.pitchChange then
+        value = metadata.pitchChange
+    else
+        value = metadata.fourteenBitValue
+    end
+	if type(value) == "number" then
 		local appearance = fcp:timeline():toolbar():appearance()
 		if appearance then
 			--------------------------------------------------------------------------------
@@ -49,10 +55,10 @@ function mod.control(metadata)
 			-- MIDI Controller Value (14bit):       0 to 16383
 			-- Zoom Slider:					        0 to 10
 			--------------------------------------------------------------------------------
-			appearance:show():zoomAmount():setValue(metadata.fourteenBitValue / (16383/10))
+			appearance:show():zoomAmount():setValue(value / (16383/10))
 		end
 	else
-	    log.ef("Unexpected type: %s", type(metadata.fourteenBitValue))
+	    log.ef("Unexpected Value: %s %s", value, value and type(value))
 	end
 end
 
