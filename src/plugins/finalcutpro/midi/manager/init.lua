@@ -70,8 +70,16 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._manager = deps.manager
-    mod.enabled:update()
     return mod
+end
+
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit()
+    if mod._manager then
+        mod.enabled:update()
+    end
 end
 
 return plugin
