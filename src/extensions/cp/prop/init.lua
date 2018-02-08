@@ -844,7 +844,6 @@ end
 --- Returns:
 ---  * A new `cp.prop` which will return a mutation of the property value.
 function prop.mt:mutate(getFn, setFn)
-	log.df("mutate: called")
 	-- create the mutant, which will pull from the original.
 	local mutantGetFn = function(owner, prop)
 		local result = getFn(prop._original, owner, prop)
