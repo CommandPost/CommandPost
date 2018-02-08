@@ -1138,7 +1138,6 @@ end
 -- * When `searchHistory` is `true`, it will only search to the `0` patch level. E.g. `10.3.2` will stop searching at `10.3.0`.
 function mod.mt:_loadPluginVersionCache(rootPath, version, language, searchHistory)
 	version = type(version) == "string" and v(version) or version
-
 	local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, language))
 	if filePath then
 		local file = io.open(filePath, "r")
@@ -1243,15 +1242,21 @@ end
 -- Returns:
 -- * `true` if the cache was saved successfully.
 function mod.mt:_saveAppPluginCache(language)
+    log.df("Saving App Plugin Cache.")
 	local fcpVersion = self:app():getVersion()
 	if not fcpVersion then
+	    log.ef("Failed to detect Final Cut Pro version: %s", fcpVersion)
 		return false
 	end
-	local path = ensureDirectoryExists("~/Library/Caches", "org.latenitefilms.CommandPost", "FinalCutPro", fcpVersion)
+	local version = tostring(v(fcpVersion))
+    if not version then
+        log.ef("Failed to translate Final Cut Pro version: %s", version)
+        return false
+    end
+	local path = ensureDirectoryExists("~/Library/Caches", "org.latenitefilms.CommandPost", "FinalCutPro", version)
 	if not path then
 		return false
 	end
-
 	local cachePath = path .. "/plugins."..language..".json"
 	local plugins = self._plugins[language]
 	if plugins then
@@ -1262,33 +1267,57 @@ function mod.mt:_saveAppPluginCache(language)
 			return true
 		end
 	else
-		-- Remove it
+	    --------------------------------------------------------------------------------
+		-- Remove it:
+		--------------------------------------------------------------------------------
 		os.remove(cachePath)
 	end
 	return false
 end
 
 function mod.mt:scanAppPlugins(language)
-	-- First, try loading from the cache
+    --------------------------------------------------------------------------------
+	-- First, try loading from the cache:
+	--------------------------------------------------------------------------------
+	local cacheStartTime = os.clock()
 	if not self:_loadAppPluginCache(language) then
+
+        --------------------------------------------------------------------------------
+        -- Scan Built-in Plugins:
+        --------------------------------------------------------------------------------
+    	local startTime = os.clock()
 		self:scanAppBuiltInPlugins(language)
+        local finishTime = os.clock()
+        log.df("scanAppBuiltInPlugins(%s): %s", language, finishTime-startTime)
 
 		--------------------------------------------------------------------------------
 		-- Scan Soundtrack Pro EDEL Effects:
 		--------------------------------------------------------------------------------
+        startTime = os.clock()
 		self:scanAppEdelEffects(language)
+        finishTime = os.clock()
+        log.df("scanAppEdelEffects(%s): %s", language, finishTime-startTime)
 
 		--------------------------------------------------------------------------------
 		-- Scan Audio Effect Bundles:
 		--------------------------------------------------------------------------------
+		startTime = os.clock()
 		self:scanAppAudioEffectBundles(language)
+        finishTime = os.clock()
+        log.df("scanAppAudioEffectBundles(%s): %s", language, finishTime-startTime)
 
 		--------------------------------------------------------------------------------
-		-- Scan App Plugins:
+		-- Scan App Motion Templates:
 		--------------------------------------------------------------------------------
+		startTime = os.clock()
 		self:scanAppMotionTemplates(language)
+        finishTime = os.clock()
+        log.df("scanAppMotionTemplates(%s): %s", language, finishTime-startTime)
 
 		self:_saveAppPluginCache(language)
+	else
+	    local cacheFinishTime = os.clock()
+	    log.df("Loaded App Plugins from Cache in %s", cacheFinishTime-cacheStartTime)
 	end
 
 end
@@ -1297,24 +1326,38 @@ function mod.mt:scanSystemPlugins(language)
 	--------------------------------------------------------------------------------
 	-- Scan System-level Motion Templates:
 	--------------------------------------------------------------------------------
+	local startTime = os.clock()
 	self:scanSystemMotionTemplates(language)
+    local finishTime = os.clock()
+    log.df("scanSystemMotionTemplates(%s): %s", language, finishTime-startTime)
 
 	--------------------------------------------------------------------------------
 	-- Scan System Audio Units:
 	--------------------------------------------------------------------------------
+	startTime = os.clock()
 	self:scanSystemAudioUnits(language)
+	finishTime = os.clock()
+    log.df("scanSystemAudioUnits(%s): %s", language, finishTime-startTime)
+
 end
 
 function mod.mt:scanUserPlugins(language)
 	--------------------------------------------------------------------------------
 	-- Scan User Effect Presets:
 	--------------------------------------------------------------------------------
+	local startTime = os.clock()
 	self:scanUserEffectsPresets(language)
+    local finishTime = os.clock()
+    log.df("scanUserEffectsPresets(%s): %s", language, finishTime-startTime)
 
 	--------------------------------------------------------------------------------
 	-- Scan User Motion Templates:
 	--------------------------------------------------------------------------------
+	startTime = os.clock()
 	self:scanUserMotionTemplates(language)
+	finishTime = os.clock()
+    log.df("scanUserMotionTemplates(%s): %s", language, finishTime-startTime)
+
 end
 
 --- cp.apple.finalcutpro.plugins:scan() -> none
@@ -1335,20 +1378,36 @@ function mod.mt:scan(language)
 	--------------------------------------------------------------------------------
 	self:reset()
 
+
+    log.df("------------------------------------------")
+    log.df("FINAL CUT PRO SCANNING:")
+    log.df("------------------------------------------")
+
 	--------------------------------------------------------------------------------
 	-- Scan app-bundled plugins:
 	--------------------------------------------------------------------------------
+    local startTime = os.clock()
 	self:scanAppPlugins(language)
+    local finishTime = os.clock()
+    log.df("scanAppPlugins(%s): %s", language, finishTime-startTime)
 
 	--------------------------------------------------------------------------------
 	-- Scan system-installed plugins:
 	--------------------------------------------------------------------------------
+	startTime = os.clock()
 	self:scanSystemPlugins(language)
+    finishTime = os.clock()
+    log.df("scanSystemPlugins(%s): %s", language, finishTime-startTime)
 
 	--------------------------------------------------------------------------------
 	-- Scan user-installed plugins:
 	--------------------------------------------------------------------------------
+	startTime = os.clock()
 	self:scanUserPlugins(language)
+    finishTime = os.clock()
+    log.df("scanUserPlugins(%s): %s", language, finishTime-startTime)
+
+    log.df("------------------------------------------")
 
 	return self._plugins[language]
 
