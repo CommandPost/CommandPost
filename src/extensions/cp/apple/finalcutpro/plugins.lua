@@ -33,7 +33,6 @@ local json                      = require("hs.json")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local archiver                  = require("cp.plist.archiver")
-local bench                     = require("cp.bench")
 local config                    = require("cp.config")
 local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
 local localized                 = require("cp.localized")
@@ -59,10 +58,8 @@ local mod                       = {}
 mod.mt                          = {}
 mod.mt.__index                  = mod.mt
 
-local TEMPLATE_START_PATTERN    = ".*<template>.*"
 local THEME_PATTERN             = ".*<theme>(.+)</theme>.*"
 local FLAGS_PATTERN             = ".*<flags>(.+)</flags>.*"
-local TEMPLATE_END_PATTERN      = ".*</template>.*"
 
 local OBSOLETE_FLAG             = 2
 
@@ -211,7 +208,6 @@ local contains                  = fnutils.contains
 local copy                      = fnutils.copy
 local getLocalizedName          = localized.getLocalizedName
 local insert, remove            = table.insert, table.remove
-local isBinaryPlist             = plist.isBinaryPlist
 local unescapeXML               = text.unescapeXML
 
 -- string:split(delimiter) -> table
@@ -223,7 +219,7 @@ local unescapeXML               = text.unescapeXML
 --
 -- Returns:
 --  * table
-function string:split(delimiter)
+function string:split(delimiter) -- luacheck: ignore
    local list = {}
    local pos = 1
    if string.find("", delimiter, 1) then -- this would result in endless loops
@@ -285,8 +281,8 @@ function mod.mt:scanSystemAudioUnits(language)
             local audioEffect = data.audioEffect or nil
             local category = data.category or nil
             local plugin = data.plugin or nil
-            local language = data.language or nil
-            self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, language)
+            local lan = data.language or nil
+            self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, lan)
         end
         return
     end
@@ -502,7 +498,7 @@ function mod.mt:scanPluginsDirectory(language, path, checkFn)
     --------------------------------------------------------------------------------
     path = fs.pathToAbsolute(path)
     if not path then
-        log.wf("The provided path does not exist: '%s'", directoryPath)
+        log.wf("The provided path does not exist: '%s'", path)
         return false
     end
 
@@ -511,7 +507,7 @@ function mod.mt:scanPluginsDirectory(language, path, checkFn)
     --------------------------------------------------------------------------------
     local attrs = fs.attributes(path)
     if not attrs or attrs.mode ~= "directory" then
-        log.ef("The provided path is not a directory: '%s'", directoryPath)
+        log.ef("The provided path is not a directory: '%s'", path)
         return false
     end
 
@@ -928,7 +924,6 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
                 for _,plugin in ipairs(newPlugins) do
                     local name = plugin.name
                     local plugins = newPluginNames[name]
-                    local unmatched = nil
                     if not plugins then
                         plugins = {
                             matched = {},
@@ -948,7 +943,7 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
             for _, oldFullName in pairs(oldPlugins) do
                 local oldTheme, oldName = string.match(oldFullName, "^(.-) %- (.+)$")
                 oldName = oldName or oldFullName
-                local newPlugins = newPluginNames[oldFullName] or newPluginNames[oldName]
+                newPlugins = newPluginNames[oldFullName] or newPluginNames[oldName]
                 if not newPlugins then
                     log.df("  - ERROR: Missing %s: %s", oldType, oldFullName)
                     errorCount = errorCount + 1
@@ -972,7 +967,7 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
                 end
             end
 
-            for newName, plugins in pairs(newPluginNames) do
+            for _, plugins in pairs(newPluginNames) do
                 if #plugins.partials ~= #plugins.unmatched then
                     for _,oldFullName in ipairs(plugins.partials) do
                         log.df("  - ERROR: Old %s plugin unmatched: %s", newType, oldFullName)
@@ -1123,8 +1118,6 @@ function mod.mt:scanAppBuiltInPlugins(language)
     --------------------------------------------------------------------------------
     -- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
     --------------------------------------------------------------------------------
-    local videoEffect, transitionType = mod.types.videoEffect, mod.types.transition
-
     for pluginType,categories in pairs(mod.appBuiltinPlugins) do
         for category,plugins in pairs(categories) do
             category = self:translateInternalEffect(category, language)
@@ -1181,7 +1174,7 @@ local CP_PLUGIN_CACHE   = config.scriptPath .. "/cp/apple/finalcutpro/plugins/ca
 function mod.clearCaches()
     local cachePath = fs.pathToAbsolute(USER_PLUGIN_CACHE)
     if cachePath then
-        ok, err = tools.rmdir(cachePath, true)
+        local ok, err = tools.rmdir(cachePath, true)
         if not ok then
             log.ef("Unable to remove user plugin cache: %s", err)
             return false
@@ -1452,8 +1445,8 @@ function mod.mt:watch(events)
     return self._watcher:watch(events)
 end
 
-function mod.mt:unwatch(id)
-    return self._watcher:unwatch(id)
+function mod.mt:unwatch(a)
+    return self._watcher:unwatch(a)
 end
 
 function mod.new(fcp)
