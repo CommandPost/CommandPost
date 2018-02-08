@@ -47,19 +47,20 @@ function mod.mt:fromPlist(pathPattern)
 	return self:from(plistSrc.new(pathPattern))
 end
 
---- cp.strings:findInSources(language, key) -> string | nil
+--- cp.strings:findInSources(language, key[, quiet]) -> string | nil
 --- Method
 --- Searches directly in the sources for the specified language/key combination.
 ---
 --- Parameters:
 ---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
 ---  * `key`		- The key to retrieve from the file.
+---  * `quiet`		- Optional boolean, defaults to `false`. If `true`, no warnings are logged for missing keys.
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:findInSources(language, key)
+function mod.mt:findInSources(language, key, quiet)
 	for _,source in ipairs(self._sources) do
-		local value = source:find(language, key)
+		local value = source:find(language, key, quiet)
 		if value then return value end
 	end
 	return nil
@@ -84,17 +85,18 @@ function mod.mt:findKeysInSources(language, value)
 end
 
 
---- cp.strings:find(language, key) -> string | nil
+--- cp.strings:find(language, key[, quiet]) -> string | nil
 --- Method
 --- Searches for the specified key in the specified language, caching the result when found.
 ---
 --- Parameters:
 ---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
 ---  * `key`		- The key to retrieve from the file.
+---  * `quiet`		- Optional boolean, defaults to `false`. If `true`, no warnings are logged for missing keys.
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:find(language, key)
+function mod.mt:find(language, key, quiet)
 	-- ensure we have a cache for the specific language
 	self._cache[language] = self._cache[language] or {}
 	local cache = self._cache[language]
@@ -106,7 +108,9 @@ function mod.mt:find(language, key)
 	end
 
 	if value == UNFOUND then
-		log.wf("Unable to find '%s' in '%s'", key, language)
+		if not quiet then
+			log.wf("Unable to find '%s' in '%s'", key, language)
+		end
 		return nil
 	else
 		return value

@@ -13,6 +13,8 @@
 local log				= require("hs.logger").new("tblsrc")
 
 local _					= require("moses")
+local find, len			= string.find, string.len
+local insert			= table.insert
 
 local mod = {}
 mod.mt = {}
@@ -46,25 +48,26 @@ function mod.mt:find(language, key)
 	return self._cache[language] and self._cache[language][key]
 end
 
---- cp.strings.source.plist:findKeys(language, value) -> {string}
+--- cp.strings.source.plist:findKeys(language, pattern) -> {string}
 --- Method
---- Finds the array of keys with the matching value in the plist file for the specified `language`, if the plist can be found, and contains matching key.
+--- Finds the array of keys who's value matches the pattern in this table. It will check that the pattern matches the beginning of the value.
 ---
 --- Parameters:
 ---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
----  * `value`		- The value.
+---  * `pattern		- The string pattern to match.
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround
-function mod.mt:findKeys(language, value)
+function mod.mt:findKeys(language, pattern)
 
 	local cache = self._cache[language]
 	local keys = {}
-	
+
 	if cache then
 		for k,v in pairs(cache) do
-			if v == value then
-				table.insert(keys, k)
+			local s, e = find(v, pattern)
+			if s == 1 and e == len(v) then
+				insert(keys, k)
 			end
 		end
 	end
