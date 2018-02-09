@@ -70,7 +70,7 @@ mod.DEFAULT_HEIGHT = 338
 --- plugins.core.preferences.manager.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Width of Preferences Window
-mod.DEFAULT_WIDTH = 750
+mod.DEFAULT_WIDTH = 1000
 
 --- plugins.core.preferences.manager.DEFAULT_TITLE -> string
 --- Constant

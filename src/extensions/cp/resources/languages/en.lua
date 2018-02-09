@@ -124,7 +124,6 @@ return {
 			setupTitle							=			"CommandPost Setup",
 			introTagLine						=			"Workflow Toolkit for Professional Editors",
 			introText							=			"Thank you for installing CommandPost. This guide will help you set things up.",
-			scanFinalCutPro						=			"Scan Final Cut Pro",
 			finalcutproUnsupportedVersionTitle	=			"Unsupported Version",
 			finalcutproUnsupportedVersionText	=			"CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
 			outroTitle							=			"CommandPost is now setup and ready to go!",
@@ -176,10 +175,11 @@ return {
 			--------------------------------------------------------------------------------
 			-- Scan Final Cut Pro:
 			--------------------------------------------------------------------------------
+			scanFinalCutPro						=			"Test Final Cut Pro",
 			scanFinalCutProWarning				=			"Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
 			scanFinalCutProDone					=			"Final Cut Pro was scanned successfully.",
-
 			updateEffectsListFailed				=			"Unfortunately the Effects List was not successfully updated.",
+			scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes only.",
 
 			--------------------------------------------------------------------------------
 			-- Error Messages:
@@ -459,7 +459,6 @@ return {
 			--------------------------------------------------------------------------------
 			-- Advanced:
 			--------------------------------------------------------------------------------
-	    	scanFinalCutProDescription			=			"This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes.",
 			advanced							=			"Advanced",
 			install								=			"Install",
 			uninstall							=			"Uninstall",
@@ -923,6 +922,14 @@ return {
     offline                             =           "Offline",
     all                                 =           "All",
     noDevicesDetected                   =           "No Devices Detected",
+    commandType                         =           "Type",
+    noteOff                             =           "Note Off",
+    noteOn                              =           "Note On",
+    polyphonicKeyPressure               =           "Polyphonic Key Pressure",
+    controlChange                       =           "Control Change",
+    programChange                       =           "Program Change",
+    channelPressure                     =           "Channel Pressure",
+    pitchWheelChange                    =           "Pitch Wheel Change",
 
 	--------------------------------------------------------------------------------
 	-- MIDI CONTROLS:

@@ -35,7 +35,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 190px;
+	width: 290px;
 }
 
 .sdRowIcon {
@@ -47,7 +47,7 @@
 }
 
 .sdRowActionButton {
-	width: 15%;
+	width: 10%;
 }
 
 .sdRowLabel {
@@ -129,7 +129,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 230px;
+	width: 400px;
 }
 
 .sdActionButton {
