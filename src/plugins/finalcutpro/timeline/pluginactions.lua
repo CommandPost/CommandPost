@@ -167,19 +167,4 @@ function plugin.init(deps)
     return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 end
 
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
-function plugin.postInit()
-    --------------------------------------------------------------------------------
-    -- Let's pre-load the choices to avoid delay when opening Console
-    -- for first time:
-    --------------------------------------------------------------------------------
-    log.df("Loading Final Cut Pro Plugin Actions.")
-    for _,handler in pairs(mod._handlers) do
-        handler:reset()
-        handler.choices:update()
-    end
-end
-
 return plugin

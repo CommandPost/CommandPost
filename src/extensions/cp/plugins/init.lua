@@ -190,7 +190,7 @@ local mod = {}
 --- cp.plugins.SLOW_PLUGIN_WARNING_THRESHOLD -> number
 --- Constant
 --- Slow Plugin Warning Threshold
-mod.SLOW_PLUGIN_WARNING_THRESHOLD = 0.05
+mod.SLOW_PLUGIN_WARNING_THRESHOLD = 0.5
 
 --- cp.plugins.CACHE -> table
 --- Constant
