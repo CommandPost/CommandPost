@@ -37,8 +37,20 @@ local tools             = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- plugins.finalcutpro.midi.controls.colorboard._colorBoard -> colorBoard
+-- Variable
+-- Color Board object.
 mod._colorBoard = fcp:colorBoard()
 
+-- shiftPressed() -> boolean
+-- Function
+-- Is the Shift Key being pressed?
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if the shift key is being pressed, otherwise `false`.
 local function shiftPressed()
     --------------------------------------------------------------------------------
     -- Check for keyboard modifiers:
@@ -97,7 +109,7 @@ function mod.init(deps)
             fn = function(metadata)
                 local midiValue
                 mod._colorBoard:show()
-                if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
+                if metadata.fourteenBitCommand or metadata.pitchChange then
                     --------------------------------------------------------------------------------
                     -- 14bit:
                     --------------------------------------------------------------------------------
@@ -121,9 +133,13 @@ function mod.init(deps)
                     --------------------------------------------------------------------------------
                     midiValue = metadata.controllerValue
                     if type(midiValue) == "number" then
-                        local colorBoard = fcp:colorBoard()
                         if mod._colorBoard then
-                            local value = tools.round(midiValue / 127*127-(127/2))
+                            local value
+                            if shiftPressed() then
+                                value = midiValue / 128*202-100
+                            else
+                                value = midiValue / 128*128-(128/2)
+                            end
                             if midiValue == 127/2 then value = 0 end
                             mod._colorBoard:applyPercentage("*", colorFunction[i], value)
                         end
@@ -145,7 +161,7 @@ function mod.init(deps)
                 local midiValue
                 mod._colorBoard:show()
 
-                if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
+                if metadata.fourteenBitCommand or metadata.pitchChange then
                     --------------------------------------------------------------------------------
                     -- 14bit:
                     --------------------------------------------------------------------------------
@@ -169,9 +185,13 @@ function mod.init(deps)
                     --------------------------------------------------------------------------------
                     midiValue = metadata.controllerValue
                     if type(midiValue) == "number" then
-                        local colorBoard = fcp:colorBoard()
                         if mod._colorBoard then
-                            local value = tools.round(midiValue / 127*127-(127/2))
+                            local value
+                            if shiftPressed() then
+                                value = midiValue / 128*202-100
+                            else
+                                value = midiValue / 128*128-(128/2)
+                            end
                             if midiValue == 127/2 then value = 0 end
                             mod._colorBoard:applyAngle("color", colorFunction[i], value)
                         end
@@ -182,11 +202,10 @@ function mod.init(deps)
             end,
         })
 
+        --------------------------------------------------------------------------------
+        -- Percentages:
+        --------------------------------------------------------------------------------
         for whichPanel=1, 3 do
-
-            --------------------------------------------------------------------------------
-            -- Percentage:
-            --------------------------------------------------------------------------------
             local colorPanel = colorPanels[whichPanel]
             deps.manager.controls:new(colorPanel .. "PercentagePuck" .. tools.numberToWord(i), {
                 group = "fcpx",
@@ -195,7 +214,7 @@ function mod.init(deps)
                 fn = function(metadata)
                     local midiValue
                     mod._colorBoard:show()
-                    if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
+                    if metadata.fourteenBitCommand or metadata.pitchChange then
                     --------------------------------------------------------------------------------
                     -- 14bit:
                     --------------------------------------------------------------------------------
@@ -219,10 +238,14 @@ function mod.init(deps)
                     --------------------------------------------------------------------------------
                     midiValue = metadata.controllerValue
                     if type(midiValue) == "number" then
-                        local colorBoard = fcp:colorBoard()
                         if mod._colorBoard then
-                            local value = tools.round(midiValue / 127*127-(127/2))
-                            if midiValue == 127/2 then value = 0 end
+                            local value
+                            if shiftPressed() then
+                                value = midiValue / 128*202-100
+                            else
+                                value = midiValue / 128*128-(128/2)
+                            end
+                            if midiValue == 128/2 then value = 0 end
                             mod._colorBoard:applyPercentage(colorPanel, colorFunction[i], value)
                         end
                     else
@@ -232,9 +255,7 @@ function mod.init(deps)
                 end,
             })
         end
-
     end
-
     return mod
 end
 
