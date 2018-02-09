@@ -87,24 +87,33 @@ hs.fileDroppedToDockIconCallback = nil
     local dialog = require("hs.dialog")
 	local settings = require("hs.settings")
 	local debugMode = settings.get("cp.debugMode")
-    if not cpLoaded then
+    if debugMode then
+        --------------------------------------------------------------------------------
+        -- DEBUG MODE:
+        --------------------------------------------------------------------------------
+        hs._notify("CommandPost Error")
+        -- print(debug.traceback())
+        print("*** ERROR: "..err)
+        hs.focus()
         hs.openConsole()
-        local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedFatalError"), i18n("sendBugReport"), i18n("quit"))
-        if result == i18n("sendBugReport") then
-            local feedback = require("cp.feedback")
-			feedback.showFeedback(true)
-		else
-		    hs.application.applicationForPID(hs.processInfo["processID"]):kill()
-		end
-	else
-        if debugMode then
-            hs._notify("CommandPost Error")
-            -- print(debug.traceback())
-            print("*** ERROR: "..err)
-            hs.focus()
+        hs._TERMINATED=true
+    else
+        if not cpLoaded then
+            --------------------------------------------------------------------------------
+            -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
+            --------------------------------------------------------------------------------
             hs.openConsole()
-            hs._TERMINATED=true
+            local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedFatalError"), i18n("sendBugReport"), i18n("quit"))
+            if result == i18n("sendBugReport") then
+                local feedback = require("cp.feedback")
+                feedback.showFeedback(true)
+            else
+                hs.application.applicationForPID(hs.processInfo["processID"]):kill()
+            end
         else
+            --------------------------------------------------------------------------------
+            -- NOT DEBUG MODE - CRASH HAPPENED AFTER BOOT - NON-FATAL ERROR:
+            --------------------------------------------------------------------------------
             print("*** ERROR: "..err)
             local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedError"), i18n("continue"), i18n("sendBugReport"))
             if result == i18n("sendBugReport") then
