@@ -160,44 +160,27 @@ function mod.init(deps)
             fn = function(metadata)
                 local midiValue
                 mod._colorBoard:show()
-
-                if metadata.fourteenBitCommand or metadata.pitchChange then
-                    --------------------------------------------------------------------------------
-                    -- 14bit:
-                    --------------------------------------------------------------------------------
-                    if metadata.pitchChange then
-                        midiValue = metadata.pitchChange
-                    else
-                        midiValue = metadata.fourteenBitValue
-                    end
-                    if type(midiValue) == "number" then
-                        if mod._colorBoard then
-                            local value = tools.round(midiValue / 16383*200-100)
-                            if midiValue == 16383/2 then value = 0 end
-                            mod._colorBoard:applyAngle("color", colorFunction[i], value)
+                --------------------------------------------------------------------------------
+                -- 7bit & 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    if mod._colorBoard then
+                        local value
+                        if metadata.fourteenBitCommand then
+                            value = midiValue / 16383*359
+                        else
+                            value = midiValue / 16383*362
                         end
-                    else
-                        log.ef("Unexpected type: %s", type(midiValue))
+                        if midiValue == 16383/2 then value = 0 end
+                        mod._colorBoard:applyAngle("color", colorFunction[i], value)
                     end
                 else
-                    --------------------------------------------------------------------------------
-                    -- 7bit:
-                    --------------------------------------------------------------------------------
-                    midiValue = metadata.controllerValue
-                    if type(midiValue) == "number" then
-                        if mod._colorBoard then
-                            local value
-                            if shiftPressed() then
-                                value = midiValue / 128*202-100
-                            else
-                                value = midiValue / 128*128-(128/2)
-                            end
-                            if midiValue == 127/2 then value = 0 end
-                            mod._colorBoard:applyAngle("color", colorFunction[i], value)
-                        end
-                    else
-                        log.ef("Unexpected type: %s", type(midiValue))
-                    end
+                    log.ef("Unexpected type: %s", type(midiValue))
                 end
             end,
         })
