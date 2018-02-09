@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("cbMIDI")
+local log               = require("hs.logger").new("cbMIDI")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -36,6 +36,8 @@ local tools             = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+mod._colorBoard = fcp:colorBoard()
 
 local function shiftPressed()
     --------------------------------------------------------------------------------
@@ -77,10 +79,16 @@ function mod.init(deps)
         [4] = "highlights",
     }
 
+    local colorPanels = {
+        [1] = "exposure",
+        [2] = "saturation",
+        [3] = "color",
+    }
+
     for i=1, 4 do
 
         --------------------------------------------------------------------------------
-        -- Current Puck:
+        -- Current Pucks:
         --------------------------------------------------------------------------------
         deps.manager.controls:new("puck" .. tools.numberToWord(i), {
             group = "fcpx",
@@ -88,6 +96,7 @@ function mod.init(deps)
             subText = i18n("midiColorBoardDescription"),
             fn = function(metadata)
                 local midiValue
+                mod._colorBoard:show()
                 if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
                     --------------------------------------------------------------------------------
                     -- 14bit:
@@ -98,11 +107,10 @@ function mod.init(deps)
                         midiValue = metadata.fourteenBitValue
                     end
                     if type(midiValue) == "number" then
-                        local colorBoard = fcp:colorBoard()
-                        if colorBoard then
+                        if mod._colorBoard then
                             local value = tools.round(midiValue / 16383*200-100)
                             if midiValue == 16383/2 then value = 0 end
-                            colorBoard:show():applyPercentage("*", colorFunction[i], value)
+                            mod._colorBoard:applyPercentage("*", colorFunction[i], value)
                         end
                     else
                         log.ef("Unexpected type: %s", type(midiValue))
@@ -114,41 +122,14 @@ function mod.init(deps)
                     midiValue = metadata.controllerValue
                     if type(midiValue) == "number" then
                         local colorBoard = fcp:colorBoard()
-                        if colorBoard then
+                        if mod._colorBoard then
                             local value = tools.round(midiValue / 127*127-(127/2))
                             if midiValue == 127/2 then value = 0 end
-                            colorBoard:show():applyPercentage("*", colorFunction[i], value)
+                            mod._colorBoard:applyPercentage("*", colorFunction[i], value)
                         end
                     else
                         log.ef("Unexpected type: %s", type(midiValue))
                     end
-                end
-            end,
-        })
-
-        --------------------------------------------------------------------------------
-        -- Color (Percentage):
-        --------------------------------------------------------------------------------
-        deps.manager.controls:new("colorPercentagePuck" .. tools.numberToWord(i), {
-            group = "fcpx",
-            text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " " .. tostring(i) .. " (" .. i18n("percentage") .. ")",
-            subText = i18n("midiColorBoardDescription"),
-            fn = function(metadata)
-                local midiValue
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
-                if type(midiValue) == "number" then
-                    local colorBoard = fcp:colorBoard()
-                    if colorBoard then
-                        local value = tools.round(midiValue / 16383*200-100)
-                        if metadata.fourteenBitValue == 16383/2 then value = 0 end
-                        colorBoard:show():applyPercentage("color", colorFunction[i], value)
-                    end
-                else
-                    log.ef("Unexpected type: %s", type(midiValue))
                 end
             end,
         })
@@ -162,81 +143,95 @@ function mod.init(deps)
             subText = i18n("midiColorBoardDescription"),
             fn = function(metadata)
                 local midiValue
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
-                if type(midiValue) == "number" then
-                    local colorBoard = fcp:colorBoard()
-                    if colorBoard then
-                        local angle = 360
-                        if fcp.isColorInspectorSupported() then
-                            angle = 359
+                mod._colorBoard:show()
+
+                if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
+                    --------------------------------------------------------------------------------
+                    -- 14bit:
+                    --------------------------------------------------------------------------------
+                    if metadata.pitchChange then
+                        midiValue = metadata.pitchChange
+                    else
+                        midiValue = metadata.fourteenBitValue
+                    end
+                    if type(midiValue) == "number" then
+                        if mod._colorBoard then
+                            local value = tools.round(midiValue / 16383*200-100)
+                            if midiValue == 16383/2 then value = 0 end
+                            mod._colorBoard:applyAngle("color", colorFunction[i], value)
                         end
-                        local value = tools.round(midiValue / (16383/angle))
-                        if metadata.fourteenBitValue == 16383/2 then value = angle/2 end
-                        colorBoard:show():applyAngle("color", colorFunction[i], value)
+                    else
+                        log.ef("Unexpected type: %s", type(midiValue))
                     end
                 else
-                    log.ef("Unexpected type: %s", type(midiValue))
+                    --------------------------------------------------------------------------------
+                    -- 7bit:
+                    --------------------------------------------------------------------------------
+                    midiValue = metadata.controllerValue
+                    if type(midiValue) == "number" then
+                        local colorBoard = fcp:colorBoard()
+                        if mod._colorBoard then
+                            local value = tools.round(midiValue / 127*127-(127/2))
+                            if midiValue == 127/2 then value = 0 end
+                            mod._colorBoard:applyAngle("color", colorFunction[i], value)
+                        end
+                    else
+                        log.ef("Unexpected type: %s", type(midiValue))
+                    end
                 end
             end,
         })
 
-        --------------------------------------------------------------------------------
-        -- Saturation:
-        --------------------------------------------------------------------------------
-        deps.manager.controls:new("saturationPuck" .. tools.numberToWord(i), {
-            group = "fcpx",
-            text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("puck") .. " " .. tostring(i),
-            subText = i18n("midiColorBoardDescription"),
-            fn = function(metadata)
-                local midiValue
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
-                if type(midiValue) == "number" then
-                    local colorBoard = fcp:colorBoard()
-                    if colorBoard then
-                        local value = tools.round(midiValue / 16383*200-100)
-                        if metadata.fourteenBitValue == 16383/2 then value = 0 end
-                        colorBoard:show():applyPercentage("saturation", colorFunction[i], value)
-                    end
-                else
-                    log.ef("Unexpected type: %s", type(midiValue))
-                end
-            end,
-        })
+        for whichPanel=1, 3 do
 
-        --------------------------------------------------------------------------------
-        -- Exposure:
-        --------------------------------------------------------------------------------
-        deps.manager.controls:new("exposurePuck" .. tools.numberToWord(i), {
-            group = "fcpx",
-            text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("puck") .. " " .. tostring(i),
-            subText = i18n("midiColorBoardDescription"),
-            fn = function(metadata)
-                local midiValue
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
-                if type(midiValue) == "number" then
-                    local colorBoard = fcp:colorBoard()
-                    if colorBoard then
-                        local value = tools.round(midiValue / 16383*200-100)
-                        if metadata.fourteenBitValue == 16383/2 then value = 0 end
-                        colorBoard:show():applyPercentage("exposure", colorFunction[i], value)
+            --------------------------------------------------------------------------------
+            -- Percentage:
+            --------------------------------------------------------------------------------
+            local colorPanel = colorPanels[whichPanel]
+            deps.manager.controls:new(colorPanel .. "PercentagePuck" .. tools.numberToWord(i), {
+                group = "fcpx",
+                text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n(colorPanel) .. " " .. i18n("puck") .. " " .. tostring(i) .. " (" .. i18n("percentage") .. ")",
+                subText = i18n("midiColorBoardDescription"),
+                fn = function(metadata)
+                    local midiValue
+                    mod._colorBoard:show()
+                    if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
+                    --------------------------------------------------------------------------------
+                    -- 14bit:
+                    --------------------------------------------------------------------------------
+                    if metadata.pitchChange then
+                        midiValue = metadata.pitchChange
+                    else
+                        midiValue = metadata.fourteenBitValue
+                    end
+                    if type(midiValue) == "number" then
+                        if mod._colorBoard then
+                            local value = tools.round(midiValue / 16383*200-100)
+                            if midiValue == 16383/2 then value = 0 end
+                            mod._colorBoard:applyPercentage(colorPanel, colorFunction[i], value)
+                        end
+                    else
+                        log.ef("Unexpected type: %s", type(midiValue))
                     end
                 else
-                    log.ef("Unexpected type: %s", type(midiValue))
+                    --------------------------------------------------------------------------------
+                    -- 7bit:
+                    --------------------------------------------------------------------------------
+                    midiValue = metadata.controllerValue
+                    if type(midiValue) == "number" then
+                        local colorBoard = fcp:colorBoard()
+                        if mod._colorBoard then
+                            local value = tools.round(midiValue / 127*127-(127/2))
+                            if midiValue == 127/2 then value = 0 end
+                            mod._colorBoard:applyPercentage(colorPanel, colorFunction[i], value)
+                        end
+                    else
+                        log.ef("Unexpected type: %s", type(midiValue))
+                    end
                 end
-            end,
-        })
+                end,
+            })
+        end
 
     end
 
