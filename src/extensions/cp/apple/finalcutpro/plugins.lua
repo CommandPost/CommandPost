@@ -275,7 +275,7 @@ function mod.mt:scanSystemAudioUnits(language)
     local audioUnitsCache = config.get("audioUnitsCache", nil)
 
     if currentModification and lastModification and audioUnitsCache and currentModification == lastModification then
-        log.df("  * Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items).")
+        log.df("  * Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items)")
         for _, data in pairs(audioUnitsCache) do
             local coreAudioPlistPath = data.coreAudioPlistPath or nil
             local audioEffect = data.audioEffect or nil
@@ -307,7 +307,9 @@ function mod.mt:scanSystemAudioUnits(language)
                 -- CoreAudio Audio Units:
                 --------------------------------------------------------------------------------
                 if coreAudioPlistData and category == "Apple" then
-                    -- look up the alternate name
+                    --------------------------------------------------------------------------------
+                    -- Look up the alternate name:
+                    --------------------------------------------------------------------------------
                     for _, component in pairs(coreAudioPlistData["AudioComponents"]) do
                         if component.name == fullName then
                             category = "Specialized"
@@ -376,26 +378,23 @@ function mod.mt:scanUserEffectsPresets(language)
     --------------------------------------------------------------------------------
     local cache = {}
 
-    local currentModification = fs.attributes(path) and fs.attributes(path).modification
-    local lastModification = config.get("userEffectsPresetsCacheModification", nil)
+    local currentSize = fs.attributes(path) and fs.attributes(path).size
+    local lastSize = config.get("userEffectsPresetsCacheModification", nil)
     local userEffectsPresetsCache = config.get("userEffectsPresetsCache", nil)
 
-    if currentModification and lastModification and userEffectsPresetsCache and currentModification == lastModification then
+    if currentSize and lastSize and userEffectsPresetsCache and currentSize == lastSize then
         log.df("  * Using User Effects Presets Cache (" .. tostring(#userEffectsPresetsCache) .. " items).")
         for _, data in pairs(userEffectsPresetsCache) do
             local effectPath = data.effectPath or nil
-            local effectType = data.audioEffect or nil
+            local effectType = data.effectType or nil
             local category = data.category or nil
             local plugin = data.plugin or nil
             local lan = data.language or nil
-            self:registerPlugin(effectPath, effectType, category, "Final Cut", plugin, language)
+            self:registerPlugin(effectPath, effectType, category, "Final Cut", plugin, lan)
         end
         return
     end
 
-    --------------------------------------------------------------------------------
-    --
-    --------------------------------------------------------------------------------
     local videoEffect, audioEffect = mod.types.videoEffect, mod.types.audioEffect
     if tools.doesDirectoryExist(path) then
 
@@ -431,8 +430,8 @@ function mod.mt:scanUserEffectsPresets(language)
         --------------------------------------------------------------------------------
         -- Save Cache:
         --------------------------------------------------------------------------------
-        if currentModification and #cache ~= 0 then
-            config.set("userEffectsPresetsCacheModification", currentModification)
+        if currentSize and #cache ~= 0 then
+            config.set("userEffectsPresetsCacheModification", currentSize)
             config.set("userEffectsPresetsCache", cache)
             log.df("  * Saved " .. #cache .. " User Effects Presets to Cache.")
         else
@@ -543,7 +542,7 @@ mod._getPluginName = getPluginName
 --- Parameters:
 ---  * `language`   - The language code to scan for (e.g. "en" or "fr").
 ---  * `path`       - The path of the root plugin directory to scan.
----  * `checkFn`        - A function which will receive the path being scanned and return `true` if it should be scanned.
+---  * `checkFn`    - A function which will receive the path being scanned and return `true` if it should be scanned.
 ---
 --- Returns:
 ---  * `true` if the plugin directory was successfully scanned.
@@ -759,6 +758,12 @@ function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, 
         language = language,
     }
     insert(types, plugin)
+    --------------------------------------------------------------------------------
+    -- Caching:
+    --------------------------------------------------------------------------------
+    if mod._motionTemplatesToCache then
+        insert(mod._motionTemplatesToCache, plugin)
+    end
     return plugin
 end
 
@@ -848,7 +853,10 @@ function mod.mt:scanAppMotionTemplates(language)
     self:scanPluginsDirectory(
         language,
         fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized",
-        -- we filter out the 'Simple' category here, since it contains unlisted iMovie titles.
+        --------------------------------------------------------------------------------
+        -- We filter out the 'Simple' category here, since it contains
+        -- unlisted iMovie titles.
+        --------------------------------------------------------------------------------
         function(plugin) return plugin.categoryReal ~= "Simple" end
     )
 end
@@ -863,7 +871,54 @@ end
 --- Returns:
 ---  * None
 function mod.mt:scanUserMotionTemplates(language)
-    return self:scanPluginsDirectory(language, "~/Movies/Motion Templates.localized")
+    --------------------------------------------------------------------------------
+    -- User Motion Templates Path:
+    --------------------------------------------------------------------------------
+    local path = "~/Movies/Motion Templates.localized"
+    local pathToAbsolute = fs.pathToAbsolute(path)
+
+    --------------------------------------------------------------------------------
+    -- Restore from cache:
+    --------------------------------------------------------------------------------
+    local cache = {}
+    local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
+    local lastSize = config.get("userMotionTemplatesCacheSize", nil)
+    local userMotionTemplatesCache = config.get("userMotionTemplatesCache", nil)
+    if currentSize and lastSize and currentSize == lastSize then
+        if userMotionTemplatesCache and userMotionTemplatesCache[language] and #userMotionTemplatesCache[language] > 0 then
+            --------------------------------------------------------------------------------
+            -- Restore from cache:
+            --------------------------------------------------------------------------------
+            log.df("  * Loading User Motion Templates from Cache (%s items)", #userMotionTemplatesCache[language])
+            for _, data in pairs(userMotionTemplatesCache[language]) do
+                self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.language)
+            end
+            return
+        else
+            log.df("  * Could not find User Motion Template Cache for language: %s", language)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Scan for User Motion Templates:
+    --------------------------------------------------------------------------------
+    mod._motionTemplatesToCache = nil
+    mod._motionTemplatesToCache = {}
+    local result = self:scanPluginsDirectory(language, path)
+    if result and currentSize then
+        --------------------------------------------------------------------------------
+        -- Save to cache:
+        --------------------------------------------------------------------------------
+        config.set("userMotionTemplatesCache", {
+            [language] = mod._motionTemplatesToCache,
+        })
+        config.set("userMotionTemplatesCacheSize", currentSize)
+
+        log.df("  * Saving User Motion Tempaltes to Cache (%s items)", #mod._motionTemplatesToCache)
+
+        mod._motionTemplatesToCache = nil
+    end
+    return result
 end
 
 --- cp.apple.finalcutpro.plugins:scanSystemMotionTemplates(language) -> none
@@ -876,7 +931,63 @@ end
 --- Returns:
 ---  * None
 function mod.mt:scanSystemMotionTemplates(language)
-    return self:scanPluginsDirectory(language, "/Library/Application Support/Final Cut Pro/Templates.localized")
+
+    --------------------------------------------------------------------------------
+    -- User Motion Templates Path:
+    --------------------------------------------------------------------------------
+    local path = "/Library/Application Support/Final Cut Pro/Templates.localized"
+    local pathToAbsolute = fs.pathToAbsolute(path)
+
+    --------------------------------------------------------------------------------
+    -- Restore from cache:
+    --------------------------------------------------------------------------------
+    local cache = {}
+
+    local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
+    local lastSize = config.get("systemMotionTemplatesCacheSize", nil)
+    local systemMotionTemplatesCache = config.get("systemMotionTemplatesCache", nil)
+
+    if currentSize and lastSize and currentSize == lastSize then
+        if systemMotionTemplatesCache and systemMotionTemplatesCache[language] and #systemMotionTemplatesCache[language] > 0 then
+            --------------------------------------------------------------------------------
+            -- Restore from cache:
+            --------------------------------------------------------------------------------
+            log.df("  * Loading System Motion Templates from Cache (%s items)", #systemMotionTemplatesCache[language])
+
+            --log.df("mod._motionTemplatesToCache: %s", hs.inspect(config.get("systemMotionTemplatesCache")))
+
+
+            for _, data in pairs(systemMotionTemplatesCache[language]) do
+                self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.language)
+            end
+
+            return
+        else
+            log.df("  * Could not find System Motion Template Cache for language: %s", language)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Scan for User Motion Templates:
+    --------------------------------------------------------------------------------
+    mod._motionTemplatesToCache = nil
+    mod._motionTemplatesToCache = {}
+    local result = self:scanPluginsDirectory(language, path)
+    if result and currentSize then
+        --------------------------------------------------------------------------------
+        -- Save to cache:
+        --------------------------------------------------------------------------------
+        config.set("systemMotionTemplatesCache", {
+            [language] = mod._motionTemplatesToCache,
+        })
+        config.set("systemMotionTemplatesCacheSize", currentSize)
+
+        log.df("  * Saving System Motion Templates to Cache (%s items)", #mod._motionTemplatesToCache)
+
+        mod._motionTemplatesToCache = nil
+    end
+    return result
+
 end
 
 --- cp.apple.finalcutpro.plugins:scanAppEdelEffects() -> none
@@ -1237,6 +1348,15 @@ function mod.mt:generators(language)
     return self:ofType(mod.types.generator, language)
 end
 
+--- cp.apple.finalcutpro.plugins:scanAppBuiltInPlugins([language]) -> None
+--- Method
+--- Scan Built In Plugins.
+---
+--- Parameters:
+---  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---
+--- Returns:
+---  * None
 function mod.mt:scanAppBuiltInPlugins(language)
     --------------------------------------------------------------------------------
     -- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
@@ -1265,6 +1385,9 @@ end
 --  * When `searchHistory` is `true`, it will only search to the `0` patch level. E.g. `10.3.2` will stop searching at `10.3.0`.
 function mod.mt:_loadPluginVersionCache(rootPath, version, language, searchHistory)
     version = type(version) == "string" and v(version) or version
+
+    local userEffectsPresetsCache = config.get("userEffectsPresetsCache", nil)
+
     local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, language))
     if filePath then
         local file = io.open(filePath, "r")
