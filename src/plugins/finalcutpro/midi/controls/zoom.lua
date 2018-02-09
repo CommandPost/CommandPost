@@ -75,7 +75,7 @@ function mod.init()
 
 	local params = {
 		group = "fcpx",
-		text = i18n("midiTimelineZoom"),
+		text = string.upper(i18n("midi")) .. ": " .. i18n("timelineZoom"),
 		subText = i18n("midiTimelineZoomDescription"),
 		fn = mod.control,
 	}

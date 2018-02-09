@@ -934,7 +934,7 @@ return {
 	--------------------------------------------------------------------------------
 	-- MIDI CONTROLS:
 	--------------------------------------------------------------------------------
-	midiTimelineZoom					=			"MIDI Timeline Zoom",
+	timelineZoom			    		=			"Timeline Zoom",
 	midiTimelineZoomDescription			=			"Allows you to control timeline zoom via MIDI controls.",
 	midiColorBoardDescription			=			"Controls the Color Board via MIDI Controls",
 

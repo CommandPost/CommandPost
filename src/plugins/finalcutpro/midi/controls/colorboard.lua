@@ -15,6 +15,16 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log				= require("hs.logger").new("cbMIDI")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local eventtap          = require("hs.eventtap")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
@@ -26,6 +36,18 @@ local tools             = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+local function shiftPressed()
+    --------------------------------------------------------------------------------
+    -- Check for keyboard modifiers:
+    --------------------------------------------------------------------------------
+    local mods = eventtap.checkKeyboardModifiers()
+    local result = false
+    if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        result = true
+    end
+    return result
+end
 
 --- plugins.finalcutpro.midi.controls.colorboard.init() -> nil
 --- Function
@@ -66,20 +88,40 @@ function mod.init(deps)
             subText = i18n("midiColorBoardDescription"),
             fn = function(metadata)
                 local midiValue
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
-                if type(midiValue) == "number" then
-                    local colorBoard = fcp:colorBoard()
-                    if colorBoard then
-                        local value = tools.round(midiValue / 16383*200-100)
-                        if midiValue == 16383/2 then value = 0 end
-                        colorBoard:show():applyPercentage("*", colorFunction[i], value)
+                if metadata.fourteenBitCommand or metadata.pitchChange or shiftPressed() then
+                    --------------------------------------------------------------------------------
+                    -- 14bit:
+                    --------------------------------------------------------------------------------
+                    if metadata.pitchChange then
+                        midiValue = metadata.pitchChange
+                    else
+                        midiValue = metadata.fourteenBitValue
+                    end
+                    if type(midiValue) == "number" then
+                        local colorBoard = fcp:colorBoard()
+                        if colorBoard then
+                            local value = tools.round(midiValue / 16383*200-100)
+                            if midiValue == 16383/2 then value = 0 end
+                            colorBoard:show():applyPercentage("*", colorFunction[i], value)
+                        end
+                    else
+                        log.ef("Unexpected type: %s", type(midiValue))
                     end
                 else
-                    log.ef("Unexpected type: %s", type(midiValue))
+                    --------------------------------------------------------------------------------
+                    -- 7bit:
+                    --------------------------------------------------------------------------------
+                    midiValue = metadata.controllerValue
+                    if type(midiValue) == "number" then
+                        local colorBoard = fcp:colorBoard()
+                        if colorBoard then
+                            local value = tools.round(midiValue / 127*127-(127/2))
+                            if midiValue == 127/2 then value = 0 end
+                            colorBoard:show():applyPercentage("*", colorFunction[i], value)
+                        end
+                    else
+                        log.ef("Unexpected type: %s", type(midiValue))
+                    end
                 end
             end,
         })

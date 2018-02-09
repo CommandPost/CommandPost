@@ -424,8 +424,11 @@ function mod._startLearning(id, params)
             mod.learningMidiDevices[deviceName]:callback(function(_, callbackDeviceName, commandType, _, metadata)
                 if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
 
-                    log.df("commandType: %s", commandType)
-                    log.df("metadata: %s", hs.inspect(metadata))
+                    --------------------------------------------------------------------------------
+                    -- Debugging:
+                    --------------------------------------------------------------------------------
+                    --log.df("commandType: %s", commandType)
+                    --log.df("metadata: %s", hs.inspect(metadata))
 
                     --------------------------------------------------------------------------------
                     -- Support 14bit Control Change Messages:
@@ -480,7 +483,7 @@ function mod._startLearning(id, params)
                                 -- Duplicate Found:
                                 --------------------------------------------------------------------------------
                                 if deviceMatch and match then
-                                    log.df("DUPLICATE FOUND!")
+                                    log.df("Duplicate MIDI Command Found!")
                                     --------------------------------------------------------------------------------
                                     -- Reset the current line item:
                                     --------------------------------------------------------------------------------
@@ -702,7 +705,7 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Stream Deck Preferences Panel:")
+            log.df("Unknown Callback in MIDI Preferences Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
