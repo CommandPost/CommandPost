@@ -238,9 +238,9 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         -- The 'Assign Shortcuts' menu:
         --------------------------------------------------------------------------------
-        menu:addMenu(PRIORITY, function() return label end)
+        local submenu = menu:addMenu(PRIORITY, function() return label end)
 
-        menu:addItems(1000, function()
+        submenu:addItems(1000, function()
             --------------------------------------------------------------------------------
             -- Effects Shortcuts:
             --------------------------------------------------------------------------------
