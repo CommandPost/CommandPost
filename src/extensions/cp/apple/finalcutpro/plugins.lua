@@ -397,8 +397,6 @@ function mod.mt:scanUserEffectsPresets(language)
 
     local videoEffect, audioEffect = mod.types.videoEffect, mod.types.audioEffect
     if tools.doesDirectoryExist(path) then
-
-        local pathToAbsolute = fs.pathToAbsolute(path)
         for file in fs.dir(path) do
             local plugin = string.match(file, "(.+)%.effectsPreset")
             if plugin then
@@ -880,7 +878,6 @@ function mod.mt:scanUserMotionTemplates(language)
     --------------------------------------------------------------------------------
     -- Restore from cache:
     --------------------------------------------------------------------------------
-    local cache = {}
     local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
     local lastSize = config.get("userMotionTemplatesCacheSize", nil)
     local userMotionTemplatesCache = config.get("userMotionTemplatesCache", nil)
@@ -941,8 +938,6 @@ function mod.mt:scanSystemMotionTemplates(language)
     --------------------------------------------------------------------------------
     -- Restore from cache:
     --------------------------------------------------------------------------------
-    local cache = {}
-
     local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
     local lastSize = config.get("systemMotionTemplatesCacheSize", nil)
     local systemMotionTemplatesCache = config.get("systemMotionTemplatesCache", nil)
@@ -1385,9 +1380,6 @@ end
 --  * When `searchHistory` is `true`, it will only search to the `0` patch level. E.g. `10.3.2` will stop searching at `10.3.0`.
 function mod.mt:_loadPluginVersionCache(rootPath, version, language, searchHistory)
     version = type(version) == "string" and v(version) or version
-
-    local userEffectsPresetsCache = config.get("userEffectsPresetsCache", nil)
-
     local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, language))
     if filePath then
         local file = io.open(filePath, "r")
@@ -1665,7 +1657,7 @@ function mod.mt:scan(language)
     local startTime = os.clock()
     self:scanAppPlugins(language)
     local finishTime = os.clock()
-    log.df("  * scanAppPlugins(%s) Took: %s", language, finishTime-startTime)
+    log.df("    * scanAppPlugins(%s) took: %s", language, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan system-installed plugins:
@@ -1675,7 +1667,7 @@ function mod.mt:scan(language)
     startTime = os.clock()
     self:scanSystemPlugins(language)
     finishTime = os.clock()
-    log.df("  * scanSystemPlugins(%s) Took: %s", language, finishTime-startTime)
+    log.df("    * scanSystemPlugins(%s) took: %s", language, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan user-installed plugins:
@@ -1685,7 +1677,7 @@ function mod.mt:scan(language)
     startTime = os.clock()
     self:scanUserPlugins(language)
     finishTime = os.clock()
-    log.df("  * scanUserPlugins(%s) Took: %s", language, finishTime-startTime)
+    log.df("    * scanUserPlugins(%s) took: %s", language, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Debug Messaging:
