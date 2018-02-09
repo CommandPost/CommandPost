@@ -51,7 +51,7 @@ local touchdevice
 -- ENABLED_DEFAULT -> number
 -- Constant
 -- Is this feature enabled by default?
-local ENABLED_DEFAULT = true
+local ENABLED_DEFAULT = false
 
 --------------------------------------------------------------------------------
 --

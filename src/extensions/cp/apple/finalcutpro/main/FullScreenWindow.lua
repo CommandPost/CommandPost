@@ -161,7 +161,7 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.FullScreenWindow:watch() -> bool
+--- cp.apple.finalcutpro.main.FullScreenWindow:watch() -> table
 --- Method
 --- Watch for events that happen in the command editor
 --- The optional functions will be called when the window
@@ -173,16 +173,23 @@ end
 ---    * `hide(CommandEditor)` - Triggered when the window is hidden.
 ---
 --- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
+---  * A table containing an ID which can be passed to `unwatch` to stop watching.
 function FullScreenWindow:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)
 	end
-
-	self._watcher:watch(events)
+	return self._watcher:watch(events)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.FullScreenWindow:unwatch(id) -> none
+--- Method
+--- Unwatches an event.
+---
+--- Parameters:
+---  * id - The ID that would have been previously returned by the `watch()` function.
+---
+--- Returns:
+---  * None
 function FullScreenWindow:unwatch(id)
 	if self._watcher then
 		self._watcher:unwatch(id)
