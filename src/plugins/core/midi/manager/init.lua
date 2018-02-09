@@ -378,7 +378,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 
 	if items[activeGroup] then
 		for _, item in pairs(items[activeGroup]) do
-			if deviceName == item.device and item.channel == metadata.channel then
+			if deviceName == item.device and item.channel == metadata.channel and item.commandType == commandType then
 			    --------------------------------------------------------------------------------
 			    -- Note On:
 			    --------------------------------------------------------------------------------
@@ -437,7 +437,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
 				--------------------------------------------------------------------------------
 				-- Pitch Wheel Change:
 				--------------------------------------------------------------------------------
-				elseif commandType == "pitchWheelChange" and item.number == "Pitch" then
+				elseif commandType == "pitchWheelChange" then
                     if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
                         --------------------------------------------------------------------------------
                         -- MIDI Controls for Pitch Wheel:
@@ -468,7 +468,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                             mod._lastPitchChange = metadata and metadata.pitchChange
                             mod._lastControllerChannel = metadata and metadata.channel
                         end
-                    elseif item.handlerID and item.action and item.number == "Pitch" then
+                    elseif item.handlerID and item.action then
                         --------------------------------------------------------------------------------
                         -- Just trigger the handler if Pitch Wheel value changes at all:
                         --------------------------------------------------------------------------------

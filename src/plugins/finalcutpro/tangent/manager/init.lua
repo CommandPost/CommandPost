@@ -1154,7 +1154,7 @@ function plugin.init(deps, env)
                     onclick = function()
                         os.execute('open "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"')
                     end,
-                    class = "tangentButtonThree",
+                    class = "tangentButtonTwo",
                 }
             )
             :addButton(9,
@@ -1163,7 +1163,7 @@ function plugin.init(deps, env)
                     onclick = function()
                         os.execute('open "http://www.tangentwave.co.uk/"')
                     end,
-                    class = "tangentButtonFour",
+                    class = "tangentButtonTwo",
                 }
             )
 

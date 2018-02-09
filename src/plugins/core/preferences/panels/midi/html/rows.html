@@ -4,6 +4,7 @@
 		local buttonID 		= tostring(i)
 		local actionTitle 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["actionTitle"] or i18nNone
 		local device 		= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["device"] or i18nNone
+		local commandType 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["commandType"] or i18nNone
 		local number 		= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["number"] or i18nNone
 		local channel	 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["channel"] or i18nNone
 		local value		 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["value"] or i18nNone
@@ -16,7 +17,7 @@
 					<a id="midi{{ groupID }}_button{{ buttonID }}_actionButton" href="#" class="button midiActionButton">{{ i18nSelect }}</a>
 				</td>
 				<td class="midiRowDevice">
-					<select id="midi{{ groupID }}_button{{ buttonID }}_device" style="width:100px;">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_device" style="width:110px;">
 						{%
 						local foundDevice = false
 						local selected = ""
@@ -74,6 +75,33 @@
 						%}
 					</select>
 				</td>
+				<td class="midiRowType">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_commandType" style="width:130px;">
+						{%
+						local selected = ""
+						if commandType == i18nNone then selected = [[selected=""]] end
+						%}
+						<option {{selected}} value="">{{i18nNone}}</option>
+						{%
+							local commandTypes = {
+								["noteOff"] = i18nNoteOff,
+								["noteOn"] = i18nNoteOn,
+								["polyphonicKeyPressure"] = i18nPolyphonicKeyPressure,
+								["controlChange"] = i18nControlChange,
+								["programChange"] = i18nProgramChange,
+								["channelPressure"] = i18nChannelPressure,
+								["pitchWheelChange"] = i18nPitchWheelChange,
+							}
+							for a, b in pairs(commandTypes) do
+								local selected = ""
+								if a == commandType then
+									selected = [[selected=""]]
+								end
+							%}<option {{selected}} value="{{ a }}">{{b}}</option>{%
+							end
+						%}
+					</select>
+				</td>
 				<td class="midiRowNumber">
 					<input style="width: 35px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_number" class="midiButtonLabel" value="{{ number }}">
 				</td>
@@ -84,20 +112,19 @@
 						if channel == i18nNone then selected = [[selected=""]] end
 						%}
 						<option {{selected}} value="">{{i18nNone}}</option>
-						{% for channelValue=0, 16 do
+						{% for channelValue=1, 16 do
 							local selected = ""
-							if tostring(channel) == tostring(channelValue) then selected = [[selected=""]] end
-							local channelValueString = tostring(channelValue)
-							if channelValue == 0 then
-								channelValueString = i18nAll
+							if channel ~= i18nNone then
+								if tostring(tonumber(channel) + 1) == tostring(channelValue) then selected = [[selected=""]] end
 							end
+							local channelValueString = tostring(channelValue)
 						%}
 							<option {{selected}} value="{{ channelValue }}">{{ channelValueString }}</option>
 						{% end %}
 					</select>
 				</td>
 				<td class="midiRowValue">
-					<input style="width: 35px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_value" class="midiButtonLabel" value="{{ value }}">
+					<input style="width: 40px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_value" class="midiButtonLabel" value="{{ value }}">
 				</td>
 				<td class="midiRowLearn">
 					<a id="midi{{ groupID }}_button{{ buttonID }}_clearButton" href="#" class="button midiActionButton">{{ i18nClear }}</a>
@@ -119,6 +146,29 @@
 										groupID: "{{ groupID }}",
 										buttonID: "{{ buttonID }}",
 										device: midi{{ groupID }}_button{{ buttonID }}_device.value,
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						COMMAND TYPE DROP DOWN:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_commandType = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_commandType");
+						midi{{ groupID }}_button{{ buttonID }}_commandType.onchange = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateCommandType",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										commandType: midi{{ groupID }}_button{{ buttonID }}_commandType.value,
 									},
 								}
 								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);

@@ -42,7 +42,7 @@ function plugin.init(deps, env)
         label       = i18n("tangentPanelLabel"),
         image       = image.imageFromPath(env:pathToAbsolute("/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 430,
+        height      = 370,
     })
 end
 

@@ -547,7 +547,7 @@ function mod.init(deps, env)
         label           = i18n("touchbarPanelLabel"),
         image           = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/TouchID.prefPane/Contents/Resources/touchid_icon.icns")),
         tooltip         = i18n("touchbarPanelTooltip"),
-        height          = 760,
+        height          = 750,
     })
         --------------------------------------------------------------------------------
         -- Virtual Touch Bar
@@ -581,7 +581,7 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod._tb.virtual.location(params.value) end,
             }
         )
-        :addParagraph(5, [[<span style="float: left" class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarDragTip") .. "</span>\n\n", true)
+        :addParagraph(5, [[<span style="display: clear;" class="tbTip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarDragTip") .. "</span>\n\n", true)
 
         --------------------------------------------------------------------------------
         -- Customise Touch Bar:
@@ -595,7 +595,7 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod.enabled(params.checked) end,
             }
         )
-        :addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarSetupTip") .. "</span>\n\n", true)
+        :addParagraph(8, [[<span class="tbTip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarSetupTip") .. "</span>\n\n", true)
         :addContent(10, generateContent, true)
 
     mod._panel:addButton(20,
