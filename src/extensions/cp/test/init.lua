@@ -329,6 +329,20 @@ function matchesFilter(t, i, count, filter)
 	return result
 end
 
+-- this function will run before each test is executed.
+function test.suite.mt:beforeEach(beforeFn)
+	assert(type(beforeFn) == "function", "Please provide a function to execute.")
+	self._beforeEach = beforeFn
+	return self
+end
+
+-- this function will run after each test is executed.
+function test.suite.mt:afterEach(afterFn)
+	assert(type(afterFn) == "function", "Please provide a function to execute.")
+	self._afterEach = afterFn
+	return self
+end
+
 -- allows the default 'run' function to get overridden. Passes in a function
 function test.suite.mt:onRun(onRunFn, ...)
 	self._run = onRunFn
@@ -341,16 +355,37 @@ function test.suite.mt:_run(runFn, ...)
 end
 
 function test.suite.mt:run(...)
-	self.result = test.result.new()
+	local result = test.result.new()
+	self.result = result
 
 	pushSuite(self)
-	self.result:start()
+	result:start()
 
 	self:_run(function(self, filter, ...)
 		local count = #self.tests
 		for i,t in ipairs(self.tests) do
 			if matchesFilter(t, i, count, filter) then
-				t(...)
+				local ok, err = true, nil
+				if self._beforeEach then
+					ok, err = xpcall(self._beforeEach, debug.traceback)
+				end
+				if ok then
+					t(...)
+					if self._afterEach then
+						local ok, err = xpcall(self._afterEach, debug.traceback)
+						if not ok then
+							if handler.error then
+								handler.error(t, format("Error occurred after test '%s': %s", t.name, err))
+							end
+							result.errors = result.errors + 1
+						end
+					end
+				else
+					if handler.error then
+						handler.error(t, format("Error occurred before test '%s': %s", t.name, err))
+					end
+					result.errors = result.errors + 1
+				end
 			end
 		end
 	end, ...)

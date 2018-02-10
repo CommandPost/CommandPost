@@ -31,32 +31,6 @@ local MenuBar = {}
 
 MenuBar.ROLE										= "AXMenuBar"
 
--- cp.apple.finalcutpro.MenuBar:new(App) -> MenuBar
--- Function
--- Constructs a new MenuBar for the specified App.
---
--- Parameters:
---  * app - The App instance the MenuBar belongs to.
---
--- Returns:
---  * a new MenuBar instance
-MenuBar._cache = {}
-
--- clearCache() -> None
--- Function
--- Clears the Menu Bar Cache.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function clearCache()
-    --log.df("Clearing MenuBar Cache")
-    MenuBar._cache = nil
-    MenuBar._cache = {}
-end
-
 --- cp.apple.finalcutpro.MenuBar:new(App) -> MenuBar
 --- Function
 --- Constructs a new MenuBar for the specified App.
@@ -73,17 +47,6 @@ function MenuBar:new(app)
 	}
 	setmetatable(o, self)
 	self.__index = self
-
-    --------------------------------------------------------------------------------
-    -- Add Watchers for Cache:
-    --------------------------------------------------------------------------------
-	app:watch({
-		terminated  = clearCache,
-		active		= clearCache,
-		inactive	= clearCache,
-		show		= clearCache,
-		hide		= clearCache,
-	})
 
 	return o
 end
@@ -269,15 +232,7 @@ end
 --- Returns:
 ---  * The Menu UI, or `nil` if it could not be found.
 function MenuBar:findMenuUI(path, language)
-
-    --------------------------------------------------------------------------------
-    -- Check Cache for MenuUI:
-    --------------------------------------------------------------------------------
-    local id = table.concat(path, "|")
-    if self._cache[id] then
-        --log.df("Using MenuUI Cache: %s", id)
-        return self._cache[id]
-    end
+	assert(type(path) == "table" and #path > 0, "Please provide a table array of menu steps.")
 
     -- Start at the top of the menu bar list
 	local menuMap = self:getMainMenu()
@@ -352,11 +307,6 @@ function MenuBar:findMenuUI(path, language)
 			return nil
 		end
 	end
-
-	--------------------------------------------------------------------------------
-	-- Cache the item:
-	--------------------------------------------------------------------------------
-	self._cache[id] = menuItemUI
 
 	return menuItemUI
 end

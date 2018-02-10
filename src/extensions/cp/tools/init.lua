@@ -595,11 +595,7 @@ end
 function tools.doesFileExist(path)
 	if path == nil then return nil end
     local attr = fs.attributes(path)
-    if type(attr) == "table" then
-    	return true
-    else
-    	return false
-    end
+    return type(attr) == "table"
 end
 
 --- cp.tools.trim(string) -> string
@@ -1081,22 +1077,23 @@ function tools.rmdir(path, recursive)
 		for name in fs.dir(path) do
 			if name ~= "." and name ~= ".." then
 				local filePath = path .. "/" .. name
-				local attrs = fs.attributes(filePath)
+				local attrs = fs.symlinkAttributes(filePath)
 				local ok, err
-				if attrs.mode == "directory" and recursive then
+				if attrs == nil then
+					return nil, "Unable to find file to remove: "..filePath
+				elseif attrs.mode == "directory" then
 					ok, err = tools.rmdir(filePath, true)
 				else
 					ok, err = os.remove(filePath)
 				end
 				if not ok then
-					return ok, err
+					return nil, err
 				end
 			end
 		end
 	end
 	-- remove the directory itself
-	fs.rmdir(path)
-	return true
+	return fs.rmdir(path)
 end
 
 --- cp.tools.numberToWord(number) -> string

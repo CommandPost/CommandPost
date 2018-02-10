@@ -47,7 +47,7 @@ mod.backgroundRender = prop.new(
 		--------------------------------------------------------------------------------
 		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
-		if panel:show() then
+		if panel:show():isShowing() then
 			panel:backgroundRender():toggle()
 		else
 			dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")

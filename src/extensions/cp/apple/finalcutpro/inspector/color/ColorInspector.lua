@@ -22,6 +22,7 @@ local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
+local idBoard							= require("cp.apple.finalcutpro.ids") "ColorBoard"
 
 local CorrectionsBar					= require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
 local ColorBoard						= require("cp.apple.finalcutpro.inspector.color.ColorBoard")
@@ -169,14 +170,14 @@ function ColorInspector:correctorUI()
 			if ui then
 				if ColorBoard.matchesOriginal(ui) then -- 10.3 Color Board
 					return ui
-				else -- 10.4+ Color Inspector
+				elseif ColorInspector.matches(ui) then -- 10.4+ Color Inspector
 					local bottomPanel = axutils.childFromBottom(ui, 1)
 					return bottomPanel and bottomPanel[1] or nil
 				end
 			end
 			return nil
 		end
-	)
+	, function(element) return self:UI() ~= nil and element ~= nil end)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:corrections() -> CorrectionsBar
@@ -212,8 +213,8 @@ end
 --- Returns:
 ---  * `true` if the Color Inspector is showing, otherwise `false`
 function ColorInspector:isShowing(correctionType)
-	local correctionsUI = self:corrections():UI()
 	if correctionType then
+		local correctionsUI = self:corrections():UI()
 		if correctionsUI then
 			local menuButton = axutils.childWith(correctionsUI, "AXRole", "AXMenuButton")
 			local colorBoardText = self:app():string(self.CORRECTION_TYPES[correctionType])
@@ -226,7 +227,7 @@ function ColorInspector:isShowing(correctionType)
 			return false
 		end
 	else
-		return correctionsUI ~= nil or false
+		return self:UI() ~= nil
 	end
 end
 
@@ -241,17 +242,7 @@ end
 ---  * ColorInspector object
 function ColorInspector:show(correctionType)
 	if not self:isShowing() then
-		if ColorBoard.matchesOriginal(self:UI()) then
-			-----------------------------------------------------------------------
-			-- Final Cut Pro 10.3:
-			-----------------------------------------------------------------------
-			self:app():menuBar():selectMenu({"Window", "Go To", id "ColorBoard"})
-		else
-			-----------------------------------------------------------------------
-			-- Final Cut Pro 10.4:
-			-----------------------------------------------------------------------
-			self:app():menuBar():selectMenu({"Window", "Go To", "Color Inspector"})
-		end
+		self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
 	end
 	if correctionType then
 		if self.CORRECTION_TYPES[correctionType] then
@@ -314,7 +305,7 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:hide() -> ColorInspector
 --- Method
---- Hides's the Color Inspector
+--- Hides the Color Inspector
 ---
 --- Parameters:
 ---  * None
@@ -323,7 +314,7 @@ end
 ---  * ColorInspector object
 function ColorInspector:hide()
 	if self:isShowing() then
-		self:app():menuBar():selectMenu({"Window", "Show in Workspace", "Inspector"})
+		self:parent():hide()
 	end
 	return self
 end

@@ -46,8 +46,13 @@ end
 
 -- TODO: Add documentation
 function Timeline:new(app)
-	local o = {_app = app}
-	return prop.extend(o, Timeline)
+	local o = prop.extend({
+		_app = app
+	},	Timeline)
+
+	o.isLoaded = o:contents().isLoaded:wrap(o)
+
+	return o
 end
 
 -- TODO: Add documentation

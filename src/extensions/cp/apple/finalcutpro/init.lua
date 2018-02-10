@@ -117,6 +117,8 @@ local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
 local plugins									= require("cp.apple.finalcutpro.plugins")
 
+local format, gsub, find						= string.format, string.gsub, string.find
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -251,20 +253,25 @@ function App:_resetStrings()
 	end
 end
 
---- cp.apple.finalcutpro:string(key[, lang]) -> string
+--- cp.apple.finalcutpro:string(key[, lang[, quiet]]) -> string
 --- Method
 --- Looks up an application string with the specified `key`.
 --- If no `lang` value is provided, the [current language](#currentLanguage) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
----  * `[lang]` - The language code to use. Defaults to the current language.
+---  * `lang`	- The language code to use. Defaults to the current language.
+---  * `quiet`	- Optional boolean, defaults to `false`. If `true`, no warnings are logged for missing keys.
 ---
 --- Returns:
 ---  * The requested string or `nil` if the application is not running.
-function App:string(key, lang)
+function App:string(key, lang, quiet)
+	if type(lang) == "boolean" then
+		quiet = lang
+		lang = nil
+	end
 	lang = lang or self:currentLanguage()
-	return self._strings and self._strings:find(lang, key)
+	return self._strings and self._strings:find(lang, key, quiet)
 end
 
 --- cp.apple.finalcutpro:keysWithString(string[, lang]) -> {string}
@@ -452,8 +459,6 @@ end
 --- Is Final Cut visible on screen?
 App.isShowing = App.application:mutate(
 	function(original)
-		-- log.df("isShowing: original = %s", _inspect(original))
-		log.df("isShowing: original type = %s", type(original))
 		local app = original()
 		return app and not app:isHidden()
 	end
@@ -619,6 +624,77 @@ App.isModalDialogOpen = prop.new(function(self)
 	end
 	return false
 end):bind(App)
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- LIBRARIES
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:openLibrary(path) -> boolean
+--- Method
+--- Attempts to open a file at the specified absolute `path`.
+---
+--- Parameters:
+--- * path	- The path to the FCP Library to open.
+---
+--- Returns:
+--- * `true` if successful, or `false` if not.
+function App:openLibrary(path)
+	assert(type(path) == "string", "Please provide a valid path to the FCP Library.")
+	if fs.attributes(path) == nil then
+		log.ef("Unable to find an FCP Library file at the provided path: %s", path)
+		return false
+	end
+
+	local output, ok = os.execute("open '".. path .. "'")
+	if not ok then
+		log.ef(format("Error while opening the FCP Library at '%s': %s", path, output))
+		return false
+	end
+
+	return true
+end
+
+--- cp.apple.finalcutpro:selectLibrary(title) -> axuielement
+--- Method
+--- Attempts to select an open library with the specified title.
+---
+--- Parameters:
+--- * title - The title of the library to select.
+---
+--- Returns:
+--- * The library row `axuielement`.
+function App:selectLibrary(title)
+	return self:libraries():selectLibrary(title)
+end
+
+--- cp.apple.finalcutpro:closeLibrary(title) -> boolean
+--- Method
+--- Attempts to close a library with the specified `title`.
+---
+--- Parameters:
+--- * title	- The title of the FCP Library to close.
+---
+--- Returns:
+--- * `true` if successful, or `false` if not.
+function App:closeLibrary(title)
+	if self:isRunning() and self:libraries():selectLibrary(title) ~= nil then
+		self:selectMenu({"File", function(item)
+			local closeFormat = self:string("FFCloseLibraryFormat")
+			if closeFormat then
+				closeFormat = gsub(closeFormat, "%%@", title)
+				return find(item:title(), closeFormat) == 1
+			end
+			return false
+		end})
+		-- wait until the library actually closes, up to 5 seconds.
+		return just.doUntil(function() return self:libraries():selectLibrary(title) == nil end, 5.0)
+	end
+	return false
+end
 
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
@@ -1054,6 +1130,19 @@ end
 ---  * the ColorInspector
 function App:color()
 	return self:primaryWindow():color()
+end
+
+--- cp.apple.finalcutpro:alert() -> cp.ui.Alert
+--- Method
+--- Provides access to any 'alert' dialogues in the app.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the `Alert` instance
+function App:alert()
+	return self:primaryWindow():alert()
 end
 
 ----------------------------------------------------------------------------------------
@@ -1681,7 +1770,7 @@ function App:_listWindows()
 	self:show()
 	local windows = self:windowsUI()
 	for i,w in ipairs(windows) do
-		log.df(string.format("%7d", i)..": "..self:_describeWindow(w))
+		log.df(format("%7d", i)..": "..self:_describeWindow(w))
 	end
 
 	log.df("")

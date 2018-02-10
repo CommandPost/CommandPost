@@ -20,8 +20,10 @@ local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
 
+local Alert							= require("cp.ui.Alert")
 local Button						= require("cp.ui.Button")
 local Window						= require("cp.ui.Window")
+
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.inspector.Inspector")
@@ -58,10 +60,9 @@ end
 --- Returns:
 ---  * PrimaryWindow
 function PrimaryWindow:new(app)
-	local o = {
+	local o = prop.extend({
 		_app = app
-	}
-	prop.extend(o, PrimaryWindow)
+	}, PrimaryWindow)
 
 	local window = Window:new(function()
 		return axutils.cache(self, "_ui", function()
@@ -128,13 +129,13 @@ end
 ---  * None
 ---
 --- Returns:
----  * `true` if the window exists and
+---  * The `PrimaryWindow` instance.
 function PrimaryWindow:show()
-	if self:isShowing() then
-		return true
-	else
+	self:app():show()
+	if not self:isShowing() then
 		return self:window():focus()
 	end
+	return self
 end
 
 -----------------------------------------------------------------------
@@ -383,6 +384,29 @@ end
 function PrimaryWindow:browserGroupUI()
 	return self:topGroupUI()
 end
+
+-----------------------------------------------------------------------
+--
+-- BROWSER:
+--
+-----------------------------------------------------------------------
+
+--- cp.apple.finalcutpro.main.PrimaryWindow:alert() -> cp.ui.Alert
+--- Method
+--- Provides access to any 'Alert' windows on the PrimaryWindow.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `cp.ui.Alert` object
+function PrimaryWindow:alert()
+	if not self._alert then
+		self._alert = Alert:new(self)
+	end
+	return self._alert
+end
+
 
 -----------------------------------------------------------------------
 --

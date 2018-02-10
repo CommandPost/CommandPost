@@ -16,8 +16,11 @@
 local log								= require("hs.logger").new("inspector")
 local inspect							= require("hs.inspect")
 
+local geometry							= require("hs.geometry")
+
 local just								= require("cp.just")
 local prop								= require("cp.prop")
+local tools								= require("cp.tools")
 local axutils							= require("cp.ui.axutils")
 
 local AudioInspector					= require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
@@ -70,7 +73,7 @@ Inspector.INSPECTOR_TABS = {
 function Inspector.matches(element)
 	return axutils.childWithID(element, id "DetailsPanel") ~= nil -- is inspecting
 		or axutils.childWithID(element, id "NothingToInspect") ~= nil 	-- nothing to inspect
-		or ColorBoard.matchesOriginal(element) ~= nil -- the 10.3 color board
+		or ColorBoard.matchesOriginal(element) -- the 10.3 color board
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:new(parent) -> Inspector
@@ -159,19 +162,33 @@ function Inspector:UI()
 	Inspector.matches)
 end
 
---- cp.apple.finalcutpro.inspector.Inspector.isShowing() -> boolean
---- Function
+--- cp.apple.finalcutpro.inspector.Inspector.isShowing <cp.prop: boolean; read-only>
+--- Field
 --- Returns `true` if the Inspector is showing otherwise `false`
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
 Inspector.isShowing = prop.new(function(self)
 	local ui = self:UI()
 	return ui ~= nil
 end):bind(Inspector)
+
+--- cp.apple.finalcutpro.inspector.Inspector.isFullHeight <cp.prop: boolean>
+--- Field
+--- Returns `true` if the Inspector is full height.
+Inspector.isFullHeight = prop.new(
+	function(self)
+		return Inspector.matches(self:parent():rightGroupUI())
+	end,
+	function(value, self)
+		self:show()
+		local fullHight = Inspector.matches(self:parent():rightGroupUI())
+		if value ~= fullHeight then
+			local label = axutils.childWithRole(self:topBarUI(), "AXStaticText")
+			if label then
+				local target = geometry(label:frame()).center
+				tools.ninjaDoubleClick(target)
+			end
+		end
+	end
+):bind(Inspector)
 
 --- cp.apple.finalcutpro.inspector.Inspector:show([tab]) -> Inspector
 --- Method
@@ -203,12 +220,12 @@ function Inspector:show(tab)
 		-----------------------------------------------------------------------
 		-- Show the parent:
 		-----------------------------------------------------------------------
-		if parent:show() then
+		if parent:show():isShowing() and not self:isShowing() then
 			local menuBar = self:app():menuBar()
 			-----------------------------------------------------------------------
 			-- Enable it in the primary:
 			-----------------------------------------------------------------------
-			menuBar:checkMenu({"Window", "Show in Workspace", "Inspector"})
+			menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
 		end
 	end
 	return self
@@ -224,9 +241,11 @@ end
 --- Returns:
 ---  * The `Inspector` instance.
 function Inspector:hide()
-	local menuBar = self:app():menuBar()
-	-- Uncheck it from the primary workspace
-	menuBar:uncheckMenu({"Window", "Show in Workspace", "Inspector"})
+	if self:isShowing() then
+		local menuBar = self:app():menuBar()
+		-- Uncheck it from the primary workspace
+		menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
+	end
 	return self
 end
 

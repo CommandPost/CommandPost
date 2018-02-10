@@ -8,6 +8,9 @@
 ---
 --- Represents a particular aspect of the color board (Color/Saturation/Exposure).
 
+local inspect					= require("hs.inspect")
+
+local just						= require("cp.just")
 local axutils					= require("cp.ui.axutils")
 local prop						= require("cp.prop")
 
@@ -18,6 +21,13 @@ local ColorPuck					= require("cp.apple.finalcutpro.inspector.color.ColorPuck")
 
 local ColorBoardAspect = {}
 
+local format					= string.format
+
+--- cp.apple.finalcutpro.inspect.color.ColorBoardAspect.ids -> table
+--- Constant
+--- A table containing the list of aspect IDs ("color", "saturation", "exposure").
+ColorBoardAspect.ids						= {"color", "saturation", "exposure"}
+
 --- cp.apple.finalcutpro.inspect.color.ColorBoard.matches() -> boolean
 --- Function
 --- Checks if the element is a ColorBoardAspect.
@@ -26,6 +36,10 @@ function ColorBoardAspect.matches(element)
 end
 
 function ColorBoardAspect:new(parent, index)
+	if index < 1 or index > #ColorBoardAspect.ids then
+		error(format("The index must be between 1 and %s: %s", #ColorBoardAspect.ids, inspect(index)))
+	end
+
 	local o = prop.extend({
 		_parent = parent,
 		_index = index,
@@ -55,6 +69,7 @@ function ColorBoardAspect:show()
 		local parent = self:parent()
 		parent:show()
 		parent:aspectGroup():selectedOption(self._index)
+		just.doUntil(function() return self:isShowing() end, 3, 0.01)
 	end
 	return self
 end
@@ -67,11 +82,19 @@ function ColorBoardAspect:index()
 	return self._index
 end
 
+function ColorBoardAspect:id()
+	return ColorBoardAspect.ids[self._index]
+end
+
+function ColorBoardAspect:selected()
+	return isShowing()
+end
+
 function ColorBoardAspect:master()
 	if not self._master then
 		self._master = ColorPuck:new(
 			self, ColorPuck.range.master,
-			{"cb master puck display name", "cb global puck display name"}
+			{"PAECorrectorEffectMaster", "cb master puck display name"}
 		)
 	end
 	return self._master
@@ -81,7 +104,7 @@ function ColorBoardAspect:shadows()
 	if not self._shadows then
 		self._shadows = ColorPuck:new(
 			self, ColorPuck.range.shadows,
-			"cb shadow puck display name"
+			{"PAECorrectorEffectShadows", "cb shadow puck display name"}
 		)
 	end
 	return self._shadows
@@ -91,7 +114,7 @@ function ColorBoardAspect:midtones()
 	if not self._midtones then
 		self._midtones = ColorPuck:new(
 			self, ColorPuck.range.midtones,
-			"cb midtone puck display name"
+			{"PAECorrectorEffectMidtones", "cb midtone puck display name"}
 		)
 	end
 	return self._midtones
@@ -101,10 +124,14 @@ function ColorBoardAspect:highlights()
 	if not self._highlights then
 		self._highlights = ColorPuck:new(
 			self, ColorPuck.range.highlights,
-			"cb highlight puck display name"
+			{"PAECorrectorEffectHighlights", "cb highlight puck display name"}
 		)
 	end
 	return self._highlights
+end
+
+function ColorBoardAspect:__tostring()
+	return self:id()
 end
 
 return ColorBoardAspect

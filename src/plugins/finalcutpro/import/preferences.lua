@@ -46,7 +46,7 @@ mod.createOptimizedMedia = prop.new(
 		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
 		local panel = fcp:preferencesWindow():importPanel()
-		if panel:show() then
+		if panel:show():isShowing() then
 			panel:createOptimizedMedia():toggle()
 		else
 			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in createOptimizedMedia().")
@@ -98,7 +98,7 @@ mod.createProxyMedia = prop.new(
 		-- Toggle the checkbox:
 		--------------------------------------------------------------------------------
 		local panel = fcp:preferencesWindow():importPanel()
-		if panel:show() then
+		if panel:show():isShowing() then
 			panel:createProxyMedia():toggle()
 		else
 			dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in createProxyMedia().")

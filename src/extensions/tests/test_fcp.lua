@@ -7,30 +7,77 @@ local fcp					= require("cp.apple.finalcutpro")
 local ids					= require("cp.apple.finalcutpro.ids")
 local just					= require("cp.just")
 local test					= require("cp.test")
+local tools					= require("cp.tools")
+local axutils				= require("cp.ui.axutils")
 
-local TEST_LIBRARY 			= "Test Library.fcpbundle"
+local v						= require("semver")
 
-local temporaryDirectory 	= fs.temporaryDirectory() .. "CommandPost"
-local temporaryLibrary 		= temporaryDirectory .. "/" .. TEST_LIBRARY
+local format, find, gsub	= string.format, string.find, string.gsub
+local rmdir, mkdir, attributes	= tools.rmdir, fs.mkdir, fs.attributes
 
-local function loadLibrary()
-	local output, status = os.execute("open '".. temporaryLibrary .. "'")
-	ok(status, output)
-end
+local TEST_LIBRARY 			= "Test Library"
 
-local function reset()
-	fcp:launch()
-	fcp:selectMenu({"Window", "Workspaces", "Default"})
-	loadLibrary()
-	-- keep trying until the library loads successfully, waiting up to 10 seconds.
-	just.doUntil(function() return fcp:libraries():selectLibrary("Test Library") ~= nil end, 10.0)
-	if not fcp:libraries():openClipTitled("Test Project") then
-		error(string.format("Unable to open the 'Test Project' clip."))
+local TEST_DIRECTORY 	= fs.temporaryDirectory() .. "CommandPost"
+local TEST_LIBRARY_PATH 		= TEST_DIRECTORY .. "/" .. TEST_LIBRARY .. ".fcpbundle"
 
+return test.suite("cp.apple.finalcutpro")
+:beforeEach(function() -- do this before each test
+	fcp:closeLibrary(TEST_LIBRARY)
+
+	-- Copy Test Library to Temporary Directory:
+	local testLibrary = config.scriptPath .. "/tests/fcp/libraries/" .. fcp:getVersion() .. "/" .. TEST_LIBRARY .. ".fcpbundle"
+
+	-- remove any old copies of the library
+	if attributes(TEST_DIRECTORY) ~= nil then
+		local ok, err = rmdir(TEST_DIRECTORY, true)
+		if not ok then
+			error(format("Unable to remove the temporary directory: %s", err))
+		end
 	end
-end
+	-- ensure the target directory exists.
+	local ok, err = mkdir(TEST_DIRECTORY)
+	if not ok then
+		error(format("Unable to create the temporary directory: %s", err))
+	end
 
-return test.suite("cp.apple.finalcutpro"):with(
+	-- copy the test library to the temporary directory
+	local output, ok, type, rc = hs.execute([[cp -R "]] .. testLibrary .. [[" "]] .. TEST_DIRECTORY .. [["]])
+	if not ok then
+		error(format("Unable to copy the Test Library to '%s': %s (%s: %s)", TEST_DIRECTORY, output, type, rc))
+	end
+
+	-- check it copied ok.
+	if not fs.attributes(TEST_LIBRARY_PATH) then
+		error(format("Unable to find the Test Library in the copied destination: %s", TEST_LIBRARY_PATH))
+	end
+
+	-- give the OS a second to catch up.
+	-- just.wait(1)
+
+	fcp:launch()
+	just.doUntil(function() return fcp:isRunning() end, 10)
+	fcp:selectMenu({"Window", "Workspaces", "Default"})
+
+	if not fcp:openLibrary(TEST_LIBRARY_PATH) then
+		error(format("Unable to open the Test Library: %s", TEST_LIBRARY_PATH))
+	end
+
+	-- keep trying until the library loads successfully, waiting up to 5 seconds.
+	just.doUntil(function() return fcp:libraries():selectLibrary(TEST_LIBRARY) ~= nil end, 5.0)
+
+	if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10) then
+		error(format("Unable to open the 'Test Project' clip."))
+	end
+end)
+:afterEach(function() -- do this after each test.
+	-- fcp:closeLibrary(TEST_LIBRARY)
+	-- -- delete the temporary library copy.
+	-- local ok, err = rmdir(TEST_DIRECTORY, true)
+	-- if not ok then
+	-- 	error(format("Unable to remove the temporary directory: %s", err))
+	-- end
+end)
+:with(
 	test("Launch FCP", function()
 		-- Launch FCP
 		fcp:launch()
@@ -38,9 +85,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Check FCP Primary Components", function()
-		-- Reset to the default workspace
-		reset()
-
 		-- Test that various UI elements are able to be found.
 		ok(fcp:primaryWindow():isShowing())
 		ok(fcp:browser():isShowing())
@@ -51,9 +95,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Check Event Viewer", function()
-		-- Reset to default workspace
-		reset()
-
 		-- Turn it on and off.
 		ok(not fcp:eventViewer():isShowing())
 		fcp:eventViewer():showOnPrimary()
@@ -63,8 +104,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Command Editor", function()
-		reset()
-
 		-- The Command Editor.
 		ok(not fcp:commandEditor():isShowing())
 		fcp:commandEditor():show()
@@ -75,19 +114,33 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Export Dialog", function()
-		reset()
+		-- Need to close and re-open the library so that all media is linked correctly.
+		-- just.wait(1)
+		-- fcp:closeLibrary(TEST_LIBRARY)
+		-- -- just.wait(5)
+		-- fcp:openLibrary(TEST_LIBRARY_PATH)
 
 		-- Export Dialog
 		ok(not fcp:exportDialog():isShowing())
 		fcp:exportDialog():show()
+
+		-- There may be a 'Missing media' alert, due to a bug(?) in FCPX where media from the library is missing the first load.
+		if fcp:alert():isShowing() then
+			local message = fcp:string("FFMissingMediaMessageText"):gsub("%%@", ".*")
+			if fcp:alert():containsText(message) then
+				fcp:alert():default():press()
+			else
+				ok(false, "Unexpected Alert displayed while opening the Export Dialog.")
+				fcp:alert():hide()
+			end
+		end
+
 		ok(fcp:exportDialog():isShowing())
 		fcp:exportDialog():hide()
 		ok(not fcp:exportDialog():isShowing())
 	end),
 
 	test("Media Importer", function()
-		reset()
-
 		-- Media Importer
 		ok(not fcp:mediaImport():isShowing())
 		fcp:mediaImport():show()
@@ -99,8 +152,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Effects Browser", function()
-		reset()
-
 		local browser = fcp:effects()
 		browser:show()
 		ok(browser:isShowing())
@@ -111,8 +162,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Transitions Browser", function()
-		reset()
-
 		local browser = fcp:transitions()
 		browser:show()
 		ok(browser:isShowing())
@@ -123,8 +172,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Media Browser", function()
-		reset()
-
 		local browser = fcp:media()
 		browser:show()
 		ok(browser:isShowing())
@@ -134,8 +181,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Generators Browser", function()
-		reset()
-
 		local browser = fcp:generators()
 		browser:show()
 		ok(browser:isShowing())
@@ -146,8 +191,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Inspector", function()
-		reset()
-
 		local inspector = fcp:inspector()
 		inspector:show()
 		just.doUntil(function() return inspector:isShowing() end, 1)
@@ -157,8 +200,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Color Inspector", function()
-		reset()
-
 		local color = fcp:inspector():color()
 		color:show()
 		just.doUntil(function() return color:isShowing() end, 1)
@@ -167,39 +208,77 @@ return test.suite("cp.apple.finalcutpro"):with(
 
 		color:hide()
 		ok(not color:isShowing())
-
 	end),
 
 	test("Color Board", function()
-		reset()
+		local tc = fcp:timeline():contents()
+		-- get the set of clips (expand secondary storylines)
+		local clips = tc:clipsUI(true)
+		if #clips < 1 then
+			error("Unable to find any clips to adjust color for.")
+		end
+		-- select the first clip.
+		tc:selectClip(clips[1])
 
 		local colorBoard = fcp:colorBoard()
 		colorBoard:show()
-		just.doUntil(function() return colorBoard:isShowing() end, 1)
-		ok(colorBoard:isShowing())
+		just.doUntil(function() return colorBoard:isShowing() end, 5)
+		ok(colorBoard:isShowing(), puck)
 
-		local aspect
+		local testPuck = function(puck, hasAngle)
+			-- check the pucks
+			ok(puck:select():isShowing())
+			ok(eq(puck:percent(15), 15), puck)
+			ok(eq(puck:percent(), 15), puck)
+			ok(eq(puck:percent(100), 100), puck)
+			ok(eq(puck:percent(101), 100), puck)
+			ok(eq(puck:percent(0), 0), puck)
+			ok(eq(puck:percent(-101), -100), puck)
+			ok(eq(puck:percent("50"), 50), puck)
 
-		aspect = colorBoard:color():show()
+			if hasAngle then
+				-- in 10.4+ the color board now cycles through the angle back to 0 after it hits 360, and vice versa for negative angles.
+				local cycleAngle = v(fcp:getVersion()) >= v("10.4")
 
-		ok(aspect:isShowing())
-		ok(not colorBoard:saturation():isShowing())
-		ok(not colorBoard:exposure():isShowing())
+				ok(eq(puck:angle(100), 100), puck)
+				ok(eq(puck:angle(359), 359), puck)
+				ok(eq(puck:angle(360), cycleAngle and 0 or 360), puck)
+				ok(eq(puck:angle(0), 0), puck)
+				ok(eq(puck:angle(-1), cycleAngle and 359 or 0), puck)
+			end
+		end
 
-		-- check the pucks
-		local puck = aspect:master()
-		ok(puck:isShowing())
-		ok(puck:percent(15) == 15)
-		ok(puck:percent() == 15)
+		local allAspects = {colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()}
 
-		ok(colorBoard:saturation():show():isShowing())
-		ok(not colorBoard:color():isShowing())
-		ok(not colorBoard:exposure():isShowing())
+		local testAspect = function(aspect, hasAngle)
+			aspect:show()
+
+			for _,otherAspect in ipairs(allAspects) do
+				ok(eq(otherAspect:isShowing(), aspect:index() == otherAspect:index()), string.format("Comparing '%s' to '%s' has an unexpected 'isShowing' status: %s", otherAspect:id(), aspect:id(), aspect:isShowing()))
+			end
+
+			-- check the pucks
+			testPuck(aspect:master(), hasAngle)
+			testPuck(aspect:shadows(), hasAngle)
+			testPuck(aspect:midtones(), hasAngle)
+			testPuck(aspect:highlights(), hasAngle)
+		end
+
+		-- check at full height
+		fcp:inspector():isFullHeight(true)
+		testAspect(colorBoard:color(), true)
+		testAspect(colorBoard:saturation(), false)
+		testAspect(colorBoard:exposure(), false)
+
+		-- and half-height (in some versions of FCP, puck property rows are hidden unless selected.)
+		-- fcp:inspector():isFullHeight(false)
+		-- testAspect(colorBoard:color(), true)
+		-- testAspect(colorBoard:saturation(), false)
+		-- testAspect(colorBoard:exposure(), false)
+
 	end),
 
 	test("Libraries Browser", function()
-		reset()
-
 		-- Show it
 		local libraries = fcp:libraries()
 		libraries:show()
@@ -235,7 +314,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Libraries Filmstrip", function()
-		reset()
 		local libraries = fcp:libraries()
 
 		-- Check Filmstrip/List view
@@ -245,7 +323,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Libraries List", function()
-		reset()
 		local libraries = fcp:libraries()
 		local list		= libraries:list()
 
@@ -260,7 +337,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Timeline", function()
-		reset()
 		local timeline = fcp:timeline()
 
 		ok(timeline:isShowing())
@@ -269,7 +345,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Timeline Appearance", function()
-		reset()
 		local appearance = fcp:timeline():toolbar():appearance()
 
 		ok(appearance:toggle():isShowing())
@@ -286,7 +361,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Timeline Contents", function()
-		reset()
 		local contents = fcp:timeline():contents()
 
 		ok(contents:isShowing())
@@ -294,7 +368,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Timeline Toolbar", function()
-		reset()
 		local toolbar = fcp:timeline():toolbar()
 
 		ok(toolbar:isShowing())
@@ -307,7 +380,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("Viewer", function()
-		reset()
 		local viewer = fcp:viewer()
 
 		ok(viewer:isShowing())
@@ -319,7 +391,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("PreferencesWindow", function()
-		reset()
 		local prefs = fcp:preferencesWindow()
 
 		prefs:show()
@@ -330,7 +401,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("ImportPanel", function()
-		reset()
 		local panel = fcp:preferencesWindow():importPanel()
 
 		-- Make sure the preferences window is hidden
@@ -350,7 +420,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end),
 
 	test("PlaybackPanel", function()
-		reset()
 		local panel = fcp:preferencesWindow():playbackPanel()
 
 		-- Make sure the preferences window is hidden
@@ -368,6 +437,8 @@ return test.suite("cp.apple.finalcutpro"):with(
 )
 -- custom run function, that loops through all languages (or languages provided)
 :onRun(function(self, runTests, languages, ...)
+	local wasRunning = fcp:isRunning()
+
 	-- Figure out which languages to test
 	if type(languages) == "table" then
 		languages = languages and #languages > 0 and languages
@@ -382,13 +453,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 	-- Store the current language:
 	local originalLanguage = fcp:currentLanguage()
 	local originalName = self.name
-
-	-- Copy Test Library to Temporary Directory:
-	local testLibrary = config.scriptPath .. "/tests/fcp/libraries/" .. fcp:getVersion() .. "/" .. TEST_LIBRARY
-
-	fs.rmdir(temporaryDirectory)
-	fs.mkdir(temporaryDirectory)
-	hs.execute([[cp -R "]] .. testLibrary .. [[" "]] .. temporaryDirectory .. [["]])
 
 	for _,lang in ipairs(languages) do
 		-- log.df("Testing FCPX in the '%s' language...", lang)
@@ -406,12 +470,10 @@ return test.suite("cp.apple.finalcutpro"):with(
 	end
 
 	-- Reset to the current language
+	if not wasRunning then
+		fcp:quit()
+	end
 	fcp:currentLanguage(originalLanguage)
 	self.name = originalName
-
-	-- Quit FCPX and remove Test Library from Temporary Directory:
-	-- log.df("Quitting FCPX and deleting Test Library...")
-	-- fcp:quit()
-	-- fs.rmdir(temporaryDirectory)
 
 end)

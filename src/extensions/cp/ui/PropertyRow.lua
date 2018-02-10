@@ -33,11 +33,12 @@ function PropertyRow:new(parent, labelKey, propertiesUI)
 	o.label = prop(function(self)
 		local app = self:app()
 		for _,key in ipairs(self._labelKeys) do
-			local label = app:string(key)
+			local label = app:string(key, true)
 			if label then
 				return label
 			end
 		end
+		log.wf("Unabled to find a string for property row titles: %s", string.join(self._labelKeys, ", "))
 		return nil
 	end):bind(o)
 
@@ -101,13 +102,17 @@ function PropertyRow:children()
 	end
 	-- check if we have children cached
 	if not chidren and label then
-		local labelFrame = geometry.new(label:frame())
-		children = axutils.childrenMatching(self:propertiesUI(), function(child)
-			-- match the children who are right of the label element (and not the AXScrollBar)
-			return labelFrame:intersect(child:frame()).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
-		end)
-		table.sort(children, axutils.compareLeftToRight)
-		self._children = children
+		local labelFrame = label:frame()
+		local labelFrame = labelFrame and geometry.new(label:frame()) or nil
+		if labelFrame then
+			children = axutils.childrenMatching(self:propertiesUI(), function(child)
+				-- match the children who are right of the label element (and not the AXScrollBar)
+				local childFrame = child:frame()
+				return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
+			end)
+			table.sort(children, axutils.compareLeftToRight)
+			self._children = children
+		end
 	end
 	return children
 end

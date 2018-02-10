@@ -95,6 +95,11 @@ TimelineContents.isShowing = prop.new(function(self)
 end):bind(TimelineContents)
 
 -- TODO: Add documentation
+TimelineContents.isLoaded = prop.new(function(self)
+	return self:scrollAreaUI() ~= nil
+end):bind(TimelineContents)
+
+-- TODO: Add documentation
 function TimelineContents:show()
 	self:parent():show()
 	return self

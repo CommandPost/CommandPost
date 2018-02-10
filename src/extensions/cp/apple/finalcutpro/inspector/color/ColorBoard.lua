@@ -130,6 +130,7 @@ function ColorBoard.matchesCurrent(element)
 		if splitGroup then
 			local colorBoardGroup = axutils.childWith(splitGroup, "AXIdentifier", id "ColorBoardGroup")
 			if colorBoardGroup and colorBoardGroup[1] and colorBoardGroup[1][1] and #colorBoardGroup[1][1]:attributeValue("AXChildren") >= 19 then
+				log.df("matchesCurrent: true")
 				return true
 			end
 		end

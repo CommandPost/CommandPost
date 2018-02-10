@@ -21,6 +21,7 @@ local drawing								= require("hs.drawing")
 local timer									= require("hs.timer")
 
 local prop									= require("cp.prop")
+local tools									= require("cp.tools")
 local axutils								= require("cp.ui.axutils")
 local PropertyRow							= require("cp.ui.PropertyRow")
 local TextField								= require("cp.ui.TextField")
@@ -58,6 +59,9 @@ function Puck:new(parent, puckNumber, labelKeys)
 
 	-- finds the 'row' for the property type
 	o.row = PropertyRow:new(o, o._labelKeys, "contentUI")
+
+	-- finds the current label for the row.
+	o.label = o.row.label:wrap(o)
 
 	-- the 'percent' text field
 	o.percent = TextField:new(o, function()
@@ -105,7 +109,12 @@ end
 function Puck:select()
 	self:show()
 	local ui = self:UI()
-	if ui then ui:doPress() end
+	if ui then
+		local f = ui:frame()
+		-- local centre = geometry(f.x + f.w/2, f.y + f.h/2)
+		local centre = geometry(f).center
+		tools.ninjaMouseClick(centre)
+	end
 	return self
 end
 
@@ -300,6 +309,10 @@ function Puck.tension(diff)
 	local factor = diff < 0 and -1 or 1
 	local tension = Puck.elasticity * (diff*factor-Puck.naturalLength) / Puck.naturalLength
 	return tension < 0 and 0 or tension * factor
+end
+
+function Puck:__tostring()
+	return string.format("%s - %s", self:parent(), self:label() or "[Unknown]")
 end
 
 return Puck
