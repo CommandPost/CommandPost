@@ -121,15 +121,13 @@ function mod.stopMousePuck()
     end
 end
 
-function mod.toggleColorBoard()
+function mod.nextAspect()
 
     --------------------------------------------------------------------------------
     -- Show the Color Board if it's hidden:
     --------------------------------------------------------------------------------
     local colorBoard = fcp:colorBoard()
-    if not colorBoard:isShowing() then colorBoard:show() end
-
-    if not colorBoard:isActive() then
+    if not colorBoard:show():isActive() then
         dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
         return "Failed"
     end
@@ -237,7 +235,7 @@ function plugin.init(deps)
     deps.fcpxCmds
         :add("cpToggleColorBoard")
         :groupedBy("colorboard")
-        :whenActivated(mod.toggleColorBoard)
+        :whenActivated(mod.nextAspect)
 
     return mod
 
