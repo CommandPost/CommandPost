@@ -607,7 +607,7 @@ end
 --- Returns:
 ---  * `true` if the file exists otherwise `false`
 function tools.doesFileExist(path)
-    return type(path) == "string" and type(fs.attribute(path)) == "table"
+    return type(path) == "string" and type(fs.attributes(path)) == "table"
 end
 
 --- cp.tools.trim(string) -> string
