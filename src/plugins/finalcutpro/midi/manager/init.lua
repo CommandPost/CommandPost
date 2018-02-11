@@ -15,14 +15,42 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log										= require("hs.logger").new("fcpMIDI")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp										= require("cp.apple.finalcutpro")
+local config                                    = require("cp.config")
+local fcp                                       = require("cp.apple.finalcutpro")
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+--- plugins.finalcutpro.midi.manager.enabled <cp.prop: boolean>
+--- Field
+--- Enable or disable MIDI Support.
+mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
+    if enabled then
+        --------------------------------------------------------------------------------
+        -- Update MIDI Commands when Final Cut Pro is shown or hidden:
+        --------------------------------------------------------------------------------
+        mod._fcpWatchID = fcp:watch({
+            active      = function() mod._manager.groupStatus("fcpx", true) end,
+            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
+            show        = function() mod._manager.groupStatus("fcpx", true) end,
+            hide        = function() mod._manager.groupStatus("fcpx", false) end,
+        })
+    else
+        --------------------------------------------------------------------------------
+        -- Destroy Watchers:
+        --------------------------------------------------------------------------------
+        if mod._fcpWatchID and mod._fcpWatchID.id then
+            fcp:unwatch(mod._fcpWatchID.id)
+            mod._fcpWatchID = nil
+        end
+    end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -30,28 +58,28 @@ local fcp										= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.midi.manager",
-	group = "finalcutpro",
-	dependencies = {
-		["core.midi.manager"]		= "manager",
-	}
+    id = "finalcutpro.midi.manager",
+    group = "finalcutpro",
+    dependencies = {
+        ["core.midi.manager"]       = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+    mod._manager = deps.manager
+    return mod
+end
 
-	--------------------------------------------------------------------------------
-	-- Update MIDI Commands when Final Cut Pro is shown or hidden:
-	--------------------------------------------------------------------------------
-	fcp:watch({
-		active		= function() deps.manager.groupStatus("fcpx", true) end,
-		inactive	= function() deps.manager.groupStatus("fcpx", false) end,
-		show		= function() deps.manager.groupStatus("fcpx", true) end,
-		hide    	= function() deps.manager.groupStatus("fcpx", false) end,
-	})
-
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit()
+    if mod._manager then
+        mod.enabled:update()
+    end
 end
 
 return plugin

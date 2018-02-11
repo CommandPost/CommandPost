@@ -13,16 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("globalConsole")
 
-local tools				= require("cp.tools")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local WIDGETS		= "widgets"
+local WIDGETS       = "widgets"
 
 --------------------------------------------------------------------------------
 --
@@ -31,28 +33,34 @@ local WIDGETS		= "widgets"
 --------------------------------------------------------------------------------
 local mod = {}
 
---------------------------------------------------------------------------------
--- SHOW CONSOLE:
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.console.show() -> none
+--- Function
+--- Shows the Final Cut Pro Console.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.show()
-	if not mod.activator then
-		mod.activator = mod.actionmanager.getActivator("finalcutpro.console")
-			:preloadChoices()
+    if not mod.activator then
+        mod.activator = mod.actionmanager.getActivator("finalcutpro.console")
+            :preloadChoices()
 
-		--------------------------------------------------------------------------------
-		-- Don't show widgets in the console:
-		--------------------------------------------------------------------------------
-		local allowedHandlers = {}
-		local handlerIds = mod.actionmanager.handlerIds()
-		for _,id in pairs(handlerIds) do
-			local handlerTable = tools.split(id, "_")
-			if handlerTable[2]~= WIDGETS then
-				table.insert(allowedHandlers, id)
-			end
-		end
-		mod.activator:allowHandlers(table.unpack(allowedHandlers))
-	end
-	mod.activator:show()
+        --------------------------------------------------------------------------------
+        -- Don't show widgets in the console:
+        --------------------------------------------------------------------------------
+        local allowedHandlers = {}
+        local handlerIds = mod.actionmanager.handlerIds()
+        for _,id in pairs(handlerIds) do
+            local handlerTable = tools.split(id, "_")
+            if handlerTable[2]~= WIDGETS then
+                table.insert(allowedHandlers, id)
+            end
+        end
+        mod.activator:allowHandlers(table.unpack(allowedHandlers))
+    end
+    mod.activator:show()
 end
 
 --------------------------------------------------------------------------------
@@ -61,30 +69,33 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.console",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.commands"]		= "fcpxCmds",
-		["core.action.manager"]			= "actionmanager",
-	}
+    id              = "finalcutpro.console",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.commands"]        = "fcpxCmds",
+        ["core.action.manager"]         = "actionmanager",
+    }
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Initialise Module:
-	--------------------------------------------------------------------------------
-	mod.actionmanager = deps.actionmanager
+    --------------------------------------------------------------------------------
+    -- Initialise Module:
+    --------------------------------------------------------------------------------
+    mod.actionmanager = deps.actionmanager
 
-	--------------------------------------------------------------------------------
-	-- Add the command trigger:
-	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpConsole")
-		:groupedBy("commandPost")
-		:whenActivated(function() mod.show() end)
-		:activatedBy():ctrl("space")
+    --------------------------------------------------------------------------------
+    -- Add the command trigger:
+    --------------------------------------------------------------------------------
+    deps.fcpxCmds:add("cpConsole")
+        :groupedBy("commandPost")
+        :whenActivated(function() mod.show() end)
+        :activatedBy():ctrl("space")
 
-	return mod
+    return mod
 
 end
 

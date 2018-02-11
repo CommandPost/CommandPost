@@ -20,27 +20,27 @@
 }
 
 .rowLabel {
-	width: 50%;
+	width: 500px;
 }
 
 .rowModifier {
-	width: 18%;	
+	width: 100px;
 }
 
 .rowKeyCode {
-	width: 30%;
+	width: 100px;
 }
 
 .rowModifier select {
-	width: 100%;
+	width: 80%;
 	font-size: 12px !important;
-	text-align-last: center;
+	text-align-last: left;
 }
 
 .rowKeyCode select {
-	width: 100%;
+	width: 80%;
 	font-size: 12px !important;
-	text-align-last: center;
+	text-align-last: left;
 }
 
 .shortcuts thead {

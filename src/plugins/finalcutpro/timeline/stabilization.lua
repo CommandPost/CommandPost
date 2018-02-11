@@ -13,9 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("stabilization")
 
-local fcp							= require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp                           = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -24,7 +26,16 @@ local fcp							= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.stabilization(value)
+--- plugins.finalcutpro.timeline.stabilization.enable() -> none
+--- Function
+--- Enables or disables Stabilisation.
+---
+--- Parameters:
+---  * value - `true` to enable, `false` to disable, `nil` to toggle.
+---
+--- Returns:
+---  * None
+function mod.enable(value)
 
 	--------------------------------------------------------------------------------
 	-- Set Stabilization:
@@ -48,33 +59,37 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.stabilization",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.commands"]			= "fcpxCmds",
-	}
+    id = "finalcutpro.timeline.stabilization",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]            = "fcpxCmds",
+    }
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local cmds = deps.fcpxCmds
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        local cmds = deps.fcpxCmds
+        cmds:add("cpStabilizationToggle")
+            :groupedBy("timeline")
+            :whenActivated(function() mod.enable() end)
 
-	cmds:add("cpStabilizationToggle")
-		:groupedBy("timeline")
-		:whenActivated(function() mod.stabilization() end)
+        cmds:add("cpStabilizationEnable")
+            :groupedBy("timeline")
+            :whenActivated(function() mod.enable(true) end)
 
-	cmds:add("cpStabilizationEnable")
-		:groupedBy("timeline")
-		:whenActivated(function() mod.stabilization(true) end)
+        cmds:add("cpStabilizationDisable")
+            :groupedBy("timeline")
+            :whenActivated(function() mod.enable(false) end)
+    end
 
-	cmds:add("cpStabilizationDisable")
-		:groupedBy("timeline")
-		:whenActivated(function() mod.stabilization(false) end)
-
-	return mod
+    return mod
 end
 
 return plugin

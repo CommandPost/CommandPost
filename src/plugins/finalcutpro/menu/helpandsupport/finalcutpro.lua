@@ -13,6 +13,10 @@
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
 local PRIORITY = 20
 
 --------------------------------------------------------------------------------
@@ -21,18 +25,18 @@ local PRIORITY = 20
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.helpandsupport.finalcutpro",
-	group			= "finalcutpro",
-	dependencies	= {
-		["core.menu.helpandsupport"] = "helpandsupport"
-	}
+    id              = "finalcutpro.menu.helpandsupport.finalcutpro",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.menu.helpandsupport"] = "helpandsupport"
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	return dependencies.helpandsupport:addMenu(PRIORITY, function() return i18n("finalCutPro") end)
+    return dependencies.helpandsupport:addMenu(PRIORITY, function() return i18n("finalCutPro") end)
 end
 
 return plugin

@@ -313,10 +313,6 @@ mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(
 		mod.sourceWatcher:stop()
 	end
 end)
-if not mod.automaticScriptReloading() then
-	log.df("Automatic Script Reloading Disabled")
-	mod.sourceWatcher:stop()
-end
 
 --------------------------------------------------------------------------------
 --

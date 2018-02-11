@@ -13,9 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("fcpPrefsWatcher")
 
-local fcp				= require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp               = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -23,25 +25,25 @@ local fcp				= require("cp.apple.finalcutpro")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.watchers.preferences",
-	group = "finalcutpro",
+    id = "finalcutpro.watchers.preferences",
+    group = "finalcutpro",
 }
 
-	--------------------------------------------------------------------------------
-	-- INITIALISE PLUGIN:
-	--------------------------------------------------------------------------------
-	function plugin.init(deps)
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.init()
 
-		--------------------------------------------------------------------------------
-		-- Update Preferences Cache when Final Cut Pro Preferences file is updated:
-		--------------------------------------------------------------------------------
-		fcp:watch({
-			preferences = function()
-				--log.df("Preferences file change detected. Reload.")
-				fcp:getPreferences()
-			end,
-		})
+    --------------------------------------------------------------------------------
+    -- Update Preferences Cache when Final Cut Pro Preferences file is updated:
+    --------------------------------------------------------------------------------
+    fcp:watch({
+        preferences = function()
+            --log.df("Preferences file change detected. Reload.")
+            fcp:getPreferences()
+        end,
+    })
 
-	end
+end
 
 return plugin

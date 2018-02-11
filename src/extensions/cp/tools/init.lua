@@ -144,6 +144,19 @@ function tools.split(str, pat)
 	return t
 end
 
+--- cp.tools.isNumberString(value) -> boolean
+--- Function
+--- Returns whether or not value is a number string.
+---
+--- Parameters:
+---  * value - the string you want to check
+---
+--- Returns:
+---  * `true` if value is a number string, otherwise `false`.
+function tools.isNumberString(value)
+	return value:match("^[0-9\\.\\-]$") ~= nil
+end
+
 --- cp.tools.splitOnColumn() -> string
 --- Function
 --- Splits a string on a column.
@@ -542,9 +555,10 @@ function tools.safeFilename(value, defaultValue)
 	result = string.gsub(result, "\n", "")
 
 	--------------------------------------------------------------------------------
-	-- Limit to 255 characters (including extension):
+	-- Limit to 243 characters.
+	-- See: https://github.com/CommandPost/CommandPost/issues/1004#issuecomment-362986645
 	--------------------------------------------------------------------------------
-	result = string.sub(result, 1, 255 - 4)
+	result = string.sub(result, 1, 243)
 
 	return result
 
@@ -575,7 +589,7 @@ end
 --- Returns:
 ---  * `true` if the directory exists otherwise `false`
 function tools.doesDirectoryExist(path)
-	if path then
+	if path and type(path) == "string" then
 	    local attr = fs.attributes(path)
     	return attr and attr.mode == 'directory'
     else
@@ -593,9 +607,7 @@ end
 --- Returns:
 ---  * `true` if the file exists otherwise `false`
 function tools.doesFileExist(path)
-	if path == nil then return nil end
-    local attr = fs.attributes(path)
-    return type(attr) == "table"
+    return type(path) == "string" and type(fs.attribute(path)) == "table"
 end
 
 --- cp.tools.trim(string) -> string

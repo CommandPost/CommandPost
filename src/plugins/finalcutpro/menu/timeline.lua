@@ -13,6 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config					= require("cp.config")
 local fcp						= require("cp.apple.finalcutpro")
 
@@ -21,15 +25,31 @@ local fcp						= require("cp.apple.finalcutpro")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 					= 2000
-local PREFERENCES_PRIORITY		= 3
-local SETTING 					= "menubarTimelineEnabled"
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 2000
+
+-- PREFERENCES_PRIORITY -> number
+-- Constant
+-- Preferences Priority
+local PREFERENCES_PRIORITY = 3
+
+-- SETTING -> number
+-- Constant
+-- Setting Name
+local SETTING = "menubarTimelineEnabled"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
+-- sectionEnabled <cp.prop: boolean>
+-- Variable
+-- Section Enabled
 local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
@@ -76,7 +96,7 @@ function plugin.init(dependencies)
 	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
 		{
 			label = i18n("show") .. " " .. i18n("timeline"),
-			onchange = function(id, params) sectionEnabled(params.checked) end,
+			onchange = function(_, params) sectionEnabled(params.checked) end,
 			checked = sectionEnabled,
 		}
 	)

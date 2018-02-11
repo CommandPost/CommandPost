@@ -13,9 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log						= require("hs.logger").new("globalCmds")
 
-local commands					= require("cp.commands")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local commands                  = require("cp.commands")
 
 --------------------------------------------------------------------------------
 --
@@ -23,15 +25,15 @@ local commands					= require("cp.commands")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.commands.global",
-	group			= "core",
+    id              = "core.commands.global",
+    group           = "core",
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init()
-	return commands.new("global")
+    return commands.new("global")
 end
 
 return plugin

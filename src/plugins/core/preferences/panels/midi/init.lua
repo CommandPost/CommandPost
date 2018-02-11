@@ -199,18 +199,39 @@ local function generateContent()
 
 
     local context = {
-        _                       = _,
-        midiGroupSelect         = midiGroupSelect,
-        groups                  = commands.groups(),
-        defaultGroup            = defaultGroup,
-
-        groupEditor             = mod.getGroupEditor,
-
-        webviewLabel            = mod._manager.getLabel(),
-
-        maxItems                = mod._midi.maxItems,
-        midi                    = mod._midi,
-        i18n                    = i18n,
+        _                           = _,
+        midiGroupSelect             = midiGroupSelect,
+        groups                      = commands.groups(),
+        defaultGroup                = defaultGroup,
+        webviewLabel                = mod._manager.getLabel(),
+        maxItems                    = mod._midi.maxItems,
+        midiDevices                 = mod._midi.devices(),
+        virtualMidiDevices          = mod._midi.virtualDevices(),
+        items                       = mod._midi.getItems(),
+        i18nSelect 	                = i18n("select"),
+        i18nClear 	                = i18n("clear"),
+        i18nNone 		            = i18n("none"),
+        i18nLearn 	                = i18n("learn"),
+        i18nPhysical	            = i18n("physical"),
+        i18nVirtual	                = i18n("virtual"),
+        i18nOffline	                = i18n("offline"),
+        i18nApplication             = i18n("application"),
+        i18nMidiEditor              = i18n("midiEditor"),
+        i18nAction                  = i18n("action"),
+        i18nDevice                  = i18n("device"),
+        i18nNoteCC                  = i18n("noteCC"),
+        i18nChannel                 = i18n("channel"),
+        i18nValue                   = i18n("value"),
+        i18nAll                     = i18n("all"),
+        i18nNoDevicesDetected       = i18n("noDevicesDetected"),
+        i18nCommmandType            = i18n("commandType"),
+        i18nNoteOff                 = i18n("noteOff"),
+        i18nNoteOn                  = i18n("noteOn"),
+        i18nPolyphonicKeyPressure   = i18n("polyphonicKeyPressure"),
+        i18nControlChange           = i18n("controlChange"),
+        i18nProgramChange           = i18n("programChange"),
+        i18nChannelPressure         = i18n("channelPressure"),
+        i18nPitchWheelChange        = i18n("pitchWheelChange"),
     }
 
     return renderPanel(context)
@@ -294,6 +315,9 @@ function mod._stopLearning(_, params, cancel)
         setValue(params["groupID"], params["buttonID"], "device", "")
         mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
 
+        setValue(params["groupID"], params["buttonID"], "commandType", "")
+        mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
+
         setValue(params["groupID"], params["buttonID"], "channel", "")
         mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
 
@@ -368,6 +392,9 @@ function mod._startLearning(id, params)
     setValue(params["groupID"], params["buttonID"], "device", "")
     mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
 
+    setValue(params["groupID"], params["buttonID"], "commandType", "")
+    mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
+
     setValue(params["groupID"], params["buttonID"], "channel", "")
     mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
 
@@ -398,6 +425,12 @@ function mod._startLearning(id, params)
                 if commandType == "controlChange" or commandType == "noteOn" or commandType == "pitchWheelChange" then
 
                     --------------------------------------------------------------------------------
+                    -- Debugging:
+                    --------------------------------------------------------------------------------
+                    --log.df("commandType: %s", commandType)
+                    --log.df("metadata: %s", hs.inspect(metadata))
+
+                    --------------------------------------------------------------------------------
                     -- Support 14bit Control Change Messages:
                     --------------------------------------------------------------------------------
                     local controllerValue = metadata.controllerValue
@@ -406,7 +439,7 @@ function mod._startLearning(id, params)
                     end
 
                     --------------------------------------------------------------------------------
-                    -- Ignore NoteOff Commands:
+                    -- Ignore noteOff Commands:
                     --------------------------------------------------------------------------------
                     if commandType == "noteOn" and metadata.velocity == 0 then return end
 
@@ -428,19 +461,21 @@ function mod._startLearning(id, params)
                                 -- Check for matching metadata:
                                 --------------------------------------------------------------------------------
                                 local match = false
-                                if commandType == "noteOn" then
-                                    if item.channel == metadata.channel and item.number == metadata.note then
-                                        match = true
+                                if item.commandType == commandType then
+                                    if commandType == "noteOn" then
+                                        if item.channel == metadata.channel and item.number == metadata.note then
+                                            match = true
+                                        end
                                     end
-                                end
-                                if commandType == "controlChange" then
-                                    if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
-                                        match = true
+                                    if commandType == "controlChange" then
+                                        if item.channel == metadata.channel and item.number == metadata.controllerNumber and item.value == controllerValue then
+                                            match = true
+                                        end
                                     end
-                                end
-                                if commandType == "pitchWheelChange" then
-                                    if item.number == metadata.pitchChange then
-                                        match = true
+                                    if commandType == "pitchWheelChange" then
+                                        if item.number == metadata.pitchChange then
+                                            match = true
+                                        end
                                     end
                                 end
 
@@ -448,11 +483,15 @@ function mod._startLearning(id, params)
                                 -- Duplicate Found:
                                 --------------------------------------------------------------------------------
                                 if deviceMatch and match then
+                                    log.df("Duplicate MIDI Command Found!")
                                     --------------------------------------------------------------------------------
                                     -- Reset the current line item:
                                     --------------------------------------------------------------------------------
                                     setValue(params["groupID"], params["buttonID"], "device", "")
                                     mod._midi.setItem("device", params["buttonID"], params["groupID"], nil)
+
+                                    setValue(params["groupID"], params["buttonID"], "commandType", "")
+                                    mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
 
                                     setValue(params["groupID"], params["buttonID"], "channel", "")
                                     mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
@@ -493,7 +532,10 @@ function mod._startLearning(id, params)
                         mod._midi.setItem("device", params["buttonID"], params["groupID"], callbackDeviceName)
                     end
 
-                    setValue(params["groupID"], params["buttonID"], "channel", metadata.channel)
+                    setValue(params["groupID"], params["buttonID"], "commandType", commandType)
+                    mod._midi.setItem("commandType", params["buttonID"], params["groupID"], commandType)
+
+                    setValue(params["groupID"], params["buttonID"], "channel", metadata.channel + 1)
                     mod._midi.setItem("channel", params["buttonID"], params["groupID"], metadata.channel)
 
                     if commandType == "noteOff" or commandType == "noteOn" then
@@ -514,8 +556,8 @@ function mod._startLearning(id, params)
 
                     elseif commandType == "pitchWheelChange" then
 
-                        setValue(params["groupID"], params["buttonID"], "number", "Pitch")
-                        mod._midi.setItem("number", params["buttonID"], params["groupID"], "Pitch")
+                        --setValue(params["groupID"], params["buttonID"], "number", "Pitch")
+                        --mod._midi.setItem("number", params["buttonID"], params["groupID"], "Pitch")
 
                         setValue(params["groupID"], params["buttonID"], "value", metadata.pitchChange)
                         mod._midi.setItem("value", params["buttonID"], params["groupID"], metadata.pitchChange)
@@ -625,6 +667,13 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             --log.df("Updating Device: %s", params["device"])
             mod._midi.setItem("device", params["buttonID"], params["groupID"], params["device"])
+
+        elseif params["type"] == "updateCommandType" then
+            --------------------------------------------------------------------------------
+            -- Update Command Type:
+            --------------------------------------------------------------------------------
+            --log.df("Updating Command Type: %s", params["commandType"])
+            mod._midi.setItem("commandType", params["buttonID"], params["groupID"], params["commandType"])
         elseif params["type"] == "updateChannel" then
             --------------------------------------------------------------------------------
             -- Update Channel:
@@ -656,41 +705,11 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Unknown Callback:
             --------------------------------------------------------------------------------
-            log.df("Unknown Callback in Stream Deck Preferences Panel:")
+            log.df("Unknown Callback in MIDI Preferences Panel:")
             log.df("id: %s", inspect(id))
             log.df("params: %s", inspect(params))
         end
     end
-end
-
---- plugins.core.preferences.panels.midi.setGroupEditor(groupId, editorFn) -> none
---- Function
---- Sets the Group Editor
----
---- Parameters:
----  * groupId - Group ID
----  * editorFn - Editor Function
----
---- Returns:
----  * None
-function mod.setGroupEditor(groupId, editorFn)
-    if not mod._groupEditors then
-        mod._groupEditors = {}
-    end
-    mod._groupEditors[groupId] = editorFn
-end
-
---- plugins.core.preferences.panels.midi.getGroupEditor(groupId) -> none
---- Function
---- Gets the Group Editor
----
---- Parameters:
----  * groupId - Group ID
----
---- Returns:
----  * Group Editor
-function mod.getGroupEditor(groupId)
-    return mod._groupEditors and mod._groupEditors[groupId]
 end
 
 -- plugins.core.preferences.panels.midi._displayBooleanToString(value) -> none
@@ -721,7 +740,7 @@ end
 --  * A number
 function mod._calculateHeight()
     if mod.enabled() then
-        return 650
+        return 610
     else
         return 210
     end
@@ -799,9 +818,9 @@ function mod.init(deps, env)
                     --------------------------------------------------------------------------------
                     -- Resize Window:
                     --------------------------------------------------------------------------------
-                    local currentSize = mod._manager.webview:size()
+                    local currentSize = mod._manager._webview:size()
                     currentSize["h"] = mod._calculateHeight()
-                    mod._manager.webview:size(currentSize)
+                    mod._manager._webview:size(currentSize)
 
                     --------------------------------------------------------------------------------
                     -- Update UI:
@@ -839,14 +858,14 @@ function mod.init(deps, env)
             {
                 label       = i18n("midiResetGroup"),
                 onclick     = mod._resetMIDIGroup,
-                class       = "midiResetGroup",
+                class       = "applyTopDeviceToAll",
             }
         )
         :addButton(14,
             {
                 label       = i18n("midiResetAll"),
                 onclick     = mod._resetMIDI,
-                class       = "midiResetAll",
+                class       = "applyTopDeviceToAll",
             }
         )
 

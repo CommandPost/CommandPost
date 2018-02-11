@@ -21,18 +21,18 @@ local PRIORITY = 10
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.menu.helpandsupport.commandpost",
-	group			= "core",
-	dependencies	= {
-		["core.menu.helpandsupport"] = "helpandsupport"
-	}
+    id              = "core.menu.helpandsupport.commandpost",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.helpandsupport"] = "helpandsupport"
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	return dependencies.helpandsupport:addMenu(PRIORITY, function() return i18n("appName") end)
+    return dependencies.helpandsupport:addMenu(PRIORITY, function() return i18n("appName") end)
 end
 
 return plugin

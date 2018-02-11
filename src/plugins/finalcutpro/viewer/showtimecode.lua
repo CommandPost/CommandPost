@@ -1,35 +1,46 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---               S H O W   T I M E L I N E   I N   P L A Y E R                --
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --- === plugins.finalcutpro.viewer.showtimecode ===
 ---
---- Show Timeline In Player.
+--- Show Timecode.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("showtimecode")
 
-local application		= require("hs.application")
-
-local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
-local config			= require("cp.config")
-local prop				= require("cp.prop")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog            = require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 20
-local DEFAULT_VALUE		= 0
-local PREFERENCES_KEY 	= "FFPlayerDisplayedTimecode"
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 20
+
+-- DEFAULT_VALUE -> number
+-- Constant
+-- The default value.
+local DEFAULT_VALUE = 0
+
+-- PREFERENCES_KEY -> string
+-- Constant
+-- The Preferences Key for Displaying Timecode
+local PREFERENCES_KEY = "FFPlayerDisplayedTimecode"
 
 --------------------------------------------------------------------------------
 --
@@ -38,32 +49,42 @@ local PREFERENCES_KEY 	= "FFPlayerDisplayedTimecode"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.viewer.showtimecode.enabled <cp.prop: boolean>
+--- Variable
+--- Show Timecode Enabled?
 mod.enabled = prop.new(
-	function()
-		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-	end,
+    function()
+        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+    end,
 
-	function(value)
+    function(value)
 
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-			return
-		end
+        --------------------------------------------------------------------------------
+        -- Update plist:
+        --------------------------------------------------------------------------------
+        if fcp:setPreference(PREFERENCES_KEY, value) == nil then
+            dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+            return
+        end
 
-	end
+    end
 )
 
+-- toggle(value) -> none
+-- Function
+-- Toggles the Show Timecode option.
+--
+-- Parameters:
+--  * value - A number between 1 and 4. Defaults to 0.
+--
+-- Returns:
+--  * None
 local function toggle(value)
-
-	if mod.enabled() == value then
-		mod.enabled:set(0)
-	else
-		mod.enabled:set(value)
-	end
-
+    if mod.enabled() == value then
+        mod.enabled:set(0)
+    else
+        mod.enabled:set(value)
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -72,12 +93,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.viewer.showtimecode",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.menu.viewer.showtimecode"]		= "menu",
-		["finalcutpro.commands"] 						= "fcpxCmds",
-	}
+    id              = "finalcutpro.viewer.showtimecode",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.menu.viewer.showtimecode"]        = "menu",
+        ["finalcutpro.commands"]                        = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -85,47 +106,53 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("showProjectTimecodeTop"),	fn = function() toggle(3) end, checked=mod.enabled() == 3 }
-	end)
+    --------------------------------------------------------------------------------
+    -- Setup Menus:
+    --------------------------------------------------------------------------------
+    if deps.menu then
+        deps.menu:addItem(PRIORITY, function()
+            return { title = i18n("showProjectTimecodeTop"),    fn = function() toggle(3) end, checked=mod.enabled() == 3 }
+        end)
 
-	deps.menu:addItem(PRIORITY + 1, function()
-		return { title = i18n("showProjectTimecodeBottom"),	fn = function() toggle(4) end, checked=mod.enabled() == 4 }
-	end)
+        deps.menu:addItem(PRIORITY + 1, function()
+            return { title = i18n("showProjectTimecodeBottom"), fn = function() toggle(4) end, checked=mod.enabled() == 4 }
+        end)
 
-	deps.menu:addItem(PRIORITY + 2, function()
-		return { title = "-" }
-	end)
+        deps.menu:addItem(PRIORITY + 2, function()
+            return { title = "-" }
+        end)
 
-	deps.menu:addItem(PRIORITY + 3, function()
-		return { title = i18n("showSourceTimecodeTop"),	fn = function() toggle(1) end, checked=mod.enabled() == 1 }
-	end)
+        deps.menu:addItem(PRIORITY + 3, function()
+            return { title = i18n("showSourceTimecodeTop"), fn = function() toggle(1) end, checked=mod.enabled() == 1 }
+        end)
 
-	deps.menu:addItem(PRIORITY + 4, function()
-		return { title = i18n("showSourceTimecodeBottom"),	fn = function() toggle(2) end, checked=mod.enabled() == 2 }
-	end)
+        deps.menu:addItem(PRIORITY + 4, function()
+            return { title = i18n("showSourceTimecodeBottom"),  fn = function() toggle(2) end, checked=mod.enabled() == 2 }
+        end)
+    end
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	deps.fcpxCmds:add("cpShowProjectTimecodeTop")
-		:groupedBy("hacks")
-		:whenActivated(function() toggle(3) end)
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        deps.fcpxCmds:add("cpShowProjectTimecodeTop")
+            :groupedBy("hacks")
+            :whenActivated(function() toggle(3) end)
 
-	deps.fcpxCmds:add("cpShowProjectTimecodeBottom")
-		:groupedBy("hacks")
-		:whenActivated(function() toggle(4) end)
+        deps.fcpxCmds:add("cpShowProjectTimecodeBottom")
+            :groupedBy("hacks")
+            :whenActivated(function() toggle(4) end)
 
-	deps.fcpxCmds:add("cpShowSourceTimecodeTop")
-		:groupedBy("hacks")
-		:whenActivated(function() toggle(1) end)
+        deps.fcpxCmds:add("cpShowSourceTimecodeTop")
+            :groupedBy("hacks")
+            :whenActivated(function() toggle(1) end)
 
-	deps.fcpxCmds:add("cpShowSourceTimecodeBottom")
-		:groupedBy("hacks")
-		:whenActivated(function() toggle(2) end)
+        deps.fcpxCmds:add("cpShowSourceTimecodeBottom")
+            :groupedBy("hacks")
+            :whenActivated(function() toggle(2) end)
+    end
 
-	return mod
-
+    return mod
 end
 
 return plugin

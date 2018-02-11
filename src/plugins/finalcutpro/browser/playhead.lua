@@ -13,13 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("playhead")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local dialog						= require("hs.dialog")
 local drawing						= require("hs.drawing")
 local geometry						= require("hs.geometry")
 local timer							= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config						= require("cp.config")
 local fcp							= require("cp.apple.finalcutpro")
 local tools							= require("cp.tools")
@@ -111,7 +116,7 @@ function mod.changeHighlightColor(value)
 		if currentColor then
 			dialog.color.color(currentColor)
 		end
-		dialog.color.callback(function(color, closed)
+		dialog.color.callback(function(color)
 			mod.setHighlightCustomColor(color)
 		end)
 		dialog.color.show()
@@ -215,7 +220,7 @@ function mod.highlightFrame(frame)
 	--------------------------------------------------------------------------------
 	-- Get Sizing Preferences:
 	--------------------------------------------------------------------------------
-	local displayHighlightShape = nil
+	local displayHighlightShape
 	displayHighlightShape = config.get("displayHighlightShape")
 	if displayHighlightShape == nil then displayHighlightShape = "Rectangle" end
 
@@ -287,7 +292,7 @@ end
 -- Returns:
 --  * table
 local function timeOptions()
- 	local timeOptionsTable = {}
+	local timeOptionsTable = {}
 	for i=1, 10 do
 		timeOptionsTable[#timeOptionsTable + 1] = {
 			label = i18n(string.lower(tools.numberToWord(i))) .. " " .. i18n("secs", {count=i}),
@@ -384,7 +389,7 @@ function plugin.init(deps)
 					},
 				},
 				required	= true,
-				onchange	= function(id, params) mod.changeHighlightColor(params.value) end,
+				onchange	= function(_, params) mod.changeHighlightColor(params.value) end,
 				class		= "highLightPlayheadSelect",
 			})
 			:addSelect(2002,
@@ -406,7 +411,7 @@ function plugin.init(deps)
 					},
 				},
 				required	= true,
-				onchange	= function(id, params) mod.setHighlightShape(params.value) end,
+				onchange	= function(_, params) mod.setHighlightShape(params.value) end,
 				class		= "highLightPlayheadSelect",
 			})
 			:addSelect(2003,
@@ -415,7 +420,7 @@ function plugin.init(deps)
 				value		= mod.getHighlightTime,
 				options		= timeOptions(),
 				required	= true,
-				onchange	= function(id, params) mod.setHighlightTime(params.value) end,
+				onchange	= function(_, params) mod.setHighlightTime(params.value) end,
 				class		= "highLightPlayheadSelect",
 			})
 	end

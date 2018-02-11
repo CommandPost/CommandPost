@@ -161,6 +161,11 @@ App.PREFS_PLIST_PATH = App.PREFS_PATH .. App.PREFS_PLIST_FILE
 --- Table of Final Cut Pro's supported Languages
 App.SUPPORTED_LANGUAGES = {"de", "en", "es", "fr", "ja", "zh_CN"}
 
+--- cp.apple.finalcutpro.EVENT_DESCRIPTION_PATH
+--- Constant
+--- The Event Description Path.
+App.EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist"
+
 --- cp.apple.finalcutpro.FLEXO_LANGUAGES
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
@@ -185,6 +190,15 @@ App.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd"
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
 App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(App.ALLOWED_IMPORT_AUDIO_EXTENSIONS, App.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
+
+--- cp.apple.finalcutpro.PLAYER_QUALITY
+--- Constant
+--- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
+App.PLAYER_QUALITY = {
+    ["ORIGINAL_BETTER_QUALITY"]     = 10,
+    ["ORIGINAL_BETTER_PERFORMANCE"] = 5,
+    ["PROXY"]                       = 4,
+}
 
 --- cp.apple.finalcutpro:init() -> App
 --- Function

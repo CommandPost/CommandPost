@@ -13,6 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp							= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -22,7 +26,7 @@ local fcp							= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.playback.play() -> nil
+--- plugins.finalcutpro.timeline.playback.play() -> none
 --- Function
 --- 'Play' in Final Cut Pro
 ---
@@ -35,7 +39,7 @@ function mod.play()
 	fcp:performShortcut("PlayPause")
 end
 
---- plugins.finalcutpro.timeline.playback.pause() -> nil
+--- plugins.finalcutpro.timeline.playback.pause() -> none
 --- Function
 --- 'Pause' in Final Cut Pro
 ---
@@ -66,13 +70,17 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	local cmds = deps.fcpxCmds
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        local cmds = deps.fcpxCmds
+        cmds:add("cpPlay")
+            :whenActivated(mod.play)
 
-	cmds:add("cpPlay")
-		:whenActivated(mod.play)
-
-	cmds:add("cpPause")
-		:whenActivated(mod.pause)
+        cmds:add("cpPause")
+            :whenActivated(mod.pause)
+    end
 
 	return mod
 end

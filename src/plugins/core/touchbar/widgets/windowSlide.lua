@@ -14,17 +14,15 @@
 --
 --------------------------------------------------------------------------------
 local canvas   			= require("hs.canvas")
-local window   			= require("hs.window")
 local screen   			= require("hs.screen")
-
 local touchbar 			= require("hs._asm.undocumented.touchbar")
+local window   			= require("hs.window")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-
 local ID = "windowSlide"
 
 --------------------------------------------------------------------------------
@@ -34,6 +32,15 @@ local ID = "windowSlide"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.core.touchbar.widgets.windowSlide.widget() -> `hs._asm.undocumented.touchbar.item`
+--- Function
+--- The Widget
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.undocumented.touchbar.item`
 function mod.widget()
 
 	local widgetCanvas = canvas.new{x = 0, y = 0, h = 30, w = 150}
@@ -107,7 +114,7 @@ function mod.init(deps)
 		group = "global",
 		text = "Window Slide",
 		subText = "Allows you to slide window positions.",
-		item = mod.widget(),
+		item = mod.widget,
 	}
 	deps.manager.widgets:new(id, params)
 

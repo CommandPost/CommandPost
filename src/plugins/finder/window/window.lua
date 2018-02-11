@@ -19,9 +19,9 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local grid			        = require("hs.grid")
-local hints			        = require("hs.hints")
-local mouse 			    = require("hs.mouse")
+local grid                  = require("hs.grid")
+local hints                 = require("hs.hints")
+local mouse                 = require("hs.mouse")
 local window                = require("hs.window")
 
 --------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.grid()
-	grid.show()
+    grid.show()
 end
 
 --- plugins.finder.window.hints() -> nil
@@ -172,15 +172,15 @@ function mod.stepResize(direction)
     end
 end
 
--- plugins.finder.window.moveAndResize(option)
+-- windowStash(theWindow)
 -- Function
--- Move and resize the focused window.
+-- Saves the window in history.
 --
 -- Parameters:
---  * option - A string specifying the option, valid strings are: `halfleft`, `halfright`, `halfup`, `halfdown`, `cornerNW`, `cornerSW`, `cornerNE`, `cornerSE`, `center`, `fullscreen`, `expand`, `shrink`.
----
---- Returns:
----  * None
+--  * theWindow - The window to save.
+--
+-- Returns:
+--  * None
 local function windowStash(theWindow)
     local windowID = theWindow:id()
     local windowFrame = theWindow:frame()
@@ -285,11 +285,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finder.window",
-	group			= "finder",
-	dependencies	= {
-		["core.commands.global"]					= "global",
-	}
+    id              = "finder.window",
+    group           = "finder",
+    dependencies    = {
+        ["core.commands.global"]                    = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -297,120 +297,120 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-
     --------------------------------------------------------------------------------
-    -- Grid:
+    -- Commands:
     --------------------------------------------------------------------------------
-	global:add("cpShowGrid")
-		:whenActivated(mod.grid)
+    local global = deps.global
+    if global then
+        --------------------------------------------------------------------------------
+        -- Grid:
+        --------------------------------------------------------------------------------
+        global:add("cpShowGrid")
+            :whenActivated(mod.grid)
 
-    --------------------------------------------------------------------------------
-    -- Center Cursor:
-    --------------------------------------------------------------------------------
-	global:add("cpCenterCursor")
-		:whenActivated(mod.centerCursor)
+        --------------------------------------------------------------------------------
+        -- Center Cursor:
+        --------------------------------------------------------------------------------
+        global:add("cpCenterCursor")
+            :whenActivated(mod.centerCursor)
 
-    --------------------------------------------------------------------------------
-    -- Hints:
-    --------------------------------------------------------------------------------
-	global:add("cpWindowHints")
-		:whenActivated(mod.hints)
+        --------------------------------------------------------------------------------
+        -- Hints:
+        --------------------------------------------------------------------------------
+        global:add("cpWindowHints")
+            :whenActivated(mod.hints)
 
-    --------------------------------------------------------------------------------
-    -- Move Window to Screen:
-    --------------------------------------------------------------------------------
-	global:add("cpMoveWindowLeft")
-		:whenActivated(function() mod.moveCurrentWindowToScreen("left") end)
+        --------------------------------------------------------------------------------
+        -- Move Window to Screen:
+        --------------------------------------------------------------------------------
+        global:add("cpMoveWindowLeft")
+            :whenActivated(function() mod.moveCurrentWindowToScreen("left") end)
 
-	global:add("cpMoveWindowRight")
-		:whenActivated(function() mod.moveCurrentWindowToScreen("right") end)
+        global:add("cpMoveWindowRight")
+            :whenActivated(function() mod.moveCurrentWindowToScreen("right") end)
 
-	global:add("cpMoveWindowUp")
-		:whenActivated(function() mod.moveCurrentWindowToScreen("up") end)
+        global:add("cpMoveWindowUp")
+            :whenActivated(function() mod.moveCurrentWindowToScreen("up") end)
 
-	global:add("cpMoveWindowDown")
-		:whenActivated(function() mod.moveCurrentWindowToScreen("down") end)
+        global:add("cpMoveWindowDown")
+            :whenActivated(function() mod.moveCurrentWindowToScreen("down") end)
 
-	global:add("cpMoveWindowNext")
-		:whenActivated(function() mod.moveCurrentWindowToScreen("next") end)
+        global:add("cpMoveWindowNext")
+            :whenActivated(function() mod.moveCurrentWindowToScreen("next") end)
 
-    --------------------------------------------------------------------------------
-    -- Move & Resize:
-    --------------------------------------------------------------------------------
-	global:add("cpMoveAndResizeHalfLeft")
-		:whenActivated(function() mod.moveAndResize("halfleft") end)
+        --------------------------------------------------------------------------------
+        -- Move & Resize:
+        --------------------------------------------------------------------------------
+        global:add("cpMoveAndResizeHalfLeft")
+            :whenActivated(function() mod.moveAndResize("halfleft") end)
 
-	global:add("cpMoveAndResizeHalfRight")
-		:whenActivated(function() mod.moveAndResize("halfright") end)
+        global:add("cpMoveAndResizeHalfRight")
+            :whenActivated(function() mod.moveAndResize("halfright") end)
 
-	global:add("cpMoveAndResizeHalfUp")
-		:whenActivated(function() mod.moveAndResize("halfup") end)
+        global:add("cpMoveAndResizeHalfUp")
+            :whenActivated(function() mod.moveAndResize("halfup") end)
 
-	global:add("cpMoveAndResizeHalfDown")
-		:whenActivated(function() mod.moveAndResize("halfdown") end)
+        global:add("cpMoveAndResizeHalfDown")
+            :whenActivated(function() mod.moveAndResize("halfdown") end)
 
-	global:add("cpMoveAndResizeCornerNorthWest")
-		:whenActivated(function() mod.moveAndResize("cornerNW") end)
+        global:add("cpMoveAndResizeCornerNorthWest")
+            :whenActivated(function() mod.moveAndResize("cornerNW") end)
 
-	global:add("cpMoveAndResizeCornerNorthEast")
-		:whenActivated(function() mod.moveAndResize("cornerNE") end)
+        global:add("cpMoveAndResizeCornerNorthEast")
+            :whenActivated(function() mod.moveAndResize("cornerNE") end)
 
-	global:add("cpMoveAndResizeCornerSouthWest")
-		:whenActivated(function() mod.moveAndResize("cornerSW") end)
+        global:add("cpMoveAndResizeCornerSouthWest")
+            :whenActivated(function() mod.moveAndResize("cornerSW") end)
 
-	global:add("cpMoveAndResizeCornerSouthEast")
-		:whenActivated(function() mod.moveAndResize("cornerSE") end)
+        global:add("cpMoveAndResizeCornerSouthEast")
+            :whenActivated(function() mod.moveAndResize("cornerSE") end)
 
-	global:add("cpMoveAndResizeFullscreen")
-		:whenActivated(function() mod.moveAndResize("fullscreen") end)
+        global:add("cpMoveAndResizeFullscreen")
+            :whenActivated(function() mod.moveAndResize("fullscreen") end)
 
-	global:add("cpMoveAndResizeCenter")
-		:whenActivated(function() mod.moveAndResize("center") end)
+        global:add("cpMoveAndResizeCenter")
+            :whenActivated(function() mod.moveAndResize("center") end)
 
-	global:add("cpMoveAndResizeExpand")
-		:whenActivated(function() mod.moveAndResize("expand") end)
+        global:add("cpMoveAndResizeExpand")
+            :whenActivated(function() mod.moveAndResize("expand") end)
 
-	global:add("cpMoveAndResizeShrink")
-		:whenActivated(function() mod.moveAndResize("shrink") end)
+        global:add("cpMoveAndResizeShrink")
+            :whenActivated(function() mod.moveAndResize("shrink") end)
 
-	global:add("cpMoveAndResizeUndo")
-		:whenActivated(mod.undo)
+        global:add("cpMoveAndResizeUndo")
+            :whenActivated(mod.undo)
 
-    --------------------------------------------------------------------------------
-    -- Step Resize:
-    --------------------------------------------------------------------------------
-	global:add("cpStepResizeLeft")
-		:whenActivated(function() mod.stepResize("left") end)
+        --------------------------------------------------------------------------------
+        -- Step Resize:
+        --------------------------------------------------------------------------------
+        global:add("cpStepResizeLeft")
+            :whenActivated(function() mod.stepResize("left") end)
 
-	global:add("cpStepResizeRight")
-		:whenActivated(function() mod.stepResize("right") end)
+        global:add("cpStepResizeRight")
+            :whenActivated(function() mod.stepResize("right") end)
 
-	global:add("cpStepResizeUp")
-		:whenActivated(function() mod.stepResize("up") end)
+        global:add("cpStepResizeUp")
+            :whenActivated(function() mod.stepResize("up") end)
 
-	global:add("cpStepResizeDown")
-		:whenActivated(function() mod.stepResize("down") end)
+        global:add("cpStepResizeDown")
+            :whenActivated(function() mod.stepResize("down") end)
 
-    --------------------------------------------------------------------------------
-    -- Step Move:
-    --------------------------------------------------------------------------------
-	global:add("cpStepMoveLeft")
-		:whenActivated(function() mod.stepMove("left") end)
+        --------------------------------------------------------------------------------
+        -- Step Move:
+        --------------------------------------------------------------------------------
+        global:add("cpStepMoveLeft")
+            :whenActivated(function() mod.stepMove("left") end)
 
-	global:add("cpStepMoveRight")
-		:whenActivated(function() mod.stepMove("right") end)
+        global:add("cpStepMoveRight")
+            :whenActivated(function() mod.stepMove("right") end)
 
-	global:add("cpStepMoveUp")
-		:whenActivated(function() mod.stepMove("up") end)
+        global:add("cpStepMoveUp")
+            :whenActivated(function() mod.stepMove("up") end)
 
-	global:add("cpStepMoveDown")
-		:whenActivated(function() mod.stepMove("down") end)
-
-	return mod
+        global:add("cpStepMoveDown")
+            :whenActivated(function() mod.stepMove("down") end)
+    end
+    return mod
 end
 
 return plugin

@@ -13,15 +13,28 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log										= require("hs.logger").new("menumgr")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local image										= require("hs.image")
 local inspect									= require("hs.inspect")
 local menubar									= require("hs.menubar")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config									= require("cp.config")
 local fcp										= require("cp.apple.finalcutpro")
 
+--------------------------------------------------------------------------------
+-- Module Extensions:
+--------------------------------------------------------------------------------
 local section									= require("section")
 
 --------------------------------------------------------------------------------
@@ -38,8 +51,14 @@ local DEFAULT_DISPLAY_MENUBAR_AS_ICON 			= true
 --------------------------------------------------------------------------------
 local manager = {}
 
+--- plugins.core.menu.manager.rootSection() -> section
+--- Variable
+--- A new Root Section
 manager.rootSection = section:new()
 
+--- plugins.core.menu.manager.titleSuffix() -> table
+--- Variable
+--- Table of Title Suffix's
 manager.titleSuffix	= {}
 
 --- plugins.core.menu.manager.init() -> none
@@ -102,7 +121,6 @@ function manager.enable()
 	end
 end
 
-
 --- plugins.core.menu.manager.updateMenubarIcon(priority) -> none
 --- Function
 --- Updates the Menubar Icon
@@ -153,7 +171,6 @@ end
 --- Field
 --- If `true`, the menubar item will be the app icon. If not, it will be the app name.
 manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPLAY_MENUBAR_AS_ICON):watch(manager.updateMenubarIcon)
-
 
 --- plugins.core.menu.manager.addSection(priority) -> section
 --- Function
@@ -215,7 +232,9 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
 
-	-- disable the menu when the Setup Panel is open.
+    --------------------------------------------------------------------------------
+	-- Disable the menu when the Setup Panel is open:
+	--------------------------------------------------------------------------------
 	deps.setup.visible:watch(function(visible)
 		if visible then
 			manager.disable()

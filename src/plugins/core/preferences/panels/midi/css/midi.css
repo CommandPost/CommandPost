@@ -39,28 +39,30 @@
 }
 
 .midiRowAction {
-	width: 30%;
+	width: 260px;
 }
 .midiRowActionButton {
-	width: 8%;
+	width: 50px;
 }
 .midiRowDevice {
-	width: 17%;
+	width: 120px;
+}
+midiRowType {
+	width: 120px;
 }
 .midiRowNumber {
-	width: 10%;
+	width: 70px;
 }
 .midiRowChannel {
-	width: 10%;
+	width: 70px;
 }
+
 .midiRowValue {
-	width: 10%;
+	width: 75px;
 }
 .midiRowLearn {
-	width: 15%;
+	width: 100px;
 }
-
-
 
 .midi thead {
 	font-weight: bold;
@@ -98,30 +100,14 @@
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
-	width: 140px;
+	width: 170px;
 }
 
 .applyTopDeviceToAll {
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
-	width: 140px;
-	margin-left: 5px;
-}
-
-.midiResetGroup {
-	clear: both;
-	margin: -5px 0px;
-	text-align: center;
-	float: left;
-	width: 140px;
-}
-
-.midiResetAll {
-	margin: -5px 0px;
-	text-align: center;
-	float: left;
-	width: 140px;
+	width: 170px;
 	margin-left: 5px;
 }
 

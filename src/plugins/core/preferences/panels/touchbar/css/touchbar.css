@@ -20,6 +20,14 @@
 	text-overflow: ellipsis;
 }
 
+.tbTip {
+	color: #4a4a4a;
+	font-style: italic;
+	padding-top: 5px;
+	display: block;
+	clear: both;
+}
+
 .tbButtonLabel {
 	-webkit-appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
@@ -35,7 +43,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 190px;
+	width: 290px;
 }
 
 .tbRowIcon {
@@ -47,7 +55,7 @@
 }
 
 .tbRowActionButton {
-	width: 15%;
+	width: 10%;
 }
 
 .tbRowLabel {
@@ -129,7 +137,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 230px;
+	width: 400px;
 }
 
 .tbActionButton {

@@ -13,14 +13,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local timer								= require("hs.timer")
-local eventtap							= require("hs.eventtap")
 
-local fcp								= require("cp.apple.finalcutpro")
-local tools								= require("cp.tools")
-local dialog							= require("cp.dialog")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local eventtap                          = require("hs.eventtap")
+local timer                             = require("hs.timer")
 
-local log								= require("hs.logger").new("colorboard")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog                            = require("cp.dialog")
+local fcp                               = require("cp.apple.finalcutpro")
+local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -42,47 +47,47 @@ local mod = {}
 ---  * None
 function mod.selectPuck(aspect, property, whichDirection)
 
-	--------------------------------------------------------------------------------
-	-- Show the Color Board with the correct panel
-	--------------------------------------------------------------------------------
-	local colorBoard = fcp:colorBoard()
+    --------------------------------------------------------------------------------
+    -- Show the Color Board with the correct panel
+    --------------------------------------------------------------------------------
+    local colorBoard = fcp:colorBoard()
 
-	--------------------------------------------------------------------------------
-	-- Show the Color Board if it's hidden:
-	--------------------------------------------------------------------------------
-	if not colorBoard:isShowing() then colorBoard:show() end
+    --------------------------------------------------------------------------------
+    -- Show the Color Board if it's hidden:
+    --------------------------------------------------------------------------------
+    if not colorBoard:isShowing() then colorBoard:show() end
 
-	if not colorBoard:isActive() then
-		dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
-		return "Failed"
-	end
+    if not colorBoard:isActive() then
+        dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
+        return "Failed"
+    end
 
-	--------------------------------------------------------------------------------
-	-- If a Direction is specified:
-	--------------------------------------------------------------------------------
-	if whichDirection ~= nil then
+    --------------------------------------------------------------------------------
+    -- If a Direction is specified:
+    --------------------------------------------------------------------------------
+    if whichDirection ~= nil then
 
-		--------------------------------------------------------------------------------
-		-- Get shortcut key from plist, press and hold if required:
-		--------------------------------------------------------------------------------
-		mod.releaseColorBoardDown = false
-		timer.doUntil(function() return mod.releaseColorBoardDown end, function()
-			if whichDirection == "up" then
-				colorBoard:shiftPercentage(aspect, property, 1)
-			elseif whichDirection == "down" then
-				colorBoard:shiftPercentage(aspect, property, -1)
-			elseif whichDirection == "left" then
-				colorBoard:shiftAngle(aspect, property, -1)
-			elseif whichDirection == "right" then
-				colorBoard:shiftAngle(aspect, property, 1)
-			end
-		end, eventtap.keyRepeatInterval())
-	else
-		--------------------------------------------------------------------------------
-		-- Just select the puck:
-		--------------------------------------------------------------------------------
-		colorBoard:selectPuck(aspect, property)
-	end
+        --------------------------------------------------------------------------------
+        -- Get shortcut key from plist, press and hold if required:
+        --------------------------------------------------------------------------------
+        mod.releaseColorBoardDown = false
+        timer.doUntil(function() return mod.releaseColorBoardDown end, function()
+            if whichDirection == "up" then
+                colorBoard:shiftPercentage(aspect, property, 1)
+            elseif whichDirection == "down" then
+                colorBoard:shiftPercentage(aspect, property, -1)
+            elseif whichDirection == "left" then
+                colorBoard:shiftAngle(aspect, property, -1)
+            elseif whichDirection == "right" then
+                colorBoard:shiftAngle(aspect, property, 1)
+            end
+        end, eventtap.keyRepeatInterval())
+    else
+        --------------------------------------------------------------------------------
+        -- Just select the puck:
+        --------------------------------------------------------------------------------
+        colorBoard:selectPuck(aspect, property)
+    end
 end
 
 --- plugins.finalcutpro.timeline.colorboard.colorBoardSelectPuckRelease() -> none
@@ -95,7 +100,7 @@ end
 --- Returns:
 ---  * None
 function mod.colorBoardSelectPuckRelease()
-	mod.releaseColorBoardDown = true
+    mod.releaseColorBoardDown = true
 end
 
 --- plugins.finalcutpro.timeline.colorboard.mousePuck(aspect, property) -> none
@@ -109,31 +114,31 @@ end
 --- Returns:
 ---  * None
 function mod.mousePuck(aspect, property)
-	--------------------------------------------------------------------------------
-	-- Stop Existing Color Pucker:
-	--------------------------------------------------------------------------------
-	if mod.colorPucker then
-		mod.colorPucker:stop()
-	end
+    --------------------------------------------------------------------------------
+    -- Stop Existing Color Pucker:
+    --------------------------------------------------------------------------------
+    if mod.colorPucker then
+        mod.colorPucker:stop()
+    end
 
-	--------------------------------------------------------------------------------
-	-- Delete any pre-existing highlights:
-	--------------------------------------------------------------------------------
-	mod.playhead.deleteHighlight()
+    --------------------------------------------------------------------------------
+    -- Delete any pre-existing highlights:
+    --------------------------------------------------------------------------------
+    mod.playhead.deleteHighlight()
 
-	local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp:colorBoard()
 
-	--------------------------------------------------------------------------------
-	-- Show the Color Board if it's hidden:
-	--------------------------------------------------------------------------------
-	if not colorBoard:isShowing() then colorBoard:show() end
+    --------------------------------------------------------------------------------
+    -- Show the Color Board if it's hidden:
+    --------------------------------------------------------------------------------
+    if not colorBoard:isShowing() then colorBoard:show() end
 
-	if not colorBoard:isActive() then
-		dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
-		return "Failed"
-	end
+    if not colorBoard:isActive() then
+        dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
+        return "Failed"
+    end
 
-	mod.colorPucker = colorBoard:startPucker(aspect, property)
+    mod.colorPucker = colorBoard:startPucker(aspect, property)
 end
 
 --- plugins.finalcutpro.timeline.colorboard.colorBoardMousePuckRelease() -> none
@@ -146,24 +151,24 @@ end
 --- Returns:
 ---  * None
 function mod.colorBoardMousePuckRelease()
-	if mod.colorPucker then
-		mod.colorPucker:stop()
-		mod.colorPicker = nil
-	end
+    if mod.colorPucker then
+        mod.colorPucker:stop()
+        mod.colorPicker = nil
+    end
 end
 
 function mod.toggleColorBoard()
 
-	--------------------------------------------------------------------------------
-	-- Show the Color Board if it's hidden:
-	--------------------------------------------------------------------------------
-	local colorBoard = fcp:colorBoard()
-	if not colorBoard:isShowing() then colorBoard:show() end
+    --------------------------------------------------------------------------------
+    -- Show the Color Board if it's hidden:
+    --------------------------------------------------------------------------------
+    local colorBoard = fcp:colorBoard()
+    if not colorBoard:isShowing() then colorBoard:show() end
 
-	if not colorBoard:isActive() then
-		dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
-		return "Failed"
-	end
+    if not colorBoard:isActive() then
+        dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
+        return "Failed"
+    end
 
 	colorBoard:nextAspect()
 
@@ -175,12 +180,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.colorboard",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.commands"]			= "fcpxCmds",
-		["finalcutpro.browser.playhead"]	= "playhead",
-	}
+    id = "finalcutpro.timeline.colorboard",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]            = "fcpxCmds",
+        ["finalcutpro.browser.playhead"]    = "playhead",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -188,83 +193,83 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	mod.playhead = deps.playhead
+    mod.playhead = deps.playhead
 
-	local colorFunction = {
-		[1] = "global",
-		[2] = "shadows",
-		[3] = "midtones",
-		[4] = "highlights",
-	}
+    local colorFunction = {
+        [1] = "global",
+        [2] = "shadows",
+        [3] = "midtones",
+        [4] = "highlights",
+    }
 
-	local selectColorBoardPuckDefaultShortcuts = {
-		[1] = "m",
-		[2] = ",",
-		[3] = ".",
-		[4] = "/",
-	}
+    local selectColorBoardPuckDefaultShortcuts = {
+        [1] = "m",
+        [2] = ",",
+        [3] = ".",
+        [4] = "/",
+    }
 
-	local colorBoardPanel = {"Color", "Saturation", "Exposure"}
+    local colorBoardPanel = {"Color", "Saturation", "Exposure"}
 
-	for i=1, 4 do
-		deps.fcpxCmds:add("cpSelectColorBoardPuck" .. tools.numberToWord(i))
-			:titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
-			:groupedBy("colorboard")
-			:activatedBy():ctrl():option():cmd(selectColorBoardPuckDefaultShortcuts[i])
-			:whenActivated(function() mod.selectPuck("*", colorFunction[i]) end)
+    for i=1, 4 do
+        deps.fcpxCmds:add("cpSelectColorBoardPuck" .. tools.numberToWord(i))
+            :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
+            :groupedBy("colorboard")
+            :activatedBy():ctrl():option():cmd(selectColorBoardPuckDefaultShortcuts[i])
+            :whenActivated(function() mod.selectPuck("*", colorFunction[i]) end)
 
-		deps.fcpxCmds:add("cpPuck" .. tools.numberToWord(i) .. "Mouse")
-			:titled(i18n("cpPuckMouse_customTitle", {count = i}))
-			:groupedBy("colorboard")
-			:whenActivated(function() mod.mousePuck("*", colorFunction[i]) end)
-			:whenReleased(function() mod.colorBoardMousePuckRelease() end)
+        deps.fcpxCmds:add("cpPuck" .. tools.numberToWord(i) .. "Mouse")
+            :titled(i18n("cpPuckMouse_customTitle", {count = i}))
+            :groupedBy("colorboard")
+            :whenActivated(function() mod.mousePuck("*", colorFunction[i]) end)
+            :whenReleased(function() mod.colorBoardMousePuckRelease() end)
 
-		for _, whichPanel in ipairs(colorBoardPanel) do
-			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i))
-				:titled(i18n("cpPuck_customTitle", {count = i, panel = whichPanel}))
-				:groupedBy("colorboard")
-				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i]) end)
+        for _, whichPanel in ipairs(colorBoardPanel) do
+            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i))
+                :titled(i18n("cpPuck_customTitle", {count = i, panel = whichPanel}))
+                :groupedBy("colorboard")
+                :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i]) end)
 
-			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Up")
-				:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Up"}))
-				:groupedBy("colorboard")
-				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "up") end)
-				:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Up")
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Up"}))
+                :groupedBy("colorboard")
+                :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "up") end)
+                :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 
-			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Down")
-				:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Down"}))
-				:groupedBy("colorboard")
-				:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "down") end)
-				:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Down")
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Down"}))
+                :groupedBy("colorboard")
+                :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "down") end)
+                :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 
-			if whichPanel == "Color" then
-				deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Left")
-					:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Left"}))
-					:groupedBy("colorboard")
-					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "left") end)
-					:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+            if whichPanel == "Color" then
+                deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Left")
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Left"}))
+                    :groupedBy("colorboard")
+                    :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "left") end)
+                    :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
 
-				deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Right")
-					:titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Right"}))
-					:groupedBy("colorboard")
-					:whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "right") end)
-					:whenReleased(function() mod.colorBoardSelectPuckRelease() end)
-			end
+                deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Right")
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Right"}))
+                    :groupedBy("colorboard")
+                    :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "right") end)
+                    :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+            end
 
-			deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Mouse")
-				:titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = whichPanel}))
-				:groupedBy("colorboard")
-				:whenActivated(function() mod.mousePuck(string.lower(whichPanel), colorFunction[i]) end)
-				:whenReleased(function() mod.colorBoardMousePuckRelease() end)
-		end
-	end
+            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Mouse")
+                :titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = whichPanel}))
+                :groupedBy("colorboard")
+                :whenActivated(function() mod.mousePuck(string.lower(whichPanel), colorFunction[i]) end)
+                :whenReleased(function() mod.colorBoardMousePuckRelease() end)
+        end
+    end
 
-	deps.fcpxCmds
-		:add("cpToggleColorBoard")
-		:groupedBy("colorboard")
-		:whenActivated(mod.toggleColorBoard)
+    deps.fcpxCmds
+        :add("cpToggleColorBoard")
+        :groupedBy("colorboard")
+        :whenActivated(mod.toggleColorBoard)
 
-	return mod
+    return mod
 
 end
 

@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("zoomMIDI")
 
-local fcp				= require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log               = require("hs.logger").new("zoomMIDI")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp               = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -33,20 +40,26 @@ local mod = {}
 ---
 --- Returns:
 ---  * None
-function mod.control(metadata, deviceName)
-	if type(metadata.fourteenBitValue) == "number" then
-		local appearance = fcp:timeline():toolbar():appearance()
-		if appearance then
-			--------------------------------------------------------------------------------
-			-- MIDI Controller Value (7bit): 		0 to 127
-			-- MIDI Controller Value (14bit):       0 to 16383
-			-- Zoom Slider:					        0 to 10
-			--------------------------------------------------------------------------------
-			appearance:show():zoomAmount():setValue(metadata.fourteenBitValue / (16383/10))
-		end
-	else
-	    log.ef("Unexpected type: %s", type(metadata.fourteenBitValue))
-	end
+function mod.control(metadata)
+    local value
+    if metadata.pitchChange then
+        value = metadata.pitchChange
+    else
+        value = metadata.fourteenBitValue
+    end
+    if type(value) == "number" then
+        local appearance = fcp:timeline():toolbar():appearance()
+        if appearance then
+            --------------------------------------------------------------------------------
+            -- MIDI Controller Value (7bit):        0 to 127
+            -- MIDI Controller Value (14bit):       0 to 16383
+            -- Zoom Slider:                         0 to 10
+            --------------------------------------------------------------------------------
+            appearance:show():zoomAmount():setValue(value / (16383/10))
+        end
+    else
+        log.ef("Unexpected Value: %s %s", value, value and type(value))
+    end
 end
 
 --- plugins.finalcutpro.midi.controls.zoom.init() -> nil
@@ -60,15 +73,15 @@ end
 ---  * None
 function mod.init()
 
-	local params = {
-		group = "fcpx",
-		text = i18n("midiTimelineZoom"),
-		subText = i18n("midiTimelineZoomDescription"),
-		fn = mod.control,
-	}
-	mod._manager.controls:new("zoomSlider", params)
+    local params = {
+        group = "fcpx",
+        text = string.upper(i18n("midi")) .. ": " .. i18n("timelineZoom"),
+        subText = i18n("midiTimelineZoomDescription"),
+        fn = mod.control,
+    }
+    mod._manager.controls:new("zoomSlider", params)
 
-	return mod
+    return mod
 
 end
 
@@ -78,11 +91,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.midi.controls.zoom",
-	group			= "finalcutpro",
-	dependencies	= {
-		["core.midi.manager"] = "manager",
-	}
+    id              = "finalcutpro.midi.controls.zoom",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.midi.manager"] = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -90,7 +103,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
     mod._manager = deps.manager
-	return mod.init()
+    return mod.init()
 end
 
 return plugin

@@ -25,7 +25,7 @@ local log                               = require("hs.logger").new("text2speech"
 local application                       = require("hs.application")
 local chooser                           = require("hs.chooser")
 local drawing                           = require("hs.drawing")
-local eventtap							= require("hs.eventtap")
+local eventtap                          = require("hs.eventtap")
 local fs                                = require("hs.fs")
 local http                              = require("hs.http")
 local menubar                           = require("hs.menubar")
@@ -38,7 +38,7 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils 							= require("cp.ui.axutils")
+local axutils                           = require("cp.ui.axutils")
 local config                            = require("cp.config")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
@@ -503,8 +503,17 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         clips = libraries:selectedClipsUI()
         if #clips ~= 1 then
-            dialog.displayErrorMessage("Wrong number of clips selected.")
-            return false
+            --------------------------------------------------------------------------------
+            -- Maybe Reveal in Browser failed, so let's try again.
+            --------------------------------------------------------------------------------
+            log.df("Reveal in Browser might have failed, so let's try again.")
+            fcp:selectMenu({"Window", "Go To", "Timeline"})
+            fcp:selectMenu({"File", "Reveal in Browser"})
+            clips = libraries:selectedClipsUI()
+            if #clips ~= 1 then
+                dialog.displayErrorMessage("Wrong number of clips selected.")
+                return false
+            end
         end
 
         --------------------------------------------------------------------------------
@@ -581,9 +590,9 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         -- Restore Filmstrip View:
         --------------------------------------------------------------------------------
-		if filmstripView then
-			libraries:toggleViewMode():press()
-		end
+        if filmstripView then
+            libraries:toggleViewMode():press()
+        end
 
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
@@ -882,7 +891,7 @@ function mod.show()
         if not folderResult then
             return nil
         else
-            mod.path(result)
+            mod.path(folderResult)
         end
     end
 
@@ -962,7 +971,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
 
     --------------------------------------------------------------------------------
     -- Define Plugins:

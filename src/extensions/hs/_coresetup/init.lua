@@ -81,49 +81,47 @@ hs.fileDroppedToDockIconCallback = nil
 
   function hs.showError(err)
 
+    i18n = require("i18n")
+	i18n.loadFile(hs.processInfo["resourcePath"] .. "/extensions/cp/resources/languages/en.lua")
+
+    local dialog = require("hs.dialog")
 	local settings = require("hs.settings")
 	local debugMode = settings.get("cp.debugMode")
-
-	if debugMode then
-
-	    hs._notify("CommandPost Error")
-    	-- print(debug.traceback())
-    	print("*** ERROR: "..err)
-    	hs.focus()
-    	hs.openConsole()
-    	hs._TERMINATED=true
-
-	else
-		print("*** ERROR: "..err)
-
-		i18n = require("i18n")
-		i18n.loadFile(hs.processInfo["resourcePath"] .. "/extensions/cp/resources/languages/en.lua")
-
-		local safeErr = string.gsub([["]] .. tostring(err) .. [["]], [[\"]], "'")
-
-		local osascript	= require("hs.osascript")
-		local appleScript = [[
-			set whatError to ]] .. safeErr .. "\n\n" ..[[
-			set iconPath to ("]] .. hs.processInfo["resourcePath"] .. "/AppIcon.icns" .. [[" as POSIX file)
-
-			display dialog "]] .. i18n("unexpectedError") .. [[" buttons {"]] .. i18n("sendBugReport") .. [[", "]] .. i18n("quit") .. " " .. i18n("appName") .. [["} with icon iconPath
-			if the button returned of the result is equal to "]] .. i18n("sendBugReport") .. [[" then
-				return true
-			else
-				return false
-			end if
-		]]
-
-		local _, result = osascript.applescript(appleScript)
-
-		if result then
-			local feedback = require("cp.feedback")
-			feedback.showFeedback(true)
-		else
-			hs.application.applicationForPID(hs.processInfo["processID"]):kill()
-		end
-	end
-
+    if debugMode then
+        --------------------------------------------------------------------------------
+        -- DEBUG MODE:
+        --------------------------------------------------------------------------------
+        hs._notify("CommandPost Error")
+        -- print(debug.traceback())
+        print("*** ERROR: "..err)
+        hs.focus()
+        hs.openConsole()
+        hs._TERMINATED=true
+    else
+        if not cpLoaded then
+            --------------------------------------------------------------------------------
+            -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
+            --------------------------------------------------------------------------------
+            hs.openConsole()
+            local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedFatalError"), i18n("sendBugReport"), i18n("quit"))
+            if result == i18n("sendBugReport") then
+                local feedback = require("cp.feedback")
+                feedback.showFeedback(true)
+            else
+                hs.application.applicationForPID(hs.processInfo["processID"]):kill()
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- NOT DEBUG MODE - CRASH HAPPENED AFTER BOOT - NON-FATAL ERROR:
+            --------------------------------------------------------------------------------
+            print("*** ERROR: "..err)
+            local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedError"), i18n("continue"), i18n("sendBugReport"))
+            if result == i18n("sendBugReport") then
+                local feedback = require("cp.feedback")
+                feedback.showFeedback()
+            end
+        end
+    end
   end
 
   function hs.assert(pred,desc,data)
