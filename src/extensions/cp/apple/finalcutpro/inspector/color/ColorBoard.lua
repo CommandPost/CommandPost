@@ -355,6 +355,15 @@ end
 --
 -----------------------------------------------------------------------
 
+--- cp.apple.finalcutpro.inspect.color.ColorBoard:color() -> ColorBoardAspect
+--- Method
+--- Returns the `color` aspect of the color board.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorBoardAspect`.
 function ColorBoard:color()
 	if not self._color then
 		self._color = Aspect:new(self, 1)
@@ -362,6 +371,15 @@ function ColorBoard:color()
 	return self._color
 end
 
+--- cp.apple.finalcutpro.inspect.color.ColorBoard:saturation() -> ColorBoardAspect
+--- Method
+--- Returns the `saturation` aspect of the color board.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorBoardAspect`.
 function ColorBoard:saturation()
 	if not self._saturation then
 		self._saturation = Aspect:new(self, 2)
@@ -369,11 +387,39 @@ function ColorBoard:saturation()
 	return self._saturation
 end
 
+--- cp.apple.finalcutpro.inspect.color.ColorBoard:exposure() -> ColorBoardAspect
+--- Method
+--- Returns the `exposure` aspect of the color board.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorBoardAspect`.
 function ColorBoard:exposure()
 	if not self._exposure then
 		self._exposure = Aspect:new(self, 3)
 	end
 	return self._exposure
+end
+
+--- cp.apple.finalcutpro.inspect.color.ColorBoard:current() -> ColorBoardAspect
+--- Method
+--- Returns the currently-selected 'aspect' of the Color Board - either the `color`, `saturation` or `exposure`.
+--- If the color board is not currently visible, it returns the `color` aspect by default.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The currently active `ColorBoardAspect`, or the `color` aspect if none is showing.
+function ColorBoard:current()
+	if self:saturation():isShowing() then
+		return self:saturation()
+	elseif self:exposure():isShowing() then
+		return self:exposure()
+	end
+	return self:color()
 end
 
 --- cp.apple.finalcutpro.inspect.color.ColorBoard:colorSatExpUI() -> hs._asm.axuielement object

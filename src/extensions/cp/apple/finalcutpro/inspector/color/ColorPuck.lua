@@ -38,6 +38,23 @@ Puck.range = {master=1, shadows=2, midtones=3, highlights=4}
 Puck.naturalLength = 20
 Puck.elasticity = Puck.naturalLength/10
 
+Puck._active = nil
+
+-- tension(diff) -> number
+-- Function
+-- Calculates the tension given the x/y difference value, based on the Puck elasticity and natural length.
+--
+-- Parameters:
+-- * diff	- The amount of stretch in a given dimension.
+--
+-- Returns:
+-- * The tension factor.
+local function tension(diff)
+	local factor = diff < 0 and -1 or 1
+	local t = Puck.elasticity * (diff*factor-Puck.naturalLength) / Puck.naturalLength
+	return t < 0 and 0 or t * factor
+end
+
 function Puck.matches(element)
 	return element and element:attributeValue("AXRole") == "AXButton"
 end
@@ -124,15 +141,24 @@ end):bind(Puck)
 
 -- TODO: Add documentation
 function Puck:start()
+	-- stop any running pucks when starting a new one.
+	if Puck._active then
+		Puck._active:stop()
+	end
+
 	-- disable skimming while the Puck is running
-	self.menuBar = self.colorBoard:app():menuBar()
+	self.menuBar = self:parent():app():menuBar()
 	if self.skimming() then
 		self.menuBar:checkMenu({"View", "Skimming"})
 	end
 
+	Puck._active = self
+
+	-- select the puck to ensure properties are available.
+	self:select()
+
 	-- record the origin and draw a marker
 	self.origin = mouse.getAbsolutePosition()
-
 	self:drawMarker()
 
 	-- start the timer
@@ -180,7 +206,7 @@ function Puck:drawMarker()
 		:setFill(true)
 		:setStrokeWidth(1)
 
-	aStart, aEnd = self:getArc()
+	local aStart, aEnd = self:getArc()
 	self.arc = drawing.arc(self.origin, d/2, aStart, aEnd)
 		:setStrokeColor(color)
 		:setFillColor(color)
@@ -197,13 +223,13 @@ end
 -- TODO: Add documentation
 function Puck:colorMarker(pct, angle)
 	local solidColor = nil
-	local fillColor = nil
+	local fillColor
 
 	if angle then
 		solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
 		fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
 	else
-		brightness = pct >= 0 and 1 or 0
+		local brightness = pct >= 0 and 1 or 0
 		fillColor = {hue = 0, saturation = 0, brightness = brightness, alpha = math.abs(pct/100)}
 	end
 
@@ -249,7 +275,7 @@ function Puck:cleanup()
 		self.menuBar:checkMenu({"View", "Skimming"})
 	end
 	self.menuBar = nil
-	self.colorBoard.Puck = nil
+	Puck._active = nil
 end
 
 -- TODO: Add documentation
@@ -276,39 +302,32 @@ function Puck:accumulate(xShift, yShift)
 end
 
 -- TODO: Add documentation
-function Puck.loop(Puck)
-	if not Puck.running then
-		Puck:cleanup()
+function Puck:loop()
+	if not self.running then
+		self:cleanup()
 		return
 	end
 
-	local pctUI = Puck.percent:UI()
-	local angleUI = Puck.angle:UI()
+	local pct = self.percent
+	local angle = self.angle
 
 	local current = mouse.getAbsolutePosition()
-	local xDiff = current.x - Puck.origin.x
-	local yDiff = Puck.origin.y - current.y
+	local xDiff = current.x - self.origin.x
+	local yDiff = self.origin.y - current.y
 
-	local xShift = Puck.tension(xDiff)
-	local yShift = Puck.tension(yDiff)
+	local xShift = tension(xDiff)
+	local yShift = tension(yDiff)
 
-	xShift, yShift = Puck:accumulate(xShift, yShift)
+	xShift, yShift = self:accumulate(xShift, yShift)
 
-	local pctValue = pctUI and tonumber(pctUI:attributeValue("AXValue") or "0") + yShift
-	local angleValue = angleUI and (tonumber(angleUI:attributeValue("AXValue") or "0") + xShift + 360) % 360
-	Puck:colorMarker(pctValue, angleValue)
+	local pctValue = (pct:value() or 0) + yShift
+	local angleValue = ((angle:value() or 0) + xShift + 360) % 360
+	self:colorMarker(pctValue, angleValue)
 
-	if yShift and pctUI then pctUI:setAttributeValue("AXValue", tostring(pctValue)):doConfirm() end
-	if xShift and angleUI then angleUI:setAttributeValue("AXValue", tostring(angleValue)):doConfirm() end
+	if yShift then pct:value(pctValue) end
+	if xShift then angle:value(angleValue) end
 
-	timer.doAfter(0.01, function() Puck.loop(Puck) end)
-end
-
--- TODO: Add documentation
-function Puck.tension(diff)
-	local factor = diff < 0 and -1 or 1
-	local tension = Puck.elasticity * (diff*factor-Puck.naturalLength) / Puck.naturalLength
-	return tension < 0 and 0 or tension * factor
+	timer.doAfter(0.01, function() self:loop() end)
 end
 
 function Puck:__tostring()

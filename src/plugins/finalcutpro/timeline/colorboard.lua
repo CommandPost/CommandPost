@@ -17,6 +17,8 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local log								= require("hs.logger").new("p_colorboard")
+
 local eventtap                          = require("hs.eventtap")
 local timer                             = require("hs.timer")
 
@@ -24,8 +26,10 @@ local timer                             = require("hs.timer")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local dialog                            = require("cp.dialog")
-local fcp                               = require("cp.apple.finalcutpro")
 local tools                             = require("cp.tools")
+
+local fcp                               = require("cp.apple.finalcutpro")
+local ColorBoardAspect					= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
 --------------------------------------------------------------------------------
 --
@@ -34,76 +38,45 @@ local tools                             = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.colorboard.selectPuck(aspect, property, whichDirection) -> none
+--- plugins.finalcutpro.timeline.colorboard.startShiftingPuck(puck, percentShift, angleShift) -> none
 --- Function
---- Color Board - Select Puck
+--- Starts shifting the puck, repeating at the keyboard repeat rate. Runs until `stopShiftingPuck()` is called.
 ---
 --- Parameters:
----  * aspect - "global", "shadows", "midtones" or "highlights"
----  * property - "Color", "Saturation" or "Exposure"
----  * whichDirection - "up" or "down"
+---  * puck			- The puck to shift
+---  * property		- The property to shift (typically the `percent` or `angle` value for the puck)
+---  * amount		- The amount to shift the property.
 ---
 --- Returns:
 ---  * None
-function mod.selectPuck(aspect, property, whichDirection)
+function mod.startShiftingPuck(puck, property, amount)
 
-    --------------------------------------------------------------------------------
-    -- Show the Color Board with the correct panel
-    --------------------------------------------------------------------------------
-    local colorBoard = fcp:colorBoard()
-
-    --------------------------------------------------------------------------------
-    -- Show the Color Board if it's hidden:
-    --------------------------------------------------------------------------------
-    if not colorBoard:isShowing() then colorBoard:show() end
-
-    if not colorBoard:isActive() then
+    if not puck:select():isShowing() then
         dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
-        return "Failed"
+        return false
     end
 
-    --------------------------------------------------------------------------------
-    -- If a Direction is specified:
-    --------------------------------------------------------------------------------
-    if whichDirection ~= nil then
-
-        --------------------------------------------------------------------------------
-        -- Get shortcut key from plist, press and hold if required:
-        --------------------------------------------------------------------------------
-        mod.releaseColorBoardDown = false
-        timer.doUntil(function() return mod.releaseColorBoardDown end, function()
-            if whichDirection == "up" then
-                colorBoard:shiftPercentage(aspect, property, 1)
-            elseif whichDirection == "down" then
-                colorBoard:shiftPercentage(aspect, property, -1)
-            elseif whichDirection == "left" then
-                colorBoard:shiftAngle(aspect, property, -1)
-            elseif whichDirection == "right" then
-                colorBoard:shiftAngle(aspect, property, 1)
-            end
-        end, eventtap.keyRepeatInterval())
-    else
-        --------------------------------------------------------------------------------
-        -- Just select the puck:
-        --------------------------------------------------------------------------------
-        colorBoard:selectPuck(aspect, property)
-    end
+	mod.puckShifting = true
+	timer.doWhile(function() return mod.puckShifting end, function()
+		local value = property()
+		if value ~= nil then property(value + amount) end
+	end, eventtap.keyRepeatInterval())
 end
 
---- plugins.finalcutpro.timeline.colorboard.colorBoardSelectPuckRelease() -> none
+--- plugins.finalcutpro.timeline.colorboard.stopShiftingPuck() -> none
 --- Function
---- Color Board Release Keypress
+--- Stops the puck from shifting with the keyboard.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * None
-function mod.colorBoardSelectPuckRelease()
-    mod.releaseColorBoardDown = true
+function mod.stopShiftingPuck()
+    mod.puckShifting = false
 end
 
---- plugins.finalcutpro.timeline.colorboard.mousePuck(aspect, property) -> none
+--- plugins.finalcutpro.timeline.colorboard.startMousePuck(aspect, property) -> none
 --- Function
 --- Color Board - Puck Control Via Mouse
 ---
@@ -113,32 +86,23 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.mousePuck(aspect, property)
-    --------------------------------------------------------------------------------
-    -- Stop Existing Color Pucker:
-    --------------------------------------------------------------------------------
-    if mod.colorPucker then
-        mod.colorPucker:stop()
-    end
-
+function mod.startMousePuck(puck)
     --------------------------------------------------------------------------------
     -- Delete any pre-existing highlights:
     --------------------------------------------------------------------------------
     mod.playhead.deleteHighlight()
 
-    local colorBoard = fcp:colorBoard()
-
-    --------------------------------------------------------------------------------
-    -- Show the Color Board if it's hidden:
-    --------------------------------------------------------------------------------
-    if not colorBoard:isShowing() then colorBoard:show() end
-
-    if not colorBoard:isActive() then
+    if not fcp:colorBoard():isActive() then
         dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
-        return "Failed"
+        return false
     end
 
-    mod.colorPucker = colorBoard:startPucker(aspect, property)
+	-- start the puck.
+	puck:start()
+
+	mod.colorPuck = puck
+
+	return true
 end
 
 --- plugins.finalcutpro.timeline.colorboard.colorBoardMousePuckRelease() -> none
@@ -150,10 +114,10 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.colorBoardMousePuckRelease()
-    if mod.colorPucker then
-        mod.colorPucker:stop()
-        mod.colorPicker = nil
+function mod.stopMousePuck()
+    if mod.colorPuck then
+        mod.colorPuck:stop()
+        mod.colorPuck = nil
     end
 end
 
@@ -195,72 +159,78 @@ function plugin.init(deps)
 
     mod.playhead = deps.playhead
 
-    local colorFunction = {
-        [1] = "global",
-        [2] = "shadows",
-        [3] = "midtones",
-        [4] = "highlights",
-    }
+	local colorBoard = fcp:colorBoard()
 
-    local selectColorBoardPuckDefaultShortcuts = {
-        [1] = "m",
-        [2] = ",",
-        [3] = ".",
-        [4] = "/",
-    }
+	local colorBoardAspects = {
+		{ title = "Color", control = colorBoard:color(), hasAngle = true },
+		{ title = "Saturation", control = colorBoard:saturation() },
+		{ title = "Exposure", control = colorBoard:exposure() },
+	}
 
-    local colorBoardPanel = {"Color", "Saturation", "Exposure"}
+	local pucks = {
+		{ title = "Master", fn = ColorBoardAspect.master, shortcut = "m" },
+		{ title = "Shadows", fn = ColorBoardAspect.shadows, shortcut = "," },
+		{ title = "Midtones", fn = ColorBoardAspect.midtones, shortcut = "." },
+		{ title = "Highlights", fn = ColorBoardAspect.highlights, shortcut = "/" },
+	}
 
-    for i=1, 4 do
-        deps.fcpxCmds:add("cpSelectColorBoardPuck" .. tools.numberToWord(i))
+	for i,puck in ipairs(pucks) do
+		local iWord = tools.numberToWord(i)
+        deps.fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
             :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :activatedBy():ctrl():option():cmd(selectColorBoardPuckDefaultShortcuts[i])
-            :whenActivated(function() mod.selectPuck("*", colorFunction[i]) end)
+            :activatedBy():ctrl():option():cmd(puck.shortcut)
+            :whenActivated(function() puck.fn( colorBoard:current() ):select() end)
 
-        deps.fcpxCmds:add("cpPuck" .. tools.numberToWord(i) .. "Mouse")
+        deps.fcpxCmds:add("cpPuck" .. iWord .. "Mouse")
             :titled(i18n("cpPuckMouse_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :whenActivated(function() mod.mousePuck("*", colorFunction[i]) end)
-            :whenReleased(function() mod.colorBoardMousePuckRelease() end)
+            :whenActivated(function() mod.startMousePuck(puck.fn( colorBoard:current() )) end)
+            :whenReleased(function() mod.stopMousePuck() end)
 
-        for _, whichPanel in ipairs(colorBoardPanel) do
-            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i))
-                :titled(i18n("cpPuck_customTitle", {count = i, panel = whichPanel}))
+		for _, aspect in ipairs(colorBoardAspects) do
+			-- find the puck for the current aspect (eg. "color > master")
+			local puckControl = puck.fn( aspect.control )
+			if not puckControl then
+				log.ef("Unable to find the %s puck control for the %s aspect.", puck.title, aspect.title)
+			end
+
+            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord)
+                :titled(i18n("cpPuck_customTitle", {count = i, panel = aspect.title}))
                 :groupedBy("colorboard")
-                :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i]) end)
+                :whenActivated(function() puckControl:select() end)
 
-            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Up")
-                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Up"}))
+            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Up")
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Up"}))
                 :groupedBy("colorboard")
-                :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "up") end)
-                :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+                :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.percent, 1) end)
+                :whenReleased(function() mod.stopShiftingPuck() end)
 
-            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Down")
-                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Down"}))
+            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Down")
+                :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Down"}))
                 :groupedBy("colorboard")
-                :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "down") end)
-                :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+                :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.percent, -1) end)
+                :whenReleased(function() mod.stopShiftingPuck() end)
 
-            if whichPanel == "Color" then
-                deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Left")
-                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Left"}))
+            if aspect.hasAngle then
+                deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Left")
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Left"}))
                     :groupedBy("colorboard")
-                    :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "left") end)
-                    :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+                    :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.angle, -1) end)
+                    :whenReleased(function() mod.stopShiftingPuck() end)
 
-                deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Right")
-                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = whichPanel, direction = "Right"}))
+                deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Right")
+                    :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Right"}))
                     :groupedBy("colorboard")
-                    :whenActivated(function() mod.selectPuck(string.lower(whichPanel), colorFunction[i], "right") end)
-                    :whenReleased(function() mod.colorBoardSelectPuckRelease() end)
+                    :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.angle, 1) end)
+                    :whenReleased(function() mod.stopShiftingPuck() end)
             end
 
-            deps.fcpxCmds:add("cp" .. whichPanel .. "Puck" .. tools.numberToWord(i) .. "Mouse")
-                :titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = whichPanel}))
+            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Mouse")
+                :titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = aspect.title}))
                 :groupedBy("colorboard")
-                :whenActivated(function() mod.mousePuck(string.lower(whichPanel), colorFunction[i]) end)
-                :whenReleased(function() mod.colorBoardMousePuckRelease() end)
+                :whenActivated(function() mod.startMousePuck(puckControl) end)
+                :whenReleased(function() mod.stopMousePuck() end)
         end
     end
 
