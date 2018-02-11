@@ -671,8 +671,8 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Panel:
     --------------------------------------------------------------------------------
-    if mod.panel then
-        mod.panel = deps.manager.addPanel({
+    if mod.manager then
+        mod.panel = mod.manager.addPanel({
                 priority        = 2020,
                 id              = "fcpxml",
                 label           = i18n("xml"),
