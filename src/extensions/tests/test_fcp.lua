@@ -70,12 +70,12 @@ return test.suite("cp.apple.finalcutpro")
 	end
 end)
 :afterEach(function() -- do this after each test.
-	-- fcp:closeLibrary(TEST_LIBRARY)
-	-- -- delete the temporary library copy.
-	-- local ok, err = rmdir(TEST_DIRECTORY, true)
-	-- if not ok then
-	-- 	error(format("Unable to remove the temporary directory: %s", err))
-	-- end
+	fcp:closeLibrary(TEST_LIBRARY)
+	-- delete the temporary library copy.
+	local ok, err = rmdir(TEST_DIRECTORY, true)
+	if not ok then
+		error(format("Unable to remove the temporary directory: %s", err))
+	end
 end)
 :with(
 	test("Launch FCP", function()

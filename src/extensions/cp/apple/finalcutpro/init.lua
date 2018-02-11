@@ -1134,7 +1134,7 @@ end
 
 --- cp.apple.finalcutpro:alert() -> cp.ui.Alert
 --- Method
---- Provides access to any 'alert' dialogues in the app.
+--- Provides basic access to any 'alert' dialog windows in the app.
 ---
 --- Parameters:
 ---  * None
