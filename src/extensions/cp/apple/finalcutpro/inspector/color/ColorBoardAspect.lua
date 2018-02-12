@@ -11,11 +11,7 @@
 local inspect					= require("hs.inspect")
 
 local just						= require("cp.just")
-local axutils					= require("cp.ui.axutils")
 local prop						= require("cp.prop")
-
-local PropertyRow				= require("cp.ui.PropertyRow")
-local TextField					= require("cp.ui.TextField")
 
 local ColorPuck					= require("cp.apple.finalcutpro.inspector.color.ColorPuck")
 
@@ -87,7 +83,16 @@ function ColorBoardAspect:id()
 end
 
 function ColorBoardAspect:selected()
-	return isShowing()
+	return self:isShowing()
+end
+
+function ColorBoardAspect:reset()
+	self:show()
+	self:master():reset()
+	self:shadows():reset()
+	self:midtones():reset()
+	self:highlights():reset()
+	return self
 end
 
 function ColorBoardAspect:master()

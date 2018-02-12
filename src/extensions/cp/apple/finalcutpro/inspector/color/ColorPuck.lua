@@ -141,6 +141,15 @@ function Puck:show()
 	return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:select() -> self
+--- Method
+--- Selects this puck.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorPuck` instance.
 function Puck:select()
 	self:show()
 	local ui = self:UI()
@@ -151,6 +160,40 @@ function Puck:select()
 		tools.ninjaMouseClick(centre)
 	end
 	return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:shiftPercent(amount) -> self
+--- Method
+--- Shifts the percent value by the provide amount.
+---
+--- Parameters:
+--- * amount - The amount to shift the percent value.
+---
+--- Returns:
+--- * The updated value.
+function Puck:shiftPercent(amount)
+	local value = self:percent()
+	if value ~= nil then
+		value = self:percent(value + amount)
+	end
+	return value
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:shiftAngle(amount) -> self
+--- Method
+--- Shifts the angle value by the provide amount.
+---
+--- Parameters:
+--- * amount - The amount to shift the angle value.
+---
+--- Returns:
+--- * The `ColorPuck` instance.
+function Puck:shiftAngle(amount)
+	local value = self:angle()
+	if value ~= nil then
+		value = self:angle(value + amount)
+	end
+	return value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:reset() -> self
