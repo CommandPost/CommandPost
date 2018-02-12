@@ -19,7 +19,6 @@ local log								= require("hs.logger").new("colorInspect")
 
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
-local tools								= require("cp.tools")
 
 local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
 local idBoard							= require("cp.apple.finalcutpro.ids") "ColorBoard"
@@ -38,16 +37,6 @@ local v									= require("semver")
 --
 --------------------------------------------------------------------------------
 local ColorInspector = {}
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES
---- Constant
---- Table of Correction Types
-ColorInspector.CORRECTION_TYPES = {
-	["Color Board"] 			= "FFCorrectorColorBoard",
-	["Color Wheels"]			= "PAECorrectorEffectDisplayName",
-	["Color Curves"] 			= "PAEColorCurvesEffectDisplayName",
-	["Hue/Saturation Curves"] 	= "PAEHSCurvesEffectDisplayName",
-}
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.matches(element)
 --- Function
@@ -84,17 +73,15 @@ end
 --- Returns:
 ---  * A ColorInspector object
 function ColorInspector:new(parent)
-	local o = {
+	local o = prop.extend({
 		_parent = parent,
 		_child = {}
-	}
-
-	prop.extend(o, ColorInspector)
+	}, ColorInspector)
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.isSupported <cp.prop: boolean; read-only>
 --- Field
 --- Is the Color Inspector supported in the installed version of Final Cut Pro?
-	o.isSupported = parent:app().getVersion:mutate(function(original, self)
+	o.isSupported = parent:app().getVersion:mutate(function(original)
 		local version = original()
 		return version and v(version) >= v("10.4")
 	end):bind(o)
@@ -244,62 +231,24 @@ function ColorInspector:show(correctionType)
 	if not self:isShowing() then
 		self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
 	end
+	-- TODO: remove this once all dependent code is updated.
 	if correctionType then
-		if self.CORRECTION_TYPES[correctionType] then
-			local correctionsUI = self:corrections():UI()
-			if correctionsUI then
-				local menuButton = axutils.childWith(correctionsUI, "AXRole", "AXMenuButton")
-				local colorInspectorText = self:app():string(self.CORRECTION_TYPES[correctionType])
-				if menuButton then
-					if not string.find(menuButton:attributeValue("AXTitle"), colorInspectorText) then
-						-----------------------------------------------------------------------
-						-- A Color Board is not already selected by default:
-						-----------------------------------------------------------------------
-						local result = menuButton:performAction("AXPress")
-						if result then
-							local subMenus = menuButton:attributeValue("AXChildren")
-							if subMenus and subMenus[1] then
-								local foundAColorInspector = false
-								local newColorInspectorUI = nil
-								for _, child in ipairs(subMenus[1]) do
-									local title = child:attributeValue("AXTitle")
-									if title and foundAColorInspector == false and not (title == "+" .. colorInspectorText) and string.find(title, colorInspectorText) then
-										-----------------------------------------------------------------------
-										-- Found an existing Color Correction in the list, so open the first one:
-										-----------------------------------------------------------------------
-										foundAColorInspector = true
-										child:performAction("AXPress")
-									end
-									-----------------------------------------------------------------------
-									-- Save the "Add" button just in case we need it...
-									-----------------------------------------------------------------------
-									if title and title == "+" .. colorInspectorText then
-										newColorInspectorUI = child
-									end
-								end
-								if not foundAColorInspector and newColorInspectorUI then
-									-----------------------------------------------------------------------
-									-- Not existing Color Correction was found so creating new one:
-									-----------------------------------------------------------------------
-									local result = newColorInspectorUI:performAction("AXPress")
-									if not result then
-										log.ef("Failed to trigger new Color Board button.")
-									end
-								end
-							end
-						else
-							log.ef("Failed to activate Color Controls drop down.")
-						end
-					end
-				end
-			else
-				--log.ef("Could not find correctionsUI.")
-			end
-		else
-			log.ef("Invalid Correction Type: %s", correctionType)
-		end
+		self:activateCorrection(correctionType)
 	end
+end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self
+--- Method
+--- Activates the named correction type and number, if present. If no corrector with the type/number combination exists, a new one is added.
+---
+--- Parameters:
+---  * correctionType	- The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.
+---  * number			- The correction number for that type. Defaults to `1`.
+---
+--- Returns:
+---  * ColorInspector object
+function ColorInspector:activateCorrection(correctionType, number)
+	self:corrections():activate(correctionType, number)
 	return self
 end
 

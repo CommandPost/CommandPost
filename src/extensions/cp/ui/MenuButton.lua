@@ -15,6 +15,8 @@
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 
+local find							= string.find
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -60,13 +62,37 @@ function MenuButton:selectItem(index)
 			if item then
 				-- select the menu item
 				item:doPress()
+				return true
 			else
 				-- close the menu again
 				items:doCancel()
 			end
 		end
 	end
-	return self
+	return false
+end
+
+function MenuButton:selectItemMatching(pattern)
+	local ui = self:UI()
+	if ui then
+		local items = ui:doPress()[1]
+		if items then
+			for _,item in ipairs(items) do
+				local title = item:attributeValue("AXTitle")
+				if title then
+					local s,e = find(title, pattern)
+					if s == 1 and e == title:len() then
+						-- perfect match
+						item:doPress()
+						return true
+					end
+				end
+			end
+			-- if we got this far, we couldn't find it.
+			items:doCancel()
+		end
+	end
+	return false
 end
 
 -- TODO: Add documentation

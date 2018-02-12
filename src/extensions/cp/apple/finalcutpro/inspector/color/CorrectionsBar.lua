@@ -12,12 +12,23 @@
 
 local log								= require("hs.logger").new("colorInspect")
 
-local axutils							= require("cp.ui.axutils")
 local prop								= require("cp.prop")
+local axutils							= require("cp.ui.axutils")
+local MenuButton						= require("cp.ui.MenuButton")
 
 local sort								= table.sort
 
 local CorrectionsBar = {}
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES
+--- Constant
+--- Table of Correction Types
+CorrectionsBar.CORRECTION_TYPES = {
+	["Color Board"] 			= "FFCorrectorColorBoard",
+	["Color Wheels"]			= "PAECorrectorEffectDisplayName",
+	["Color Curves"] 			= "PAEColorCurvesEffectDisplayName",
+	["Hue/Saturation Curves"] 	= "PAEHSCurvesEffectDisplayName",
+}
 
 function CorrectionsBar.matches(element)
 	if element and element:attributeValue("AXRole") == "AXGroup" then
@@ -64,6 +75,33 @@ end
 
 function CorrectionsBar:isShowing()
 	return self:UI() ~= nil
+end
+
+function CorrectionsBar:menuButton()
+	if not self._menuButton then
+		self._menuButton = MenuButton:new(self, function()
+			return axutils.childWithRole(self:UI(), "AXMenuButton")
+		end)
+	end
+	return self._menuButton
+end
+
+function CorrectionsBar:activate(correctionType, number)
+	number = number or 1 -- default to the first corrector.
+
+	-- see if the correction type/number combo exists already
+	local menuButton = self:menuButton()
+	local correctionText = self:app():string(self.CORRECTION_TYPES[correctionType])
+	local pattern = "%s*"..correctionText.." "..number
+	if not menuButton:selectItemMatching(pattern) then
+		-- try adding a new correction of the specified type.
+		pattern = "%+"..correctionText
+		if not menuButton:selectItemMatching(pattern) then
+			log.ef("Invalid Correction Type: %s", correctionType)
+		end
+	end
+
+	return self
 end
 
 return CorrectionsBar
