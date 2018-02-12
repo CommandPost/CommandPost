@@ -261,8 +261,8 @@ local function puckWidget(id, puck)
         })
     end
 
-    local pct = puck:percent()
-    local angle = puck:angle()
+    local pct = puck():percent()
+    local angle = puck():angle()
 
     local brightness, _, fillColor, negative = calculateColor(pct, angle)
 
@@ -290,7 +290,7 @@ local function puckWidget(id, puck)
     insert(widgetCanvas, {
         id = "text",
         frame = { h = 30, w = 150, x = 10, y = 6 },
-        text = getWidgetText(puck),
+        text = getWidgetText(puck()),
         textAlignment = "left",
         textColor = { white = 1.0 },
         textSize = 12,
@@ -313,7 +313,7 @@ local function puckWidget(id, puck)
     --------------------------------------------------------------------------------
     -- Arc:
     --------------------------------------------------------------------------------
-    local arcAction = puck:angle() ~= nil and "strokeAndFill" or "skip"
+    local arcAction = puck():angle() ~= nil and "strokeAndFill" or "skip"
     insert(widgetCanvas, {
         id                  = "arc",
         type                = "arc",
@@ -375,7 +375,7 @@ local function puckWidget(id, puck)
                     -- Reset Puck:
                     --------------------------------------------------------------------------------
                     mod._doubleTap[id] = false
-                    puck:reset()
+                    puck():reset()
                     skipMaths = true
                 else
                     mod._doubleTap[id] = true
@@ -388,12 +388,12 @@ local function puckWidget(id, puck)
             --------------------------------------------------------------------------------
             -- Show the Puck if it's hidden:
             --------------------------------------------------------------------------------
-            puck:show()
+            puck():show()
 
             --------------------------------------------------------------------------------
             -- Abort if Puck is still not showing.
             --------------------------------------------------------------------------------
-            if not puck:isShowing() then
+            if not puck():isShowing() then
                 return
             end
 
@@ -426,7 +426,7 @@ local function puckWidget(id, puck)
             --------------------------------------------------------------------------------
             -- Update UI:
             --------------------------------------------------------------------------------
-            updateCanvas(o, puck)
+            updateCanvas(o, puck())
 
             --------------------------------------------------------------------------------
             -- Perform Action:
@@ -434,9 +434,9 @@ local function puckWidget(id, puck)
             if not skipMaths then
                 if m == "mouseDown" or m == "mouseMove" then
                     if shiftPressed then
-                        puck:angle(x)
+                        puck():angle(x)
                     else
-                        puck:percent(x)
+                        puck():percent(x)
                     end
                 end
             end
@@ -451,7 +451,7 @@ local function puckWidget(id, puck)
     --------------------------------------------------------------------------------
     -- Update the Canvas:
     --------------------------------------------------------------------------------
-    updateCanvas(widgetCanvas, puck)
+    updateCanvas(widgetCanvas, puck())
 
     --------------------------------------------------------------------------------
     -- Create new Touch Bar Item from Canvas:
@@ -463,7 +463,7 @@ local function puckWidget(id, puck)
     --------------------------------------------------------------------------------
     mod._updateCallbacks[#mod._updateCallbacks + 1] = function()
         if item:isVisible() then
-            updateCanvas(widgetCanvas, puck)
+            updateCanvas(widgetCanvas, puck())
         end
     end
 
@@ -518,10 +518,10 @@ local function groupPuck(id)
     --------------------------------------------------------------------------------
     local group = touchbar.item.newGroup(id):groupItems({
         touchbar.item.newCanvas(widgetCanvas):canvasClickColor{ alpha = 0.0 },
-        puckWidget("colorBoardGroup1", colorBoard:current():master()),
-        puckWidget("colorBoardGroup2", colorBoard:current():shadows()),
-        puckWidget("colorBoardGroup3", colorBoard:current():midtones()),
-        puckWidget("colorBoardGroup4", colorBoard:current():highlights()),
+        puckWidget("colorBoardGroup1", function() return colorBoard:current():master() end),
+        puckWidget("colorBoardGroup2", function() return colorBoard:current():shadows() end),
+        puckWidget("colorBoardGroup3", function() return colorBoard:current():midtones() end),
+        puckWidget("colorBoardGroup4", function() return colorBoard:current():highlights() end),
     })
     return group
 
@@ -564,7 +564,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 1",
         subText = "Allows you to control puck one of the Color Board.",
-        item = function() return puckWidget("colorBoardPuck1", colorBoard:current():master()) end,
+        item = function() return puckWidget("colorBoardPuck1", function() return colorBoard:current():master() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck1", params)
 
@@ -572,7 +572,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 2",
         subText = "Allows you to control puck two of the Color Board.",
-        item = function() return puckWidget("colorBoardPuck2", colorBoard:current():shadows()) end,
+        item = function() return puckWidget("colorBoardPuck2", function() return colorBoard:current():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck2", params)
 
@@ -580,7 +580,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 3",
         subText = "Allows you to control puck three of the Color Board.",
-        item = function() return puckWidget("colorBoardPuck3", colorBoard:current():midtones()) end,
+        item = function() return puckWidget("colorBoardPuck3", function() return colorBoard:current():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck3", params)
 
@@ -588,7 +588,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 4",
         subText = "Allows you to control puck four of the Color Board.",
-        item = function() return puckWidget("colorBoardPuck4", colorBoard:current():highlights()) end,
+        item = function() return puckWidget("colorBoardPuck4", function() return colorBoard:current():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardPuck4", params)
 
@@ -599,7 +599,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 1",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardColorPuck1", colorBoard:color():master()) end,
+        item = function() return puckWidget("colorBoardColorPuck1", function() return colorBoard:color():master() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck1", params)
 
@@ -607,7 +607,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 2",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardColorPuck2", colorBoard:color():shadows()) end,
+        item = function() return puckWidget("colorBoardColorPuck2", function() return colorBoard:color():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck2", params)
 
@@ -615,7 +615,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 3",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardColorPuck3", colorBoard:color():midtones()) end,
+        item = function() return puckWidget("colorBoardColorPuck3", function() return colorBoard:color():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck3", params)
 
@@ -623,7 +623,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 4",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardColorPuck4", colorBoard:color():highlights()) end,
+        item = function() return puckWidget("colorBoardColorPuck4", function() return colorBoard:color():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck4", params)
 
@@ -634,7 +634,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 1",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardSaturationPuck1", colorBoard:saturation():master()) end,
+        item = function() return puckWidget("colorBoardSaturationPuck1", function() return colorBoard:saturation():master() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck1", params)
 
@@ -642,7 +642,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 2",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardSaturationPuck2", colorBoard:saturation():shadows()) end,
+        item = function() return puckWidget("colorBoardSaturationPuck2", function() return colorBoard:saturation():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck2", params)
 
@@ -650,7 +650,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 3",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardSaturationPuck3", colorBoard:saturation():midtones()) end,
+        item = function() return puckWidget("colorBoardSaturationPuck3", function() return colorBoard:saturation():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck3", params)
 
@@ -658,7 +658,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 4",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardSaturationPuck4", colorBoard:saturation():highlights()) end,
+        item = function() return puckWidget("colorBoardSaturationPuck4", function() return colorBoard:saturation():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck4", params)
 
@@ -669,7 +669,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 1",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardExposurePuck1", colorBoard:exposure():global()) end,
+        item = function() return puckWidget("colorBoardExposurePuck1", function() return colorBoard:exposure():global() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck1", params)
 
@@ -677,7 +677,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 2",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardExposurePuck2", colorBoard:exposure():shadows()) end,
+        item = function() return puckWidget("colorBoardExposurePuck2", function() return colorBoard:exposure():shadows() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck2", params)
 
@@ -685,7 +685,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 3",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardExposurePuck3", colorBoard:exposure():midtones()) end,
+        item = function() return puckWidget("colorBoardExposurePuck3", function() return colorBoard:exposure():midtones() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck3", params)
 
@@ -693,7 +693,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 4",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() return puckWidget("colorBoardExposurePuck4", colorBoard:exposure():highlights()) end,
+        item = function() return puckWidget("colorBoardExposurePuck4", function() return colorBoard:exposure():highlights() end) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck4", params)
 
