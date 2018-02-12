@@ -230,13 +230,13 @@ function mod.stop()
     mod._timer:stop()
 end
 
--- puckWidget(id, puck) -> `hs._asm.undocumented.touchbar.item` object
+-- puckWidget(id, puck) -> `hs._asm.undocumented.touchbar.item` object -> TouchBar Item
 -- Function
 -- Creates a Puck Widget.
 --
 -- Parameters:
 --  * id - ID of the widget as string
---  * puck - the `ColorPuck` to create the widget for.
+--  * puck - a function that returns the `ColorPuck` to create the widget for.
 --
 -- Returns:
 --  * A `hs._asm.undocumented.touchbar.item` object
