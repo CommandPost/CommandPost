@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log									= require("hs.logger").new("colorPuck")
+-- local log									= require("hs.logger").new("colorPuck")
 
 local mouse									= require("hs.mouse")
 local geometry								= require("hs.geometry")
