@@ -40,6 +40,9 @@ Puck.elasticity = Puck.naturalLength/10
 
 Puck._active = nil
 
+-- The list of default angles for the various pucks (1-4)
+local defaultAngles = { 110, 180, 215, 250 }
+
 -- tension(diff) -> number
 -- Function
 -- Calculates the tension given the x/y difference value, based on the Puck elasticity and natural length.
@@ -77,7 +80,9 @@ function Puck:new(parent, puckNumber, labelKeys)
 	-- finds the 'row' for the property type
 	o.row = PropertyRow:new(o, o._labelKeys, "contentUI")
 
-	-- finds the current label for the row.
+	--- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
+	--- Field
+	--- The human-readable label for the puck, in FCPX's current language.
 	o.label = o.row.label:wrap(o)
 
 	-- the 'percent' text field
@@ -93,6 +98,19 @@ function Puck:new(parent, puckNumber, labelKeys)
 	end, tonumber)
 
 	return o
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:index() -> number
+--- Method
+--- Returns the puck number (1 through 4).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The puck number.
+function Puck:index()
+	return self._puckNumber
 end
 
 function Puck:parent()
@@ -132,6 +150,21 @@ function Puck:select()
 		local centre = geometry(f).center
 		tools.ninjaMouseClick(centre)
 	end
+	return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:reset() -> self
+--- Method
+--- Resets the puck to its default settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorPuck` instance.
+function Puck:reset()
+	self:percent(0)
+	self:angle(defaultAngles[self:index()])
 	return self
 end
 

@@ -32,6 +32,10 @@ local fcp               = require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local touchbar          = require("hs._asm.undocumented.touchbar")
 
+local insert            = table.insert
+local format            = string.format
+local abs               = math.abs
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -74,12 +78,10 @@ local function calculateColor(pct, angle)
 
     if angle then
         solidColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = 1}
-        fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = math.abs(pct/100)}
-    else
-        if pct then
-            brightness = pct >= 0 and 1 or 0
-            fillColor = {hue = 0, saturation = 0, brightness = brightness, alpha = math.abs(pct/100)}
-        end
+        fillColor = {hue = angle/360, saturation = 1, brightness = 1, alpha = abs(pct/100)}
+    elseif pct then
+        brightness = pct >= 0 and 1 or 0
+        fillColor = {hue = 0, saturation = 0, brightness = brightness, alpha = abs(pct/100)}
     end
 
     local negative = false
@@ -90,20 +92,17 @@ local function calculateColor(pct, angle)
     return brightness, solidColor, fillColor, negative
 end
 
--- getWidgetText(id, aspect) -> string
+-- getWidgetText(puck) -> string
 -- Function
--- Returns the widget text
+-- Returns the widget text.
 --
 -- Parameters:
---  * id - puck ID
---  * aspect - "color", "saturation" or "exposure"
+--  * puck - The `ColorPuck` being described.
 --
 -- Returns:
 --  * Text in `hs.styledtext` format
-local function getWidgetText(id, aspect)
-    local colorBoard = fcp:colorBoard()
-    local widgetText
-    local puckID = tonumber(string.sub(id, -1))
+local function getWidgetText(puck)
+    local puckID = puck:index()
 
     local aspectTitle = {
         ["color"] = "Color",
@@ -118,82 +117,67 @@ local function getWidgetText(id, aspect)
         [4] = "High",
     }
 
-    local spanStyle = [[<span style="font-family: -apple-system; font-size: 12px; color: #FFFFFF;">]]
-    if aspect == "*" then
-        local selectedPanel = colorBoard:selectedAspect()
-        if selectedPanel then
-            if aspectTitle[selectedPanel] and puckTitle[puckID] then
-                widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. aspectTitle[selectedPanel] .. ": </strong>" .. puckTitle[puckID] .. "</span>")
-            end
-        else
-            widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. puckTitle[puckID] .. ":</strong> </span>")
-        end
-    else
-        widgetText = styledtext.getStyledTextFromData(spanStyle .. "<strong>" .. aspectTitle[aspect] .. ":</strong> </span>") .. puckTitle[puckID]
-    end
-
-    return widgetText
+    return styledtext.getStyledTextFromData(format(
+        [[<span style="font-family: -apple-system; font-size: 12px; color: #FFFFFF;">]] ..
+            [[<strong>%s</strong> %s]] ..
+        [[</span>]],
+        aspectTitle[puck:parent():id()],
+        puckTitle[puckID]
+    ))
 end
 
--- updateCanvas(widgetCanvas, id, aspect, property) -> none
+-- updateCanvas(widgetCanvas, puck) -> none
 -- Function
 -- Updates a Canvas
 --
 -- Parameters:
 --  * widgetCanvas - a `hs.canvas` object
---  * id - ID of the puck as string
---  * aspect - "color", "saturation" or "exposure"
---  * property - "global", "shadows", "midtones", "highlights"
+--  * puck - The puck to manipulate.
 --
 -- Returns:
 --  * None
-local function updateCanvas(widgetCanvas, id, aspect, property)
+local function updateCanvas(widgetCanvas, puck)
 
-    local colorBoard = fcp:colorBoard()
-
-    if not colorBoard:isActive() then
+    if not puck:isShowing() then
         widgetCanvas.negative.action = "skip"
         widgetCanvas.arc.action = "skip"
         widgetCanvas.info.action = "skip"
         widgetCanvas.circle.action = "skip"
     else
-        if colorBoard:selectedPanel() == aspect or aspect == "*" then
-            local pct = colorBoard:getPercentage(aspect, property)
-            local angle = colorBoard:getAngle(aspect, property)
+        local pct = puck:percent()
+        local angle = puck:angle()
 
-            local _, solidColor, fillColor, negative = calculateColor(pct, angle)
+        local _, solidColor, fillColor, negative = calculateColor(pct, angle)
 
-            widgetCanvas.circle.action = "strokeAndFill"
-            if solidColor then
-                widgetCanvas.circle.strokeColor = solidColor
-                widgetCanvas.arc.strokeColor = solidColor
-                widgetCanvas.arc.fillColor = solidColor
-            end
-            widgetCanvas.circle.fillColor = fillColor
-
-            if negative then
-                widgetCanvas.negative.action = "strokeAndFill"
-            else
-                widgetCanvas.negative.action = "skip"
-            end
-
-            if colorBoard:selectedAspect() == "color" and aspect == "*" then
-                widgetCanvas.arc.action = "strokeAndFill"
-            else
-                widgetCanvas.arc.action = "skip"
-            end
-
-            widgetCanvas.info.action = "strokeAndFill"
-            if pct then
-                widgetCanvas.info.text = pct .. "%"
-            else
-                widgetCanvas.info.text = ""
-            end
-
-            widgetCanvas.text.text = getWidgetText(id, aspect)
+        widgetCanvas.circle.action = "strokeAndFill"
+        if solidColor then
+            widgetCanvas.circle.strokeColor = solidColor
+            widgetCanvas.arc.strokeColor = solidColor
+            widgetCanvas.arc.fillColor = solidColor
         end
-    end
+        widgetCanvas.circle.fillColor = fillColor
 
+        if negative then
+            widgetCanvas.negative.action = "strokeAndFill"
+        else
+            widgetCanvas.negative.action = "skip"
+        end
+
+        if puck:angle() ~= nil then
+            widgetCanvas.arc.action = "strokeAndFill"
+        else
+            widgetCanvas.arc.action = "skip"
+        end
+
+        widgetCanvas.info.action = "strokeAndFill"
+        if pct then
+            widgetCanvas.info.text = pct .. "%"
+        else
+            widgetCanvas.info.text = ""
+        end
+
+        widgetCanvas.text.text = getWidgetText(puck)
+    end
 end
 
 -- update() -> none
@@ -246,18 +230,17 @@ function mod.stop()
     mod._timer:stop()
 end
 
--- puckWidget(id, aspect, property) -> `hs._asm.undocumented.touchbar.item` object
+-- puckWidget(id, puck) -> `hs._asm.undocumented.touchbar.item` object
 -- Function
--- Creates a Puck Widget
+-- Creates a Puck Widget.
 --
 -- Parameters:
 --  * id - ID of the widget as string
---  * aspect - "color", "saturation" or "exposure"
---  * property - "global", "shadows", "midtones", "highlights"
+--  * puck - the `ColorPuck` to create the widget for.
 --
 -- Returns:
 --  * A `hs._asm.undocumented.touchbar.item` object
-local function puckWidget(id, aspect, property)
+local function puckWidget(id, puck)
 
     --------------------------------------------------------------------------------
     -- Setup Timer:
@@ -278,15 +261,12 @@ local function puckWidget(id, aspect, property)
         })
     end
 
-    local colorBoard = fcp:colorBoard()
-
-    local pct = colorBoard:getPercentage(aspect, property)
-    local angle = colorBoard:getAngle(aspect, property)
+    local pct = puck:percent()
+    local angle = puck:angle()
 
     local brightness, _, fillColor, negative = calculateColor(pct, angle)
 
-    local value = colorBoard:getPercentage(aspect, property)
-    if value == nil then value = 0 end
+    local value = pct or 0
 
     local color = {hue=0, saturation=0, brightness=brightness, alpha=1}
 
@@ -295,32 +275,32 @@ local function puckWidget(id, aspect, property)
     --------------------------------------------------------------------------------
     -- Background:
     --------------------------------------------------------------------------------
-    widgetCanvas[#widgetCanvas + 1] = {
+    insert(widgetCanvas, {
         id               = "background",
         type             = "rectangle",
         action           = "strokeAndFill",
         strokeColor      = { white = 1 },
         fillColor        = { hex = "#292929", alpha = 1 },
         roundedRectRadii = { xRadius = 5, yRadius = 5 },
-    }
+    })
 
     --------------------------------------------------------------------------------
     -- Text:
     --------------------------------------------------------------------------------
-    widgetCanvas[#widgetCanvas + 1] = {
+    insert(widgetCanvas, {
         id = "text",
         frame = { h = 30, w = 150, x = 10, y = 6 },
-        text = getWidgetText(id, aspect),
+        text = getWidgetText(puck),
         textAlignment = "left",
         textColor = { white = 1.0 },
         textSize = 12,
         type = "text",
-    }
+    })
 
     --------------------------------------------------------------------------------
     -- Circle:
     --------------------------------------------------------------------------------
-    widgetCanvas[#widgetCanvas + 1] = {
+    insert(widgetCanvas, {
         id                  = "circle",
         type                = "circle",
         radius              = "7%",
@@ -328,16 +308,13 @@ local function puckWidget(id, aspect, property)
         action              = "strokeAndFill",
         strokeColor         = color,
         fillColor           = fillColor,
-    }
+    })
 
     --------------------------------------------------------------------------------
     -- Arc:
     --------------------------------------------------------------------------------
-    local arcAction = "skip"
-    if colorBoard:selectedAspect() == "color" and aspect == "*" then
-        arcAction = "strokeAndFill"
-    end
-    widgetCanvas[#widgetCanvas + 1] = {
+    local arcAction = puck:angle() ~= nil and "strokeAndFill" or "skip"
+    insert(widgetCanvas, {
         id                  = "arc",
         type                = "arc",
         radius              = "7%",
@@ -347,14 +324,13 @@ local function puckWidget(id, aspect, property)
         action              = arcAction,
         strokeColor         = color,
         fillColor           = color,
-    }
+    })
 
     --------------------------------------------------------------------------------
     -- Negative Symbol (Used for Color Panel):
     --------------------------------------------------------------------------------
-    local negativeType = "skip"
-    if negative then negativeType = "strokeAndFill" end
-    widgetCanvas[#widgetCanvas + 1] = {
+    local negativeType = negative and "strokeAndFill" or "skip"
+    insert(widgetCanvas, {
         id              = "negative",
         type            = "rectangle",
         action          = negativeType,
@@ -362,13 +338,13 @@ local function puckWidget(id, aspect, property)
         strokeWidth     = 1,
         fillColor       = {white=0, alpha=1.0 },
         frame           = { h = 5, w = 10, x = 130, y = 12 },
-    }
+    })
 
     --------------------------------------------------------------------------------
     -- Text:
     --------------------------------------------------------------------------------
-    local textValue = value .. "%" or ""
-    widgetCanvas[#widgetCanvas + 1] = {
+    local textValue = value and value .. "%" or ""
+    insert(widgetCanvas, {
         id = "info",
         frame = { h = 30, w = 120, x = 0, y = 6 },
         text = textValue,
@@ -376,7 +352,7 @@ local function puckWidget(id, aspect, property)
         textColor = { white = 1.0 },
         textSize = 12,
         type = "text",
-    }
+    })
 
     --------------------------------------------------------------------------------
     -- Touch Events:
@@ -399,16 +375,7 @@ local function puckWidget(id, aspect, property)
                     -- Reset Puck:
                     --------------------------------------------------------------------------------
                     mod._doubleTap[id] = false
-                    colorBoard:applyPercentage(aspect, property, 0)
-
-                    local defaultValues = {
-                        ["global"] = 110,
-                        ["shadows"] = 180,
-                        ["midtones"] = 215,
-                        ["highlights"] = 250,
-                    }
-
-                    colorBoard:applyAngle(aspect, property, defaultValues[property])
+                    puck:reset()
                     skipMaths = true
                 else
                     mod._doubleTap[id] = true
@@ -419,16 +386,14 @@ local function puckWidget(id, aspect, property)
             end
 
             --------------------------------------------------------------------------------
-            -- Show the Color Board if it's hidden:
+            -- Show the Puck if it's hidden:
             --------------------------------------------------------------------------------
-            if not colorBoard:isShowing() then
-                colorBoard:show()
-            end
+            puck:show()
 
             --------------------------------------------------------------------------------
-            -- Abort if Color Board is not active:
+            -- Abort if Puck is still not showing.
             --------------------------------------------------------------------------------
-            if not colorBoard:isActive() then
+            if not puck:isShowing() then
                 return
             end
 
@@ -461,7 +426,7 @@ local function puckWidget(id, aspect, property)
             --------------------------------------------------------------------------------
             -- Update UI:
             --------------------------------------------------------------------------------
-            updateCanvas(o, id, aspect, property)
+            updateCanvas(o, puck)
 
             --------------------------------------------------------------------------------
             -- Perform Action:
@@ -469,11 +434,10 @@ local function puckWidget(id, aspect, property)
             if not skipMaths then
                 if m == "mouseDown" or m == "mouseMove" then
                     if shiftPressed then
-                        colorBoard:applyAngle(aspect, property, x)
+                        puck:angle(x)
                     else
-                        colorBoard:applyPercentage(aspect, property, x)
+                        puck:percent(x)
                     end
-                --elseif m == "mouseUp" then
                 end
             end
 
@@ -487,7 +451,7 @@ local function puckWidget(id, aspect, property)
     --------------------------------------------------------------------------------
     -- Update the Canvas:
     --------------------------------------------------------------------------------
-    updateCanvas(widgetCanvas, id, aspect, property)
+    updateCanvas(widgetCanvas, puck)
 
     --------------------------------------------------------------------------------
     -- Create new Touch Bar Item from Canvas:
@@ -499,7 +463,7 @@ local function puckWidget(id, aspect, property)
     --------------------------------------------------------------------------------
     mod._updateCallbacks[#mod._updateCallbacks + 1] = function()
         if item:isVisible() then
-            updateCanvas(widgetCanvas, id, aspect, property)
+            updateCanvas(widgetCanvas, puck)
         end
     end
 
@@ -517,20 +481,21 @@ end
 -- Returns:
 --  * A `hs._asm.undocumented.touchbar.item` object
 local function groupPuck(id)
+    local colorBoard = fcp:colorBoard()
 
     --------------------------------------------------------------------------------
     -- Setup Toggle Button:
     --------------------------------------------------------------------------------
     local widgetCanvas = canvas.new{x = 0, y = 0, h = 30, w = 50}
-    widgetCanvas[#widgetCanvas + 1] = {
+    insert(widgetCanvas, {
         id               = "background",
         type             = "rectangle",
         action           = "strokeAndFill",
         strokeColor      = { white = 1 },
         fillColor        = { hex = "#292929", alpha = 1 },
         roundedRectRadii = { xRadius = 5, yRadius = 5 },
-    }
-    widgetCanvas[#widgetCanvas + 1] = {
+    })
+    insert(widgetCanvas, {
         id = "text",
         frame = { h = 30, w = 50, x = 0, y = 6 },
         text = "Toggle",
@@ -538,12 +503,12 @@ local function groupPuck(id)
         textColor = { white = 1.0 },
         textSize = 12,
         type = "text",
-    }
+    })
     widgetCanvas:canvasMouseEvents(true, true, false, true)
         :mouseCallback(function(_,m)
             if m == "mouseDown" or m == "mouseMove" then
                 mod.stop()
-                fcp:colorBoard():nextAspect()
+                colorBoard:nextAspect()
                 mod.start(0.01)
             end
         end)
@@ -553,10 +518,10 @@ local function groupPuck(id)
     --------------------------------------------------------------------------------
     local group = touchbar.item.newGroup(id):groupItems({
         touchbar.item.newCanvas(widgetCanvas):canvasClickColor{ alpha = 0.0 },
-        puckWidget("colorBoardGroup1", "*", "global"),
-        puckWidget("colorBoardGroup2", "*", "shadows"),
-        puckWidget("colorBoardGroup3", "*", "midtones"),
-        puckWidget("colorBoardGroup4", "*", "highlights"),
+        puckWidget("colorBoardGroup1", colorBoard:current():master()),
+        puckWidget("colorBoardGroup2", colorBoard:current():shadows()),
+        puckWidget("colorBoardGroup3", colorBoard:current():midtones()),
+        puckWidget("colorBoardGroup4", colorBoard:current():highlights()),
     })
     return group
 
@@ -586,9 +551,11 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board (Grouped)",
         subText = "Color Board Panel Toggle Button & 4 x Puck Controls.",
-        item = function() groupPuck("colorBoardGroup") end,
+        item = function() return groupPuck("colorBoardGroup") end,
     }
     deps.manager.widgets:new("colorBoardGroup", params)
+
+    local colorBoard = fcp:colorBoard()
 
     --------------------------------------------------------------------------------
     -- Active Puck Controls:
@@ -597,7 +564,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 1",
         subText = "Allows you to control puck one of the Color Board.",
-        item = function() puckWidget("colorBoardPuck1", "*", "global") end,
+        item = function() return puckWidget("colorBoardPuck1", colorBoard:current():master()) end,
     }
     deps.manager.widgets:new("colorBoardPuck1", params)
 
@@ -605,7 +572,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 2",
         subText = "Allows you to control puck two of the Color Board.",
-        item = function() puckWidget("colorBoardPuck2", "*", "shadows") end,
+        item = function() return puckWidget("colorBoardPuck2", colorBoard:current():shadows()) end,
     }
     deps.manager.widgets:new("colorBoardPuck2", params)
 
@@ -613,7 +580,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 3",
         subText = "Allows you to control puck three of the Color Board.",
-        item = function() puckWidget("colorBoardPuck3", "*", "midtones") end,
+        item = function() return puckWidget("colorBoardPuck3", colorBoard:current():midtones()) end,
     }
     deps.manager.widgets:new("colorBoardPuck3", params)
 
@@ -621,7 +588,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Puck 4",
         subText = "Allows you to control puck four of the Color Board.",
-        item = function() puckWidget("colorBoardPuck4", "*", "highlights") end,
+        item = function() return puckWidget("colorBoardPuck4", colorBoard:current():highlights()) end,
     }
     deps.manager.widgets:new("colorBoardPuck4", params)
 
@@ -632,7 +599,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 1",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() puckWidget("colorBoardColorPuck1", "color", "global") end,
+        item = function() return puckWidget("colorBoardColorPuck1", colorBoard:color():master()) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck1", params)
 
@@ -640,7 +607,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 2",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() puckWidget("colorBoardColorPuck2", "color", "shadows") end,
+        item = function() return puckWidget("colorBoardColorPuck2", colorBoard:color():shadows()) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck2", params)
 
@@ -648,7 +615,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 3",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() puckWidget("colorBoardColorPuck3", "color", "midtones") end,
+        item = function() return puckWidget("colorBoardColorPuck3", colorBoard:color():midtones()) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck3", params)
 
@@ -656,7 +623,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Color Puck 4",
         subText = "Allows you to the Color Panel of the Color Board.",
-        item = function() puckWidget("colorBoardColorPuck4", "color", "highlights") end,
+        item = function() return puckWidget("colorBoardColorPuck4", colorBoard:color():highlights()) end,
     }
     deps.manager.widgets:new("colorBoardColorPuck4", params)
 
@@ -667,7 +634,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 1",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() puckWidget("colorBoardSaturationPuck1", "saturation", "global") end,
+        item = function() return puckWidget("colorBoardSaturationPuck1", colorBoard:saturation():master()) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck1", params)
 
@@ -675,7 +642,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 2",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() puckWidget("colorBoardSaturationPuck2", "saturation", "shadows") end,
+        item = function() return puckWidget("colorBoardSaturationPuck2", colorBoard:saturation():shadows()) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck2", params)
 
@@ -683,7 +650,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 3",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() puckWidget("colorBoardSaturationPuck3", "saturation", "midtones") end,
+        item = function() return puckWidget("colorBoardSaturationPuck3", colorBoard:saturation():midtones()) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck3", params)
 
@@ -691,7 +658,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Saturation Puck 4",
         subText = "Allows you to the Saturation Panel of the Color Board.",
-        item = function() puckWidget("colorBoardSaturationPuck4", "saturation", "highlights") end,
+        item = function() return puckWidget("colorBoardSaturationPuck4", colorBoard:saturation():highlights()) end,
     }
     deps.manager.widgets:new("colorBoardSaturationPuck4", params)
 
@@ -702,7 +669,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 1",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() puckWidget("colorBoardExposurePuck1", "exposure", "global") end,
+        item = function() return puckWidget("colorBoardExposurePuck1", colorBoard:exposure():global()) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck1", params)
 
@@ -710,7 +677,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 2",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() puckWidget("colorBoardExposurePuck2", "exposure", "shadows") end,
+        item = function() return puckWidget("colorBoardExposurePuck2", colorBoard:exposure():shadows()) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck2", params)
 
@@ -718,7 +685,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 3",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() puckWidget("colorBoardExposurePuck3", "exposure", "midtones") end,
+        item = function() return puckWidget("colorBoardExposurePuck3", colorBoard:exposure():midtones()) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck3", params)
 
@@ -726,7 +693,7 @@ function mod.init(deps)
         group = "fcpx",
         text = "Color Board Exposure Puck 4",
         subText = "Allows you to the Exposure Panel of the Color Board.",
-        item = function() puckWidget("colorBoardExposurePuck4", "exposure", "highlights") end,
+        item = function() return puckWidget("colorBoardExposurePuck4", colorBoard:exposure():highlights()) end,
     }
     deps.manager.widgets:new("colorBoardExposurePuck4", params)
 

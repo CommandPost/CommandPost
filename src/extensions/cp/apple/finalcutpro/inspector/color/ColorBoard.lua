@@ -14,11 +14,9 @@
 --
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("timline")
-local inspect							= require("hs.inspect")
 local geometry							= require("hs.geometry")
 
 local prop								= require("cp.prop")
-local just								= require("cp.just")
 local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 
@@ -95,7 +93,7 @@ ColorBoard.currentAspect = "*"
 --- Returns:
 ---  * `true` if the `element` is a Color Board otherwise `false`
 function ColorBoard.matches(element)
-	return ColorBoard.matchesCurrent(element) or ColorBoard.matchesOriginal(colorBoard)
+	return ColorBoard.matchesCurrent(element) or ColorBoard.matchesOriginal(element)
 end
 
 --- cp.apple.finalcutpro.inspect.color.ColorBoard.matchesOriginal(element) -> boolean
@@ -312,14 +310,14 @@ end
 --- Gets the `hs._asm.axuielement` object for a child with the specified ID.
 ---
 --- Parameters:
----  * id - `AXIdentifier` of the child
+---  * axID - `AXIdentifier` of the child
 ---
 --- Returns:
 ---  * An `hs._asm.axuielement` object
-function ColorBoard:childUI(id)
-	return axutils.cache(self._child, id, function()
+function ColorBoard:childUI(axID)
+	return axutils.cache(self._child, "_"..axID, function()
 		local ui = self:contentUI()
-		return ui and axutils.childWithID(ui, id)
+		return ui and axutils.childWithID(ui, axID)
 	end)
 end
 
@@ -339,7 +337,7 @@ function ColorBoard:topToolbarUI()
 	return axutils.cache(self, "_topToolbar", function()
 		local ui = self:UI()
 		if ui then
-			for i,child in ipairs(ui) do
+			for _,child in ipairs(ui) do
 				if axutils.childWith(child, "AXIdentifier", id "BackButton") then
 					return child
 				end
@@ -457,7 +455,7 @@ function ColorBoard:getAspect(aspect, property)
 			-----------------------------------------------------------------------
 			local ui = self:colorSatExpUI()
 			if ui then
-				for k,value in pairs(ColorBoard.aspect) do
+				for _,value in pairs(ColorBoard.aspect) do
 					if ui[value.id] and ui[value.id]:value() == 1 then
 						panel = value
 					end

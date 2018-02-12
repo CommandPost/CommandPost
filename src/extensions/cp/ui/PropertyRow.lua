@@ -19,7 +19,7 @@ local geometry					= require("hs.geometry")
 local PropertyRow = {}
 
 function PropertyRow.matches(element)
-	return true
+	return element ~= nil
 end
 
 function PropertyRow:new(parent, labelKey, propertiesUI)
@@ -62,7 +62,7 @@ PropertyRow.isShowing = prop(function(self)
 end):bind(PropertyRow)
 
 function PropertyRow:show()
-	local ui = self:UI()
+	self:parent():show()
 end
 
 function PropertyRow:labelKeys()
@@ -101,16 +101,18 @@ function PropertyRow:children()
 		children = nil
 	end
 	-- check if we have children cached
-	if not chidren and label then
+	if not children and label then
 		local labelFrame = label:frame()
-		local labelFrame = labelFrame and geometry.new(label:frame()) or nil
+		labelFrame = labelFrame and geometry.new(label:frame()) or nil
 		if labelFrame then
 			children = axutils.childrenMatching(self:propertiesUI(), function(child)
 				-- match the children who are right of the label element (and not the AXScrollBar)
 				local childFrame = child:frame()
 				return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
 			end)
-			table.sort(children, axutils.compareLeftToRight)
+			if children then
+				table.sort(children, axutils.compareLeftToRight)
+			end
 			self._children = children
 		end
 	end
