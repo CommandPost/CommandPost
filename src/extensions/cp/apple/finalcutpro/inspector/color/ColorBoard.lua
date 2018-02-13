@@ -248,13 +248,7 @@ end):bind(ColorBoard)
 ---  * ColorBoard object
 function ColorBoard:show()
 	if not self:isShowing() then
-		self:parent():show()
-		if self:isColorInspectorSupported() then
-			-----------------------------------------------------------------------
-			-- Final Cut Pro 10.4:
-			-----------------------------------------------------------------------
-			self:parent():show(CORRECTION_TYPE)
-		end
+		self:parent():activateCorrection(CORRECTION_TYPE)
 	end
 	return self
 end

@@ -139,7 +139,9 @@ end
 --- Returns:
 ---  * HueSaturationCurves object
 function HueSaturationCurves:show()
-	self:parent():show(CORRECTION_TYPE)
+    if not self:isShowing() then
+        self:parent():activateCorrection(CORRECTION_TYPE)
+    end
 	return self
 end
 

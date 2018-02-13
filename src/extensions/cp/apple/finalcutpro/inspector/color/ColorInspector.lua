@@ -218,22 +218,18 @@ function ColorInspector:isShowing(correctionType)
 	end
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:show([correctionType]) -> ColorInspector
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:show() -> self
 --- Method
---- Show's the Color Inspector
+--- Shows the Color Inspector.
 ---
 --- Parameters:
----  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES).
+---  * None
 ---
 --- Returns:
 ---  * ColorInspector object
 function ColorInspector:show(correctionType)
 	if not self:isShowing() then
 		self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
-	end
-	-- TODO: remove this once all dependent code is updated.
-	if correctionType then
-		self:activateCorrection(correctionType)
 	end
 end
 

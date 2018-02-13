@@ -86,18 +86,30 @@ function CorrectionsBar:menuButton()
 	return self._menuButton
 end
 
+function CorrectionsBar:findCorrectionLabel(correctionType)
+	return self:app():string(self.CORRECTION_TYPES[correctionType])
+end
+
 function CorrectionsBar:activate(correctionType, number)
 	number = number or 1 -- default to the first corrector.
 
+	self:show()
+
 	-- see if the correction type/number combo exists already
+	local correctionText = self:findCorrectionLabel(correctionType)
+	if not correctionText then
+		log.ef("Invalid Correction Type: %s", correctionType)
+	end
+
 	local menuButton = self:menuButton()
-	local correctionText = self:app():string(self.CORRECTION_TYPES[correctionType])
-	local pattern = "%s*"..correctionText.." "..number
-	if not menuButton:selectItemMatching(pattern) then
-		-- try adding a new correction of the specified type.
-		pattern = "%+"..correctionText
+	if menuButton:isShowing() then
+		local pattern = "%s*"..correctionText.." "..number
 		if not menuButton:selectItemMatching(pattern) then
-			log.ef("Invalid Correction Type: %s", correctionType)
+			-- try adding a new correction of the specified type.
+			pattern = "%+"..correctionText
+			if not menuButton:selectItemMatching(pattern) then
+				log.ef("Invalid Correction Type: %s", correctionType)
+			end
 		end
 	end
 
