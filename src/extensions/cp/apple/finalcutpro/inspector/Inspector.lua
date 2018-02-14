@@ -256,12 +256,19 @@ function Inspector:topBarUI()
 	end)
 end
 
+function Inspector:panelUI()
+	return axutils.cache(self, "_panel", function()
+		local ui = self:UI()
+		return ui and #ui == 3 and axutils.childFromTop(ui, 2) or ui
+	end)
+end
+
 function Inspector:propertiesUI()
 	return axutils.cache(self, "_properties", function()
-		local ui = self:UI()
+		local ui = self:panelUI()
 		if ui then
 			return (
-				(#ui == 3 and axutils.childFromTop(ui, 2)[1]) -- 10.4+ Inspector
+				axutils.childWithRole(ui, "AXScrollArea") -- 10.4+ Inspector
 				or ColorBoard.matchesOriginal(ui) and ui  -- 10.3 Color Board
 				or nil -- not found
 			)

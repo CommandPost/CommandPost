@@ -50,11 +50,14 @@ local ColorInspector = {}
 function ColorInspector.matches(element)
 	if element then
 		local role = element:attributeValue("AXRole") -- 10.4+
-		if role == "AXSplitGroup" and #element == 3 then
-			local top = axutils.childFromTop(element, 1)
-			if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
-				-- check it's the correction bar.
-				return CorrectionsBar.matches(top[1])
+		if role == "AXGroup" and #element == 1 then
+			local split = element[1]
+			if split:attributeValue("AXRole") == "AXSplitGroup" then
+				local top = axutils.childFromTop(split, 1)
+				if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
+					-- check it's the correction bar.
+					return CorrectionsBar.matches(top[1])
+				end
 			end
 		else -- 10.3 Color Board
 			return ColorBoard.matchesOriginal(element)
@@ -134,8 +137,8 @@ end
 function ColorInspector:UI()
 	return axutils.cache(self, "_ui",
 		function()
-			local properties = self:parent():propertiesUI()
-			return ColorInspector.matches(properties) and properties or nil
+			local ui = self:parent():panelUI()
+			return ColorInspector.matches(ui) and ui or nil
 		end,
 		ColorInspector.matches
 	)
@@ -227,7 +230,7 @@ end
 ---
 --- Returns:
 ---  * ColorInspector object
-function ColorInspector:show(correctionType)
+function ColorInspector:show()
 	if not self:isShowing() then
 		self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
 	end

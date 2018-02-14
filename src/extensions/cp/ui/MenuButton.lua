@@ -98,13 +98,18 @@ end
 -- TODO: Add documentation
 function MenuButton:getValue()
 	local ui = self:UI()
-	return ui and ui:value()
+	return ui and ui:attributeValue("AXValue")
+end
+
+function MenuButton:getTitle()
+	local ui = self:UI()
+	return ui and ui:attributeValue("AXTitle")
 end
 
 -- TODO: Add documentation
 function MenuButton:setValue(value)
 	local ui = self:UI()
-	if ui and not ui:value() == value then
+	if ui and not ui:attributeValue("AXValue") == value then
 		local items = ui:doPress()[1]
 		for i,item in items do
 			if item:title() == value then
