@@ -140,6 +140,7 @@ return {
             --------------------------------------------------------------------------------
             bugReport                           =           "Bug Report",
             support                             =           "Support",
+            featureRequest                      =           "Feature Request",
             whatWentWrong                       =           "What went wrong?",
             whatDidYouExpectToHappen            =           "What did you expect to happen?",
             whatStepsToRecreate                 =           "What are the steps to recreate the problem?",
