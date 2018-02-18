@@ -20,7 +20,6 @@ local log								= require("hs.logger").new("colorInspect")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local id								= require("cp.apple.finalcutpro.ids") "ColorInspector"
 local idBoard							= require("cp.apple.finalcutpro.ids") "ColorBoard"
 
 local CorrectionsBar					= require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")

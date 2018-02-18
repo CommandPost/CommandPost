@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("textField")
+-- local log							= require("hs.logger").new("textField")
 
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
@@ -95,7 +95,10 @@ TextField.value = prop(
 		local ui = self:UI()
 		if ui then
 			value = tostring(value)
+			local focused = ui:attributeValue("AXFocused")
+			ui:setAttributeValue("AXFocused", true)
 			ui:setAttributeValue("AXValue", value)
+			ui:setAttributeValue("AXFocused", focused)
 			ui:performAction("AXConfirm")
 		end
 

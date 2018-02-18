@@ -75,10 +75,16 @@ function ColorWheel:new(parent, type)
 --- The current color value, as a `hs.drawing.color` table.
 	o.colorValue = o:colorWell().value:wrap(o)
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.colorScreenPosition <cp.prop: point>
+--- Field
+--- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
+--- actual Color Well circle, which only extends to 85 out of 255 values.
+	o.colorScreenPosition = o:colorWell().colorScreenPosition:wrap(o)
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorPosition <cp.prop: point>
 --- Field
---- X/Y position for the current color value of the Color Well. This ignores the bounds of the
---- actual Color Well circle, which only extends to 85 out of 255 values.
+--- Relative X/Y position for the current color value of the Color Well. This will be a `point` table,
+--- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
 	o.colorPosition = o:colorWell().colorPosition:wrap(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>

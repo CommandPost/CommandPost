@@ -107,6 +107,13 @@ local function colorToColorWellValue(value)
 	return ""
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell.min
+--- Constant
+--- The minimum relative X or Y value for the well, for `colorPosition`.
+--- The maximum relative X or Y value for the well, for `colorPosition`.
+ColorWell.min = -175
+ColorWell.max = 176
+
 --- cp.apple.finalcutpro.inspector.color.ColorWell.matches(element)
 --- Function
 --- Checks if the specified element is a Color Well.
@@ -262,7 +269,7 @@ local toXY = function(c, frame, absolute, clamp)
 	local a = h * math.pi * 2
 	local x, y = b * cos(a), b * sin(a)
 
-	local pos = {x = round(ctr.x + x*radius), y = round(ctr.y + y*radius)}
+	local pos = {x = round(x*radius), y = round(y*radius)}
 	if absolute then
 		local ctr = centre(frame)
 		pos.x, pos.y = pos.x + ctr.x, pos.y + ctr.y
@@ -271,14 +278,15 @@ local toXY = function(c, frame, absolute, clamp)
 	return pos
 end
 
--- fromXY(pos, frame) -> table
+-- fromXY(pos, frame, absolute) -> table
 -- Function
 -- Converts an XY position to a color, relative to the provided color well circle `frame`.
 -- The return value should be multiplied by the radius of the particular color well.
 --
 -- Parameters:
--- * pos	- The {x=?, y=?} position of the location.
--- * frame	- The frame for the outer boundary of the color well cirle.
+-- * pos		- The `{x=?, y=?}` position of the location.
+-- * frame		- The frame for the outer boundary of the color well cirle.
+-- * absolute	- If `true`, the position and frame are considered to be absolute screen positions.
 --
 -- Returns:
 -- * The `hs.drawing.color` for the position, relative to the color well.
@@ -296,10 +304,30 @@ local fromXY = function(pos, frame, absolute)
     return asRGB({hue=h, saturation=1, brightness=b})
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell.colorPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWell.colorScreenPosition <cp.prop: hs.geometry.point>
 --- Field
---- X/Y position for the current color value of the Color Well. This ignores the bounds of the
+--- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
 --- actual Color Well circle, which only extends to 85 out of 255 values.
+ColorWell.colorScreenPosition = prop(
+	function(self)
+		local frame = self:frame()
+		if frame then
+			return toXY(self:value(), frame, true)
+		end
+		return nil
+	end,
+	function(position, self)
+		local frame = self:frame()
+		if frame then
+			self:value(fromXY(position, frame, true))
+		end
+	end
+):bind(ColorWell)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWell.colorScreenPosition <cp.prop: hs.geometry.point>
+--- Field
+--- Relative X/Y position for the current color value of the Color Well. This will be a `point` table,
+--- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
 ColorWell.colorPosition = prop(
 	function(self)
 		local frame = self:frame()
@@ -311,10 +339,11 @@ ColorWell.colorPosition = prop(
 	function(position, self)
 		local frame = self:frame()
 		if frame then
-			self:value(fromXY(position, frame))
+			self:value(fromXY(position, frame, false))
 		end
 	end
 ):bind(ColorWell)
+
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: point>
 --- Field

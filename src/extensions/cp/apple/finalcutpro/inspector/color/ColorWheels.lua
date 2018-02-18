@@ -90,8 +90,9 @@ local ColorWheels = {}
 --- * `true` if the element is the Color Wheels.
 function ColorWheels.matches(element)
 	if element and element:attributeValue("AXRole") == "AXGroup"
-	and #element == 1 and element[1]:attributeValue("AXRole") == "AXScrollArea" then
-		local scroll = element[1]
+	and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"
+	and #element[1] == 1 and element[1][1]:attributeValue("AXRole") == "AXScrollArea" then
+		local scroll = element[1][1]
 		return axutils.childMatching(scroll, ColorWheel.matches) ~= nil
 	end
 	return false
@@ -197,7 +198,7 @@ end
 function ColorWheels:contentUI()
 	return axutils.cache(self, "_content", function()
 		local ui = self:UI()
-		return ui and #ui == 1 and ui[1] or nil
+		return ui and #ui == 1 and #ui[1] == 1 and ui[1][1] or nil
 	end)
 end
 
