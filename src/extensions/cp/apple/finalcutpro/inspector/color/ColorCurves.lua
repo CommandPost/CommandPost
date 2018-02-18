@@ -26,9 +26,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("colorCurves")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                               = require("hs.logger").new("colorCurves")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -36,7 +43,7 @@ local prop								= require("cp.prop")
 --
 --------------------------------------------------------------------------------
 
-local CORRECTION_TYPE					= "Color Curves"
+local CORRECTION_TYPE                   = "Color Curves"
 
 --------------------------------------------------------------------------------
 --
@@ -44,10 +51,6 @@ local CORRECTION_TYPE					= "Color Curves"
 --
 --------------------------------------------------------------------------------
 local ColorCurves = {}
-
---------------------------------------------------------------------------------
--- CONSTANTS:
---------------------------------------------------------------------------------
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurves.VIEW_MODES -> table
 --- Constant
@@ -72,17 +75,19 @@ ColorCurves.CURVES = {
 --- Creates a new ColorCurves object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A ColorInspector object
-function ColorCurves:new(parent)
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
+-- TODO: Use a Method instead of a Function.
+function ColorCurves:new(parent) -- luacheck: ignore
 
-	return prop.extend(o, ColorCurves)
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+
+    return prop.extend(o, ColorCurves)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurves:parent() -> table
@@ -95,7 +100,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function ColorCurves:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurves:app() -> table
@@ -108,7 +113,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function ColorCurves:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
@@ -130,7 +135,7 @@ function ColorCurves:show()
     if not self:isShowing() then
         self:parent():activateCorrection(CORRECTION_TYPE)
     end
-	return self
+    return self
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorCurves:isShowing() -> boolean
@@ -192,7 +197,7 @@ function ColorCurves:viewMode(value)
             if ui[1][1] then
                 for _, child in ipairs(ui[1][1]) do
                     local title = child:attributeValue("AXTitle")
-                    local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
+                    --local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
                     local app = self:app()
                     if title == app:string(self.VIEW_MODES["All Curves"]) and value == "All Curves" then
                         child:performAction("AXPress") -- Close the popup
@@ -258,7 +263,7 @@ function ColorCurves:visibleCurve(value)
         --------------------------------------------------------------------------------
         if value then
             self:viewMode("Single Curves")
-            local ui = self:parent():UI() -- Refresh the UI
+            ui = self:parent():UI() -- Refresh the UI
             if ui and ui[2] and ui[2][1] then
                 if value == "Luma" and ui[2][1]:attributeValue("AXValue") == 0 then
                     ui[2][1]:performAction("AXPress")
@@ -305,7 +310,7 @@ end
 ---  * A number containing the mix value or `nil` if an error occurs.
 function ColorCurves:mix(value)
 
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
     -- Validation:
     --------------------------------------------------------------------------------
     if value then
@@ -314,7 +319,7 @@ function ColorCurves:mix(value)
             return nil
         end
         if value >= 0 and value <= 1 then
-            --log.df("Valid Value: %s", value)
+            log.df("Valid Value: %s", value)
         else
             log.ef("Invalid Mix Value: %s", value)
             return nil
@@ -325,32 +330,32 @@ function ColorCurves:mix(value)
         return nil
     end
 
-	--------------------------------------------------------------------------------
-	-- Find Mix Slider:
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Find Mix Slider:
+    --------------------------------------------------------------------------------
     local ui = self:parent():UI()
     local slider = nil
-    for i, v in ipairs(ui) do
-    	if v:attributeValue("AXRole") == "AXSlider" then
-    		slider = v
-    	end
+    for _, v in ipairs(ui) do
+        if v:attributeValue("AXRole") == "AXSlider" then
+            slider = v
+        end
     end
-	if not slider then
-		log.ef("Could not find slider.")
-		return nil
-	end
+    if not slider then
+        log.ef("Could not find slider.")
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Setter:
-	--------------------------------------------------------------------------------
-	if value then
-		slider:setAttributeValue("AXValue", value)
-	end
+    --------------------------------------------------------------------------------
+    -- Setter:
+    --------------------------------------------------------------------------------
+    if value then
+        slider:setAttributeValue("AXValue", value)
+    end
 
-	--------------------------------------------------------------------------------
-	-- Getter:
-	--------------------------------------------------------------------------------
-	return slider:attributeValue("AXValue")
+    --------------------------------------------------------------------------------
+    -- Getter:
+    --------------------------------------------------------------------------------
+    return slider:attributeValue("AXValue")
 
 end
 
@@ -369,7 +374,7 @@ function ColorCurves:preserveLuma(value)
     -- TODO: This currently only gets, not sets, because the checkbox is read only.
     --------------------------------------------------------------------------------
 
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
     -- Validation:
     --------------------------------------------------------------------------------
     if type(value) ~= "nil" then
@@ -383,39 +388,39 @@ function ColorCurves:preserveLuma(value)
         return nil
     end
 
-	--------------------------------------------------------------------------------
-	-- Find Preserve Luma Chebox:
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Find Preserve Luma Chebox:
+    --------------------------------------------------------------------------------
     local ui = self:parent():UI()
     local checkbox = nil
-    for i, v in ipairs(ui) do
-    	if v:attributeValue("AXRole") == "AXCheckBox" then
-    		checkbox = v
-    	end
+    for _, v in ipairs(ui) do
+        if v:attributeValue("AXRole") == "AXCheckBox" then
+            checkbox = v
+        end
     end
-	if not checkbox then
-		log.ef("Could not find checkbox.")
-		return nil
-	end
+    if not checkbox then
+        log.ef("Could not find checkbox.")
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Setter:
-	--------------------------------------------------------------------------------
-	if type(value) == "boolean" then
-	    log.df("SETTER!")
-	    if value == true then
-	        log.df("SETTING TO TRUE")
-    		checkbox:setAttributeValue("AXValue", 1)
-    	else
-    	    log.df("SETTING TO FALSE")
-    	    checkbox:setAttributeValue("AXValue", 0)
-    	end
-	end
+    --------------------------------------------------------------------------------
+    -- Setter:
+    --------------------------------------------------------------------------------
+    if type(value) == "boolean" then
+        log.df("SETTER!")
+        if value == true then
+            log.df("SETTING TO TRUE")
+            checkbox:setAttributeValue("AXValue", 1)
+        else
+            log.df("SETTING TO FALSE")
+            checkbox:setAttributeValue("AXValue", 0)
+        end
+    end
 
-	--------------------------------------------------------------------------------
-	-- Getter:
-	--------------------------------------------------------------------------------
-	return checkbox:attributeValue("AXValue") == 1
+    --------------------------------------------------------------------------------
+    -- Getter:
+    --------------------------------------------------------------------------------
+    return checkbox:attributeValue("AXValue") == 1
 
 end
 

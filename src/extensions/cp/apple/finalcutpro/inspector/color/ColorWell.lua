@@ -7,28 +7,40 @@
 --- === cp.apple.finalcutpro.inspector.color.ColorWell ===
 ---
 --- Represents a single Color Well in the Color Wheels Inspector.
----
---- Requires Final Cut Pro 10.4 or later.
---
------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("colorWell")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local color								= require("hs.drawing.color")
 local inspect							= require("hs.inspect")
-local asRGB, asHSB						= color.asRGB, color.asHSB
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop                              = require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local min, cos, sin, atan, floor, sqrt, modf	= math.min, math.cos, math.sin, math.atan, math.floor, math.sqrt, math.modf
-
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local ColorWell = {}
+
+local asRGB, asHSB						= color.asRGB, color.asHSB
+
+local min, cos, sin, atan, floor, sqrt, modf	= math.min, math.cos, math.sin, math.atan, math.floor, math.sqrt, math.modf
 
 -- the hue shift currently being output from AXColorWell values.
 local HUE_SHIFT = 4183333/6000000
@@ -139,7 +151,9 @@ end
 ---
 --- Returns:
 --- * A new `ColorWell` instance.
-function ColorWell:new(parent, finderFn)
+-- TODO: Use a Method instead of a Function.
+function ColorWell:new(parent, finderFn) -- luacheck: ignore
+
 	local o = prop.extend({
 		_parent = parent,
 		_finder = finderFn,

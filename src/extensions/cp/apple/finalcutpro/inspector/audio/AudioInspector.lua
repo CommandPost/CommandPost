@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("audioInspect")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                               = require("hs.logger").new("audioInspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -29,16 +36,17 @@ local AudioInspector = {}
 --- Creates a new AudioInspector object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A AudioInspector object
-function AudioInspector:new(parent)
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
-	return prop.extend(o, AudioInspector)
+-- TODO: Replace Method with Function.
+function AudioInspector:new(parent) -- luacheck: ignore
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+    return prop.extend(o, AudioInspector)
 end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector:parent() -> table
@@ -51,7 +59,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function AudioInspector:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector:app() -> table
@@ -64,7 +72,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function AudioInspector:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------

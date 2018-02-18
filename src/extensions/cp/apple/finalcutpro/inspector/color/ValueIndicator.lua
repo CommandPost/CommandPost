@@ -42,7 +42,9 @@ end
 ---
 --- Returns:
 --- * New `ValueIndicator` instance.
-function ValueIndicator:new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn)
+-- TODO: Use a function instead of a method.
+function ValueIndicator:new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -- luacheck: ignore
+
 	return prop.extend({
 		_parent = parent,
 		_finder = finderFn,

@@ -13,11 +13,17 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("windowWatcher")
 
-local windowfilter					= require("cp.apple.finalcutpro.windowfilter")
-local axuielement					= require("hs._asm.axuielement")
-local watcher						= require("cp.watcher")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local axuielement                   = require("hs._asm.axuielement")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local windowfilter                  = require("cp.apple.finalcutpro.windowfilter")
+local watcher                       = require("cp.watcher")
 
 --------------------------------------------------------------------------------
 --
@@ -31,15 +37,15 @@ local WindowWatcher = {}
 --- Creates a new WindowWatcher
 ---
 --- Parameters:
----  * `window` 	- the window object (eg. CommandEditor)
+---  * `window`     - the window object (eg. CommandEditor)
 ---
 --- Returns:
----  * `WindowWatcher`	- the new WindowWatcher instance.
+---  * `WindowWatcher`  - the new WindowWatcher instance.
 function WindowWatcher:new(window)
-	local o = {_window = window}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+    local o = {_window = window}
+    setmetatable(o, self)
+    self.__index = self
+    return o
 end
 
 --- cp.apple.finalcutpro.WindowWatcher:watch() -> bool
@@ -60,78 +66,77 @@ end
 ---  * An ID which can be passed to `unwatch` to stop watching.
 function WindowWatcher:watch(events)
 
-	if not self._watchers then
-		self._watchers = watcher.new("show", "hide", "move", "open", "close")
-	end
+    if not self._watchers then
+        self._watchers = watcher.new("show", "hide", "move", "open", "close")
+    end
 
-	local id = self._watchers:watch(events)
+    local id = self._watchers:watch(events)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Made Visible:
-	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowVisible", function(window)
-		local windowUI = axuielement.windowElement(window)
-		if self._window:UI() == windowUI then
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Window Made Visible:
+    --------------------------------------------------------------------------------
+    windowfilter:subscribe("windowVisible", function(window)
+        local windowUI = axuielement.windowElement(window)
+        if self._window:UI() == windowUI then
 
-			--------------------------------------------------------------------------------
-			-- Cache the Window ID, as it will be used to detect when it's destroyed.
-			--------------------------------------------------------------------------------
-			self._visibleWindowID = window:id()
+            --------------------------------------------------------------------------------
+            -- Cache the Window ID, as it will be used to detect when it's destroyed.
+            --------------------------------------------------------------------------------
+            self._visibleWindowID = window:id()
 
-			self._watchers:notify("show", self._window)
-		end
-	end,
-	true)
+            self._watchers:notify("show", self._window)
+        end
+    end,
+    true)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Not Visisble:
-	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowNotVisible", function(window)
-		local windowUI = axuielement.windowElement(window)
-		if window:id() == self._visibleWindowID then
-			self._visibleWindowID = nil -- Reset the window ID.
-			self._watchers:notify("hide", self._window)
-		end
-	end, true)
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Window Not Visisble:
+    --------------------------------------------------------------------------------
+    windowfilter:subscribe("windowNotVisible", function(window)
+        if window:id() == self._visibleWindowID then
+            self._visibleWindowID = nil -- Reset the window ID.
+            self._watchers:notify("hide", self._window)
+        end
+    end, true)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Created:
-	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowCreated", function(window)
-		local windowUI = axuielement.windowElement(window)
-		if self._window:UI() == windowUI then
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Window Created:
+    --------------------------------------------------------------------------------
+    windowfilter:subscribe("windowCreated", function(window)
+        local windowUI = axuielement.windowElement(window)
+        if self._window:UI() == windowUI then
 
-			--------------------------------------------------------------------------------
-			-- Cache the Window ID, as it will be used to detect when it's destroyed.
-			--------------------------------------------------------------------------------
-			self._windowID = window:id()
+            --------------------------------------------------------------------------------
+            -- Cache the Window ID, as it will be used to detect when it's destroyed.
+            --------------------------------------------------------------------------------
+            self._windowID = window:id()
 
-			self._watchers:notify("open", self._window)
-		end
-	end, true)
+            self._watchers:notify("open", self._window)
+        end
+    end, true)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Destroyed:
-	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowDestroyed", function(window)
-		if window:id() == self._windowID then
-			self._windowID = nil -- Reset the window ID.
-			self._watchers:notify("close", self._window)
-		end
-	end,
-	true)
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Window Destroyed:
+    --------------------------------------------------------------------------------
+    windowfilter:subscribe("windowDestroyed", function(window)
+        if window:id() == self._windowID then
+            self._windowID = nil -- Reset the window ID.
+            self._watchers:notify("close", self._window)
+        end
+    end,
+    true)
 
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window Moved:
-	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowMoved", function(window)
-		local windowUI = axuielement.windowElement(window)
-		if self._window:UI() == windowUI then
-			self._watchers:notify("move", self._window)
-		end
-	end, true)
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Window Moved:
+    --------------------------------------------------------------------------------
+    windowfilter:subscribe("windowMoved", function(window)
+        local windowUI = axuielement.windowElement(window)
+        if self._window:UI() == windowUI then
+            self._watchers:notify("move", self._window)
+        end
+    end, true)
 
-	return id
+    return id
 end
 
 --- cp.apple.finalcutpro.WindowWatcher:unwatch() -> bool
@@ -144,10 +149,10 @@ end
 --- Returns:
 ---  * None
 function WindowWatcher:unwatch(id)
-	local watchers = self._watchers
-	if id and id.id and watchers and watchers[id.id] then
-		table.remove(watchers, id.id)
-	end
+    local watchers = self._watchers
+    if id and id.id and watchers and watchers[id.id] then
+        table.remove(watchers, id.id)
+    end
 end
 
 return WindowWatcher

@@ -7,11 +7,9 @@
 --- === cp.apple.finalcutpro.inspector.color.ColorWheels ===
 ---
 --- Color Wheels Module.
----
---- Requires Final Cut Pro 10.4 or later.
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------
--- DAVID'S TODO LIST:
+-- TODO LIST:
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 --
 --  [ ] `cp.apple.finalcutpro.inspector.color.ColorWheels:nudgeControl` should use GUI Scripting instead of shortcuts
@@ -30,14 +28,21 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log                               = require("hs.logger").new("colorWheels")
 
-local prop                              = require("cp.prop")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
 local MenuButton						= require("cp.ui.MenuButton")
+local prop                              = require("cp.prop")
+local PropertyRow						= require("cp.ui.PropertyRow")
 local RadioGroup						= require("cp.ui.RadioGroup")
 local Slider							= require("cp.ui.Slider")
-local PropertyRow						= require("cp.ui.PropertyRow")
 
 local ColorWheel						= require("cp.apple.finalcutpro.inspector.color.ColorWheel")
 
@@ -102,7 +107,8 @@ end
 ---
 --- Returns:
 ---  * A ColorInspector object
-function ColorWheels:new(parent)
+-- TODO: Use a function instead of a method.
+function ColorWheels:new(parent) -- luacheck: ignore
     local o = prop.extend({
         _parent = parent,
         _child = {}

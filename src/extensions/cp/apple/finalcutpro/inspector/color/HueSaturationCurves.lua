@@ -27,8 +27,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("hueSaturationCurves")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -36,7 +43,6 @@ local prop								= require("cp.prop")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-
 local CORRECTION_TYPE					= "Hue/Saturation Curves"
 
 --------------------------------------------------------------------------------
@@ -75,7 +81,8 @@ HueSaturationCurves.CURVES = {
 ---
 --- Returns:
 ---  * A HueSaturationCurves object
-function HueSaturationCurves:new(parent)
+-- TODO: Use a function instead of a method.
+function HueSaturationCurves:new(parent) -- luacheck: ignore
 	local o = {
 		_parent = parent,
 		_child = {}
@@ -191,7 +198,7 @@ function HueSaturationCurves:viewMode(value)
             if ui[1][1] then
                 for _, child in ipairs(ui[1][1]) do
                     local title = child:attributeValue("AXTitle")
-                    local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
+                    --local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
                     local app = self:app()
                     if title == app:string(self.VIEW_MODES["6 Curves"]) and value == "6 Curves" then
                         child:performAction("AXPress") -- Close the popup
@@ -259,7 +266,7 @@ function HueSaturationCurves:visibleCurve(value)
         --------------------------------------------------------------------------------
         if value then
             self:viewMode("Single Curves")
-            local ui = self:parent():UI() -- Refresh the UI
+            ui = self:parent():UI() -- Refresh the UI
             if ui and ui[2] and ui[2][1] then
                 if value == "HvH" and ui[2][1]:attributeValue("AXValue") == 0 then
                     ui[2][1]:performAction("AXPress")
@@ -323,7 +330,7 @@ function HueSaturationCurves:mix(value)
             return nil
         end
         if value >= 0 and value <= 1 then
-            --log.df("Valid Value: %s", value)
+            log.df("Valid Value: %s", value)
         else
             log.ef("Invalid Mix Value: %s", value)
             return nil
@@ -339,10 +346,10 @@ function HueSaturationCurves:mix(value)
 	--------------------------------------------------------------------------------
     local ui = self:parent():UI()
     local slider = nil
-    for i, v in ipairs(ui) do
-    	if v:attributeValue("AXRole") == "AXSlider" then
-    		slider = v
-    	end
+    for _, v in ipairs(ui) do
+      if v:attributeValue("AXRole") == "AXSlider" then
+        slider = v
+      end
     end
 	if not slider then
 		log.ef("Could not find slider.")

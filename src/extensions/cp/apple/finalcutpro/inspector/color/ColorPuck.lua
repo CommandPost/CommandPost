@@ -13,18 +13,28 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log									= require("hs.logger").new("colorPuck")
 
-local mouse									= require("hs.mouse")
-local geometry								= require("hs.geometry")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local drawing								= require("hs.drawing")
+local geometry								= require("hs.geometry")
+local mouse									= require("hs.mouse")
 local timer									= require("hs.timer")
 
-local prop									= require("cp.prop")
-local tools									= require("cp.tools")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils								= require("cp.ui.axutils")
+local prop									= require("cp.prop")
 local PropertyRow							= require("cp.ui.PropertyRow")
 local TextField								= require("cp.ui.TextField")
+local tools									= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -63,7 +73,9 @@ function Puck.matches(element)
 end
 
 -- TODO: Add documentation
-function Puck:new(parent, puckNumber, labelKeys)
+-- TODO: Use a Method instead of a Function.
+function Puck:new(parent, puckNumber, labelKeys) -- luacheck: ignore
+
 	assert(
 		puckNumber >= Puck.range.master and puckNumber <= Puck.range.highlights,
 		string.format("Please supply a puck number between %s and %s.", Puck.range.master, Puck.range.highlights)

@@ -73,6 +73,7 @@ mod.MODES = {
     },
 }
 
+local colorWheels = fcp:inspector():color():colorWheels()
 local colorBoard = fcp:colorBoard()
 local color, saturation, exposure = colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()
 
@@ -258,6 +259,34 @@ mod.CUSTOM_PARAMETERS = {
             ["shiftValue"] = function(value) return exposure:highlights():shiftPercent(value) end,
             ["resetValue"] = function() exposure:highlights():reset() end,
         },
+
+        --------------------------------------------------------------------------------
+        -- COLOR WHEEL:
+        --------------------------------------------------------------------------------
+        ["0x00030017"] = {
+            ["name"] = "Color Wheel - Master - Vertical",
+            ["name9"] = "MASTER",
+            ["minValue"] = colorWheels:master():colorWell().minPosition,
+            ["maxValue"] = colorWheels:master():colorWell().maxPosition,
+            ["stepSize"] = 1,
+            ["getValue"] = function() return colorWheels:master():colorPosition() and colorWheels:master():colorPosition().y end,
+            ["shiftValue"] = function(value)
+                local currentValue = colorWheels:master():colorPosition()
+                if currentValue then
+                    local x, y = currentValue.x, currentValue.y
+                    y = y + 1
+                    colorWheels:master():colorPosition({
+                        ["x"] = x,
+                        ["y"] = y,
+                    })
+                end
+            end,
+            ["resetValue"] = function() colorWheels:master():reset() end,
+        },
+
+        --------------------------------------------------------------------------------
+        -- BINDINGS:
+        --------------------------------------------------------------------------------
         ["bindings"] = {
             ["name"] = "zzzzzzzzzzz", -- This is just to put the binding alphabetically last.
             ["xml"] = [[
@@ -645,6 +674,7 @@ function mod.updateMode()
         for id,metadata in pairs(mod.MODES) do
             local active = metadata.active()
             if active == true then
+                log.df("ACTIVE MODE: %s", id)
                 tangent.send("MODE_VALUE", {
                     ["modeID"] = tonumber(id)
                 })
@@ -665,6 +695,9 @@ end
 --- Returns:
 ---  * None
 function mod.callback(id, metadata)
+
+    log.df("Callback Triggered: %s", id)
+
     if id == "CONNECTED" then
         --------------------------------------------------------------------------------
         -- Connected:

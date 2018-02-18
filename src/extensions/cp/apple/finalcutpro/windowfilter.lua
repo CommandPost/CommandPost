@@ -13,11 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local logname										= "fcpWinFilter"
 
-local log											= require("hs.logger").new(logname)
-
-local windowfilter									= require("hs.window.filter")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local windowfilter                                  = require("hs.window.filter")
 
 --------------------------------------------------------------------------------
 --
@@ -26,12 +26,26 @@ local windowfilter									= require("hs.window.filter")
 --------------------------------------------------------------------------------
 local mod = {}
 
---log.df("Setting up Final Cut Pro Window Filter...")
+-- Disable Window Filter Errors (the wfilter errors are too annoying):
+windowfilter.setLogLevel("nothing")
 
-windowfilter.setLogLevel("nothing") -- The wfilter errors are too annoying.
+--- cp.apple.finalcutpro.windowfilter.LOG_NAME -> string
+--- Constant
+--- The name of the `hs.logger` instance.
+mod.LOG_NAME = "fcpWinFilter"
 
+--- cp.apple.finalcutpro.windowfilter.windowfilter -> hs.window.filter object
+--- Function
+--- Creates a new `hs.window.filter` instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A new `windowfilter` instance
 mod.windowfilter = windowfilter.new(function(window)
-	return window and window:application():bundleID() == "com.apple.FinalCut" -- TODO: This should be taken from cp.apple.finalcutpro.BUNDLE_ID somehow?
-end, logname)
+    -- TODO: This should be taken from cp.apple.finalcutpro.BUNDLE_ID:
+    return window and window:application():bundleID() == "com.apple.FinalCut"
+end, mod.LOGNAME)
 
 return mod.windowfilter

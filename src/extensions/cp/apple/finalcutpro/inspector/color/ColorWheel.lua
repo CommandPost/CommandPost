@@ -7,18 +7,21 @@
 --- === cp.apple.finalcutpro.inspector.color.ColorWheel ===
 ---
 --- Represents a single Color Well in the Color Wheels Inspector.
----
---- Requires Final Cut Pro 10.4 or later.
---
------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log                               = require("hs.logger").new("colorWheel")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop                              = require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
@@ -26,6 +29,11 @@ local ColorWell							= require("cp.apple.finalcutpro.inspector.color.ColorWell"
 local ValueIndicator					= require("cp.apple.finalcutpro.inspector.color.ValueIndicator")
 local Button							= require("cp.ui.Button")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local ColorWheel = {}
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.TYPE
@@ -64,7 +72,8 @@ end
 ---
 --- Returns:
 --- * A new `ColorWheel` instance.
-function ColorWheel:new(parent, type)
+-- TODO: Use a Method instead of a Function.
+function ColorWheel:new(parent, type) -- luacheck: ignore
 	local o = prop.extend({
 		_parent = parent,
 		_type = type,
