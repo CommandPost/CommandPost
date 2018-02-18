@@ -201,36 +201,6 @@ ColorWell.frame = prop(
 	end
 ):bind(ColorWell)
 
-local SIZE = 100
-local function _highlightPoint(point)
-    --------------------------------------------------------------------------------
-    -- Get Highlight Colour Preferences:
-    --------------------------------------------------------------------------------
-    local hColor = {red=1, blue=0, green=0, alpha=0.75}
-
-    local vert = drawing.line({x=point.x, y=point.y-SIZE}, {x=point.x, y=point.y+SIZE})
-    vert:setStrokeColor(hColor)
-    vert:setFill(false)
-    vert:setStrokeWidth(1)
-
-	local horiz = drawing.line({x=point.x-SIZE, y=point.y}, {x=point.x+SIZE, y=point.y})
-    horiz:setStrokeColor(hColor)
-    horiz:setFill(false)
-    horiz:setStrokeWidth(1)
-
-	vert:show()
-	horiz:show()
-
-    --------------------------------------------------------------------------------
-    -- Set a timer to delete the highlight after 10 seconds:
-    --------------------------------------------------------------------------------
-    timer.doAfter(10,
-	function()
-		vert:delete()
-        horiz:delete()
-    end)
-end
-
 local BRIGHTNESS_CLAMP = 85/255
 
 local function round(value)

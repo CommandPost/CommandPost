@@ -30,14 +30,9 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("colorWheels")
-
-local drawing 							= require("hs.drawing")
-local color								= require("hs.drawing.color")
-local inspect							= require("hs.inspect")
+-- local log                               = require("hs.logger").new("colorWheels")
 
 local prop                              = require("cp.prop")
-local tools								= require("cp.tools")
 local axutils							= require("cp.ui.axutils")
 local MenuButton						= require("cp.ui.MenuButton")
 local RadioGroup						= require("cp.ui.RadioGroup")
