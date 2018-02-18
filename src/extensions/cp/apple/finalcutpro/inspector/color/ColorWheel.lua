@@ -17,7 +17,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("colorWheel")
+-- local log                               = require("hs.logger").new("colorWheel")
 
 local prop                              = require("cp.prop")
 local axutils							= require("cp.ui.axutils")

@@ -19,10 +19,8 @@
 --------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("colorWell")
 
-local drawing							= require("hs.drawing")
 local color								= require("hs.drawing.color")
 local inspect							= require("hs.inspect")
-local timer								= require("hs.timer")
 local asRGB, asHSB						= color.asRGB, color.asHSB
 
 local prop                              = require("cp.prop")
@@ -271,7 +269,8 @@ local fromXY = function(pos, frame, absolute)
 		x, y = x - ctr.x, y - ctr.y
 	end
 
-	local h, b = atan(y, x) / ( math.pi * 2), sqrt(x * x + y * y) / radius
+	local h, b, _
+	h, b = atan(y, x) / ( math.pi * 2), sqrt(x * x + y * y) / radius
 	_, h = modf(1 - h + HUE_SHIFT)
 	b = min(1.0, b)
     return asRGB({hue=h, saturation=1, brightness=b})

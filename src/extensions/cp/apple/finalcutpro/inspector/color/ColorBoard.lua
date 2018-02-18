@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timline")
+-- local log								= require("hs.logger").new("timline")
 
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")

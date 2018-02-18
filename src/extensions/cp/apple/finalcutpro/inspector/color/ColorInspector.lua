@@ -15,7 +15,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("colorInspect")
+-- local log								= require("hs.logger").new("colorInspect")
 
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")

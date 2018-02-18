@@ -69,7 +69,7 @@ function _findUnusedLanguageStrings()
 		end
 		if not skip then
 			local executeString = [[grep -r --max-count=1 --exclude-dir=resources --include \*.html --include \*.htm --include \*.lua ']] .. string .. [[' ']] .. hs.processInfo.bundlePath .. [[/']]
-			local output, status = hs.execute(executeString)
+			local _, status = hs.execute(executeString)
 			if not status then
 				result = result .. string .. "\n"
 				stringCount = stringCount + 1
@@ -108,7 +108,7 @@ function _inspectAtMouse(options)
     options = options or {}
     local element = _elementAtMouse()
     if options.parents then
-        for i=1,options.parents do
+        for _=1,options.parents do
             element = element ~= nil and element:parent()
         end
     end
@@ -137,7 +137,7 @@ function _inspect(e, options)
         return "<nil>"
     elseif type(e) ~= "userdata" or not e.attributeValue then
         if type(e) == "table" and #e > 0 then
-            local item = nil
+            local item
             local result = ""
             for i=1,#e do
                 item = e[i]
@@ -203,10 +203,9 @@ function _highlight(e)
     --------------------------------------------------------------------------------
     -- Set a timer to delete the highlight after 3 seconds:
     --------------------------------------------------------------------------------
-    local highlightTimer = timer.doAfter(3,
+    timer.doAfter(3,
     function()
         highlight:delete()
-        highlightTimer = nil
     end)
 	return e
 end

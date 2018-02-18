@@ -260,8 +260,8 @@ ColorWheels.viewingAllWheels = prop(
 		end
 		return false
 	end,
-	function(allWheels, self, prop)
-		local current = prop:get()
+	function(allWheels, self, theProp)
+		local current = theProp:get()
 		if allWheels and not current then
 			self:viewMode():selectItem(1)
 		elseif not allWheels and current then
