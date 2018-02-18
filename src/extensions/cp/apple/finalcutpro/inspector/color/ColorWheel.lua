@@ -87,6 +87,11 @@ function ColorWheel:new(parent, type)
 --- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
 	o.colorPosition = o:colorWell().colorPosition:wrap(o)
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.puckScreenPosition <cp.prop: point>
+--- Field
+--- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+	o.puckScreenPosition = o:colorWell().puckScreenPosition:wrap(o)
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
 --- Field
 --- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.

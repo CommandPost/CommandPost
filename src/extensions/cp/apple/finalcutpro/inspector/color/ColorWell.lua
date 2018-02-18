@@ -222,9 +222,9 @@ local function _highlightPoint(point)
 	horiz:show()
 
     --------------------------------------------------------------------------------
-    -- Set a timer to delete the highlight after 3 seconds:
+    -- Set a timer to delete the highlight after 10 seconds:
     --------------------------------------------------------------------------------
-    local theTimer = timer.doAfter(10,
+    timer.doAfter(10,
 	function()
 		vert:delete()
         horiz:delete()
@@ -347,22 +347,40 @@ ColorWell.colorPosition = prop(
 	end
 ):bind(ColorWell)
 
-
---- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWell.puckScreenPosition <cp.prop: hs.geometry.point>
 --- Field
---- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-ColorWell.puckPosition = prop(
+--- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+ColorWell.puckScreenPosition = prop(
 	function(self)
 		local frame = self:frame()
 		if frame then
-			local x, y = toXY(self:value(), frame, true)
+			return toXY(self:value(), frame, true, true)
 		end
 		return nil
 	end,
 	function(position, self)
 		local frame = self:frame()
 		if frame then
-			self:value(fromXY(position, frame))
+			self:value(fromXY(position, frame, true))
+		end
+	end
+):bind(ColorWell)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: hs.geometry.point>
+--- Field
+--- Relative X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+ColorWell.puckPosition = prop(
+	function(self)
+		local frame = self:frame()
+		if frame then
+			return toXY(self:value(), frame, false, true)
+		end
+		return nil
+	end,
+	function(position, self)
+		local frame = self:frame()
+		if frame then
+			self:value(fromXY(position, frame, false))
 		end
 	end
 ):bind(ColorWell)
