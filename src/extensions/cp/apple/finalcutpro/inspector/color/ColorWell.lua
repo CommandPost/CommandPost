@@ -107,12 +107,15 @@ local function colorToColorWellValue(value)
 	return ""
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell.min
+--- cp.apple.finalcutpro.inspector.color.ColorWell.minPosition
 --- Constant
 --- The minimum relative X or Y value for the well, for `colorPosition`.
+ColorWell.minPosition = -175
+
+--- cp.apple.finalcutpro.inspector.color.ColorWell.maxPosition
+--- Constant
 --- The maximum relative X or Y value for the well, for `colorPosition`.
-ColorWell.min = -175
-ColorWell.max = 176
+ColorWell.maxPosition = 176
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.matches(element)
 --- Function
