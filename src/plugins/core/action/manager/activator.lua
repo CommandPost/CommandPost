@@ -149,9 +149,9 @@ function activator.new(id, manager)
             local allowed = {}
             local allowedIds = o:_allowedHandlers()
 
-            for id,handler in pairs(handlers) do
-                if allowedIds == nil or allowedIds[id] then
-                    allowed[id] = handler
+            for theID,handler in pairs(handlers) do
+                if allowedIds == nil or allowedIds[theID] then
+                    allowed[theID] = handler
                 end
             end
 

@@ -124,7 +124,7 @@ Window.UI = prop(
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
 Window.hsWindow = Window.UI:mutate(
-    function(original, self)
+    function(original)
         local ui = original()
         return ui and ui:asHSWindow()
     end

@@ -73,7 +73,7 @@ mod.MODES = {
     },
 }
 
-local colorWheels = fcp:inspector():color():colorWheels()
+--local colorWheels = fcp:inspector():color():colorWheels()
 local colorBoard = fcp:colorBoard()
 local color, saturation, exposure = colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()
 
@@ -263,6 +263,7 @@ mod.CUSTOM_PARAMETERS = {
         --------------------------------------------------------------------------------
         -- COLOR WHEEL:
         --------------------------------------------------------------------------------
+        --[[
         ["0x00030017"] = {
             ["name"] = "Color Wheel - Master - Vertical",
             ["name9"] = "MASTER",
@@ -283,6 +284,7 @@ mod.CUSTOM_PARAMETERS = {
             end,
             ["resetValue"] = function() colorWheels:master():reset() end,
         },
+        --]]
 
         --------------------------------------------------------------------------------
         -- BINDINGS:
