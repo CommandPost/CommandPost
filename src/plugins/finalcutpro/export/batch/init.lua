@@ -20,6 +20,11 @@
 local log           = require("hs.logger").new("batch")
 
 --------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local fnutils       = require("hs.fnutils")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils       = require("cp.ui.axutils")
@@ -44,10 +49,25 @@ local PRIORITY = 2000
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- plugins.finalcutpro.export.batch._existingClipNames -> table
+-- Variable
+-- Table of existing clip names.
+mod._existingClipNames = {}
+
 --- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
 --- Field
 --- Defines whether or not a Batch Export should Replace Existing Files.
 mod.replaceExistingFiles = config.prop("batchExportReplaceExistingFiles", false)
+
+--- plugins.finalcutpro.export.batch.useCustomFilename <cp.prop: boolean>
+--- Field
+--- Defines whether or not the Batch Export tool should override the clipname with a custom filename.
+mod.useCustomFilename = config.prop("batchExportOverrideClipnameWithCustomFilename", false)
+
+--- plugins.finalcutpro.export.batch.customFilename <cp.prop: string>
+--- Field
+--- Custom Filename for Batch Export.
+mod.customFilename = config.prop("batchExportCustomFilename", i18n("batchExport"))
 
 --- plugins.finalcutpro.export.batch.ignoreMissingEffects <cp.prop: boolean>
 --- Field
@@ -293,6 +313,35 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
                 saveSheet:setPath(exportPath)
                 firstTime = false
             end
+
+            --------------------------------------------------------------------------------
+            -- Make sure we don't already have a clip with the same name in the batch:
+            --------------------------------------------------------------------------------
+            local filename = saveSheet:filename():getValue()
+            if filename then
+                local newFilename = filename
+
+                --------------------------------------------------------------------------------
+                -- Inject Custom Filenames:
+                --------------------------------------------------------------------------------
+                local customFilename = mod.customFilename()
+                local useCustomFilename = mod.useCustomFilename()
+                if useCustomFilename and customFilename then
+                    newFilename = customFilename
+                end
+
+                while fnutils.contains(mod._existingClipNames, newFilename) do
+                    newFilename = tools.incrementFilename(newFilename)
+                end
+                if filename ~= newFilename then
+                    saveSheet:filename():setValue(newFilename)
+                end
+                table.insert(mod._existingClipNames, newFilename)
+            end
+
+            --------------------------------------------------------------------------------
+            -- Click 'Save' on the save sheet:
+            --------------------------------------------------------------------------------
             saveSheet:pressSave()
 
         end
@@ -414,6 +463,12 @@ end
 function mod.batchExport()
 
     --------------------------------------------------------------------------------
+    -- Reset Existing Clip Names:
+    --------------------------------------------------------------------------------
+    mod._existingClipNames = nil
+    mod._existingClipNames = {}
+
+    --------------------------------------------------------------------------------
     -- Set Custom Export Path (or Default to Desktop):
     --------------------------------------------------------------------------------
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
@@ -496,7 +551,7 @@ function mod.batchExport()
         else
             replaceFilesMessage = i18n("batchExportReplaceNo")
         end
-        local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("buttonContinueBatchExport"), i18n("cancel")})
+        local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("continue") .. " " .. i18n("batchExport"), i18n("cancel")})
         if result == nil then return end
 
         --------------------------------------------------------------------------------
@@ -581,6 +636,22 @@ function plugin.init(deps)
             { title = i18n("replaceExistingFiles"), fn = function() mod.replaceExistingFiles:toggle() end, checked = mod.replaceExistingFiles() },
             { title = i18n("ignoreMissingEffects"), fn = function() mod.ignoreMissingEffects:toggle() end, checked = mod.ignoreMissingEffects() },
             { title = i18n("ignoreProxies"), fn = function() mod.ignoreProxies:toggle() end, checked = mod.ignoreProxies() },
+            { title = "-" },
+            { title = string.upper(i18n("customFilename")) .. ": " .. mod.customFilename(), disabled = true },
+            { title = "-" },
+            { title = i18n("useCustomFilename"), fn = function() mod.useCustomFilename:toggle() end, checked = mod.useCustomFilename() },
+            { title = i18n("setCustomFilename"), fn = function()
+                local result = mod.customFilename(dialog.displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
+                    if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
+                        return true
+                    else
+                        return false
+                    end
+                end))
+                if type(result) == "string" then
+                    mod.customFilename(result)
+                end
+            end },
         }
     end)
 

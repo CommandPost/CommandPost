@@ -96,7 +96,6 @@ return {
             no                                  =           "No",
             done                                =           "Done",
             cancel                              =           "Cancel",
-            buttonContinueBatchExport           =           "Continue Batch Export",
             continue                            =           "Continue",
             quit                                =           "Quit",
             send                                =           "Send",
@@ -207,15 +206,6 @@ return {
                 other                           =           "items"
             },
 
-            batchExportDestinationsNotFound     =           "We were unable to find the list of Share Destinations.",
-            batchExportNoDestination            =           "It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
-            batchExportEnableBrowser            =           "Please ensure that the browser is enabled before exporting.",
-            batchExportCheckPath                =           "Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
-            batchExportReplaceYes               =           "Exports with duplicate filenames will be replaced.",
-            batchExportReplaceNo                =           "Exports with duplicate filenames will be incremented.",
-            batchExportNoClipsSelected          =           "Please ensure that at least one clip is selected for export.",
-            batchExportComplete                 =           "Batch Export is now complete. The selected clips have been added to your render queue.",
-            batchExportFinalCutProClosed        =           "Final Cut Pro needs to be running to set a destination preset.\n\nPlease open Final Cut Pro and try again.",
             failedToWriteToPreferences          =           "Failed to write to the Final Cut Pro Preferences file.",
             failedToChangeLanguage              =           "Unable to change Final Cut Pro's language.",
             failedToRestart                     =           "Failed to restart Final Cut Pro. You will need to restart manually.",
@@ -495,17 +485,6 @@ return {
             appVersion                          =           "Version",
 
             --------------------------------------------------------------------------------
-            -- Batch Export Options:
-            --------------------------------------------------------------------------------
-            performBatchExport                  =           "Perform Batch Export",
-            setDestinationPreset                =           "Set Destination Preset",
-            setDestinationFolder                =           "Set Destination Folder",
-            replaceExistingFiles                =           "Replace Existing Files",
-            ignoreMissingEffects                =           "Ignore Missing & Offline Files",
-            ignoreProxies                       =           "Ignore Proxies",
-            sendToCompressor                    =           "Send to Compressor",
-
-            --------------------------------------------------------------------------------
             -- Menubar Options:
             --------------------------------------------------------------------------------
             showTools                           =           "Show Tools",
@@ -625,6 +604,31 @@ return {
             openErrorLog                        =           "Open Error Log",
             launchAtStartup                     =           "Launch at Startup",
             checkForUpdates                     =           "Check for Updates",
+
+    --------------------------------------------------------------------------------
+    -- BATCH EXPORT:
+    --------------------------------------------------------------------------------
+    performBatchExport                  =           "Perform Batch Export",
+    setDestinationPreset                =           "Set Destination Preset",
+    setDestinationFolder                =           "Set Destination Folder",
+    replaceExistingFiles                =           "Replace Existing Files",
+    ignoreMissingEffects                =           "Ignore Missing & Offline Files",
+    ignoreProxies                       =           "Ignore Proxies",
+    sendToCompressor                    =           "Send to Compressor",
+    useCustomFilename                   =           "Use Custom Filename",
+    setCustomFilename                   =           "Set Custom Filename",
+    enterCustomFilename                 =           "Please enter a custom filename",
+    enterCustomFilenameError            =           "This filename looks invalid. Please try again.",
+    customFilename                      =           "Custom Filename",
+    batchExportDestinationsNotFound     =           "We were unable to find the list of Share Destinations.",
+    batchExportNoDestination            =           "It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
+    batchExportEnableBrowser            =           "Please ensure that the browser is enabled before exporting.",
+    batchExportCheckPath                =           "Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+    batchExportReplaceYes               =           "Exports with duplicate filenames will be replaced.",
+    batchExportReplaceNo                =           "Exports with duplicate filenames will be incremented.",
+    batchExportNoClipsSelected          =           "Please ensure that at least one clip is selected for export.",
+    batchExportComplete                 =           "Batch Export is now complete. The selected clips have been added to your render queue.",
+    batchExportFinalCutProClosed        =           "Final Cut Pro needs to be running to set a destination preset.\n\nPlease open Final Cut Pro and try again.",
 
     --------------------------------------------------------------------------------
     -- BUG REPORT
