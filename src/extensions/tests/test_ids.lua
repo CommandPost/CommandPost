@@ -9,7 +9,8 @@ local v					= require("semver")
 local IDS_PATH = config.scriptPath .. "/tests/ids"
 
 local function init(currentVersion)
-	return ids.new(IDS_PATH, function() return currentVersion end)
+	local versionFn = type(currentVersion) == "function" and currentVersion or (function() return currentVersion end)
+	return ids.new(IDS_PATH, versionFn)
 end
 
 return test.suite("cp.ids"):with(
@@ -61,10 +62,18 @@ return test.suite("cp.ids"):with(
 	end),
 
 	test("ofCurrent", function()
-		local id = init("10.4.0")
+		local version = "10.4.0"
+		local versionFn = function() return version end
+
+		local id = init(versionFn)
 		local alpha = id:ofCurrent("Alpha")
 
 		ok(eq(alpha "One", "Uno"))
+		ok(eq(alpha "Two", "2"))
+
+		-- change the version number without updating alpha
+		version = "10.3.3"
+		ok(eq(alpha "One", "1"))
 		ok(eq(alpha "Two", "2"))
 	end),
 

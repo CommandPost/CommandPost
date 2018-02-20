@@ -184,16 +184,22 @@ function mod.mt:load(version)
 	return vIds
 end
 
---- cp.ids:of(version, subset) -> table
+--- cp.ids:of(version, subset) -> function
 --- Method
---- Returns a table of the IDs of the specified version and subset.
+--- Returns a function which can be called to retrieve a specific value for the specified version.
+---
+--- Eg:
+--- ```lua
+--- local id = ids:of("10.4.0", "CommandEditor")
+--- print "bar = "..id("bar")
+--- ```
 ---
 --- Parameters:
 ---  * version - The version number you want to load as a string (i.e. "10.4.0")
 ---  * subset - A string containing the subset of data you want to load
 ---
 --- Returns:
----  * A table containing the subset of IDs for the selected version. Will never be `nil`.
+---  * A function that will return the value of the specified `subset` ID for the specified version.
 function mod.mt:of(version, subset)
 	local data = self:load(version)
 	local subsetData = data[subset] or {}
@@ -202,17 +208,25 @@ function mod.mt:of(version, subset)
 	end
 end
 
---- cp.ids:ofCurrent(subset) -> table
+--- cp.ids:ofCurrent(subset) -> function
 --- Method
---- Returns a table of IDs for a current version and specified subset
+--- Returns a function which can be called with an ID to retrieve a specific value for the current version.
 ---
 --- Parameters:
 ---  * subset - A string containing the subset of data you want to load
 ---
 --- Returns:
----  * A table containing the subset of IDs for the current version
+---  * A function that will return the value of the specified `subset` ID for the current version.
 function mod.mt:ofCurrent(subset)
-	return self:of(self:currentVersion(), subset)
+	local currentVersion = nil
+	local ofFn = nil
+	return function(name)
+		local newVersion = self:currentVersion()
+		if not ofFn or currentVersion ~= newVersion then
+			ofFn = self:of(newVersion, subset)
+		end
+		return ofFn(name)
+	end
 end
 
 --

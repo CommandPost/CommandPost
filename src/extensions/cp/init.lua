@@ -21,13 +21,17 @@ local logger                    = require("hs.logger"); logger.defaultLogLevel =
 local log                       = logger.new("cp")
 
 --------------------------------------------------------------------------------
+-- Show Dock Icon during boot:
+--------------------------------------------------------------------------------
+hs.dockIcon(true)
+
+--------------------------------------------------------------------------------
 -- Display startup screen:
 --------------------------------------------------------------------------------
 local alert                     = require("hs.alert")
 local config                    = require("cp.config")
 local alertUUID
 if not config.get("hasRunOnce", false) then
-    hs.dockIcon(true)
     alertUUID = alert.show("Please wait while CommandPost scans your system for plugins...")
 end
 
@@ -346,6 +350,11 @@ function mod.init()
     config.automaticScriptReloading:update()
 
     --------------------------------------------------------------------------------
+    -- Global Variable to confirm CommandPost has successfully loaded:
+    --------------------------------------------------------------------------------
+    cpLoaded = true
+
+    --------------------------------------------------------------------------------
     -- Load Plugins:
     --------------------------------------------------------------------------------
     log.df("Loading Plugins...")
@@ -357,21 +366,22 @@ function mod.init()
     --------------------------------------------------------------------------------
     if alertUUID then
         alert.closeSpecific(alertUUID)
-        hs.dockIcon(false)
     end
 
     --------------------------------------------------------------------------------
-    -- Global Variable to confirm CommandPost has successfully loaded:
+    -- Hide Dock Icon:
     --------------------------------------------------------------------------------
-    cpLoaded = true
+    hs.dockIcon(false)
 
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
     collectgarbage()
 
+    --------------------------------------------------------------------------------
+    -- Return the module:
+    --------------------------------------------------------------------------------
     return mod
-
 end
 
 return mod.init()

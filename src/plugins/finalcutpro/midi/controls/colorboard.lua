@@ -23,12 +23,18 @@ local log               = require("hs.logger").new("cbMIDI")
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap          = require("hs.eventtap")
+local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
+
+local fcp               = require("cp.apple.finalcutpro")
+local ColorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
+
+local round             = tools.round
+local upper, format     = string.upper, string.format
 
 --------------------------------------------------------------------------------
 --
@@ -63,6 +69,81 @@ local function shiftPressed()
     return result
 end
 
+local ZERO_14BIT = 16383/2
+local UNSHIFTED_14BIT = 16383*200-100
+local ANGLE_14BIT = 16383*359
+local ANGLE_PITCH = 16383*362
+
+local ZERO_7BIT = 127/2
+local SHIFTED_7BIT = 128*202-100
+local UNSHIFTED_7BIT = 128*128-(128/2)
+
+-- makePercentHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for percent controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the percentage value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makePercentHandler(puckFinderFn)
+    return function(metadata)
+        local midiValue, value
+        local puck = puckFinderFn()
+        if metadata.fourteenBitCommand or metadata.pitchChange then
+            --------------------------------------------------------------------------------
+            -- 14bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if type(midiValue) == "number" then
+                value = midiValue == ZERO_14BIT and 0 or round(midiValue / UNSHIFTED_14BIT)
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- 7bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.controllerValue
+            if type(midiValue) == "number" then
+                value = midiValue == ZERO_7BIT and 0
+                    or midiValue / (shiftPressed() and SHIFTED_7BIT or UNSHIFTED_7BIT)
+            end
+        end
+        if value == nil then
+            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+        end
+        -- set the value
+        puck:select():percent(value)
+    end
+end
+
+-- makeAngleHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for angle controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the angle value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makeAngleHandler(puckFinderFn)
+    return function(metadata)
+        local puck = puckFinderFn()
+        --------------------------------------------------------------------------------
+        -- 7bit & 14bit:
+        --------------------------------------------------------------------------------
+        local midiValue = metadata.pitchChange or metadata.fourteenBitValue
+        if type(midiValue) == "number" then
+            local value = midiValue == ZERO_14BIT and 0
+                or metadata.fourteenBitCommand and midiValue / ANGLE_14BIT
+                or midiValue / ANGLE_PITCH
+            puck:select():angle(value)
+        else
+            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+        end
+    end
+end
+
 --- plugins.finalcutpro.midi.controls.colorboard.init() -> nil
 --- Function
 --- Initialise the module.
@@ -81,161 +162,56 @@ function mod.init(deps)
     -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
     --------------------------------------------------------------------------------
 
-    --  * aspect - "color", "saturation" or "exposure"
-    --  * property - "global", "shadows", "midtones", "highlights"
+    local colorBoard = fcp:colorBoard()
 
-    local colorFunction = {
-        [1] = "global",
-        [2] = "shadows",
-        [3] = "midtones",
-        [4] = "highlights",
+    local colorBoardAspects = {
+        { title = i18n("color"), control = colorBoard:color(), hasAngle = true },
+        { title = i18n("saturation"), control = colorBoard:saturation() },
+        { title = i18n("exposure"), control = colorBoard:exposure() },
     }
 
-    local colorPanels = {
-        [1] = "exposure",
-        [2] = "saturation",
-        [3] = "color",
+    local pucks = {
+        { title = "Master", fn = ColorBoardAspect.master, shortcut = "m" },
+        { title = "Shadows", fn = ColorBoardAspect.shadows, shortcut = "," },
+        { title = "Midtones", fn = ColorBoardAspect.midtones, shortcut = "." },
+        { title = "Highlights", fn = ColorBoardAspect.highlights, shortcut = "/" },
     }
 
-    for i=1, 4 do
+    local midiText, colorBoardText, puckText, descriptionText = upper(i18n("midi")), i18n("colorBoard"), i18n("puck"), i18n("midiColorBoardDescription")
+    local angleText, percentageText, colorText = i18n("angle"), i18n("percentage"), i18n("color")
 
+    for i,puck in ipairs(pucks) do
+        local puckNumber = tools.numberToWord(i)
         --------------------------------------------------------------------------------
         -- Current Pucks:
         --------------------------------------------------------------------------------
-        deps.manager.controls:new("puck" .. tools.numberToWord(i), {
+        deps.manager.controls:new("puck" .. puckNumber, {
             group = "fcpx",
-            text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n("puck") .. " " .. tostring(i),
-            subText = i18n("midiColorBoardDescription"),
-            fn = function(metadata)
-                local midiValue
-                mod._colorBoard:show()
-                if metadata.fourteenBitCommand or metadata.pitchChange then
-                    --------------------------------------------------------------------------------
-                    -- 14bit:
-                    --------------------------------------------------------------------------------
-                    if metadata.pitchChange then
-                        midiValue = metadata.pitchChange
-                    else
-                        midiValue = metadata.fourteenBitValue
-                    end
-                    if type(midiValue) == "number" then
-                        if mod._colorBoard then
-                            local value = tools.round(midiValue / 16383*200-100)
-                            if midiValue == 16383/2 then value = 0 end
-                            mod._colorBoard:applyPercentage("*", colorFunction[i], value)
-                        end
-                    else
-                        log.ef("Unexpected type: %s", type(midiValue))
-                    end
-                else
-                    --------------------------------------------------------------------------------
-                    -- 7bit:
-                    --------------------------------------------------------------------------------
-                    midiValue = metadata.controllerValue
-                    if type(midiValue) == "number" then
-                        if mod._colorBoard then
-                            local value
-                            if shiftPressed() then
-                                value = midiValue / 128*202-100
-                            else
-                                value = midiValue / 128*128-(128/2)
-                            end
-                            if midiValue == 127/2 then value = 0 end
-                            mod._colorBoard:applyPercentage("*", colorFunction[i], value)
-                        end
-                    else
-                        log.ef("Unexpected type: %s", type(midiValue))
-                    end
-                end
-            end,
+            text = format("%s: %s %s %s", midiText, colorBoardText, puckText, i),
+            subText = descriptionText,
+            fn = makePercentHandler(function() return puck.fn( colorBoard:current() ) end),
         })
 
         --------------------------------------------------------------------------------
-        -- Color (Angle):
+        -- Angle (Color only)
         --------------------------------------------------------------------------------
-        deps.manager.controls:new("colorAnglePuck" .. tools.numberToWord(i), {
+        deps.manager.controls:new("colorAnglePuck" .. puckNumber, {
             group = "fcpx",
-            text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("puck") .. " " .. tostring(i) .. " (" .. i18n("angle") .. ")",
-            subText = i18n("midiColorBoardDescription"),
-            fn = function(metadata)
-                local midiValue
-                mod._colorBoard:show()
-                --------------------------------------------------------------------------------
-                -- 7bit & 14bit:
-                --------------------------------------------------------------------------------
-                if metadata.pitchChange then
-                    midiValue = metadata.pitchChange
-                else
-                    midiValue = metadata.fourteenBitValue
-                end
-                if type(midiValue) == "number" then
-                    if mod._colorBoard then
-                        local value
-                        if metadata.fourteenBitCommand then
-                            value = midiValue / 16383*359
-                        else
-                            value = midiValue / 16383*362
-                        end
-                        if midiValue == 16383/2 then value = 0 end
-                        mod._colorBoard:applyAngle("color", colorFunction[i], value)
-                    end
-                else
-                    log.ef("Unexpected type: %s", type(midiValue))
-                end
-            end,
+            text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, colorText, puckText, i, angleText),
+            subText = descriptionText,
+            fn = makeAngleHandler(function() return puck.fn( colorBoard:color() ) end),
         })
 
         --------------------------------------------------------------------------------
         -- Percentages:
         --------------------------------------------------------------------------------
-        for whichPanel=1, 3 do
-            local colorPanel = colorPanels[whichPanel]
-            deps.manager.controls:new(colorPanel .. "PercentagePuck" .. tools.numberToWord(i), {
+        for _,aspect in ipairs(colorBoardAspects) do
+            local colorPanel = aspect.control:id()
+            deps.manager.controls:new(colorPanel .. "PercentagePuck" .. puckNumber, {
                 group = "fcpx",
-                text = string.upper(i18n("midi")) .. ": " .. i18n("colorBoard") .. " " .. i18n(colorPanel) .. " " .. i18n("puck") .. " " .. tostring(i) .. " (" .. i18n("percentage") .. ")",
-                subText = i18n("midiColorBoardDescription"),
-                fn = function(metadata)
-                    local midiValue
-                    mod._colorBoard:show()
-                    if metadata.fourteenBitCommand or metadata.pitchChange then
-                    --------------------------------------------------------------------------------
-                    -- 14bit:
-                    --------------------------------------------------------------------------------
-                    if metadata.pitchChange then
-                        midiValue = metadata.pitchChange
-                    else
-                        midiValue = metadata.fourteenBitValue
-                    end
-                    if type(midiValue) == "number" then
-                        if mod._colorBoard then
-                            local value = tools.round(midiValue / 16383*200-100)
-                            if midiValue == 16383/2 then value = 0 end
-                            mod._colorBoard:applyPercentage(colorPanel, colorFunction[i], value)
-                        end
-                    else
-                        log.ef("Unexpected type: %s", type(midiValue))
-                    end
-                else
-                    --------------------------------------------------------------------------------
-                    -- 7bit:
-                    --------------------------------------------------------------------------------
-                    midiValue = metadata.controllerValue
-                    if type(midiValue) == "number" then
-                        if mod._colorBoard then
-                            local value
-                            if shiftPressed() then
-                                value = midiValue / 128*202-100
-                            else
-                                value = midiValue / 128*128-(128/2)
-                            end
-                            if midiValue == 128/2 then value = 0 end
-                            mod._colorBoard:applyPercentage(colorPanel, colorFunction[i], value)
-                        end
-                    else
-                        log.ef("Unexpected type: %s", type(midiValue))
-                    end
-                end
-                end,
+                text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, aspect.title, puckText, i, percentageText ),
+                subText = descriptionText,
+                fn = makePercentHandler(function() return aspect.control end),
             })
         end
     end

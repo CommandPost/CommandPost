@@ -586,11 +586,14 @@ local function addWidget(icon, action, label, id)
             local params = widget:params()
             if params and params.item then
                 table.insert(mod._tbItemIDs, widget:id())
-                if type(params.item) == "function" then
-                    table.insert(mod._tbItems, params.item())
-                else
-                    table.insert(mod._tbItems, params.item)
+                local item = params.item
+                if type(item) == "function" then
+                    item = item()
                 end
+                if item == nil then
+                    log.wf("A widget item resolved to `nil`: %s, %s", action.id, id)
+                end
+                table.insert(mod._tbItems, item)
                 mod._tbWidgetID[widget:id()] = id
             end
         end

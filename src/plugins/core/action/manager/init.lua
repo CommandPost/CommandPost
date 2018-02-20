@@ -17,19 +17,17 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log						= require("hs.logger").new("actnmngr")
+--local log						= require("hs.logger").new("actnmngr")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local fnutils					= require("hs.fnutils")
-local timer						= require("hs.timer")
 local urlevent					= require("hs.urlevent")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config					= require("cp.config")
 local dialog					= require("cp.dialog")
 local prop						= require("cp.prop")
 local tools                     = require("cp.tools")
@@ -136,8 +134,8 @@ end
 --- Returns:
 --- * A string
 function mod.getURL(handlerId, action)
-	local handler = mod.getHandler(handlerId)
-	if handler and action then
+	local theHandler = mod.getHandler(handlerId)
+	if theHandler and action then
 		local params = freezeParams(action)
 		return format("commandpost://%s?%s", handlerId, params)
 	else
@@ -246,7 +244,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps)
+function plugin.init()
 	mod.init()
 	return mod
 end

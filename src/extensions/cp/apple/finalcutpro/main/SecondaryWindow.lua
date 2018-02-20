@@ -89,8 +89,9 @@ end):bind(SecondaryWindow)
 
 -- TODO: Add documentation
 function SecondaryWindow:show()
-	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
-	return true
+	-- Currently just ensures the app is running. Determine if there are any scenarios where we need to force this.
+	self:app():show()
+	return self
 end
 
 -- TODO: Add documentation

@@ -32,8 +32,7 @@ end
 --- Function
 --- Creates a new Slider
 function Slider:new(parent, finderFn)
-	local o = {_parent = parent, _finder = finderFn}
-	return prop.extend(o, Slider)
+	return prop.extend({_parent = parent, _finder = finderFn}, Slider)
 end
 
 -- TODO: Add documentation
@@ -87,7 +86,7 @@ end
 Slider.minValue = prop.new(function(self)
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXMinValue")
-end)
+end):bind(Slider)
 
 -- TODO: Add documentation
 function Slider:getMinValue()
@@ -97,7 +96,7 @@ end
 Slider.maxValue = prop.new(function(self)
 	local ui = self:UI()
 	return ui and ui:attributeValue("AXMaxValue")
-end)
+end):bind(Slider)
 
 -- TODO: Add documentation
 function Slider:getMaxValue()

@@ -86,7 +86,7 @@ function axutils.childWithDescription(element, value)
 	return axutils.childWith(element, "AXDescription", value)
 end
 
---- cp.ui.axutils.childMatching(element, matcherFn) -> axuielement
+--- cp.ui.axutils.childMatching(element, matcherFn[, index]) -> axuielement
 --- Function
 --- This searches for the first child of the specified element for which the provided function returns `true`.
 --- The function will receive one parameter - the current child.
@@ -94,10 +94,12 @@ end
 --- Parameters:
 ---  * element		- the axuielement
 ---  * matcherFn	- the function which checks if the child matches the requirements.
+---  * index		- the number of matching child to return. Defaults to `1`.
 ---
 --- Returns:
 ---  * The first matching child, or nil if none was found
-function axutils.childMatching(element, matcherFn)
+function axutils.childMatching(element, matcherFn, index)
+	index = index or 1
 	if element then
 		local children = element
 		-- Try to get the children array directly, if present, to optimise the loop.
@@ -106,9 +108,13 @@ function axutils.childMatching(element, matcherFn)
 			children = element:attributeValue("AXChildren") or element
 		end
 		if #children > 0 then
+			local count = 0
 			for i,child in ipairs(children) do
 				if matcherFn(child) then
-					return child
+					count = count + 1
+					if count == index then
+						return child
+					end
 				end
 			end
 		end
@@ -143,6 +149,65 @@ function axutils.childAtIndex(element, index, compareFn)
 	return nil
 end
 
+--- cp.ui.axutils.compareLeftToRight(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is left of element `b`. May be used with `table.sort`.
+---
+--- Parameters
+--- * a	- The first element
+--- * b	- The second element
+---
+--- Returns:
+--- * `true` if `a` is left of `b`.
+function axutils.compareLeftToRight(a, b)
+	return a:frame().x < b:frame().x
+end
+
+--- cp.ui.axutils.compareRightToLeft(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is right of element `b`. May be used with `table.sort`.
+---
+--- Parameters
+--- * a	- The first element
+--- * b	- The second element
+---
+--- Returns:
+--- * `true` if `a` is right of `b`.
+function axutils.compareRightToLeft(a, b)
+	local aFrame, bFrame = a:frame(), b:frame()
+	return aFrame.x + aFrame.w > bFrame.x + bFrame.w
+end
+
+--- cp.ui.axutils.compareTopToBottom(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is above element `b`. May be used with `table.sort`.
+---
+--- Parameters
+--- * a	- The first element
+--- * b	- The second element
+---
+--- Returns:
+--- * `true` if `a` is above `b`.
+function axutils.compareTopToBottom(a, b)
+	return a:frame().y < b:frame().y
+end
+
+
+--- cp.ui.axutils.compareBottomToTop(a, b) -> boolean
+--- Function
+--- Returns `true` if element `a` is below element `b`. May be used with `table.sort`.
+---
+--- Parameters
+--- * a	- The first element
+--- * b	- The second element
+---
+--- Returns:
+--- * `true` if `a` is below `b`.
+function axutils.compareBottomToTop(a, b)
+	local aFrame, bFrame = a:frame(), b:frame()
+	return aFrame.y + aFrame.h > bFrame.y + bFrame.h
+end
+
 --- cp.ui.axutils.childFromLeft(element, index) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted left-to-right.
@@ -154,7 +219,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromLeft(element, index)
-	return axutils.childAtIndex(element, index, function(a, b) return a:frame().x < b:frame().x end)
+	return axutils.childAtIndex(element, index, axutils.compareLeftToRight)
 end
 
 --- cp.ui.axutils.childFromRight(element, index) -> axuielement
@@ -168,12 +233,12 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromRight(element, index)
-	return axutils.childAtIndex(element, index, function(a, b) return a:frame().x > b:frame().x end)
+	return axutils.childAtIndex(element, index, axutils.compareRightToLeft)
 end
 
 --- cp.ui.axutils.childFromTop(element, index) -> axuielement
 --- Function
---- Searches for the child element which is at number `index` when sorted top-to-botom.
+--- Searches for the child element which is at number `index` when sorted top-to-bottom.
 ---
 --- Parameters:
 ---  * element		- the axuielement or array of axuielements
@@ -182,12 +247,12 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromTop(element, index)
-	return axutils.childAtIndex(element, index, function(a, b) return a:frame().y < b:frame().y end)
+	return axutils.childAtIndex(element, index, axutils.compareTopToBottom)
 end
 
---- cp.ui.axutils.childFromTop(element, index) -> axuielement
+--- cp.ui.axutils.childFromBottom(element, index) -> axuielement
 --- Function
---- Searches for the child element which is at number `index` when sorted top-to-botom.
+--- Searches for the child element which is at number `index` when sorted bottom-to-top.
 ---
 --- Parameters:
 ---  * element		- the axuielement or array of axuielements
@@ -196,7 +261,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromBottom(element, index)
-	return axutils.childAtIndex(element, index, function(a, b) return a:frame().y > b:frame().y end)
+	return axutils.childAtIndex(element, index, axutils.compareBottomToTop)
 end
 
 --- cp.ui.axutils.childrenWith(element, name, value) -> axuielement
@@ -231,7 +296,7 @@ end
 --- cp.ui.axutils.childrenMatching(element, matcherFn) -> { axuielement }
 --- Function
 --- This searches for all children of the specified element for which the provided
---- function returns true. The function will receive one parameter - the current child.
+--- function returns `true`. The function will receive one parameter - the current child.
 ---
 --- Parameters:
 ---  * element	- the axuielement

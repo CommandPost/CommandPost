@@ -60,15 +60,15 @@ mod.backgroundRender = prop.new(
         --------------------------------------------------------------------------------
         local panel = fcp:preferencesWindow():playbackPanel()
 
-        --------------------------------------------------------------------------------
-        -- Toggle the checkbox:
-        --------------------------------------------------------------------------------
-        if panel:show() then
-            panel:backgroundRender():toggle()
-        else
-            dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")
-            return false
-        end
+		--------------------------------------------------------------------------------
+		-- Toggle the checkbox:
+		--------------------------------------------------------------------------------
+		if panel:show():isShowing() then
+			panel:backgroundRender():toggle()
+		else
+			dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")
+			return false
+		end
 
         --------------------------------------------------------------------------------
         -- Close the Preferences window:

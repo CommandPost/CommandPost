@@ -17,7 +17,8 @@ local timer				= require("hs.timer")
 local text				= require("cp.web.text")
 
 local escapeXML, unescapeXML = text.escapeXML, text.unescapeXML
-
+local find, len			= string.find, string.len
+local insert			= table.insert
 
 local aliases = {
 	de	= "German",
@@ -91,27 +92,29 @@ function mod.mt:find(language, key)
 	return unescapeXML(self._cache[language][escapeXML(key)])
 end
 
---- cp.strings.source.plist:findKeys(language, value) -> {string}
+--- cp.strings.source.plist:findKeys(language, pattern) -> {string}
 --- Method
---- Finds the array of keys with the matching value in the plist file for the specified `language`, if the plist can be found, and contains matching key.
+--- Finds the array of keys whos value matches the pattern in the plist file for the specified `language`, if the plist can be found, and contains matching key.
 ---
 --- Parameters:
 ---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
----  * `value`		- The value.
+---  * `pattern		- The value pattern.
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround
-function mod.mt:findKeys(language, value)
+function mod.mt:findKeys(language, pattern)
 
 	self._cache = self._cache or {}
 	self._cache[language] = self._cache[language] or self:loadFile(language) or {}
 
 	local keys = {}
 	local cache = self._cache[language]
-	local escapedValue = escapeXML(value)
 	for k,v in pairs(cache) do
-		if v == escapedValue then
-			table.insert(keys, unescapeXML(k))
+		v = unescapeXML(v)
+		-- check if the pattern matches the beginning of the key value
+		local s, e = find(v, pattern)
+		if s == 1 and e == len(v) then
+		insert(keys, unescapeXML(k))
 		end
 	end
 	return keys

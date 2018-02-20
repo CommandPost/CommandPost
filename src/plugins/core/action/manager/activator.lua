@@ -140,21 +140,24 @@ function activator.new(id, manager)
     -- The ID of a single handler to source
     o._allowedHandlers = prop.THIS(nil):bind(o)
 
-    --- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
-    --- Field
-    --- Contains all handlers that are allowed in this activator.
-    o.allowedHandlers = o._manager.handlers:mutate(function(handlers)
-        local allowed = {}
-        local allowedIds = o:_allowedHandlers()
+--- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
+--- Field
+--- Contains all handlers that are allowed in this activator.
+    o.allowedHandlers = o._manager.handlers:mutate(
+        function(original)
+            local handlers = original()
+            local allowed = {}
+            local allowedIds = o:_allowedHandlers()
 
-        for i,handler in pairs(handlers) do
-            if allowedIds == nil or allowedIds[i] then
-                allowed[i] = handler
+            for theID,handler in pairs(handlers) do
+                if allowedIds == nil or allowedIds[theID] then
+                    allowed[theID] = handler
+                end
             end
-        end
 
-        return allowed
-    end):bind(o)
+            return allowed
+        end
+    ):bind(o)
 
     -- plugins.core.action.activator._disabledHandlers <cp.prop: table of booleans>
     -- Field
@@ -508,8 +511,8 @@ function activator.mt:unfavoriteChoice(id)
         self:favoriteChoices(favorites)
         local choice = self:findChoice(id)
         if choice then choice.favorite = nil end
-
         --------------------------------------------------------------------------------
+
         -- Update the chooser list:
         --------------------------------------------------------------------------------
         self:refreshChooser()
