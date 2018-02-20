@@ -82,7 +82,7 @@ function MediaImport:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.export.MediaImport:UI() -> axuielementObject
+--- cp.apple.finalcutpro.import.MediaImport:UI() -> axuielementObject
 --- Method
 --- Returns the Media Import Accessibility Object
 ---
@@ -99,7 +99,7 @@ function MediaImport:UI()
     MediaImport.matches)
 end
 
--- cp.apple.finalcutpro.export.MediaImport:_findWindowUI(windows) -> axuielementObject | nil
+-- cp.apple.finalcutpro.import.MediaImport:_findWindowUI(windows) -> axuielementObject | nil
 -- Method
 -- Finds a matching window UI.
 --
