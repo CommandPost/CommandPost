@@ -1,12 +1,38 @@
-local log			= require("hs.logger").new("test")
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
-local timer			= require("hs.timer")
+--- === cp.test ===
+---
+--- CommandPost Test Scripts.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log			= require("hs.logger").new("test")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local inspect		= require("hs.inspect")
 
-local format		= string.format
-local insert, remove	= table.insert, table.remove
-
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local suites = {}
+
+local format = string.format
+local insert, remove = table.insert, table.remove
 
 local function topSuite()
 	return #suites > 0 and suites[#suites] or nil
@@ -54,8 +80,6 @@ local DEFAULT_HANDLER = {
 
 local handler = DEFAULT_HANDLER
 
-local depth = 0
-
 local function notequal(a, b)
 	return false, format("%s ~= %s", inspect(a), inspect(b))
 end
@@ -88,18 +112,18 @@ end
 
 local function spy(f)
 	local s = {}
-	setmetatable(s, {__call = function(s, ...)
-		s.called = s.called or {}
+	setmetatable(s, {__call = function(ss, ...)
+		ss.called = ss.called or {}
 		local a = args(...)
-		table.insert(s.called, {...})
+		table.insert(ss.called, {...})
 		if f then
 			local r
-			r = args(xpcall(function() f((unpack or table.unpack)(a, 1, a.n)) end, debug.traceback))
+			r = args(xpcall(function() f((unpack or table.unpack)(a, 1, a.n)) end, debug.traceback)) -- luacheck: ignore
 			if not r[1] then
 				s.errors = s.errors or {}
 				s.errors[#s.called] = r[2]
 			else
-				return (unpack or table.unpack)(r, 2, r.n)
+				return (unpack or table.unpack)(r, 2, r.n) -- luacheck: ignore
 			end
 		end
 	end})
@@ -160,7 +184,7 @@ local function newCase(name, executeFn)
 	end
 
 	local o = {
-		parent		= parent,
+		--parent		= parent, -- TODO: David, I'm not sure why this is here?
 		name		= name,
 		executeFn	= executeFn,
 	}
@@ -170,7 +194,7 @@ local function newCase(name, executeFn)
 end
 
 -- disables 'test.case.new' when already running inside a test case.
-local function noCase(name, executeFn)
+local function noCase(name, _)
 	error(format("Use a suite to group multiple test cases: %s", name))
 end
 
@@ -222,7 +246,7 @@ function test.case.mt:run()
 	-- run the test
 	if handler.start then handler.start(self) end
 	result:start()
-	local ok, err = xpcall(function() self.executeFn(restore) end, debug.traceback)
+	local ok, err = xpcall(function() self.executeFn() end, debug.traceback)
 	result:stop()
 
 	if not ok then
@@ -298,7 +322,7 @@ function test.suite.mt:with(...)
 	return self
 end
 
-function matchesFilter(t, i, count, filter)
+local function matchesFilter(t, i, count, filter)
 	if filter == nil or filter == true then
 		return true
 	end
@@ -344,7 +368,7 @@ function test.suite.mt:afterEach(afterFn)
 end
 
 -- allows the default 'run' function to get overridden. Passes in a function
-function test.suite.mt:onRun(onRunFn, ...)
+function test.suite.mt:onRun(onRunFn)
 	self._run = onRunFn
 	return self
 end
@@ -361,18 +385,18 @@ function test.suite.mt:run(...)
 	pushSuite(self)
 	result:start()
 
-	self:_run(function(self, filter, ...)
-		local count = #self.tests
-		for i,t in ipairs(self.tests) do
+	self:_run(function(Self, filter, ...)
+		local count = #Self.tests
+		for i,t in ipairs(Self.tests) do
 			if matchesFilter(t, i, count, filter) then
 				local ok, err = true, nil
-				if self._beforeEach then
-					ok, err = xpcall(self._beforeEach, debug.traceback)
+				if Self._beforeEach then
+					ok, err = xpcall(Self._beforeEach, debug.traceback)
 				end
 				if ok then
 					t(...)
-					if self._afterEach then
-						local ok, err = xpcall(self._afterEach, debug.traceback)
+					if Self._afterEach then
+						ok, err = xpcall(Self._afterEach, debug.traceback)
 						if not ok then
 							if handler.error then
 								handler.error(t, format("Error occurred after test '%s': %s", t.name, err))
@@ -413,7 +437,7 @@ end
 
 function test.config(newHandler, isVerbose)
 	if newHandler then
-		self.handler(newHandler)
+		self.handler(newHandler) -- luacheck: ignore
 	end
 	if verbose ~= nil then
 		verbose = isVerbose

@@ -47,8 +47,8 @@ function mod.enable(value)
 		--------------------------------------------------------------------------------
 		-- Toggle:
 		--------------------------------------------------------------------------------
-		local value = inspector:stabilization()
-		inspector:stabilization(not value)
+		local result = inspector:stabilization()
+		inspector:stabilization(not result)
 	end
 
 end

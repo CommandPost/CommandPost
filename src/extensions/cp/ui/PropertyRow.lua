@@ -1,28 +1,51 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --- === cp.ui.PropertyRow ===
 ---
 --- Represents a list of property rows, typically in a Property Inspector.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log						= require("hs.logger").new("propertyRow")
 
-local prop						= require("cp.prop")
-
-local axutils					= require("cp.ui.axutils")
-local Button					= require("cp.ui.Button")
-
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local geometry					= require("hs.geometry")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils					= require("cp.ui.axutils")
+local Button					= require("cp.ui.Button")
+local prop						= require("cp.prop")
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local PropertyRow = {}
 
+-- TODO: Add documentation
 function PropertyRow.matches(element)
 	return element ~= nil
 end
 
-function PropertyRow:new(parent, labelKey, propertiesUI)
+-- TODO: Add documentation
+-- TODO: Use a function instead of a method.
+function PropertyRow:new(parent, labelKey, propertiesUI) -- luacheck: ignore
 	local o = prop.extend({
 		_parent = parent,
 		_labelKeys = type(labelKey) == "string" and {labelKey} or labelKey,
@@ -30,51 +53,59 @@ function PropertyRow:new(parent, labelKey, propertiesUI)
 		_children = nil,
 	}, PropertyRow)
 
-	o.label = prop(function(self)
-		local app = self:app()
-		for _,key in ipairs(self._labelKeys) do
+	o.label = prop(function(Self)
+		local app = Self:app()
+		for _,key in ipairs(Self._labelKeys) do
 			local label = app:string(key, true)
 			if label then
 				return label
 			end
 		end
-		log.wf("Unabled to find a string for property row titles: %s", string.join(self._labelKeys, ", "))
+		log.wf("Unabled to find a string for property row titles: %s", string.join(self._labelKeys, ", ")) -- luacheck: ignore
 		return nil
 	end):bind(o)
 
 	return o
 end
 
+-- TODO: Add documentation
 function PropertyRow:parent()
 	return self._parent
 end
 
+-- TODO: Add documentation
 function PropertyRow:app()
 	return self:parent():app()
 end
 
+-- TODO: Add documentation
 function PropertyRow:UI()
 	return self:labelUI()
 end
 
+-- TODO: Add documentation
 PropertyRow.isShowing = prop(function(self)
 	return self:UI() ~= nil
 end):bind(PropertyRow)
 
+-- TODO: Add documentation
 function PropertyRow:show()
 	self:parent():show()
 end
 
+-- TODO: Add documentation
 function PropertyRow:labelKeys()
 	return self._labelKeys()
 end
 
+-- TODO: Add documentation
 function PropertyRow:propertiesUI()
 	local parent = self:parent()
 	local propFn = parent[self._propertiesUI]
 	return propFn and propFn(parent) or nil
 end
 
+-- TODO: Add documentation
 function PropertyRow:labelUI()
 	return axutils.cache(self, "_labelUI", function()
 		local ui = self:propertiesUI()
@@ -89,6 +120,7 @@ function PropertyRow:labelUI()
 	end)
 end
 
+-- TODO: Add documentation
 function PropertyRow:children()
 	local label = self:labelUI()
 	if not label then
@@ -119,6 +151,7 @@ function PropertyRow:children()
 	return children
 end
 
+-- TODO: Add documentation
 function PropertyRow:resetButton()
 	if not self._resetButton then
 		self._resetButton = Button:new(self, function()
@@ -133,6 +166,7 @@ function PropertyRow:resetButton()
 	return self._resetButton
 end
 
+-- TODO: Add documentation
 function PropertyRow:reset()
 	self:resetButton():press()
 	return self

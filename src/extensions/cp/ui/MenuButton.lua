@@ -13,9 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
 
-local find							= string.find
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils						= require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
@@ -23,6 +25,8 @@ local find							= string.find
 --
 --------------------------------------------------------------------------------
 local MenuButton = {}
+
+local find = string.find
 
 -- TODO: Add documentation
 function MenuButton.matches(element)
@@ -111,7 +115,7 @@ function MenuButton:setValue(value)
 	local ui = self:UI()
 	if ui and not ui:attributeValue("AXValue") == value then
 		local items = ui:doPress()[1]
-		for i,item in items do
+		for _,item in items do
 			if item:title() == value then
 				item:doPress()
 				return

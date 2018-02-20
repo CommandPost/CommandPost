@@ -13,10 +13,17 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("colorMIDI")
 
-local fcp				= require("cp.apple.finalcutpro")
-local tools				= require("cp.tools")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log             = require("hs.logger").new("colorMIDI")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp               = require("cp.apple.finalcutpro")
+local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -36,17 +43,17 @@ local mod = {}
 ---  * None
 function mod.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- MIDI Controller Value: 		   0 to 127
-	-- Percentage Slider:			-255 to 255
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- MIDI Controller Value:          0 to 127
+    -- Percentage Slider:           -255 to 255
+    --------------------------------------------------------------------------------
 
-	local wheel = {
-		[1] = "Master",
-		[2] = "Shadows",
-		[3] = "Midtones",
-		[4] = "Highlights",
-	}
+    local wheel = {
+        [1] = "Master",
+        [2] = "Shadows",
+        [3] = "Midtones",
+        [4] = "Highlights",
+    }
 
     local colors = {
         [1] = "Red",
@@ -54,7 +61,7 @@ function mod.init(deps)
         [3] = "Blue",
     }
 
-	for i=1, 4 do
+    for i=1, 4 do
         for v=1, 3 do
             deps.manager.controls:new("wheels" .. wheel[i] .. colors[v], {
                 group = "fcpx",
@@ -72,9 +79,9 @@ function mod.init(deps)
                 end,
             })
         end
-	end
+    end
 
-	return mod
+    return mod
 end
 
 --------------------------------------------------------------------------------
@@ -83,18 +90,18 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.midi.controls.colorwheels",
-	group			= "finalcutpro",
-	dependencies	= {
-		["core.midi.manager"] = "manager",
-	}
+    id              = "finalcutpro.midi.controls.colorwheels",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.midi.manager"] = "manager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod.init(deps)
+    return mod.init(deps)
 end
 
 return plugin

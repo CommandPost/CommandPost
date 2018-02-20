@@ -13,8 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log							= require("hs.logger").new("textField")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
@@ -53,7 +60,8 @@ end
 ---
 --- Returns:
 --- * The new `TextField`.
-function TextField:new(parent, finderFn, convertFn)
+-- TODO: Use a function instead of a method.
+function TextField:new(parent, finderFn, convertFn) -- luacheck: ignore
 	return prop.extend({
 		_parent = parent,
 		_finder = finderFn,
@@ -140,6 +148,7 @@ function TextField:loadLayout(layout)
 	end
 end
 
+-- TODO: Add documentation
 function TextField.__call(self, parent, value)
 	if parent and parent ~= self:parent() then
 		value = parent

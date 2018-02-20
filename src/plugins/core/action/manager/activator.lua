@@ -143,21 +143,21 @@ function activator.new(id, manager)
 --- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
 --- Field
 --- Contains all handlers that are allowed in this activator.
-	o.allowedHandlers = o._manager.handlers:mutate(
-		function(original)
-			local handlers = original()
-			local allowed = {}
-			local allowedIds = o:_allowedHandlers()
+    o.allowedHandlers = o._manager.handlers:mutate(
+        function(original)
+            local handlers = original()
+            local allowed = {}
+            local allowedIds = o:_allowedHandlers()
 
-			for id,handler in pairs(handlers) do
-				if allowedIds == nil or allowedIds[id] then
-					allowed[id] = handler
-				end
-			end
+            for id,handler in pairs(handlers) do
+                if allowedIds == nil or allowedIds[id] then
+                    allowed[id] = handler
+                end
+            end
 
-			return allowed
-		end
-	):bind(o)
+            return allowed
+        end
+    ):bind(o)
 
     -- plugins.core.action.activator._disabledHandlers <cp.prop: table of booleans>
     -- Field

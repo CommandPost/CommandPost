@@ -13,11 +13,21 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("radioGroup")
-local inspect						= require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log							= require("hs.logger").new("radioGroup")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+--local inspect						= require("hs.inspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-
 local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -51,7 +61,8 @@ end
 ---
 --- Returns:
 --- * The new `RadioGroup` instance.
-function RadioGroup:new(parent, finderFn, cached)
+-- TODO: Use a function instead of a method.
+function RadioGroup:new(parent, finderFn, cached) -- luacheck: ignore
 	local o = prop.extend({
 		_parent = parent,
 		_finder = finderFn,

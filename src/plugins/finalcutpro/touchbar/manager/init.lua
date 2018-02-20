@@ -18,7 +18,6 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
-local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
