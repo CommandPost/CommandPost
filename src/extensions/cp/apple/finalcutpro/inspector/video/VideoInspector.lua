@@ -13,12 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("videoInspect")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
-
 local id								= require("cp.apple.finalcutpro.ids") "Inspector"
+local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -36,7 +42,8 @@ local VideoInspector = {}
 ---
 --- Returns:
 ---  * A VideoInspector object
-function VideoInspector:new(parent)
+-- TODO: Use a function instead of a method.
+function VideoInspector:new(parent) -- luacheck: ignore
 	local o = {
 		_parent = parent,
 		_child = {}
@@ -135,10 +142,10 @@ function VideoInspector:stabilization(value)
 			if self:parent():selectedTab() == "Video" then
 				local inspectorContent = axutils.childWithID(ui, id "DetailsPanel")
 				if inspectorContent then
-					for id,child in ipairs(inspectorContent[1][1]) do
+					for theID,child in ipairs(inspectorContent[1][1]) do
 						if child:attributeValue("AXValue") == app:string("FFStabilizationEffect") then
-							if inspectorContent[1][1][id - 1] then
-								local checkbox = inspectorContent[1][1][id - 1]
+							if inspectorContent[1][1][theID - 1] then
+								local checkbox = inspectorContent[1][1][theID - 1]
 								if checkbox then
 									local checkboxValue = checkbox:attributeValue("AXValue")
 									if value == nil then

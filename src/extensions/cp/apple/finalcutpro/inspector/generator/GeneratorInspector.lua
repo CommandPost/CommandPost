@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("generatorInspect")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                               = require("hs.logger").new("generatorInspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -29,16 +36,17 @@ local GeneratorInspector = {}
 --- Creates a new GeneratorInspector object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A GeneratorInspector object
-function GeneratorInspector:new(parent)
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
-	return prop.extend(o, GeneratorInspector)
+-- TODO: Use a function instead of a method.
+function GeneratorInspector:new(parent) -- luacheck: ignore
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+    return prop.extend(o, GeneratorInspector)
 end
 
 --- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:parent() -> table
@@ -51,7 +59,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function GeneratorInspector:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:app() -> table
@@ -64,7 +72,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function GeneratorInspector:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------

@@ -62,20 +62,6 @@ local CORRECTION_TYPE                   = "Color Wheels"
 local ColorWheels = {}
 
 --------------------------------------------------------------------------------
--- CONSTANTS:
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.color.ColorWheels.WHEELS -> table
---- Constant
---- Table containing all the different types of Color Wheels
--- ColorWheels.WHEELS = {
---     MASTER          	= "PAE4WayCorrectorViewControllerMaster",
---     SHADOWS         	= "PAE4WayCorrectorViewControllerShadows",
---     MIDTONES        	= "PAE4WayCorrectorViewControllerMidtones",
---     HIGHLIGHTS      	= "PAE4WayCorrectorViewControllerHighlights",
--- }
-
---------------------------------------------------------------------------------
 -- PUBLIC FUNCTIONS & METHODS:
 --------------------------------------------------------------------------------
 

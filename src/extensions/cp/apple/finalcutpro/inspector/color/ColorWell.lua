@@ -22,14 +22,14 @@ local log                               = require("hs.logger").new("colorWell")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local color								= require("hs.drawing.color")
-local inspect							= require("hs.inspect")
+local color                             = require("hs.drawing.color")
+local inspect                           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local prop                              = require("cp.prop")
-local axutils							= require("cp.ui.axutils")
+local axutils                           = require("cp.ui.axutils")
 
 --------------------------------------------------------------------------------
 --
@@ -38,28 +38,55 @@ local axutils							= require("cp.ui.axutils")
 --------------------------------------------------------------------------------
 local ColorWell = {}
 
-local asRGB, asHSB						= color.asRGB, color.asHSB
+local asRGB, asHSB = color.asRGB, color.asHSB
+local min, cos, sin, atan, floor, sqrt, modf = math.min, math.cos, math.sin, math.atan, math.floor, math.sqrt, math.modf
 
-local min, cos, sin, atan, floor, sqrt, modf	= math.min, math.cos, math.sin, math.atan, math.floor, math.sqrt, math.modf
-
--- the hue shift currently being output from AXColorWell values.
+-- HUE_SHIFT -> number
+-- Constant
+-- The hue shift currently being output from AXColorWell values.
 local HUE_SHIFT = 4183333/6000000
--- anything below this value is considered to be 0
+
+-- COLOR_THRESHOLD -> number
+-- Constant
+-- Anything below this value is considered to be 0
 local COLOR_THRESHOLD = 1/25500
 
+-- BRIGHTNESS_CLAMP -> number
+-- Constant
+-- Brightness Clamp as a number.
+local BRIGHTNESS_CLAMP = 85/255
+
+-- toColorValue(value) -> number
+-- Function
+-- Converts a color value.
+--
+-- Parameters:
+--  * `value` - The value to convert.
+--
+-- Returns:
+--  * Color value as number.
 local function toColorValue(value)
-	value = tonumber(value)
-	if value < COLOR_THRESHOLD then
-		value = 0
-	end
-	return value
+    value = tonumber(value)
+    if value < COLOR_THRESHOLD then
+        value = 0
+    end
+    return value
 end
 
+-- cleanColor(value) -> number
+-- Function
+-- Gets Clean Color.
+--
+-- Parameters:
+--  * `value` - The value to convert.
+--
+-- Returns:
+--  * Color value as number.
 local function cleanColor(value)
-	for k,v in pairs(value) do
-		value[k] = toColorValue(v)
-	end
-	return value
+    for k,v in pairs(value) do
+        value[k] = toColorValue(v)
+    end
+    return value
 end
 
 -- colorWellValueToTable(value) -> table | nil
@@ -76,26 +103,26 @@ local function colorWellValueToColor(value)
         log.ef("Invalid AXColorWell value: %s", inspect(value))
         return nil
     end
-    local valueToTable = string.split(value, " ")
+    local valueToTable = string.split(value, " ") -- luacheck: ignore
     if not valueToTable or #valueToTable ~= 5 then
         return nil
-	end
-	local rgbValue = {
+    end
+    local rgbValue = {
         red = toColorValue(valueToTable[2]),
-		green = toColorValue(valueToTable[3]),
-		blue = toColorValue(valueToTable[4]),
-		alpha = toColorValue(valueToTable[5]),
-	}
+        green = toColorValue(valueToTable[3]),
+        blue = toColorValue(valueToTable[4]),
+        alpha = toColorValue(valueToTable[5]),
+    }
 
-	-- NOTE: There is a bug in AXColorWell which shifts the output value color from the actual value.
-	-- This code compensates for that shift.
-	local hsbValue = asHSB(rgbValue)
+    -- NOTE: There is a bug in AXColorWell which shifts the output value color from the actual value.
+    -- This code compensates for that shift.
+    local hsbValue = asHSB(rgbValue)
     local theHue = hsbValue.hue
     theHue = theHue + HUE_SHIFT
     theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
-	hsbValue.hue = theHue
-	rgbValue = cleanColor(asRGB(hsbValue))
-	log.df("value: hsb: %s, rgb: %s", inspect(hsbValue), inspect(rgbValue))
+    hsbValue.hue = theHue
+    rgbValue = cleanColor(asRGB(hsbValue))
+    log.df("value: hsb: %s, rgb: %s", inspect(hsbValue), inspect(rgbValue))
 
     return rgbValue
 end
@@ -110,11 +137,11 @@ end
 -- Returns:
 --  * A string or `nil` if an error occurred.
 local function colorToColorWellValue(value)
-	if value then
-		value = asRGB(value)
-		return string.format("rgb %g %g %g %g", value.red, value.green, value.blue, value.alpha)
-	end
-	return ""
+    if value then
+        value = asRGB(value)
+        return string.format("rgb %g %g %g %g", value.red, value.green, value.blue, value.alpha)
+    end
+    return ""
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.minPosition
@@ -132,12 +159,12 @@ ColorWell.maxPosition = 176
 --- Checks if the specified element is a Color Well.
 ---
 --- Parameters:
---- * element	- The element to check
+--- * element   - The element to check
 ---
 --- Returns:
 --- * `true` if the element is a Color Well.
 function ColorWell.matches(element)
-	return axutils.isValid(element) and element:attributeValue("AXRole") == "AXColorWell"
+    return axutils.isValid(element) and element:attributeValue("AXRole") == "AXColorWell"
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell:new(parent, finderFn) -> ColorWell
@@ -154,80 +181,147 @@ end
 -- TODO: Use a Method instead of a Function.
 function ColorWell:new(parent, finderFn) -- luacheck: ignore
 
-	local o = prop.extend({
-		_parent = parent,
-		_finder = finderFn,
-	}, ColorWell)
+    local o = prop.extend({
+        _parent = parent,
+        _finder = finderFn,
+    }, ColorWell)
 
-	return o
+    return o
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell:parent() -> table
+--- Method
+--- Returns the Color Well parent table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object as a table
 function ColorWell:parent()
-	return self._parent
+    return self._parent
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell:app() -> cp.apple.finalcutpro
+--- Method
+--- Returns the Final Cut Pro object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro object.
 function ColorWell:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell:UI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `hs._asm.axuielement` object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil`.
 function ColorWell:UI()
-	return axutils.cache(self, "_ui",
-		function()
-			return self._finder()
-		end
-	)
+    return axutils.cache(self, "_ui",
+        function()
+            return self._finder()
+        end
+    )
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell:isShowing() -> boolean
+--- Method
+--- Is the Color Well currently showing?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if showing, otherwise `false`
 function ColorWell:isShowing()
-	return self:UI() ~= nil
+    return self:UI() ~= nil
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:show() -> cp.apple.finalcutpro.inspector.color.ColorInspector
+--- Method
+--- Shows the Color Well.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `cp.apple.finalcutpro.inspector.color.ColorInspector` object
 function ColorWell:show()
-	self:parent():show()
-	return self
+    self:parent():show()
+    return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.value <cp.prop: string>
+--- Field
+--- Gets the Color Well Value.
 ColorWell.value = prop(
-	function(self)
-		local ui = self:UI()
-		return ui and colorWellValueToColor(ui:attributeValue("AXValue")) or nil
-	end,
-	function(value, self)
-		local ui = self:UI()
-		if ui then
-			ui:setAttributeValue("AXValue", colorToColorWellValue(value))
-		end
-	end
+    function(self)
+        local ui = self:UI()
+        return ui and colorWellValueToColor(ui:attributeValue("AXValue")) or nil
+    end,
+    function(value, self)
+        local ui = self:UI()
+        if ui then
+            ui:setAttributeValue("AXValue", colorToColorWellValue(value))
+        end
+    end
 ):bind(ColorWell)
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.frame <cp.prop: string>
+--- Field
+--- Gets the Color Well Frame.
 ColorWell.frame = prop(
-	function(self)
-		local ui = self:UI()
-		return ui and ui:attributeValue("AXFrame")
-	end,
-	function(value, self)
-		local ui = self:UI()
-		if ui then
-			ui:setAttributeValue("AXFrame", value)
-		end
-	end
+    function(self)
+        local ui = self:UI()
+        return ui and ui:attributeValue("AXFrame")
+    end,
+    function(value, self)
+        local ui = self:UI()
+        if ui then
+            ui:setAttributeValue("AXFrame", value)
+        end
+    end
 ):bind(ColorWell)
 
-local BRIGHTNESS_CLAMP = 85/255
-
+-- round(value) -> number
+-- Function
+-- Rounds a value the nearest number.
+--
+-- Parameters:
+--  * `value` - The value as number.
+--
+-- Returns:
+--  * The rounded number.
 local function round(value)
-	return floor(value + 0.5)
+    return floor(value + 0.5)
 end
 
+-- centre(frame) -> table
+-- Function
+-- Returns the centred frame.
+--
+-- Parameters:
+--  * frame - The frame to centre.
+--
+-- Returns:
+--  * The centered frame.
 local function centre(frame)
-	return {x = floor(frame.x + frame.w/2), y = floor(frame.y + frame.h/2)}
+    return {x = floor(frame.x + frame.w/2), y = floor(frame.y + frame.h/2)}
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.centre <cp.prop: point; read-only>
 --- Field
 --- The center point of the ColorWell. A table with `{x=..., y=...}`.
 ColorWell.centre = prop(function(self)
-	return centre(self:frame())
+    return centre(self:frame())
 end):bind(ColorWell)
 
 -- toXY(c, frame, absolute, clamp) -> table
@@ -238,29 +332,29 @@ end):bind(ColorWell)
 -- the XY position will be where where it would be if not clamped.
 --
 -- Parameters:
--- * c			- The hs.drawing.color to position
--- * frame		- The frame for the outer boundary of the color well cirle.
--- * absolute	- If `true`, the returned position will be the absolute screen position. Otherwise, it will be relative to the centre of the color well.
--- * clamp		- If `true`, the returned position will be clamped to the color well circle.
+--  * c          - The hs.drawing.color to position
+--  * frame      - The frame for the outer boundary of the color well cirle.
+--  * absolute   - If `true`, the returned position will be the absolute screen position. Otherwise, it will be relative to the centre of the color well.
+--  * clamp      - If `true`, the returned position will be clamped to the color well circle.
 --
 -- Returns:
--- * The position of the color, relative to the centre of the color well.
+--  * The position of the color, relative to the centre of the color well.
 local toXY = function(c, frame, absolute, clamp)
-	c = asHSB(c)
+    c = asHSB(c)
 
-	local radius = min(frame.w/2, frame.h/2) / (clamp and 1 or BRIGHTNESS_CLAMP)
-	local h = 1 - c.hue + HUE_SHIFT
-	local b = clamp and min(BRIGHTNESS_CLAMP, c.brightness)/BRIGHTNESS_CLAMP or c.brightness
-	local a = h * math.pi * 2
-	local x, y = b * cos(a), b * sin(a)
+    local radius = min(frame.w/2, frame.h/2) / (clamp and 1 or BRIGHTNESS_CLAMP)
+    local h = 1 - c.hue + HUE_SHIFT
+    local b = clamp and min(BRIGHTNESS_CLAMP, c.brightness)/BRIGHTNESS_CLAMP or c.brightness
+    local a = h * math.pi * 2
+    local x, y = b * cos(a), b * sin(a)
 
-	local pos = {x = round(x*radius), y = round(y*radius)}
-	if absolute then
-		local ctr = centre(frame)
-		pos.x, pos.y = pos.x + ctr.x, pos.y + ctr.y
-		-- _highlightPoint(pos)
-	end
-	return pos
+    local pos = {x = round(x*radius), y = round(y*radius)}
+    if absolute then
+        local ctr = centre(frame)
+        pos.x, pos.y = pos.x + ctr.x, pos.y + ctr.y
+        -- _highlightPoint(pos)
+    end
+    return pos
 end
 
 -- fromXY(pos, frame, absolute) -> table
@@ -269,24 +363,24 @@ end
 -- The return value should be multiplied by the radius of the particular color well.
 --
 -- Parameters:
--- * pos		- The `{x=?, y=?}` position of the location.
--- * frame		- The frame for the outer boundary of the color well cirle.
--- * absolute	- If `true`, the position and frame are considered to be absolute screen positions.
+--  * pos        - The `{x=?, y=?}` position of the location.
+--  * frame      - The frame for the outer boundary of the color well cirle.
+--  * absolute   - If `true`, the position and frame are considered to be absolute screen positions.
 --
 -- Returns:
--- * The `hs.drawing.color` for the position, relative to the color well.
+--  * The `hs.drawing.color` for the position, relative to the color well.
 local fromXY = function(pos, frame, absolute)
-	local radius = min(frame.w/2, frame.h/2) / BRIGHTNESS_CLAMP
-	local x, y = pos.x, pos.y
-	if absolute then
-		local ctr = centre(frame)
-		x, y = x - ctr.x, y - ctr.y
-	end
+    local radius = min(frame.w/2, frame.h/2) / BRIGHTNESS_CLAMP
+    local x, y = pos.x, pos.y
+    if absolute then
+        local ctr = centre(frame)
+        x, y = x - ctr.x, y - ctr.y
+    end
 
-	local h, b, _
-	h, b = atan(y, x) / ( math.pi * 2), sqrt(x * x + y * y) / radius
-	_, h = modf(1 - h + HUE_SHIFT)
-	b = min(1.0, b)
+    local h, b, _
+    h, b = atan(y, x) / ( math.pi * 2), sqrt(x * x + y * y) / radius
+    _, h = modf(1 - h + HUE_SHIFT)
+    b = min(1.0, b)
     return asRGB({hue=h, saturation=1, brightness=b})
 end
 
@@ -295,19 +389,19 @@ end
 --- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
 --- actual Color Well circle, which only extends to 85 out of 255 values.
 ColorWell.colorScreenPosition = prop(
-	function(self)
-		local frame = self:frame()
-		if frame then
-			return toXY(self:value(), frame, true)
-		end
-		return nil
-	end,
-	function(position, self)
-		local frame = self:frame()
-		if frame then
-			self:value(fromXY(position, frame, true))
-		end
-	end
+    function(self)
+        local frame = self:frame()
+        if frame then
+            return toXY(self:value(), frame, true)
+        end
+        return nil
+    end,
+    function(position, self)
+        local frame = self:frame()
+        if frame then
+            self:value(fromXY(position, frame, true))
+        end
+    end
 ):bind(ColorWell)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.colorScreenPosition <cp.prop: hs.geometry.point>
@@ -315,57 +409,57 @@ ColorWell.colorScreenPosition = prop(
 --- Relative X/Y position for the current color value of the Color Well. This will be a `point` table,
 --- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
 ColorWell.colorPosition = prop(
-	function(self)
-		local frame = self:frame()
-		if frame then
-			return toXY(self:value(), frame, false)
-		end
-		return nil
-	end,
-	function(position, self)
-		local frame = self:frame()
-		if frame then
-			self:value(fromXY(position, frame, false))
-		end
-	end
+    function(self)
+        local frame = self:frame()
+        if frame then
+            return toXY(self:value(), frame, false)
+        end
+        return nil
+    end,
+    function(position, self)
+        local frame = self:frame()
+        if frame then
+            self:value(fromXY(position, frame, false))
+        end
+    end
 ):bind(ColorWell)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.puckScreenPosition <cp.prop: hs.geometry.point>
 --- Field
 --- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
 ColorWell.puckScreenPosition = prop(
-	function(self)
-		local frame = self:frame()
-		if frame then
-			return toXY(self:value(), frame, true, true)
-		end
-		return nil
-	end,
-	function(position, self)
-		local frame = self:frame()
-		if frame then
-			self:value(fromXY(position, frame, true))
-		end
-	end
+    function(self)
+        local frame = self:frame()
+        if frame then
+            return toXY(self:value(), frame, true, true)
+        end
+        return nil
+    end,
+    function(position, self)
+        local frame = self:frame()
+        if frame then
+            self:value(fromXY(position, frame, true))
+        end
+    end
 ):bind(ColorWell)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: hs.geometry.point>
 --- Field
 --- Relative X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
 ColorWell.puckPosition = prop(
-	function(self)
-		local frame = self:frame()
-		if frame then
-			return toXY(self:value(), frame, false, true)
-		end
-		return nil
-	end,
-	function(position, self)
-		local frame = self:frame()
-		if frame then
-			self:value(fromXY(position, frame, false))
-		end
-	end
+    function(self)
+        local frame = self:frame()
+        if frame then
+            return toXY(self:value(), frame, false, true)
+        end
+        return nil
+    end,
+    function(position, self)
+        local frame = self:frame()
+        if frame then
+            self:value(fromXY(position, frame, false))
+        end
+    end
 ):bind(ColorWell)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell:nudge(x, y) -> self
@@ -374,16 +468,16 @@ ColorWell.puckPosition = prop(
 --- positive `y` values shift down. Only integer values have an effect.
 ---
 --- Parameters:
---- * x		- The number of pixels to shift horizontally.
---- * y		- The number of pixels to shift vertically.
+---  * `x` - The number of pixels to shift horizontally.
+---  * `y` - The number of pixels to shift vertically.
 ---
 --- Returns:
---- * The `ColorWell` instance.
+---  * The `ColorWell` instance.
 function ColorWell:nudge(x, y)
-	local pos = self:colorPosition()
-	pos.x, pos.y = pos.x + x, pos.y + y
-	self:colorPosition(pos)
-	return self
+    local pos = self:colorPosition()
+    pos.x, pos.y = pos.x + x, pos.y + y
+    self:colorPosition(pos)
+    return self
 end
 
 return ColorWell

@@ -17,12 +17,12 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                           = require("hs.logger").new("PrefsDlg")
+--local log                           = require("hs.logger").new("PrefsDlg")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local inspect                       = require("hs.inspect")
+--local inspect                       = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -69,7 +69,8 @@ end
 ---
 --- Returns:
 ---  * A new CommandEditor object.
-function CommandEditor:new(app)
+-- TODO: Use a function instead of a method.
+function CommandEditor:new(app) -- luacheck: ignore
     local o = {_app = app}
     return prop.extend(o, CommandEditor)
 end
@@ -113,8 +114,9 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` or `nil`
-function CommandEditor:_findWindowUI(windows)
-    for i,window in ipairs(windows) do
+-- TODO: Use a function instead of a method.
+function CommandEditor:_findWindowUI(windows) -- luacheck: ignore
+    for _,window in ipairs(windows) do
         if CommandEditor.matches(window) then return window end
     end
     return nil
@@ -141,7 +143,7 @@ function CommandEditor:show()
         -- open the window
         if self:app():menuBar():isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
             self:app():menuBar():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
-            local ui = just.doUntil(function() return self:UI() end)
+            just.doUntil(function() return self:UI() end)
         end
     end
     return self
@@ -247,9 +249,9 @@ end
 ---
 --- Returns:
 ---  * None
-function CommandEditor:unwatch(id)
+function CommandEditor:unwatch(theID)
     if self._watcher then
-        self._watcher:unwatch(id)
+        self._watcher:unwatch(theID)
     end
 end
 

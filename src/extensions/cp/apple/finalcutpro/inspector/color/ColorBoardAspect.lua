@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.inspect.color.ColorBoardAspect ===
+--- === cp.apple.finalcutpro.inspector.color.ColorBoardAspect ===
 ---
 --- Represents a particular aspect of the color board (Color/Saturation/Exposure).
 
@@ -35,20 +35,36 @@ local ColorBoardAspect = {}
 
 local format = string.format
 
---- cp.apple.finalcutpro.inspect.color.ColorBoardAspect.ids -> table
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.ids -> table
 --- Constant
 --- A table containing the list of aspect IDs ("color", "saturation", "exposure").
 ColorBoardAspect.ids = {"color", "saturation", "exposure"}
 
---- cp.apple.finalcutpro.inspect.color.ColorBoard.matches() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.matches(element) -> boolean
 --- Function
 --- Checks if the element is a ColorBoardAspect.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function ColorBoardAspect.matches(element)
     return element and element:attributeValue("AXRole") == "AXGroup"
 end
 
--- TODO: Add documentation
-function ColorBoardAspect:new(parent, index)
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:new(app) -> ColorBoardAspect
+--- Function
+--- Creates a new `ColorBoardAspect` object.
+---
+--- Parameters:
+---  * parent - The parent object.
+---  * index - The Color Board Aspect Index.
+---
+--- Returns:
+---  * A new `ColorBoardAspect object.
+-- TODO: Use a function instead of a method.
+function ColorBoardAspect:new(parent, index) -- luacheck: ignore
     if index < 1 or index > #ColorBoardAspect.ids then
         error(format("The index must be between 1 and %s: %s", #ColorBoardAspect.ids, inspect(index)))
     end
@@ -61,17 +77,41 @@ function ColorBoardAspect:new(parent, index)
     return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:parent() -> object
+--- Method
+--- Returns the Parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object.
 function ColorBoardAspect:parent()
     return self._parent
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:app() -> App
+--- Method
+--- Returns the App instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function ColorBoardAspect:app()
     return self:parent():app()
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:UI() -> axuielementObject
+--- Method
+--- Returns the Color Board Aspect Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` or `nil`
 function ColorBoardAspect:UI()
     local parent = self:parent()
     -- only return the if this is the currently-selected aspect
@@ -80,7 +120,15 @@ function ColorBoardAspect:UI()
     end
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:show() -> cp.apple.finalcutpro.inspector.color.ColorBoardAspect
+--- Method
+--- Shows the Color Board Aspect
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `cp.apple.finalcutpro.inspector.color.ColorBoardAspect` object for method chaining.
 function ColorBoardAspect:show()
     if not self:isShowing() then
         local parent = self:parent()
@@ -91,27 +139,67 @@ function ColorBoardAspect:show()
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:isShowing() -> boolean
+--- Method
+--- Gets whether or not the Color Board Aspect is showing.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if showing or `false` if not.
 function ColorBoardAspect:isShowing()
     return self:UI() ~= nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:index() -> number
+--- Method
+--- Gets the Color Board Aspect index.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A number.
 function ColorBoardAspect:index()
     return self._index
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:id() -> string
+--- Method
+--- Gets the Color Board Aspect ID.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The ID as string.
 function ColorBoardAspect:id()
     return ColorBoardAspect.ids[self._index]
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:selected() -> boolean
+--- Method
+--- Is the Color Board Aspect selected?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if selected otherwise `false`.
 function ColorBoardAspect:selected()
     return self:isShowing()
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:reset() -> cp.apple.finalcutpro.inspector.color.ColorBoardAspect
+--- Method
+--- Resets the Color Board Aspect.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `cp.apple.finalcutpro.inspector.color.ColorBoardAspect` object for method chaining.
 function ColorBoardAspect:reset()
     self:show()
     self:master():reset()
@@ -121,51 +209,91 @@ function ColorBoardAspect:reset()
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:master() -> ColorPuck
+--- Method
+--- Gets the Master ColorPuck object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Master ColorPuck object.
 function ColorBoardAspect:master()
     if not self._master then
         self._master = ColorPuck:new(
-            self, ColorPuck.range.master,
+            self, ColorPuck.RANGE.master,
             {"PAECorrectorEffectMaster", "cb master puck display name"}
         )
     end
     return self._master
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:shadows() -> ColorPuck
+--- Method
+--- Gets the Shadows ColorPuck object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Shadows ColorPuck object.
 function ColorBoardAspect:shadows()
     if not self._shadows then
         self._shadows = ColorPuck:new(
-            self, ColorPuck.range.shadows,
+            self, ColorPuck.RANGE.shadows,
             {"PAECorrectorEffectShadows", "cb shadow puck display name"}
         )
     end
     return self._shadows
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:midtones() -> ColorPuck
+--- Method
+--- Gets the Midtones ColorPuck object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Midtones ColorPuck object.
 function ColorBoardAspect:midtones()
     if not self._midtones then
         self._midtones = ColorPuck:new(
-            self, ColorPuck.range.midtones,
+            self, ColorPuck.RANGE.midtones,
             {"PAECorrectorEffectMidtones", "cb midtone puck display name"}
         )
     end
     return self._midtones
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:highlights() -> ColorPuck
+--- Method
+--- Gets the Highlights ColorPuck object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Highlights ColorPuck object.
 function ColorBoardAspect:highlights()
     if not self._highlights then
         self._highlights = ColorPuck:new(
-            self, ColorPuck.range.highlights,
+            self, ColorPuck.RANGE.highlights,
             {"PAECorrectorEffectHighlights", "cb highlight puck display name"}
         )
     end
     return self._highlights
 end
 
--- TODO: Add documentation
+-- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:__tostring() -> string
+-- Method
+-- Gets the Color Board Aspect ID.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The ID as string.
 function ColorBoardAspect:__tostring()
     return self:id()
 end

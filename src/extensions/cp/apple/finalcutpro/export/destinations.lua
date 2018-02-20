@@ -83,6 +83,7 @@ local function watch()
         mod._watcher = pathwatcher.new(mod.PREFERENCES_PATH, function(files)
             for _,file in pairs(files) do
                 if file:sub(string.len(mod.DESTINATIONS_FILE)*-1) == mod.DESTINATIONS_FILE then
+                  local err
                     mod._details, err = load()
                     if err then
                         log.wf("Unable to load FCPX User Destinations")
@@ -105,7 +106,7 @@ end
 ---  * The table of Share Destinations.
 function mod.details()
     if not mod._details then
-        mod._details, err = load()
+        mod._details = load()
         watch()
     end
     return mod._details

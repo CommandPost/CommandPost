@@ -88,7 +88,7 @@ local pathwatcher								= require("hs.pathwatcher")
 local timer										= require("hs.timer")
 
 local v											= require("semver")
-local _											= require("moses")
+local moses										= require("moses")
 
 local just										= require("cp.just")
 local plist										= require("cp.plist")
@@ -774,7 +774,7 @@ function App:menuBar()
 		-- Add a finder for Share Destinations:
 		----------------------------------------------------------------------------------------
 		menuBar:addMenuFinder(function(parentItem, path, childName)
-			if _.isEqual(path, {"File", "Share"}) then
+			if moses.isEqual(path, {"File", "Share"}) then
 				childName = childName:match("(.*)…$") or childName
 				local index = destinations.indexOf(childName)
 				if index then
@@ -797,7 +797,7 @@ function App:menuBar()
 
 		menuBar:addMenuFinder(function(parentItem, path, childName)
 			for _,item in ipairs(missingMenuMap) do
-				if _.isEqual(path, item.path) and childName == item.child then
+				if moses.isEqual(path, item.path) and childName == item.child then
 					return axutils.childWith(parentItem, "AXTitle", self:string(item.key))
 				end
 			end

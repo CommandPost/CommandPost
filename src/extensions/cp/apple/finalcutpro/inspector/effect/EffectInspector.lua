@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("effectInspect")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                               = require("hs.logger").new("effectInspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -29,16 +36,17 @@ local EffectInspector = {}
 --- Creates a new EffectInspector object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A EffectInspector object
-function EffectInspector:new(parent)
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
-	return prop.extend(o, EffectInspector)
+-- TODO: Use a function instead of a method.
+function EffectInspector:new(parent) -- luacheck: ignore
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+    return prop.extend(o, EffectInspector)
 end
 
 --- cp.apple.finalcutpro.inspector.effect.EffectInspector:parent() -> table
@@ -51,7 +59,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function EffectInspector:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.effect.EffectInspector:app() -> table
@@ -64,7 +72,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function EffectInspector:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------

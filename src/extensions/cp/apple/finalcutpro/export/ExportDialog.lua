@@ -17,12 +17,12 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                           = require("hs.logger").new("PrefsDlg")
+--local log                           = require("hs.logger").new("PrefsDlg")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local inspect                       = require("hs.inspect")
+--local inspect                       = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -68,7 +68,8 @@ end
 ---
 --- Returns:
 ---  * A new ExportDialog object.
-function ExportDialog:new(app)
+-- TODO: Use a function instead of a method.
+function ExportDialog:new(app) -- luacheck: ignore
     local o = {_app = app}
     return prop.extend(o, ExportDialog)
 end
@@ -112,8 +113,9 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` or `nil`
-function ExportDialog:_findWindowUI(windows)
-    for i,window in ipairs(windows) do
+-- TODO: Use a function instead of a method.
+function ExportDialog:_findWindowUI(windows) -- luacheck: ignore
+    for _,window in ipairs(windows) do
         if ExportDialog.matches(window) then return window end
     end
     return nil
@@ -142,7 +144,7 @@ function ExportDialog:show()
         --------------------------------------------------------------------------------
         if self:app():menuBar():isEnabled({"File", "Share", 1}) then
             self:app():menuBar():selectMenu({"File", "Share", 1})
-            local ui = just.doUntil(function() return self:UI() end)
+            just.doUntil(function() return self:UI() end)
         end
     end
     return self
@@ -265,9 +267,9 @@ end
 ---
 --- Returns:
 ---  * None
-function ExportDialog:unwatch(id)
+function ExportDialog:unwatch(theID)
     if self._watcher then
-        self._watcher:unwatch(id)
+        self._watcher:unwatch(theID)
     end
 end
 

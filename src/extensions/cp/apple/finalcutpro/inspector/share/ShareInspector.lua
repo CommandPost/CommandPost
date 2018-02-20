@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("shareInspect")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                             = require("hs.logger").new("shareInspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -29,16 +36,17 @@ local ShareInspector = {}
 --- Creates a new ShareInspector object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A ShareInspector object
-function ShareInspector:new(parent)
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
-	return prop.extend(o, ShareInspector)
+-- TODO: Use a function instead of a method.
+function ShareInspector:new(parent) -- luacheck: ignore
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+    return prop.extend(o, ShareInspector)
 end
 
 --- cp.apple.finalcutpro.inspector.share.ShareInspector:parent() -> table
@@ -51,7 +59,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function ShareInspector:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.share.ShareInspector:app() -> table
@@ -64,7 +72,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function ShareInspector:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------

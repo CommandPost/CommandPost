@@ -13,9 +13,16 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("videoInspect")
 
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                               = require("hs.logger").new("titleInspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -29,16 +36,17 @@ local TitleInspector = {}
 --- Creates a new TitleInspector object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
 ---  * A TitleInspector object
-function TitleInspector:new(parent)
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
-	return prop.extend(o, TitleInspector)
+-- TODO: Use a function instead of a method.
+function TitleInspector:new(parent) -- luacheck: ignore
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+    return prop.extend(o, TitleInspector)
 end
 
 --- cp.apple.finalcutpro.inspector.title.TitleInspector:parent() -> table
@@ -51,7 +59,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function TitleInspector:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.title.TitleInspector:app() -> table
@@ -64,7 +72,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function TitleInspector:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------

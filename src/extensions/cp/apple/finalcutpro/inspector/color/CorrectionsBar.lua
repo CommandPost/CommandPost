@@ -47,6 +47,15 @@ CorrectionsBar.CORRECTION_TYPES = {
     ["Hue/Saturation Curves"]   = "PAEHSCurvesEffectDisplayName",
 }
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function CorrectionsBar.matches(element)
     if element and element:attributeValue("AXRole") == "AXGroup" then
         local children = element:children()
@@ -59,6 +68,15 @@ function CorrectionsBar.matches(element)
     return false
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:new(parent) -> CorrectionsBar
+--- Function
+--- Creates a new Media Import object.
+---
+--- Parameters:
+---  * parent - The parent object.
+---
+--- Returns:
+---  * A new CorrectionsBar object.
 -- TODO: Use a function instead of a method.
 function CorrectionsBar:new(parent) -- luacheck: ignore
     local o = {
@@ -68,14 +86,41 @@ function CorrectionsBar:new(parent) -- luacheck: ignore
     return o
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:parent() -> table
+--- Method
+--- Returns the Corrections Bar's parent table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object as a table
 function CorrectionsBar:parent()
     return self._parent
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:app() -> table
+--- Method
+--- Returns the `cp.apple.finalcutpro` app table
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The application object as a table
 function CorrectionsBar:app()
     return self:parent():app()
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:UI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `hs._asm.axuielement` object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil`.
 function CorrectionsBar:UI()
     return axutils.cache(self, "_ui",
         function()
@@ -91,10 +136,28 @@ function CorrectionsBar:UI()
     )
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:isShowing() -> boolean
+--- Method
+--- Is the Corrections Bar currently showing?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if showing, otherwise `false`
 function CorrectionsBar:isShowing()
     return self:UI() ~= nil
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:menuButton() -> MenuButton
+--- Method
+--- Returns the menu button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `menuButton` object.
 function CorrectionsBar:menuButton()
     if not self._menuButton then
         self._menuButton = MenuButton:new(self, function()
@@ -104,16 +167,37 @@ function CorrectionsBar:menuButton()
     return self._menuButton
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:findCorrectionLabel(correctionType) -> string
+--- Method
+--- Returns Correction Label.
+---
+--- Parameters:
+---  * correctionType - The correction type as string.
+---
+--- Returns:
+---  * The correction label as string.
 function CorrectionsBar:findCorrectionLabel(correctionType)
     return self:app():string(self.CORRECTION_TYPES[correctionType])
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:activate(correctionType, number) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
+--- Method
+--- Activates a correction type.
+---
+--- Parameters:
+---  * `correctionType` - The correction type as string.
+---  * `number` - The number of the correction.
+---
+--- Returns:
+---  *  `cp.apple.finalcutpro.inspector.color.CorrectionsBar` object.
 function CorrectionsBar:activate(correctionType, number)
-    number = number or 1 -- default to the first corrector.
+    number = number or 1 -- Default to the first corrector.
 
     self:show()
 
-    -- see if the correction type/number combo exists already
+    --------------------------------------------------------------------------------
+    -- See if the correction type/number combo exists already:
+    --------------------------------------------------------------------------------
     local correctionText = self:findCorrectionLabel(correctionType)
     if not correctionText then
         log.ef("Invalid Correction Type: %s", correctionType)
@@ -123,7 +207,9 @@ function CorrectionsBar:activate(correctionType, number)
     if menuButton:isShowing() then
         local pattern = "%s*"..correctionText.." "..number
         if not menuButton:selectItemMatching(pattern) then
-            -- try adding a new correction of the specified type.
+            --------------------------------------------------------------------------------
+            -- Try adding a new correction of the specified type:
+            --------------------------------------------------------------------------------
             pattern = "%+"..correctionText
             if not menuButton:selectItemMatching(pattern) then
                 log.ef("Invalid Correction Type: %s", correctionType)

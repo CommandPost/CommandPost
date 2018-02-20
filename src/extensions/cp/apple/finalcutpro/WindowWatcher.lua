@@ -139,7 +139,7 @@ function WindowWatcher:watch(events)
     return id
 end
 
---- cp.apple.finalcutpro.WindowWatcher:unwatch() -> bool
+--- cp.apple.finalcutpro.WindowWatcher:unwatch() -> none
 --- Method
 --- Removes the watch with the specified ID
 ---

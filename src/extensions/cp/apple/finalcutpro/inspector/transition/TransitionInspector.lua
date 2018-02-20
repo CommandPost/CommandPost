@@ -13,8 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("transInspect")
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log								= require("hs.logger").new("transInspect")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -33,7 +40,8 @@ local TransitionInspector = {}
 ---
 --- Returns:
 ---  * A TransitionInspector object
-function TransitionInspector:new(parent)
+-- TODO: Use a function instead of a method.
+function TransitionInspector:new(parent) -- luacheck: ignore
 	local o = {
 		_parent = parent,
 		_child = {}
