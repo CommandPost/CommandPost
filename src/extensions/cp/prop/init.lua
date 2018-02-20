@@ -869,13 +869,13 @@ end
 function prop.mt:mutate(getFn, setFn)
     -- create the mutant, which will pull from the original.
     local mutantGetFn = function(owner, Prop)
-        local result = getFn(prop._original, owner, Prop)
+        local result = getFn(Prop._original, owner, Prop)
         return result
     end
     local mutantSetFn = nil
     if setFn then
         mutantSetFn = function(newValue, owner, Prop)
-            setFn(newValue, prop._original, owner, Prop)
+            setFn(newValue, Prop._original, owner, Prop)
         end
     end
 
