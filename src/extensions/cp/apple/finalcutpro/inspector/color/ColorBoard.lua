@@ -206,7 +206,10 @@ end
 --- Returns:
 ---  * A `hs._asm.axuielement` object
 function ColorBoard:UI()
-    return self:parent():correctorUI()
+    return axutils.cache(self, "_ui", function()
+        local ui = self:parent():correctorUI()
+        return ColorBoard.matches(ui) and ui or nil
+    end, ColorBoard.matches)
 end
 
 function ColorBoard:contentUI()

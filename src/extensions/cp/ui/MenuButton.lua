@@ -56,6 +56,18 @@ function MenuButton:UI()
 	MenuButton.matches)
 end
 
+function MenuButton:isShowing()
+	return self:UI() ~= nil
+end
+
+function MenuButton:show()
+	local parent = self:parent()
+	if parent.show then
+		self:parent():show()
+	end
+	return self
+end
+
 -- TODO: Add documentation
 function MenuButton:selectItem(index)
 	local ui = self:UI()
