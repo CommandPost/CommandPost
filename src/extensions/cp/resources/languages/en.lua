@@ -319,6 +319,11 @@ return {
         --------------------------------------------------------------------------------
 
             --------------------------------------------------------------------------------
+            -- Donations:
+            --------------------------------------------------------------------------------
+            donateToDevelopers                  =           "Paypal Donation to Developers",
+
+            --------------------------------------------------------------------------------
             -- Update:
             --------------------------------------------------------------------------------
             updateAvailable                     =           "Update Available",
@@ -994,6 +999,7 @@ return {
         core_console_label                                      =   "Console",
         core_helpandsupport_credits_label                       =   "Help & Support: Credits",
         core_helpandsupport_developerguide_label                =   "Help & Support: Developer Guide",
+        core_helpandsupport_donate_label                        =   "Help & Support: Donate",
         core_helpandsupport_feedback_label                      =   "Help & Support: Feedback",
         core_helpandsupport_userguide_label                     =   "Help & Support: User Guide",
         core_language_label                                     =   "Language Module",

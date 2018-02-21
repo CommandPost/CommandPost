@@ -146,7 +146,7 @@ end
 ---
 --- Returns:
 ---  * A ColorBoard object
--- TODO: Use a Method instead of a Function.
+-- TODO: Use a Function instead of a Method.
 function ColorBoard:new(parent) -- luacheck: ignore
     local o = {
         _parent = parent,

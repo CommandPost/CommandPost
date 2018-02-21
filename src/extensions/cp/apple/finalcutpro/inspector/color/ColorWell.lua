@@ -178,7 +178,7 @@ end
 ---
 --- Returns:
 --- * A new `ColorWell` instance.
--- TODO: Use a Method instead of a Function.
+-- TODO: Use a Function instead of a Method.
 function ColorWell:new(parent, finderFn) -- luacheck: ignore
 
     local o = prop.extend({
