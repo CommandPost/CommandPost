@@ -13,9 +13,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log							= require("hs.logger").new("primaryWindow")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local inspect						= require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
@@ -27,7 +38,6 @@ local Window						= require("cp.ui.Window")
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.inspector.Inspector")
-local ColorBoard					= require("cp.apple.finalcutpro.main.ColorBoard")
 
 --------------------------------------------------------------------------------
 --
@@ -407,7 +417,6 @@ function PrimaryWindow:alert()
 	return self._alert
 end
 
-
 -----------------------------------------------------------------------
 --
 -- WATCHERS:
@@ -432,8 +441,7 @@ function PrimaryWindow:watch(events)
 	if not self._watcher then
 		self._watcher = WindowWatcher:new(self)
 	end
-
-	self._watcher:watch(events)
+	return self._watcher:watch(events)
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow:unwatch() -> string

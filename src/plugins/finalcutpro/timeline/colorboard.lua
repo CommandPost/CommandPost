@@ -157,6 +157,7 @@ function plugin.init(deps)
 
     mod.playhead = deps.playhead
 
+    local fcpxCmds = deps.fcpxCmds
 	local colorBoard = fcp:colorBoard()
 
 	local colorBoardAspects = {
@@ -174,57 +175,59 @@ function plugin.init(deps)
 
 	for i,puck in ipairs(pucks) do
 		local iWord = tools.numberToWord(i)
-        deps.fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
+        fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
             :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
             :groupedBy("colorboard")
             :activatedBy():ctrl():option():cmd(puck.shortcut)
             :whenActivated(function() puck.fn( colorBoard:current() ):select() end)
 
-        deps.fcpxCmds:add("cpPuck" .. iWord .. "Mouse")
+        fcpxCmds:add("cpPuck" .. iWord .. "Mouse")
             :titled(i18n("cpPuckMouse_customTitle", {count = i}))
             :groupedBy("colorboard")
             :whenActivated(function() mod.startMousePuck(puck.fn( colorBoard:current() )) end)
             :whenReleased(function() mod.stopMousePuck() end)
 
 		for _, aspect in ipairs(colorBoardAspects) do
-			-- find the puck for the current aspect (eg. "color > master")
+		    --------------------------------------------------------------------------------
+			-- Find the puck for the current aspect (eg. "color > master"):
+			--------------------------------------------------------------------------------
 			local puckControl = puck.fn( aspect.control )
 			if not puckControl then
 				log.ef("Unable to find the %s puck control for the %s aspect.", puck.title, aspect.title)
 			end
 
-            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord)
+            fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord)
                 :titled(i18n("cpPuck_customTitle", {count = i, panel = aspect.title}))
                 :groupedBy("colorboard")
                 :whenActivated(function() puckControl:select() end)
 
-            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Up")
+            fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Up")
                 :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Up"}))
                 :groupedBy("colorboard")
                 :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.percent, 1) end)
                 :whenReleased(function() mod.stopShiftingPuck() end)
 
-            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Down")
+            fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Down")
                 :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Down"}))
                 :groupedBy("colorboard")
                 :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.percent, -1) end)
                 :whenReleased(function() mod.stopShiftingPuck() end)
 
             if aspect.hasAngle then
-                deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Left")
+                fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Left")
                     :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Left"}))
                     :groupedBy("colorboard")
                     :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.angle, -1) end)
                     :whenReleased(function() mod.stopShiftingPuck() end)
 
-                deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Right")
+                fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Right")
                     :titled(i18n("cpPuckDirection_customTitle", {count = i, panel = aspect.title, direction = "Right"}))
                     :groupedBy("colorboard")
                     :whenActivated(function() mod.startShiftingPuck(puckControl, puckControl.angle, 1) end)
                     :whenReleased(function() mod.stopShiftingPuck() end)
             end
 
-            deps.fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Mouse")
+            fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord .. "Mouse")
                 :titled(i18n("cpPuckMousePanel_customTitle", {count = i, panel = aspect.title}))
                 :groupedBy("colorboard")
                 :whenActivated(function() mod.startMousePuck(puckControl) end)
@@ -232,10 +235,36 @@ function plugin.init(deps)
         end
     end
 
-    deps.fcpxCmds
+    -- TODO: This currently doesn't work:
+
+    fcpxCmds
         :add("cpToggleColorBoard")
         :groupedBy("colorboard")
         :whenActivated(mod.nextAspect)
+
+    fcpxCmds
+        :add("cpResetPuck1")
+        :titled("Reset Color Board Puck 1")
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:current():master():reset() end)
+
+    fcpxCmds
+        :add("cpResetPuck2")
+        :titled("Reset Color Board Puck 2")
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:current():shadows():reset() end)
+
+    fcpxCmds
+        :add("cpResetPuck3")
+        :titled("Reset Color Board Puck 3")
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:current():midtones():reset() end)
+
+    fcpxCmds
+        :add("cpResetPuck4")
+        :titled("Reset Color Board Puck 4")
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:current():highlights():reset() end)
 
     return mod
 
