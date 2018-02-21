@@ -72,7 +72,7 @@ end
 ---
 --- Returns:
 --- * A new `ColorWheel` instance.
--- TODO: Use a Method instead of a Function.
+-- TODO: Use a Function instead of a Method.
 function ColorWheel:new(parent, type) -- luacheck: ignore
 	local o = prop.extend({
 		_parent = parent,

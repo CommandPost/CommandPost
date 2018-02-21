@@ -79,7 +79,7 @@ ColorCurves.CURVES = {
 ---
 --- Returns:
 ---  * A ColorInspector object
--- TODO: Use a Method instead of a Function.
+-- TODO: Use a Function instead of a Method.
 function ColorCurves:new(parent) -- luacheck: ignore
 
     local o = {
