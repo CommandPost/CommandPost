@@ -158,7 +158,7 @@ end
 --  * None
 local function watchUpdate(data, name)
     if name then
-        log.df("Clipboard updated. Adding '%s' to history.", name)
+        --log.df("Clipboard updated. Adding '%s' to history.", name)
         mod.addHistoryItem(data, name)
     end
 end

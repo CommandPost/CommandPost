@@ -184,10 +184,12 @@ function mod.init(actionmanager)
     mod._choices = config.get("plugins.finalcutpro.menu.menuaction.choices", {})
     local delay = config.get("plugins.finalcutpro.menu.menuaction.loadDelay", 5)
 
-    -- watch for restarts
+    --------------------------------------------------------------------------------
+    -- Watch for restarts:
+    --------------------------------------------------------------------------------
     fcp.isRunning:watch(function()
         idle.queue(delay, function()
-            log.df("Reloading Final Cut Menu Items")
+            --log.df("Reloading Final Cut Menu Items")
             mod.reload()
         end)
     end, true)

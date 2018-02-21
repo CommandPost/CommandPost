@@ -415,7 +415,7 @@ function mod.start()
             --------------------------------------------------------------------------------
             -- Cache Scroll Direction:
             --------------------------------------------------------------------------------
-            log.df("Global Preferences Updated. Refreshing scroll direction cache.")
+            --log.df("Global Preferences Updated. Refreshing scroll direction cache.")
             mod.scrollDirection = mouse.scrollDirection()
         end
     end):start()
