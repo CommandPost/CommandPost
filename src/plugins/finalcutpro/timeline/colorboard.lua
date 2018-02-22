@@ -15,21 +15,23 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log								= require("hs.logger").new("colorBoard")
+
+--------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("p_colorboard")
-
 local eventtap                          = require("hs.eventtap")
 local timer                             = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local dialog                            = require("cp.dialog")
-local tools                             = require("cp.tools")
-
-local fcp                               = require("cp.apple.finalcutpro")
 local ColorBoardAspect					= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
+local dialog                            = require("cp.dialog")
+local fcp                               = require("cp.apple.finalcutpro")
+local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -50,7 +52,6 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.startShiftingPuck(puck, property, amount)
-
     if not puck:select():isShowing() then
         dialog.displayNotification(i18n("pleaseSelectSingleClipInTimeline"))
         return false
@@ -97,11 +98,11 @@ function mod.startMousePuck(puck)
         return false
     end
 
-	-- start the puck.
+    --------------------------------------------------------------------------------
+	-- Start the puck:
+	--------------------------------------------------------------------------------
 	puck:start()
-
 	mod.colorPuck = puck
-
 	return true
 end
 
@@ -121,8 +122,16 @@ function mod.stopMousePuck()
     end
 end
 
+--- plugins.finalcutpro.timeline.colorboard.nextAspect() -> none
+--- Function
+--- Goes to the next Color Board aspect.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.nextAspect()
-
     --------------------------------------------------------------------------------
     -- Show the Color Board if it's hidden:
     --------------------------------------------------------------------------------
@@ -131,9 +140,7 @@ function mod.nextAspect()
         dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
         return "Failed"
     end
-
 	colorBoard:nextAspect()
-
 end
 
 --------------------------------------------------------------------------------
@@ -235,37 +242,125 @@ function plugin.init(deps)
         end
     end
 
-    -- TODO: This currently doesn't work:
-
+    --------------------------------------------------------------------------------
+    -- Toggle Color Board Panel:
+    --------------------------------------------------------------------------------
     fcpxCmds
         :add("cpToggleColorBoard")
         :groupedBy("colorboard")
         :whenActivated(mod.nextAspect)
 
+    --------------------------------------------------------------------------------
+    -- TODO: Eventually David will probably want to clean up the below code.
+    --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- Reset Color Board - Current Pucks:
+    --------------------------------------------------------------------------------
     fcpxCmds
-        :add("cpResetPuck1")
-        :titled("Reset Color Board Puck 1")
+        :add("cpResetColorBoardCurrentMaster")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("master"))
         :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():master():reset() end)
+        :whenActivated(function() colorBoard:current():show():master():reset() end)
 
     fcpxCmds
-        :add("cpResetPuck2")
-        :titled("Reset Color Board Puck 2")
+        :add("cpResetColorBoardCurrentShadows")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("shadows"))
         :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():shadows():reset() end)
+        :whenActivated(function() colorBoard:current():show():shadows():reset() end)
 
     fcpxCmds
-        :add("cpResetPuck3")
-        :titled("Reset Color Board Puck 3")
+        :add("cpResetColorBoardCurrentMidtones")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("midtones"))
         :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():midtones():reset() end)
+        :whenActivated(function() colorBoard:current():show():midtones():reset() end)
 
     fcpxCmds
-        :add("cpResetPuck4")
-        :titled("Reset Color Board Puck 4")
+        :add("cpResetColorBoardCurrentHighlights")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("highlights"))
         :groupedBy("colorboard")
-        :whenActivated(function() colorBoard:current():highlights():reset() end)
+        :whenActivated(function() colorBoard:current():show():highlights():reset() end)
 
+    --------------------------------------------------------------------------------
+    -- Reset Color Board - Color Pucks:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("cpResetColorBoardColorMaster")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("master"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:color():show():master():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardColorShadows")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("shadows"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:color():show():shadows():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardColorMidtones")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("midtones"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:color():show():midtones():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardColorHighlights")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("color") .. " " .. i18n("highlights"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:color():show():highlights():reset() end)
+
+    --------------------------------------------------------------------------------
+    -- Reset Color Board - Saturation Pucks:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("cpResetColorBoardSaturationMaster")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("master"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:saturation():show():master():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardSaturationShadows")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("shadows"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:saturation():show():shadows():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardSaturationMidtones")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("midtones"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:saturation():show():midtones():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardSaturationHighlights")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("saturation") .. " " .. i18n("highlights"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:saturation():show():highlights():reset() end)
+
+    --------------------------------------------------------------------------------
+    -- Reset Color Board - Exposure Pucks:
+    --------------------------------------------------------------------------------
+    fcpxCmds
+        :add("cpResetColorBoardExposureMaster")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("master"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:exposure():show():master():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardExposureShadows")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("shadows"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:exposure():show():shadows():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardExposureMidtones")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("midtones"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:exposure():show():midtones():reset() end)
+
+    fcpxCmds
+        :add("cpResetColorBoardExposureHighlights")
+        :titled(i18n("reset") .. " " .. i18n("colorBoard") .. " " .. i18n("exposure") .. " " .. i18n("highlights"))
+        :groupedBy("colorboard")
+        :whenActivated(function() colorBoard:exposure():show():highlights():reset() end)
     return mod
 
 end

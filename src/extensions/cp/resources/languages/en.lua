@@ -8,247 +8,243 @@ return {
         appName                             =           "CommandPost",
 
         --------------------------------------------------------------------------------
-        -- GENERIC:
+        -- APPLICATIONS:
         --------------------------------------------------------------------------------
-
-            --------------------------------------------------------------------------------
-            -- Apps:
-            --------------------------------------------------------------------------------
-            apple                               =           "Apple",
-            finalCutPro                         =           "Final Cut Pro",
-
-            --------------------------------------------------------------------------------
-            -- Numbers:
-            --------------------------------------------------------------------------------
-            one                                 =           "1",
-            two                                 =           "2",
-            three                               =           "3",
-            four                                =           "4",
-            five                                =           "5",
-            six                                 =           "6",
-            seven                               =           "7",
-            eight                               =           "8",
-            nine                                =           "9",
-            ten                                 =           "10",
-
-            --------------------------------------------------------------------------------
-            -- Common Strings:
-            --------------------------------------------------------------------------------
-            button                              =           "Button",
-            options                             =           "Options",
-            open                                =           "Open",
-            secs                                =
-            {
-                one                             =           "sec",
-                other                           =           "secs",
-            },
-            mins                                =
-            {
-                one                             =           "min",
-                other                           =           "mins",
-            },
-            version                             =           "Version",
-            unassigned                          =           "Unassigned",
-            enabled                             =           "Enabled",
-            disabled                            =           "Disabled",
-            show                                =           "Show",
-            clearList                           =           "Clear List",
-            feedback                            =           "Feedback",
-            settings                            =           "Settings",
-            launch                              =           "Launch",
-            location                            =           "Location",
-            visibility                          =           "Visibility",
-            always                              =           "Always",
-            none                                =           "None",
-            icon                                =           "Icon",
-            action                              =           "Action",
-            application                         =           "Application",
-            tip                                 =           "Tip",
-            device                              =           "Device",
-            select                              =           "Select",
-            clear                               =           "Clear",
-            number                              =           "Number",
-            validate                            =           "Validate",
-            success                             =           "Success",
-            unknownError                        =           "Unknown Error",
-            color                               =           "Color",
-
-            --------------------------------------------------------------------------------
-            -- Generic Final Cut Pro Strings:
-            --------------------------------------------------------------------------------
-            colorBoard                          =           "Color Board",
-            percentage                          =           "Percentage",
-            angle                               =           "Angle",
-            puck                                =           "Puck",
-            color                               =           "Color",
-            saturation                          =           "Saturation",
-            exposure                            =           "Exposure",
+        apple                               =           "Apple",
+        finalCutPro                         =           "Final Cut Pro",
 
         --------------------------------------------------------------------------------
-        -- DIALOG BOXES:
+        -- NUMBERS:
         --------------------------------------------------------------------------------
+        one                                 =           "1",
+        two                                 =           "2",
+        three                               =           "3",
+        four                                =           "4",
+        five                                =           "5",
+        six                                 =           "6",
+        seven                               =           "7",
+        eight                               =           "8",
+        nine                                =           "9",
+        ten                                 =           "10",
 
-            --------------------------------------------------------------------------------
-            -- Buttons:
-            --------------------------------------------------------------------------------
-            ok                                  =           "OK",
-            yes                                 =           "Yes",
-            no                                  =           "No",
-            done                                =           "Done",
-            cancel                              =           "Cancel",
-            continue                            =           "Continue",
-            quit                                =           "Quit",
-            send                                =           "Send",
-            skip                                =           "Skip",
-            close                               =           "Close",
+        --------------------------------------------------------------------------------
+        -- COMMON STRINGS:
+        --------------------------------------------------------------------------------
+        action                              =           "Action",
+        always                              =           "Always",
+        application                         =           "Application",
+        button                              =           "Button",
+        clear                               =           "Clear",
+        clearList                           =           "Clear List",
+        color                               =           "Color",
+        device                              =           "Device",
+        disabled                            =           "Disabled",
+        enabled                             =           "Enabled",
+        feedback                            =           "Feedback",
+        icon                                =           "Icon",
+        item                                =
+        {
+            one                             =           "item",
+            other                           =           "items"
+        },
+        launch                              =           "Launch",
+        location                            =           "Location",
+        none                                =           "None",
+        number                              =           "Number",
+        mins                                =
+        {
+            one                             =           "min",
+            other                           =           "mins",
+        },
+        open                                =           "Open",
+        options                             =           "Options",
+        reset                               =           "Reset",
+        secs                                =
+        {
+            one                             =           "sec",
+            other                           =           "secs",
+        },
+        select                              =           "Select",
+        settings                            =           "Settings",
+        show                                =           "Show",
+        success                             =           "Success",
+        tip                                 =           "Tip",
+        unassigned                          =           "Unassigned",
+        unknownError                        =           "Unknown Error",
+        validate                            =           "Validate",
+        version                             =           "Version",
+        visibility                          =           "Visibility",
 
-            --------------------------------------------------------------------------------
-            -- Common Error Messages:
-            --------------------------------------------------------------------------------
-            somethingHasGoneWrong               =           "Opps! Something has gone wrong!",
-            unexpectedFatalError                =           "I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
-            unexpectedError                     =           "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?",
-            commonErrorMessageStart             =           "The following error has occurred:",
-            commonErrorMessageEnd               =           "Would you like to submit a bug report?",
-            sendBugReport                       =           "Send Bug Report",
+        --------------------------------------------------------------------------------
+        -- GENERIC FINAL CUT PRO STRINGS:
+        --------------------------------------------------------------------------------
+        angle                               =           "Angle",
+        color                               =           "Color",
+        colorBoard                          =           "Color Board",
+        exposure                            =           "Exposure",
+        highlights                          =           "Highlights",
+        master                              =           "Master",
+        midtones                            =           "Midtones",
+        percentage                          =           "Percentage",
+        puck                                =           "Puck",
+        saturation                          =           "Saturation",
+        shadows                             =           "Shadows",
 
-            --------------------------------------------------------------------------------
-            -- Common Strings:
-            --------------------------------------------------------------------------------
-            pleaseTryAgain                      =           "Please try again.",
-            doYouWantToContinue                 =           "Do you want to continue?",
+        --------------------------------------------------------------------------------
+        -- GENERIC BUTTONS:
+        --------------------------------------------------------------------------------
+        ok                                  =           "OK",
+        yes                                 =           "Yes",
+        no                                  =           "No",
+        done                                =           "Done",
+        cancel                              =           "Cancel",
+        continue                            =           "Continue",
+        quit                                =           "Quit",
+        send                                =           "Send",
+        skip                                =           "Skip",
+        close                               =           "Close",
 
-            --------------------------------------------------------------------------------
-            -- Welcome Screen:
-            --------------------------------------------------------------------------------
-            setupTitle                          =           "CommandPost Setup",
-            introTagLine                        =           "Workflow Toolkit for Professional Editors",
-            introText                           =           "Thank you for installing CommandPost. This guide will help you set things up.",
-            finalcutproUnsupportedVersionTitle  =           "Unsupported Version",
-            finalcutproUnsupportedVersionText   =           "CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
-            outroTitle                          =           "CommandPost is now setup and ready to go!",
-            outroText                           =           "You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
-            commandSetText                      =           "CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
-            commandSetUseFCPX                   =           "Use Final Cut Pro",
-            commandSetUseCP                     =           "Use CommandPost",
-            accessibilityNote                   =           "CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
-            enableAccessibility                 =           "Enable Accessibility",
+        --------------------------------------------------------------------------------
+        -- COMMON ERROR MESSAGES:
+        --------------------------------------------------------------------------------
+        somethingHasGoneWrong               =           "Opps! Something has gone wrong!",
+        unexpectedFatalError                =           "I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?",
+        unexpectedError                     =           "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?",
+        commonErrorMessageStart             =           "The following error has occurred:",
+        commonErrorMessageEnd               =           "Would you like to submit a bug report?",
+        sendBugReport                       =           "Send Bug Report",
 
-            --------------------------------------------------------------------------------
-            -- Feedback Module:
-            --------------------------------------------------------------------------------
-            bugReport                           =           "Bug Report",
-            support                             =           "Support",
-            featureRequest                      =           "Feature Request",
-            whatWentWrong                       =           "What went wrong?",
-            whatDidYouExpectToHappen            =           "What did you expect to happen?",
-            whatStepsToRecreate                 =           "What are the steps to recreate the problem?",
-            whatFeatures                        =           "What feature would you like to see implemented or improved?",
-            howCanWeHelp                        =           "How can we help you?",
-            emailResponse                       =           "If you want an email response you will need to enter your email address:",
-            includeContactInfo                  =           "Include contact info",
-            attachLog                           =           "Attach Error Log",
-            attachScreenshot                    =           "Attach Screenshot",
-            fullName                            =           "Full Name",
-            emailAddress                        =           "Email Address",
-            feedbackSuccess                     =           "Your feedback was submitted successfully.\n\nThank you!",
-            feedbackError                       =           "An error occurred trying to communicate with the CommandPost servers.\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
+        --------------------------------------------------------------------------------
+        -- COMMON MESSAGES:
+        --------------------------------------------------------------------------------
+        pleaseTryAgain                      =           "Please try again.",
+        doYouWantToContinue                 =           "Do you want to continue?",
 
-            --------------------------------------------------------------------------------
-            -- Notifications:
-            --------------------------------------------------------------------------------
-            keywordPresetsSaved                 =           "Your Keywords have been saved to Preset",
-            keywordPresetsRestored              =           "Your Keywords have been restored to Preset",
-            scrollingTimelineDeactivated        =           "Scrolling Timeline Deactivated",
-            scrollingTimelineActivated          =           "Scrolling Timeline Activated",
-            playheadLockActivated               =           "Playhead Lock Activated",
-            playheadLockDeactivated             =           "Playhead Lock Deactivated",
-            pleaseSelectSingleClipInTimeline    =           "Please select a single clip in the Timeline.",
-            colorBoardCouldNotBeActivated       =           "The Color Board could not be activated. Please make sure a single clip in the timeline is selected and try again.",
+        --------------------------------------------------------------------------------
+        -- WELCOME SCREEN:
+        --------------------------------------------------------------------------------
+        accessibilityNote                   =           "CommandPost makes use of the built-in macOS Accessibility Frameworks<br />to control other applications, such as Final Cut Pro.<br /><br />To continue, please press <strong>Enable Accessibility</strong> below and<br />follow the prompts to allow CommandPost accessibility access.",
+        commandSetText                      =           "CommandPost has the <strong>optional</strong> ability to let you to manage and control its shortcuts through the Final Cut Pro Command Editor, instead of its built-in Shortcut Manager.<br /><br />Using this feature requires your administrator password and requires Final Cut Pro to restart.<br /><br />",
+        commandSetUseCP                     =           "Use CommandPost",
+        commandSetUseFCPX                   =           "Use Final Cut Pro",
+        enableAccessibility                 =           "Enable Accessibility",
+        finalcutproUnsupportedVersionText   =           "CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
+        finalcutproUnsupportedVersionTitle  =           "Unsupported Version",
+        introTagLine                        =           "Workflow Toolkit for Professional Editors",
+        introText                           =           "Thank you for installing CommandPost. This guide will help you set things up.",
+        outroText                           =           "You can access CommandPost via the satellite icon<br />in your system’s menubar at the top right corner of the screen.",
+        outroTitle                          =           "CommandPost is now setup and ready to go!",
+        setupTitle                          =           "CommandPost Setup",
 
-            --------------------------------------------------------------------------------
-            -- Error Log:
-            --------------------------------------------------------------------------------
-            clearLog                            =           "Clear Log",
-            alwaysOnTop                         =           "Always On Top",
-            reload                              =           "Reload",
+        --------------------------------------------------------------------------------
+        -- FEEDBACK MODULE:
+        --------------------------------------------------------------------------------
+        bugReport                           =           "Bug Report",
+        support                             =           "Support",
+        featureRequest                      =           "Feature Request",
+        whatWentWrong                       =           "What went wrong?",
+        whatDidYouExpectToHappen            =           "What did you expect to happen?",
+        whatStepsToRecreate                 =           "What are the steps to recreate the problem?",
+        whatFeatures                        =           "What feature would you like to see implemented or improved?",
+        howCanWeHelp                        =           "How can we help you?",
+        emailResponse                       =           "If you want an email response you will need to enter your email address:",
+        includeContactInfo                  =           "Include contact info",
+        attachLog                           =           "Attach Error Log",
+        attachScreenshot                    =           "Attach Screenshot",
+        fullName                            =           "Full Name",
+        emailAddress                        =           "Email Address",
+        feedbackSuccess                     =           "Your feedback was submitted successfully.\n\nThank you!",
+        feedbackError                       =           "An error occurred trying to communicate with the CommandPost servers.\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
 
-            --------------------------------------------------------------------------------
-            -- Scan Final Cut Pro:
-            --------------------------------------------------------------------------------
-            scanFinalCutPro                     =           "Test Final Cut Pro",
-            scanFinalCutProWarning              =           "Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
-            scanFinalCutProDone                 =           "Final Cut Pro was scanned successfully.",
-            updateEffectsListFailed             =           "Unfortunately the Effects List was not successfully updated.",
-            scanFinalCutProDescription          =           "This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes only.",
+        --------------------------------------------------------------------------------
+        -- NOTIFICATIONS:
+        --------------------------------------------------------------------------------
+        colorBoardCouldNotBeActivated       =           "The Color Board could not be activated. Please make sure a single clip in the timeline is selected and try again.",
+        keywordPresetsRestored              =           "Your Keywords have been restored to Preset",
+        keywordPresetsSaved                 =           "Your Keywords have been saved to Preset",
+        playheadLockActivated               =           "Playhead Lock Activated",
+        playheadLockDeactivated             =           "Playhead Lock Deactivated",
+        pleaseSelectSingleClipInTimeline    =           "Please select a single clip in the Timeline.",
+        scrollingTimelineActivated          =           "Scrolling Timeline Activated",
+        scrollingTimelineDeactivated        =           "Scrolling Timeline Deactivated",
 
-            --------------------------------------------------------------------------------
-            -- Error Messages:
-            --------------------------------------------------------------------------------
-            noSupportedVersionsOfFCPX           =           "No supported versions of Final Cut Pro were detected.",
+        --------------------------------------------------------------------------------
+        -- ERROR LOG:
+        --------------------------------------------------------------------------------
+        clearLog                            =           "Clear Log",
+        alwaysOnTop                         =           "Always On Top",
+        reload                              =           "Reload",
 
-            sharedClipboardRootFolder           =           "Shared Clipboard Root Folder",
-            sharedClipboardPathMissing          =           "The Shared Clipboard path no longer exists. Would you like to select a new location?",
+        --------------------------------------------------------------------------------
+        -- SCAN FINAL CUT PRO:
+        --------------------------------------------------------------------------------
+        scanFinalCutPro                     =           "Test Final Cut Pro",
+        scanFinalCutProDescription          =           "This will scan Final Cut Pro using GUI Scripting Techniques for debugging purposes only.",
+        scanFinalCutProDone                 =           "Final Cut Pro was scanned successfully.",
+        scanFinalCutProWarning              =           "Depending on how many Effects, Transitions, Generators, and Titles you have installed this might take quite a few seconds.\n\nPlease do not use your mouse or keyboard until you're notified that this process is complete.",
+        updateEffectsListFailed             =           "Unfortunately the Effects List was not successfully updated.",
 
-            loadFinalCutProFailed               =           "Failed to load Final Cut Pro. Please try again.",
+        --------------------------------------------------------------------------------
+        -- ERROR MESSAGES:
+        --------------------------------------------------------------------------------
+        noSupportedVersionsOfFCPX           =           "No supported versions of Final Cut Pro were detected.",
 
-            noPluginFound                       =           "Unable to find a ${plugin} called '${name}'.",
-            noPluginShortcut                    =           "There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+        sharedClipboardRootFolder           =           "Shared Clipboard Root Folder",
+        sharedClipboardPathMissing          =           "The Shared Clipboard path no longer exists. Would you like to select a new location?",
 
-            noTitleShortcut                     =           "There is no Title assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
-            noGeneratorShortcut                 =           "There is no Generator assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+        loadFinalCutProFailed               =           "Failed to load Final Cut Pro. Please try again.",
 
-            touchBarError                       =           "Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
+        noPluginFound                       =           "Unable to find a ${plugin} called '${name}'.",
+        noPluginShortcut                    =           "There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
-            item                                =
-            {
-                one                             =           "item",
-                other                           =           "items"
-            },
+        noTitleShortcut                     =           "There is no Title assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
+        noGeneratorShortcut                 =           "There is no Generator assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
 
-            failedToWriteToPreferences          =           "Failed to write to the Final Cut Pro Preferences file.",
-            failedToChangeLanguage              =           "Unable to change Final Cut Pro's language.",
-            failedToRestart                     =           "Failed to restart Final Cut Pro. You will need to restart manually.",
+        touchBarError                       =           "Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
 
-            backupIntervalFail                  =           "Failed to write Backup Interval to the Final Cut Pro Preferences file.",
+        failedToWriteToPreferences          =           "Failed to write to the Final Cut Pro Preferences file.",
+        failedToChangeLanguage              =           "Unable to change Final Cut Pro's language.",
+        failedToRestart                     =           "Failed to restart Final Cut Pro. You will need to restart manually.",
 
-            voiceCommandsError                  =           "Voice Commands could not be activated.\n\nPlease try again.",
+        backupIntervalFail                  =           "Failed to write Backup Interval to the Final Cut Pro Preferences file.",
 
-            sharedXMLError                      =           "Something went wrong when attempting to translate the XML data you dropped. Please try again.",
+        voiceCommandsError                  =           "Voice Commands could not be activated.\n\nPlease try again.",
 
-            shortcutCouldNotBeTriggered         =           "This shortcut could not be triggered.\n\nPlease check that you valid shortcut keys assigned to command you've tried to trigger in the Final Cut Pro Command Editor and try again.",
+        sharedXMLError                      =           "Something went wrong when attempting to translate the XML data you dropped. Please try again.",
 
-            --------------------------------------------------------------------------------
-            -- Yes/No Dialog Boxes:
-            --------------------------------------------------------------------------------
-            changeFinalCutProLanguage           =           "Changing Final Cut Pro's language requires Final Cut Pro to restart.",
-            changeSmartCollectionsLabel         =           "Changing the Smart Collections Label requires Final Cut Pro to restart.",
+        shortcutCouldNotBeTriggered         =           "This shortcut could not be triggered.\n\nPlease check that you valid shortcut keys assigned to command you've tried to trigger in the Final Cut Pro Command Editor and try again.",
 
-            hacksEnabling                       =           "Enabling",
-            hacksDisabling                      =           "Disabling",
-            hacksShortcutsEditorText            =           [[Please use the Final Cut Pro <strong>Command Editor</strong> to edit these shortcuts.<br />
-                                                            <br />
-                                                            This feature can be disabled by unchecking the <strong>Control CommandPost Shortcuts within Final Cut Pro</strong><br/>
-                                                            option in the Final Cut Pro tab.
-                                                            ]],
-            hacksShortcutsRestart               =           "CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
-            hacksShortcutAdminPassword          =           "CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
+        --------------------------------------------------------------------------------
+        -- YES/NO DIALOG BOXES:
+        --------------------------------------------------------------------------------
+        changeFinalCutProLanguage           =           "Changing Final Cut Pro's language requires Final Cut Pro to restart.",
+        changeSmartCollectionsLabel         =           "Changing the Smart Collections Label requires Final Cut Pro to restart.",
 
-            togglingMovingMarkersRestart        =           "Toggling Moving Markers requires Final Cut Pro to restart.",
-            togglingWaveformsRestart            =           "Toggling Waveform Drawings requires Final Cut Pro to restart.",
-            trashPreferencesConfirmation        =           "Are you sure you want to trash the CommandPost Preferences?",
+        hacksEnabling                       =           "Enabling",
+        hacksDisabling                      =           "Disabling",
+        hacksShortcutsEditorText            =           [[Please use the Final Cut Pro <strong>Command Editor</strong> to edit these shortcuts.<br />
+                                                        <br />
+                                                        This feature can be disabled by unchecking the <strong>Control CommandPost Shortcuts within Final Cut Pro</strong><br/>
+                                                        option in the Final Cut Pro tab.
+                                                        ]],
+        hacksShortcutsRestart               =           "CommandPost Shortcuts in Final Cut Pro requires your Administrator password and also needs Final Cut Pro to restart before it can take affect.",
+        hacksShortcutAdminPassword          =           "CommandPost Shortcuts in Final Cut Pro requires your Administrator password.",
 
-            --------------------------------------------------------------------------------
-            -- Textbox Dialog Boxes:
-            --------------------------------------------------------------------------------
-            smartCollectionsLabelTextbox        =           "What would you like to set your Smart Collections Label to:",
-            smartCollectionsLabelError          =           "The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.",
+        togglingMovingMarkersRestart        =           "Toggling Moving Markers requires Final Cut Pro to restart.",
+        togglingWaveformsRestart            =           "Toggling Waveform Drawings requires Final Cut Pro to restart.",
+        trashPreferencesConfirmation        =           "Are you sure you want to trash the CommandPost Preferences?",
 
-            changeBackupIntervalTextbox         =           "What would you like to set your Final Cut Pro Backup Interval to (in minutes)?",
-            changeBackupIntervalError           =           "The backup interval you entered is not valid. Please enter a value in minutes.",
+        --------------------------------------------------------------------------------
+        -- TEXTBOX DIALOG BOXES:
+        --------------------------------------------------------------------------------
+        smartCollectionsLabelTextbox        =           "What would you like to set your Smart Collections Label to:",
+        smartCollectionsLabelError          =           "The Smart Collections Label you entered is not valid.\n\nPlease only use standard characters and numbers.",
 
-            selectDestinationPreset             =           "Please select a Destination Preset:",
-            selectDestinationFolder             =           "Please select a Destination Folder:",
+        changeBackupIntervalTextbox         =           "What would you like to set your Final Cut Pro Backup Interval to (in minutes)?",
+        changeBackupIntervalError           =           "The backup interval you entered is not valid. Please enter a value in minutes.",
+
+        selectDestinationPreset             =           "Please select a Destination Preset:",
+        selectDestinationFolder             =           "Please select a Destination Folder:",
 
         --------------------------------------------------------------------------------
         -- NOTIFICATIONS:
@@ -257,62 +253,62 @@ return {
             --------------------------------------------------------------------------------
             -- iMessage:
             --------------------------------------------------------------------------------
-            iMessageNotifications               =           "iMessage Notifications",
             enableiMessageNotifications         =           "Enable iMessage Notifications",
             iMessageDestination                 =           "Mobile/Apple ID",
             iMessageMissingDestination          =           "Phone Number or Apple ID Required",
             iMessageMissingMessage              =           "You must enter a valid phone number or Apple ID before enabling iMessage Notifications.",
-            openMessages                        =           "Open Messages",
+            iMessageNotifications               =           "iMessage Notifications",
             openContacts                        =           "Open Contacts",
+            openMessages                        =           "Open Messages",
 
             --------------------------------------------------------------------------------
             -- Prowl:
             --------------------------------------------------------------------------------
-            prowlNotifications                  =           "Prowl Notifications",
             enableProwlNotifications            =           "Enable Prowl Notifications",
+            getProwlAccount                     =           "Signup for a Prowl Account",
+            invalidProwlAPIKey                  =           "Invalid Prowl API Key",
+            notValidProwlAPIKeyError            =           "The Prowl API Key failed to validate due to the following error:",
             prowlAPIKey                         =           "Prowl API Key",
             prowlMissingAPIKey                  =           "Missing Prowl API Key",
             prowlMissingAPIKeyMessage           =           "You must enter a valid Prowl API Key to enable Prowl Notifications.",
-            invalidProwlAPIKey                  =           "Invalid Prowl API Key",
-            notValidProwlAPIKeyError            =           "The Prowl API Key failed to validate due to the following error:",
-            getProwlAccount                     =           "Signup for a Prowl Account",
+            prowlNotifications                  =           "Prowl Notifications",
 
             --------------------------------------------------------------------------------
             -- Pushover:
             --------------------------------------------------------------------------------
-            pushover                            =           "Pushover",
-            enablePushoverNotifications         =           "Enable Pushover Notifications",
-            pushoverNotifications               =           "Pushover Notifications",
-            userAPIKey                          =           "User API Key",
-            applicationAPIKey                   =           "Application API Key",
-            needUserAndAppAPIKey                =           "You must supply both a User & Application API key to continue.",
             apiKeysValidated                    =           "Your API keys you entered have been successfully validated.",
-            invalidAPIKeysSupplied              =           "Invalid API Keys Supplied",
-            notValidKeysAndError                =           "The supplied API keys are not valid.\n\nThe following error(s) occurred:\n",
-            pushoverSignup                      =           "Signup for a Pushover Account",
+            applicationAPIKey                   =           "Application API Key",
+            enablePushoverNotifications         =           "Enable Pushover Notifications",
             getCommandPostPushoverAPIKey        =           "Create Application API Key",
+            invalidAPIKeysSupplied              =           "Invalid API Keys Supplied",
+            needUserAndAppAPIKey                =           "You must supply both a User & Application API key to continue.",
+            notValidKeysAndError                =           "The supplied API keys are not valid.\n\nThe following error(s) occurred:\n",
+            pushover                            =           "Pushover",
+            pushoverNotifications               =           "Pushover Notifications",
+            pushoverServerFailed                =           "Could not communicate with the Pushover server.",
+            pushoverSignup                      =           "Signup for a Pushover Account",
             pushoverTestFailed                  =           "You must enter both a User and Application API key and then press the 'Validate' button before you can test Pushover Notifications.",
             pushoverValidateFailed              =           "You must enter both a User and Application API key and then press the 'Validate' button before you can enable Pushover Notifications.",
-            pushoverServerFailed                =           "Could not communicate with the Pushover server.",
+            userAPIKey                          =           "User API Key",
 
             --------------------------------------------------------------------------------
             -- Common:
             --------------------------------------------------------------------------------
             areYouConnectedToTheInternet        =           "Are you actually connected to the Internet?",
-            testTitle                           =           "CommandPost Test",
-            thisIsATest                         =           "This is a test",
             notificationTestFailed              =           "Notification Test Failed",
             notificationTestFailedMessage       =           "The test failed with the following errors:",
             sendTestNotification                =           "Send Test Notification",
-            shareSuccessful                     =           "Share Successful\n%{info}",
-            shareFailed                         =           "Share Failed",
-            shareUnknown                        =           "Type: %{type}",
             shareDetails_export                 =           "Type: Local Export\nLocation: %{result}",
-            shareDetails_youtube                =           "Type: YouTube\nLogin: %{login}\nTitle: %{title}",
-            shareDetails_Vimeo                  =           "Type: Vimeo\nLogin: %{login}\nTitle: %{title}",
             shareDetails_Facebook               =           "Type: Facebook\nLogin: %{login}\nTitle: %{title}",
-            shareDetails_Youku                  =           "Type: Youku\nLogin: %{login}\nTitle: %{title}",
             shareDetails_Tudou                  =           "Type: Tudou\nLogin: %{login}\nTitle: %{title}",
+            shareDetails_Vimeo                  =           "Type: Vimeo\nLogin: %{login}\nTitle: %{title}",
+            shareDetails_Youku                  =           "Type: Youku\nLogin: %{login}\nTitle: %{title}",
+            shareDetails_youtube                =           "Type: YouTube\nLogin: %{login}\nTitle: %{title}",
+            shareFailed                         =           "Share Failed",
+            shareSuccessful                     =           "Share Successful\n%{info}",
+            shareUnknown                        =           "Type: %{type}",
+            testTitle                           =           "CommandPost Test",
+            thisIsATest                         =           "This is a test",
 
         --------------------------------------------------------------------------------
         -- MENUBAR:
@@ -375,10 +371,10 @@ return {
             --------------------------------------------------------------------------------
             -- Automation Options:
             --------------------------------------------------------------------------------
-            enableScrollingTimeline         =           "Enable Scrolling Timeline",
-            enableTimelinePlayheadLock      =           "Enable Timeline Playhead Lock",
-            enableShortcutsDuringFullscreen =           "Enable Shortcuts During Fullscreen Playback",
-            ignoreInsertedCameraCards       =           "Ignore Inserted Camera Cards",
+            enableScrollingTimeline             =           "Enable Scrolling Timeline",
+            enableTimelinePlayheadLock          =           "Enable Timeline Playhead Lock",
+            enableShortcutsDuringFullscreen     =           "Enable Shortcuts During Fullscreen Playback",
+            ignoreInsertedCameraCards           =           "Ignore Inserted Camera Cards",
 
             --------------------------------------------------------------------------------
             -- Clipboard:
@@ -406,24 +402,24 @@ return {
             clearSharedClipboard                =           "Clear Shared Clipboard",
             emptySharedClipboard                =           "Empty",
 
-                --------------------------------------------------------------------------------
-                -- Languages:
-                --------------------------------------------------------------------------------
-                german                          =           "German",
-                english                         =           "English",
-                spanish                         =           "Spanish",
-                french                          =           "French",
-                japanese                        =           "Japanese",
-                chineseChina                    =           "Chinese (China)",
+            --------------------------------------------------------------------------------
+            -- Languages:
+            --------------------------------------------------------------------------------
+            german                              =           "German",
+            english                             =           "English",
+            spanish                             =           "Spanish",
+            french                              =           "French",
+            japanese                            =           "Japanese",
+            chineseChina                        =           "Chinese (China)",
 
-                --------------------------------------------------------------------------------
-                -- Tools Options:
-                --------------------------------------------------------------------------------
-                enableHUD                       =           "Enable HUD",
-                enableClipboardHistory          =           "Enable Clipboard History",
-                enableSharedClipboard           =           "Enable Shared Clipboard",
-                enableXMLSharing                =           "Enable XML Sharing",
-                enableVoiceCommands             =           "Enable Voice Commands",
+            --------------------------------------------------------------------------------
+            -- Tools Options:
+            --------------------------------------------------------------------------------
+            enableHUD                           =           "Enable HUD",
+            enableClipboardHistory              =           "Enable Clipboard History",
+            enableSharedClipboard               =           "Enable Shared Clipboard",
+            enableXMLSharing                    =           "Enable XML Sharing",
+            enableVoiceCommands                 =           "Enable Voice Commands",
 
         --------------------------------------------------------------------------------
         -- ADMIN TOOLS:
@@ -605,35 +601,35 @@ return {
             --------------------------------------------------------------------------------
             -- Hammerspoon Settings:
             --------------------------------------------------------------------------------
-            errorLog                            =           "Error Log",
-            openErrorLog                        =           "Open Error Log",
-            launchAtStartup                     =           "Launch at Startup",
             checkForUpdates                     =           "Check for Updates",
+            errorLog                            =           "Error Log",
+            launchAtStartup                     =           "Launch at Startup",
+            openErrorLog                        =           "Open Error Log",
 
     --------------------------------------------------------------------------------
     -- BATCH EXPORT:
     --------------------------------------------------------------------------------
-    performBatchExport                  =           "Perform Batch Export",
-    setDestinationPreset                =           "Set Destination Preset",
-    setDestinationFolder                =           "Set Destination Folder",
-    replaceExistingFiles                =           "Replace Existing Files",
-    ignoreMissingEffects                =           "Ignore Missing & Offline Files",
-    ignoreProxies                       =           "Ignore Proxies",
-    sendToCompressor                    =           "Send to Compressor",
-    useCustomFilename                   =           "Use Custom Filename",
-    setCustomFilename                   =           "Set Custom Filename",
+    batchExportCheckPath                =           "Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
+    batchExportComplete                 =           "Batch Export is now complete. The selected clips have been added to your render queue.",
+    batchExportDestinationsNotFound     =           "We were unable to find the list of Share Destinations.",
+    batchExportEnableBrowser            =           "Please ensure that the browser is enabled before exporting.",
+    batchExportFinalCutProClosed        =           "Final Cut Pro needs to be running to set a destination preset.\n\nPlease open Final Cut Pro and try again.",
+    batchExportNoClipsSelected          =           "Please ensure that at least one clip is selected for export.",
+    batchExportNoDestination            =           "It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
+    batchExportReplaceNo                =           "Exports with duplicate filenames will be incremented.",
+    batchExportReplaceYes               =           "Exports with duplicate filenames will be replaced.",
+    customFilename                      =           "Custom Filename",
     enterCustomFilename                 =           "Please enter a custom filename",
     enterCustomFilenameError            =           "This filename looks invalid. Please try again.",
-    customFilename                      =           "Custom Filename",
-    batchExportDestinationsNotFound     =           "We were unable to find the list of Share Destinations.",
-    batchExportNoDestination            =           "It doesn't look like you have a Default Destination selected.\n\nYou can set a Default Destination by going to 'Preferences', clicking the 'Destinations' tab, right-clicking on the Destination you would like to use and then click 'Make Default'.\n\nYou can set a Batch Export Destination Preset via the CommandPost menubar.",
-    batchExportEnableBrowser            =           "Please ensure that the browser is enabled before exporting.",
-    batchExportCheckPath                =           "Final Cut Pro will export the%{count}selected %{item} to the following location:\n\n\t%{path}\n\nUsing the following preset:\n\n\t%{preset}\n\nIf the preset is adding the export to an iTunes Playlist, the Destination Folder will be ignored. %{replace}\n\nYou can change these settings via the CommandPost Menubar Preferences.\n\nPlease do not interrupt Final Cut Pro once you press the Continue button as it may break the automation.",
-    batchExportReplaceYes               =           "Exports with duplicate filenames will be replaced.",
-    batchExportReplaceNo                =           "Exports with duplicate filenames will be incremented.",
-    batchExportNoClipsSelected          =           "Please ensure that at least one clip is selected for export.",
-    batchExportComplete                 =           "Batch Export is now complete. The selected clips have been added to your render queue.",
-    batchExportFinalCutProClosed        =           "Final Cut Pro needs to be running to set a destination preset.\n\nPlease open Final Cut Pro and try again.",
+    ignoreMissingEffects                =           "Ignore Missing & Offline Files",
+    ignoreProxies                       =           "Ignore Proxies",
+    performBatchExport                  =           "Perform Batch Export",
+    replaceExistingFiles                =           "Replace Existing Files",
+    sendToCompressor                    =           "Send to Compressor",
+    setCustomFilename                   =           "Set Custom Filename",
+    setDestinationFolder                =           "Set Destination Folder",
+    setDestinationPreset                =           "Set Destination Preset",
+    useCustomFilename                   =           "Use Custom Filename",
 
     --------------------------------------------------------------------------------
     -- BUG REPORT
@@ -644,26 +640,26 @@ return {
     --------------------------------------------------------------------------------
     -- FINAL CUT PRO MEDIA WATCH FOLDER PLUGIN:
     --------------------------------------------------------------------------------
+    addFinderTagsOnImport               =           "Add Finder Tags on Import",
     addWatchFolder                      =           "Add Watch Folder",
-    watchFolders                        =           "Watch Folders",
-    setupWatchFolders                   =           "Setup Watch Folders",
-    selectFolderToWatch                 =           "Please select a folder to watch:",
     alreadyWatched                      =           "This folder is already being watched.",
-    watchFolderFCPMediaHelp             =           "This feature allows you to recieve macOS notfications whenever supported files are added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
-    description                         =           "Description",
     automaticallyImport                 =           "Automatically Import without Notification",
-    importToTimeline                    =           "Import directly into Timeline",
-    newFileForFinalCutPro               =           "New Media for Final Cut Pro",
-    import                              =           "Import",
-    finalCutProNotRunning               =           "Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.",
     deleteAfterImport                   =           "Delete file from Watch Folder (5 seconds after Import)",
     deleteNote                          =           "Make sure <strong>Copy to library storage location</strong> is selected in Final Cut Pro's Preferences.",
-    addFinderTagsOnImport               =           "Add Finder Tags on Import",
-    enterVideoTag                       =           "Enter a Video Tag Here",
+    description                         =           "Description",
     enterAudioTag                       =           "Enter a Audio Tag Here",
     enterImageTag                       =           "Enter a Image Tag Here",
-    watchFolderFCPMediaTooltip          =           "Final Cut Pro Media Watch Folder Preferences",
+    enterVideoTag                       =           "Enter a Video Tag Here",
+    finalCutProNotRunning               =           "Opps! Final Cut Pro is not currently running.\n\nThis notification will be reinstated.",
+    import                              =           "Import",
+    importToTimeline                    =           "Import directly into Timeline",
     incomingFile                        =           "Incoming File...",
+    newFileForFinalCutPro               =           "New Media for Final Cut Pro",
+    selectFolderToWatch                 =           "Please select a folder to watch:",
+    setupWatchFolders                   =           "Setup Watch Folders",
+    watchFolderFCPMediaHelp             =           "This feature allows you to recieve macOS notfications whenever supported files are added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
+    watchFolderFCPMediaTooltip          =           "Final Cut Pro Media Watch Folder Preferences",
+    watchFolders                        =           "Watch Folders",
 
     --------------------------------------------------------------------------------
     -- KEYWORD PRESETS PLUGIN:
@@ -675,74 +671,73 @@ return {
     --------------------------------------------------------------------------------
     -- FCPXML WATCH FOLDER PLUGIN:
     --------------------------------------------------------------------------------
-    xml                                 =           "XML",
     newFCPXMLForFinalCutPro             =           "New Media for Final Cut Pro",
     watchFolderFCPXMLTooltip            =           "Final Cut Pro XML Watch Folder Preferences",
     watchFolderXMLHelp                  =           "This feature allows you to recieve macOS notfications whenever a FCPXML file is added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
+    xml                                 =           "XML",
 
     --------------------------------------------------------------------------------
     -- COMPRESSOR WATCH FOLDER PLUGIN:
     --------------------------------------------------------------------------------
-    compressor                          =           "Compressor",
-    watchFolderCompressorTooltip        =           "Compressor Watch Folder Preferences",
-    watchFolderCompressorHelp           =           "This feature allows you to automatically transcode files with Compressor when they're added to any of the below Watch Folders.",
-    selectCompressorSettingsFile        =           "Select a Compressor Settings File:",
-    selectCompressorDestination         =           "Select a Destination Folder:",
-    compressorError                     =           "Something went wrong when sending to Compressor.",
     addedToCompressor                   =           "Added to Compressor:",
+    compressor                          =           "Compressor",
+    compressorError                     =           "Something went wrong when sending to Compressor.",
     monitor                             =           "Monitor",
     renderComplete                      =           "Render Complete!",
+    selectCompressorDestination         =           "Select a Destination Folder:",
+    selectCompressorSettingsFile        =           "Select a Compressor Settings File:",
+    watchFolderCompressorHelp           =           "This feature allows you to automatically transcode files with Compressor when they're added to any of the below Watch Folders.",
+    watchFolderCompressorTooltip        =           "Compressor Watch Folder Preferences",
 
     --------------------------------------------------------------------------------
     -- TEXT TO SPEECH PLUGIN:
     --------------------------------------------------------------------------------
-    clearHistory                        =           "Clear History",
+    addTextToNotesFieldAfterImport      =           "Add to Notes Field After Import",
     changeDestinationFolder             =           "Change Destination Folder",
-    selectVoice                         =           "Select Voice",
-    textToSpeechDestination             =           "Please select where you want to save your audio files:",
+    clearHistory                        =           "Clear History",
+    createRoleForVoice                  =           "Assign Voice Role",
+    currentIncrementalNumber            =           "Incremental Number",
     customiseFinderTag                  =           "Customise Finder Tag",
+    customPrefixError                   =           "This prefix looks invalid. Please try again.",
+    deleteFileAfterImport               =           "Delete Generated File After Import",
+    enableFilenamePrefix                =           "Enable Filename Prefix",
     enterFinderTag                      =           "Please enter the Finder Tag you want to use:",
     enterFinderTagError                 =           "This Finder Tag looks invalid.\n\nPlease try again.",
+    generatedVoiceOver                  =           "Generated Voice Over",
+    includeTextInFilename               =           "Include Entered Text in Filename",
     insertIntoTimeline                  =           "Insert into Timeline",
     openEmbeddedSpeechCommandsHelp      =           "Speech Commands Help",
     openVoiceOverUtility                =           "Open Voice Over Utility",
-    createRoleForVoice                  =           "Assign Voice Role",
-    enableFilenamePrefix                =           "Enable Filename Prefix",
-    setFilenamePrefix                   =           "Set Filename Prefix",
     pleaseEnterAPrefix                  =           "Please enter a prefix",
-    useUnderscore                       =           "Use Underscore Seperator",
-    currentIncrementalNumber            =           "Incremental Number",
     prefix                              =           "Prefix",
-    resetIncrementalNumber              =           "Reset Incremental Number",
-    setIncrementalNumber                =           "Set Incremental Number",
-    setIncrementalNumberMessage         =           "What would you like to set the Incremental Number to?",
-    setIncrementalNumberError           =           "This value looks incorrect. Please enter a number and try again.",
-    customPrefixError                   =           "This prefix looks invalid. Please try again.",
-    generatedVoiceOver                  =           "Generated Voice Over",
     replaceSpaceWithUnderscore          =           "Replace Spaces with Underscores",
-    deleteFileAfterImport               =           "Delete Generated File After Import",
-    includeTextInFilename               =           "Include Entered Text in Filename",
-    addTextToNotesFieldAfterImport      =           "Add to Notes Field After Import",
+    resetIncrementalNumber              =           "Reset Incremental Number",
+    selectVoice                         =           "Select Voice",
+    setFilenamePrefix                   =           "Set Filename Prefix",
+    setIncrementalNumber                =           "Set Incremental Number",
+    setIncrementalNumberError           =           "This value looks incorrect. Please enter a number and try again.",
+    setIncrementalNumberMessage         =           "What would you like to set the Incremental Number to?",
+    textToSpeechDestination             =           "Please select where you want to save your audio files:",
+    useUnderscore                       =           "Use Underscore Seperator",
 
     --------------------------------------------------------------------------------
     -- HUD:
     --------------------------------------------------------------------------------
-    hud                                 =           "HUD",
-    media                               =           "Media",
-    quality                             =           "Quality",
     backgroundRender                    =           "Background Render",
-    originalOptimised                   =           "Original/Optimised",
-    betterQuality                       =           "Better Quality",
     betterPerformance                   =           "Better Performance",
-    proxy                               =           "Proxy",
-    hudDropZoneText                     =           "Drag from Browser to Here",
+    betterQuality                       =           "Better Quality",
+    hud                                 =           "HUD",
+    hudButtonItem                       =           "Button %{count} (%{title})",
     hudDropZoneError                    =           "Ah, I'm not sure what you dragged here, but it didn't look like FCPXML?",
+    hudDropZoneText                     =           "Drag from Browser to Here",
     hudXMLNameDialog                    =           "How would you like to label this XML file?",
     hudXMLNameError                     =           "The label you entered has special characters that cannot be used.\n\nPlease try again.",
     hudXMLSharingDisabled               =           "XML Sharing is currently disabled.\n\nPlease enable it via the CommandPost menu and try again.",
-    hudButtonItem                       =           "Button %{count} (%{title})",
-
+    media                               =           "Media",
     menuChoiceSubText                   =           "Menu: %{path}",
+    originalOptimised                   =           "Original/Optimised",
+    proxy                               =           "Proxy",
+    quality                             =           "Quality",
 
     --------------------------------------------------------------------------------
     -- XML SHARING:
@@ -753,37 +748,32 @@ return {
     --------------------------------------------------------------------------------
     -- ACTIVATORS:
     --------------------------------------------------------------------------------
-    activatorUnfavoriteAction           =           "Unfavourite",
     activatorFavoriteAction             =           "Favourite",
     activatorHideAction                 =           "Hide",
-    activatorUnhideAction               =           "Unhide",
     activatorShowHidden                 =           "Show Hidden",
+    activatorUnfavoriteAction           =           "Unfavourite",
+    activatorUnhideAction               =           "Unhide",
 
     --------------------------------------------------------------------------------
     -- CONSOLE:
     --------------------------------------------------------------------------------
-    console                             =           "Console",
-    highlightedItem                     =           "Highlighted Item",
-
     actionHiddenText                    =           "%{text} [Hidden]",
-
+    commandEditorShortcut               =           "Command Editor Shortcut",
+    console                             =           "Console",
     consoleSections                     =           "Sections",
-    consoleSectionsShowAll              =           "Show All",
     consoleSectionsHideAll              =           "Hide All",
-
-    removeFromList                      =           "Remove from List",
+    consoleSectionsShowAll              =           "Show All",
+    highlightedItem                     =           "Highlighted Item",
     mode                                =           "Mode",
     normal                              =           "Normal",
-
-    showAll                             =           "Show All",
-
-    showTransitions                     =           "Show Transitions",
-    showTitles                          =           "Show Titles",
-    showGenerators                      =           "Show Generators",
     rememberLastQuery                   =           "Remember Last Query",
+    removeFromList                      =           "Remove from List",
     searchSubtext                       =           "Search Subtext",
+    showAll                             =           "Show All",
+    showGenerators                      =           "Show Generators",
+    showTitles                          =           "Show Titles",
+    showTransitions                     =           "Show Transitions",
     update                              =           "Update",
-    commandEditorShortcut               =           "Command Editor Shortcut",
 
     --------------------------------------------------------------------------------
     -- ACTIONS:
@@ -801,11 +791,11 @@ return {
         fcpx_audioEffect_action             =           "Audio Effects",
         fcpx_cmds_action                    =           "Commands",
         fcpx_colorInspector_action          =           "Color Inspector",
-        fcpx_timeline_action                =           "Timeline",
         fcpx_generator_action               =           "Generators",
         fcpx_menu_action                    =           "Menu Items",
         fcpx_midicontrols_action            =           "MIDI Controls",
         fcpx_shortcuts_action               =           "Command Editor Shortcuts",
+        fcpx_timeline_action                =           "Timeline",
         fcpx_title_action                   =           "Titles",
         fcpx_transition_action              =           "Transitions",
         fcpx_videoEffect_action             =           "Video Effects",
@@ -816,26 +806,26 @@ return {
     --------------------------------------------------------------------------------
     actionMismatchError                 =           "Expected '%{expected}' action type but got '%{actual}.",
     actionUndefinedError                =           "No action was specified to execute.",
-    cmdIdMissingError                   =           "A command ID is required to execute.",
     cmdDoesNotExistError                =           "No command with the ID of %{id} could be found.",
     cmdGroupNotActivated                =           "Unable to activate the '%{id}' command group.",
+    cmdIdMissingError                   =           "A command ID is required to execute.",
 
     --------------------------------------------------------------------------------
     -- COMMAND GROUPS:
     --------------------------------------------------------------------------------
-    timeline_group                      =           "Timeline",
+    audioEffect_group                   =           "Audio Effect",
     browser_group                       =           "Browser",
     colorboard_group                    =           "Colour Board",
-    mediaImport_group                   =           "Media Import",
-    hacks_group                         =           "Advanced Features",
-    videoEffect_group                   =           "Video Effect",
-    audioEffect_group                   =           "Audio Effect",
-    title_group                         =           "Title",
-    transition_group                    =           "Transition",
-    generator_group                     =           "Generator",
     commandPost_group                   =           "CommandPost",
     finalCutPro_group                   =           "Final Cut Pro",
+    generator_group                     =           "Generator",
+    hacks_group                         =           "Advanced Features",
     helpandsupport_group                =           "Help & Support",
+    mediaImport_group                   =           "Media Import",
+    timeline_group                      =           "Timeline",
+    title_group                         =           "Title",
+    transition_group                    =           "Transition",
+    videoEffect_group                   =           "Video Effect",
 
     commandChoiceSubText                =           "Command: %{group}",
 
@@ -859,96 +849,96 @@ return {
     shortcut_group_fcpx                 =           "Final Cut Pro",
 
     customiseShortcuts                  =           "Customise Shortcuts",
+    resetShortcuts                      =           "Reset to Default Shortcuts",
+    resetShortcutsAllToNone             =           "Set All Shortcuts to None",
+    shortcutAlreadyInUse                =           "This shortcut is already in use.",
+    shortcutAlreadyInUseByMacOS         =           "This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
+    shortcutDuplicateError              =           "You cannot use the same shortcut for multiple commands.",
+    shortcutPleaseTryAgain              =           "Please select a new key and/or modifier combination and try again.",
     shortcutsGroup                      =           "Group",
+    shortcutsKey                        =           "Key",
     shortcutsLabel                      =           "Label",
     shortcutsModifier                   =           "Modifier",
-    shortcutsKey                        =           "Key",
-    resetShortcuts                      =           "Reset to Default Shortcuts",
     shortcutsResetConfirmation          =           "This will reset all modified shortcuts to the default values.",
-    resetShortcutsAllToNone             =           "Set All Shortcuts to None",
     shortcutsSetNoneConfirmation        =           "This will reset all of the shortcuts to None.",
-    shortcutAlreadyInUse                =           "This shortcut is already in use.",
-    shortcutDuplicateError              =           "You cannot use the same shortcut for multiple commands.",
-    shortcutAlreadyInUseByMacOS         =           "This shortcut combination is currently in use by macOS (i.e. it could be used by Screen Capture, Universal Access, and Keyboard Navigation keys).",
-    shortcutPleaseTryAgain              =           "Please select a new key and/or modifier combination and try again.",
 
     --------------------------------------------------------------------------------
     -- TOUCH BAR PANEL:
     --------------------------------------------------------------------------------
-    virtualTouchBar                     =           "Virtual Touch Bar",
-    layoutEditor                        =           "Layout Editor",
-    customTouchBar                      =           "Custom Touch Bar",
-    touchBarReset                       =           "Reset All Touch Bar Items",
-    touchBarResetConfirmation           =           "This will reset all modified Touch Bar items to the default values.",
-    buttonLabel                         =           "Button Label",
-    pleaseSelectAnIcon                  =           "Please select an icon:",
-    fileCouldNotBeRead                  =           "The selected file could not be read.",
+    actionOrWidget                      =           "Action / Widget",
     badTouchBarIcon                     =           "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
+    buttonLabel                         =           "Button Label",
+    customTouchBar                      =           "Custom Touch Bar",
+    draggable                           =           "Draggable",
     enableCustomisedTouchBar            =           "Enable Customised Touch Bar",
     enableVirtualTouchBar               =           "Enable Virtual Touch Bar",
-    draggable                           =           "Draggable",
+    fileCouldNotBeRead                  =           "The selected file could not be read.",
+    layoutEditor                        =           "Layout Editor",
     mouseLocation                       =           "Centre of Mouse Location",
+    pleaseSelectAnIcon                  =           "Please select an icon:",
     topCentreOfTimeline                 =           "Top Centre of Timeline",
     touchBarDragTip                     =           "If Draggable is selected, you can hold down the left OPTION key to drag.",
+    touchBarReset                       =           "Reset All Touch Bar Items",
+    touchBarResetConfirmation           =           "This will reset all modified Touch Bar items to the default values.",
     touchBarSetupTip                    =           [[Make sure "App Controls with Control Strip" is selected within the "Touch Bar shows" Keyboard System Preferences to see the CommandPost icon. You can then tap this icon to toggle through the different Touch Bar groups.]],
-    actionOrWidget                      =           "Action / Widget",
     touchBarWidget                      =           "Touch Bar Widget",
+    virtualTouchBar                     =           "Virtual Touch Bar",
 
     --------------------------------------------------------------------------------
     -- STREAM DECK PANEL:
     --------------------------------------------------------------------------------
-    streamDeck                          =           "Stream Deck",
-    streamDeckReset                     =           "Reset All Stream Deck Items",
-    streamDeckResetConfirmation         =           "This will reset all modified Stream Deck items to the default values.",
+    badStreamDeckIcon                   =           "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Stream Deck icons.",
     enableStreamDeck                    =           "Enable Stream Deck",
+    streamDeck                          =           "Stream Deck",
     streamDeckAppRunning                =           "Stream Deck App is running.",
     streamDeckAppRunningMessage         =           "This must be closed to activate Stream Deck support in CommandPost.",
     streamDeckAppTip                    =           [[You MUST have "Stream Deck.app" closed when using Stream Deck with CommandPost. ]],
-    badStreamDeckIcon                   =           "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Stream Deck icons.",
+    streamDeckReset                     =           "Reset All Stream Deck Items",
+    streamDeckResetConfirmation         =           "This will reset all modified Stream Deck items to the default values.",
 
     --------------------------------------------------------------------------------
     -- MIDI PANEL:
     --------------------------------------------------------------------------------
-    midi                                =           "MIDI",
-    midiEditor                          =           "MIDI Editor",
-    midiControls                        =           "MIDI Controls",
-    midiResetAll                        =           "Reset All Applications",
-    midiResetGroup                      =           "Reset Selected Application",
-    refreshMidi                         =           "Refresh MIDI Devices",
+    all                                 =           "All",
     applyTopDeviceToAll                 =           "Apply Top Device to All",
+    channel                             =           "Channel",
+    channelPressure                     =           "Channel Pressure",
+    commandType                         =           "Type",
+    controlChange                       =           "Control Change",
+    controlChange                       =           "Control Change",
+    enableMIDI                          =           "Enable MIDI Controls",
+    learn                               =           "Learn",
+    midi                                =           "MIDI",
+    midiControls                        =           "MIDI Controls",
+    midiEditor                          =           "MIDI Editor",
+    midiResetAll                        =           "Reset All Applications",
     midiResetAllConfirmation            =           "This will reset all MIDI items across all applications to the default values.",
+    midiResetGroup                      =           "Reset Selected Application",
     midiResetGroupConfirmation          =           "This will reset all MIDI items with the current application to the default values.",
     midiTopDeviceToAll                  =           "This will apply the MIDI device on the top of the list to all the subsequent lines for the current application.",
-    enableMIDI                          =           "Enable MIDI Controls",
-    channel                             =           "Channel",
-    value                               =           "Value",
-    learn                               =           "Learn",
-    noteOn                              =           "Note On",
-    noteOff                             =           "Note Off",
-    controlChange                       =           "Control Change",
-    openAudioMIDISetup                  =           "Open Audio MIDI Setup",
-    noteCC                              =           "Note/CC",
-    physical                            =           "Physical",
-    virtual                             =           "Virtual",
-    offline                             =           "Offline",
-    all                                 =           "All",
     noDevicesDetected                   =           "No Devices Detected",
-    commandType                         =           "Type",
+    noteCC                              =           "Note/CC",
+    noteOff                             =           "Note Off",
     noteOff                             =           "Note Off",
     noteOn                              =           "Note On",
-    polyphonicKeyPressure               =           "Polyphonic Key Pressure",
-    controlChange                       =           "Control Change",
-    programChange                       =           "Program Change",
-    channelPressure                     =           "Channel Pressure",
+    noteOn                              =           "Note On",
+    offline                             =           "Offline",
+    openAudioMIDISetup                  =           "Open Audio MIDI Setup",
+    physical                            =           "Physical",
     pitchWheelChange                    =           "Pitch Wheel Change",
+    polyphonicKeyPressure               =           "Polyphonic Key Pressure",
+    programChange                       =           "Program Change",
+    refreshMidi                         =           "Refresh MIDI Devices",
+    value                               =           "Value",
+    virtual                             =           "Virtual",
 
     --------------------------------------------------------------------------------
     -- MIDI CONTROLS:
     --------------------------------------------------------------------------------
-    timelineZoom                        =           "Timeline Zoom",
-    midiTimelineZoomDescription         =           "Allows you to control timeline zoom via MIDI controls.",
     midiColorBoardDescription           =           "Controls the Color Board via MIDI Controls",
     midiColorWheelDescription           =           "Controls the Color Wheels via MIDI Controls",
+    midiTimelineZoomDescription         =           "Allows you to control timeline zoom via MIDI controls.",
+    timelineZoom                        =           "Timeline Zoom",
 
     --------------------------------------------------------------------------------
     -- TANGENT SUPPORT:
@@ -977,8 +967,8 @@ return {
     plugin_group_compressor             =           "Compressor",
     plugin_group_core                   =           "Core",
     plugin_group_finalcutpro            =           "Final Cut Pro",
-    plugin_group_plugin                 =           "Plugin",
     plugin_group_finder                 =           "Finder",
+    plugin_group_plugin                 =           "Plugin",
 
     --------------------------------------------------------------------------------
     -- PLUGIN LABELS:
@@ -1149,20 +1139,20 @@ return {
         --------------------------------------------------------------------------------
         -- Global:
         --------------------------------------------------------------------------------
-        cpLaunchFinalCutPro_title                               =   "Launch Final Cut Pro",
-        cpSetupWatchFolders_title                               =   "Setup Watch Folders",
-        cpPreferences_title                                     =   "Preferences",
-        cpOpenErrorLog_title                                    =   "Open Error Log",
-        cpTrashPreferences_title                                =   "Trash Preferences",
-        cpOpenPluginsFolder_title                               =   "Open Plugins Folder",
-        cpUserGuide_title                                       =   "User Guide",
-        cpFeedback_title                                        =   "Provide Feedback",
-        cpDeveloperGuide_title                                  =   "Developer Guide",
-        cpTouchBar_title                                        =   "Toggle Touch Bar",
-        cpStreamDeck_title                                      =   "Toggle Stream Deck",
-        cpMIDI_title                                            =   "Toggle MIDI Controls",
         cpCredits_title                                         =   "Credits",
+        cpDeveloperGuide_title                                  =   "Developer Guide",
+        cpFeedback_title                                        =   "Provide Feedback",
         cpGlobalConsole_title                                   =   "Activate Global Console",
+        cpLaunchFinalCutPro_title                               =   "Launch Final Cut Pro",
+        cpMIDI_title                                            =   "Toggle MIDI Controls",
+        cpOpenErrorLog_title                                    =   "Open Error Log",
+        cpOpenPluginsFolder_title                               =   "Open Plugins Folder",
+        cpPreferences_title                                     =   "Preferences",
+        cpSetupWatchFolders_title                               =   "Setup Watch Folders",
+        cpStreamDeck_title                                      =   "Toggle Stream Deck",
+        cpTouchBar_title                                        =   "Toggle Touch Bar",
+        cpTrashPreferences_title                                =   "Trash Preferences",
+        cpUserGuide_title                                       =   "User Guide",
 
         --------------------------------------------------------------------------------
         -- Finder:
@@ -1171,35 +1161,35 @@ return {
             --------------------------------------------------------------------------------
             -- Windows Management:
             --------------------------------------------------------------------------------
-            cpShowGrid_title                                        =   "Show Window Grid",
             cpCenterCursor_title                                    =   "Center Cursor on Focussed Window",
-            cpWindowHints_title                                     =   "Show Window Hints",
-            cpMoveWindowLeft_title                                  =   "Move Focussed Window: One Screen Left",
-            cpMoveWindowRight_title                                 =   "Move Focussed Window: One Screen Right",
-            cpMoveWindowUp_title                                    =   "Move Focussed Window: One Screen Up",
-            cpMoveWindowDown_title                                  =   "Move Focussed Window: One Screen Down",
-            cpMoveWindowNext_title                                  =   "Move Focussed Window: Next Screen",
+            cpMoveAndResizeCenter_title                             =   "Move & Resize Focussed Window: Center",
+            cpMoveAndResizeCornerNorthEast_title                    =   "Move & Resize Focussed Window: Top Right Corner",
+            cpMoveAndResizeCornerNorthWest_title                    =   "Move & Resize Focussed Window: Top Left Corner",
+            cpMoveAndResizeCornerSouthEast_title                    =   "Move & Resize Focussed Window: Bottom Right Corner",
+            cpMoveAndResizeCornerSouthWest_title                    =   "Move & Resize Focussed Window: Bottom Left Corner",
+            cpMoveAndResizeExpand_title                             =   "Move & Resize Focussed Window: Expand",
+            cpMoveAndResizeFullscreen_title                         =   "Move & Resize Focussed Window: Fullscreen",
+            cpMoveAndResizeHalfDown_title                           =   "Move & Resize Focussed Window: Half Down",
             cpMoveAndResizeHalfLeft_title                           =   "Move & Resize Focussed Window: Half Left",
             cpMoveAndResizeHalfRight_title                          =   "Move & Resize Focussed Window: Half Right",
             cpMoveAndResizeHalfUp_title                             =   "Move & Resize Focussed Window: Half Up",
-            cpMoveAndResizeHalfDown_title                           =   "Move & Resize Focussed Window: Half Down",
-            cpMoveAndResizeCornerNorthWest_title                    =   "Move & Resize Focussed Window: Top Left Corner",
-            cpMoveAndResizeCornerNorthEast_title                    =   "Move & Resize Focussed Window: Top Right Corner",
-            cpMoveAndResizeCornerSouthWest_title                    =   "Move & Resize Focussed Window: Bottom Left Corner",
-            cpMoveAndResizeCornerSouthEast_title                    =   "Move & Resize Focussed Window: Bottom Right Corner",
-            cpMoveAndResizeFullscreen_title                         =   "Move & Resize Focussed Window: Fullscreen",
-            cpMoveAndResizeCenter_title                             =   "Move & Resize Focussed Window: Center",
-            cpMoveAndResizeExpand_title                             =   "Move & Resize Focussed Window: Expand",
             cpMoveAndResizeShrink_title                             =   "Move & Resize Focussed Window: Shrink",
             cpMoveAndResizeUndo_title                               =   "Undo Last Move & Resize",
-            cpStepResizeLeft_title                                  =   "Step Resize Focussed Window: Left",
-            cpStepResizeRight_title                                 =   "Step Resize Focussed Window: Right",
-            cpStepResizeUp_title                                    =   "Step Resize Focussed Window: Up",
-            cpStepResizeDown_title                                  =   "Step Resize Focussed Window: Down",
+            cpMoveWindowDown_title                                  =   "Move Focussed Window: One Screen Down",
+            cpMoveWindowLeft_title                                  =   "Move Focussed Window: One Screen Left",
+            cpMoveWindowNext_title                                  =   "Move Focussed Window: Next Screen",
+            cpMoveWindowRight_title                                 =   "Move Focussed Window: One Screen Right",
+            cpMoveWindowUp_title                                    =   "Move Focussed Window: One Screen Up",
+            cpShowGrid_title                                        =   "Show Window Grid",
+            cpStepMoveDown_title                                    =   "Step Move Focussed Window: Down",
             cpStepMoveLeft_title                                    =   "Step Move Focussed Window: Left",
             cpStepMoveRight_title                                   =   "Step Move Focussed Window: Right",
             cpStepMoveUp_title                                      =   "Step Move Focussed Window: Up",
-            cpStepMoveDown_title                                    =   "Step Move Focussed Window: Down",
+            cpStepResizeDown_title                                  =   "Step Resize Focussed Window: Down",
+            cpStepResizeLeft_title                                  =   "Step Resize Focussed Window: Left",
+            cpStepResizeRight_title                                 =   "Step Resize Focussed Window: Right",
+            cpStepResizeUp_title                                    =   "Step Resize Focussed Window: Up",
+            cpWindowHints_title                                     =   "Show Window Hints",
 
             --------------------------------------------------------------------------------
             -- Text Tools:
