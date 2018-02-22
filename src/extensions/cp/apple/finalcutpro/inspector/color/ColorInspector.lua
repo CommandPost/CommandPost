@@ -265,6 +265,7 @@ function ColorInspector:show()
     if not self:isShowing() then
         self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
     end
+    return self
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self

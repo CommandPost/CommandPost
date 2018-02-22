@@ -265,10 +265,19 @@ function Inspector:topBarUI()
 end
 
 function Inspector:panelUI()
-    return axutils.cache(self, "_panel", function()
-        local ui = self:UI()
-        return ui and #ui == 3 and axutils.childFromTop(ui, 2) or ui
-    end)
+    return axutils.cache(self, "_panel",
+        function()
+            local ui = self:UI()
+            if ui then
+                local groups = axutils.childrenWithRole(ui, "AXGroup")
+                if groups and #groups == 3 then
+                    return axutils.childFromTop(groups, 2)
+                end
+            end
+            return nil
+        end,
+        function(element) return element:attributeValue("AXRole") == "AXGroup" end
+    )
 end
 
 function Inspector:propertiesUI()
