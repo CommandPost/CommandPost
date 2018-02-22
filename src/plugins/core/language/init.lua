@@ -22,8 +22,10 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local dialog        = require("hs.dialog")
 local fs            = require("hs.fs")
 local host          = require("hs.host")
+local json          = require("hs.json")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -35,7 +37,6 @@ local config        = require("cp.config")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY = 6
 local LANGUAGE_PATH = config.languagePath
 
 --------------------------------------------------------------------------------
@@ -60,18 +61,28 @@ mod.installedLanguages = {}
 --- Returns:
 ---  * None
 function mod.loadCommandPostLanguages()
-    --log.df("Loading CommandPost Languages")
-    for file in fs.dir(LANGUAGE_PATH) do
-        if file:sub(-4) == ".lua" then
-            local languageFile = io.open(LANGUAGE_PATH .. file, "r")
-            if languageFile ~= nil then
-                local languageFileData = languageFile:read("*all")
-                if string.find(languageFileData, "-- LANGUAGE: ") ~= nil then
-                    local fileLanguage = string.sub(languageFileData, string.find(languageFileData, "-- LANGUAGE: ") + 13, string.find(languageFileData, "\n") - 1)
-                    local languageID = string.sub(file, 1, -5)
-                    mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
+    local languagePath = LANGUAGE_PATH
+    for file in fs.dir(languagePath) do
+        if file:sub(-5) == ".json" then
+            local path = languagePath .. "/" .. file
+            local data = io.open(path, "r")
+            local content, decoded
+            if data then
+                content = data:read("*all")
+                data:close()
+            end
+            if content then
+                decoded = json.decode(content)
+                if decoded and type(decoded) == "table" then
+                    local fileLanguage = file:sub(1, -6)
+                    local languageID
+                    for id,_ in pairs(decoded) do
+                        languageID = id
+                    end
+                    if fileLanguage and languageID then
+                        mod.installedLanguages[#mod.installedLanguages + 1] = { id = languageID, language = fileLanguage }
+                    end
                 end
-                languageFile:close()
             end
         end
     end
@@ -192,6 +203,7 @@ local plugin = {
     group           = "core",
     dependencies    = {
         ["core.preferences.panels.general"] = "general",
+        ["core.preferences.manager"]        = "manager",
     }
 }
 
@@ -216,6 +228,15 @@ function plugin.init(deps)
                 value       = mod.getUserLocale,
                 options     = getLanguageOptions,
                 required    = true,
+                onchange    = function(_, params)
+                    dialog.webviewAlert(deps.manager.getWebview(), function(result)
+                        if result == i18n("yes") then
+                            config.set("language", params.value)
+                            i18n.setLocale(params.value)
+                            hs.reload()
+                        end
+                    end, i18n("changeLanguageRestart"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))
+                end,
             }
         )
 

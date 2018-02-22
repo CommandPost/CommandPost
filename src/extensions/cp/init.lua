@@ -48,11 +48,16 @@ local console                   = require("hs.console")
 local fs                        = require("hs.fs")
 local host                      = require("hs.host")
 local image                     = require("hs.image")
-local ipc                       = require("hs.ipc")                         -- Not used in `init.lua`, but is required to "jump start" the CLI support
+local json                      = require("hs.json")
 local keycodes                  = require("hs.keycodes")
 local notify                    = require("hs.notify")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
+
+--------------------------------------------------------------------------------
+-- Not used in `init.lua`, but is required to "jump start" the CLI support:
+--------------------------------------------------------------------------------
+require("hs.ipc")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -66,13 +71,29 @@ local tools                     = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 i18n = require("i18n")
-local languagePath = config.scriptPath .. "/cp/resources/languages/"
+local languagePath = config.languagePath
+local allLanguages = {}
 for file in fs.dir(languagePath) do
-    if file:sub(-4) == ".lua" then
-        i18n.loadFile(languagePath .. file)
+    if file:sub(-5) == ".json" then
+        local path = languagePath .. "/" .. file
+        local data = io.open(path, "r")
+        local content, decoded
+        if data then
+            content = data:read("*all")
+            data:close()
+        end
+        if content then
+            decoded = json.decode(content)
+            if decoded and type(decoded) == "table" then
+                allLanguages = tools.mergeTable(allLanguages, decoded)
+            end
+        end
     end
 end
-local userLocale = nil
+if next(allLanguages) ~= nil then
+    i18n.load(allLanguages)
+end
+local userLocale
 if config.get("language") == nil then
     userLocale = host.locale.current()
 else
@@ -124,7 +145,7 @@ function mod.init()
     if debugMode then
         logger.defaultLogLevel = 'debug'
         require("cp.developer")
-    else
+    --else
         --------------------------------------------------------------------------------
         -- NOTE: For now, whilst we're in beta, it's probably better if our error
         --       logs contain all the debug message we write to the console, so we can
@@ -208,7 +229,7 @@ function mod.init()
     hs.shutdownCallback = function()
         local shutdownCallbacks = config.shutdownCallback:getAll()
         if shutdownCallbacks and type(shutdownCallbacks) == "table" then
-            for i, v in pairs(shutdownCallbacks) do
+            for _, v in pairs(shutdownCallbacks) do
                 local fn = v:callbackFn()
                 if fn and type(fn) == "function" then
                     fn()
@@ -223,7 +244,7 @@ function mod.init()
     hs.textDroppedToDockIconCallback = function(value)
         local textDroppedToDockIconCallbacks = config.textDroppedToDockIconCallback:getAll()
         if textDroppedToDockIconCallbacks and type(textDroppedToDockIconCallbacks) == "table" then
-            for i, v in pairs(textDroppedToDockIconCallbacks) do
+            for _, v in pairs(textDroppedToDockIconCallbacks) do
                 local fn = v:callbackFn()
                 if fn and type(fn) == "function" then
                     fn(value)
@@ -238,7 +259,7 @@ function mod.init()
     hs.fileDroppedToDockIconCallback = function(value)
         local fileDroppedToDockIconCallbacks = config.fileDroppedToDockIconCallback:getAll()
         if fileDroppedToDockIconCallbacks and type(fileDroppedToDockIconCallbacks) == "table" then
-            for i, v in pairs(fileDroppedToDockIconCallbacks) do
+            for _, v in pairs(fileDroppedToDockIconCallbacks) do
                 local fn = v:callbackFn()
                 if fn and type(fn) == "function" then
                     fn(value)
@@ -253,7 +274,7 @@ function mod.init()
     hs.dockIconClickCallback = function(value)
         local dockIconClickCallbacks = config.dockIconClickCallback:getAll()
         if dockIconClickCallbacks and type(dockIconClickCallbacks) == "table" then
-            for i, v in pairs(dockIconClickCallbacks) do
+            for _, v in pairs(dockIconClickCallbacks) do
                 local fn = v:callbackFn()
                 if fn and type(fn) == "function" then
                     fn(value)
