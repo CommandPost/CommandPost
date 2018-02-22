@@ -113,12 +113,12 @@ mod.menubarIconPath     = mod.assetsPath .. "/CommandPost.png"
 --- cp.config.languagePath
 --- Constant
 --- Path to the Languages Folder
-mod.languagePath		= mod.scriptPath .. "/cp/resources/languages/"
+mod.languagePath		= mod.scriptPath .. "/languages/"
 
 --- cp.config.sourceExtensions
 --- Constant
 --- Extensions for files which will trigger a reload when modified.
-mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css" }
+mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css", ".json" }
 
 --- cp.config.sourceWatcher
 --- Constant
