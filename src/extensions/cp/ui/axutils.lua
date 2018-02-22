@@ -109,7 +109,7 @@ function axutils.childMatching(element, matcherFn, index)
 		end
 		if #children > 0 then
 			local count = 0
-			for i,child in ipairs(children) do
+			for _,child in ipairs(children) do
 				if matcherFn(child) then
 					count = count + 1
 					if count == index then
@@ -160,7 +160,8 @@ end
 --- Returns:
 --- * `true` if `a` is left of `b`.
 function axutils.compareLeftToRight(a, b)
-	return a:frame().x < b:frame().x
+	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+	return aFrame and bFrame and aFrame.x < bFrame.x or false
 end
 
 --- cp.ui.axutils.compareRightToLeft(a, b) -> boolean
@@ -174,8 +175,8 @@ end
 --- Returns:
 --- * `true` if `a` is right of `b`.
 function axutils.compareRightToLeft(a, b)
-	local aFrame, bFrame = a:frame(), b:frame()
-	return aFrame.x + aFrame.w > bFrame.x + bFrame.w
+	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+	return aFrame and bFrame and aFrame.x + aFrame.w > bFrame.x + bFrame.w or false
 end
 
 --- cp.ui.axutils.compareTopToBottom(a, b) -> boolean
@@ -189,7 +190,8 @@ end
 --- Returns:
 --- * `true` if `a` is above `b`.
 function axutils.compareTopToBottom(a, b)
-	return a:frame().y < b:frame().y
+	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+	return aFrame and bFrame and aFrame.y < bFrame.y or false
 end
 
 
@@ -204,8 +206,8 @@ end
 --- Returns:
 --- * `true` if `a` is below `b`.
 function axutils.compareBottomToTop(a, b)
-	local aFrame, bFrame = a:frame(), b:frame()
-	return aFrame.y + aFrame.h > bFrame.y + bFrame.h
+	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+	return aFrame and bFrame and aFrame.y + aFrame.h > bFrame.y + bFrame.h or false
 end
 
 --- cp.ui.axutils.childFromLeft(element, index) -> axuielement

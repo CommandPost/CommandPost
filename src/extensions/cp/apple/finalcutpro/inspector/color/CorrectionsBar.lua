@@ -61,6 +61,7 @@ function CorrectionsBar.matches(element)
         local children = element:children()
         -- sort them left-to-right
         sort(children, axutils.compareLeftToRight)
+        -- log.df("matches: children left to right: \n%s", _inspect(children))
         return #children >= 2
            and children[1]:attributeValue("AXRole") == "AXCheckBox"
            and children[2]:attributeValue("AXRole") == "AXMenuButton"
@@ -124,10 +125,10 @@ end
 function CorrectionsBar:UI()
     return axutils.cache(self, "_ui",
         function()
-            local ui = self:parent():UI()
+            local ui = self:parent():topBarUI()
             if ui then
-                local barUI = axutils.childFromTop(ui, 1)
-                return CorrectionsBar.matches(barUI[1]) and barUI[1] or nil
+                local barUI = ui[1]
+                return CorrectionsBar.matches(barUI) and barUI or nil
             else
                 return nil
             end
@@ -147,6 +148,20 @@ end
 ---  * `true` if showing, otherwise `false`
 function CorrectionsBar:isShowing()
     return self:UI() ~= nil
+end
+
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:show() -> self
+--- Method
+--- Attempts to show the bar.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `CorrectionsBar` instance.
+function CorrectionsBar:show()
+    self:parent():show()
+    return self
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:menuButton() -> MenuButton

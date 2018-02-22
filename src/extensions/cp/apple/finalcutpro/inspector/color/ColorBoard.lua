@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log                                = require("hs.logger").new("timline")
+-- local log                                = require("hs.logger").new("colorBoard")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -127,13 +127,11 @@ end
 --- Returns:
 ---  * `true` if the `element` is a 10.4+ Color Board otherwise `false`
 function ColorBoard.matchesCurrent(element)
-    for _, child in ipairs(element) do
-        local splitGroup = axutils.childWith(child, "AXRole", "AXSplitGroup")
-        if splitGroup then
-            local colorBoardGroup = axutils.childWith(splitGroup, "AXIdentifier", id "ColorBoardGroup")
-            if colorBoardGroup and colorBoardGroup[1] and colorBoardGroup[1][1] and #colorBoardGroup[1][1]:attributeValue("AXChildren") >= 19 then
-                return true
-            end
+    if element and #element == 1 then
+        local scroll = element[1]
+        if scroll:attributeValue("AXRole") == "AXScrollArea" then
+            local aspectGroup = axutils.childFromTop(scroll, 2)
+            return RadioGroup.matches(aspectGroup)
         end
     end
     return false
@@ -206,7 +204,14 @@ end
 --- Returns:
 ---  * A `hs._asm.axuielement` object
 function ColorBoard:UI()
-    return self:parent():correctorUI()
+    return axutils.cache(self, "_ui", function()
+        local ui = self:parent():correctorUI()
+        if ui and ui[1] then
+            local board = ui[1]
+            return ColorBoard.matches(board) and board or nil
+        end
+        return nil
+    end, ColorBoard.matches)
 end
 
 function ColorBoard:contentUI()
@@ -415,22 +420,6 @@ function ColorBoard:current()
         return self:exposure()
     end
     return self:color()
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:colorSatExpUI() -> hs._asm.axuielement object
---- Method
---- Gets the `hs._asm.axuielement` object for the `AXRadioGroup` which houses the "Color", "Saturation" and "Exposure" button
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function ColorBoard:colorSatExpUI()
-    return axutils.cache(self, "_colorSatExp", function()
-        local ui = self:contentUI()
-        return ui and axutils.childWith(ui, "AXIdentifier", id "ColorSatExp")
-    end)
 end
 
 -----------------------------------------------------------------------

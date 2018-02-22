@@ -152,6 +152,29 @@ function ColorInspector:UI()
     )
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:topBarUI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object representing the top bar.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
+function ColorInspector:topBarUI()
+    return axutils.cache(self, "_topBar",
+        function()
+            local ui = self:UI()
+            if ui and #ui == 1 then
+                local split = ui[1]
+                return #split == 3 and axutils.childFromTop(split, 1) or nil
+            end
+            return nil
+        end,
+        function(element) return element:attributeValue("AXRole") == "AXGroup" end
+    )
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:correctorUI() -> hs._asm.axuielement object
 --- Method
 --- Returns the `hs._asm.axuielement` object representing the currently-selected corrector panel.
@@ -169,8 +192,8 @@ function ColorInspector:correctorUI()
                 if ColorBoard.matchesOriginal(ui) then -- 10.3 Color Board
                     return ui
                 elseif ColorInspector.matches(ui) then -- 10.4+ Color Inspector
-                    local bottomPanel = axutils.childFromBottom(ui, 1)
-                    return bottomPanel and bottomPanel[1] or nil
+                    local split = ui[1]
+                    return axutils.childFromTop(split, 2)
                 end
             end
             return nil
@@ -242,6 +265,7 @@ function ColorInspector:show()
     if not self:isShowing() then
         self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
     end
+    return self
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self
