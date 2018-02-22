@@ -520,7 +520,7 @@ end
 ---  * None
 function mod.start()
 	if not mod._midiDevices then
-		log.df("Starting MIDI Watchers")
+		--log.df("Starting MIDI Watchers")
 		mod._midiDevices = {}
 	end
 
@@ -592,8 +592,8 @@ function mod.stop()
     --------------------------------------------------------------------------------
     -- Destroy MIDI Watchers:
     --------------------------------------------------------------------------------
-	log.df("Stopping MIDI Watchers")
-	if mod._midiDevices then
+	--log.df("Stopping MIDI Watchers")
+	if mod._midiDevices and type(mod._midiDevices) == "table" then
         for _, id in pairs(mod._midiDevices) do
             mod._midiDevices[id] = nil
         end
