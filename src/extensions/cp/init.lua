@@ -21,6 +21,11 @@ local logger                    = require("hs.logger"); logger.defaultLogLevel =
 local log                       = logger.new("cp")
 
 --------------------------------------------------------------------------------
+-- Save Error Log History across sessions:
+--------------------------------------------------------------------------------
+history                         = require("cp.console.history")
+
+--------------------------------------------------------------------------------
 -- Show Dock Icon during boot:
 --------------------------------------------------------------------------------
 hs.dockIcon(true)
