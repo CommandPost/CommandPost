@@ -4,6 +4,8 @@ globals = {
 	"i18n",
 	"table",
 	"cpLoaded",
+	"history",
+	"string",
 	-- used in cp.test
 	"ok", "eq",
 }
