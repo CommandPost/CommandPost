@@ -509,6 +509,28 @@ function mod.virtualDevices()
     return mod._virtualDevices
 end
 
+-- plugins.core.midi.manager._forcefullyWatchMIDIDevices -> table
+-- Variable
+-- Table of forced MIDI Devices.
+mod._forcefullyWatchMIDIDevices = {}
+
+--- plugins.core.midi.manager.forcefullyWatchMIDIDevices(devices) -> none
+--- Function
+--- Forces CommandPost to watch a table of MIDI devices.
+---
+--- Parameters:
+---  * devices - A table containing all the device names you want to always watch.
+---
+--- Returns:
+---  * A table of Virtual MIDI Source Names.
+function mod.forcefullyWatchMIDIDevices(devices)
+    if devices and type(devices) == "table" then
+        for _, device in pairs(devices) do
+            table.insert(mod._forcefullyWatchMIDIDevices, device)
+        end
+    end
+end
+
 --- plugins.core.midi.manager.start() -> boolean
 --- Function
 --- Starts the MIDI Plugin
@@ -543,6 +565,43 @@ function mod.start()
             table.insert(usedDevices, vv.device)
         end
     end
+
+    --------------------------------------------------------------------------------
+    -- Take into account Sync features too:
+    --------------------------------------------------------------------------------
+    local transmitMMCDevice = mod.transmitMMCDevice()
+    if mod.transmitMMC() and transmitMMCDevice and type(transmitMMCDevice) == "string" and transmitMMCDevice ~= "" then
+        log.df("Using transmitMMC")
+        table.insert(usedDevices, transmitMMCDevice)
+    end
+
+    local listenMMCDevice = mod.listenMMCDevice()
+    if mod.listenMMC() and listenMMCDevice and type(listenMMCDevice) == "string" and listenMMCDevice ~= "" then
+        log.df("Using listenMMC")
+        table.insert(usedDevices, listenMMCDevice)
+    end
+
+    local transmitMTCDevice = mod.transmitMTCDevice()
+    if mod.transmitMTC() and transmitMTCDevice and type(transmitMTCDevice) == "string" and transmitMTCDevice ~= "" then
+        log.df("Using transmitMTC")
+        table.insert(usedDevices, transmitMTCDevice)
+    end
+
+    local listenMTCDevice = mod.listenMTCDevice()
+    if mod.listenMTC() and listenMTCDevice and type(listenMTCDevice) == "string" and listenMTCDevice ~= "" then
+        log.df("Using listenMTC")
+        table.insert(usedDevices, listenMTCDevice)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Take into account forced MIDI Devices:
+    --------------------------------------------------------------------------------
+    for _, device in pairs(mod._forcefullyWatchMIDIDevices) do
+        table.insert(mod._forcefullyWatchMIDIDevices, device)
+    end
+
+
+    log.df("Used Devices: %s", hs.inspect(usedDevices))
 
     --------------------------------------------------------------------------------
     -- Create a table of both Physical & Virtual MIDI Devices:
@@ -653,6 +712,79 @@ end
 
 --------------------------------------------------------------------------------
 --
+-- MIDI SYNC:
+--
+--------------------------------------------------------------------------------
+
+
+
+
+--- plugins.core.midi.manager.transmitMMC <cp.prop: boolean>
+--- Field
+--- Enable or disable Transmit MMC Support.
+mod.transmitMMC = config.prop("transmitMMC", false):watch(function(enabled)
+    if enabled then
+        log.df("Transmit MMC Enabled!")
+    else
+        log.df("Transmit MMC Disabled!")
+    end
+end)
+
+--- plugins.core.midi.manager.listenMMC <cp.prop: boolean>
+--- Field
+--- Enable or disable Listen MMC Support.
+mod.listenMMC = config.prop("listenMMC", false):watch(function(enabled)
+    if enabled then
+        log.df("Listen MMC Enabled!")
+    else
+        log.df("Listen MMC Disabled!")
+    end
+end)
+
+--- plugins.core.midi.manager.transmitMTC <cp.prop: boolean>
+--- Field
+--- Enable or disable Transmit MTC Support.
+mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
+    if enabled then
+        log.df("Transmit MTC Enabled!")
+    else
+        log.df("Transmit MTC Disabled!")
+    end
+end)
+
+--- plugins.core.midi.manager.listenMTC <cp.prop: boolean>
+--- Field
+--- Enable or disable Listen MTC Support.
+mod.listenMTC = config.prop("listenMTC", false):watch(function(enabled)
+    if enabled then
+        log.df("Listen MTC Enabled!")
+    else
+        log.df("Listen MTC Disabled!")
+    end
+end)
+
+--- plugins.core.midi.manager.transmitMMCDevice <cp.prop: string>
+--- Field
+--- MIDI Device
+mod.transmitMMCDevice = config.prop("transmitMMCDevice", "")
+
+--- plugins.core.midi.manager.listenMMCDevice <cp.prop: string>
+--- Field
+--- MIDI Device
+mod.listenMMCDevice = config.prop("listenMMCDevice", "")
+
+--- plugins.core.midi.manager.transmitMTCDevice <cp.prop: string>
+--- Field
+--- MIDI Device
+mod.transmitMTCDevice = config.prop("transmitMTCDevice", "")
+
+--- plugins.core.midi.manager.listenMTCDevice <cp.prop: string>
+--- Field
+--- MIDI Device
+mod.listenMTCDevice = config.prop("listenMTCDevice", "")
+
+--------------------------------------------------------------------------------
+--
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -677,7 +809,7 @@ function plugin.init(deps, env)
 	mod._deviceNames = midi.devices() or {}
 
 	--------------------------------------------------------------------------------
-	-- Commands:
+	-- Setup Commands:
 	--------------------------------------------------------------------------------
 	local global = deps.global
 	global:add("cpMIDI")
@@ -687,6 +819,9 @@ function plugin.init(deps, env)
 	return mod.init(deps, env)
 end
 
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.postInit(deps, env)
 
 	--------------------------------------------------------------------------------
@@ -724,6 +859,9 @@ function plugin.postInit(deps, env)
 			:onActionId(function() return id end)
 	end
 
+    --------------------------------------------------------------------------------
+    -- Start Plugin:
+    --------------------------------------------------------------------------------
 	if mod.enabled() then
 		mod.start()
 	end

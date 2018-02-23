@@ -1,5 +1,12 @@
 {
     "en": {
+    	"midiTools": "MIDI Tools",
+    	"midiMachineControl": "MIDI Machine Control (MMC)",
+    	"transmitMMC": "Transmit MMC",
+    	"listenMMC": "Listen to MMC Input",
+    	"midiTimecode": "MIDI Time Code (MTC)",
+    	"transmitMTC": "Transmit MTC",
+    	"listenMTC": "Listen to MTC Input",
     	"suggestATranslation": "Suggest A New Language",
     	"reportATranslationMistake": "Report a Translation Mistake",
     	"changeLanguageRestart": "Changing languages requires CommandPost to Restart.",
