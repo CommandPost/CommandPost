@@ -219,7 +219,7 @@ function plugin.init(deps)
 		:addButton(64,
 			{
 				label = i18n("openErrorLog"),
-				width = 150,
+				width = 200,
 				onclick = mod.openErrorLog,
 			}
 		)
@@ -228,7 +228,7 @@ function plugin.init(deps)
 		:addButton(75,
 			{
 				label	= getCommandLineToolTitle(),
-				width	= 150,
+				width	= 200,
 				onclick	= mod.toggleCommandLineTool,
 				id		= "commandLineTool",
 			}
@@ -239,7 +239,7 @@ function plugin.init(deps)
 		:addButton(85,
 			{
 				label	= i18n("trashPreferences"),
-				width	= 150,
+				width	= 200,
 				onclick	= mod.trashPreferences,
 			}
 		)

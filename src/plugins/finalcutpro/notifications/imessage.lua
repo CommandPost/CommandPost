@@ -189,6 +189,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+5,
                 {
+                    width = 200,
                     label = i18n("sendTestNotification"),
                     onclick = function()
                         mod.sendNotification(i18n("thisIsATest"))
@@ -198,6 +199,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+6,
                 {
+                    width = 200,
                     label = i18n("openMessages"),
                     onclick = function()
                         os.execute("open /Applications/Messages.app")
@@ -207,6 +209,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+7,
                 {
+                    width = 200,
                     label = i18n("openContacts"),
                     onclick = function()
                         os.execute("open /Applications/Contacts.app")

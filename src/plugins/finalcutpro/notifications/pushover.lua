@@ -265,6 +265,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+3,
                 {
+                    width = 200,
                     label = i18n("sendTestNotification"),
                     onclick = function()
                         if mod.apiValidated() then
@@ -282,6 +283,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+4,
                 {
+                    width = 200,
                     label = i18n("pushoverSignup"),
                     onclick = function()
                         os.execute('open "https://pushover.net/login"')
@@ -291,6 +293,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+5,
                 {
+                    width = 200,
                     label = i18n("getCommandPostPushoverAPIKey"),
                     onclick = function()
                         os.execute('open "https://pushover.net/apps/clone/commandpost"')
@@ -333,6 +336,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+8,
                 {
+                    width = 200,
                     label = i18n("validate"),
                     onclick = function()
                         if not mod.userAPIKey() or not mod.appAPIKey() then

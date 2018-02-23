@@ -224,7 +224,7 @@ function plugin.init(deps)
         :addHeading(40, i18n("languageHeading"))
         :addSelect(41,
             {
-                label       = i18n("commandPostLanguage"),
+                width       = 237,
                 value       = mod.getUserLocale,
                 options     = getLanguageOptions,
                 required    = true,
@@ -239,7 +239,20 @@ function plugin.init(deps)
                 end,
             }
         )
-
+        :addButton(41.2,
+            {
+                label 		= i18n("suggestATranslation"),
+                width		= 200,
+                onclick		= function() hs.execute("open '" .. config.translationURL .. "'") end,
+            }
+        )
+        :addButton(41.3,
+            {
+                label 		= i18n("reportATranslationMistake"),
+                width		= 200,
+                onclick		= function() hs.execute("open '" .. config.translationURL .. "'") end,
+            }
+        )
     return mod
 end
 

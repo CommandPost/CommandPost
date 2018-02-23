@@ -81,13 +81,13 @@
 
 .resetShortcuts {
 	margin: 10px 0px;
-	text-align: left;
+	text-align: center !important;
 	float: left;
 }
 
 .resetShortcutsToNone {
 	margin: 10px 0px;
-	text-align: right;
+	text-align: center !important;
 	float: right;
 }
 

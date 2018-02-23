@@ -108,7 +108,7 @@ function plugin.init(deps)
 	:addButton(52,
 		{
 			label 		= i18n("openPrivacyPolicy"),
-			width		= 150,
+			width		= 200,
 			onclick		= mod.openPrivacyPolicy,
 		}
 	)

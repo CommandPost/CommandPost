@@ -103,7 +103,7 @@ function plugin.init(deps)
             :addButton(61.1,
                 {
                     label = i18n("scanFinalCutPro"),
-                    width = 150,
+                    width = 200,
                     onclick = mod.scanFinalCutPro,
                 }
             )

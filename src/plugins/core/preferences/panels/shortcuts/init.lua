@@ -613,6 +613,7 @@ function mod.init(deps, env)
         :addContent(10, generateContent, true)
         :addButton(20,
             {
+                width       = 200,
                 label       = i18n("resetShortcuts"),
                 onclick     = resetShortcuts,
                 class       = "resetShortcuts",
@@ -620,6 +621,7 @@ function mod.init(deps, env)
         )
         :addButton(21,
             {
+                width       = 200,
                 label       = i18n("resetShortcutsAllToNone"),
                 onclick     = resetShortcutsToNone,
                 class       = "resetShortcutsToNone",

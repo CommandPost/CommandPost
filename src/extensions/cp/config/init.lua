@@ -32,27 +32,32 @@ local watcher			= require("cp.watcher")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- cp.config.appName
+--- cp.config.appName -> string
 --- Constant
 --- The name of the Application
 mod.appName			= "CommandPost"
 
---- cp.config.appVersion
+--- cp.config.appVersion -> string
 --- Constant
 --- Prefix used for Configuration Settings
 mod.appVersion       = hs.processInfo["version"]
 
---- cp.config.configPrefix
+--- cp.config.configPrefix -> string
 --- Constant
 --- Prefix used for Configuration Settings
 mod.configPrefix		= "cp"
 
---- cp.config.privacyPolicyURL
+--- cp.config.privacyPolicyURL -> string
 --- Constant
 --- URL for Privacy Policy
 mod.privacyPolicyURL      = "https://help.commandpost.io/getting_started/privacy_policy/"
 
---- cp.config.scriptPath
+--- cp.config.translationURL -> string
+--- Constant
+--- URL for Translations
+mod.translationURL      = "https://poeditor.com/join/project/QWvOQlF1Sy"
+
+--- cp.config.scriptPath -> string
 --- Constant
 --- Path to where Application Scripts are stored
 if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
@@ -67,32 +72,32 @@ else
 	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions"
 end
 
---- cp.config.assetsPath
+--- cp.config.assetsPath -> string
 --- Constant
 --- Path to where Application Assets are stored
 mod.assetsPath			= mod.scriptPath .. "/cp/resources/assets"
 
---- cp.config.basePath
+--- cp.config.basePath -> string
 --- Constant
 --- Path to where the Extensions & Plugins folders are stored.
 mod.basePath = fs.pathToAbsolute(mod.scriptPath .. "/..")
 
---- cp.config.bundledPluginsPath
+--- cp.config.bundledPluginsPath -> string
 --- Constant
 --- The path to bundled plugins
 mod.bundledPluginsPath	= mod.basePath .. "/plugins"
 
---- cp.config.userConfigRootPath
+--- cp.config.userConfigRootPath -> string
 --- Constant
 --- The path to user configuration folders
 mod.userConfigRootPath = os.getenv("HOME") .. "/Library/Application Support/CommandPost"
 
---- cp.config.userPluginsPath
+--- cp.config.userPluginsPath -> string
 --- Constant
 --- The path to user plugins
 mod.userPluginsPath		= mod.userConfigRootPath .. "/Plugins"
 
---- cp.config.pluginPaths
+--- cp.config.pluginPaths -> table
 --- Constant
 --- Table of Plugins Paths. Earlier entries take precedence.
 mod.pluginPaths			= {
@@ -100,37 +105,37 @@ mod.pluginPaths			= {
 	mod.bundledPluginsPath,
 }
 
---- cp.config.iconPath
+--- cp.config.iconPath -> string
 --- Constant
 --- Path to the Application Icon
 mod.iconPath            = hs.processInfo["resourcePath"] .. "/AppIcon.icns"
 
---- cp.config.menubarIconPath
+--- cp.config.menubarIconPath -> string
 --- Constant
 --- Path to the Menubar Application Icon
 mod.menubarIconPath     = mod.assetsPath .. "/CommandPost.png"
 
---- cp.config.languagePath
+--- cp.config.languagePath -> string
 --- Constant
 --- Path to the Languages Folder
 mod.languagePath		= mod.scriptPath .. "/languages/"
 
---- cp.config.sourceExtensions
+--- cp.config.sourceExtensions -> table
 --- Constant
 --- Extensions for files which will trigger a reload when modified.
 mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css", ".json" }
 
---- cp.config.sourceWatcher
+--- cp.config.sourceWatcher -> SourceWatcher
 --- Constant
 --- A `cp.sourcewatcher` that will watch for source files and reload CommandPost if any change.
 mod.sourceWatcher		= sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
 
---- cp.config.bundleID
+--- cp.config.bundleID -> string
 --- Constant
 --- Application's Bundle ID
 mod.bundleID			= hs.processInfo["bundleID"]
 
---- cp.config.processID
+--- cp.config.processID -> number
 --- Constant
 --- Application's Process ID
 mod.processID			= hs.processInfo["processID"]

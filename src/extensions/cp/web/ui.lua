@@ -264,9 +264,15 @@ function ui.select(params)
 		return options
 	end
 
+	local style
+	if params.width then
+		style = "width: " .. params.width .. "px;"
+	end
+
 	-- create the
 	return html.select {
 		id 		= params.id,
+		style   = style,
 		name	= params.name or params.id,
 		class	= params.class,
 	} (optionGenerator, true)

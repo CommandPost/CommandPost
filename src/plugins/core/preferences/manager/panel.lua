@@ -372,10 +372,11 @@ end
 --- Adds a select to the panel.
 ---
 --- Parameters:
+---  * priority - Priority of the item as number.
 ---  * params - A table of parameters
 ---
 --- Returns:
---- * The panel object.
+---  * The panel object.
 function panel:addSelect(priority, params)
 
     --------------------------------------------------------------------------------
@@ -386,9 +387,13 @@ function panel:addSelect(priority, params)
     --------------------------------------------------------------------------------
     -- Create the select:
     --------------------------------------------------------------------------------
-    local select = html.p { class=getClass(params) } (
-        html(params.label) .. ": " .. ui.select(params)
-    )
+    local result
+    if params.label then
+        result = html(params.label) .. ": " .. ui.select(params)
+    else
+       result = ui.select(params)
+    end
+    local select = html.p { class=getClass(params) } (result)
 
     if params.onchange then
         self:addHandler("onchange", params.id, params.onchange, { "value" })

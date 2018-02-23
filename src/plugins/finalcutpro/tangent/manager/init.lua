@@ -1082,24 +1082,24 @@ function plugin.init(deps, env)
                 <style>
                     .tangentButtonOne {
                         float:left;
-                        width: 141px;
+                        width: 192px;
                     }
                     .tangentButtonTwo {
                         float:left;
                         margin-left: 5px;
-                        width: 141px;
+                        width: 192px;
                     }
                     .tangentButtonThree {
                         clear:both;
                         float:left;
                         margin-top: 5px;
-                        width: 141px;
+                        width: 192px;
                     }
                     .tangentButtonFour {
                         float:left;
                         margin-top: 5px;
                         margin-left: 5px;
-                        width: 141px;
+                        width: 192px;
                     }
                 </style>
             ]], true)

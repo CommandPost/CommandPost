@@ -451,6 +451,7 @@ function mod.init(deps, env)
 
     mod._panel:addButton(20,
         {
+            width       = 200,
             label       = i18n("streamDeckReset"),
             onclick     = resetStreamDeck,
             class       = "resetShortcuts",

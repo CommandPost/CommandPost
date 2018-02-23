@@ -1,5 +1,7 @@
 {
     "en": {
+    	"suggestATranslation": "Suggest a Translation",
+    	"reportATranslationMistake": "Report a Translation Mistake",
     	"changeLanguageRestart": "Changing languages requires CommandPost to Restart.",
         "loadFinalCutProFailed": "Failed to load Final Cut Pro. Please try again.",
         "cpGenerator8_title": "Apply Generator 8",

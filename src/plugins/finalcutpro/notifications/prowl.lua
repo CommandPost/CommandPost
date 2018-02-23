@@ -253,6 +253,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+5,
                 {
+                    width = 200,
                     label = i18n("sendTestNotification"),
                     onclick = function()
                         local success, errorMessage = mod.sendNotification(i18n("thisIsATest"), i18n("testTitle"))
@@ -265,6 +266,7 @@ function plugin.init(deps)
             )
             :addButton(PRIORITY+6,
                 {
+                    width = 200,
                     label = i18n("getProwlAccount"),
                     onclick = function()
                         os.execute("open https://www.prowlapp.com/register.php")
