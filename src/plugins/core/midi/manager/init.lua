@@ -343,6 +343,138 @@ function mod.groupStatus(groupID, status)
 	mod.update()
 end
 
+mod._listenMMCFunctions = {}
+
+function mod.registerListenMMCFunction(fn)
+    if fn and type(fn) == "function" then
+        table.insert(mod._listenMMCFunctions, fn)
+    else
+        log.ef("Expected Function in registerListenMMCFunction, but got: %s", fn)
+    end
+end
+
+
+function processMMC(sysexData)
+    ---------------------------------------------------------------------------------------------
+    -- An MMC message is either an MMC command (Sub-ID#1=06) or an MMC response
+    -- (Sub-ID#1=07). As a SysEx message it is formatted (all numbers hexadecimal):
+    --
+    --      F0 7F <Device-ID> <06|07> [<Sub-ID#2> [<parameters>]] F7
+    --      Device-ID: MMC device's ID#; value 00-7F (7F = all devices); AKA "channel number"
+    ---------------------------------------------------------------------------------------------
+    --log.df("Got sysexData: %s", sysexData)
+    log.df("hexDump: %s", hs.utf8.hexDump(sysexData))
+
+    local data = {}
+    for c in sysexData:gmatch"." do
+        table.insert(data, string.format("%02X",string.byte(c)))
+    end
+
+    --log.df("Data: %s", hs.inspect(data))
+
+    --log.df("--------------")
+
+    -- MIDI MONITOR:    00  F0 7F 7F 06 44 06 01 21  03 05 10 00 F7           |    D  !     |
+    -- COMMANDPOST:     00 : 06 44 06 01 21 03 05 10                          : .D..!...
+
+    if data then
+        if data[1] == "06" then
+            --------------------------------------------------------------------------------
+            -- We have a command:
+            --------------------------------------------------------------------------------
+            if data[2] == "01" then
+                log.df("Stop")
+            elseif data[2] == "02" then
+                log.df("Play")
+            elseif data[2] == "03" then
+                log.df("Deferred Play (play after no longer busy)")
+            elseif data[2] == "04" then
+                log.df("Fast Forward")
+            elseif data[2] == "05" then
+                log.df("Rewind")
+            elseif data[2] == "06" then
+                log.df("Record Strobe (AKA [[Punch in/out|Punch In]])")
+            elseif data[2] == "07" then
+                log.df("Record Exit (AKA [[Punch out (music)|Punch out]])")
+            elseif data[2] == "08" then
+                log.df("Record Pause")
+            elseif data[2] == "09" then
+                log.df("Pause (pause playback)")
+            elseif data[2] == "0A" then
+                log.df("Eject (disengage media container from MMC device)")
+            elseif data[2] == "0B" then
+                log.df("Chase")
+            elseif data[2] == "0D" then
+                log.df("MMC Reset (to default/startup state)")
+            elseif data[2] == "40" then
+                log.df("Write (AKA Record Ready, AKA Arm Tracks)")
+            elseif data[2] == "44" then
+
+                --------------------------------------------------------------------------------
+                -- F0 7F <Device-ID> 06 44 <length>=06 01 <hr> <mn> <sc> <fr> <ff> F7
+                --
+                -- Sub-ID#2 =44: LOCATE command
+                -- length: 06 Data byte count (always six bytes)
+                -- subcommand: 01 TARGET
+                -- hr: hours and type (as with MTC Fullframe); values 0-17 (= 0-23 decimal)
+                -- mn: minutes; values 0-3B (= 0-59 decimal)
+                -- sc: seconds; values 0-3B (= 0-59 decimal)
+                -- fr: frames; values 0-1D (= 0-29 decimal)
+                -- ff: sub-frames / fractional frames (leave at zero if un-sure); values 0-63 (= 0-99 decimal)
+                --------------------------------------------------------------------------------
+
+                --------------------------------------------------------------------------------
+                -- The data byte for the Hours hi nybble and frame-rate, the bits are interpreted as follows:
+                -- 0nnn xyyd
+                --
+                -- x is unused and set to 0.
+                -- d is the high bit of the Hours count.
+                -- yy defines the frame-rate as follows:
+                -- 00 = 24 fps (Film)
+                -- 01 = 25 fps (EBU)
+                -- 10 = 30 fps (SMPTE drop-frame)
+                -- 11 = 30 fps (SMPTE non-drop frame)
+                --------------------------------------------------------------------------------
+
+                log.df("Goto (AKA Locate)")
+
+                -- 06 44 06 01 21
+
+
+                if data[3] == "06" and data[4] == "01" then
+                    local hourHex = data[5]
+                    local minHex = data[6]
+                    local secHex = data[7]
+                    local frameHex = data[8]
+                    --local subframeHex = data[9]
+
+                    --[[
+                    log.df("hour: %s", tonumber(hourHex,16))
+                    log.df("minHex: %s", tonumber(minHex,16))
+                    log.df("secHex: %s", tonumber(secHex,16))
+                    log.df("frameHex: %s", tonumber(frameHex,16))
+                    --]]
+
+                else
+                    log.df("Bad Goto Data")
+                end
+            elseif data[2] == "47" then
+                log.df("Shuttle")
+            else
+                log.df("Unrecognised message")
+            end
+        elseif data[1] == "07" then
+            --------------------------------------------------------------------------------
+            -- We have a response:
+            --------------------------------------------------------------------------------
+        else
+            log.df("Invalid MMC Data")
+        end
+    end
+
+
+end
+
 --- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
 --- Function
 --- MIDI Callback
@@ -366,6 +498,21 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     --------------------------------------------------------------------------------
     if metadata.isVirtual == true then
         deviceName = "virtual_" .. deviceName
+    end
+
+    --------------------------------------------------------------------------------
+    -- Listen for MMC Callbacks:
+    ---------------------------- ----------------------------------------------------
+    local listenMMCDevice = mod.listenMMCDevice()
+    if mod.listenMMC() and listenMMCDevice and listenMMCDevice == deviceName and commandType == "systemExclusive" then
+        log.df("FOUND A MATCH FOR OUR MMC FEED!")
+        for _, v in pairs(mod._listenMMCFunctions) do
+            timer.doAfter(0.0000000000000000000001, function()
+                --v(activeGroup, deviceName, commandType, description, metadata)
+                log.df("deviceName: %s, commandType: %s, metadata: %s", deviceName, commandType, hs.inspect(metadata))
+                processMMC(metadata.sysexData)
+            end)
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -571,25 +718,21 @@ function mod.start()
     --------------------------------------------------------------------------------
     local transmitMMCDevice = mod.transmitMMCDevice()
     if mod.transmitMMC() and transmitMMCDevice and type(transmitMMCDevice) == "string" and transmitMMCDevice ~= "" then
-        log.df("Using transmitMMC")
         table.insert(usedDevices, transmitMMCDevice)
     end
 
     local listenMMCDevice = mod.listenMMCDevice()
     if mod.listenMMC() and listenMMCDevice and type(listenMMCDevice) == "string" and listenMMCDevice ~= "" then
-        log.df("Using listenMMC")
         table.insert(usedDevices, listenMMCDevice)
     end
 
     local transmitMTCDevice = mod.transmitMTCDevice()
     if mod.transmitMTC() and transmitMTCDevice and type(transmitMTCDevice) == "string" and transmitMTCDevice ~= "" then
-        log.df("Using transmitMTC")
         table.insert(usedDevices, transmitMTCDevice)
     end
 
     local listenMTCDevice = mod.listenMTCDevice()
     if mod.listenMTC() and listenMTCDevice and type(listenMTCDevice) == "string" and listenMTCDevice ~= "" then
-        log.df("Using listenMTC")
         table.insert(usedDevices, listenMTCDevice)
     end
 
@@ -599,7 +742,6 @@ function mod.start()
     for _, device in pairs(mod._forcefullyWatchMIDIDevices) do
         table.insert(mod._forcefullyWatchMIDIDevices, device)
     end
-
 
     log.df("Used Devices: %s", hs.inspect(usedDevices))
 
@@ -715,9 +857,6 @@ end
 -- MIDI SYNC:
 --
 --------------------------------------------------------------------------------
-
-
-
 
 --- plugins.core.midi.manager.transmitMMC <cp.prop: boolean>
 --- Field

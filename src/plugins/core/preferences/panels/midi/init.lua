@@ -735,9 +735,9 @@ end
 --  * A number
 function mod._calculateHeight()
     if mod._midi.enabled() then
-        return 830
+        return 780
     else
-        return 450
+        return 400
     end
 end
 
@@ -975,7 +975,6 @@ function mod.init(deps, env)
                 </div>
             </div>
         ]], true)
-        :addParagraph(5, "<br />", true)
         --------------------------------------------------------------------------------
         --
         -- MIDI CONTROLS:
@@ -1021,14 +1020,14 @@ function mod.init(deps, env)
             {
                 label       = i18n("midiResetGroup"),
                 onclick     = mod._resetMIDIGroup,
-                class       = "applyTopDeviceToAll",
+                class       = "midiResetGroup",
             }
         )
         :addButton(14,
             {
                 label       = i18n("midiResetAll"),
                 onclick     = mod._resetMIDI,
-                class       = "applyTopDeviceToAll",
+                class       = "midiResetGroup",
             }
         )
 

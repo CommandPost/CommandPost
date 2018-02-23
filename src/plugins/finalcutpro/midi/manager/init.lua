@@ -15,6 +15,11 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("fcpMidiMan")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
@@ -79,6 +84,9 @@ end
 function plugin.postInit()
     if mod._manager then
         mod.enabled:update()
+        mod._manager.registerListenMMCFunction(function(activeGroup, deviceName, commandType, description, metadata)
+            log.df("Final Cut Pro MMC Message Recieved!")
+        end)
     end
 end
 

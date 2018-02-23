@@ -97,13 +97,13 @@ midiRowType {
 }
 
 .openAudioMIDISetup {
-	margin: 10px 0px;
+	margin: 0px 0px 5px;
 	float: left;
 	width: 200px;
 }
 
 .refreshMidi {
-	margin: 10px 0px 0px 5px;
+	margin: 0px 0px 0px 5px;
 	text-align: center;
 	float: left;
 	width: 200px;
@@ -113,8 +113,14 @@ midiRowType {
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
-	width: 170px;
-	margin-left: 5px;
+	width: 200px;
+}
+
+.midiResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 200px;
 }
 
 .resetShortcutsToNone {
