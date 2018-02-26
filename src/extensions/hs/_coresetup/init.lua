@@ -80,10 +80,6 @@ hs.fileDroppedToDockIconCallback = nil
 ---  * You can override this function if you wish to route errors differently (e.g. for remote systems)
 
   function hs.showError(err)
-
-    i18n = require("i18n")
-	i18n.loadFile(hs.processInfo["resourcePath"] .. "/extensions/cp/resources/languages/en.lua")
-
     local dialog = require("hs.dialog")
 	local settings = require("hs.settings")
 	local debugMode = settings.get("cp.debugMode")
@@ -103,7 +99,7 @@ hs.fileDroppedToDockIconCallback = nil
             -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
             --------------------------------------------------------------------------------
             hs.openConsole()
-            local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedFatalError"), i18n("sendBugReport"), i18n("quit"))
+            local result = dialog.blockAlert("Opps! Something has gone wrong!", "I'm sorry, but an unexpected error has occurred and CommandPost must now close.\n\nWould you like to report this bug to the team?", "Send Bug Report", "Quit")
             if result == i18n("sendBugReport") then
                 local feedback = require("cp.feedback")
                 feedback.showFeedback(true)
@@ -115,7 +111,7 @@ hs.fileDroppedToDockIconCallback = nil
             -- NOT DEBUG MODE - CRASH HAPPENED AFTER BOOT - NON-FATAL ERROR:
             --------------------------------------------------------------------------------
             print("*** ERROR: "..err)
-            local result = dialog.blockAlert(i18n("somethingHasGoneWrong"), i18n("unexpectedError"), i18n("continue"), i18n("sendBugReport"))
+            local result = dialog.blockAlert("Opps! Something has gone wrong!", "I'm sorry, but an unexpected error has occurred.\n\nWould you like to report this bug to the team?", "Continue", "Send Bug Report")
             if result == i18n("sendBugReport") then
                 local feedback = require("cp.feedback")
                 feedback.showFeedback()
