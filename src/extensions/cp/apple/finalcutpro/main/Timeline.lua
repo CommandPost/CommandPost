@@ -13,14 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timeline")
+-- local log								= require("hs.logger").new("timeline")
 
 local eventtap							= require("hs.eventtap")
-local inspect							= require("hs.inspect")
 local timer								= require("hs.timer")
 
 local axutils							= require("cp.ui.axutils")
-local just								= require("cp.just")
 local prop								= require("cp.prop")
 
 local id								= require("cp.apple.finalcutpro.ids") "Timeline"
@@ -320,10 +318,10 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 			return
 		end
 
-		local viewFrame = content:viewFrame()
+		local contentFrame = content:viewFrame()
 		local playheadPosition = playhead:getPosition()
 
-		if viewFrame == nil or playheadPosition == nil then
+		if contentFrame == nil or playheadPosition == nil then
 			-- The timeline and/or playhead does not exist.
 			if status ~= Timeline.INVISIBLE then
 				status = Timeline.INVISIBLE
@@ -338,7 +336,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 		else
 			-- The timeline is visible. Let's track it!
 			-- Reset the original offset if the viewFrame gets too narrow
-			if originalOffset >= viewFrame.w then originalOffset = math.floor(viewFrame.w/2) end
+			if originalOffset >= contentFrame.w then originalOffset = math.floor(contentFrame.w/2) end
 
 			if playheadPosition == lastPosition then
 				-- it hasn't moved since the last check
@@ -354,7 +352,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
 			else
 				-- it's moving
 				local timelineFrame = content:timelineFrame()
-				local scrollWidth = timelineFrame.w - viewFrame.w
+				local scrollWidth = timelineFrame.w - contentFrame.w
 				local scrollPoint = timelineFrame.x*-1 + playheadPosition - originalOffset
 				local scrollTarget = scrollPoint/scrollWidth
 				local scrollValue = content:getScrollHorizontal()

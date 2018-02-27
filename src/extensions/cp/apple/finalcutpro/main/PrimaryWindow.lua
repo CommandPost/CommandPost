@@ -17,22 +17,15 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("primaryWindow")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local inspect						= require("hs.inspect")
+-- local log							= require("hs.logger").new("primaryWindow")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local just							= require("cp.just")
 local prop							= require("cp.prop")
 
 local Alert							= require("cp.ui.Alert")
-local Button						= require("cp.ui.Button")
 local Window						= require("cp.ui.Window")
 
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
@@ -86,6 +79,11 @@ function PrimaryWindow:new(app)
 --- Field
 --- The `axuielement` for the window.
 	o.UI = window.UI:wrap(o)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.hsWindow <cp.prop: hs.window; read-only>
+--- Field
+--- The `hs.window` instance for the window, or `nil` if it can't be found.
+	o.hsWindow = window.hsWindow:wrap(o)
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isShowing <cp.prop: boolean>
 --- Field
@@ -182,7 +180,7 @@ end
 function PrimaryWindow:leftGroupUI()
 	local root = self:rootGroupUI()
 	if root then
-		for i,child in ipairs(root) do
+		for _,child in ipairs(root) do
 			-----------------------------------------------------------------------
 			-- The left group has only one child:
 			-----------------------------------------------------------------------
