@@ -70,4 +70,10 @@ function Button:press()
 	return self
 end
 
+-- TODO: Add documentation
+function Button:frame()
+    local ui = self:UI()
+    return ui and ui:attributeValue("AXFrame")
+end
+
 return Button

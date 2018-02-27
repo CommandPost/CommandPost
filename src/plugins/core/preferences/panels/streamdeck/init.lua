@@ -243,7 +243,7 @@ local function streamDeckPanelCallback(id, params)
                 local handlerIds = mod._actionmanager.handlerIds()
                 for _,groupID in ipairs(commands.groupIds()) do
 
-                    log.df("Create activator groupID: %s", groupID)
+                    --log.df("Create activator groupID: %s", groupID)
 
                     --------------------------------------------------------------------------------
                     -- Create new Activator:

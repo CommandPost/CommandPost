@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.midi.manager ===
 ---
---- MIDI Plugin for Final Cut Pro.
+--- MIDI Manager Plugin for Final Cut Pro.
 
 --------------------------------------------------------------------------------
 --
@@ -24,6 +24,7 @@ local log										= require("hs.logger").new("fcpMidiMan")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
+local just                                      = require("cp.just")
 
 --------------------------------------------------------------------------------
 --
@@ -31,6 +32,11 @@ local fcp                                       = require("cp.apple.finalcutpro"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+--- plugins.finalcutpro.midi.manager.ID -> string
+--- Constant
+--- Group ID
+mod.ID = "fcpx"
 
 --- plugins.finalcutpro.midi.manager.enabled <cp.prop: boolean>
 --- Field
@@ -41,10 +47,10 @@ mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
         -- Update MIDI Commands when Final Cut Pro is shown or hidden:
         --------------------------------------------------------------------------------
         mod._fcpWatchID = fcp:watch({
-            active      = function() mod._manager.groupStatus("fcpx", true) end,
-            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
-            show        = function() mod._manager.groupStatus("fcpx", true) end,
-            hide        = function() mod._manager.groupStatus("fcpx", false) end,
+            active      = function() mod._manager.groupStatus(mod.ID, true) end,
+            inactive    = function() mod._manager.groupStatus(mod.ID, false) end,
+            show        = function() mod._manager.groupStatus(mod.ID, true) end,
+            hide        = function() mod._manager.groupStatus(mod.ID, false) end,
         })
     else
         --------------------------------------------------------------------------------
@@ -83,10 +89,45 @@ end
 --------------------------------------------------------------------------------
 function plugin.postInit()
     if mod._manager then
+
+        --------------------------------------------------------------------------------
+        -- Update Watchers:
+        --------------------------------------------------------------------------------
         mod.enabled:update()
-        mod._manager.registerListenMMCFunction(function(activeGroup, deviceName, commandType, description, metadata)
-            log.df("Final Cut Pro MMC Message Recieved!")
+
+        --------------------------------------------------------------------------------
+        -- Listen to MMC Commands in Final Cut Pro:
+        --------------------------------------------------------------------------------
+        mod._manager.registerListenMMCFunction(mod.ID, function(mmcType, timecode)
+            if mmcType == "GOTO" then
+                if timecode then
+                    --------------------------------------------------------------------------------
+                    -- Make sure FCPX is active:
+                    --------------------------------------------------------------------------------
+                    fcp:launch()
+
+                    --------------------------------------------------------------------------------
+                    -- Wait until FCPX is active:
+                    --------------------------------------------------------------------------------
+                    just.doUntil(function()
+                        return fcp:isFrontmost()
+                    end, 3)
+
+                    --------------------------------------------------------------------------------
+                    -- Jump to the correct timecode:
+                    --------------------------------------------------------------------------------
+                    fcp:timeline():playhead():setTimecode(timecode)
+                end
+            end
         end)
+
+        --------------------------------------------------------------------------------
+        -- Listen to MTC Commands in Final Cut Pro:
+        --------------------------------------------------------------------------------
+        mod._manager.registerListenMTCFunction(mod.ID, function(mtcType, timecode, framerate)
+            log.df("mtcType: %s, timecode: %s, framerate: %s", mtcType, timecode, framerate)
+        end)
+
     end
 end
 

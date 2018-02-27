@@ -185,6 +185,16 @@ mod._lastControllerChannel 		= nil
 mod._lastTimestamp 				= nil
 mod._lastPitchChange            = nil
 
+-- mod._listenMMCFunctions -> table
+-- Variable
+-- MMC Listener Functions.
+mod._listenMMCFunctions = {}
+
+-- mod._listenMTCFunctions -> table
+-- Variable
+-- MTC Listener Functions.
+mod._listenMTCFunctions = {}
+
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of MIDI items per group.
@@ -343,18 +353,105 @@ function mod.groupStatus(groupID, status)
 	mod.update()
 end
 
-mod._listenMMCFunctions = {}
-
-function mod.registerListenMMCFunction(fn)
-    if fn and type(fn) == "function" then
-        table.insert(mod._listenMMCFunctions, fn)
+--- plugins.core.midi.manager.registerListenMMCFunction(id, fn) -> none
+--- Function
+--- Registers a MMC Listening Function
+---
+--- Parameters:
+---  * id - The group ID as a string.
+---  * fn - The function you want to trigger.
+---
+--- Returns:
+---  * None
+function mod.registerListenMMCFunction(id, fn)
+    if id and type(id) == "string" and fn and type(fn) == "function" then
+        mod._listenMMCFunctions[id] = fn
     else
-        log.ef("Expected Function in registerListenMMCFunction, but got: %s", fn)
+        log.ef("Could not register MMC listening function. id: %s, fn %s", id, fn)
     end
 end
 
+--- plugins.core.midi.manager.registerListenMTCFunction(id, fn) -> none
+--- Function
+--- Registers a MTC Listening Function
+---
+--- Parameters:
+---  * id - The group ID as a string.
+---  * fn - The function you want to trigger.
+---
+--- Returns:
+---  * None
+function mod.registerListenMTCFunction(id, fn)
+    if id and type(id) == "string" and fn and type(fn) == "function" then
+        mod._listenMTCFunctions[id] = fn
+    else
+        log.ef("Could not register MTC listening function. id: %s, fn %s", id, fn)
+    end
+end
 
-function processMMC(sysexData)
+-- convertSingleHexStringToDecimalString(hex) -> string
+-- Function
+-- Converts a single hex string (i.e. "3") to a binary string (i.e. "0011")
+--
+-- Parameters:
+--  * hex - A single string character
+--
+-- Returns:
+--  * A four character string
+local function convertSingleHexStringToDecimalString(hex)
+    local lookup = {
+        ["0"]	= "0000",
+        ["1"]	= "0001",
+        ["2"]	= "0010",
+        ["3"]	= "0011",
+        ["4"]	= "0100",
+        ["5"]	= "0101",
+        ["6"]	= "0110",
+        ["7"]	= "0111",
+        ["8"]	= "1000",
+        ["9"]	= "1001",
+        ["A"]	= "1010",
+        ["B"]	= "1011",
+        ["C"]	= "1100",
+        ["D"]	= "1101",
+        ["E"]   = "1110",
+        ["F"]	= "1111",
+    }
+    return lookup[hex]
+end
+
+--- plugins.core.midi.manager.processMMC(sysexData) -> string, ...
+--- Function
+--- Process MMC Data
+---
+--- Parameters:
+---  * sysexData - Sysex Data as Hex String
+---
+--- Returns:
+---  * A string with the MMC command, and any additional parameters as per below notes.
+---
+--- Notes:
+---  * The possible MMC commands are:
+---    * STOP
+---    * PLAY
+---    * DEFERRED_PLAY
+---    * FAST_FORWARD
+---    * REWIND
+---    * RECORD_STROBE
+---    * RECORD_EXIT
+---    * RECORD_PAUSE
+---    * PAUSE
+---    * EJECT
+---    * CHASE
+---    * MMC_RESET
+---    * WRITE
+---    * GOTO
+---      * Timecode as string, in the following format: "hh:mm:ss:fr" (i.e. "12:03:03:13").
+---      * Frame Rate as string, possible options include: "24", "25", "30 DF" or "30 NDF".
+---      * Subframe as string.
+---    * ERROR
+---    * SHUTTLE
+function mod.processMMC(sysexData)
     ---------------------------------------------------------------------------------------------
     -- An MMC message is either an MMC command (Sub-ID#1=06) or an MMC response
     -- (Sub-ID#1=07). As a SysEx message it is formatted (all numbers hexadecimal):
@@ -362,53 +459,91 @@ function processMMC(sysexData)
     --      F0 7F <Device-ID> <06|07> [<Sub-ID#2> [<parameters>]] F7
     --      Device-ID: MMC device's ID#; value 00-7F (7F = all devices); AKA "channel number"
     ---------------------------------------------------------------------------------------------
-    --log.df("Got sysexData: %s", sysexData)
-    log.df("hexDump: %s", hs.utf8.hexDump(sysexData))
 
+    ---------------------------------------------------------------------------------------------
+    -- Split sysexData into individual components:
+    ---------------------------------------------------------------------------------------------
     local data = {}
     for c in sysexData:gmatch"." do
-        table.insert(data, string.format("%02X",string.byte(c)))
+        table.insert(data, c)
     end
 
-    --log.df("Data: %s", hs.inspect(data))
-
-    --log.df("--------------")
-
-    -- MIDI MONITOR:    00  F0 7F 7F 06 44 06 01 21  03 05 10 00 F7           |    D  !     |
-    -- COMMANDPOST:     00 : 06 44 06 01 21 03 05 10                          : .D..!...
-
     if data then
-        if data[1] == "06" then
+        if data[1] == "0" and data[2] == "6" then
             --------------------------------------------------------------------------------
             -- We have a command:
             --------------------------------------------------------------------------------
-            if data[2] == "01" then
-                log.df("Stop")
-            elseif data[2] == "02" then
-                log.df("Play")
-            elseif data[2] == "03" then
-                log.df("Deferred Play (play after no longer busy)")
-            elseif data[2] == "04" then
-                log.df("Fast Forward")
-            elseif data[2] == "05" then
-                log.df("Rewind")
-            elseif data[2] == "06" then
-                log.df("Record Strobe (AKA [[Punch in/out|Punch In]])")
-            elseif data[2] == "07" then
-                log.df("Record Exit (AKA [[Punch out (music)|Punch out]])")
-            elseif data[2] == "08" then
-                log.df("Record Pause")
-            elseif data[2] == "09" then
-                log.df("Pause (pause playback)")
-            elseif data[2] == "0A" then
-                log.df("Eject (disengage media container from MMC device)")
-            elseif data[2] == "0B" then
-                log.df("Chase")
-            elseif data[2] == "0D" then
-                log.df("MMC Reset (to default/startup state)")
-            elseif data[2] == "40" then
-                log.df("Write (AKA Record Ready, AKA Arm Tracks)")
-            elseif data[2] == "44" then
+            if data[3] == "0" and data[4] == "1" then
+                --------------------------------------------------------------------------------
+                -- 01 Stop
+                --------------------------------------------------------------------------------
+                return "STOP"
+            elseif data[3] == "0" and data[4] == "2" then
+                --------------------------------------------------------------------------------
+                -- 02 Play
+                --------------------------------------------------------------------------------
+                return "PLAY"
+            elseif data[3] == "0" and data[4] == "3" then
+                --------------------------------------------------------------------------------
+                -- 03 Deferred Play (play after no longer busy)
+                --------------------------------------------------------------------------------
+                return "DEFERRED_PLAY"
+            elseif data[3] == "0" and data[4] == "4" then
+                --------------------------------------------------------------------------------
+                -- 04 Fast Forward
+                --------------------------------------------------------------------------------
+                return "FAST_FORWARD"
+            elseif data[3] == "0" and data[4] == "5" then
+                --------------------------------------------------------------------------------
+                -- 05 Rewind
+                --------------------------------------------------------------------------------
+                return "REWIND"
+            elseif data[3] == "0" and data[4] == "6" then
+                --------------------------------------------------------------------------------
+                -- 06 Record Strobe (AKA [[Punch in/out|Punch In]])
+                --------------------------------------------------------------------------------
+                return "RECORD_STROBE"
+            elseif data[3] == "0" and data[4] == "7" then
+                --------------------------------------------------------------------------------
+                -- 07 Record Exit (AKA [[Punch out (music)|Punch out]])
+                --------------------------------------------------------------------------------
+                return "RECORD_EXIT"
+            elseif data[3] == "0" and data[4] == "8" then
+                --------------------------------------------------------------------------------
+                -- 08 Record Pause
+                --------------------------------------------------------------------------------
+                return "RECORD_PAUSE"
+            elseif data[3] == "0" and data[4] == "9" then
+                --------------------------------------------------------------------------------
+                -- 09 Pause (pause playback)
+                --------------------------------------------------------------------------------
+                return "PAUSE"
+            elseif data[3] == "0" and data[4] == "A" then
+                --------------------------------------------------------------------------------
+                -- 0A Eject (disengage media container from MMC device)
+                --------------------------------------------------------------------------------
+                return "EJECT"
+            elseif data[3] == "0" and data[4] == "B" then
+                --------------------------------------------------------------------------------
+                -- 0B Chase
+                --------------------------------------------------------------------------------
+                return "CHASE"
+            elseif data[3] == "0" and data[4] == "D" then
+                --------------------------------------------------------------------------------
+                -- 0D MMC Reset (to default/startup state)
+                --------------------------------------------------------------------------------
+                return "MMC_RESET"
+            elseif data[3] == "4" and data[4] == "0" then
+                --------------------------------------------------------------------------------
+                -- 40 Write (AKA Record Ready, AKA Arm Tracks)
+                --    parameters: <length1> 4F <length2> <track-bitmap-bytes>
+                --------------------------------------------------------------------------------
+                return "WRITE"
+            elseif data[3] == "4" and data[4] == "4" then
+                --------------------------------------------------------------------------------
+                -- 44 Goto (AKA Locate)
+                --    parameters: <length>=06 01 <hours> <minutes> <seconds> <frames> <subframes>
+                --------------------------------------------------------------------------------
 
                 --------------------------------------------------------------------------------
                 -- F0 7F <Device-ID> 06 44 <length>=06 01 <hr> <mn> <sc> <fr> <ff> F7
@@ -421,9 +556,8 @@ function processMMC(sysexData)
                 -- sc: seconds; values 0-3B (= 0-59 decimal)
                 -- fr: frames; values 0-1D (= 0-29 decimal)
                 -- ff: sub-frames / fractional frames (leave at zero if un-sure); values 0-63 (= 0-99 decimal)
-                --------------------------------------------------------------------------------
-
-                --------------------------------------------------------------------------------
+                --
+                --
                 -- The data byte for the Hours hi nybble and frame-rate, the bits are interpreted as follows:
                 -- 0nnn xyyd
                 --
@@ -435,44 +569,174 @@ function processMMC(sysexData)
                 -- 10 = 30 fps (SMPTE drop-frame)
                 -- 11 = 30 fps (SMPTE non-drop frame)
                 --------------------------------------------------------------------------------
+                if data[5] == "0" and data[6] == "6" and data[7] == "0" and data[8] == "1" then
 
-                log.df("Goto (AKA Locate)")
+                    local hourHex = data[9] .. data[10]
+                    local minHex = data[11] .. data[12]
+                    local secHex = data[13] .. data[14]
+                    local frameHex = data[15] .. data[16]
+                    local subframeHex = data[17] .. data[18]
 
-                -- 06 44 06 01 21
+                    local hour, frameRate
+                    if hourHex then
+                        local hourDec = tostring(tonumber(hourHex,16))
+                        local hourBin = convertSingleHexStringToDecimalString(hourDec:sub(1, 1)) .. convertSingleHexStringToDecimalString(hourDec:sub(2, 2))
+                        frameRate = hourBin:sub(6,7)
+                        hour = hourDec & 0x1f
+                    end
 
+                    local min = minHex and tonumber(minHex,16) or 0
+                    local sec = secHex and tonumber(secHex,16) or 0
+                    local frame = frameHex and tonumber(frameHex,16) or 0
+                    local subframe = subframeHex and tonumber(subframeHex,16) or 0
 
-                if data[3] == "06" and data[4] == "01" then
-                    local hourHex = data[5]
-                    local minHex = data[6]
-                    local secHex = data[7]
-                    local frameHex = data[8]
-                    --local subframeHex = data[9]
+                    local frameRateString = mod.MMC_TIMECODE_TYPE[frameRate] or "UNKNOWN"
 
-                    --[[
-                    log.df("hour: %s", tonumber(hourHex,16))
-                    log.df("minHex: %s", tonumber(minHex,16))
-                    log.df("secHex: %s", tonumber(secHex,16))
-                    log.df("frameHex: %s", tonumber(frameHex,16))
-                    --]]
+                    local timecode = string.format("%02d", hour) .. ":" .. string.format("%02d", min) .. ":" .. string.format("%02d", sec) .. ":" .. string.format("%02d", frame)
 
+                    return "GOTO", timecode, frameRateString, string.format("%02d", subframe)
                 else
-                    log.df("Bad Goto Data")
+                    return "ERROR", "Bad Goto Data"
                 end
-            elseif data[2] == "47" then
-                log.df("Shuttle")
-            else
-                log.df("Unrecognised message")
+            elseif data[3] == "4" and data[4] == "7" then
+                --------------------------------------------------------------------------------
+                -- 47 Shuttle
+                --    parameters: <length>=03 <sh> <sm> <sl> (MIDI Standard Speed codes)
+                --------------------------------------------------------------------------------
+                return "SHUTTLE"
             end
-        elseif data[1] == "07" then
+        elseif data[1] == "0" and data[2] == "7" then
             --------------------------------------------------------------------------------
             -- We have a response:
             --------------------------------------------------------------------------------
-        else
-            log.df("Invalid MMC Data")
         end
     end
+    return nil
+end
 
+--- plugins.core.midi.manager.MMC_TIMECODE_TYPE -> table
+--- Constant
+--- MMC Timecode Type
+mod.MMC_TIMECODE_TYPE = {
+    ["00"] = "24",              -- 24 fps (Film)
+    ["01"] = "25",              -- 25 fps (EBU)
+    ["10"] = "30 DF",           -- 30 fps (SMPTE drop-frame)
+    ["11"] = "30 NDF",          -- 30 fps (SMPTE non-drop frame)
+}
 
+--- plugins.core.midi.manager.MTC_MESSAGE_TYPE -> table
+--- Constant
+--- MTC Message Types
+mod.MTC_MESSAGE_TYPE = {
+    [0] = "FRAME_LS",
+    [1] = "FRAME_MS",
+    [2] = "SECONDS_LS",
+    [3] = "SECONDS_MS",
+    [4] = "MINUTES_LS",
+    [5] = "MINUTES_MS",
+    [6] = "HOURS_LS",
+    [7] = "HOURS_MS",
+}
+
+--- plugins.core.midi.manager.MTC_TIMECODE_TYPE -> table
+--- Constant
+--- MTC Timecode Type
+mod.MTC_TIMECODE_TYPE = {
+    [0] = "24",
+    [1] = "25",
+    [2] = "30 DF",
+    [3] = "30 NDF",
+}
+
+--- plugins.core.midi.manager.MTC_COMMAND_TYPE -> table
+--- Constant
+--- MTC Command Type
+mod.MTC_COMMAND_TYPE = {
+    ["f1"] = "QUARTER_FRAME",
+}
+
+-- plugins.core.midi.manager._mtcBuffer -> table
+-- Variable
+-- MTC Buffer.
+mod._mtcBuffer = {}
+
+--- plugins.core.midi.manager.processMTC(mtcData) -> string, ...
+--- Function
+--- Process MTC Data
+---
+--- Parameters:
+---  * mtcData - MTC Data as Hex String
+---
+--- Returns:
+---  * A string with the MTC command, and any additional parameters.
+function mod.processMTC(mtcData)
+
+    ---------------------------------------------------------------------------------------------
+    -- Split sysexData into individual components:
+    ---------------------------------------------------------------------------------------------
+    local data = {}
+    for c in mtcData:gmatch"." do
+        table.insert(data, c)
+    end
+
+    if data then
+        if data[1] == "f" and data[2] == "1" then
+            ---------------------------------------------------------------------------------------------
+            -- Quarter Frame Messages (2 bytes)
+            ---------------------------------------------------------------------------------------------
+            local message = convertSingleHexStringToDecimalString(data[3]) .. convertSingleHexStringToDecimalString(data[4])
+            if message then
+
+                ---------------------------------------------------------------------------------------------
+                -- Split nibble into individual components:
+                ---------------------------------------------------------------------------------------------
+                local nibble = {}
+                for c in message:gmatch"." do
+                    table.insert(nibble, c)
+                end
+
+                if nibble[1] == "0" then
+                    local messageTypeBinary = nibble[2] .. nibble[3] .. nibble[4]
+                    local messageTypeDecimal = tonumber(messageTypeBinary, 2)
+                    local messageTypeString = mod.MTC_MESSAGE_TYPE[messageTypeDecimal]
+
+                    mod._mtcBuffer[messageTypeString] = nibble[5] .. nibble[6] .. nibble[7] .. nibble[8]
+
+                    if mod._mtcBuffer["FRAME_LS"] and mod._mtcBuffer["FRAME_MS"] and mod._mtcBuffer["SECONDS_LS"] and mod._mtcBuffer["SECONDS_MS"] and mod._mtcBuffer["MINUTES_LS"] and mod._mtcBuffer["MINUTES_MS"] and mod._mtcBuffer["HOURS_LS"] and mod._mtcBuffer["HOURS_MS"] then
+
+                        local frameCount = string.sub(mod._mtcBuffer["FRAME_MS"] .. mod._mtcBuffer["FRAME_LS"], 4)
+                        local secondsCount = string.sub(mod._mtcBuffer["SECONDS_MS"] .. mod._mtcBuffer["SECONDS_LS"], 3)
+                        local minutesCount = string.sub(mod._mtcBuffer["MINUTES_MS"] .. mod._mtcBuffer["MINUTES_LS"], 3)
+                        local hoursCount = string.sub(mod._mtcBuffer["HOURS_MS"] .. mod._mtcBuffer["HOURS_LS"], 4)
+                        local framerateCount = string.sub(mod._mtcBuffer["HOURS_MS"] .. mod._mtcBuffer["HOURS_LS"], 2, 3)
+
+                        local frame = string.format("%02d", tonumber(frameCount, 2))
+                        local sec = string.format("%02d", tonumber(secondsCount, 2))
+                        local min = string.format("%02d", tonumber(minutesCount, 2))
+                        local hour = string.format("%02d", tonumber(hoursCount, 2))
+
+                        local framerate = mod.MTC_TIMECODE_TYPE[tonumber(framerateCount, 2)]
+
+                        local timecode = hour .. ":" .. min .. ":" .. sec .. ":" .. frame
+
+                        if timecode ~= mod._lastMTC then
+                            mod._lastMTC = timecode
+                            return "QUARTER_FRAME", timecode, framerate
+                        else
+                            mod._lastMTC = timecode
+                        end
+
+                        ---------------------------------------------------------------------------------------------
+                        -- Clear the buffer:
+                        ---------------------------------------------------------------------------------------------
+                        mod._mtcBuffer = nil
+                        mod._mtcBuffer = {}
+                    end
+                end
+            end
+        end
+    end
+    return nil
 end
 
 --- plugins.core.midi.manager.midiCallback(object, deviceName, commandType, description, metadata) -> none
@@ -490,7 +754,14 @@ end
 ---  * None
 function mod.midiCallback(object, deviceName, commandType, description, metadata)
 
+    --------------------------------------------------------------------------------
+    -- Get Active Group:
+    --------------------------------------------------------------------------------
 	local activeGroup = mod.activeGroup()
+
+	--------------------------------------------------------------------------------
+	-- Get Items:
+	--------------------------------------------------------------------------------
 	local items = mod._items()
 
     --------------------------------------------------------------------------------
@@ -505,12 +776,27 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     ---------------------------- ----------------------------------------------------
     local listenMMCDevice = mod.listenMMCDevice()
     if mod.listenMMC() and listenMMCDevice and listenMMCDevice == deviceName and commandType == "systemExclusive" then
-        log.df("FOUND A MATCH FOR OUR MMC FEED!")
         for _, v in pairs(mod._listenMMCFunctions) do
             timer.doAfter(0.0000000000000000000001, function()
-                --v(activeGroup, deviceName, commandType, description, metadata)
-                log.df("deviceName: %s, commandType: %s, metadata: %s", deviceName, commandType, hs.inspect(metadata))
-                processMMC(metadata.sysexData)
+                local mmcType, timecode, framerate, subframe = mod.processMMC(metadata.sysexData)
+                if mmcType then
+                    v(mmcType, timecode, framerate, subframe)
+                end
+            end)
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Listen for MTC Callbacks:
+    --------------------------------------------------------------------------------
+    local listenMTCDevice = mod.listenMTCDevice()
+    if mod.listenMTC() and listenMTCDevice and listenMTCDevice == deviceName and commandType == "systemTimecodeQuarterFrame" then
+        for _, v in pairs(mod._listenMTCFunctions) do
+            timer.doAfter(0.0000000000000000000001, function()
+                local mtcType, timecode, framerate = mod.processMTC(metadata.data)
+                if mtcType then
+                    v(mtcType, timecode, framerate)
+                end
             end)
         end
     end
@@ -743,8 +1029,6 @@ function mod.start()
         table.insert(mod._forcefullyWatchMIDIDevices, device)
     end
 
-    log.df("Used Devices: %s", hs.inspect(usedDevices))
-
     --------------------------------------------------------------------------------
     -- Create a table of both Physical & Virtual MIDI Devices:
     --------------------------------------------------------------------------------
@@ -833,7 +1117,9 @@ mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
 	if enabled then
 		mod.start()
 	else
-		mod.stop()
+    	if not mod.listenMTC() and not mod.listenMMC() then
+	    	mod.stop()
+	    end
 	end
 end)
 
@@ -875,6 +1161,7 @@ end)
 mod.listenMMC = config.prop("listenMMC", false):watch(function(enabled)
     if enabled then
         log.df("Listen MMC Enabled!")
+        mod.start()
     else
         log.df("Listen MMC Disabled!")
     end
@@ -897,6 +1184,7 @@ end)
 mod.listenMTC = config.prop("listenMTC", false):watch(function(enabled)
     if enabled then
         log.df("Listen MTC Enabled!")
+        mod.start()
     else
         log.df("Listen MTC Disabled!")
     end
@@ -1001,7 +1289,7 @@ function plugin.postInit(deps, env)
     --------------------------------------------------------------------------------
     -- Start Plugin:
     --------------------------------------------------------------------------------
-	if mod.enabled() then
+	if mod.enabled() or mod.listenMTC() or mod.listenMMC() then
 		mod.start()
 	end
 
