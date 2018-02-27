@@ -15,6 +15,7 @@
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("viewer")
 
+local canvas							= require("hs.canvas")
 local geometry							= require("hs.geometry")
 
 local prop								= require("cp.prop")
@@ -26,6 +27,8 @@ local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 
 local id								= require("cp.apple.finalcutpro.ids") "Viewer"
+
+local floor								= math.floor
 
 --------------------------------------------------------------------------------
 --
@@ -287,51 +290,116 @@ function Viewer:playButton()
     return self._playButton
 end
 
-function Viewer:playPause()
+--- cp.apple.finalcutpro.main.Viewer:togglePlaying() -> self
+--- Method
+--- Toggles if the viewer is playing.
+--- If there is nothing available to play, this will have no effect.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Viewer` instance.
+function Viewer:togglePlaying()
 	self:playButton():press()
 	return self
 end
 
--- hardcoded playing icon pixel
-local PLAYING_PIXEL = [[data:image/png;base64,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]]
+-- pixelsFromWindowCanvas(hsWindow, centerPixel) -> hs.image, hs.image
+-- Function
+-- Extracts two 2x2 pixel images from the screenshot of the image, centred
+-- on the `centerPixel`. The first is the pixel in the centre, the second is offset by 2 pixels to the left
+--
+-- Parameters:
+-- * hsWindow		- The `hs.window` having pixels pulled
+-- * centerPixel	- The pixel to to retrieve (and offset)
+--
+-- Returns:
+-- * Two `hs.images`, the first being the center pixel, the second being offset by 2px left.
+local function pixelsFromWindowCanvas(hsWindow, centerPixel)
+	local centerShot, offShot = nil, nil
+	local windowShot = hsWindow:snapshot()
+	if windowShot then
+		-- log.df("windowShot:size(): %s", hs.inspect(windowShot:size()))
+		local windowFrame = hsWindow:frame()
+		local shotSize = windowShot:size()
+		local ratio = shotSize.h/windowFrame.h
 
-function Viewer:isPlaying()
-    local playButton = self:playButton()
-    local frame = playButton:frame()
-	if frame then
-		frame = geometry.new(frame)
-		local center = frame.center
-		local centerPixel = {x=center.x, y=center.y, w=1, h=1}
-		-- local centerPixel = frame
+		-- log.df("windowFrame: %s", hs.inspect(windowFrame))
+		local imagePixel = {
+			x = (windowFrame.x-centerPixel.x)*ratio,
+			y = (windowFrame.y-centerPixel.y)*ratio,
+			w = shotSize.w,
+			h = shotSize.h,
+		}
 
-		local window = self:currentWindow()
+		-- local c = canvas.new({w=1,h=1})
+		local c = canvas.new({w=1, h=1})
+		c[1] = {
+			type = "image",
+			image = windowShot,
+			imageScaling = "none",
+			imageAlignment = "topLeft",
+			frame = imagePixel,
+		}
 
-		local screen = window:hsWindow():screen()
-		local screenPixel = screen:absoluteToLocal(centerPixel)
+		centerShot = c:imageFromCanvas()
 
-        -----------------------------------------------------------------------
-        -- Save a snapshot:
-        -----------------------------------------------------------------------
-		local snapshot = screen:snapshot(screenPixel)
-
-		if snapshot then
-			-----------------------------------------------------------------------
-			-- Get the snapshot as an encoded URL string:
-			-----------------------------------------------------------------------
-			local urlString = snapshot:encodeAsURLString()
-
-			-----------------------------------------------------------------------
-			-- Compare to hardcoded version
-			-----------------------------------------------------------------------
-			if urlString == PLAYING_PIXEL then
-				return true
-			end
-		else
-			log.ef("Unable to snapshot the play button.")
-		end
-
-    end
-    return false
+		-- shift left
+		c[1].frame.x = imagePixel.x+2
+		offShot = c:imageFromCanvas()
+	end
+	return centerShot, offShot
 end
+
+--- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
+--- Field
+--- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
+--- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
+Viewer.isPlaying = prop(
+	function(self)
+		local playButton = self:playButton()
+		local frame = playButton:frame()
+		if frame then
+			frame = geometry.new(frame)
+			local center = frame.center
+			local centerPixel = {x=floor(center.x), y=floor(center.y), w=1, h=1}
+			-- log.df("centerPixel = %s", hs.inspect(centerPixel))
+
+			local window = self:currentWindow()
+			local hsWindow = window:hsWindow()
+
+			-----------------------------------------------------------------------
+			-- Save a snapshot:
+			-----------------------------------------------------------------------
+			local centerShot, offShot = pixelsFromWindowCanvas(hsWindow, centerPixel)
+
+			if centerShot then
+
+				-----------------------------------------------------------------------
+				-- Get the snapshots as encoded URL strings:
+				-----------------------------------------------------------------------
+				local centerString = centerShot:encodeAsURLString()
+				local offString = offShot:encodeAsURLString()
+
+				-----------------------------------------------------------------------
+				-- Compare to hardcoded version
+				-----------------------------------------------------------------------
+				if centerString ~= offString then
+					return true
+				end
+			else
+				log.ef("Unable to snapshot the play button.")
+			end
+		end
+		return false
+	end,
+	function(newValue, self, thisProp)
+		local value = thisProp:value()
+		if newValue ~= value then
+			self:playButton():press()
+		end
+	end
+):bind(Viewer)
 
 return Viewer
