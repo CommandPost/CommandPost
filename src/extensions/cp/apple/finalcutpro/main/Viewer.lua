@@ -320,12 +320,10 @@ local function pixelsFromWindowCanvas(hsWindow, centerPixel)
 	local centerShot, offShot = nil, nil
 	local windowShot = hsWindow:snapshot()
 	if windowShot then
-		-- log.df("windowShot:size(): %s", hs.inspect(windowShot:size()))
 		local windowFrame = hsWindow:frame()
 		local shotSize = windowShot:size()
 		local ratio = shotSize.h/windowFrame.h
 
-		-- log.df("windowFrame: %s", hs.inspect(windowFrame))
 		local imagePixel = {
 			x = (windowFrame.x-centerPixel.x)*ratio,
 			y = (windowFrame.y-centerPixel.y)*ratio,
@@ -333,7 +331,6 @@ local function pixelsFromWindowCanvas(hsWindow, centerPixel)
 			h = shotSize.h,
 		}
 
-		-- local c = canvas.new({w=1,h=1})
 		local c = canvas.new({w=1, h=1})
 		c[1] = {
 			type = "image",
@@ -367,7 +364,6 @@ Viewer.isPlaying = prop(
 			frame = geometry.new(frame)
 			local center = frame.center
 			local centerPixel = {x=floor(center.x), y=floor(center.y), w=1, h=1}
-			-- log.df("centerPixel = %s", hs.inspect(centerPixel))
 
 			local window = self:currentWindow()
 			local hsWindow = window:hsWindow()
