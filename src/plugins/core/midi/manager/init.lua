@@ -195,6 +195,11 @@ mod._listenMMCFunctions = {}
 -- MTC Listener Functions.
 mod._listenMTCFunctions = {}
 
+-- mod._generalCallbacks -> table
+-- Variable
+-- General Callback Functions.
+mod._generalCallbacks = {}
+
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of MIDI items per group.
@@ -367,7 +372,7 @@ function mod.registerListenMMCFunction(id, fn)
     if id and type(id) == "string" and fn and type(fn) == "function" then
         mod._listenMMCFunctions[id] = fn
     else
-        log.ef("Could not register MMC listening function. id: %s, fn %s", id, fn)
+        log.ef("Could not register MMC listening function. id: %s, fn: %s", id, fn)
     end
 end
 
@@ -385,7 +390,25 @@ function mod.registerListenMTCFunction(id, fn)
     if id and type(id) == "string" and fn and type(fn) == "function" then
         mod._listenMTCFunctions[id] = fn
     else
-        log.ef("Could not register MTC listening function. id: %s, fn %s", id, fn)
+        log.ef("Could not register MTC listening function. id: %s, fn: %s", id, fn)
+    end
+end
+
+--- plugins.core.midi.manager.registerCallback(id, fn) -> none
+--- Function
+--- Registers a MIDI Callback.
+---
+--- Parameters:
+---  * id - The ID as a string.
+---  * fn - The function you want to trigger.
+---
+--- Returns:
+---  * None
+function mod.registerCallback(id, fn)
+    if id and type(id) == "string" and fn and type(fn) == "function" then
+        mod._generalCallbacks[id] = fn
+    else
+        log.ef("Could not register callback function. id: %s, fn: %s", id, fn)
     end
 end
 
@@ -802,6 +825,15 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     end
 
     --------------------------------------------------------------------------------
+    -- Listen for General Callbacks:
+    --------------------------------------------------------------------------------
+    for _, v in pairs(mod._generalCallbacks) do
+        timer.doAfter(0.0000000000000000000001, function()
+            v(object, deviceName, commandType, description, metadata)
+        end)
+    end
+
+    --------------------------------------------------------------------------------
     -- Support 14bit Control Change Messages:
     --------------------------------------------------------------------------------
     local controllerValue = metadata.controllerValue
@@ -962,6 +994,23 @@ function mod.forcefullyWatchMIDIDevices(devices)
             table.insert(mod._forcefullyWatchMIDIDevices, device)
         end
     end
+end
+
+--- plugins.core.midi.manager.getDevice(deviceName, virtual) -> hs.midi object | nil
+--- Function
+--- Gets a MIDI Device.
+---
+--- Parameters:
+---  * deviceName - The device name.
+---  * virtual - A boolean that defines whether or not the device is virtual.
+---
+--- Returns:
+---  * A `hs.midi` object or nil if no MIDI device by that name exists.
+function mod.getDevice(deviceName, virtual)
+    if virtual then
+        deviceName = "virtual_" .. deviceName
+    end
+    return mod._midiDevices and mod._midiDevices[deviceName]
 end
 
 --- plugins.core.midi.manager.start() -> boolean
