@@ -324,6 +324,7 @@ local function pixelsFromWindowCanvas(hsWindow, centerPixel)
 		local windowFrame = hsWindow:frame()
 		local shotSize = windowShot:size()
 		local ratio = shotSize.h/windowFrame.h
+		log.df("ratio: %s", ratio)
 
 		-- log.df("windowFrame: %s", hs.inspect(windowFrame))
 		local imagePixel = {
@@ -345,9 +346,12 @@ local function pixelsFromWindowCanvas(hsWindow, centerPixel)
 
 		centerShot = c:imageFromCanvas()
 
-		-- shift left
-		c[1].frame.x = imagePixel.x+2
+		-- shift left by a factor of 1 to 3 pixels, depending on the ratio.
+		c[1].frame.x = imagePixel.x+floor(ratio*1.5)
 		offShot = c:imageFromCanvas()
+
+		-- delete the canvas
+		c:delete()
 	end
 	return centerShot, offShot
 end
@@ -375,7 +379,8 @@ Viewer.isPlaying = prop(
 			local centerShot, offShot = pixelsFromWindowCanvas(hsWindow, centerPixel)
 
 			if centerShot then
-
+				centerShot:saveToFile("~/Desktop/viewer_center.png")
+				offShot:saveToFile("~/Desktop/viewer_off.png")
 				-----------------------------------------------------------------------
 				-- Get the snapshots as encoded URL strings:
 				-----------------------------------------------------------------------
