@@ -13,8 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("button")
-local inspect						= require("hs.inspect")
+-- local log							= require("hs.logger").new("button")
 
 local axutils						= require("cp.ui.axutils")
 
@@ -55,6 +54,11 @@ function Button:UI()
 		return self._finder()
 	end,
 	Button.matches)
+end
+
+function Button:frame()
+	local ui = self:UI()
+	return ui and ui:frame() or nil
 end
 
 -- TODO: Add documentation

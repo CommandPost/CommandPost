@@ -14,16 +14,21 @@
 --
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("viewer")
-local inspect							= require("hs.inspect")
 
-local just								= require("cp.just")
+local canvas							= require("hs.canvas")
+local geometry							= require("hs.geometry")
+
 local prop								= require("cp.prop")
+
 local axutils							= require("cp.ui.axutils")
+local Button							= require("cp.ui.Button")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 
 local id								= require("cp.apple.finalcutpro.ids") "Viewer"
+
+local floor								= math.floor
 
 --------------------------------------------------------------------------------
 --
@@ -62,18 +67,6 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function Viewer:UI()
-	return axutils.cache(self, "_ui", function()
-		local app = self:app()
-		if self:isMainViewer() then
-			return self:findViewerUI(app:secondaryWindow(), app:primaryWindow())
-		else
-			return self:findEventViewerUI(app:secondaryWindow(), app:primaryWindow())
-		end
-	end,
-	Viewer.matches)
-end
 
 -----------------------------------------------------------------------
 --
@@ -82,14 +75,14 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function Viewer:findViewerUI(...)
+local function findViewerUI(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
 		if window then
 			local top = window:viewerGroupUI()
 			local ui = nil
 			if top then
-				for i,child in ipairs(top) do
+				for _,child in ipairs(top) do
 					-- There can be two viwers enabled
 					if Viewer.matches(child) then
 						-- Both the event viewer and standard viewer have the ID, so pick the right-most one
@@ -112,7 +105,7 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function Viewer:findEventViewerUI(...)
+local function findEventViewerUI(...)
 	for i = 1,select("#", ...) do
 		local window = select(i, ...)
 		if window then
@@ -120,7 +113,7 @@ function Viewer:findEventViewerUI(...)
 			local ui = nil
 			local viewerCount = 0
 			if top then
-				for i,child in ipairs(top) do
+				for _,child in ipairs(top) do
 					-- There can be two viwers enabled
 					if Viewer.matches(child) then
 						viewerCount = viewerCount + 1
@@ -139,6 +132,20 @@ function Viewer:findEventViewerUI(...)
 	end
 	return nil
 end
+
+-- TODO: Add documentation
+function Viewer:UI()
+	return axutils.cache(self, "_ui", function()
+		local app = self:app()
+		if self:isMainViewer() then
+			return findViewerUI(app:secondaryWindow(), app:primaryWindow())
+		else
+			return findEventViewerUI(app:secondaryWindow(), app:primaryWindow())
+		end
+	end,
+	Viewer.matches)
+end
+
 
 -- TODO: Add documentation
 Viewer.isEventViewer = prop.new(function(self)
@@ -161,6 +168,15 @@ Viewer.isOnPrimary = prop.new(function(self)
 	local ui = self:UI()
 	return ui and PrimaryWindow.matches(ui:window())
 end):bind(Viewer)
+
+-- TODO: Add documentation
+function Viewer:currentWindow()
+	if self:isOnSecondary() then
+		return self:app():secondaryWindow()
+	else
+		return self:app():primaryWindow()
+	end
+end
 
 -- TODO: Add documentation
 Viewer.isShowing = prop.new(function(self)
@@ -263,5 +279,127 @@ function Viewer:getTitle()
 	local titleText = axutils.childFromLeft(self:topToolbarUI(), id "Title")
 	return titleText and titleText:value()
 end
+
+-- TODO: Add documentation
+function Viewer:playButton()
+    if not self._playButton then
+		self._playButton = Button:new(self, function()
+            return axutils.childFromLeft(axutils.childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
+        end)
+    end
+    return self._playButton
+end
+
+--- cp.apple.finalcutpro.main.Viewer:togglePlaying() -> self
+--- Method
+--- Toggles if the viewer is playing.
+--- If there is nothing available to play, this will have no effect.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Viewer` instance.
+function Viewer:togglePlaying()
+	self:playButton():press()
+	return self
+end
+
+-- pixelsFromWindowCanvas(hsWindow, centerPixel) -> hs.image, hs.image
+-- Function
+-- Extracts two 2x2 pixel images from the screenshot of the image, centred
+-- on the `centerPixel`. The first is the pixel in the centre, the second is offset by 2 pixels to the left
+--
+-- Parameters:
+-- * hsWindow		- The `hs.window` having pixels pulled
+-- * centerPixel	- The pixel to to retrieve (and offset)
+--
+-- Returns:
+-- * Two `hs.images`, the first being the center pixel, the second being offset by 2px left.
+local function pixelsFromWindowCanvas(hsWindow, centerPixel)
+	local centerShot, offShot = nil, nil
+	local windowShot = hsWindow:snapshot()
+	if windowShot then
+		local windowFrame = hsWindow:frame()
+		local shotSize = windowShot:size()
+		local ratio = shotSize.h/windowFrame.h
+
+		local imagePixel = {
+			x = (windowFrame.x-centerPixel.x)*ratio,
+			y = (windowFrame.y-centerPixel.y)*ratio,
+			w = shotSize.w,
+			h = shotSize.h,
+		}
+
+		local c = canvas.new({w=1, h=1})
+		c[1] = {
+			type = "image",
+			image = windowShot,
+			imageScaling = "none",
+			imageAlignment = "topLeft",
+			frame = imagePixel,
+		}
+
+		centerShot = c:imageFromCanvas()
+
+		-- shift left by a factor of 1 to 3 pixels, depending on the ratio.
+		c[1].frame.x = imagePixel.x+floor(ratio*1.5)
+		offShot = c:imageFromCanvas()
+
+		-- delete the canvas
+		c:delete()
+	end
+	return centerShot, offShot
+end
+
+--- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
+--- Field
+--- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
+--- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
+Viewer.isPlaying = prop(
+	function(self)
+		local playButton = self:playButton()
+		local frame = playButton:frame()
+		if frame then
+			frame = geometry.new(frame)
+			local center = frame.center
+			local centerPixel = {x=floor(center.x), y=floor(center.y), w=1, h=1}
+
+			local window = self:currentWindow()
+			local hsWindow = window:hsWindow()
+
+			-----------------------------------------------------------------------
+			-- Save a snapshot:
+			-----------------------------------------------------------------------
+			local centerShot, offShot = pixelsFromWindowCanvas(hsWindow, centerPixel)
+
+			if centerShot then
+				-- centerShot:saveToFile("~/Desktop/viewer_center.png")
+				-- offShot:saveToFile("~/Desktop/viewer_off.png")
+				-----------------------------------------------------------------------
+				-- Get the snapshots as encoded URL strings:
+				-----------------------------------------------------------------------
+				local centerString = centerShot:encodeAsURLString()
+				local offString = offShot:encodeAsURLString()
+
+				-----------------------------------------------------------------------
+				-- Compare to hardcoded version
+				-----------------------------------------------------------------------
+				if centerString ~= offString then
+					return true
+				end
+			else
+				log.ef("Unable to snapshot the play button.")
+			end
+		end
+		return false
+	end,
+	function(newValue, self, thisProp)
+		local value = thisProp:value()
+		if newValue ~= value then
+			self:playButton():press()
+		end
+	end
+):bind(Viewer)
 
 return Viewer

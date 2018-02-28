@@ -13,14 +13,13 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("secondaryWindow")
-local inspect						= require("hs.inspect")
+-- local log							= require("hs.logger").new("secondaryWindow")
 
-local axutils						= require("cp.ui.axutils")
-local just							= require("cp.just")
 local prop							= require("cp.prop")
 
-local Button						= require("cp.ui.Button")
+local axutils						= require("cp.ui.axutils")
+local Window						= require("cp.ui.Window")
+
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 --------------------------------------------------------------------------------
@@ -41,10 +40,42 @@ end
 
 -- TODO: Add documentation
 function SecondaryWindow:new(app)
-	local o = {
+	local o = prop.extend({
 		_app = app
-	}
-	prop.extend(o, SecondaryWindow)
+	}, SecondaryWindow)
+
+	local window = Window:new(function()
+		return axutils.cache(self, "_ui", function()
+			return axutils.childMatching(app:windowsUI(), SecondaryWindow.matches)
+		end,
+		SecondaryWindow.matches)
+	end)
+	o._window = window
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.UI <cp.prop: axuielement; read-only>
+--- Field
+--- The `axuielement` for the window.
+	o.UI = window.UI:wrap(o)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.hsWindow <cp.prop: hs.window; read-only>
+--- Field
+--- The `hs.window` instance for the window, or `nil` if it can't be found.
+	o.hsWindow = window.hsWindow:wrap(o)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.isShowing <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is visible.
+	o.isShowing = window.visible:wrap(o)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.isFullScreen <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is full-screen.
+	o.isFullScreen = window.fullScreen:wrap(o)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.frame <cp.prop: frame>
+--- Field
+--- The current position (x, y, width, height) of the window.
+	o.frame = window.frame:wrap(o)
 
 	o:watch({
 		show	= function() o.isShowing:update() end,
@@ -62,6 +93,19 @@ function SecondaryWindow:app()
 	return self._app
 end
 
+--- cp.apple.finalcutpro.main.SecondaryWindow:window() -> cp.ui.Window
+--- Method
+--- Returns the `Window` instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Window` instance.
+function SecondaryWindow:window()
+	return self._window
+end
+
 -- TODO: Add documentation
 SecondaryWindow.isShowing = prop.new(function(self)
 	local ui = self:UI()
@@ -73,7 +117,7 @@ SecondaryWindow.isFullScreen = prop.new(function(self)
 	local ui = self:rootGroupUI()
 	if ui then
 		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
-		local group = nil
+		local group
 		if #ui == 1 then
 			group = ui[1]
 		else
@@ -118,7 +162,7 @@ end
 
 -- TODO: Add documentation
 function SecondaryWindow:_findWindowUI(windows)
-	for i,w in ipairs(windows) do
+	for _,w in ipairs(windows) do
 		if SecondaryWindow.matches(w) then return w end
 	end
 	return nil
