@@ -20,10 +20,10 @@
 --- o:start()
 --- ```
 
--- local log                   = require("hs.logger").new("notifier")
-local inspect               = require("hs.inspect")
+local log                   = require("hs.logger").new("notifier")
 
 local ax                    = require("hs._asm.axuielement")
+local axutils               = require("cp.ui.axutils")
 
 local application           = require("hs.application")
 local applicationwatcher    = require("hs.application.watcher")
@@ -48,7 +48,7 @@ local registeredBundleIDs = {}
 local registeredPIDs = {}
 
 -- the overall app watcher for all cp.ui.notifiers.
-local appWatcher = applicationwatcher.new(
+applicationwatcher.new(
     function(_, eventType, app)
         local pid = app:pid()
         local notifiers = nil
@@ -61,8 +61,10 @@ local appWatcher = applicationwatcher.new(
             end
         elseif eventType == TERMINATED then
             local bundleID = registeredPIDs[pid]
-            notifiers = registeredBundleIDs[bundleID]
             registeredPIDs[pid] = nil
+            if bundleID then
+                notifiers = registeredBundleIDs[bundleID]
+            end
         end
 
         -- check if we need to update
@@ -73,7 +75,7 @@ local appWatcher = applicationwatcher.new(
             end
         end
     end
-)
+):start()
 
 -- registerNotifier(notifier) -> nil
 -- Local Function
@@ -98,7 +100,7 @@ local function registerNotifier(notifier)
 end
 
 --- cp.ui.notifier.new(bundleID, elementFinderFn) -> cp.ui.notifier
---- Function
+--- Constructor
 --- Creates a new `cp.ui.notifier` instance with the specified bundle ID and
 --- a function that returns the element being observed.
 ---
@@ -262,7 +264,10 @@ function mod.mt:_observer(create)
                 local watchers = self.__watchers[notification]
                 if watchers then
                     for _,fn in ipairs(watchers) do
-                        fn(element, notification, details)
+                        local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
+                        if not ok then
+                            log.ef("Error processing '%s' notification from app '%':\n%s", notification, self:bundleID(), result)
+                        end
                     end
                 end
             end)
@@ -335,10 +340,11 @@ function mod.mt:update(force)
     local observer = self:_observer(false)
 
     if observer then
-        local remove = force or lastElement ~= nil and lastElement ~= element
+        -- TODO: figure out if/how we can remove watches on elements that are no longer valid.
+        local remove = axutils.isValid(lastElement) and (force or lastElement ~= element)
         for n,_ in pairs(self.__watchers) do
             -- deregister the old element
-            if remove and lastElement then
+            if remove then
                 observer:removeWatcher(lastElement, n)
             end
 
@@ -369,10 +375,6 @@ end
 --- * The `cp.ui.notifier` instance.
 function mod.mt:start()
     self.__running = true
-    -- make sure we're watching for app start/stop events
-    if not appWatcher:isRunning() then
-        appWatcher:start()
-    end
     -- start observing, if possible
     self:_startObserving()
     return self
