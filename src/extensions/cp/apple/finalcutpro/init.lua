@@ -306,15 +306,9 @@ function App:keysWithString(string, lang)
 	return self._strings and self._strings:findKeys(result, string)
 end
 
---- cp.apple.finalcutpro:application() -> hs.application
---- Method
---- Returns the running `hs.application` for Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The hs.application, or `nil` if the application is not running.
+--- cp.apple.finalcutpro.application <cp.prop: hs.application; read-only>
+--- Field
+--- Returns the running `hs.application` for Final Cut Pro, or `nil` if it's not running.
 App.application = prop.new(function(self)
 	local app = self._application
 	if not app or app:bundleID() == nil or not app:isRunning() then
