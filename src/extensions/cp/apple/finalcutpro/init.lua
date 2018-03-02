@@ -306,6 +306,19 @@ function App:keysWithString(string, lang)
 	return self._strings and self._strings:findKeys(result, string)
 end
 
+--- cp.apple.finalcutpro:bundleID() -> string
+--- Method
+--- Returns the Bundle ID for the app.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The bundle ID
+function App:bundleID()
+	return App.BUNDLE_ID
+end
+
 --- cp.apple.finalcutpro.application <cp.prop: hs.application; read-only>
 --- Field
 --- Returns the running `hs.application` for Final Cut Pro, or `nil` if it's not running.

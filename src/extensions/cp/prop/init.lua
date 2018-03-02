@@ -333,7 +333,7 @@ function prop.is(value)
     return false
 end
 
---- cp.prop:id(newId) -> string | cp.prop
+--- cp.prop:id([newId]) -> string | cp.prop
 --- Method
 --- If `newId` is provided it is given a new ID and the `cp.prop` is returned.
 --- Otherwise, it returns the current ID.

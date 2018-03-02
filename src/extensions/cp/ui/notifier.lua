@@ -47,6 +47,9 @@ local registeredBundleIDs = {}
 -- The key is the `pid`, and the value is the matching `Bundle ID`.
 local registeredPIDs = {}
 
+mod._registeredBundleIDs = registeredBundleIDs
+mod._registeredPIDs = registeredPIDs
+
 -- the overall app watcher for all cp.ui.notifiers.
 applicationwatcher.new(
     function(_, eventType, app)

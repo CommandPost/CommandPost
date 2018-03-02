@@ -22,6 +22,7 @@ local prop								= require("cp.prop")
 
 local axutils							= require("cp.ui.axutils")
 local Button							= require("cp.ui.Button")
+local StaticText						= require("cp.ui.StaticText")
 
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
@@ -46,17 +47,44 @@ function Viewer.matches(element)
 	   and #(contents[1]) > 0
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:new(app, eventViewer) -> Viewer
+--- Method
+--- Creates a new `Viewer` instance.
+---
+--- Parameters:
+--- * app 			- The FCP application.
+--- * eventViewer	- If `true`, the viewer is the Event Viewer.
+---
+--- Returns:
+--- * The new `Viewer` instance.
 function Viewer:new(app, eventViewer)
-	local o = {
+	local o = prop.extend({
 		_app = app,
 		_eventViewer = eventViewer
-	}
+	}, Viewer)
 
-	return prop.extend(o, Viewer)
+	o._timecode = StaticText:new(o, function()
+		local ui = o:bottomToolbarUI()
+		return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
+	end)
+
+--- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string>
+--- Field
+--- The current timecode value. The property can be watched to get notifications of changes.
+	o.timecode = o._timecode.value:wrap(o)
+
+	return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:app() -> application
+--- Method
+--- Returns the application.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The application.
 function Viewer:app()
 	return self._app
 end
@@ -288,21 +316,6 @@ function Viewer:playButton()
         end)
     end
     return self._playButton
-end
-
---- cp.apple.finalcutpro.main.Viewer:togglePlaying() -> self
---- Method
---- Toggles if the viewer is playing.
---- If there is nothing available to play, this will have no effect.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `Viewer` instance.
-function Viewer:togglePlaying()
-	self:playButton():press()
-	return self
 end
 
 -- pixelsFromWindowCanvas(hsWindow, centerPixel) -> hs.image, hs.image
