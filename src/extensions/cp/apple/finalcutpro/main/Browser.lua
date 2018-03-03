@@ -68,13 +68,13 @@ end
 -----------------------------------------------------------------------
 
 -- TODO: Add documentation
-function Browser:UI()
+Browser.UI = prop(function(self)
     return axutils.cache(self, "_ui", function()
         local app = self:app()
         return Browser._findBrowser(app:secondaryWindow(), app:primaryWindow())
     end,
     Browser.matches)
-end
+end):bind(Browser)
 
 -- TODO: Add documentation
 function Browser._findBrowser(...)

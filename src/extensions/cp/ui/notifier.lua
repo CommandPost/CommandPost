@@ -51,7 +51,7 @@ mod._registeredBundleIDs = registeredBundleIDs
 mod._registeredPIDs = registeredPIDs
 
 -- the overall app watcher for all cp.ui.notifiers.
-applicationwatcher.new(
+local appWatcher = applicationwatcher.new(
     function(_, eventType, app)
         local pid = app:pid()
         local notifiers = nil
@@ -60,30 +60,33 @@ applicationwatcher.new(
             local bundleID = app:bundleID()
             notifiers = registeredBundleIDs[bundleID]
             if notifiers then -- we have notifiers, so link the PID to the BundleID
+                -- log.df("Registering PID %s to Bundle ID '%s'", pid, bundleID)
                 registeredPIDs[pid] = bundleID
             end
         elseif eventType == TERMINATED then
             local bundleID = registeredPIDs[pid]
             registeredPIDs[pid] = nil
             if bundleID then
+                -- log.df("Deregistering PID %s from Bundle ID '%s'", pid, bundleID)
                 notifiers = registeredBundleIDs[bundleID]
             end
         end
 
         -- check if we need to update
         if notifiers then
+            -- log.df("Updating notifiers that their app has changed state...")
             for _,o in ipairs(notifiers) do
-                -- update any notifiers that the related app has launched.
-                o:update()
+                o:reset():_startObserving()
             end
         end
     end
-):start()
+)
 
 -- registerNotifier(notifier) -> nil
 -- Local Function
 -- Registers the specified `cp.ui.notifier`
 local function registerNotifier(notifier)
+    appWatcher:start()
     local bundleID = notifier:bundleID()
 
     -- add it to the list of notifiers
@@ -119,7 +122,7 @@ end
 --- * A new `cp.ui.notifier` instance.
 function mod.new(bundleID, elementFinderFn)
     assert(type(bundleID) == "string", "Provide a string value for the `bundleID`.")
-    assert(type(elementFinderFn) == "function", "Provide a function for the `elementFinderFn`.")
+    assert(type(elementFinderFn) == "function" or prop.is(elementFinderFn), "Provide a function for the `elementFinderFn`.")
 
     return registerNotifier(prop.extend({
         __bundleID = bundleID,
