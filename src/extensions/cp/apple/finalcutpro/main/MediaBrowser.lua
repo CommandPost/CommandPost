@@ -81,7 +81,7 @@ end
 -- TODO: Add documentation
 MediaBrowser.isShowing = prop.new(function(self)
 	local parent = self:parent()
-	return parent:isShowing() and parent:showMedia():isChecked()
+	return parent:isShowing() and parent:showMedia():checked()
 end):bind(MediaBrowser)
 
 -- TODO: Add documentation

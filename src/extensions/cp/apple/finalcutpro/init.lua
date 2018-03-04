@@ -99,6 +99,7 @@ local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
 local axutils									= require("cp.ui.axutils")
+local notifier									= require("cp.ui.notifier")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
@@ -314,8 +315,8 @@ end
 --- * None
 ---
 --- Returns:
---- * The bundle ID
-function App:bundleID()
+--- * The Bundle ID
+function App:bundleID() -- luacheck: ignore
 	return App.BUNDLE_ID
 end
 
@@ -343,20 +344,6 @@ App.isRunning = prop.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:bundleID() ~= nil and app:isRunning()
 end):bind(App):monitor(App.application)
-
---- cp.apple.finalcutpro:getBundleID() -> string
---- Method
---- Returns the Final Cut Pro Bundle ID
----
---- Parameters:
----  * None
----
---- Returns:
----  * A string of the Final Cut Pro Bundle ID
--- TODO: This should be a function rather than a method.
-function App:getBundleID() -- luacheck: ignore
-	return App.BUNDLE_ID
-end
 
 --- cp.apple.finalcutpro:getPasteboardUTI() -> string
 --- Method
@@ -386,6 +373,22 @@ function App:UI()
 		local fcp = self:application()
 		return fcp and ax.applicationElement(fcp)
 	end)
+end
+
+--- cp.apple.finalcutpro:notifier() -> cp.ui.notifier
+--- Method
+--- Returns a notifier that is tracking the application UI element. It has already been started.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The notifier.
+function App:notifier()
+	if not self._notifier then
+		self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
+	end
+	return self._notifier
 end
 
 --- cp.apple.finalcutpro:launch() -> boolean
@@ -987,6 +990,19 @@ end
 --
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:toolbar() -> PrimaryToolbar
+--- Method
+--- Returns the Primary Toolbar - the toolbar at the top of the Primary Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the PrimaryToolbar
+function App:toolbar()
+	return self:primaryWindow():toolbar()
+end
 
 --- cp.apple.finalcutpro:timeline() -> Timeline
 --- Method

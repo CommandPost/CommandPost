@@ -89,7 +89,7 @@ end):bind(TimelineAppearance)
 -- TODO: Add documentation
 function TimelineAppearance:show()
 	if not self:isShowing() then
-		self:toggle():check()
+		self:toggle():checked(true)
 	end
 	return self
 end

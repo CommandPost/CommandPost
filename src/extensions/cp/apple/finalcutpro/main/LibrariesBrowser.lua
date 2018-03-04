@@ -72,7 +72,7 @@ end
 
 -- TODO: Add documentation
 Libraries.isShowing = prop.new(function(self)
-	return self:parent():isShowing() and self:parent():showLibraries():isChecked()
+	return self:parent():isShowing() and self:parent():showLibraries():checked()
 end):bind(Libraries)
 
 -- TODO: Add documentation
@@ -98,7 +98,7 @@ function Libraries:show()
 		if not browser:isShowing() then
 			browser:showOnPrimary()
 		end
-		browser:showLibraries():check()
+		browser:showLibraries():checked(true)
 	end
 	return self
 end

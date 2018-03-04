@@ -34,7 +34,7 @@ local ImportPanel = {}
 -- TODO: Add documentation
 function ImportPanel:new(preferencesDialog)
 	local o = {_parent = preferencesDialog}
-	
+
 	return prop.extend(o, ImportPanel)
 end
 
@@ -130,10 +130,10 @@ end
 -- TODO: Add documentation
 function ImportPanel:toggleMediaLocation()
 	if self:show():isShowing() then
-		if self:copyToMediaFolder():isChecked() then
-			self:leaveInPlace():check()
+		if self:copyToMediaFolder():checked() then
+			self:leaveInPlace():checked(true)
 		else
-			self:copyToMediaFolder():check()
+			self:copyToMediaFolder():checked(true)
 		end
 		return true
 	end

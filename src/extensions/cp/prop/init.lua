@@ -485,7 +485,7 @@ end
 ---  * The current value of the prop. May not be the same as `newValue`.
 function prop.mt:set(newValue)
     if not self._set then
-        error("This property cannot be modified.")
+        error(string.format("The '%s' property cannot be modified.", self))
     end
     newValue = prepareValue(newValue, self._tableCopy, self._skipMetatable)
     if self._notifying then -- defer the update
@@ -517,7 +517,7 @@ end
 
 --- cp.prop:bind(owner) -> cp.prop
 --- Method
---- Creates a clone of this `cp.prop` which is bound to the specified owner.
+--- Binds the property to the specified owner. Once bound, it cannot be changed.
 ---
 --- Parameters:
 ---  * `owner`  - The owner to attach to.
@@ -529,9 +529,8 @@ end
 ---  * Throws an `error` if the new owner is `nil`.
 function prop.mt:bind(owner)
     assert(owner ~= nil, "The owner must not be nil.")
-    local o = self:clone()
-    o._owner = owner
-    return o
+    self._owner = owner
+    return self
 end
 
 --- cp.prop:owner() -> table
@@ -729,8 +728,8 @@ end
 ---  * `cp.prop`    - This prop value.
 ---  * `function`   - The watch function. Can be used to [unwatch](#unwatch) the `otherProp` if needed.
 function prop.mt:monitor(otherProp)
-    if not otherProp then
-        error("Please provide the otherProp to monitor.")
+    if not prop.is(otherProp) then
+        error("Please provide a cp.prop to monitor.")
     end
     local _, watch = otherProp:watch(function() self:update() end, false, true)
     return self, watch
@@ -811,9 +810,11 @@ local function watchProps(watcher, ...)
     end
 end
 
---- cp.prop:mutate(getFn[, setFn]) -> cp.prop <anything; read-only>
+--- cp.prop:mutate(getFn[, setFn]) -> cp.prop <anything; read-only>, function
 --- Method
 --- Returns a new property that is a mutation of the current one.
+--- Watchers of the mutant will be if a change in the current prop causes
+--- the mutation to be a new value.
 ---
 --- The `getFn` is a function with the following signature:
 ---
@@ -821,10 +822,10 @@ end
 --- function(original, owner, prop) --> mutantValue
 --- ```
 ---
----  * `original`       - The original property being mutated.
+---  * `originalProp`   - The original `cp.prop` being mutated.
 ---  * `owner`          - The owner of the mutator property, if it has been bound.
----  * `prop`           - The mutant property.
----  * `mutantValue`        - The new value based off the original.
+---  * `mutantProp`     - The mutant property.
+---  * `mutantValue`    - The new value based off the original.
 ---
 --- You can ignore any parameters that you don't need. Most simply use the `original` prop.
 ---
@@ -834,10 +835,10 @@ end
 --- function(mutantValue, original, owner, prop) --> nil
 --- ```
 ---
----  * `mutantValue`        - The new value being sent in.
----  * `original`       - The current value of the original property being mutated.
----  * `owner`          - The owner of the mutator property, if it has been bound.
----  * `prop`           - The mutant property.
+---  * `mutantValue`    - The new value being sent in.
+---  * `originalProp`   - The original property being mutated.
+---  * `owner`          - The owner of the mutant property, if it has been bound.
+---  * `mutantProp`     - The mutant property.
 ---
 --- Again, you can ignore any parameters that you don't need.
 --- If you want to set a new value to the `original` property, you can do so.
@@ -849,7 +850,7 @@ end
 --- anyNumber   = prop.THIS(1)
 --- isEven      = anyNumber:mutate(function(original) return original() % 2 == 0 end)
 ---     :watch(function(even)
----         if even then
+---         if even() then
 ---             print "even"
 ---         else
 ---             print "odd"
@@ -866,6 +867,7 @@ end
 ---
 --- Returns:
 ---  * A new `cp.prop` which will return a mutation of the property value.
+---  * The `watch` function that is monitoring the current `cp.prop`. It can be used to `unwatch` if required.
 function prop.mt:mutate(getFn, setFn)
     -- create the mutant, which will pull from the original.
     local mutantGetFn = function(owner, Prop)
@@ -883,8 +885,8 @@ function prop.mt:mutate(getFn, setFn)
     mutant._original = self
     self._mutated = true
     -- watch for changes and notify with the mutation
-    self:watch(function() mutant:_notify(getFn(self, mutant:owner(), mutant)) end, false, true)
-    return mutant
+    local _,watcher = mutant:monitor(self)
+    return mutant, watcher
 end
 
 --- cp.prop:wrap([owner]) -> cp.prop <anything>
@@ -1426,7 +1428,7 @@ end
 ---  * See [OR Function](#or) for more details.
 prop.mt.OR = prop.OR
 
--- cp.prop.applyAll(target, ...) -> table
+-- rebind(target, source) -> table
 -- Function
 -- Copies and binds all 'method' properties on the source tables passed in to the `target` table. E.g.:
 --
@@ -1454,8 +1456,8 @@ local function rebind(target, source)
     for k,v in pairs(source) do
         if target[k] == nil and prop.is(v) then
             if v:owner() == source then
-                -- it's a bound method. rebind.
-                local rebound = v:bind(target)
+                -- it's a bound method. Clone and rebind to the new target.
+                local rebound = v:clone():bind(target)
                 target[k] = rebound
                 if v._mutated then -- it will need to be reconnected
                     mutated[v._id] = rebound
