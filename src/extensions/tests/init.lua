@@ -11,5 +11,6 @@ return test.suite("cp"):with(
 	"tests.test_prop",
 	"tests.test_strings",
 	"tests.test_text",
-	"tests.test_utf16"
+	"tests.test_utf16",
+	"cp.ui.notifier_test"
 )
