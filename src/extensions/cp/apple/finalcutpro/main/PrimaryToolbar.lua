@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("PrimaryToolbar")
+-- local log								= require("hs.logger").new("PrimaryToolbar")
 
 local axutils							= require("cp.ui.axutils")
 local prop								= require("cp.prop")
@@ -38,7 +38,7 @@ local function getParent(element)
 end
 
 -- TODO: Add documentation
-function PrimaryToolbar:new(parent)
+function PrimaryToolbar.new(parent)
 	local o = prop.extend({_parent = parent}, PrimaryToolbar)
 
 	-- a CheckBox instance to access the browser button.

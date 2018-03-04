@@ -405,7 +405,7 @@ end
 --- * The `PrimaryToolbar`.
 function PrimaryWindow:toolbar()
 	if not self._toolbar then
-		self._toolbar = PrimaryToolbar:new(self)
+		self._toolbar = PrimaryToolbar.new(self)
 	end
 	return self._toolbar
 end
