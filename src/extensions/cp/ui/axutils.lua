@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log						= require("hs.logger").new("axutils")
+-- local log						= require("hs.logger").new("axutils")
 
 local fnutils					= require("hs.fnutils")
 
