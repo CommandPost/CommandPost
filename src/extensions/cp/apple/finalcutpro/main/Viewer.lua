@@ -84,8 +84,8 @@ local function pixelsFromWindowCanvas(hsWindow, centerPixel)
 
 		centerShot = c:imageFromCanvas()
 
-		-- shift left by a factor of 1 to 3 pixels, depending on the ratio.
-		c[1].frame.x = imagePixel.x+floor(ratio*1.5)
+		-- shift left by a factor of 3 to 6 pixels, depending on the ratio.
+		c[1].frame.x = imagePixel.x-floor(ratio*2)
 		offShot = c:imageFromCanvas()
 
 		-- delete the canvas
