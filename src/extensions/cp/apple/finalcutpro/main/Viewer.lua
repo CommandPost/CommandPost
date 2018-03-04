@@ -47,8 +47,55 @@ function Viewer.matches(element)
 	   and #(contents[1]) > 0
 end
 
---- cp.apple.finalcutpro.main.Viewer:new(app, eventViewer) -> Viewer
---- Method
+-- pixelsFromWindowCanvas(hsWindow, centerPixel) -> hs.image, hs.image
+-- Function
+-- Extracts two 2x2 pixel images from the screenshot of the image, centred
+-- on the `centerPixel`. The first is the pixel in the centre, the second is offset by 2 pixels to the left
+--
+-- Parameters:
+-- * hsWindow		- The `hs.window` having pixels pulled
+-- * centerPixel	- The pixel to to retrieve (and offset)
+--
+-- Returns:
+-- * Two `hs.images`, the first being the center pixel, the second being offset by 2px left.
+local function pixelsFromWindowCanvas(hsWindow, centerPixel)
+	local centerShot, offShot = nil, nil
+	local windowShot = hsWindow:snapshot()
+	if windowShot then
+		local windowFrame = hsWindow:frame()
+		local shotSize = windowShot:size()
+		local ratio = shotSize.h/windowFrame.h
+
+		local imagePixel = {
+			x = (windowFrame.x-centerPixel.x)*ratio,
+			y = (windowFrame.y-centerPixel.y)*ratio,
+			w = shotSize.w,
+			h = shotSize.h,
+		}
+
+		local c = canvas.new({w=1, h=1})
+		c[1] = {
+			type = "image",
+			image = windowShot,
+			imageScaling = "none",
+			imageAlignment = "topLeft",
+			frame = imagePixel,
+		}
+
+		centerShot = c:imageFromCanvas()
+
+		-- shift left by a factor of 1 to 3 pixels, depending on the ratio.
+		c[1].frame.x = imagePixel.x+floor(ratio*1.5)
+		offShot = c:imageFromCanvas()
+
+		-- delete the canvas
+		c:delete()
+	end
+	return centerShot, offShot
+end
+
+--- cp.apple.finalcutpro.main.Viewer.new(app, eventViewer) -> Viewer
+--- Constructor
 --- Creates a new `Viewer` instance.
 ---
 --- Parameters:
@@ -57,7 +104,7 @@ end
 ---
 --- Returns:
 --- * The new `Viewer` instance.
-function Viewer:new(app, eventViewer)
+function Viewer.new(app, eventViewer)
 	local o = prop.extend({
 		_app = app,
 		_eventViewer = eventViewer
@@ -68,10 +115,63 @@ function Viewer:new(app, eventViewer)
 		return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
 	end)
 
+	prop.bind(o) {
+
 --- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string>
 --- Field
 --- The current timecode value. The property can be watched to get notifications of changes.
-	o.timecode = o._timecode.value:wrap(o)
+		timecode = o._timecode.value,
+
+--- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
+--- Field
+--- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
+--- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
+		isPlaying = prop(
+			function(self)
+				local playButton = self:playButton()
+				local frame = playButton:frame()
+				if frame then
+					frame = geometry.new(frame)
+					local center = frame.center
+					local centerPixel = {x=floor(center.x), y=floor(center.y), w=1, h=1}
+
+					local window = self:currentWindow()
+					local hsWindow = window:hsWindow()
+
+					-----------------------------------------------------------------------
+					-- Save a snapshot:
+					-----------------------------------------------------------------------
+					local centerShot, offShot = pixelsFromWindowCanvas(hsWindow, centerPixel)
+
+					if centerShot then
+						-- centerShot:saveToFile("~/Desktop/viewer_center.png")
+						-- offShot:saveToFile("~/Desktop/viewer_off.png")
+						-----------------------------------------------------------------------
+						-- Get the snapshots as encoded URL strings:
+						-----------------------------------------------------------------------
+						local centerString = centerShot:encodeAsURLString()
+						local offString = offShot:encodeAsURLString()
+
+						-----------------------------------------------------------------------
+						-- Compare to hardcoded version
+						-----------------------------------------------------------------------
+						if centerString ~= offString then
+							return true
+						end
+					else
+						log.ef("Unable to snapshot the play button.")
+					end
+				end
+				return false
+			end,
+			function(newValue, owner, thisProp)
+				local value = thisProp:value()
+				if newValue ~= value then
+					owner:playButton():press()
+				end
+			end
+		):monitor(o._timecode.value)
+	}
 
 	return o
 end
@@ -317,102 +417,5 @@ function Viewer:playButton()
     end
     return self._playButton
 end
-
--- pixelsFromWindowCanvas(hsWindow, centerPixel) -> hs.image, hs.image
--- Function
--- Extracts two 2x2 pixel images from the screenshot of the image, centred
--- on the `centerPixel`. The first is the pixel in the centre, the second is offset by 2 pixels to the left
---
--- Parameters:
--- * hsWindow		- The `hs.window` having pixels pulled
--- * centerPixel	- The pixel to to retrieve (and offset)
---
--- Returns:
--- * Two `hs.images`, the first being the center pixel, the second being offset by 2px left.
-local function pixelsFromWindowCanvas(hsWindow, centerPixel)
-	local centerShot, offShot = nil, nil
-	local windowShot = hsWindow:snapshot()
-	if windowShot then
-		local windowFrame = hsWindow:frame()
-		local shotSize = windowShot:size()
-		local ratio = shotSize.h/windowFrame.h
-
-		local imagePixel = {
-			x = (windowFrame.x-centerPixel.x)*ratio,
-			y = (windowFrame.y-centerPixel.y)*ratio,
-			w = shotSize.w,
-			h = shotSize.h,
-		}
-
-		local c = canvas.new({w=1, h=1})
-		c[1] = {
-			type = "image",
-			image = windowShot,
-			imageScaling = "none",
-			imageAlignment = "topLeft",
-			frame = imagePixel,
-		}
-
-		centerShot = c:imageFromCanvas()
-
-		-- shift left by a factor of 1 to 3 pixels, depending on the ratio.
-		c[1].frame.x = imagePixel.x+floor(ratio*1.5)
-		offShot = c:imageFromCanvas()
-
-		-- delete the canvas
-		c:delete()
-	end
-	return centerShot, offShot
-end
-
---- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
---- Field
---- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
---- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
-Viewer.isPlaying = prop(
-	function(self)
-		local playButton = self:playButton()
-		local frame = playButton:frame()
-		if frame then
-			frame = geometry.new(frame)
-			local center = frame.center
-			local centerPixel = {x=floor(center.x), y=floor(center.y), w=1, h=1}
-
-			local window = self:currentWindow()
-			local hsWindow = window:hsWindow()
-
-			-----------------------------------------------------------------------
-			-- Save a snapshot:
-			-----------------------------------------------------------------------
-			local centerShot, offShot = pixelsFromWindowCanvas(hsWindow, centerPixel)
-
-			if centerShot then
-				-- centerShot:saveToFile("~/Desktop/viewer_center.png")
-				-- offShot:saveToFile("~/Desktop/viewer_off.png")
-				-----------------------------------------------------------------------
-				-- Get the snapshots as encoded URL strings:
-				-----------------------------------------------------------------------
-				local centerString = centerShot:encodeAsURLString()
-				local offString = offShot:encodeAsURLString()
-
-				-----------------------------------------------------------------------
-				-- Compare to hardcoded version
-				-----------------------------------------------------------------------
-				if centerString ~= offString then
-					return true
-				end
-			else
-				log.ef("Unable to snapshot the play button.")
-			end
-		end
-		return false
-	end,
-	function(newValue, self, thisProp)
-		local value = thisProp:value()
-		if newValue ~= value then
-			self:playButton():press()
-		end
-	end
-):bind(Viewer)
 
 return Viewer

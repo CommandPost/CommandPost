@@ -1031,7 +1031,7 @@ end
 ---  * the Viewer
 function App:viewer()
 	if not self._viewer then
-		self._viewer = Viewer:new(self, false)
+		self._viewer = Viewer.new(self, false)
 	end
 	return self._viewer
 end
@@ -1047,7 +1047,7 @@ end
 ---  * the Event Viewer
 function App:eventViewer()
 	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true)
+		self._eventViewer = Viewer.new(self, true)
 	end
 	return self._eventViewer
 end
