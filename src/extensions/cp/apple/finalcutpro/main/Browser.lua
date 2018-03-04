@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                             = require("hs.logger").new("browser")
+-- local log                             = require("hs.logger").new("browser")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -54,41 +54,71 @@ end
 function Browser:new(app) -- luacheck: ignore
     local o = prop.extend({_app = app}, Browser)
 
---- cp.apple.finalcutpro.main.Browser.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- The `axuielement` for the browser, or `nil` if not available.
-    o.UI = prop(function()
+    local UI = prop(function()
         return axutils.cache(self, "_ui", function()
             return Browser._findBrowser(app:secondaryWindow(), app:primaryWindow())
         end,
         Browser.matches)
-    end):bind(o)
+    end):monitor(app:toolbar().browserShowing)
 
-    -- monitor the 'Browser' button in the toolbar to track if the browser is visible.
-    o.UI:monitor(app:toolbar().browserShowing)
+    prop.bind(o) {
 
---- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
---- Field
---- Is the Browser on the Secondary Window?
-    o.isOnSecondary = o.UI:mutate(function(uiProp)
-        local ui = uiProp()
-        return ui and SecondaryWindow.matches(ui:window())
-    end):bind(o)
+        --- cp.apple.finalcutpro.main.Browser.UI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- The `axuielement` for the browser, or `nil` if not available.
+        UI = UI,
 
---- cp.apple.finalcutpro.main.Browser.isOnPrimary <cp.prop: boolean; read-only>
---- Field
---- Is the Browser on the Primary Window?
-    o.isOnPrimary = o.UI:mutate(function(uiProp)
-        local ui = uiProp()
-        return ui and PrimaryWindow.matches(ui:window())
-    end):bind(o)
+        --- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the Browser on the Secondary Window?
+        isOnSecondary = UI:mutate(function(original)
+            local ui = original()
+            return ui and SecondaryWindow.matches(ui:window())
+        end),
 
---- cp.apple.finalcutpro.main.Browser.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the Browser showing somewhere?
-    o.isShowing = o.UI:mutate(function(uiProp)
-        return uiProp() ~= nil
-    end):bind(o)
+        --- cp.apple.finalcutpro.main.Browser.isOnPrimary <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the Browser on the Primary Window?
+        isOnPrimary = UI:mutate(function(uiProp)
+            local ui = uiProp()
+            return ui and PrimaryWindow.matches(ui:window())
+        end),
+
+        --- cp.apple.finalcutpro.main.Browser.isShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the Browser showing somewhere?
+        isShowing = UI:mutate(function(original)
+            return original() ~= nil
+        end),
+
+        --- cp.apple.finalcutpro.main.Browser.librariesShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the 'Libraries' button active, and thus showing?
+        librariesShowing = o:showLibraries().checked,
+
+        --- cp.apple.finalcutpro.main.Browser.mediaShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the 'Media' button active, and thus showing?
+        mediaShowing = o:showMedia().checked,
+
+        --- cp.apple.finalcutpro.main.Browser.generatorsShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the 'Generators' button active, and thus showing?
+        generatorsShowing = o:showGenerators().checked,
+    }
+
+    -- wire up the libraries/media/generators buttons up to listen for updates from the app
+    app:notifier():addWatcher("AXValueChanged", function(element)
+        if element:attributeValue("AXRole") == "AXImage" then
+            local parent = element:attributeValue("AXParent")
+            local ui = o:UI()
+            if parent ~= nil and parent == ui then -- it's from inside the Browser UI
+                o:showLibraries().checked:update()
+                o:showMedia().checked:update()
+                o:showGenerators().checked:update()
+            end
+        end
+    end)
 
     return o
 end

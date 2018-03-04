@@ -53,7 +53,7 @@ function plugin.init(deps)
 	-- The last version we notified about:
 	--------------------------------------------------------------------------------
 	local notified = mod.notifiedVersion
-	local notNotified = notified:EQUALS(fcp.getVersion):NOT()
+	local notNotified = notified:ISNOT(fcp.getVersion)
     --------------------------------------------------------------------------------
 	-- Require setup if FCP is unsupported and we have not notified about
 	-- this version:

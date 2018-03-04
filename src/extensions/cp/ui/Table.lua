@@ -13,14 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("Table")
-local inspect						= require("hs.inspect")
-local drawing						= require("hs.drawing")
-local geometry						= require("hs.geometry")
+-- local log							= require("hs.logger").new("Table")
 
-local just							= require("cp.just")
+local prop							= require("cp.prop")
 local axutils						= require("cp.ui.axutils")
-local tools							= require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -184,8 +180,69 @@ end
 ---  * `parent`		- The parent object.
 ---  * `finder`		- A function which will return the `axuielement` that this table represents.
 function Table.new(parent, finder)
-	local o = {_parent = parent, _finder = finder}
-	return setmetatable(o, Table.mt)
+	local o = prop.extend({_parent = parent, _finder = finder}, Table.mt)
+
+	local UI = prop(function(self)
+		if not self._uncached then
+			return axutils.cache(self, "_ui", function()
+				return self._finder()
+			end,
+			Table.matches)
+		else
+			return self._finder()
+		end
+	end)
+
+	prop.bind(o) {
+		--- cp.ui.Table.UI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the current `axuielement` element for the table. May be `nil` if it is not available at present.
+		UI = UI,
+
+		--- cp.ui.Table.contentUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the `axuielement` that contains the actual rows.
+		contentUI = UI:mutate(function(original, self)
+			return axutils.cache(self, "_content", function()
+				local ui = original()
+				return ui and axutils.childMatching(ui, Table.matchesContent)
+			end,
+			Table.matchesContent)
+		end),
+
+		--- cp.ui.Table.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The vertical scroll bar UI element, if present.
+		verticalScrollBarUI = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:attributeValue("AXVerticalScrollBar")
+		end),
+
+		--- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The horizontal scroll bar UI element, if present.
+		horizontalScrollBarUI = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:attributeValue("AXHorizontalScrollBar")
+		end),
+
+		--- cp.ui.Table.isShowing <cp.prop: boolean; read-only>
+		--- Field
+		--- Returns `true` if the table is visible.
+		isShowing = UI:mutate(function(original)
+			return original() ~= nil
+		end),
+
+		--- cp.ui.Table.isFocused <cp.prop: boolean; read-only>
+		--- Field
+		--- Returns `true` if the table is focused by the user.
+		isFocused = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
+		end),
+	}
+
+	return o
 end
 
 --- cp.ui.Table:uncached() -> Table
@@ -214,43 +271,6 @@ function Table.mt:parent()
 	return self._parent
 end
 
---- cp.ui.Table:UI() -> axuielement | nil
---- Method
---- Returns the current `axuielement` element for the table. May be `nil` if it is not available at present.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `axuielement` for the Table.
-function Table.mt:UI()
-	if not self._uncached then
-		return axutils.cache(self, "_ui", function()
-			return self._finder()
-		end,
-		Table.matches)
-	else
-		return self._finder()
-	end
-end
-
---- cp.ui.Table:UI() -> axuielement | nil
---- Method
---- Returns the `axuielement` that contains the actual rows.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The content UI element, or `nil`.
-function Table.mt:contentUI()
-	return axutils.cache(self, "_content", function()
-		local ui = self:UI()
-		return ui and axutils.childMatching(ui, Table.matchesContent)
-	end,
-	Table.matchesContent)
-end
-
 --- cp.ui.Table.matchesContent(element) -> boolean
 --- Function
 --- Checks if the `element` is a valid table content element.
@@ -268,61 +288,6 @@ function Table.matchesContent(element)
 	return false
 end
 
---- cp.ui.Table:verticalScrollBarUI() -> axuielement | nil
---- Method
---- Finds the vertical scroll bar UI element, if present.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The UI element, or `nil`.
-function Table.mt:verticalScrollBarUI()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXVerticalScrollBar")
-end
-
---- cp.ui.Table:horizontalScrollBarUI() -> axuielement | nil
---- Method
---- Finds the horizontal scroll bar UI element, if present.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The UI element, or `nil`.
-function Table.mt:horizontalScrollBarUI()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXHorizontalScrollBar")
-end
-
---- cp.ui.Table:isShowing() -> boolean
---- Method
---- Checks if the table is visible.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the element is visible.
-function Table.mt:isShowing()
-	return self:UI() ~= nil
-end
-
---- cp.ui.Table:isFocused() -> boolean
---- Method
---- Checks if the table is focused by the user.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the element is focused.
-function Table.mt:isFocused()
-	local ui = self:UI()
-	return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
-end
-
 --- cp.ui.Table:rowsUI([filterFn]) -> table of axuielements | nil
 --- Method
 --- Returns the list of rows in the table. An optional filter function may be provided.
@@ -330,7 +295,7 @@ end
 ---
 --- Parameters:
 ---  * `filterFn`	- An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
---- 
+---
 --- Returns:
 ---  * Table of rows. If the table is visible but no rows match, it will be an empty table, otherwise it will be `nil`.
 function Table.mt:rowsUI(filterFn)
@@ -356,7 +321,7 @@ end
 ---
 --- Parameters:
 ---  * `filterFn`	- An optional function that will be called to check if individual rows should be included. If not provided, all rows are returned.
---- 
+---
 --- Returns:
 ---  * Table of rows. If the table is visible but no rows match, it will be an empty table, otherwise it will be `nil`.
 function Table.mt:topRowsUI(filterFn)

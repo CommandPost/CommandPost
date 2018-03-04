@@ -14,14 +14,11 @@
 --
 --------------------------------------------------------------------------------
 local log								= require("hs.logger").new("librariesBrowser")
-local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local LibrariesList						= require("cp.apple.finalcutpro.main.LibrariesList")
 local LibrariesFilmstrip				= require("cp.apple.finalcutpro.main.LibrariesFilmstrip")
 
@@ -40,8 +37,59 @@ local Libraries = {}
 
 -- TODO: Add documentation
 function Libraries:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, Libraries)
+	local o = prop.extend({_parent = parent}, Libraries)
+
+	-- checks if the Libraries Browser is showing
+	local isShowing = parent.isShowing:AND(parent.librariesShowing)
+
+	-- returns the UI for the Libraries Browser.
+	local UI = prop.OR(isShowing:AND(parent.UI), prop.NIL)
+
+	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.LibrariesBrowser.isShowing <cp.prop: boolean; read-only>
+		--- Field
+		--- Indicates if the Libraries Browser is showing.
+		isShowing = isShowing,
+
+		--- cp.apple.finalcutpro.main.LibrariesBrowser.UI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The `axuielement` for the Library Browser, or `nil` if not available.
+		UI = UI,
+
+		--- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the main group within the Libraries Browser, or `nil` if not available..
+		mainGroupUI = UI:mutate(function(original)
+			return axutils.cache(self, "_mainGroup", function()
+				local ui = original()
+				return ui and axutils.childWithRole(ui, "AXSplitGroup")
+			end)
+		end),
+
+		--- cp.apple.finalcutpro.main.LibrariesBrowser.isFocused <cp.prop: boolean; read-only>
+		--- Field
+		--- Indicates if the Libraries Browser is the current focus.
+		isFocused = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
+		end),
+	}
+
+	-- because we are referencing list/filmstrip classes which in turn reference our UI/etc
+	-- we need a separate prop.bind to avoid a circular reference.
+	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.LibrariesBrowser.isListView <cp.prop: boolean; read-only>
+		--- Field
+		--- Indicates if the Library Browser is in 'list view' mode.
+		isListView = o:list().isShowing:wrap(),
+
+		--- cp.apple.finalcutpro.main.LibrariesBrowser.isFilmstripView <cp.prop: boolean; read-only>
+		--- Field
+		--- Indicates if the Library Browser is in 'filmstrip view' mode.
+		isFilmstripView = o:filmstrip().isShowing:wrap(),
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -59,37 +107,6 @@ end
 -- BROWSER UI:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-function Libraries:UI()
-	if self:isShowing() then
-		return axutils.cache(self, "_ui", function()
-			return self:parent():UI()
-		end)
-	end
-	return nil
-end
-
--- TODO: Add documentation
-Libraries.isShowing = prop.new(function(self)
-	return self:parent():isShowing() and self:parent():showLibraries():checked()
-end):bind(Libraries)
-
--- TODO: Add documentation
-Libraries.isListView = prop.new(function(self)
-	return self:list():isShowing()
-end):bind(Libraries)
-
--- TODO: Add documentation
-Libraries.isFilmstripView = prop.new(function(self)
-	return self:filmstrip():isShowing()
-end):bind(Libraries)
-
--- TODO: Add documentation
-Libraries.isFocused = prop.new(function(self)
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXFocused") or axutils.childWith(ui, "AXFocused", true) ~= nil
-end):bind(Libraries)
 
 -- TODO: Add documentation
 function Libraries:show()
@@ -201,7 +218,7 @@ Libraries.UNUSED = 6
 function Libraries:selectClipFiltering(filterType)
 	local ui = self:UI()
 	if ui then
-		button = axutils.childWithID(ui, id "FilterButton")
+		local button = axutils.childWithID(ui, id "FilterButton")
 		if button then
 			local menu = button[1]
 			if not menu then
@@ -215,15 +232,6 @@ function Libraries:selectClipFiltering(filterType)
 		end
 	end
 	return self
-end
-
--- TODO: Add documentation
-function Libraries:mainGroupUI()
-	return axutils.cache(self, "_mainGroup",
-	function()
-		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXSplitGroup")
-	end)
 end
 
 -- TODO: Add documentation
@@ -329,7 +337,6 @@ function Libraries:showClip(clip)
 	else
 		return self:filmstrip():showClip(clip)
 	end
-	return false
 end
 
 -- TODO: Add documentation

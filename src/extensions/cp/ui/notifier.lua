@@ -272,7 +272,7 @@ function mod.mt:_observer(create)
                     for _,fn in ipairs(watchers) do
                         local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
                         if not ok then
-                            log.ef("Error processing '%s' notification from app '%':\n%s", notification, self:bundleID(), result)
+                            log.ef("Error processing '%s' notification from app '%sS':\n%s", notification, self:bundleID(), result)
                         end
                     end
                 end
