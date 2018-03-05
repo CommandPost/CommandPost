@@ -84,21 +84,70 @@ function ColorWheels.matches(element)
 	return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:new(parent) -> ColorInspector object
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.new(parent) -> ColorInspector
+--- Constructor
 --- Creates a new ColorWheels object
 ---
 --- Parameters:
 ---  * `parent`     - The parent
 ---
 --- Returns:
----  * A ColorInspector object
--- TODO: Use a function instead of a method.
-function ColorWheels:new(parent) -- luacheck: ignore
+---  * A new `ColorInspector` object
+function ColorWheels.new(parent)
     local o = prop.extend({
         _parent = parent,
         _child = {}
 	}, ColorWheels)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` representing the ColorWheels corrector.
+	o.UI = parent.correctorUI:mutate(function(original, self)
+		return axutils.cache(self, "_ui", function()
+			local ui = original()
+			return ColorWheels.matches(ui) and ui or nil
+		end, ColorWheels.matches)
+	end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` representing the content element of the ColorWheels corrector.
+--- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.
+	o.contentUI = o.UI:mutate(function(original)
+		return axutils.cache(o, "_content", function()
+			local ui = original()
+			return ui and #ui == 1 and #ui[1] == 1 and ui[1][1] or nil
+		end)
+	end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Is the Color Wheels Corrector currently showing?
+	o.isShowing = o.UI:mutate(function(original)
+		return original() ~= nil
+	end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheels.viewingAllWheels <cp.prop: boolean>
+--- Field
+--- Reports and modifies whether the ColorWheels corrector is showing "All Wheels" (`true`) or "Single Wheels" (`false`).
+	o.viewingAllWheels = prop(
+		function(self)
+			local ui = self:contentUI()
+			if ui then
+				-- 'all wheels' mode has at least 2 color wheels, 'single wheels' does not.
+				return axutils.childMatching(ui, ColorWheel.matches, 2) ~= nil
+			end
+			return false
+		end,
+		function(allWheels, self, theProp)
+			local current = theProp:get()
+			if allWheels and not current then
+				self:viewMode():selectItem(1)
+			elseif not allWheels and current then
+				self:viewMode():selectItem(2)
+			end
+		end
+	):bind(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.mix <cp.prop: number>
 --- Field
@@ -109,7 +158,6 @@ function ColorWheels:new(parent) -- luacheck: ignore
 --- Field
 --- The color temperature for this corrector. A number from 2500 to 10000.
 	o.temperature = o:temperatureSlider().value:wrap(o)
-
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.tint <cp.prop: number>
 --- Field
@@ -156,39 +204,6 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:UI() -> axuielement
---- Method
---- Returns  the the `axuielement` representing the ColorWheels corrector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The ColorWheels `axuielement`
-function ColorWheels:UI()
-	return axutils.cache(self, "_ui", function()
-		local ui = self:parent():correctorUI()
-		return ColorWheels.matches(ui) and ui or nil
-	end, ColorWheels.matches)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorWheels:contentUI() -> axuielement
---- Method
---- Returns  the the `axuielement` representing the content element of the ColorWheels corrector.
---- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The ColorWheels content `axuielement`
-function ColorWheels:contentUI()
-	return axutils.cache(self, "_content", function()
-		local ui = self:UI()
-		return ui and #ui == 1 and #ui[1] == 1 and ui[1][1] or nil
-	end)
-end
-
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:show() -> boolean
 --- Method
 --- Show's the Color Board within the Color Inspector.
@@ -203,19 +218,6 @@ function ColorWheels:show()
 		self:parent():activateCorrection(CORRECTION_TYPE)
 	end
     return self
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorWheels:isShowing() -> boolean
---- Method
---- Is the Color Wheels currently showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function ColorWheels:isShowing()
-    return self:UI() ~= nil
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:viewMode() -> MenuButton
@@ -239,28 +241,6 @@ function ColorWheels:viewMode()
 	end
 	return self._viewMode
 end
-
---- cp.apple.finalcutpro.inspector.color.ColorWheels:viewingAllWheels <cp.prop: boolean>
---- Field
---- Reports and modifies whether the ColorWheels corrector is showing "All Wheels" (`true`) or "Single Wheels" (`false`).
-ColorWheels.viewingAllWheels = prop(
-	function(self)
-		local ui = self:contentUI()
-		if ui then
-			-- 'all wheels' mode has at least 2 color wheels, 'single wheels' does not.
-			return axutils.childMatching(ui, ColorWheel.matches, 2) ~= nil
-		end
-		return false
-	end,
-	function(allWheels, self, theProp)
-		local current = theProp:get()
-		if allWheels and not current then
-			self:viewMode():selectItem(1)
-		elseif not allWheels and current then
-			self:viewMode():selectItem(2)
-		end
-	end
-):bind(ColorWheels)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:wheelType() -> RadioGroup
 --- Method
@@ -299,7 +279,7 @@ end
 --- * The `ColorWheel`.
 function ColorWheels:master()
 	if not self._master then
-		self._master = ColorWheel:new(self, ColorWheel.TYPE.MASTER)
+		self._master = ColorWheel.new(self, ColorWheel.TYPE.MASTER)
 	end
 	return self._master
 end
@@ -315,7 +295,7 @@ end
 --- * The `ColorWheel`.
 function ColorWheels:shadows()
 	if not self._shadows then
-		self._shadows = ColorWheel:new(self, ColorWheel.TYPE.SHADOWS)
+		self._shadows = ColorWheel.new(self, ColorWheel.TYPE.SHADOWS)
 	end
 	return self._shadows
 end
@@ -331,7 +311,7 @@ end
 --- * The `ColorWheel`.
 function ColorWheels:midtones()
 	if not self._midtones then
-		self._midtones = ColorWheel:new(self, ColorWheel.TYPE.MIDTONES)
+		self._midtones = ColorWheel.new(self, ColorWheel.TYPE.MIDTONES)
 	end
 	return self._midtones
 end
@@ -347,7 +327,7 @@ end
 --- * The `ColorWheel`.
 function ColorWheels:highlights()
 	if not self._highlights then
-		self._highlights = ColorWheel:new(self, ColorWheel.TYPE.HIGHLIGHTS)
+		self._highlights = ColorWheel.new(self, ColorWheel.TYPE.HIGHLIGHTS)
 	end
 	return self._highlights
 end

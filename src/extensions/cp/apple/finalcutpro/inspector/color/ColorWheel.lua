@@ -62,8 +62,8 @@ function ColorWheel.matches(element)
 	return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel:new(parent, type) -> ColorWheel
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.new(parent, type) -> ColorWheel
+--- Constructor
 --- Creates a new `ColorWheel` instance, with the specified parent and type.
 ---
 --- Parameters:
@@ -73,11 +73,52 @@ end
 --- Returns:
 --- * A new `ColorWheel` instance.
 -- TODO: Use a Function instead of a Method.
-function ColorWheel:new(parent, type) -- luacheck: ignore
+function ColorWheel.new(parent, type) -- luacheck: ignore
 	local o = prop.extend({
 		_parent = parent,
 		_type = type,
 	}, ColorWheel)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` for the ColorWheel.
+	o.UI = parent.contentUI:mutate(function(original, self)
+		return axutils.cache(self, "_ui", function()
+			local ui = original()
+			if ui then
+				if parent:viewingAllWheels() then
+					return axutils.childFromTop(ui, 2 + self._type.all)
+				elseif parent:wheelType():selectedOption() == self._type.single then
+					return axutils.childFromTop(ui, 4)
+				end
+			end
+			return nil
+		end, ColorWheel.matches)
+	end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the ColorWheel is showing on screen.
+	o.isShowing = o.UI:mutate(function(original)
+		return original() ~= nil
+	end):bind(o)
+
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.focused <cp.pref: boolean>
+--- Field
+--- Gets and sets whether the Color Well has focus.
+    o.focused = o.UI:mutate(
+        function(original)
+            local ui = original()
+            return ui ~= nil and ui:attributeValue("AXFocused") == true
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                ui:setAttributeValue("AXFocused", value)
+            end
+        end
+    ):bind(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorValue <cp.prop: hs.drawing.color>
 --- Field
@@ -127,26 +168,6 @@ function ColorWheel:app()
 	return self:parent():app()
 end
 
-function ColorWheel:UI()
-	return axutils.cache(self, "_ui",
-		function()
-			local ui = self:parent():contentUI()
-			if ui then
-				if self:parent():viewingAllWheels() then
-					return axutils.childFromTop(ui, 2 + self._type.all)
-				elseif self:parent():wheelType():selectedOption() == self._type.single then
-					return axutils.childFromTop(ui, 4)
-				end
-			end
-			return nil
-		end
-	, ColorWheel.matches)
-end
-
-function ColorWheel:isShowing()
-	return self:UI() ~= nil
-end
-
 function ColorWheel:show()
 	self:parent():show()
 	-- ensure the wheel type is correct, if visible.
@@ -156,6 +177,21 @@ function ColorWheel:show()
 	end
 	return self
 end
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:select() -> cp.apple.finalcutpro.inspector.color.ColorWheel
+--- Method
+--- Shows and selects this color wheel.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `ColorWheel` instance.
+function ColorWheel:select()
+    self:show():focused(true)
+    return self
+end
+
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:colorWell() -> ColorWell
 --- Method
@@ -168,7 +204,7 @@ end
 --- * The `ColorWell` instance.
 function ColorWheel:colorWell()
 	if not self._colorWell then
-		self._colorWell = ColorWell:new(self, function()
+		self._colorWell = ColorWell.new(self, function()
 			return axutils.childMatching(self:UI(), ColorWell.matches)
 		end)
 	end
