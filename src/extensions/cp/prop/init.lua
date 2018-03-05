@@ -972,7 +972,7 @@ end
 ---
 --- Returns:
 ---  * A new `cp.prop` which wraps this property.
-function prop.mt:wrap(owner)
+function prop.mt:wrap(owner, key)
     local wrapGetFn = function(_, wrapper) return wrapper._wrapped:get() end
     local wrapSetFn = self._set and function(newValue, _, wrapper) wrapper._wrapped:set(newValue) end or nil
     local wrapCloneFn = function(wrapper)
