@@ -200,6 +200,7 @@ end
 -- Returns:
 -- * The orientation color.
 local function fromOrientation(o)
+    o.right, o.up = o.right or 0, o.up or 0
     local h, b, _
     h, b = atan(o.up*-1, o.right) / ( math.pi * 2), sqrt(o.right * o.right + o.up * o.up)
     _, h = modf(1 - h + HUE_SHIFT)
@@ -487,6 +488,7 @@ end
 --- Returns:
 ---  * The `ColorWell` instance.
 function ColorWell:nudge(right, up)
+    right, up = right or 0, up or 0
     local o = self:colorOrientation()
     if o then
         o.right, o.up = o.right + right, o.up + up
