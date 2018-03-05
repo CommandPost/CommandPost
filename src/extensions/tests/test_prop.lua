@@ -454,16 +454,16 @@ return test.suite("cp.prop"):with(
 
 		ok(eq(bClone:owner(), bProp:owner()))
 
-		ok(aProp() == true)
-		ok(bProp() == true)
-		ok(aClone() == true)
-		ok(bClone() == true)
+		ok(eq(aProp(), true))
+		ok(eq(bProp(), true))
+		ok(eq(aClone(), true))
+		ok(eq(bClone(), true))
 
 		aProp(false)
-		ok(aProp() == false)
-		ok(bProp() == true)
-		ok(aClone() == true)
-		ok(bClone() == true)
+		ok(eq(aProp(), false))
+		ok(eq(bProp(), false))
+		ok(eq(aClone(), true))
+		ok(eq(bClone(), true))
 	end),
 
 	test("Prop Bind AND Watch", function()
@@ -485,19 +485,75 @@ return test.suite("cp.prop"):with(
 		local boundWatch = function(value) boundCount = boundCount + 1; boundValue = value end
 		andBound:watch(boundWatch)
 
-		ok(#andProp._watchers == 1)
-		ok(andProp._watchers[1].fn == propWatch)
+		ok(eq(#andProp._watchers, 2))
+		ok(eq(andProp._watchers[1].fn, propWatch))
+		ok(eq(andProp._watchers[2].fn, boundWatch))
 
-		ok(#andBound._watchers == 1)
-		ok(andBound._watchers[1].fn == boundWatch)
+		ok(eq(propValue, nil))
+		ok(eq(boundValue, nil))
+		aProp(false)
+
+		ok(eq(propValue, false))
+		ok(eq(boundValue, false))
+	end),
+
+	test("Prop Bind to Key", function()
+		local owner = {}
+
+		local aProp = prop.TRUE():bind(owner, "a")
+		ok(eq(aProp:owner(), owner))
+		ok(eq(aProp:label(), "a"))
+	end),
+
+	test("Prop Bind Batch", function()
+		local owner = {}
+
+		prop.bind(owner) {
+			a = prop.TRUE(),
+			b = prop.FALSE(),
+		}
+
+		ok(prop.is(owner.a))
+		ok(prop.is(owner.b))
+		ok(eq(owner.a:owner(), owner))
+		ok(eq(owner.b:owner(), owner))
+		ok(eq(owner.a:label(), "a"))
+		ok(eq(owner.b:label(), "b"))
+
+		local other = {}
+
+		prop.bind(other) {
+			c = owner.a,
+		}
+
+		-- even though we bound c directly to a, we don't hijack a because it's already bound.
+		ok(eq(owner.a:owner(), owner))
+		ok(eq(other.c:owner(), other))
+
+		owner:a(true)
+		ok(eq(owner:a(), true))
+		ok(eq(other:c(), true))
+
+		owner:a(false)
+		ok(eq(owner:a(), false))
+		ok(eq(other:c(), false))
+	end),
+
+	test("Prop tostring", function()
+		local aProp = prop.TRUE()
+
+		ok(eq(tostring(aProp), "id #".. aProp:id() ..": true"))
+
+		aProp:label("foo")
+		ok(eq(tostring(aProp), "foo: true"))
 	end),
 
 	test("Prop Binary Functions", function()
 		local one, two, three = prop.THIS(1), prop.THIS(2), prop.THIS(3)
 
-		ok(one:EQUALS(1):value() == true)
-		ok(one:EQUALS(one):value() == true)
-		ok(one:EQUALS(two):value() == false)
+		ok(one:IS(1):value() == true)
+		ok(one:IS(one):value() == true)
+		ok(one:IS(two):value() == false)
 
 		ok(two:BELOW(one):value() == false)
 		ok(two:ABOVE(one):value() == true)
@@ -512,7 +568,7 @@ return test.suite("cp.prop"):with(
 		ok(two:ATMOST(2):value() == true)
 
 		local something = prop.THIS(1)
-		local comp = one:EQUALS(something)
+		local comp = one:IS(something)
 
 		ok(comp:value() == true)
 		something(0)
@@ -536,14 +592,21 @@ return test.suite("cp.prop"):with(
 
 		local b = prop.new(function() return a() and "true" or "false" end)
 			:monitor(a)
-			:watch(function(value) report[#report+1] = value end)
+
+		ok(eq(report, {}))
+		ok(eq(a:hasWatchers(), false))
+
+		a:toggle()
 
 		ok(eq(report, {}))
 
-		a(false)
+		b:watch(function(value) report[#report+1] = value end)
 
-		ok(eq(report, {"false"}))
+		ok(eq(a:hasWatchers(), true))
 
+		a:toggle()
+
+		ok(eq(report, {"true"}))
 	end),
 
 	test("Prop Mutation", function()

@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
+--                  C O M M A N D P O S T    U I    A P I                     --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
@@ -13,8 +13,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+-- local log						= require("hs.logger").new("axutils")
 
 local fnutils					= require("hs.fnutils")
+
+local canvas					= require("hs.canvas")
 
 --------------------------------------------------------------------------------
 --
@@ -354,6 +357,57 @@ function axutils.cache(source, key, finderFn, verifyFn)
 		end
 	end
 	return value
+end
+
+--- cp.ui.axutils.snapshot(element, [filename]) -> hs.image
+--- Function
+--- Takes a snapshot of the specified `axuielement` and returns it.
+--- If the `filename` is provided it also saves the file to the specified location.
+---
+--- Parameters:
+--- * element		- The `axuielement` to snap.
+--- * filename		- (optional) The path to save the image as a PNG file.
+---
+--- Returns:
+--- * An `hs.image` file, or `nil` if the element could not be snapped.
+function axutils.snapshot(element, filename)
+	if axutils.isValid(element) then
+		local window = element:attributeValue("AXWindow")
+		if window then
+			local hsWindow = window:asHSWindow()
+			local windowSnap = hsWindow:snapshot()
+			local windowFrame = window:frame()
+			local shotSize = windowSnap:size()
+
+			local ratio = shotSize.h/windowFrame.h
+			local elementFrame = element:frame()
+
+			local imageFrame = {
+				x = (windowFrame.x-elementFrame.x)*ratio,
+				y = (windowFrame.y-elementFrame.y)*ratio,
+				w = shotSize.w,
+				h = shotSize.h,
+			}
+
+			local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
+			c[1] = {
+				type = "image",
+				image = windowSnap,
+				imageScaling = "none",
+				imageAlignment = "topLeft",
+				frame = imageFrame,
+			}
+
+			local elementSnap = c:imageFromCanvas()
+
+			if filename then
+				elementSnap:saveToFile(filename)
+			end
+
+			return elementSnap
+		end
+	end
+	return nil
 end
 
 return axutils

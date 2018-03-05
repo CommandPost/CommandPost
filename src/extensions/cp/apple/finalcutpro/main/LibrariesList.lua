@@ -39,8 +39,56 @@ end
 
 -- TODO: Add documentation
 function List:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, List)
+	local o = prop.extend({_parent = parent}, List)
+
+	local UI = parent.mainGroupUI:mutate(function(original)
+		return axutils.cache(o, "_ui", function()
+			local main = original()
+			if main then
+				for _,child in ipairs(main) do
+					if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
+						if List.matches(child[1]) then
+							return child[1]
+						end
+					end
+				end
+			end
+			return nil
+		end, List.matches)
+	end)
+
+	local playerUI = UI:mutate(function(original)
+		return axutils.cache(self, "_player", function()
+			return axutils.childFromTop(original(), id "Player")
+		end)
+	end)
+
+	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.LibrariesList.UI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The `axuielement` for the Libraries List, or `nil` if not available.
+		UI = UI,
+
+		--- cp.apple.finalcutpro.main.LibrariesList.playerUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The `axuielement` for the player section of the Libraries List UI.
+		playerUI = playerUI,
+
+		--- cp.apple.finalcutpro.main.LibrariesList.isShowing <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Libraries List is showing on screen.
+		isShowing = parent.isShowing:AND(UI:ISNOT(nil)),
+
+		--- cp.apple.finalcutpro.main.LibrariesList.isFocused <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Libraries List is currently focused within FCPX.
+		isFocused = o:contents().isFocused:OR(playerUI:mutate(function(original)
+			local ui = original()
+			return ui ~= nil and ui:attributeValue("AXFocused") == true
+		end)),
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -59,35 +107,6 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function List:UI()
-	return axutils.cache(self, "_ui", function()
-		local main = self:parent():mainGroupUI()
-		if main then
-			for i,child in ipairs(main) do
-				if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
-					if List.matches(child[1]) then
-						return child[1]
-					end
-				end
-			end
-		end
-		return nil
-	end,
-	List.matches)
-end
-
--- TODO: Add documentation
-List.isShowing = prop.new(function(self)
-	return self:UI() ~= nil and self:parent():isShowing()
-end):bind(List)
-
--- TODO: Add documentation
-List.isFocused = prop.new(function(self)
-	local player = self:playerUI()
-	return self:contents():isFocused() or player and player:focused()
-end):bind(List)
-
 function List:show()
 	if not self:isShowing() and self:parent():show():isShowing() then
 		self:parent():toggleViewMode():press()
@@ -99,13 +118,6 @@ end
 -- PREVIEW PLAYER:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-function List:playerUI()
-	return axutils.cache(self, "_player", function()
-		return axutils.childFromTop(self:UI(), id "Player")
-	end)
-end
 
 -- TODO: Add documentation
 function List:playhead()

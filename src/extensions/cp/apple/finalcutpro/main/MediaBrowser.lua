@@ -13,19 +13,13 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("mediaBrowser")
-local inspect							= require("hs.inspect")
+-- local log								= require("hs.logger").new("mediaBrowser")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Button							= require("cp.ui.Button")
 local Table								= require("cp.ui.Table")
-local ScrollArea						= require("cp.ui.ScrollArea")
-local CheckBox							= require("cp.ui.CheckBox")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
@@ -48,8 +42,35 @@ MediaBrowser.SOUND_EFFECTS = 4
 
 -- TODO: Add documentation
 function MediaBrowser:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, MediaBrowser)
+	local o = prop.extend({_parent = parent}, MediaBrowser)
+
+	local isShowing = parent.isShowing:AND(parent.mediaShowing)
+
+	local UI = prop.OR(isShowing:AND(parent.UI), prop.NIL)
+
+	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.MediaBrowser.isShowing <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Media Browser is showing.
+		isShowing = isShowing,
+
+		--- cp.apple.finalcutpro.main.MediaBrowser.UI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the UI for the Media Browser, or `nil` if not available.
+		UI = UI,
+
+		--- cp.apple.finalcutpro.main.MediaBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the main group UI for the Media Browser, or `nil` if not available.
+		mainGroupUI = UI:mutate(function(original)
+			return axutils.cache(self, "_mainGroup", function()
+				local ui = original()
+				return ui and axutils.childWithRole(ui, "AXSplitGroup")
+			end)
+		end),
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -67,22 +88,6 @@ end
 -- MEDIABROWSER UI:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-function MediaBrowser:UI()
-	if self:isShowing() then
-		return axutils.cache(self, "_ui", function()
-			return self:parent():UI()
-		end)
-	end
-	return nil
-end
-
--- TODO: Add documentation
-MediaBrowser.isShowing = prop.new(function(self)
-	local parent = self:parent()
-	return parent:isShowing() and parent:showMedia():isChecked()
-end):bind(MediaBrowser)
 
 -- TODO: Add documentation
 function MediaBrowser:show()
@@ -104,15 +109,6 @@ end
 -- SECTIONS:
 --
 -----------------------------------------------------------------------------
-
--- TODO: Add documentation
-function MediaBrowser:mainGroupUI()
-	return axutils.cache(self, "_mainGroup",
-	function()
-		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXSplitGroup")
-	end)
-end
 
 -- TODO: Add documentation
 function MediaBrowser:sidebar()

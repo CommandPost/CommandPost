@@ -17,7 +17,6 @@ local _									= require("moses")
 
 local axutils							= require("cp.ui.axutils")
 
-local tools								= require("cp.tools")
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
@@ -39,8 +38,54 @@ end
 
 -- TODO: Add documentation
 function Filmstrip:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, Filmstrip)
+	local o = prop.extend({_parent = parent}, Filmstrip)
+
+	local UI = parent.mainGroupUI:mutate(function(original)
+		return axutils.cache(self, "_ui", function()
+			local main = original()
+			if main then
+				for _,child in ipairs(main) do
+					if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
+						if Filmstrip.matches(child[1]) then
+							return child[1]
+						end
+					end
+				end
+			end
+			return nil
+		end,
+		Filmstrip.matches)
+	end)
+
+	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.UI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The `axuielement` for the Libraries List, or `nil` if not available.
+		UI = UI,
+
+		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.isShowing <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Libraries Filmstrip is showing on screen.
+		isShowing = parent.isShowing:AND(UI:ISNOT(nil)),
+
+		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the `axuielement` representing the 'vertical scroll bar', or `nil` if not available.
+		verticalScrollBarUI = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:attributeValue("AXVerticalScrollBar")
+		end),
+
+		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Returns the `axuielement` representing the 'content', or `nil` if not available.
+		contentsUI = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:contents()[1]
+		end),
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -59,45 +104,11 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function Filmstrip:UI()
-	return axutils.cache(self, "_ui", function()
-		local main = self:parent():mainGroupUI()
-		if main then
-			for i,child in ipairs(main) do
-				if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
-					if Filmstrip.matches(child[1]) then
-						return child[1]
-					end
-				end
-			end
-		end
-		return nil
-	end,
-	Filmstrip.matches)
-end
-
--- TODO: Add documentation
-function Filmstrip:verticalScrollBarUI()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXVerticalScrollBar")
-end
-
--- TODO: Add documentation
-Filmstrip.isShowing = prop.new(function(self)
-	return self:UI() ~= nil and self:parent():isShowing()
-end):bind(Filmstrip)
 
 function Filmstrip:show()
 	if not self:isShowing() and self:parent():show():isShowing() then
 		self:parent():toggleViewMode():press()
 	end
-end
-
--- TODO: Add documentation
-function Filmstrip:contentsUI()
-	local ui = self:UI()
-	return ui and ui:contents()[1]
 end
 
 -----------------------------------------------------------------------
