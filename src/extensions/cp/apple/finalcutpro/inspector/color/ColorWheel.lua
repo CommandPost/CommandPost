@@ -125,27 +125,22 @@ function ColorWheel.new(parent, type) -- luacheck: ignore
 --- The current color value, as a `hs.drawing.color` table.
 	o.colorValue = o:colorWell().value:wrap(o)
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.colorScreenPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
 --- Field
---- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
---- actual Color Well circle, which only extends to 85 out of 255 values.
-	o.colorScreenPosition = o:colorWell().colorScreenPosition:wrap(o)
+--- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+	o.puckPosition = o:colorWell().puckPosition:wrap(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorPosition <cp.prop: point>
 --- Field
---- Relative X/Y position for the current color value of the Color Well. This will be a `point` table,
---- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
+--- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
+--- actual Color Well circle, which only extends to 85 out of 255 values.
 	o.colorPosition = o:colorWell().colorPosition:wrap(o)
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.puckScreenPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.colorOrientation <cp.prop: table>
 --- Field
---- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-	o.puckScreenPosition = o:colorWell().puckScreenPosition:wrap(o)
-
---- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
---- Field
---- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-	o.puckPosition = o:colorWell().puckPosition:wrap(o)
+--- Provides the orientation of the color as a table containing an `up` and `right` value.
+--- The values will have a range between `-1` and `1`.
+	o.colorOrientation = o:colorWell().colorOrientation:wrap(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.saturationValue <cp.prop: number>
 --- Field
@@ -296,19 +291,19 @@ function ColorWheel:reset()
 	return self:resetButton():press()
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(x, y) -> self
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(right, up) -> self
 --- Method
---- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
---- positive `y` values shift down. Only integer values have an effect.
+--- Nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left,
+--- negative `up` values shift down. You may have decimal shift values.
 ---
 --- Parameters:
---- * x		- The number of pixels to shift horizontally.
---- * y		- The number of pixels to shift vertically.
+---  * `right` - The number of steps to shift right. May be negative to shift left.
+---  * `up` - The number of pixels to shift down. May be negative to shift down.
 ---
 --- Returns:
 --- * The `ColorWheel` instance.
-function ColorWheel:nudgeColor(x, y)
-	self:colorWell():nudge(x, y)
+function ColorWheel:nudgeColor(right, up)
+	self:colorWell():nudge(right, up)
 	return self
 end
 

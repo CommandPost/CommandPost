@@ -1,6 +1,6 @@
 local test		= require("cp.test")
-local log		= require("hs.logger").new("testprop")
-local inspect	= require("hs.inspect")
+-- local log		= require("hs.logger").new("testprop")
+-- local inspect	= require("hs.inspect")
 
 local prop		= require("cp.prop")
 
@@ -149,7 +149,7 @@ return test.suite("cp.prop"):with(
 
 	test("Prop Watch Bound", function()
 		local owner = {}
-		owner.prop = prop.TRUE():watch(function(value, self) ok(eq(self, owner)) end):bind(owner)
+		owner.prop = prop.TRUE():watch(function(_, self) ok(eq(self, owner)) end):bind(owner)
 		owner.prop:update()
 	end),
 
@@ -215,7 +215,7 @@ return test.suite("cp.prop"):with(
 		ok(isLeftAndRight() == true)
 
 		-- Use AND as a method
-		isLeftAndRightAgain = isLeft:AND(isRight)
+		local isLeftAndRightAgain = isLeft:AND(isRight)
 		ok(isLeftAndRightAgain:value() == true)
 
 		-- Check we get an error when combining an AND and OR
@@ -375,15 +375,15 @@ return test.suite("cp.prop"):with(
 		local log = {}
 
 		-- logs
-		aProp:watch(function(value) log[#log+1] = 1 end)
+		aProp:watch(function(_) log[#log+1] = 1 end)
 
 		-- modifies then logs
-		aProp:watch(function(value)
+		aProp:watch(function(_)
 			aProp:set(false)
 			log[#log+1] = 2
 		end)
 		-- logs
-		aProp:watch(function(value) log[#log+1] = 3 end)
+		aProp:watch(function(_) log[#log+1] = 3 end)
 
 		aProp:update()
 
@@ -397,15 +397,15 @@ return test.suite("cp.prop"):with(
 		local log = {}
 
 		-- logs
-		aProp:watch(function(value) log[#log+1] = 1 end)
+		aProp:watch(function(_) log[#log+1] = 1 end)
 
 		-- modifies to false then logs
-		aProp:watch(function(value)
+		aProp:watch(function(_)
 			aProp:set(false)
 			log[#log+1] = 2
 		end)
 		-- modifes back to true then logs
-		aProp:watch(function(value)
+		aProp:watch(function(_)
 			aProp:set(true)
 			log[#log+1] = 3
 		end)
@@ -552,12 +552,13 @@ return test.suite("cp.prop"):with(
 		-- take any number
 		local anyNumber = prop.THIS(1)
 
-		-- mutate to check if it's odd or even
-		local isEven = anyNumber:mutate(
+		-- mutate to double it
+		local double = anyNumber:mutate(
 			function(original)
-				-- log.df("prop mutation: original = %s", inspect(original))
-				-- log.df("prop mutation: original() = %s", inspect(original()))
-				return original() % 2 == 0
+				return original() * 2
+			end,
+			function(newValue, original)
+				original(newValue/2)
 			end
 		):watch(
 			function(value)
@@ -565,25 +566,29 @@ return test.suite("cp.prop"):with(
 			end
 		)
 
-		ok(isEven() == false)
+		ok(eq(double(), 2))
 		ok(eq(report, {}))
 
 		anyNumber(10)
-		ok(isEven() == true)
-		ok(eq(report, {true}))
+		ok(eq(double(), 20))
+		ok(eq(report, {20}))
 
 		anyNumber(4)
-		ok(isEven() == true)
-		ok(eq(report, {true}))
+		ok(eq(double(), 8))
+		ok(eq(report, {20,8}))
 
 		anyNumber(7)
-		ok(isEven() == false)
-		ok(eq(report, {true, false}))
+		ok(eq(double(), 14))
+		ok(eq(report, {20,8,14}))
+
+		double(8)
+		ok(eq(anyNumber(), 4))
+		ok(eq(report, {20,8,14,8}))
 	end),
 
 	test("Prop Wrapping", function()
 		local a = prop.TRUE()
-		local b = a:wrap(b)
+		local b = a:wrap()
 		local c = b:clone()
 
 		local aReport = {}
@@ -618,6 +623,23 @@ return test.suite("cp.prop"):with(
 		ok(eq(aReport, {false, true}))
 		ok(eq(bReport, {false, true}))
 		ok(eq(cReport, {false, true}))
+	end),
+
+	test("Prop Bound Wrapping", function()
+		local owner = {}
+		local a = prop.TRUE()
+		owner.b = a:wrap(owner)
+
+		ok(eq(a(), true))
+		ok(eq(owner:b(), true))
+
+		a(false)
+		ok(eq(a(), false))
+		ok(eq(owner:b(), false))
+
+		owner:b(true)
+		ok(eq(a(), true))
+		ok(eq(owner:b(), true))
 	end),
 
 	test("Prop Pre-Watch", function()
