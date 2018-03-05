@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("viewer")
 
 local canvas							= require("hs.canvas")
 local geometry							= require("hs.geometry")
+local delayedTimer						= require("hs.timer").delayed
 
 local prop								= require("cp.prop")
 
@@ -30,6 +31,7 @@ local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local id								= require("cp.apple.finalcutpro.ids") "Viewer"
 
 local floor								= math.floor
+local match, sub						= string.match, string.sub
 
 --------------------------------------------------------------------------------
 --
@@ -37,6 +39,64 @@ local floor								= math.floor
 --
 --------------------------------------------------------------------------------
 local Viewer = {}
+
+-- findViewersUI(...) -> table of hs._asm.axuielement | nil
+-- Private Function
+-- Finds the viewer `axuielement`s in a table. There may be more than one if the Event Viewer is enabled.
+-- If none can be found, `nil` is returned.
+--
+-- Parameters:
+-- * ...	- The list of windows to search in. Must have the `viewerGroupUI()` function.
+--
+-- Returns:
+-- * A list of Viewer `axuielement`s, or `nil`.
+local function findViewersUI(...)
+	for i = 1,select("#", ...) do
+		local window = select(i, ...)
+		if window then
+			local viewers = axutils.childrenMatching(window:viewerGroupUI(), Viewer.matches)
+			if viewers then
+				return viewers
+			end
+		end
+	end
+	return nil
+end
+
+-- findViewerUI(...) -> hs._asm.axuielement
+-- Private Function
+-- Finds the Viewer UI from the list, if present.
+--
+-- Parameters:
+-- * ...	- the list of windows to check in.
+--
+-- Returns:
+-- * The Viewer `axuelement`, or `nil` if not available.
+local function findViewerUI(...)
+	local viewers = findViewersUI(...)
+	if viewers then
+		return axutils.childFromRight(viewers, 1)
+	end
+	return nil
+end
+
+-- findEventViewerUI(...) -> hs._asm.axuielement
+-- Private Function
+-- Finds the Event Viewer UI from the list, if present.
+--
+-- Parameters:
+-- * ...	- the list of windows to check in.
+--
+-- Returns:
+-- * The Event Viewer `axuelement`, or `nil` if not available.
+local function findEventViewerUI(...)
+	local viewers = findViewersUI(...)
+	if viewers and #viewers == 2 then
+		-- The Event Viewer is always on the left, if present.
+		return axutils.childFromLeft(viewers, 1)
+	end
+	return nil
+end
 
 -- TODO: Add documentation
 function Viewer.matches(element)
@@ -84,7 +144,7 @@ local function pixelsFromWindowCanvas(hsWindow, centerPixel)
 
 		centerShot = c:imageFromCanvas()
 
-		-- shift left by a factor of 3 to 6 pixels, depending on the ratio.
+		-- shift left by 2 pixels, scaled by the ratio
 		c[1].frame.x = imagePixel.x-floor(ratio*2)
 		offShot = c:imageFromCanvas()
 
@@ -110,22 +170,103 @@ function Viewer.new(app, eventViewer)
 		_eventViewer = eventViewer
 	}, Viewer)
 
+	-- The UI finder
+	local UI = prop(function(self)
+		return axutils.cache(o, "_ui", function()
+			if self:isMainViewer() then
+				return findViewerUI(app:secondaryWindow(), app:primaryWindow())
+			else
+				return findEventViewerUI(app:secondaryWindow(), app:primaryWindow())
+			end
+		end,
+		Viewer.matches)
+	end)
+
+	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.Viewer.UI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- The `axuielement` for the Viewer.
+		UI = UI,
+
+		--- cp.apple.finalcutpro.main.Viewer.isShowing <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Viewer is showing.
+		isShowing = UI:mutate(function(original)
+			return original() ~= nil
+		end),
+
+		--- cp.apple.finalcutpro.main.Viewer.isOnSecondary <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Viewer is showing on the Secondary Window.
+		isOnSecondary = UI:mutate(function(original)
+			local ui = original()
+			return ui and SecondaryWindow.matches(ui:window())
+		end),
+
+		--- cp.apple.finalcutpro.main.Viewer.isOnPrimary <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the Viewer is showing on the Primary Window.
+		isOnPrimary = UI:mutate(function(original)
+			local ui = original()
+			return ui and PrimaryWindow.matches(ui:window())
+		end),
+	}
+
+	local topToolbarUI = UI:mutate(function(original)
+		return axutils.cache(o, "_topToolbar", function()
+			local ui = original()
+			return ui and axutils.childFromTop(ui, 1)
+		end)
+	end)
+
+	local bottomToolbarUI = UI:mutate(function(original)
+		return axutils.cache(o, "_bottomToolbar", function()
+			local ui = original()
+			return ui and axutils.childFromBottom(ui, 1)
+		end)
+	end)
+
+	-- The StaticText that contains the timecode.
 	o._timecode = StaticText:new(o, function()
-		local ui = o:bottomToolbarUI()
+		local ui = bottomToolbarUI()
 		return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
 	end)
 
 	prop.bind(o) {
+		--- cp.apple.finalcutpro.main.Viewer.topToolbarUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Provides the `axuielement` for the top toolbar of the Viewer, or `nil` if not available.
+		topToolbarUI = topToolbarUI,
 
---- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string>
---- Field
---- The current timecode value. The property can be watched to get notifications of changes.
+		--- cp.apple.finalcutpro.main.Viewer.bottomToolbarUI <cp.prop: hs._asm.axuielement; read-only>
+		--- Field
+		--- Provides the `axuielement` for the bottom toolbar of the Viewer, or `nil` if not available.
+		bottomToolbarUI = bottomToolbarUI,
+
+		--- cp.apple.finalcutpro.main.Viewer.hasPlayerControls <cp.prop: boolean; read-only>
+		--- Field
+		--- Checks if the viewer has Player Controls visible.
+		hasPlayerControls = bottomToolbarUI:mutate(function(original)
+			return original() ~= nil
+		end),
+
+		--- cp.apple.finalcutpro.main.Viewer.title <cp.prop: string; read-only>
+		--- Field
+		--- Provides the Title of the clip in the Viewer as a string, or `nil` if not available.
+		title = topToolbarUI:mutate(function(original)
+			local titleText = axutils.childFromLeft(original(), id "Title")
+			return titleText and titleText:value()
+		end),
+
+		--- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string>
+		--- Field
+		--- The current timecode value. The property can be watched to get notifications of changes.
 		timecode = o._timecode.value,
 
---- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
---- Field
---- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
---- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
+		--- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
+		--- Field
+		--- The 'playing' status of the viewer. If true, it is playing, if not it is paused.
+		--- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
 		isPlaying = prop(
 			function(self)
 				local playButton = self:playButton()
@@ -170,8 +311,52 @@ function Viewer.new(app, eventViewer)
 					owner:playButton():press()
 				end
 			end
-		):monitor(o._timecode.value)
+		),
 	}
+
+	o._isPlayingChecker = delayedTimer.new(0.1, function()
+		if o.isPlaying:update() then
+			-- it hasn't actually finished yet, so keep running.
+			o._isPlayingChecker:start()
+		end
+	end)
+
+	-- watch the `timecode` field and update `isPlaying`.
+	o.timecode:watch(function(_)
+		local checker = o._isPlayingChecker
+		if o.isPlaying:update() then
+			checker:start()
+		else
+			checker:stop()
+		end
+	end)
+
+	--- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
+	--- Field
+	--- Provides the `axuielement` for the Format text.
+	local formatUI = topToolbarUI:mutate(function(original)
+		return axutils.cache(o, "_format", function()
+			local ui = original()
+			return ui and axutils.childFromLeft(ui, id "Format")
+		end)
+	end):bind(o, "formatUI")
+
+	--- cp.apple.finalcutpro.main.Viewer.getFormat <cp.prop: string; read-only>
+	--- Field
+	--- Provides the format text value, or `nil` if none is available.
+	local format = formatUI:mutate(function(original)
+			local format = original()
+			return format and format:value()
+	end):bind(o, "format")
+
+	--- cp.apple.finalcutpro.main.Viewer.framerate <cp.prop: number; read-only>
+	--- Field
+	--- Provides the framerate as a number, or nil if not available.
+	format:mutate(function(original)
+		local formatValue = original()
+		local framerate = format and match(formatValue, ' %d%d%.?%d?%d?[pi]')
+		return framerate and tonumber(sub(framerate, 1,-2))
+	end):bind(o, "framerate")
 
 	return o
 end
@@ -195,107 +380,37 @@ end
 --
 -----------------------------------------------------------------------
 
+--- cp.apple.finalcutpro.main.Viewer:isMainViewer() -> boolean
+--- Method
+--- Returns `true` if this is the main Viewer.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if this is the main Viewer.
+function Viewer:isMainViewer()
+	return not self._eventViewer
+end
+
+--- cp.apple.finalcutpro.main.Viewer:isEventViewer() -> boolean
+--- Method
+--- Returns `true` if this is the Event Viewer.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if this is the Event Viewer.
+function Viewer:isEventViewer()
+	return self._eventViewer
+end
 
 -----------------------------------------------------------------------
 --
 -- VIEWER UI:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-local function findViewerUI(...)
-	for i = 1,select("#", ...) do
-		local window = select(i, ...)
-		if window then
-			local top = window:viewerGroupUI()
-			local ui = nil
-			if top then
-				for _,child in ipairs(top) do
-					-- There can be two viwers enabled
-					if Viewer.matches(child) then
-						-- Both the event viewer and standard viewer have the ID, so pick the right-most one
-						if ui == nil or ui:position().x < child:position().x then
-							ui = child
-						end
-					end
-				end
-			end
-			if ui then return ui end
-		end
-	end
-	return nil
-end
-
------------------------------------------------------------------------
---
--- EVENT VIEWER UI:
---
------------------------------------------------------------------------
-
--- TODO: Add documentation
-local function findEventViewerUI(...)
-	for i = 1,select("#", ...) do
-		local window = select(i, ...)
-		if window then
-			local top = window:viewerGroupUI()
-			local ui = nil
-			local viewerCount = 0
-			if top then
-				for _,child in ipairs(top) do
-					-- There can be two viwers enabled
-					if Viewer.matches(child) then
-						viewerCount = viewerCount + 1
-						-- Both the event viewer and standard viewer have the ID, so pick the left-most one
-						if ui == nil or ui:position().x > child:position().x then
-							ui = child
-						end
-					end
-				end
-			end
-			-- Can only be the event viewer if there are two viewers.
-			if viewerCount == 2 then
-				return ui
-			end
-		end
-	end
-	return nil
-end
-
--- TODO: Add documentation
-function Viewer:UI()
-	return axutils.cache(self, "_ui", function()
-		local app = self:app()
-		if self:isMainViewer() then
-			return findViewerUI(app:secondaryWindow(), app:primaryWindow())
-		else
-			return findEventViewerUI(app:secondaryWindow(), app:primaryWindow())
-		end
-	end,
-	Viewer.matches)
-end
-
-
--- TODO: Add documentation
-Viewer.isEventViewer = prop.new(function(self)
-	return self._eventViewer
-end):bind(Viewer)
-
--- TODO: Add documentation
-Viewer.isMainViewer = prop.new(function(self)
-	return not self._eventViewer
-end):bind(Viewer)
-
--- TODO: Add documentation
-Viewer.isOnSecondary = prop.new(function(self)
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end):bind(Viewer)
-
--- TODO: Add documentation
-Viewer.isOnPrimary = prop.new(function(self)
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
-end):bind(Viewer)
 
 -- TODO: Add documentation
 function Viewer:currentWindow()
@@ -305,11 +420,6 @@ function Viewer:currentWindow()
 		return self:app():primaryWindow()
 	end
 end
-
--- TODO: Add documentation
-Viewer.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
-end):bind(Viewer)
 
 -- TODO: Add documentation
 function Viewer:showOnPrimary()
@@ -358,54 +468,6 @@ function Viewer:hide()
 		menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
 	end
 	return self
-end
-
--- TODO: Add documentation
-function Viewer:topToolbarUI()
-	return axutils.cache(self, "_topToolbar", function()
-		local ui = self:UI()
-		return ui and axutils.childFromTop(ui, 1)
-	end)
-end
-
--- TODO: Add documentation
-function Viewer:bottomToolbarUI()
-	return axutils.cache(self, "_bottomToolbar", function()
-		local ui = self:UI()
-		return ui and axutils.childFromBottom(ui, 1)
-	end)
-end
-
--- TODO: Add documentation
-function Viewer:hasPlayerControls()
-	return self:bottomToolbarUI() ~= nil
-end
-
--- TODO: Add documentation
-function Viewer:formatUI()
-	return axutils.cache(self, "_format", function()
-		local ui = self:topToolbarUI()
-		return ui and axutils.childFromLeft(ui, id "Format")
-	end)
-end
-
--- TODO: Add documentation
-function Viewer:getFormat()
-	local format = self:formatUI()
-	return format and format:value()
-end
-
--- TODO: Add documentation
-function Viewer:getFramerate()
-	local format = self:getFormat()
-	local framerate = format and string.match(format, ' %d%d%.?%d?%d?[pi]')
-	return framerate and tonumber(string.sub(framerate, 1,-2))
-end
-
--- TODO: Add documentation
-function Viewer:getTitle()
-	local titleText = axutils.childFromLeft(self:topToolbarUI(), id "Title")
-	return titleText and titleText:value()
 end
 
 -- TODO: Add documentation
