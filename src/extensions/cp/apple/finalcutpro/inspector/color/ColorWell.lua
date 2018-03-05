@@ -413,8 +413,6 @@ function ColorWell.new(parent, finderFn)
             return toOrientation(original())
         end,
         function(orientation, original)
-            log.df("is prop: %s", prop.is(original))
-            log.df("prop owner: %s", type(original:owner()))
             original(fromOrientation(orientation))
         end
     ):bind(o)
