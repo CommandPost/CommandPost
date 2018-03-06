@@ -1063,7 +1063,7 @@ end
 ---
 --- Returns:
 ---  * New, read-only `cp.prop` which will be `true` if this property is NOT equal to `something`.
-prop.mt.NEQ = prop.mt.NOTEQUALTO
+prop.mt.NEQ = prop.mt.ISNOT
 
 --- cp.prop:BELOW() -> cp.prop <boolean; read-only>
 --- Method

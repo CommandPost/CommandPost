@@ -127,7 +127,7 @@ mod.CUSTOM_PARAMETERS = {
             ["minValue"] = -100,
             ["maxValue"] = 100,
             ["stepSize"] = 1,
-            ["getValue"] = function() return color:shadows():percentage() end,
+            ["getValue"] = function() return color:shadows():percent() end,
             ["shiftValue"] = function(value) return color:shadows():shiftPercent(value) end,
             ["resetValue"] = function() color:shadows():reset() end,
         },
