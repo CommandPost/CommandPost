@@ -77,6 +77,9 @@ mod.MODES = {
 local colorBoard = fcp:colorBoard()
 local color, saturation, exposure = colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()
 
+local colorWheels = fcp:inspector():color():colorWheels()
+local cwMaster, cwShadows, cwMidtones, cwHighlights = colorWheels:master(), colorWheels:shadows(), colorWheels:midtones(), colorWheels:highlights()
+
 --- plugins.finalcutpro.tangent.manager.customParameters
 --- Constant
 --- Table containing custom Tangent parameters.
@@ -263,28 +266,37 @@ mod.CUSTOM_PARAMETERS = {
         --------------------------------------------------------------------------------
         -- COLOR WHEEL:
         --------------------------------------------------------------------------------
-        --[[
         ["0x00030017"] = {
             ["name"] = "Color Wheel - Master - Vertical",
-            ["name9"] = "MASTER",
-            ["minValue"] = colorWheels:master():colorWell().minPosition,
-            ["maxValue"] = colorWheels:master():colorWell().maxPosition,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return colorWheels:master():colorPosition() and colorWheels:master():colorPosition().y end,
-            ["shiftValue"] = function(value)
-                local currentValue = colorWheels:master():colorPosition()
-                if currentValue then
-                    local x, y = currentValue.x, currentValue.y
-                    y = y + 1
-                    colorWheels:master():colorPosition({
-                        ["x"] = x,
-                        ["y"] = y,
-                    })
-                end
+            ["name9"] = "MSTR VERT",
+            ["minValue"] = -1,
+            ["maxValue"] = 1,
+            ["stepSize"] = 1/600,
+            ["getValue"] = function()
+                local o = cwMaster:colorOrientation()
+                return o and o.up
             end,
-            ["resetValue"] = function() colorWheels:master():reset() end,
+            ["shiftValue"] = function(value)
+                cwMaster:nudgeColor(0, value)
+            end,
+            ["resetValue"] = function() cwMaster:reset() end,
         },
-        --]]
+        ["0x00030018"] = {
+            ["name"] = "Color Wheel - Master - Horizontal",
+            ["name9"] = "MSTR HORZ",
+            ["minValue"] = -1,
+            ["maxValue"] = 1,
+            ["stepSize"] = 1/600,
+            ["getValue"] = function()
+                local o = cwMaster:colorOrientation()
+                return o and o.right
+            end,
+            ["shiftValue"] = function(value)
+                cwMaster:nudgeColor(value, 0)
+            end,
+            ["resetValue"] = function() cwMaster:reset() end,
+        },
+
 
         --------------------------------------------------------------------------------
         -- BINDINGS:
@@ -307,6 +319,10 @@ mod.CUSTOM_PARAMETERS = {
                 <Binding name="Color Board Highlights Color">
                     <Member id="0x00030007"/>
                     <Member id="0x00030008"/>
+                </Binding>
+                <Binding name="Color Wheels Master">
+                    <Member id="0x00030017"/>
+                    <Member id="0x00030018"/>
                 </Binding>
                 ]],
             },
