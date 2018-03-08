@@ -46,12 +46,12 @@ local touchdevice
 --
 -- CONSTANTS:
 --
-MOD_OF_CHOISE = "alt"
-MOD_1 = "cmd"
-MOD_2 = "shift"
-MOD_3 = "ctrl"
-MOD_4 = "capslock"
-MOD_5 = "fn"
+local MOD_OF_CHOISE = "alt"
+local MOD_1 = "cmd"
+local MOD_2 = "shift"
+local MOD_3 = "ctrl"
+local MOD_4 = "capslock"
+local MOD_5 = "fn"
 
 --------------------------------------------------------------------------------
 
