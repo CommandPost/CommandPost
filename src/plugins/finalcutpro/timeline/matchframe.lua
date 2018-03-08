@@ -369,7 +369,7 @@ function mod.matchFrame(focus)
         --------------------------------------------------------------------------------
         -- Get Clip Name from the Viewer
         --------------------------------------------------------------------------------
-        local clipName = fcp:viewer():getTitle()
+        local clipName = fcp:viewer():title()
 
         if clipName then
             --------------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                             = require("hs.logger").new("browser")
+-- local log                             = require("hs.logger").new("browser")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -52,8 +52,75 @@ end
 -- TODO: Add documentation
 -- TODO: Use a function instead of a method.
 function Browser:new(app) -- luacheck: ignore
-    local o = {_app = app}
-    return prop.extend(o, Browser)
+    local o = prop.extend({_app = app}, Browser)
+
+    local UI = prop(function()
+        return axutils.cache(self, "_ui", function()
+            return Browser._findBrowser(app:secondaryWindow(), app:primaryWindow())
+        end,
+        Browser.matches)
+    end):monitor(app:toolbar().browserShowing)
+
+    prop.bind(o) {
+
+        --- cp.apple.finalcutpro.main.Browser.UI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- The `axuielement` for the browser, or `nil` if not available.
+        UI = UI,
+
+        --- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the Browser on the Secondary Window?
+        isOnSecondary = UI:mutate(function(original)
+            local ui = original()
+            return ui and SecondaryWindow.matches(ui:window())
+        end),
+
+        --- cp.apple.finalcutpro.main.Browser.isOnPrimary <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the Browser on the Primary Window?
+        isOnPrimary = UI:mutate(function(uiProp)
+            local ui = uiProp()
+            return ui and PrimaryWindow.matches(ui:window())
+        end),
+
+        --- cp.apple.finalcutpro.main.Browser.isShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the Browser showing somewhere?
+        isShowing = UI:mutate(function(original)
+            return original() ~= nil
+        end),
+
+        --- cp.apple.finalcutpro.main.Browser.librariesShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the 'Libraries' button active, and thus showing?
+        librariesShowing = o:showLibraries().checked,
+
+        --- cp.apple.finalcutpro.main.Browser.mediaShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the 'Media' button active, and thus showing?
+        mediaShowing = o:showMedia().checked,
+
+        --- cp.apple.finalcutpro.main.Browser.generatorsShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Is the 'Generators' button active, and thus showing?
+        generatorsShowing = o:showGenerators().checked,
+    }
+
+    -- wire up the libraries/media/generators buttons up to listen for updates from the app
+    app:notifier():addWatcher("AXValueChanged", function(element)
+        if element:attributeValue("AXRole") == "AXImage" then
+            local parent = element:attributeValue("AXParent")
+            local ui = o:UI()
+            if parent ~= nil and parent == ui then -- it's from inside the Browser UI
+                o:showLibraries().checked:update()
+                o:showMedia().checked:update()
+                o:showGenerators().checked:update()
+            end
+        end
+    end)
+
+    return o
 end
 
 -- TODO: Add documentation
@@ -66,15 +133,6 @@ end
 -- BROWSER UI:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-function Browser:UI()
-    return axutils.cache(self, "_ui", function()
-        local app = self:app()
-        return Browser._findBrowser(app:secondaryWindow(), app:primaryWindow())
-    end,
-    Browser.matches)
-end
 
 -- TODO: Add documentation
 function Browser._findBrowser(...)
@@ -90,29 +148,6 @@ function Browser._findBrowser(...)
     end
     return nil
 end
-
---- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
---- Field
---- Is the Browser on the Secondary Window?
-Browser.isOnSecondary = prop.new(function(self)
-    local ui = self:UI()
-    return ui and SecondaryWindow.matches(ui:window())
-end):bind(Browser)
-
---- cp.apple.finalcutpro.main.Browser <cp.prop: boolean; read-only>
---- Field
---- Is the Browser on the Primary Window?
-Browser.isOnPrimary = prop.new(function(self)
-    local ui = self:UI()
-    return ui and PrimaryWindow.matches(ui:window())
-end):bind(Browser)
-
---- cp.apple.finalcutpro.main.Browser <cp.prop: boolean; read-only>
---- Field
---- Is the Browser showing?
-Browser.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(Browser)
 
 -- TODO: Add documentation
 function Browser:showOnPrimary()

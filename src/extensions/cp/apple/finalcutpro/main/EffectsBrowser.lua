@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("EffectsBrowser")
+-- local log								= require("hs.logger").new("EffectsBrowser")
 
 local geometry							= require("hs.geometry")
 local fnutils							= require("hs.fnutils")
@@ -23,9 +23,6 @@ local tools								= require("cp.tools")
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 
-local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Button							= require("cp.ui.Button")
 local Table								= require("cp.ui.Table")
 local ScrollArea						= require("cp.ui.ScrollArea")
 local CheckBox							= require("cp.ui.CheckBox")
@@ -81,7 +78,7 @@ function Browser:UI()
 end
 
 Browser.isShowing = prop.new(function(self)
-	return self:toggleButton():isChecked()
+	return self:toggleButton():checked()
 end):bind(Browser)
 
 function Browser:toggleButton()
@@ -101,14 +98,14 @@ end
 
 function Browser:show()
 	self:app():timeline():show()
-	self:toggleButton():check()
+	self:toggleButton():checked(true)
 	just.doUntil(function() return self:isShowing() end)
 	return self
 end
 
 function Browser:hide()
 	if self:app():timeline():isShowing() then
-		self:toggleButton():uncheck()
+		self:toggleButton():checked(false)
 		just.doWhile(function() return self:isShowing() end)
 	end
 	return self
@@ -135,7 +132,6 @@ function Browser:hideSidebar()
 end
 
 function Browser:toggleSidebar()
-	local isShowing = self:sidebar():isShowing()
 	self:sidebarToggle():toggle()
 	return self
 end

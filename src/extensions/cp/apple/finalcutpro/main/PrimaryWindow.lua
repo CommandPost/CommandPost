@@ -31,6 +31,7 @@ local Window						= require("cp.ui.Window")
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
 local Inspector						= require("cp.apple.finalcutpro.inspector.Inspector")
+local PrimaryToolbar				= require("cp.apple.finalcutpro.main.PrimaryToolbar")
 
 --------------------------------------------------------------------------------
 --
@@ -391,6 +392,22 @@ end
 ---  * An `hs._asm.axuielement` object
 function PrimaryWindow:browserGroupUI()
 	return self:topGroupUI()
+end
+
+--- cp.apple.finalcutpro.main.PrimaryWindow:toolbar() -> PrimaryToolbar
+--- Method
+--- Returns the PrimaryToolbar element.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `PrimaryToolbar`.
+function PrimaryWindow:toolbar()
+	if not self._toolbar then
+		self._toolbar = PrimaryToolbar.new(self)
+	end
+	return self._toolbar
 end
 
 -----------------------------------------------------------------------

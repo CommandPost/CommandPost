@@ -88,7 +88,7 @@ end
 ---
 --- Returns:
 ---  * A string of the Compressor Bundle ID
-function App:getBundleID()
+function App:bundleID() -- luacheck: ignore
 	return App.BUNDLE_ID
 end
 
