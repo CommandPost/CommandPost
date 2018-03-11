@@ -6,7 +6,7 @@
 
 --- === plugins.finalcutpro.timeline.mousezoom ===
 ---
---- Allows you to zoom in or out of a Final Cut Pro timeline using the mechanical scroll wheel on your mouse or the Touch Pad on the Magic Mouse when holding down the OPTION modifier key.
+--- Allows you to zoom in or out of a Final Cut Pro timeline using the mechanical scroll wheel on your mouse or the Touch Pad on the Magic Mouse when holding down the modifier key of your choise.
 ---
 --- Special Thanks: Iain Anderson (@funwithstuff) for all his incredible testing!
 
@@ -46,6 +46,13 @@ local touchdevice
 --
 -- CONSTANTS:
 --
+local MOD_OF_CHOISE = "alt"
+local MOD_1 = "cmd"
+local MOD_2 = "shift"
+local MOD_3 = "ctrl"
+local MOD_4 = "capslock"
+local MOD_5 = "fn"
+
 --------------------------------------------------------------------------------
 
 -- ENABLED_DEFAULT -> number
@@ -114,7 +121,7 @@ mod.enabled = config.prop("enablemousezoom", ENABLED_DEFAULT):watch(mod.update)
 
 --- plugins.finalcutpro.timeline.mousezoom.stop() -> none
 --- Function
---- Disables the ability to zoom a timeline using your mouse scroll wheel and the OPTION modifier key.
+--- Disables the ability to zoom a timeline using your mouse scroll wheel and the modifier key of your choise.
 ---
 --- Parameters:
 ---  * None
@@ -254,13 +261,13 @@ local function touchCallback(_, touches)
     if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 
     --------------------------------------------------------------------------------
-    -- Only allow when ONLY the OPTION modifier key is held down:
+    -- Only allow when ONLY the modifier key of your choise is held down:
     --------------------------------------------------------------------------------
     local mods = eventtap.checkKeyboardModifiers()
-    if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
-        mod.altPressed = true
+    if mods[MOD_OF_CHOISE] and not mods[MOD_1] and not mods[MOD_2] and not mods[MOD_3] and not mods[MOD_4] and not mods[MOD_5] then
+        mod.modifierPressed = true
     else
-        mod.altPressed = false
+        mod.modifierPressed = false
         return
     end
 
@@ -370,7 +377,7 @@ end
 
 --- plugins.finalcutpro.timeline.mousezoom.start() -> none
 --- Function
---- Enables the ability to zoon a timeline using your mouse scroll wheel and the OPTION modifier key.
+--- Enables the ability to zoon a timeline using your mouse scroll wheel and the modifier key of your choise.
 ---
 --- Parameters:
 ---  * None
@@ -429,9 +436,9 @@ function mod.start()
         -- Block Horizontal Scrolling:
         --------------------------------------------------------------------------------
         if event:getProperty(eventtap.event.properties.scrollWheelEventPointDeltaAxis2) ~= 0 then
-            if mod.altPressed then
+            if mod.modifierPressed then
                 --------------------------------------------------------------------------------
-                -- Exit callback if OPTION is being held down:
+                -- Exit callback if modifier of your choise is being held down:
                 --------------------------------------------------------------------------------
                 return true
             end
@@ -442,8 +449,8 @@ function mod.start()
         --------------------------------------------------------------------------------
         local mods = eventtap.checkKeyboardModifiers()
         local mouseButtons = eventtap.checkMouseButtons()
-        if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
-            mod.altPressed = true
+        if mods[MOD_OF_CHOISE] and not mods[MOD_1] and not mods[MOD_2] and not mods[MOD_3] and not mods[MOD_4] and not mods[MOD_5] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
+            mod.modifierPressed = true
             if mod.foundMagicMouse then
                 --------------------------------------------------------------------------------
                 -- This prevents the Magic Mouse from scrolling horizontally or vertically:
@@ -474,22 +481,22 @@ function mod.start()
             end
         else
             --------------------------------------------------------------------------------
-            -- False alarm - OPTION isn't being pressed:
+            -- False alarm - modifier of your choise isn't being pressed:
             --------------------------------------------------------------------------------
-            mod.altPressed = false
+            mod.modifierPressed = false
         end
     end):start()
 
     --------------------------------------------------------------------------------
-    -- Detect when OPTION key is released:
+    -- Detect when modifier key of your choise is released:
     --------------------------------------------------------------------------------
     mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)
-        if mod.altPressed and tools.tableCount(event:getFlags()) == 0 then
+        if mod.modifierPressed and tools.tableCount(event:getFlags()) == 0 then
 
             --------------------------------------------------------------------------------
             -- Reset everything:
             --------------------------------------------------------------------------------
-            mod.altPressed = false
+            mod.modifierPressed = false
             mod.lastPosition = nil
 
             --------------------------------------------------------------------------------
@@ -540,7 +547,7 @@ function plugin.init(deps)
                 --------------------------------------------------------------------------------
                 :addCheckbox(101,
                 {
-                    label = i18n("allowZoomingWithOptionKey") .. " (requires macOS 10.12 or greater)",
+                    label = i18n("allowZoomingWithModifierKey") .. " (requires macOS 10.12 or greater)",
                     onchange = function() end,
                     checked = false,
                     disabled = true,
@@ -570,7 +577,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             :addCheckbox(101,
             {
-                label = i18n("allowZoomingWithOptionKey"),
+                label = i18n("allowZoomingWithModifierKey"),
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             }
