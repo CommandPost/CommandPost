@@ -122,7 +122,6 @@ local function colorWellValueToColor(value)
     theHue = theHue > 1 and (theHue-1) or theHue < 0 and (theHue+1) or theHue
     hsbValue.hue = theHue
     rgbValue = cleanColor(asRGB(hsbValue))
-    log.df("value: hsb: %s, rgb: %s", inspect(hsbValue), inspect(rgbValue))
 
     return rgbValue
 end
@@ -144,15 +143,141 @@ local function colorToColorWellValue(value)
     return ""
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell.minPosition
---- Constant
---- The minimum relative X or Y value for the well, for `colorPosition`.
-ColorWell.minPosition = -175
+-- round(value) -> number
+-- Function
+-- Rounds a value the nearest number.
+--
+-- Parameters:
+--  * `value` - The value as number.
+--
+-- Returns:
+--  * The rounded number.
+local function round(value)
+    return floor(value + 0.5)
+end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell.maxPosition
+-- center(frame) -> table
+-- Function
+-- Returns the centered frame.
+--
+-- Parameters:
+--  * frame - The frame to center.
+--
+-- Returns:
+--  * The centered frame.
+local function center(frame)
+    return {x = floor(frame.x + frame.w/2), y = floor(frame.y + frame.h/2)}
+end
+
+-- toOrientation(theColor) -> {right,down}
+-- Function
+-- Converts `theColor` to an `orientation` table with `right` and `up` values.
+-- The values will range between `-1` and `+1`. Negative values are shifts
+-- to the left and down, respectively.
+--
+-- Parameters:
+-- * theColor       - The `hs.drawing.color` to convert.
+--
+-- Returns:
+-- * The orientation table.
+local function toOrientation(theColor)
+    if theColor and type(theColor) == "table" then
+        theColor = asHSB(theColor)
+
+        local h = 1 - theColor.hue + HUE_SHIFT
+        local b = theColor.brightness
+        local a = h * math.pi * 2
+        return {right = b * cos(a), up = b * sin(a) * -1}
+    else
+        return nil
+    end
+end
+
+-- fromOrientation(theOrientation) -> hs.drawing.color
+-- Function
+-- Converts the `orientation` table with `right` and `up` values between `-1` and `1`
+-- into an RGB `hs.drawing.color`.
+--
+-- Parameters:
+-- * theOrientation     - The orientation table.
+--
+-- Returns:
+-- * The orientation color.
+local function fromOrientation(o)
+    o.right, o.up = o.right or 0, o.up or 0
+    local h, b, _
+    h, b = atan(o.up*-1, o.right) / ( math.pi * 2), sqrt(o.right * o.right + o.up * o.up)
+    _, h = modf(1 - h + HUE_SHIFT)
+    b = min(1.0, b)
+
+    return asRGB({hue=h, saturation=1, brightness=b})
+end
+
+-- toXY(c, frame, clamp) -> table
+-- Function
+-- Converts a color to a position to the center of the provided color well frame.
+-- The color well only shows movement to 85 out of 255 possible values. If `clamp`
+-- is `true`, the returned XY position will be clamped inside the circle. If `false`,
+-- the XY position will be where where it would be if not clamped.
+--
+-- Parameters:
+--  * c          - The hs.drawing.color to position
+--  * frame      - The frame for the outer boundary of the color well cirle.
+--  * clamp      - If `true`, the returned position will be clamped to the color well circle.
+--  * precise    - If `true`, the returned position will be not be rounded to whole numbers.
+--
+-- Returns:
+--  * The position of the color, relative to the center of the color well.
+local function toXY(c, frame, clamp)
+    local o = toOrientation(c)
+
+    local radius = min(frame.w/2, frame.h/2) / (clamp and 1 or BRIGHTNESS_CLAMP)
+    local pos = {x = o.right*radius, y = o.up*radius*-1}
+    pos.x, pos.y = round(pos.x), round(pos.y)
+
+    local ctr = center(frame)
+    pos.x, pos.y = pos.x + ctr.x, pos.y + ctr.y
+
+    -- _highlightPoint(pos)
+    return pos
+end
+
+-- fromXY(pos, frame, absolute) -> table
+-- Function
+-- Converts an XY position to a color, relative to the provided color well circle `frame`.
+-- The return value should be multiplied by the radius of the particular color well.
+--
+-- Parameters:
+--  * pos        - The `{x=?, y=?}` position of the location.
+--  * frame      - The frame for the outer boundary of the color well cirle.
+--  * absolute   - If `true`, the position and frame are considered to be absolute screen positions.
+--
+-- Returns:
+--  * The `hs.drawing.color` for the position, relative to the color well.
+local function fromXY(pos, frame, absolute)
+    local x, y = pos.x, pos.y
+    if absolute then
+        local ctr = center(frame)
+        x, y = x - ctr.x, y - ctr.y
+    end
+
+    local radius = min(frame.w/2, frame.h/2) / BRIGHTNESS_CLAMP
+    local o = {right = x/radius, up = y/radius*-1}
+
+    return fromOrientation(o)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorWell.KEY_PRESS
 --- Constant
---- The maximum relative X or Y value for the well, for `colorPosition`.
-ColorWell.maxPosition = 176
+--- This can be used with `nudge` to shift by the same distance
+--- as a key press. Multiple key presses can be simulated by
+--- multiplying it by the number of keys. For example:
+---
+--- ```lua
+--- -- Nudge it two key presses to the right
+--- colorWell:nudge(2*ColorWell.KEY_PRESS, 0)
+--- ```
+ColorWell.KEY_PRESS = 1/600
 
 --- cp.apple.finalcutpro.inspector.color.ColorWell.matches(element)
 --- Function
@@ -167,8 +292,8 @@ function ColorWell.matches(element)
     return axutils.isValid(element) and element:attributeValue("AXRole") == "AXColorWell"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell:new(parent, finderFn) -> ColorWell
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorWell.new(parent, finderFn) -> ColorWell
+--- Constructor
 --- Creates a new `ColorWell` instance, with the specified parent and finder function.
 --- The finder function should return the specific color well UI element that this instance represents.
 ---
@@ -178,13 +303,123 @@ end
 ---
 --- Returns:
 --- * A new `ColorWell` instance.
--- TODO: Use a Function instead of a Method.
-function ColorWell:new(parent, finderFn) -- luacheck: ignore
-
+function ColorWell.new(parent, finderFn)
     local o = prop.extend({
         _parent = parent,
         _finder = finderFn,
     }, ColorWell)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.UI <cp.pref: hs._asm.axuielement; read-only>
+    --- Field
+    --- Returns the `hs._asm.axuielement` object for the color well.
+    o.UI = prop(function(self)
+        return axutils.cache(self, "_ui", function()
+            return self._finder()
+        end)
+    end):bind(o)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.isShowing <cp.pref: boolean; read-only>
+    --- Field
+    --- Is the Color Well currently showing?
+    o.isShowing = o.UI:mutate(function(original)
+        return original() ~= nil
+    end):bind(o)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.focused <cp.pref: boolean>
+    --- Field
+    --- Gets and sets whether the Color Well has focus.
+    o.focused = parent.focused:wrap(o)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorInspector.value <cp.prop: cp.drawing.color>
+    --- Field
+    --- Gets the Color Well Value as a `cp.drawing.color`.
+    o.value = o.UI:mutate(
+        function(original)
+            local ui = original()
+            return ui and colorWellValueToColor(ui:attributeValue("AXValue")) or nil
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                ui:setAttributeValue("AXValue", colorToColorWellValue(value))
+            end
+        end
+    ):bind(o)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorInspector.frame <cp.prop: string>
+    --- Field
+    --- Gets the Color Well Frame.
+    o.frame = o.UI:mutate(
+        function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXFrame")
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                ui:setAttributeValue("AXFrame", value)
+            end
+        end
+    ):bind(o)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.center <cp.prop: point; read-only>
+    --- Field
+    --- The center point of the ColorWell. A table with `{x=..., y=...}`.
+    o.center = o.frame:mutate(function(original)
+        return center(original())
+    end):bind(o)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: hs.geometry.point>
+    --- Field
+    --- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+    o.puckPosition = o.value:mutate(
+        function(original, self)
+            local frame = self:frame()
+            if frame then
+                return toXY(original(), frame, true)
+            end
+            return nil
+        end,
+        function(position, original, self)
+            local frame = self:frame()
+            if frame then
+                original(fromXY(position, frame, true))
+            end
+        end
+    ):bind(o):monitor(o.frame)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.colorPosition <cp.prop: hs.geometry.point>
+    --- Field
+    --- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
+    --- actual Color Well circle, which only extends to 85 out of 255 values.
+    o.colorPosition = o.value:mutate(
+        function(original, self)
+            local frame = self:frame()
+            if frame then
+                return toXY(original(), frame, false)
+            end
+            return nil
+        end,
+        function(position, original, self)
+            local frame = self:frame()
+            if frame then
+                original(fromXY(position, frame, false))
+            end
+        end
+    ):bind(o):monitor(o.frame)
+
+    --- cp.apple.finalcutpro.inspector.color.ColorWell.colorOrientation <cp.prop: table>
+    --- Field
+    --- Provides the orientation of the color as a table containing an `up` and `right` value.
+    --- The values will have a range between `-1` and `1`.
+    o.colorOrientation = o.value:mutate(
+        function(original)
+            return toOrientation(original())
+        end,
+        function(orientation, original)
+            original(fromOrientation(orientation))
+        end
+    ):bind(o)
 
     return o
 end
@@ -215,36 +450,6 @@ function ColorWell:app()
     return self:parent():app()
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWell:UI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `hs._asm.axuielement` object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil`.
-function ColorWell:UI()
-    return axutils.cache(self, "_ui",
-        function()
-            return self._finder()
-        end
-    )
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorWell:isShowing() -> boolean
---- Method
---- Is the Color Well currently showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function ColorWell:isShowing()
-    return self:UI() ~= nil
-end
-
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:show() -> cp.apple.finalcutpro.inspector.color.ColorInspector
 --- Method
 --- Shows the Color Well.
@@ -259,224 +464,38 @@ function ColorWell:show()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector.value <cp.prop: string>
---- Field
---- Gets the Color Well Value.
-ColorWell.value = prop(
-    function(self)
-        local ui = self:UI()
-        return ui and colorWellValueToColor(ui:attributeValue("AXValue")) or nil
-    end,
-    function(value, self)
-        local ui = self:UI()
-        if ui then
-            ui:setAttributeValue("AXValue", colorToColorWellValue(value))
-        end
-    end
-):bind(ColorWell)
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector.frame <cp.prop: string>
---- Field
---- Gets the Color Well Frame.
-ColorWell.frame = prop(
-    function(self)
-        local ui = self:UI()
-        return ui and ui:attributeValue("AXFrame")
-    end,
-    function(value, self)
-        local ui = self:UI()
-        if ui then
-            ui:setAttributeValue("AXFrame", value)
-        end
-    end
-):bind(ColorWell)
-
--- round(value) -> number
--- Function
--- Rounds a value the nearest number.
---
--- Parameters:
---  * `value` - The value as number.
---
--- Returns:
---  * The rounded number.
-local function round(value)
-    return floor(value + 0.5)
-end
-
--- centre(frame) -> table
--- Function
--- Returns the centred frame.
---
--- Parameters:
---  * frame - The frame to centre.
---
--- Returns:
---  * The centered frame.
-local function centre(frame)
-    return {x = floor(frame.x + frame.w/2), y = floor(frame.y + frame.h/2)}
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorWell.centre <cp.prop: point; read-only>
---- Field
---- The center point of the ColorWell. A table with `{x=..., y=...}`.
-ColorWell.centre = prop(function(self)
-    return centre(self:frame())
-end):bind(ColorWell)
-
--- toXY(c, frame, absolute, clamp) -> table
--- Function
--- Converts a color to a position to the centre of the provided color well frame.
--- The color well only shows movement to 85 out of 255 possible values. If `clamp`
--- is `true`, the returned XY position will be clamped inside the circle. If `false`,
--- the XY position will be where where it would be if not clamped.
---
--- Parameters:
---  * c          - The hs.drawing.color to position
---  * frame      - The frame for the outer boundary of the color well cirle.
---  * absolute   - If `true`, the returned position will be the absolute screen position. Otherwise, it will be relative to the centre of the color well.
---  * clamp      - If `true`, the returned position will be clamped to the color well circle.
---
--- Returns:
---  * The position of the color, relative to the centre of the color well.
-local toXY = function(c, frame, absolute, clamp)
-    c = asHSB(c)
-
-    local radius = min(frame.w/2, frame.h/2) / (clamp and 1 or BRIGHTNESS_CLAMP)
-    local h = 1 - c.hue + HUE_SHIFT
-    local b = clamp and min(BRIGHTNESS_CLAMP, c.brightness)/BRIGHTNESS_CLAMP or c.brightness
-    local a = h * math.pi * 2
-    local x, y = b * cos(a), b * sin(a)
-
-    local pos = {x = round(x*radius), y = round(y*radius)}
-    if absolute then
-        local ctr = centre(frame)
-        pos.x, pos.y = pos.x + ctr.x, pos.y + ctr.y
-        -- _highlightPoint(pos)
-    end
-    return pos
-end
-
--- fromXY(pos, frame, absolute) -> table
--- Function
--- Converts an XY position to a color, relative to the provided color well circle `frame`.
--- The return value should be multiplied by the radius of the particular color well.
---
--- Parameters:
---  * pos        - The `{x=?, y=?}` position of the location.
---  * frame      - The frame for the outer boundary of the color well cirle.
---  * absolute   - If `true`, the position and frame are considered to be absolute screen positions.
---
--- Returns:
---  * The `hs.drawing.color` for the position, relative to the color well.
-local fromXY = function(pos, frame, absolute)
-    local radius = min(frame.w/2, frame.h/2) / BRIGHTNESS_CLAMP
-    local x, y = pos.x, pos.y
-    if absolute then
-        local ctr = centre(frame)
-        x, y = x - ctr.x, y - ctr.y
-    end
-
-    local h, b, _
-    h, b = atan(y, x) / ( math.pi * 2), sqrt(x * x + y * y) / radius
-    _, h = modf(1 - h + HUE_SHIFT)
-    b = min(1.0, b)
-    return asRGB({hue=h, saturation=1, brightness=b})
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorWell.colorScreenPosition <cp.prop: hs.geometry.point>
---- Field
---- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
---- actual Color Well circle, which only extends to 85 out of 255 values.
-ColorWell.colorScreenPosition = prop(
-    function(self)
-        local frame = self:frame()
-        if frame then
-            return toXY(self:value(), frame, true)
-        end
-        return nil
-    end,
-    function(position, self)
-        local frame = self:frame()
-        if frame then
-            self:value(fromXY(position, frame, true))
-        end
-    end
-):bind(ColorWell)
-
---- cp.apple.finalcutpro.inspector.color.ColorWell.colorScreenPosition <cp.prop: hs.geometry.point>
---- Field
---- Relative X/Y position for the current color value of the Color Well. This will be a `point` table,
---- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
-ColorWell.colorPosition = prop(
-    function(self)
-        local frame = self:frame()
-        if frame then
-            return toXY(self:value(), frame, false)
-        end
-        return nil
-    end,
-    function(position, self)
-        local frame = self:frame()
-        if frame then
-            self:value(fromXY(position, frame, false))
-        end
-    end
-):bind(ColorWell)
-
---- cp.apple.finalcutpro.inspector.color.ColorWell.puckScreenPosition <cp.prop: hs.geometry.point>
---- Field
---- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-ColorWell.puckScreenPosition = prop(
-    function(self)
-        local frame = self:frame()
-        if frame then
-            return toXY(self:value(), frame, true, true)
-        end
-        return nil
-    end,
-    function(position, self)
-        local frame = self:frame()
-        if frame then
-            self:value(fromXY(position, frame, true))
-        end
-    end
-):bind(ColorWell)
-
---- cp.apple.finalcutpro.inspector.color.ColorWell.puckPosition <cp.prop: hs.geometry.point>
---- Field
---- Relative X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-ColorWell.puckPosition = prop(
-    function(self)
-        local frame = self:frame()
-        if frame then
-            return toXY(self:value(), frame, false, true)
-        end
-        return nil
-    end,
-    function(position, self)
-        local frame = self:frame()
-        if frame then
-            self:value(fromXY(position, frame, false))
-        end
-    end
-):bind(ColorWell)
-
---- cp.apple.finalcutpro.inspector.color.ColorWell:nudge(x, y) -> self
+--- cp.apple.finalcutpro.inspector.color.ColorWell:select() -> cp.apple.finalcutpro.inspector.color.ColorWell
 --- Method
---- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
---- positive `y` values shift down. Only integer values have an effect.
+--- Selects this color well.
 ---
 --- Parameters:
----  * `x` - The number of pixels to shift horizontally.
----  * `y` - The number of pixels to shift vertically.
+---  * None
 ---
 --- Returns:
 ---  * The `ColorWell` instance.
-function ColorWell:nudge(x, y)
-    local pos = self:colorPosition()
-    pos.x, pos.y = pos.x + x, pos.y + y
-    self:colorPosition(pos)
+function ColorWell:select()
+    self:parent():select()
+    return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorWell:nudge(right, up) -> self
+--- Method
+--- Nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left,
+--- negative `up` values shift down. You may have decimal shift values.
+---
+--- Parameters:
+---  * `right` - The number of steps to shift right. May be negative to shift left.
+---  * `up` - The number of pixels to shift down. May be negative to shift down.
+---
+--- Returns:
+---  * The `ColorWell` instance.
+function ColorWell:nudge(right, up)
+    right, up = right or 0, up or 0
+    local o = self:colorOrientation()
+    if o then
+        o.right, o.up = o.right + right, o.up + up
+        self:colorOrientation(o)
+    end
     return self
 end
 

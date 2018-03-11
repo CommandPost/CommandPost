@@ -313,7 +313,7 @@ end
 ---  * Inspector
 function PrimaryWindow:inspector()
 	if not self._inspector then
-		self._inspector = Inspector:new(self)
+		self._inspector = Inspector.new(self)
 	end
 	return self._inspector
 end

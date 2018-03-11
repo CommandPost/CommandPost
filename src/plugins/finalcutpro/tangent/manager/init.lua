@@ -1,18 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                T A N G E N T    M A N A G E R    P L U G I N               --
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --- === plugins.finalcutpro.tangent.manager ===
 ---
---- Tangent Control Surface Manager
----
---- This plugin allows Hammerspoon to communicate with Tangent's range of
---- panels (Element, Virtual Element Apps, Wave, Ripple and any future panels).
----
---- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
---- here: http://www.tangentwave.co.uk/developer-support/
+--- Final Cut Pro Tangent Manager.
 
 --------------------------------------------------------------------------------
 --
@@ -21,1024 +15,577 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("tangentMan")
-
---------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local dialog                                    = require("hs.dialog")
-local fs                                        = require("hs.fs")
-local inspect                                   = require("hs.inspect")
-local json                                      = require("hs.json")
-local tangent                                   = require("hs.tangent")
-local timer                                     = require("hs.timer")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
-local tools                                     = require("cp.tools")
-
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local moses                                     = require("moses")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 
---------------------------------------------------------------------------------
--- MODULE CONSTANTS:
---------------------------------------------------------------------------------
-
---- plugins.finalcutpro.tangent.manager.MODES() -> none
---- Constant
---- The default Modes for CommandPost in the Tangent Mapper.
-mod.MODES = {
-    ["0x00010001"] = {
-        ["name"]    =   "Global",
-        ["active"]  =   function() return not fcp.isFrontmost() end,
-    },
-    ["0x00010002"] = {
-        ["name"]    =   "Final Cut Pro",
-        ["active"]  =   function() return fcp.isFrontmost() end,
-    },
-}
-
---local colorWheels = fcp:inspector():color():colorWheels()
-local colorBoard = fcp:colorBoard()
-local color, saturation, exposure = colorBoard:color(), colorBoard:saturation(), colorBoard:exposure()
-
---- plugins.finalcutpro.tangent.manager.customParameters
---- Constant
---- Table containing custom Tangent parameters.
-mod.CUSTOM_PARAMETERS = {
-    --------------------------------------------------------------------------------
-    -- COLOR INSPECTOR PARAMETERS:
-    --
-    --  * aspect - "color", "saturation" or "exposure"
-    --  * property - "global", "shadows", "midtones", "highlights"
-    --------------------------------------------------------------------------------
-    ["fcpx_colorInspector"] = {
-        --------------------------------------------------------------------------------
-        -- COLOR BOARD - COLOR:
-        --------------------------------------------------------------------------------
-        ["0x00030001"] = {
-            ["name"] = "Color Board - Color - Master - Angle",
-            ["name9"] = "CB MS ANG",
-            ["minValue"] = 0,
-            ["maxValue"] = 359,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:master():angle() end,
-            ["shiftValue"] = function(value) return color:master():shiftAngle(value) end,
-            ["resetValue"] = function() color:master():reset() end,
-        },
-        ["0x00030002"] = {
-            ["name"] = "Color Board - Color - Master - Percentage",
-            ["name9"] = "CB MS PER",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:master():percent() end,
-            ["shiftValue"] = function(value) return color:master():shiftPercent(value) end,
-            ["resetValue"] = function() color:master():reset() end,
-        },
-        ["0x00030003"] = {
-            ["name"] = "Color Board - Color - Shadows - Angle",
-            ["name9"] = "CB SD ANG",
-            ["minValue"] = 0,
-            ["maxValue"] = 359,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:shadows():angle() end,
-            ["shiftValue"] = function(value) return color:shadows():shiftAngle(value) end,
-            ["resetValue"] = function() color:shadows():reset() end,
-        },
-        ["0x00030004"] = {
-            ["name"] = "Color Board - Color - Shadows - Percentage",
-            ["name9"] = "CB SD PER",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:shadows():percentage() end,
-            ["shiftValue"] = function(value) return color:shadows():shiftPercent(value) end,
-            ["resetValue"] = function() color:shadows():reset() end,
-        },
-        ["0x00030005"] = {
-            ["name"] = "Color Board - Color - Midtones - Angle",
-            ["name9"] = "CB MT ANG",
-            ["minValue"] = 0,
-            ["maxValue"] = 359,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:midtones():angle() end,
-            ["shiftValue"] = function(value) return color:midtones():shiftAngle(value) end,
-            ["resetValue"] = function() color:midtones():reset() end,
-        },
-        ["0x00030006"] = {
-            ["name"] = "Color Board - Color - Midtones - Percentage",
-            ["name9"] = "CB HL PER",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:midtones():percent() end,
-            ["shiftValue"] = function(value) return color:midtones():shiftPercent(value) end,
-            ["resetValue"] = function() color:midtones():reset() end,
-        },
-        ["0x00030007"] = {
-            ["name"] = "Color Board - Color - Highlights - Angle",
-            ["name9"] = "CB HL ANG",
-            ["minValue"] = 0,
-            ["maxValue"] = 359,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:highlights():angle() end,
-            ["shiftValue"] = function(value) return color:highlights():shiftAngle(value) end,
-            ["resetValue"] = function() color:highlights():reset() end,
-        },
-        ["0x00030008"] = {
-            ["name"] = "Color Board - Color - Highlights - Percentage",
-            ["name9"] = "CB HL PER",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return color:highlights():percent() end,
-            ["shiftValue"] = function(value) return color:highlights():shiftPercent(value) end,
-            ["resetValue"] = function() color:highlights():reset() end,
-        },
-
-        --------------------------------------------------------------------------------
-        -- COLOR BOARD - SATURATION:
-        --------------------------------------------------------------------------------
-        ["0x00030009"] = {
-            ["name"] = "Color Board - Saturation - Master",
-            ["name9"] = "CB SAT MS",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return saturation:master():percent() end,
-            ["shiftValue"] = function(value) return saturation:master():shiftPercent(value) end,
-            ["resetValue"] = function() saturation:master():reset() end,
-        },
-        ["0x00030010"] = {
-            ["name"] = "Color Board - Saturation - Shadows",
-            ["name9"] = "CB SAT SD",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return saturation:shadows():percent() end,
-            ["shiftValue"] = function(value) return saturation:shadows():shiftPercent(value) end,
-            ["resetValue"] = function() saturation:shadows():reset() end,
-        },
-        ["0x00030011"] = {
-            ["name"] = "Color Board - Saturation - Midtones",
-            ["name9"] = "CB SAT MT",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return saturation:midtones():percent() end,
-            ["shiftValue"] = function(value) return saturation:midtones():shiftPercent(value) end,
-            ["resetValue"] = function() saturation:midtones():reset() end,
-        },
-        ["0x00030012"] = {
-            ["name"] = "Color Board - Saturation - Highlights",
-            ["name9"] = "CB SAT HL",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return saturation:highlights():percent() end,
-            ["shiftValue"] = function(value) return saturation:highlights():shiftPercent(value) end,
-            ["resetValue"] = function() saturation:highlights():reset() end,
-        },
-
-        --------------------------------------------------------------------------------
-        -- COLOR BOARD - EXPOSURE:
-        --------------------------------------------------------------------------------
-        ["0x00030013"] = {
-            ["name"] = "Color Board - Exposure - Master",
-            ["name9"] = "CB EXP MS",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return exposure:master():percent() end,
-            ["shiftValue"] = function(value) return exposure:master():shiftPercent(value) end,
-            ["resetValue"] = function() exposure:master():reset() end,
-        },
-        ["0x00030014"] = {
-            ["name"] = "Color Board - Exposure - Shadows",
-            ["name9"] = "CB EXP SD",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return exposure:shadows():percent() end,
-            ["shiftValue"] = function(value) return exposure:shadows():shiftPercent(value) end,
-            ["resetValue"] = function() exposure:shadows():reset() end,
-        },
-        ["0x00030015"] = {
-            ["name"] = "Color Board - Exposure - Midtones",
-            ["name9"] = "CB EXP MT",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return exposure:midtones():percent() end,
-            ["shiftValue"] = function(value) return exposure:midtones():shiftPercent(value) end,
-            ["resetValue"] = function() exposure:midtones():reset() end,
-        },
-        ["0x00030016"] = {
-            ["name"] = "Color Board - Exposure - Highlights",
-            ["name9"] = "CB EXP HL",
-            ["minValue"] = -100,
-            ["maxValue"] = 100,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return exposure:highlights():percent() end,
-            ["shiftValue"] = function(value) return exposure:highlights():shiftPercent(value) end,
-            ["resetValue"] = function() exposure:highlights():reset() end,
-        },
-
-        --------------------------------------------------------------------------------
-        -- COLOR WHEEL:
-        --------------------------------------------------------------------------------
-        --[[
-        ["0x00030017"] = {
-            ["name"] = "Color Wheel - Master - Vertical",
-            ["name9"] = "MASTER",
-            ["minValue"] = colorWheels:master():colorWell().minPosition,
-            ["maxValue"] = colorWheels:master():colorWell().maxPosition,
-            ["stepSize"] = 1,
-            ["getValue"] = function() return colorWheels:master():colorPosition() and colorWheels:master():colorPosition().y end,
-            ["shiftValue"] = function(value)
-                local currentValue = colorWheels:master():colorPosition()
-                if currentValue then
-                    local x, y = currentValue.x, currentValue.y
-                    y = y + 1
-                    colorWheels:master():colorPosition({
-                        ["x"] = x,
-                        ["y"] = y,
-                    })
-                end
-            end,
-            ["resetValue"] = function() colorWheels:master():reset() end,
-        },
-        --]]
-
-        --------------------------------------------------------------------------------
-        -- BINDINGS:
-        --------------------------------------------------------------------------------
-        ["bindings"] = {
-            ["name"] = "zzzzzzzzzzz", -- This is just to put the binding alphabetically last.
-            ["xml"] = [[
-                <Binding name="Color Board Master Color">
-                    <Member id="0x00030001"/>
-                    <Member id="0x00030002"/>
-                </Binding>
-                <Binding name="Color Board Shadows Color">
-                    <Member id="0x00030003"/>
-                    <Member id="0x00030004"/>
-                </Binding>
-                <Binding name="Color Board Midtones Color">
-                    <Member id="0x00030005"/>
-                    <Member id="0x00030006"/>
-                </Binding>
-                <Binding name="Color Board Highlights Color">
-                    <Member id="0x00030007"/>
-                    <Member id="0x00030008"/>
-                </Binding>
-                ]],
-            },
-        },
-    ["fcpx_timeline"] = {
-        --------------------------------------------------------------------------------
-        -- TIMELINE ZOOM:
-        --------------------------------------------------------------------------------
-        ["0x00030018"] = {
-            ["name"] = "Timeline Zoom",
-            ["name9"] = "Zoom",
-            ["minValue"] = 0,
-            ["maxValue"] = 10,
-            ["stepSize"] = 0.2,
-            ["getValue"] = function() return fcp:timeline():toolbar():appearance():show():zoomAmount():getValue() end,
-            ["shiftValue"] = function(value) return fcp:timeline():toolbar():appearance():show():zoomAmount():shiftValue(value) end,
-            ["resetValue"] = function() fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(10) end,
-        },
-    },
-}
-
---------------------------------------------------------------------------------
--- HELPER FUNCTIONS:
---------------------------------------------------------------------------------
-
--- getCustomParameter(id) -> table
--- Function
--- Returns a custom parameter table.
---
--- Parameters:
---  * id - The ID of the table as string.
---
--- Returns:
---  * table or `nil` if no match.
-local function getCustomParameter(id)
-    for _, group in pairs(mod.CUSTOM_PARAMETERS) do
-        for parameterID, parameter in pairs(group) do
-            if parameterID == id then
-                return parameter
-            end
-        end
-    end
-    return nil
-end
-
--- loadMapping() -> none
--- Function
--- Loads the Tangent Mapping file from the Application Support folder.
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if successful, otherwise `false`
-local function loadMapping()
-    local mappingFilePath = mod._configPath .. "/mapping.json"
-    if not tools.doesFileExist(mappingFilePath) then
-        log.ef("Tangent Mapping could not be found.")
-        return false
-    end
-    local file = io.open(mappingFilePath, "r")
-    if file then
-        local content = file:read("*all")
-        file:close()
-        if not moses.isEmpty(content) then
-            log.df("Loaded Tangent Mappings.")
-            mod._mapping = json.decode(content)
-            return true
-        else
-            log.ef("Empty Tangent Mapping: '%s'", mappingFilePath)
-            return false
-        end
-    else
-        log.ef("Unable to load Tangent Mapping: '%s'", mappingFilePath)
-        return false
-    end
-end
-
--- makeStringTangentFriendly(value) -> none
--- Function
--- Removes any illegal characters from the value
---
--- Parameters:
---  * value - The string you want to process
---
--- Returns:
---  * A string that's valid for Tangent's panels
-local function makeStringTangentFriendly(value)
-    local result = ""
-    for i = 1, #value do
-        local letter = value:sub(i,i)
-        local byte = string.byte(letter)
-        if byte >= 32 and byte <= 126 then
-            result = result .. letter
-        --else
-            --log.df("Illegal Character: %s", letter)
-        end
-    end
-    if #result == 0 then
-        return nil
-    else
-        --------------------------------------------------------------------------------
-        -- Replace Ampersand's as we're building an XML file:
-        --------------------------------------------------------------------------------
-        result = string.gsub(result, "&", "&amp;")
-
-        --------------------------------------------------------------------------------
-        -- Trim Results, just to be safe:
-        --------------------------------------------------------------------------------
-        return tools.trim(result)
-    end
-end
-
--- getKeysSortedByValue(tbl, sortFunction) -> table
--- Function
--- Sorts table keys by a value
---
--- Parameters:
---  * tbl - the table you want to sort
---  * sortFunction - the function you want to use to sort the table
---
--- Returns:
---  * A sorted table
-local function getKeysSortedByValue(tbl, sortFunction)
-    local keys = {}
-    for key in pairs(tbl) do
-        table.insert(keys, key)
-    end
-
-    table.sort(keys, function(a, b)
-        return sortFunction(tbl[a], tbl[b])
-    end)
-
-    return keys
-end
-
--- writeControlsXML() -> none
--- Function
--- Writes the Tangent controls.xml File to the User's Application Support folder.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function writeControlsXML()
-
-    --------------------------------------------------------------------------------
-    -- Create folder if it doesn't exist:
-    --------------------------------------------------------------------------------
-    if not tools.doesDirectoryExist(mod._configPath) then
-        log.df("Tangent Settings folder did not exist, so creating one.")
-        fs.mkdir(mod._configPath)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Copy existing XML files from Application Bundle to local Application Support:
-    --------------------------------------------------------------------------------
-    local _, status = hs.execute([[cp -a "]] .. mod._pluginPath .. [["/. "]] .. mod._configPath .. [[/"]])
-    if not status then
-        log.ef("Failed to copy XML files.")
-    end
-
-    --------------------------------------------------------------------------------
-    -- Create "controls.xml" file:
-    --------------------------------------------------------------------------------
-    local mapping = {}
-    local controlsFile = io.open(mod._configPath .. "/controls.xml", "w")
-    if controlsFile then
-
-        io.output(controlsFile)
-
-        --------------------------------------------------------------------------------
-        -- Set starting values:
-        --------------------------------------------------------------------------------
-        local currentActionID = 131073 -- Action ID starts at 0x00020001
-
-        local result = ""
-        result = result .. [[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>]] .. "\n"
-        result = result .. [[<TangentWave fileType="ControlSystem" fileVersion="3.0">]] .. "\n"
-
-        --------------------------------------------------------------------------------
-        -- Capabilities:
-        --------------------------------------------------------------------------------
-        result = result .. [[   <Capabilities>]] .. "\n"
-        result = result .. [[       <Jog enabled="true"/>]] .. "\n"
-        result = result .. [[       <Shuttle enabled="false"/>]] .. "\n"
-        result = result .. [[       <StatusDisplay lineCount="3"/>]] .. "\n"
-        result = result .. [[   </Capabilities>]] .. "\n"
-
-        --------------------------------------------------------------------------------
-        -- Modes:
-        --------------------------------------------------------------------------------
-        result = result .. [[   <Modes>]] .. "\n"
-        for modeID, metadata in pairs(mod.MODES) do
-            result = result .. [[       <Mode id="]] .. modeID .. [[">]] .. "\n"
-            result = result .. [[           <Name>]] .. metadata.name .. [[</Name>]] .. "\n"
-            result = result .. [[       </Mode>]] .. "\n"
-        end
-        result = result .. [[   </Modes>]] .. "\n"
-
-        --------------------------------------------------------------------------------
-        -- Get a list of Handler IDs:
-        --------------------------------------------------------------------------------
-        local handlerIds = mod._actionmanager.handlerIds()
-
-        --------------------------------------------------------------------------------
-        -- Add Custom Parameters to Handler IDs:
-        --------------------------------------------------------------------------------
-        for id, _ in pairs(mod.CUSTOM_PARAMETERS) do
-            table.insert(handlerIds, id)
-        end
-
-        --------------------------------------------------------------------------------
-        -- Sort the Handler IDs alphabetically:
-        --------------------------------------------------------------------------------
-        table.sort(handlerIds, function(a, b) return i18n(a .. "_action") < i18n(b .. "_action") end)
-
-        --------------------------------------------------------------------------------
-        -- Controls:
-        --------------------------------------------------------------------------------
-        result = result .. [[   <Controls>]] .. "\n"
-        for _, handlerID in pairs(handlerIds) do
-
-            --------------------------------------------------------------------------------
-            -- Add Custom Parameters & Bindings:
-            --------------------------------------------------------------------------------
-            local match = false
-            for customParameterID, customParameter in pairs(mod.CUSTOM_PARAMETERS) do
-                if handlerID == customParameterID then
-
-                    --------------------------------------------------------------------------------
-                    -- Found a match:
-                    --------------------------------------------------------------------------------
-                    match = true
-
-                    --------------------------------------------------------------------------------
-                    -- Start Group:
-                    --------------------------------------------------------------------------------
-                    local handlerLabel = i18n(handlerID .. "_action")
-                    result = result .. [[       <Group name="]] .. handlerLabel .. [[">]] .. "\n"
-
-                    --------------------------------------------------------------------------------
-                    -- Sort table alphabetically by name:
-                    --------------------------------------------------------------------------------
-                    local sortedKeys = getKeysSortedByValue(customParameter, function(a, b) return a.name < b.name end)
-
-                    --------------------------------------------------------------------------------
-                    -- Process the Custom Parameters:
-                    --------------------------------------------------------------------------------
-                    for _, id in pairs(sortedKeys) do
-                        local metadata = customParameter[id]
-                        if id == "bindings" then
-                            --------------------------------------------------------------------------------
-                            -- Add Bindings:
-                            --------------------------------------------------------------------------------
-                            result = result .. metadata.xml
-                        else
-                            --------------------------------------------------------------------------------
-                            -- Add Parameter:
-                            --------------------------------------------------------------------------------
-                            result = result .. [[           <Parameter id="]] .. id .. [[">]] .. "\n"
-                            result = result .. [[               <Name>]] .. metadata.name .. [[</Name>]] .. "\n"
-                            result = result .. [[               <Name9>]] .. metadata.name9 .. [[</Name9>]] .. "\n"
-                            result = result .. [[               <MinValue>]] .. metadata.minValue .. [[</MinValue>]] .. "\n"
-                            result = result .. [[               <MaxValue>]] .. metadata.maxValue .. [[</MaxValue>]] .. "\n"
-                            result = result .. [[               <StepSize>]] .. metadata.stepSize .. [[</StepSize>]] .. "\n"
-                            result = result .. [[           </Parameter>]] .. "\n"
-                            currentActionID = currentActionID + 1
-                        end
-                    end
-
-                    --------------------------------------------------------------------------------
-                    -- End Group:
-                    --------------------------------------------------------------------------------
-                    result = result .. [[       </Group>]] .. "\n"
-
-                end
-            end
-
-            if not match then
-                --------------------------------------------------------------------------------
-                -- Action Manager Actions:
-                --------------------------------------------------------------------------------
-                local handler = mod._actionmanager.getHandler(handlerID)
-                if string.sub(handlerID, -7) ~= "widgets" and string.sub(handlerID, -12) ~= "midicontrols" then
-                    local handlerLabel = i18n(handler:id() .. "_action")
-                    result = result .. [[       <Group name="]] .. handlerLabel .. [[">]] .. "\n"
-                    local choices = handler:choices()._choices
-                    table.sort(choices, function(a, b) return a.text < b.text end)
-                    for _, choice in pairs(choices) do
-                        local friendlyName = makeStringTangentFriendly(choice.text)
-                        if friendlyName and #friendlyName >= 1 then
-                            local actionID = string.format("%#010x", currentActionID)
-                            result = result .. [[           <Action id="]] .. actionID .. [[">]] .. "\n"
-                            result = result .. [[               <Name>]] .. friendlyName .. [[</Name>]] .. "\n"
-                            result = result .. [[           </Action>]] .. "\n"
-                            currentActionID = currentActionID + 1
-                            table.insert(mapping, {
-                                [actionID] = {
-                                    ["handlerID"] = handlerID,
-                                    ["action"] = choice.params,
-                                }
-                            })
-                        end
-                    end
-                    result = result .. [[       </Group>]] .. "\n"
-                end
-            end
-        end
-        result = result .. [[   </Controls>]] .. "\n"
-
-        --------------------------------------------------------------------------------
-        -- Default Global Settings:
-        --------------------------------------------------------------------------------
-        result = result .. [[   <DefaultGlobalSettings>]] .. "\n"
-        result = result .. [[       <KnobSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <JogDialSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <TrackerballSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <TrackerballDialSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <IndependentPanelBanks enabled="false"/>]] .. "\n"
-        result = result .. [[   </DefaultGlobalSettings>]] .. "\n"
-
-        --------------------------------------------------------------------------------
-        -- End of XML:
-        --------------------------------------------------------------------------------
-        result = result .. [[</TangentWave>]]
-
-        --------------------------------------------------------------------------------
-        -- Write to File & Close:
-        --------------------------------------------------------------------------------
-        io.write(result)
-        io.close(controlsFile)
-
-        --------------------------------------------------------------------------------
-        -- Save Mapping File:
-        --------------------------------------------------------------------------------
-        local mappingFile = io.open(mod._configPath .. "/mapping.json", "w")
-        io.output(mappingFile)
-        io.write(json.encode(mapping))
-        io.close(mappingFile)
-        mod._mapping = mapping
-    end
-
-end
-
---------------------------------------------------------------------------------
--- MODULE METHODS & FUNCTIONS:
---------------------------------------------------------------------------------
-
---- plugins.finalcutpro.tangent.manager.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.touchbar.manager.enabled <cp.prop: boolean>
 --- Field
---- Enable or disables the Tangent Manager.
-mod.enabled = config.prop("enableTangent", false)
+--- Is `true` if the plugin is enabled.
+mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
+    if enabled then
+        --------------------------------------------------------------------------------
+        -- Update Touch Bar Buttons when FCPX is active:
+        --------------------------------------------------------------------------------
+        mod._fcpWatchID = fcp:watch({
+            active      = function() mod._manager.groupStatus("fcpx", true) end,
+            show        = function() mod._manager.groupStatus("fcpx", true) end,
+            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
+            hide        = function() mod._manager.groupStatus("fcpx", false) end,
+        })
 
---- plugins.finalcutpro.tangent.manager.updateMode() -> none
---- Function
---- Updates the Mode on the Tangent Hub
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.updateMode()
-    if mod.enabled() then
-        for id,metadata in pairs(mod.MODES) do
-            local active = metadata.active()
-            if active == true then
-                log.df("ACTIVE MODE: %s", id)
-                tangent.send("MODE_VALUE", {
-                    ["modeID"] = tonumber(id)
-                })
-                return
-            end
-        end
-    end
-end
-
---- plugins.finalcutpro.tangent.manager.callback(id, metadata) -> none
---- Function
---- Tangent Manager Callback Function
----
---- Parameters:
----  * id - The ID of the Tangent Message
----  * metadata - A table of metadata
----
---- Returns:
----  * None
-function mod.callback(id, metadata)
-
-    log.df("Callback Triggered: %s", id)
-
-    if id == "CONNECTED" then
-        --------------------------------------------------------------------------------
-        -- Connected:
-        --------------------------------------------------------------------------------
-        log.df("Connection To Tangent Hub successfully established.")
-    elseif id == "INITIATE_COMMS" then
-        --------------------------------------------------------------------------------
-        -- InitiateComms:
-        --------------------------------------------------------------------------------
-        log.df("InitiateComms Received:")
-        log.df("    Protocol Revision: %s", metadata.protocolRev)
-        log.df("    Number of Panels: %s", metadata.numberOfPanels)
-        for _, v in pairs(metadata.panels) do
-            log.df("        Panel Type: %s (%s)", v.panelType, string.format("%#010x", v.panelID))
-        end
-        --------------------------------------------------------------------------------
-        -- Display CommandPost Version on Screen:
-        --------------------------------------------------------------------------------
-        timer.doAfter(1, function()
-            tangent.send("DISPLAY_TEXT", {["stringOne"]="CommandPost " .. config.appVersion,["stringOneDoubleHeight"]=false})
-        end)
-        --------------------------------------------------------------------------------
-        -- Update Mode:
-        --------------------------------------------------------------------------------
-        mod.updateMode()
-    elseif id == "ACTION_ON" then
-        --------------------------------------------------------------------------------
-        -- Action On:
-        --------------------------------------------------------------------------------
-        if metadata and metadata.actionID then
-            local actionID = string.format("%#010x", metadata.actionID)
-            local mapping = nil
-            for _, v in pairs(mod._mapping) do
-                if v[actionID] then
-                    mapping = v[actionID]
-                end
-            end
-            if mapping then
-                if string.sub(mapping.handlerID, 1, 4) == "fcpx" and fcp.isFrontmost() == false then
-                    log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-                    return
-                end
-                local handler = mod._actionmanager.getHandler(mapping.handlerID)
-                handler:execute(mapping.action)
-            else
-                log.ef("Could not find a Mapping with Action ID: '%s'", actionID)
-            end
-        end
-    elseif id == "PARAMETER_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Parameter Change:
-        --------------------------------------------------------------------------------
-        if metadata and metadata.increment and metadata.paramID then
-            if fcp.isFrontmost() == false then
-                log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-                return
-            end
-
-            local paramID = string.format("%#010x", metadata.paramID)
-            local increment = metadata.increment
-
-
-            local customParameter = getCustomParameter(paramID)
-            if customParameter then
-                --------------------------------------------------------------------------------
-                -- Shift Value:
-                --------------------------------------------------------------------------------
-                customParameter.shiftValue(increment)
-
-                --------------------------------------------------------------------------------
-                -- Send Values back to Tangent Hub:
-                --------------------------------------------------------------------------------
-                local value = customParameter.getValue()
-                if value then
-                    tangent.send("PARAMETER_VALUE", {
-                        ["paramID"] = paramID,
-                        ["value"] = value,
-                        ["atDefault"] = false,
-                    })
-                end
-            end
-        end
-    elseif id == "PARAMETER_VALUE_REQUEST" then
-        --------------------------------------------------------------------------------
-        -- Parameter Value Request:
-        --------------------------------------------------------------------------------
-        local paramID = string.format("%#010x", metadata.paramID)
-        local customParameter = getCustomParameter(paramID)
-        if customParameter then
-            local value = customParameter.getValue()
-            if value then
-                tangent.send("PARAMETER_VALUE", {
-                    ["paramID"] = paramID,
-                    ["value"] = value,
-                    ["atDefault"] = false,
-                })
-            end
-        end
-    --elseif id == "ACTION_OFF" then
-        --------------------------------------------------------------------------------
-        -- Action Off:
-        --------------------------------------------------------------------------------
-        --
-        -- A key has been released.
-        --
-    elseif id == "PARAMETER_RESET" then
-        --------------------------------------------------------------------------------
-        -- Parameter Reset:
-        --------------------------------------------------------------------------------
-        local paramID = string.format("%#010x", metadata.paramID)
-        local customParameter = getCustomParameter(paramID)
-        if customParameter then
-            customParameter.resetValue()
-        end
-    elseif id == "TRANSPORT" then
-        --------------------------------------------------------------------------------
-        -- Transport:
-        --------------------------------------------------------------------------------
-        if fcp.isFrontmost() then
-            if metadata.jogValue == 1 then
-                fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
-            elseif metadata.jogValue == -1 then
-                fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
-            end
-        end
-    --elseif id == "MENU_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Menu Change:
-        --------------------------------------------------------------------------------
-        --
-        -- Do nothing.
-        --
-    --elseif id == "MENU_RESET" then
-        --------------------------------------------------------------------------------
-        -- Menu Reset:
-        --------------------------------------------------------------------------------
-        --
-        -- Do nothing.
-        --
-    --elseif id == "MENU_STRING_REQUEST" then
-        --------------------------------------------------------------------------------
-        -- Menu String Request:
-        --------------------------------------------------------------------------------
-        --
-        -- Do nothing.
-        --
-    --elseif id == "MODE_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Mode Change:
-        --------------------------------------------------------------------------------
-        --
-        -- Do nothing.
-        --
-    --elseif id == "UNMANAGED_PANEL_CAPABILITIES" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Panel Capabilities:
-        --------------------------------------------------------------------------------
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --
-    --elseif id == "UNMANAGED_BUTTON_DOWN" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Button Down:
-        --------------------------------------------------------------------------------
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --
-    --elseif id == "UNMANAGED_BUTTON_UP" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Button Up:
-        --------------------------------------------------------------------------------
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --
-    --elseif id == "UNMANAGED_ENCODER_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Encoder Change:
-        --------------------------------------------------------------------------------
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --
-    --elseif id == "UNMANAGED_DISPLAY_REFRESH" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Display Refresh:
-        --------------------------------------------------------------------------------
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --
-    --elseif id == "PANEL_CONNECTION_STATE" then
-        --------------------------------------------------------------------------------
-        -- Panel Connection State:
-        --------------------------------------------------------------------------------
-        --
-        -- Sent in response to a PanelConnectionStatesRequest (0xA5) command to report the
-        -- current connected/disconnected status of a configured panel.
-        --
     else
-        log.df("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, metadata and inspect(metadata))
+        --------------------------------------------------------------------------------
+        -- Destroy Watchers:
+        --------------------------------------------------------------------------------
+        if mod._fcpWatchID and mod._fcpWatchID.id then
+            fcp:unwatch(mod._fcpWatchID.id)
+            mod._fcpWatchID = nil
+        end
     end
-end
+end)
 
---- plugins.finalcutpro.tangent.manager.start() -> boolean
+--- plugins.finalcutpro.tangent.manager.init() -> none
 --- Function
---- Starts the Tangent Plugin
----
---- Parameters:
----  * resetControlMap - When `true`, CommandPost will rebuild the Control Map for Tangent Mapper.
----
---- Returns:
----  * `true` if successfully started, otherwise `false`
-function mod.start(resetControlMap)
-    if tangent.isTangentHubInstalled() then
-        --------------------------------------------------------------------------------
-        -- Write Controls XML:
-        --------------------------------------------------------------------------------
-        if resetControlMap then
-            writeControlsXML()
-        end
-        --------------------------------------------------------------------------------
-        -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
-        --------------------------------------------------------------------------------
-        if tools.doesDirectoryExist("/Library/Application Support/Tangent/Hub/KeypressApps/Final Cut Pro") then
-            local hideFilePath = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
-            if tools.doesFileExist(hideFilePath) then
-                --------------------------------------------------------------------------------
-                -- Read existing Hide file:
-                --------------------------------------------------------------------------------
-                local file = io.open(hideFilePath, "r")
-                if file then
-                    local fileContents = file:read("*a")
-                    file:close()
-                    if fileContents and string.match(fileContents, "Final Cut Pro") then
-                        --------------------------------------------------------------------------------
-                        -- Final Cut Pro is already hidden in the Tangent Hub.
-                        --------------------------------------------------------------------------------
-                        log.df("Final Cut Pro is already disabled in Tangent Hub.")
-                    else
-                        --------------------------------------------------------------------------------
-                        -- Append Existing Hide File:
-                        --------------------------------------------------------------------------------
-                        local appendFile = io.open(hideFilePath, "a")
-                        if appendFile then
-                            appendFile:write("\nFinal Cut Pro")
-                            appendFile:close()
-                        else
-                            log.ef("Failed to append existing Hide File for Tangent Mapper.")
-                        end
-                    end
-                else
-                    log.ef("Failed to read existing Hide File for Tangent Mapper.")
-                end
-            else
-                --------------------------------------------------------------------------------
-                -- Create new Hide File:
-                --------------------------------------------------------------------------------
-                local newFile = io.open(hideFilePath, "w")
-                if newFile then
-                    newFile:write("Final Cut Pro")
-                    newFile:close()
-                else
-                    log.ef("Failed to create new Hide File for Tangent Mapper.")
-                end
-            end
-        else
-            log.df("Final Cut Pro preset doesn't exist in Tangent Hub.")
-        end
-        --------------------------------------------------------------------------------
-        -- Connect to Tangent Hub:
-        --------------------------------------------------------------------------------
-        log.df("Connecting to Tangent Hub...")
-        local result, errorMessage = tangent.connect("CommandPost", mod._configPath)
-        if result then
-            --------------------------------------------------------------------------------
-            -- Setup Final Cut Pro Watchers:
-            --------------------------------------------------------------------------------
-            fcp:watch({
-                active      = mod.updateMode,
-                inactive    = mod.updateMode,
-                show        = mod.updateMode,
-                hide        = mod.updateMode,
-            })
-            tangent.callback(mod.callback)
-            return true
-        else
-            log.ef("Failed to start Tangent Support: %s", errorMessage)
-            return false
-        end
-    else
-        return false
-    end
-end
-
---- plugins.finalcutpro.tangent.manager.stop() -> boolean
---- Function
---- Stops the Tangent Plugin
+--- Initialises the module.
 ---
 --- Parameters:
 ---  * None
----
---- Returns:
----  * None
-function mod.stop()
-    --------------------------------------------------------------------------------
-    -- Disable Final Cut Pro Watchers:
-    --------------------------------------------------------------------------------
-    fcp:watch({
-        active      = nil,
-        inactive    = nil,
-        show        = nil,
-        hide        = nil,
-    })
-    --------------------------------------------------------------------------------
-    -- Disconnect from Tangent:
-    --------------------------------------------------------------------------------
-    tangent.disconnect()
-    log.df("Disconnected from Tangent Hub.")
-end
-
---- plugins.finalcutpro.tangent.manager.init(deps, env) -> none
---- Function
---- Initialises the Tangent Plugin
----
---- Parameters:
----  * deps - Dependencies Table
----  * env - Environment Table
 ---
 --- Returns:
 ---  * None
 function mod.init()
-    if mod.enabled() then
-        if tools.doesFileExist(mod._configPath .. "/controls.xml") == false or tools.doesFileExist(mod._configPath .. "/mapping.json") == false then
-            log.df("Tangent Control and/or Mapping File doesn't exist, so disabling Tangent Support.")
-            mod.enabled(false)
-        else
-            loadMapping()
-            mod.start()
-        end
-    end
-    return mod
+    --------------------------------------------------------------------------------
+    -- Add Final Cut Pro Modes:
+    --------------------------------------------------------------------------------
+    local modes = {
+        ["0x00010002"] = {
+            ["name"]        =   "FCP: Edit",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "edit",
+        },
+        ["0x00010003"] = {
+            ["name"]        =   "FCP: Board",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "board",
+        },
+        ["0x00010004"] = {
+            ["name"]        =   "FCP: Wheels",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "wheels",
+        },
+        ["0x00010005"] = {
+            ["name"]        =   "FCP: Prep",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "prep",
+        },
+        ["0x00010006"] = {
+            ["name"]        =   "FCP: Keyword",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "keyword",
+        },
+        ["0x00010007"] = {
+            ["name"]        =   "FCP: Speed",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "speed",
+        },
+        ["0x00010008"] = {
+            ["name"]        =   "FCP: Audition",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "audition",
+        },
+        ["0x00010009"] = {
+            ["name"]        =   "FCP: Multicam",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "multicam",
+        },
+        ["0x00010010"] = {
+            ["name"]        =   "FCP: Marker",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "marker",
+        },
+        ["0x00010011"] = {
+            ["name"]        =   "FCP: Sound",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "sound",
+        },
+        ["0x00010012"] = {
+            ["name"]        =   "FCP: Function",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "function",
+        },
+        ["0x00010013"] = {
+            ["name"]        =   "FCP: View",
+            ["groupID"]     =   "fcpx",
+            ["groupSubID"]  =   "view",
+        },
+    }
+    mod._manager.addModes(modes)
+
+    --------------------------------------------------------------------------------
+    -- Add Final Cut Pro Parameters:
+    --------------------------------------------------------------------------------
+    local parameters = {
+        ["fcpx_colorInspector"] = {
+            --------------------------------------------------------------------------------
+            -- COLOR BOARD - COLOR:
+            --------------------------------------------------------------------------------
+            ["0x00030001"] = {
+                ["name"] = "Color Board - Color - Master - Angle",
+                ["name9"] = "CB MS ANG",
+                ["minValue"] = 0,
+                ["maxValue"] = 359,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():master():angle() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():master():show():shiftAngle(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():master():show():reset() end,
+            },
+            ["0x00030002"] = {
+                ["name"] = "Color Board - Color - Master - Percentage",
+                ["name9"] = "CB MS PER",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():master():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():master():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():master():show():reset() end,
+            },
+            ["0x00030003"] = {
+                ["name"] = "Color Board - Color - Shadows - Angle",
+                ["name9"] = "CB SD ANG",
+                ["minValue"] = 0,
+                ["maxValue"] = 359,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():shadows():angle() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():shadows():show():shiftAngle(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():shadows():show():reset() end,
+            },
+            ["0x00030004"] = {
+                ["name"] = "Color Board - Color - Shadows - Percentage",
+                ["name9"] = "CB SD PER",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():shadows():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():shadows():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():shadows():show():reset() end,
+            },
+            ["0x00030005"] = {
+                ["name"] = "Color Board - Color - Midtones - Angle",
+                ["name9"] = "CB MT ANG",
+                ["minValue"] = 0,
+                ["maxValue"] = 359,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():midtones():angle() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():midtones():show():shiftAngle(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():midtones():show():reset() end,
+            },
+            ["0x00030006"] = {
+                ["name"] = "Color Board - Color - Midtones - Percentage",
+                ["name9"] = "CB HL PER",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():midtones():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():midtones():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():midtones():show():reset() end,
+            },
+            ["0x00030007"] = {
+                ["name"] = "Color Board - Color - Highlights - Angle",
+                ["name9"] = "CB HL ANG",
+                ["minValue"] = 0,
+                ["maxValue"] = 359,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():highlights():angle() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():highlights():show():shiftAngle(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():highlights():show():reset() end,
+            },
+            ["0x00030008"] = {
+                ["name"] = "Color Board - Color - Highlights - Percentage",
+                ["name9"] = "CB HL PER",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():color():highlights():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():color():highlights():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():color():highlights():show():reset() end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- COLOR BOARD - SATURATION:
+            --------------------------------------------------------------------------------
+            ["0x00030009"] = {
+                ["name"] = "Color Board - Saturation - Master",
+                ["name9"] = "CB SAT MS",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():saturation():master():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():master():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():saturation():master():show():reset() end,
+            },
+            ["0x00030010"] = {
+                ["name"] = "Color Board - Saturation - Shadows",
+                ["name9"] = "CB SAT SD",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():saturation():shadows():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():shadows():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():saturation():shadows():show():reset() end,
+            },
+            ["0x00030011"] = {
+                ["name"] = "Color Board - Saturation - Midtones",
+                ["name9"] = "CB SAT MT",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():saturation():midtones():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():midtones():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():saturation():midtones():show():reset() end,
+            },
+            ["0x00030012"] = {
+                ["name"] = "Color Board - Saturation - Highlights",
+                ["name9"] = "CB SAT HL",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():saturation():highlights():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():highlights():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():saturation():highlights():show():reset() end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- COLOR BOARD - EXPOSURE:
+            --------------------------------------------------------------------------------
+            ["0x00030013"] = {
+                ["name"] = "Color Board - Exposure - Master",
+                ["name9"] = "CB EXP MS",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():exposure():master():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():master():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():exposure():master():show():reset() end,
+            },
+            ["0x00030014"] = {
+                ["name"] = "Color Board - Exposure - Shadows",
+                ["name9"] = "CB EXP SD",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():exposure():shadows():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():shadows():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():exposure():shadows():show():reset() end,
+            },
+            ["0x00030015"] = {
+                ["name"] = "Color Board - Exposure - Midtones",
+                ["name9"] = "CB EXP MT",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():exposure():midtones():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():midtones():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():exposure():midtones():show():reset() end,
+            },
+            ["0x00030016"] = {
+                ["name"] = "Color Board - Exposure - Highlights",
+                ["name9"] = "CB EXP HL",
+                ["minValue"] = -100,
+                ["maxValue"] = 100,
+                ["stepSize"] = 1,
+                ["getValue"] = function() return fcp:colorBoard():exposure():highlights():percent() end,
+                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():highlights():show():shiftPercent(value) end,
+                ["resetValue"] = function() fcp:colorBoard():exposure():highlights():show():reset() end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- COLOR WHEELS - WHEELS:
+            --------------------------------------------------------------------------------
+            ["0x00030017"] = {
+                ["name"] = "Color Wheel - Master - Horizontal",
+                ["name9"] = "MSTR HORZ",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():master():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():colorOrientation() and fcp:inspector():color():colorWheels():master():colorOrientation().right end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():nudgeColor(value, 0) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():reset() end,
+            },
+            ["0x00030018"] = {
+                ["name"] = "Color Wheel - Master - Vertical",
+                ["name9"] = "MSTR VERT",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():master():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():colorOrientation() and fcp:inspector():color():colorWheels():master():colorOrientation().up end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():nudgeColor(0, value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():reset() end,
+            },
+            ["0x00030019"] = {
+                ["name"] = "Color Wheel - Shadows - Horizontal",
+                ["name9"] = "SHDW HORZ",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():shadows():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():colorOrientation() and fcp:inspector():color():colorWheels():shadows():colorOrientation().right end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():nudgeColor(value, 0) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():reset() end,
+            },
+            ["0x00030020"] = {
+                ["name"] = "Color Wheel - Shadows - Vertical",
+                ["name9"] = "SHDW VERT",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():shadows():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():colorOrientation() and fcp:inspector():color():colorWheels():shadows():colorOrientation().up end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():nudgeColor(0, value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():reset() end,
+            },
+            ["0x00030021"] = {
+                ["name"] = "Color Wheel - Midtones - Horizontal",
+                ["name9"] = "MIDT HORZ",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():midtones():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():colorOrientation() and fcp:inspector():color():colorWheels():midtones():colorOrientation().right end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():nudgeColor(value, 0) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():reset() end,
+            },
+            ["0x00030022"] = {
+                ["name"] = "Color Wheel - Midtones - Vertical",
+                ["name9"] = "MIDT VERT",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():midtones():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():colorOrientation() and fcp:inspector():color():colorWheels():midtones():colorOrientation().up end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():nudgeColor(0, value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():reset() end,
+            },
+            ["0x00030023"] = {
+                ["name"] = "Color Wheel - Highlights - Horizontal",
+                ["name9"] = "HIGH HORZ",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():highlights():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():colorOrientation() and fcp:inspector():color():colorWheels():highlights():colorOrientation().right end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():nudgeColor(value, 0) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():reset() end,
+            },
+            ["0x00030024"] = {
+                ["name"] = "Color Wheel - Highlights - Vertical",
+                ["name9"] = "HIGH VERT",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = fcp:inspector():color():colorWheels():highlights():colorWell().KEY_PRESS,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():colorOrientation() and fcp:inspector():color():colorWheels():highlights():colorOrientation().up end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():nudgeColor(0, value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():reset() end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- COLOR WHEELS - SATURATION:
+            --------------------------------------------------------------------------------
+            ["0x00030025"] = {
+                ["name"] = "Color Wheel - Master - Saturation",
+                ["name9"] = "MSTR SAT",
+                ["minValue"] = 0,
+                ["maxValue"] = 2,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():saturation():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():saturation():value(1) end,
+            },
+            ["0x00030026"] = {
+                ["name"] = "Color Wheel - Shadows - Saturation",
+                ["name9"] = "LOW SAT",
+                ["minValue"] = 0,
+                ["maxValue"] = 2,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():saturation():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():saturation():value(1) end,
+            },
+            ["0x00030027"] = {
+                ["name"] = "Color Wheel - Midtones - Saturation",
+                ["name9"] = "MID SAT",
+                ["minValue"] = 0,
+                ["maxValue"] = 2,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():saturation():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():saturation():value(1) end,
+            },
+            ["0x00030028"] = {
+                ["name"] = "Color Wheel - Highlights - Saturation",
+                ["name9"] = "HIGH SAT",
+                ["minValue"] = 0,
+                ["maxValue"] = 2,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():saturation():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():saturation():value(1) end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- COLOR WHEELS - BRIGHTNESS:
+            --------------------------------------------------------------------------------
+            ["0x00030029"] = {
+                ["name"] = "Color Wheel - Master - Brightness",
+                ["name9"] = "MSTR BRIG",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():brightness():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():brightness():value(0) end,
+            },
+            ["0x00030030"] = {
+                ["name"] = "Color Wheel - Shadows - Brightness",
+                ["name9"] = "LOW BRIG",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():brightness():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():brightness():value(0) end,
+            },
+            ["0x00030031"] = {
+                ["name"] = "Color Wheel - Midtones - Brightness",
+                ["name9"] = "MID BRIG",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():brightness():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():brightness():value(0) end,
+            },
+            ["0x00030032"] = {
+                ["name"] = "Color Wheel - Highlights - Brightness",
+                ["name9"] = "HIGH BRIG",
+                ["minValue"] = -1,
+                ["maxValue"] = 1,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():brightness():value() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():brightness():value(0) end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- COLOR WHEELS - TEMPERATURE, TINT, HUE, MIX:
+            --------------------------------------------------------------------------------
+            ["0x00030033"] = {
+                ["name"] = "Color Wheel - Temperature",
+                ["name9"] = "COLR TEMP",
+                ["minValue"] = 2500,
+                ["maxValue"] = 10000,
+                ["stepSize"] = 0.1,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():temperature() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():temperatureSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():temperatureSlider():setValue(0) end,
+            },
+            ["0x00030034"] = {
+                ["name"] = "Color Wheel - Tint",
+                ["name9"] = "COLR TINT",
+                ["minValue"] = -50,
+                ["maxValue"] = 50,
+                ["stepSize"] = 0.1,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():tint() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():tintSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():tintSlider():setValue(0) end,
+            },
+            ["0x00030035"] = {
+                ["name"] = "Color Wheel - Hue",
+                ["name9"] = "COLR TINT",
+                ["minValue"] = 0,
+                ["maxValue"] = 360,
+                ["stepSize"] = 0.1,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():hue() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():hueSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():hueSlider():setValue(0) end,
+            },
+            ["0x00030036"] = {
+                ["name"] = "Color Wheel - Mix",
+                ["name9"] = "COLR MIX",
+                ["minValue"] = 0,
+                ["maxValue"] = 1,
+                ["stepSize"] = 0.01,
+                ["getValue"] = function() return fcp:inspector():color():colorWheels():mix() end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():mixSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():mixSlider():setValue(0) end,
+            },
+
+            --------------------------------------------------------------------------------
+            -- BINDINGS:
+            --------------------------------------------------------------------------------
+            ["bindings"] = {
+                ["name"] = "zzzzzzzzzzz", -- This is just to put the binding alphabetically last.
+                ["xml"] = [[
+                    <Binding name="Color Board Master Color">
+                        <Member id="0x00030001"/>
+                        <Member id="0x00030002"/>
+                    </Binding>
+                    <Binding name="Color Board Shadows Color">
+                        <Member id="0x00030003"/>
+                        <Member id="0x00030004"/>
+                    </Binding>
+                    <Binding name="Color Board Midtones Color">
+                        <Member id="0x00030005"/>
+                        <Member id="0x00030006"/>
+                    </Binding>
+                    <Binding name="Color Board Highlights Color">
+                        <Member id="0x00030007"/>
+                        <Member id="0x00030008"/>
+                    </Binding>
+                    <Binding name="Color Wheels Master">
+                        <Member id="0x00030017"/>
+                        <Member id="0x00030018"/>
+                        <Member id="0x00030025"/>
+                    </Binding>
+                    <Binding name="Color Wheels Shadows">
+                        <Member id="0x00030019"/>
+                        <Member id="0x00030020"/>
+                        <Member id="0x00030026"/>
+                    </Binding>
+                    <Binding name="Color Wheels Midtones">
+                        <Member id="0x00030021"/>
+                        <Member id="0x00030022"/>
+                        <Member id="0x00030027"/>
+                    </Binding>
+                    <Binding name="Color Wheels Highlights">
+                        <Member id="0x00030023"/>
+                        <Member id="0x00030024"/>
+                        <Member id="0x00030028"/>
+                    </Binding>
+                    ]],
+                },
+            },
+        ["fcpx_timeline"] = {
+            --------------------------------------------------------------------------------
+            -- TIMELINE ZOOM:
+            --------------------------------------------------------------------------------
+            ["0x00040001"] = {
+                ["name"] = "Timeline Zoom",
+                ["name9"] = "Zoom",
+                ["minValue"] = 0,
+                ["maxValue"] = 10,
+                ["stepSize"] = 0.2,
+                ["getValue"] = function() return fcp:timeline():toolbar():appearance():zoomAmount():getValue() end,
+                ["shiftValue"] = function(value) return fcp:timeline():toolbar():appearance():show():zoomAmount():shiftValue(value) end,
+                ["resetValue"] = function() fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(10) end,
+            },
+        },
+    }
+    mod._manager.addParameters(parameters)
+
 end
 
 --------------------------------------------------------------------------------
@@ -1047,150 +594,38 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id          = "finalcutpro.tangent.manager",
-    group       = "finalcutpro",
-    required    = true,
-    dependencies    = {
-        ["core.preferences.panels.tangent"]             = "prefs",
-        ["core.preferences.manager"]                    = "prefsManager",
-        ["core.action.manager"]                         = "actionmanager",
+    id = "finalcutpro.tangent.manager",
+    group = "finalcutpro",
+    dependencies = {
+        ["core.tangent.manager"]       = "manager",
     }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
+    --------------------------------------------------------------------------------
+    -- Connect to Manager:
+    --------------------------------------------------------------------------------
+    mod._manager = deps.manager
 
     --------------------------------------------------------------------------------
-    -- Action Manager:
+    -- Initalise the Module:
     --------------------------------------------------------------------------------
-    mod._actionmanager = deps.actionmanager
+    mod.init()
 
-    --------------------------------------------------------------------------------
-    -- Get XML Path:
-    --------------------------------------------------------------------------------
-    mod._pluginPath = env:pathToAbsolute("/defaultmap")
-    mod._configPath = config.userConfigRootPath .. "/Tangent Settings"
-
-    --------------------------------------------------------------------------------
-    -- Setup Preferences Panel:
-    --------------------------------------------------------------------------------
-    if deps.prefs then
-        deps.prefs
-            :addContent(1, [[
-                <style>
-                    .tangentButtonOne {
-                        float:left;
-                        width: 192px;
-                    }
-                    .tangentButtonTwo {
-                        float:left;
-                        margin-left: 5px;
-                        width: 192px;
-                    }
-                    .tangentButtonThree {
-                        clear:both;
-                        float:left;
-                        margin-top: 5px;
-                        width: 192px;
-                    }
-                    .tangentButtonFour {
-                        float:left;
-                        margin-top: 5px;
-                        margin-left: 5px;
-                        width: 192px;
-                    }
-                </style>
-            ]], true)
-            :addHeading(2, i18n("tangentPanelSupport"))
-            :addParagraph(3, i18n("tangentPreferencesInfo"), true)
-            :addCheckbox(4,
-                {
-                    label = i18n("enableTangentPanelSupport"),
-                    onchange = function(_, params)
-                        if params.checked then
-                            if not tangent.isTangentHubInstalled() then
-                                dialog.webviewAlert(deps.prefsManager.getWebview(), function()
-                                    mod.enabled(false)
-                                    deps.prefsManager.injectScript([[
-                                        document.getElementById("enableTangentSupport").checked = false;
-                                    ]])
-                                end, i18n("tangentPanelSupport"), i18n("mustInstallTangentMapper"), i18n("ok"))
-                            else
-                                dialog.webviewAlert(deps.prefsManager.getWebview(), function()
-                                    mod.enabled(true)
-                                    mod.start(true)
-                                end, i18n("enablingTangentPanelSupport"), i18n("rebuildControlMapMessage"), i18n("ok"))
-                            end
-                        else
-                            mod.enabled(false)
-                            mod.stop()
-                        end
-                    end,
-                    checked = mod.enabled,
-                    id = "enableTangentSupport",
-                }
-            )
-            :addParagraph(5, "<br />", true)
-            :addButton(6,
-                {
-                    label = i18n("openTangentMapper"),
-                    onclick = function()
-                        if tools.doesFileExist("/Applications/Tangent/Tangent Mapper.app") then
-                            os.execute('open "/Applications/Tangent/Tangent Mapper.app"')
-                        else
-                            dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
-                        end
-                    end,
-                    class = "tangentButtonOne",
-                }
-            )
-            :addButton(7,
-                {
-                    label = i18n("rebuildControlMap"),
-                    onclick = function()
-                        dialog.webviewAlert(deps.prefsManager.getWebview(), function()
-                            if mod.enabled() then
-                                mod.stop()
-                                mod.start(true)
-                            else
-                                writeControlsXML()
-                            end
-                        end, i18n("rebuildControlMap"), i18n("rebuildControlMapMessage"), i18n("ok"))
-                    end,
-                    class = "tangentButtonTwo",
-                }
-            )
-            :addButton(8,
-                {
-                    label = i18n("downloadTangentHub"),
-                    onclick = function()
-                        os.execute('open "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"')
-                    end,
-                    class = "tangentButtonTwo",
-                }
-            )
-            :addButton(9,
-                {
-                    label = i18n("visitTangentWebsite"),
-                    onclick = function()
-                        os.execute('open "http://www.tangentwave.co.uk/"')
-                    end,
-                    class = "tangentButtonTwo",
-                }
-            )
-
-    end
-
-    --------------------------------------------------------------------------------
-    -- Return Module:
-    --------------------------------------------------------------------------------
     return mod
 end
 
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.postInit()
-    mod.init()
+    --------------------------------------------------------------------------------
+    -- Update visibility:
+    --------------------------------------------------------------------------------
+    mod.enabled:update()
 end
 
 return plugin

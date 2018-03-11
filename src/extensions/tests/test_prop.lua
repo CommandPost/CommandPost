@@ -615,12 +615,13 @@ return test.suite("cp.prop"):with(
 		-- take any number
 		local anyNumber = prop.THIS(1)
 
-		-- mutate to check if it's odd or even
-		local isEven = anyNumber:mutate(
+		-- mutate to double it
+		local double = anyNumber:mutate(
 			function(original)
-				-- log.df("prop mutation: original = %s", inspect(original))
-				-- log.df("prop mutation: original() = %s", inspect(original()))
-				return original() % 2 == 0
+				return original() * 2
+			end,
+			function(newValue, original)
+				original(newValue/2)
 			end
 		):watch(
 			function(value)
@@ -628,25 +629,29 @@ return test.suite("cp.prop"):with(
 			end
 		)
 
-		ok(isEven() == false)
+		ok(eq(double(), 2))
 		ok(eq(report, {}))
 
 		anyNumber(10)
-		ok(isEven() == true)
-		ok(eq(report, {true}))
+		ok(eq(double(), 20))
+		ok(eq(report, {20}))
 
 		anyNumber(4)
-		ok(isEven() == true)
-		ok(eq(report, {true}))
+		ok(eq(double(), 8))
+		ok(eq(report, {20,8}))
 
 		anyNumber(7)
-		ok(isEven() == false)
-		ok(eq(report, {true, false}))
+		ok(eq(double(), 14))
+		ok(eq(report, {20,8,14}))
+
+		double(8)
+		ok(eq(anyNumber(), 4))
+		ok(eq(report, {20,8,14,8}))
 	end),
 
 	test("Prop Wrapping", function()
 		local a = prop.TRUE()
-		local b = a:wrap(b)
+		local b = a:wrap()
 		local c = b:clone()
 
 		local aReport = {}
@@ -681,6 +686,23 @@ return test.suite("cp.prop"):with(
 		ok(eq(aReport, {false, true}))
 		ok(eq(bReport, {false, true}))
 		ok(eq(cReport, {false, true}))
+	end),
+
+	test("Prop Bound Wrapping", function()
+		local owner = {}
+		local a = prop.TRUE()
+		owner.b = a:wrap(owner)
+
+		ok(eq(a(), true))
+		ok(eq(owner:b(), true))
+
+		a(false)
+		ok(eq(a(), false))
+		ok(eq(owner:b(), false))
+
+		owner:b(true)
+		ok(eq(a(), true))
+		ok(eq(owner:b(), true))
 	end),
 
 	test("Prop Pre-Watch", function()

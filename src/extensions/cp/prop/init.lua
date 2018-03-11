@@ -941,14 +941,14 @@ end
 ---  * A new `cp.prop` which will return a mutation of the property value.
 function prop.mt:mutate(getFn, setFn)
     -- create the mutant, which will pull from the original.
-    local mutantGetFn = function(owner, Prop)
-        local result = getFn(Prop._original, owner, Prop)
+    local mutantGetFn = function(owner, mutant)
+        local result = getFn(mutant._original, owner, mutant)
         return result
     end
     local mutantSetFn = nil
     if setFn then
-        mutantSetFn = function(newValue, owner, Prop)
-            setFn(newValue, Prop._original, owner, Prop)
+        mutantSetFn = function(newValue, owner, mutant)
+            setFn(newValue, mutant._original, owner, mutant)
         end
     end
 
@@ -973,12 +973,12 @@ end
 --- Returns:
 ---  * A new `cp.prop` which wraps this property.
 function prop.mt:wrap(owner, key)
-    local wrapGetFn = function(_, Prop) return Prop._wrapped:get() end
-    local wrapSetFn = self._set and function(newValue, _, Prop) Prop._wrapped:set(newValue) end or nil
-    local wrapCloneFn = function(Self)
-        local clone = prop.mt._clone(Self)
-        clone._wrapped = Self._wrapped
-        clone._wrapped:watch(function(value) clone:_notify(value) end, false, true)
+    local wrapGetFn = function(_, wrapper) return wrapper._wrapped:get() end
+    local wrapSetFn = self._set and function(newValue, _, wrapper) wrapper._wrapped:set(newValue) end or nil
+    local wrapCloneFn = function(wrapper)
+        local clone = prop.mt._clone(wrapper)
+        clone._wrapped = wrapper._wrapped
+        clone:monitor(clone._wrapped)
         return clone
     end
 
@@ -992,7 +992,7 @@ function prop.mt:wrap(owner, key)
     end
 
     -- watch the original
-    self:watch(function(value) wrapper:_notify(value) end, false, true)
+    wrapper:monitor(self)
 
     return wrapper
 end
@@ -1063,7 +1063,7 @@ end
 ---
 --- Returns:
 ---  * New, read-only `cp.prop` which will be `true` if this property is NOT equal to `something`.
-prop.mt.NEQ = prop.mt.NOTEQUALTO
+prop.mt.NEQ = prop.mt.ISNOT
 
 --- cp.prop:BELOW() -> cp.prop <boolean; read-only>
 --- Method
@@ -1158,12 +1158,12 @@ function prop.mt:ATLEAST(something)
 end
 
 -- Notifies registered watchers in the array if the value has changed since last notification.
-local function _notifyWatchers(watchers, value, owner, Prop)
+local function _notifyWatchers(watchers, value, owner, theProp)
     if watchers then
         for _,watcher in ipairs(watchers) do
             if watcher.lastValue ~= value then
                 watcher.lastValue = value
-                watcher.fn(value, owner, Prop)
+                watcher.fn(value, owner, theProp)
             end
         end
     end
