@@ -112,6 +112,11 @@ end
 --- Toggles the Enable Proxy Menu Icon
 mod.enabled = config.prop("enablemousezoom", ENABLED_DEFAULT):watch(mod.update)
 
+--- plugins.finalcutpro.timeline.mousezoom.customModifier <cp.prop: string>
+--- Variable
+--- Custom Modifier as string.
+mod.customModifier = config.prop("mouseZoomCustomModifier", "alt")
+
 --- plugins.finalcutpro.timeline.mousezoom.stop() -> none
 --- Function
 --- Disables the ability to zoom a timeline using your mouse scroll wheel and the OPTION modifier key.
@@ -216,18 +221,17 @@ function mod.findMagicMouses()
                         log.df("Found a first generation Magic Mouse with ID: %s", id)
                         mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
                         mod.foundMagicMouse = true
+                    else
+                        --------------------------------------------------------------------------------
+                        -- Second Generation:
+                        --------------------------------------------------------------------------------
+                        local selectedProductName = selectedDevice:details().productName
+                        if selectedProductName == "Magic Mouse 2" then
+                            log.df("Found a second generation Magic Mouse with ID: %s", id)
+                            mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
+                            mod.foundMagicMouse = true
+                        end
                     end
-
-                    --------------------------------------------------------------------------------
-                    -- Second Generation:
-                    --------------------------------------------------------------------------------
-                    local selectedProductName = selectedDevice:details().productName
-                    if selectedProductName == "Magic Mouse 2" then
-                        log.df("Found a second generation Magic Mouse with ID: %s", id)
-                        mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
-                        mod.foundMagicMouse = true
-                    end
-
                 end
             end
         end
@@ -254,13 +258,39 @@ local function touchCallback(_, touches)
     if not fcp.isFrontmost() or not fcp:timeline():isShowing() then return end
 
     --------------------------------------------------------------------------------
-    -- Only allow when ONLY the OPTION modifier key is held down:
+    -- Only allow when ONLY the custom modifier key is held down:
+    --
+    -- TODO: There's got to be a better way to do this. Until then...
     --------------------------------------------------------------------------------
     local mods = eventtap.checkKeyboardModifiers()
-    if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
-        mod.altPressed = true
-    else
-        mod.altPressed = false
+    mod.modifierPressed = false
+    local customModifier = mod.customModifier()
+    if customModifier == "cmd" then
+        if mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+            mod.modifierPressed = true
+        end
+    elseif customModifier == "alt" then
+        if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+            mod.modifierPressed = true
+        end
+    elseif customModifier == "shift" then
+        if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+            mod.modifierPressed = true
+        end
+    elseif customModifier == "ctrl" then
+        if mods['ctrl'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['capslock'] and not mods['fn'] then
+            mod.modifierPressed = true
+        end
+    elseif customModifier == "capslock" then
+        if mods['capslock'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['ctrl'] and not mods['fn'] then
+            mod.modifierPressed = true
+        end
+    elseif customModifier == "fn" then
+        if mods['fn'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] then
+            mod.modifierPressed = true
+        end
+    end
+    if not mod.modifierPressed then
         return
     end
 
@@ -429,7 +459,7 @@ function mod.start()
         -- Block Horizontal Scrolling:
         --------------------------------------------------------------------------------
         if event:getProperty(eventtap.event.properties.scrollWheelEventPointDeltaAxis2) ~= 0 then
-            if mod.altPressed then
+            if mod.modifierPressed then
                 --------------------------------------------------------------------------------
                 -- Exit callback if OPTION is being held down:
                 --------------------------------------------------------------------------------
@@ -439,11 +469,44 @@ function mod.start()
 
         --------------------------------------------------------------------------------
         -- Setup Mouse & Keyword Checkers:
+        --
+        -- TODO: There's got to be a better way to do this. Until then...
         --------------------------------------------------------------------------------
         local mods = eventtap.checkKeyboardModifiers()
+        mod.modifierPressed = false
+        local customModifier = mod.customModifier()
+        if customModifier == "cmd" then
+            if mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+                mod.modifierPressed = true
+            end
+        elseif customModifier == "alt" then
+            if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+                mod.modifierPressed = true
+            end
+        elseif customModifier == "shift" then
+            if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+                mod.modifierPressed = true
+            end
+        elseif customModifier == "ctrl" then
+            if mods['ctrl'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['capslock'] and not mods['fn'] then
+                mod.modifierPressed = true
+            end
+        elseif customModifier == "capslock" then
+            if mods['capslock'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['ctrl'] and not mods['fn'] then
+                mod.modifierPressed = true
+            end
+        elseif customModifier == "fn" then
+            if mods['fn'] and not mods['cmd'] and not mods['alt'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] then
+                mod.modifierPressed = true
+            end
+        end
+        if not mod.modifierPressed then
+            return
+        end
+
         local mouseButtons = eventtap.checkMouseButtons()
-        if mods['alt'] and not mods['cmd'] and not mods['shift'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] and not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
-            mod.altPressed = true
+        if not next(mouseButtons) and fcp.isFrontmost() and fcp:timeline():isShowing() then
+            mod.modifierPressed = true
             if mod.foundMagicMouse then
                 --------------------------------------------------------------------------------
                 -- This prevents the Magic Mouse from scrolling horizontally or vertically:
@@ -472,24 +535,19 @@ function mod.start()
                     return true
                 end
             end
-        else
-            --------------------------------------------------------------------------------
-            -- False alarm - OPTION isn't being pressed:
-            --------------------------------------------------------------------------------
-            mod.altPressed = false
         end
     end):start()
 
     --------------------------------------------------------------------------------
-    -- Detect when OPTION key is released:
+    -- Detect when modifier key is released:
     --------------------------------------------------------------------------------
     mod.keytap = eventtap.new({eventtap.event.types.flagsChanged}, function(event)
-        if mod.altPressed and tools.tableCount(event:getFlags()) == 0 then
+        if mod.modifierPressed and tools.tableCount(event:getFlags()) == 0 then
 
             --------------------------------------------------------------------------------
             -- Reset everything:
             --------------------------------------------------------------------------------
-            mod.altPressed = false
+            mod.modifierPressed = false
             mod.lastPosition = nil
 
             --------------------------------------------------------------------------------
@@ -570,11 +628,43 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             :addCheckbox(101,
             {
-                label = i18n("allowZoomingWithOptionKey"),
+                label = i18n("allowZoomingWithModifierKey"),
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
-            }
-        )
+            })
+			:addSelect(102,
+			{
+				label		= i18n("modifierKey"),
+				value		= mod.customModifier,
+				options		= {
+					{
+						label = "command ⌘",
+						value = "cmd",
+					},
+					{
+						label = "option ⌥",
+						value = "alt",
+					},
+					{
+						label = "shift ⇧",
+						value = "shift",
+					},
+					{
+						label = "control ⌃",
+						value = "ctrl",
+					},
+					{
+						label = "caps lock",
+						value = "capslock",
+					},
+					{
+						label = "fn",
+						value = "fn",
+					},
+				},
+				required	= true,
+				onchange	= function(_, params) mod.customModifier(params.value) end,
+			})
     end
 
     return mod
