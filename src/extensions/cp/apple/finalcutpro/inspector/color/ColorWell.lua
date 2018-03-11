@@ -181,12 +181,16 @@ end
 -- Returns:
 -- * The orientation table.
 local function toOrientation(theColor)
-    theColor = asHSB(theColor)
+    if theColor and type(theColor) == "table" then
+        theColor = asHSB(theColor)
 
-    local h = 1 - theColor.hue + HUE_SHIFT
-    local b = theColor.brightness
-    local a = h * math.pi * 2
-    return {right = b * cos(a), up = b * sin(a) * -1}
+        local h = 1 - theColor.hue + HUE_SHIFT
+        local b = theColor.brightness
+        local a = h * math.pi * 2
+        return {right = b * cos(a), up = b * sin(a) * -1}
+    else
+        return nil
+    end
 end
 
 -- fromOrientation(theOrientation) -> hs.drawing.color
