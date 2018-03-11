@@ -318,7 +318,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():master():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():master():colorOrientation() and fcp:inspector():color():colorWheels():master():colorOrientation().right end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030018"] = {
                 ["name"] = "Color Wheel - Master - Vertical",
@@ -328,7 +328,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():master():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():master():colorOrientation() and fcp:inspector():color():colorWheels():master():colorOrientation().up end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030019"] = {
                 ["name"] = "Color Wheel - Shadows - Horizontal",
@@ -338,7 +338,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():shadows():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():colorOrientation() and fcp:inspector():color():colorWheels():shadows():colorOrientation().right end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030020"] = {
                 ["name"] = "Color Wheel - Shadows - Vertical",
@@ -348,7 +348,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():shadows():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():colorOrientation() and fcp:inspector():color():colorWheels():shadows():colorOrientation().up end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030021"] = {
                 ["name"] = "Color Wheel - Midtones - Horizontal",
@@ -358,7 +358,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():midtones():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():colorOrientation() and fcp:inspector():color():colorWheels():midtones():colorOrientation().right end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030022"] = {
                 ["name"] = "Color Wheel - Midtones - Vertical",
@@ -368,7 +368,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():midtones():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():colorOrientation() and fcp:inspector():color():colorWheels():midtones():colorOrientation().up end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030023"] = {
                 ["name"] = "Color Wheel - Highlights - Horizontal",
@@ -378,7 +378,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():highlights():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():colorOrientation() and fcp:inspector():color():colorWheels():highlights():colorOrientation().right end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():colorPosition({x=0, y=0}) end,
             },
             ["0x00030024"] = {
                 ["name"] = "Color Wheel - Highlights - Vertical",
@@ -388,7 +388,7 @@ function mod.init()
                 ["stepSize"] = fcp:inspector():color():colorWheels():highlights():colorWell().KEY_PRESS,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():colorOrientation() and fcp:inspector():color():colorWheels():highlights():colorOrientation().up end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():reset() end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():colorPosition({x=0, y=0}) end,
             },
 
             --------------------------------------------------------------------------------
@@ -401,8 +401,8 @@ function mod.init()
                 ["maxValue"] = 2,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():master():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():saturation():value(1) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():saturation():value(1) end,
             },
             ["0x00030026"] = {
                 ["name"] = "Color Wheel - Shadows - Saturation",
@@ -411,8 +411,8 @@ function mod.init()
                 ["maxValue"] = 2,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():saturation():value(1) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():saturation():value(1) end,
             },
             ["0x00030027"] = {
                 ["name"] = "Color Wheel - Midtones - Saturation",
@@ -421,8 +421,8 @@ function mod.init()
                 ["maxValue"] = 2,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():saturation():value(1) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():saturation():value(1) end,
             },
             ["0x00030028"] = {
                 ["name"] = "Color Wheel - Highlights - Saturation",
@@ -431,8 +431,8 @@ function mod.init()
                 ["maxValue"] = 2,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():saturation():value(1) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():saturation():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():saturation():value(1) end,
             },
 
             --------------------------------------------------------------------------------
@@ -445,8 +445,8 @@ function mod.init()
                 ["maxValue"] = 1,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():master():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():brightness():value(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():brightness():value(0) end,
             },
             ["0x00030030"] = {
                 ["name"] = "Color Wheel - Shadows - Brightness",
@@ -455,8 +455,8 @@ function mod.init()
                 ["maxValue"] = 1,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():brightness():value(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():brightness():value(0) end,
             },
             ["0x00030031"] = {
                 ["name"] = "Color Wheel - Midtones - Brightness",
@@ -465,8 +465,8 @@ function mod.init()
                 ["maxValue"] = 1,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():brightness():value(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():brightness():value(0) end,
             },
             ["0x00030032"] = {
                 ["name"] = "Color Wheel - Highlights - Brightness",
@@ -475,8 +475,8 @@ function mod.init()
                 ["maxValue"] = 1,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():brightness():value(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():brightness():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():brightness():value(0) end,
             },
 
             --------------------------------------------------------------------------------
@@ -489,8 +489,8 @@ function mod.init()
                 ["maxValue"] = 10000,
                 ["stepSize"] = 0.1,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():temperature() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():temperatureSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():temperatureSlider():setValue(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():temperatureSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():temperatureSlider():setValue(0) end,
             },
             ["0x00030034"] = {
                 ["name"] = "Color Wheel - Tint",
@@ -499,18 +499,23 @@ function mod.init()
                 ["maxValue"] = 50,
                 ["stepSize"] = 0.1,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():tint() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():tintSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():tintSlider():setValue(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():tintSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():tintSlider():setValue(0) end,
             },
             ["0x00030035"] = {
                 ["name"] = "Color Wheel - Hue",
-                ["name9"] = "COLR TINT",
+                ["name9"] = "COLR HUE",
                 ["minValue"] = 0,
                 ["maxValue"] = 360,
                 ["stepSize"] = 0.1,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():hue() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():hueSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():hueSlider():setValue(0) end,
+                ["shiftValue"] = function(value)
+                        local currentValue = fcp:inspector():color():colorWheels():show():hue()
+                        if currentValue then
+                            fcp:inspector():color():colorWheels():hue(currentValue + value)
+                        end
+                    end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():hue(0) end,
             },
             ["0x00030036"] = {
                 ["name"] = "Color Wheel - Mix",
@@ -519,8 +524,8 @@ function mod.init()
                 ["maxValue"] = 1,
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():mix() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():mixSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():mixSlider():setValue(0) end,
+                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():mixSlider():shiftValue(value) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():mixSlider():setValue(0) end,
             },
 
             --------------------------------------------------------------------------------
