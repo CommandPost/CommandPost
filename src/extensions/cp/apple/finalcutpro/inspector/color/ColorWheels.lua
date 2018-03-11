@@ -43,6 +43,7 @@ local prop                              = require("cp.prop")
 local PropertyRow						= require("cp.ui.PropertyRow")
 local RadioGroup						= require("cp.ui.RadioGroup")
 local Slider							= require("cp.ui.Slider")
+local TextField                         = require("cp.ui.TextField")
 
 local ColorWheel						= require("cp.apple.finalcutpro.inspector.color.ColorWheel")
 
@@ -167,7 +168,7 @@ function ColorWheels.new(parent)
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
 --- Field
 --- The hue for the corrector. A number from `0` to `50`.
-	o.hue = o:hueSlider().value:wrap(o)
+	o.hue = o:hueTextField().value:wrap(o)
 
     return o
 end
@@ -467,7 +468,7 @@ function ColorWheels:hueRow()
 	return self._hueRow
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:hueSlider() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:hueTextField() -> cp.ui.Slider
 --- Method
 --- Returns a `Slider` that provides access to the 'Hue' slider.
 ---
@@ -476,16 +477,16 @@ end
 ---
 --- Returns:
 ---  * The Hue `Slider`.
-function ColorWheels:hueSlider()
-	if not self._hueSlider then
-		self._hueSlider = Slider:new(self,
+function ColorWheels:hueTextField()
+	if not self._hueTextField then
+		self._hueTextField = TextField:new(self,
 			function()
 				local ui = self:hueRow():children()
-				return ui and axutils.childWithRole(ui, "AXSlider")
+				return ui and axutils.childWithRole(ui, "AXTextField")
 			end
 		)
 	end
-	return self._hueSlider
+	return self._hueTextField
 end
 
 return ColorWheels
