@@ -73,7 +73,7 @@ function ColorInspector.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector:new(parent) -> ColorInspector object
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.new(parent) -> ColorInspector object
 --- Method
 --- Creates a new ColorInspector object
 ---
@@ -82,13 +82,63 @@ end
 ---
 --- Returns:
 ---  * A ColorInspector object
--- TODO: Use a Function instead of a Method.
-function ColorInspector:new(parent) -- luacheck: ignore
+function ColorInspector.new(parent)
 
     local o = prop.extend({
         _parent = parent,
         _child = {}
     }, ColorInspector)
+
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `hs._asm.axuielement` object for the Color Inspector. Prior to FCPX 10.4 this will be the Color Board.
+    o.UI = prop(function(self)
+        return axutils.cache(self, "_ui",
+            function()
+                local ui = self:parent():panelUI()
+                return ColorInspector.matches(ui) and ui or nil
+            end,
+            ColorInspector.matches
+        )
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `hs._asm.axuielement` object representing the top bar.
+    o.topBarUI = o.UI:mutate(function(original, self)
+        return axutils.cache(self, "_topBar",
+            function()
+                local ui = original()
+                if ui and #ui == 1 then
+                    local split = ui[1]
+                    return #split == 3 and axutils.childFromTop(split, 1) or nil
+                end
+                return nil
+            end,
+            function(element) return element:attributeValue("AXRole") == "AXGroup" end
+        )
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.correctorUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `hs._asm.axuielement` object representing the currently-selected corrector panel.
+    o.correctorUI = o.UI:mutate(function(original, self)
+        return axutils.cache(self, "_corrector",
+            function()
+                local ui = original()
+                if ui then
+                    if ColorBoard.matchesOriginal(ui) then -- 10.3 Color Board
+                        return ui
+                    elseif ColorInspector.matches(ui) then -- 10.4+ Color Inspector
+                        local split = ui[1]
+                        return axutils.childFromTop(split, 2)
+                    end
+                end
+                return nil
+            end, function(element) return original() ~= nil and element ~= nil end
+        )
+    end):bind(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.isSupported <cp.prop: boolean; read-only>
 --- Field
@@ -132,74 +182,6 @@ end
 -- COLOR INSPECTOR UI:
 --
 -----------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Final Cut Pro 10.4 Color Board Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
-function ColorInspector:UI()
-    return axutils.cache(self, "_ui",
-        function()
-            local ui = self:parent():panelUI()
-            return ColorInspector.matches(ui) and ui or nil
-        end,
-        ColorInspector.matches
-    )
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector:topBarUI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object representing the top bar.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
-function ColorInspector:topBarUI()
-    return axutils.cache(self, "_topBar",
-        function()
-            local ui = self:UI()
-            if ui and #ui == 1 then
-                local split = ui[1]
-                return #split == 3 and axutils.childFromTop(split, 1) or nil
-            end
-            return nil
-        end,
-        function(element) return element:attributeValue("AXRole") == "AXGroup" end
-    )
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector:correctorUI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object representing the currently-selected corrector panel.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil` if not running Final Cut Pro 10.4 (or later), or if an error occurs.
-function ColorInspector:correctorUI()
-    return axutils.cache(self, "_corrector",
-        function()
-            local ui = self:UI()
-            if ui then
-                if ColorBoard.matchesOriginal(ui) then -- 10.3 Color Board
-                    return ui
-                elseif ColorInspector.matches(ui) then -- 10.4+ Color Inspector
-                    local split = ui[1]
-                    return axutils.childFromTop(split, 2)
-                end
-            end
-            return nil
-        end
-    , function(element) return self:UI() ~= nil and element ~= nil end)
-end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:corrections() -> CorrectionsBar
 --- Method
@@ -338,7 +320,7 @@ end
 ---  * A new ColorWheels object
 function ColorInspector:colorWheels()
     if not self._colorWheels then
-        self._colorWheels = ColorWheels:new(self)
+        self._colorWheels = ColorWheels.new(self)
     end
     return self._colorWheels
 end

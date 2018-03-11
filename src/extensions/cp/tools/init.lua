@@ -64,6 +64,69 @@ local leftMouseDown     = eventtap.event.types["leftMouseDown"]
 local leftMouseUp       = eventtap.event.types["leftMouseUp"]
 local clickState        = eventtap.event.properties.mouseEventClickState
 
+--- cp.tools.getKeysSortedByValue(tbl, sortFunction) -> table
+--- Function
+--- Sorts table keys by a value
+---
+--- Parameters:
+---  * tbl - the table you want to sort
+---  * sortFunction - the function you want to use to sort the table
+---
+--- Returns:
+---  * A sorted table
+function tools.getKeysSortedByValue(tbl, sortFunction)
+    local keys = {}
+    for key in pairs(tbl) do
+        table.insert(keys, key)
+    end
+    table.sort(keys, function(a, b)
+        return sortFunction(tbl[a], tbl[b])
+    end)
+    return keys
+end
+
+--- cp.tools.spairs(t, order) -> function
+--- Function
+--- A customised version of pairs, called `spairs` because it iterates over the table in a sorted order.
+---
+--- Parameters:
+---  * t     - The table to process
+---  * order - The function of how to sort the table.
+---
+--- Returns:
+---  * A iterator function.
+---
+--- Notes:
+---  * Author: [Michal Kottman](https://stackoverflow.com/a/15706820)
+function tools.spairs(t, order)
+    --------------------------------------------------------------------------------
+    -- Collect the keys:
+    --------------------------------------------------------------------------------
+    local keys = {}
+    for k in pairs(t) do keys[#keys+1] = k end
+
+    --------------------------------------------------------------------------------
+    -- If order function given, sort by it by passing the table and keys a, b,
+    -- otherwise just sort the keys:
+    --------------------------------------------------------------------------------
+    if order then
+        table.sort(keys, function(a,b) return order(t, a, b) end)
+    else
+        table.sort(keys)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Return the iterator function:
+    --------------------------------------------------------------------------------
+    local i = 0
+    return function()
+        i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
+
 --- cp.tools.mergeTable(target, ...) -> table
 --- Function
 --- Gives you the file system volume format of a path.

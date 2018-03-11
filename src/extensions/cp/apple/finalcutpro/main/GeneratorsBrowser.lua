@@ -77,7 +77,7 @@ end
 -- TODO: Add documentation
 GeneratorsBrowser.isShowing = prop.new(function(self)
 	local parent = self:parent()
-	return parent:isShowing() and parent:showGenerators():isChecked()
+	return parent:isShowing() and parent:showGenerators():checked()
 end):bind(GeneratorsBrowser)
 
 -- TODO: Add documentation

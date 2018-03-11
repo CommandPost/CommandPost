@@ -385,8 +385,8 @@ end)
     ok(viewer:topToolbarUI() ~= nil)
     ok(viewer:bottomToolbarUI() ~= nil)
     ok(viewer:formatUI() ~= nil)
-    ok(viewer:getFramerate() ~= nil)
-    ok(viewer:getTitle() ~= nil)
+    ok(viewer:framerate() ~= nil)
+    ok(viewer:title() ~= nil)
     end),
 
     test("PreferencesWindow", function()
@@ -413,7 +413,7 @@ end)
     ok(panel:createOptimizedMedia():isShowing())
     ok(panel:copyToMediaFolder():isShowing())
     ok(panel:leaveInPlace():isShowing())
-    ok(panel:copyToMediaFolder():isChecked() or panel:leaveInPlace():isChecked())
+    ok(panel:copyToMediaFolder():checked() or panel:leaveInPlace():checked())
 
     panel:hide()
     end),

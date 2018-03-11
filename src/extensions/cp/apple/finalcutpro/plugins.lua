@@ -1411,7 +1411,7 @@ local CP_PLUGIN_CACHE   = config.scriptPath .. "/cp/apple/finalcutpro/plugins/ca
 ---
 --- Notes:
 ---  * Does not uninstall any of the actual plugins.
-function mod.clearCaches()
+function mod.mt.clearCaches()
     local cachePath = fs.pathToAbsolute(USER_PLUGIN_CACHE)
     if cachePath then
         local ok, err = tools.rmdir(cachePath, true)
@@ -1759,7 +1759,7 @@ end
 -- Ensures the cache is cleared if the config is reset:
 --------------------------------------------------------------------------------
 config.watch({
-    reset = mod.clearCaches,
+    reset = mod.mt.clearCaches,
 })
 
 return mod

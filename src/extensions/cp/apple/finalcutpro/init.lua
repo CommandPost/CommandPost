@@ -99,6 +99,7 @@ local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
 local axutils									= require("cp.ui.axutils")
+local notifier									= require("cp.ui.notifier")
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
@@ -306,15 +307,22 @@ function App:keysWithString(string, lang)
 	return self._strings and self._strings:findKeys(result, string)
 end
 
---- cp.apple.finalcutpro:application() -> hs.application
+--- cp.apple.finalcutpro:bundleID() -> string
 --- Method
---- Returns the running `hs.application` for Final Cut Pro.
+--- Returns the Bundle ID for the app.
 ---
 --- Parameters:
----  * None
+--- * None
 ---
 --- Returns:
----  * The hs.application, or `nil` if the application is not running.
+--- * The Bundle ID
+function App:bundleID() -- luacheck: ignore
+	return App.BUNDLE_ID
+end
+
+--- cp.apple.finalcutpro.application <cp.prop: hs.application; read-only>
+--- Field
+--- Returns the running `hs.application` for Final Cut Pro, or `nil` if it's not running.
 App.application = prop.new(function(self)
 	local app = self._application
 	if not app or app:bundleID() == nil or not app:isRunning() then
@@ -336,20 +344,6 @@ App.isRunning = prop.new(function(self)
 	local app = self:application()
 	return app ~= nil and app:bundleID() ~= nil and app:isRunning()
 end):bind(App):monitor(App.application)
-
---- cp.apple.finalcutpro:getBundleID() -> string
---- Method
---- Returns the Final Cut Pro Bundle ID
----
---- Parameters:
----  * None
----
---- Returns:
----  * A string of the Final Cut Pro Bundle ID
--- TODO: This should be a function rather than a method.
-function App:getBundleID() -- luacheck: ignore
-	return App.BUNDLE_ID
-end
 
 --- cp.apple.finalcutpro:getPasteboardUTI() -> string
 --- Method
@@ -379,6 +373,22 @@ function App:UI()
 		local fcp = self:application()
 		return fcp and ax.applicationElement(fcp)
 	end)
+end
+
+--- cp.apple.finalcutpro:notifier() -> cp.ui.notifier
+--- Method
+--- Returns a notifier that is tracking the application UI element. It has already been started.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The notifier.
+function App:notifier()
+	if not self._notifier then
+		self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
+	end
+	return self._notifier
 end
 
 --- cp.apple.finalcutpro:launch() -> boolean
@@ -981,6 +991,19 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- cp.apple.finalcutpro:toolbar() -> PrimaryToolbar
+--- Method
+--- Returns the Primary Toolbar - the toolbar at the top of the Primary Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the PrimaryToolbar
+function App:toolbar()
+	return self:primaryWindow():toolbar()
+end
+
 --- cp.apple.finalcutpro:timeline() -> Timeline
 --- Method
 --- Returns the Timeline instance, whether it is in the primary or secondary window.
@@ -1008,7 +1031,7 @@ end
 ---  * the Viewer
 function App:viewer()
 	if not self._viewer then
-		self._viewer = Viewer:new(self, false)
+		self._viewer = Viewer.new(self, false)
 	end
 	return self._viewer
 end
@@ -1024,7 +1047,7 @@ end
 ---  * the Event Viewer
 function App:eventViewer()
 	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true)
+		self._eventViewer = Viewer.new(self, true)
 	end
 	return self._eventViewer
 end

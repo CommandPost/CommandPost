@@ -62,8 +62,8 @@ function ColorWheel.matches(element)
 	return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel:new(parent, type) -> ColorWheel
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.new(parent, type) -> ColorWheel
+--- Constructor
 --- Creates a new `ColorWheel` instance, with the specified parent and type.
 ---
 --- Parameters:
@@ -73,38 +73,74 @@ end
 --- Returns:
 --- * A new `ColorWheel` instance.
 -- TODO: Use a Function instead of a Method.
-function ColorWheel:new(parent, type) -- luacheck: ignore
+function ColorWheel.new(parent, type) -- luacheck: ignore
 	local o = prop.extend({
 		_parent = parent,
 		_type = type,
 	}, ColorWheel)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` for the ColorWheel.
+	o.UI = parent.contentUI:mutate(function(original, self)
+		return axutils.cache(self, "_ui", function()
+			local ui = original()
+			if ui then
+				if parent:viewingAllWheels() then
+					return axutils.childFromTop(ui, 2 + self._type.all)
+				elseif parent:wheelType():selectedOption() == self._type.single then
+					return axutils.childFromTop(ui, 4)
+				end
+			end
+			return nil
+		end, ColorWheel.matches)
+	end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the ColorWheel is showing on screen.
+	o.isShowing = o.UI:mutate(function(original)
+		return original() ~= nil
+	end):bind(o)
+
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.focused <cp.pref: boolean>
+--- Field
+--- Gets and sets whether the Color Well has focus.
+    o.focused = o.UI:mutate(
+        function(original)
+            local ui = original()
+            return ui ~= nil and ui:attributeValue("AXFocused") == true
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                ui:setAttributeValue("AXFocused", value)
+            end
+        end
+    ):bind(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorValue <cp.prop: hs.drawing.color>
 --- Field
 --- The current color value, as a `hs.drawing.color` table.
 	o.colorValue = o:colorWell().value:wrap(o)
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.colorScreenPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
 --- Field
---- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
---- actual Color Well circle, which only extends to 85 out of 255 values.
-	o.colorScreenPosition = o:colorWell().colorScreenPosition:wrap(o)
+--- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
+	o.puckPosition = o:colorWell().puckPosition:wrap(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorPosition <cp.prop: point>
 --- Field
---- Relative X/Y position for the current color value of the Color Well. This will be a `point` table,
---- with an `x` and `y` value between `-255` and `+255`. `{x=0,y=0}` is the centre point.
+--- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
+--- actual Color Well circle, which only extends to 85 out of 255 values.
 	o.colorPosition = o:colorWell().colorPosition:wrap(o)
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.puckScreenPosition <cp.prop: point>
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.colorOrientation <cp.prop: table>
 --- Field
---- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-	o.puckScreenPosition = o:colorWell().puckScreenPosition:wrap(o)
-
---- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
---- Field
---- X/Y position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-	o.puckPosition = o:colorWell().puckPosition:wrap(o)
+--- Provides the orientation of the color as a table containing an `up` and `right` value.
+--- The values will have a range between `-1` and `1`.
+	o.colorOrientation = o:colorWell().colorOrientation:wrap(o)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.saturationValue <cp.prop: number>
 --- Field
@@ -127,26 +163,6 @@ function ColorWheel:app()
 	return self:parent():app()
 end
 
-function ColorWheel:UI()
-	return axutils.cache(self, "_ui",
-		function()
-			local ui = self:parent():contentUI()
-			if ui then
-				if self:parent():viewingAllWheels() then
-					return axutils.childFromTop(ui, 2 + self._type.all)
-				elseif self:parent():wheelType():selectedOption() == self._type.single then
-					return axutils.childFromTop(ui, 4)
-				end
-			end
-			return nil
-		end
-	, ColorWheel.matches)
-end
-
-function ColorWheel:isShowing()
-	return self:UI() ~= nil
-end
-
 function ColorWheel:show()
 	self:parent():show()
 	-- ensure the wheel type is correct, if visible.
@@ -156,6 +172,21 @@ function ColorWheel:show()
 	end
 	return self
 end
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:select() -> cp.apple.finalcutpro.inspector.color.ColorWheel
+--- Method
+--- Shows and selects this color wheel.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `ColorWheel` instance.
+function ColorWheel:select()
+    self:show():focused(true)
+    return self
+end
+
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:colorWell() -> ColorWell
 --- Method
@@ -168,7 +199,7 @@ end
 --- * The `ColorWell` instance.
 function ColorWheel:colorWell()
 	if not self._colorWell then
-		self._colorWell = ColorWell:new(self, function()
+		self._colorWell = ColorWell.new(self, function()
 			return axutils.childMatching(self:UI(), ColorWell.matches)
 		end)
 	end
@@ -260,19 +291,19 @@ function ColorWheel:reset()
 	return self:resetButton():press()
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(x, y) -> self
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(right, up) -> self
 --- Method
---- Nudges the `colorPosition` by `x`/`y` values. Positive `x` values shift right,
---- positive `y` values shift down. Only integer values have an effect.
+--- Nudges the `colorPosition` by `right`/`up` values. Negative `right` values shift left,
+--- negative `up` values shift down. You may have decimal shift values.
 ---
 --- Parameters:
---- * x		- The number of pixels to shift horizontally.
---- * y		- The number of pixels to shift vertically.
+---  * `right` - The number of steps to shift right. May be negative to shift left.
+---  * `up` - The number of pixels to shift down. May be negative to shift down.
 ---
 --- Returns:
 --- * The `ColorWheel` instance.
-function ColorWheel:nudgeColor(x, y)
-	self:colorWell():nudge(x, y)
+function ColorWheel:nudgeColor(right, up)
+	self:colorWell():nudge(right, up)
 	return self
 end
 

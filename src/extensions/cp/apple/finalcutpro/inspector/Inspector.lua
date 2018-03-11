@@ -83,8 +83,8 @@ function Inspector.matches(element)
         or ColorBoard.matchesOriginal(element) -- the 10.3 color board
 end
 
---- cp.apple.finalcutpro.inspector.Inspector:new(parent) -> Inspector
---- Method
+--- cp.apple.finalcutpro.inspector.Inspector.new(parent) -> Inspector
+--- Constructor
 --- Creates a new Inspector.
 ---
 --- Parameters:
@@ -92,9 +92,132 @@ end
 ---
 --- Returns:
 ---  * The Inspector object.
--- TODO: Change from Method to Function.
-function Inspector:new(parent) -- luacheck: ignore
+function Inspector.new(parent)
     local o = prop.extend({_parent = parent}, Inspector)
+
+--- cp.apple.finalcutpro.inspector.Inspector.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `axuielement` for the Inspector.
+    o.UI = prop(function(self)
+        return axutils.cache(self, "_ui",
+        function()
+            local ui = parent:rightGroupUI()
+            if ui then
+                -----------------------------------------------------------------------
+                -- It's in the right panel (full-height):
+                -----------------------------------------------------------------------
+                if Inspector.matches(ui) then
+                    return ui
+                end
+            else
+                -----------------------------------------------------------------------
+                -- It's in the top-right panel (half-height):
+                -----------------------------------------------------------------------
+                local top = parent:topGroupUI()
+                if top then
+                    for _,child in ipairs(top) do
+                        if Inspector.matches(child) then
+                            return child
+                        end
+                    end
+                end
+            end
+            return nil
+        end,
+        Inspector.matches)
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the "top bar" `axuielement` for the Inspector.
+    o.topBarUI = o.UI:mutate(function(original, self)
+        return axutils.cache(self, "_topBar", function()
+            local ui = original()
+            return ui and #ui == 3 and axutils.childFromTop(ui, 1) or nil
+        end)
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.panelUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the central panel `axuielement` for the Inspector.
+    o.panelUI = o.UI:mutate(function(original, self)
+        return axutils.cache(self, "_panel",
+            function()
+                local ui = original()
+                if ui then
+                    local groups = axutils.childrenWithRole(ui, "AXGroup")
+                    if groups and #groups == 3 then
+                        return axutils.childFromTop(groups, 2)
+                    end
+                end
+                return nil
+            end,
+            function(element) return element:attributeValue("AXRole") == "AXGroup" end
+        )
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the properties `axuielement` for the Inspector. This contains the rows of property values.
+    o.propertiesUI = o.panelUI:mutate(function(original, self)
+        return axutils.cache(self, "_properties", function()
+            local ui = original()
+            if ui then
+                return (
+                    axutils.childWithRole(ui, "AXScrollArea") -- 10.4+ Inspector
+                    or ColorBoard.matchesOriginal(ui) and ui  -- 10.3 Color Board
+                    or nil -- not found
+                )
+            end
+            return nil
+        end)
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.bottomBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the bottom bar `axuielement` for the Inspector.
+    o.bottomBarUI = o.UI:mutate(function(original, self)
+        return axutils.cache(self, "_bottomBar", function()
+            local ui = original()
+            return ui and #ui == 3 and axutils.childFromBottom(ui, 1) or nil
+        end)
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.labelUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `axuielement` for text label at the top of the Inspector.
+    o.labelUI = o.topBarUI:mutate(function(original)
+        local ui = original()
+        return axutils.childWithRole(ui, "AXStaticText")
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Returns `true` if the Inspector is showing otherwise `false`
+    o.isShowing = o.UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil
+    end):bind(o)
+
+--- cp.apple.finalcutpro.inspector.Inspector.isFullHeight <cp.prop: boolean>
+--- Field
+--- Returns `true` if the Inspector is full height.
+    o.isFullHeight = prop.new(
+        function(self)
+            return Inspector.matches(self:parent():rightGroupUI())
+        end,
+        function(value, self)
+            self:show()
+            local fullHeight = Inspector.matches(self:parent():rightGroupUI())
+            if value ~= fullHeight then
+                local label = self:labelUI()
+                if label then
+                    local target = geometry(label:frame()).center
+                    tools.ninjaDoubleClick(target)
+                end
+            end
+        end
+    ):bind(o)
 
     return o
 end
@@ -130,73 +253,6 @@ end
 -- INSPECTOR UI:
 --
 -----------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.Inspector:UI() -> axuielementObject
---- Method
---- Returns the Inspectors Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function Inspector:UI()
-    return axutils.cache(self, "_ui",
-    function()
-        local parent = self:parent()
-        local ui = parent:rightGroupUI()
-        if ui then
-            -----------------------------------------------------------------------
-            -- It's in the right panel (full-height):
-            -----------------------------------------------------------------------
-            if Inspector.matches(ui) then
-                return ui
-            end
-        else
-            -----------------------------------------------------------------------
-            -- It's in the top-right panel (half-height):
-            -----------------------------------------------------------------------
-            local top = parent:topGroupUI()
-            if top then
-                for _,child in ipairs(top) do
-                    if Inspector.matches(child) then
-                        return child
-                    end
-                end
-            end
-        end
-        return nil
-    end,
-    Inspector.matches)
-end
-
---- cp.apple.finalcutpro.inspector.Inspector.isShowing <cp.prop: boolean; read-only>
---- Field
---- Returns `true` if the Inspector is showing otherwise `false`
-Inspector.isShowing = prop.new(function(self)
-    local ui = self:UI()
-    return ui ~= nil
-end):bind(Inspector)
-
---- cp.apple.finalcutpro.inspector.Inspector.isFullHeight <cp.prop: boolean>
---- Field
---- Returns `true` if the Inspector is full height.
-Inspector.isFullHeight = prop.new(
-    function(self)
-        return Inspector.matches(self:parent():rightGroupUI())
-    end,
-    function(value, self)
-        self:show()
-        local fullHeight = Inspector.matches(self:parent():rightGroupUI())
-        if value ~= fullHeight then
-            local label = axutils.childWithRole(self:topBarUI(), "AXStaticText")
-            if label then
-                local target = geometry(label:frame()).center
-                tools.ninjaDoubleClick(target)
-            end
-        end
-    end
-):bind(Inspector)
 
 --- cp.apple.finalcutpro.inspector.Inspector:show([tab]) -> Inspector
 --- Method
@@ -255,50 +311,6 @@ function Inspector:hide()
         menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
     end
     return self
-end
-
-function Inspector:topBarUI()
-    return axutils.cache(self, "_topBar", function()
-        local ui = self:UI()
-        return ui and #ui == 3 and axutils.childFromTop(ui, 1) or nil
-    end)
-end
-
-function Inspector:panelUI()
-    return axutils.cache(self, "_panel",
-        function()
-            local ui = self:UI()
-            if ui then
-                local groups = axutils.childrenWithRole(ui, "AXGroup")
-                if groups and #groups == 3 then
-                    return axutils.childFromTop(groups, 2)
-                end
-            end
-            return nil
-        end,
-        function(element) return element:attributeValue("AXRole") == "AXGroup" end
-    )
-end
-
-function Inspector:propertiesUI()
-    return axutils.cache(self, "_properties", function()
-        local ui = self:panelUI()
-        if ui then
-            return (
-                axutils.childWithRole(ui, "AXScrollArea") -- 10.4+ Inspector
-                or ColorBoard.matchesOriginal(ui) and ui  -- 10.3 Color Board
-                or nil -- not found
-            )
-        end
-        return nil
-    end)
-end
-
-function Inspector:bottomBarUI()
-    return axutils.cache(self, "_bottomBar", function()
-        local ui = self:UI()
-        return ui and #ui == 3 and axutils.childFromBottom(ui, 1) or nil
-    end)
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:selectTab([tab]) -> boolean
@@ -605,7 +617,7 @@ end
 ---  * ColorInspector
 function Inspector:color()
     if not self._colorInspector then
-        self._colorInspector = ColorInspector:new(self)
+        self._colorInspector = ColorInspector.new(self)
     end
     return self._colorInspector
 end
