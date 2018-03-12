@@ -123,7 +123,7 @@ end
 -- TODO: Add documentation
 function MediaBrowser:group()
 	if not self._group then
-		self._group = PopUpButton:new(self, function()
+		self._group = PopUpButton.new(self, function()
 			return axutils.childWithRole(self:UI(), "AXPopUpButton")
 		end)
 	end

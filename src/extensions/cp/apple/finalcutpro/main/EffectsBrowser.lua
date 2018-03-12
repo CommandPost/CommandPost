@@ -349,7 +349,7 @@ end
 
 function Browser:sidebarToggle()
 	if not self._sidebarToggle then
-		self._sidebarToggle = CheckBox:new(self, function()
+		self._sidebarToggle = CheckBox.new(self, function()
 			return axutils.childWithRole(self:UI(), "AXCheckBox")
 		end)
 	end
@@ -358,7 +358,7 @@ end
 
 function Browser:group()
 	if not self._group then
-		self._group = PopUpButton:new(self, function()
+		self._group = PopUpButton.new(self, function()
 			return axutils.childWithRole(self:mainGroupUI(), "AXPopUpButton")
 		end)
 	end

@@ -13,21 +13,18 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("timline")
-local inspect							= require("hs.inspect")
+-- local log								= require("hs.logger").new("timline")
+-- local inspect							= require("hs.inspect")
 
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 local tools								= require("cp.tools")
 local geometry							= require("hs.geometry")
+local fnutils							= require("hs.fnutils")
 
-local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
-local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
-local Button							= require("cp.ui.Button")
 local Table								= require("cp.ui.Table")
 local ScrollArea						= require("cp.ui.ScrollArea")
-local CheckBox							= require("cp.ui.CheckBox")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
@@ -43,7 +40,7 @@ local GeneratorsBrowser = {}
 GeneratorsBrowser.TITLE = "Titles and Generators"
 
 -- TODO: Add documentation
-function GeneratorsBrowser:new(parent)
+function GeneratorsBrowser.new(parent)
 	local o = {_parent = parent}
 	return prop.extend(o, GeneratorsBrowser)
 end
@@ -137,7 +134,7 @@ end
 -- TODO: Add documentation
 function GeneratorsBrowser:group()
 	if not self._group then
-		self._group = PopUpButton:new(self, function()
+		self._group = PopUpButton.new(self, function()
 			return axutils.childWithRole(self:UI(), "AXPopUpButton")
 		end)
 	end

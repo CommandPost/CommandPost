@@ -28,11 +28,59 @@ function Slider.matches(element)
 	return element:attributeValue("AXRole") == "AXSlider"
 end
 
---- cp.ui.Slider:new(axuielement, function) -> Slider
---- Function
+--- cp.ui.Slider.new(parent, finderFn) -> cp.ui.Slider
+--- Constructor
 --- Creates a new Slider
-function Slider:new(parent, finderFn)
-	return prop.extend({_parent = parent, _finder = finderFn}, Slider)
+---
+--- Parameters:
+--- * parent		- The parent object. Should have an `isShowing` property.
+--- * finderFn		- The function which returns an `hs._asm.axuielement` for the slider, or `nil`.
+---
+--- Returns:
+--- * A new `Slider` instance.
+function Slider.new(parent, finderFn)
+	local o = prop.extend({_parent = parent, _finder = finderFn}, Slider)
+
+	-- TODO: Add documentation
+	local UI = prop(function(self)
+		return axutils.cache(self, "_ui", function()
+			return self._finder()
+		end,
+		Slider.matches)
+	end)
+
+	prop.bind(o) {
+		UI = UI,
+
+		isShowing = parent.isShowing:AND(UI),
+
+		value = UI:mutate(
+			function(original)
+				local ui = original()
+				return ui and ui:attributeValue("AXValue")
+			end,
+			function(value, self)
+				local ui = self:UI()
+				if ui then
+					ui:setAttributeValue("AXValue", value)
+				end
+			end
+		),
+
+		-- TODO: Add documentation
+		minValue = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:attributeValue("AXMinValue")
+		end),
+
+		-- TODO: Add documentation
+		maxValue = UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:attributeValue("AXMaxValue")
+		end),
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -40,30 +88,9 @@ function Slider:parent()
 	return self._parent
 end
 
-function Slider:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
+function Slider:app()
+	return self:parent():app()
 end
-
--- TODO: Add documentation
-function Slider:UI()
-	return axutils.cache(self, "_ui", function()
-		return self._finder()
-	end,
-	Slider.matches)
-end
-
-Slider.value = prop.new(
-	function(self)
-		local ui = self:UI()
-		return ui and ui:attributeValue("AXValue")
-	end,
-	function(value, self)
-		local ui = self:UI()
-		if ui then
-			ui:setAttributeValue("AXValue", value)
-		end
-	end
-):bind(Slider)
 
 -- TODO: Add documentation
 function Slider:getValue()
@@ -83,20 +110,10 @@ function Slider:shiftValue(value)
 	return self
 end
 
-Slider.minValue = prop.new(function(self)
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXMinValue")
-end):bind(Slider)
-
 -- TODO: Add documentation
 function Slider:getMinValue()
 	return self:minValue()
 end
-
-Slider.maxValue = prop.new(function(self)
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXMaxValue")
-end):bind(Slider)
 
 -- TODO: Add documentation
 function Slider:getMaxValue()
@@ -139,6 +156,24 @@ function Slider:loadLayout(layout)
 	if layout then
 		self:setValue(layout.value)
 	end
+end
+
+--- cp.ui.Slider:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function Slider:snapshot(path)
+	local ui = self:UI()
+	if ui then
+		return axutils.snapshot(ui, path)
+	end
+	return nil
 end
 
 return Slider

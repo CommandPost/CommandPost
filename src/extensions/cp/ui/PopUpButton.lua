@@ -14,6 +14,7 @@
 --
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -27,27 +28,64 @@ function PopUpButton.matches(element)
 	return element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
---- cp.ui.PopUpButton:new(axuielement, function) -> PopUpButton
---- Function
---- Creates a new PopUpButton
-function PopUpButton:new(parent, finderFn)
-	local o = {_parent = parent, _finder = finderFn}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+--- cp.ui.PopUpButton.new(axuielement, function) -> cp.ui.PopUpButton
+--- Constructor
+--- Creates a new PopUpButton.
+---
+--- Parameters:
+--- * parent		- The parent table. Should have a `isShowing` property.
+---
+--- Returns:
+--- * The new `PopUpButton` instance.
+function PopUpButton.new(parent, finderFn)
+	local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
+
+	-- TODO: Add documentation
+	local UI = prop(function(self)
+		return axutils.cache(self, "_ui", function()
+			return self._finder()
+		end,
+		PopUpButton.matches)
+	end)
+
+	if prop.is(parent.UI) then
+		UI:monitor(parent.UI)
+	end
+
+	local isShowing = UI:mutate(function(original, self)
+		return original() ~= nil and self:parent():isShowing()
+	end)
+
+	local value = UI:mutate(
+		function(original)
+			local ui = original()
+			return ui and ui:value()
+		end,
+		function(value, original)
+			local ui = original()
+			if ui and not ui:value() == value then
+				local items = ui:doPress()[1]
+				for _,item in items do
+					if item:title() == value then
+						item:doPress()
+						return
+					end
+				end
+				items:doCancel()
+			end
+		end
+	)
+
+	return prop.bind(o) {
+		UI = UI,
+		isShowing, isShowing,
+		value = value,
+	}
 end
 
 -- TODO: Add documentation
 function PopUpButton:parent()
 	return self._parent
-end
-
--- TODO: Add documentation
-function PopUpButton:UI()
-	return axutils.cache(self, "_ui", function()
-		return self._finder()
-	end,
-	PopUpButton.matches)
 end
 
 -- TODO: Add documentation
@@ -71,23 +109,12 @@ end
 
 -- TODO: Add documentation
 function PopUpButton:getValue()
-	local ui = self:UI()
-	return ui and ui:value()
+	return self:value()
 end
 
 -- TODO: Add documentation
 function PopUpButton:setValue(value)
-	local ui = self:UI()
-	if ui and not ui:value() == value then
-		local items = ui:doPress()[1]
-		for i,item in items do
-			if item:title() == value then
-				item:doPress()
-				return
-			end
-		end
-		items:doCancel()
-	end
+	self.value:set(value)
 	return self
 end
 
@@ -118,6 +145,24 @@ function PopUpButton:loadLayout(layout)
 	if layout then
 		self:setValue(layout.value)
 	end
+end
+
+--- cp.ui.PopUpButton:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function PopUpButton:snapshot(path)
+	local ui = self:UI()
+	if ui then
+		return axutils.snapshot(ui, path)
+	end
+	return nil
 end
 
 return PopUpButton

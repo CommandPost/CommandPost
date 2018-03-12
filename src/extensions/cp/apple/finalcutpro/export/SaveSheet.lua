@@ -66,7 +66,7 @@ function SaveSheet:new(parent) -- luacheck: ignore
     return prop.extend(o, SaveSheet)
 end
 
---- cp.apple.finalcutpro.export.GoToPrompt:parent() -> object
+--- cp.apple.finalcutpro.export.SaveSheet:parent() -> object
 --- Method
 --- Returns the Parent object.
 ---
@@ -230,7 +230,7 @@ end
 ---  * A `ReplaceAlert` object.
 function SaveSheet:replaceAlert()
     if not self._replaceAlert then
-        self._replaceAlert = ReplaceAlert:new(self)
+        self._replaceAlert = ReplaceAlert.new(self)
     end
     return self._replaceAlert
 end

@@ -44,8 +44,8 @@ function ReplaceAlert.matches(element)
 	return false
 end
 
---- cp.apple.finalcutpro.export.ReplaceAlert:new(app) -> ReplaceAlert
---- Function
+--- cp.apple.finalcutpro.export.ReplaceAlert.new(app) -> ReplaceAlert
+--- Constructor
 --- Creates a new Replace Alert object.
 ---
 --- Parameters:
@@ -54,7 +54,7 @@ end
 --- Returns:
 ---  * A new ReplaceAlert object.
 -- TODO: Use a function instead of a method.
-function ReplaceAlert:new(parent) -- luacheck: ignore
+function ReplaceAlert.new(parent) -- luacheck: ignore
 	local o = {_parent = parent}
 	return prop.extend(o, ReplaceAlert)
 end

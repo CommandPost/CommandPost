@@ -42,7 +42,7 @@ function PrimaryToolbar.new(parent)
 	local o = prop.extend({_parent = parent}, PrimaryToolbar)
 
 	-- a CheckBox instance to access the browser button.
-	o._browserShowing = CheckBox:new(o, function()
+	o._browserShowing = CheckBox.new(o, function()
 		local group = axutils.childFromRight(o:UI(), 4)
 		if group and group:attributeValue("AXRole") == "AXGroup" then
 			return axutils.childWithRole(group, "AXCheckBox")
@@ -110,14 +110,14 @@ end):bind(PrimaryToolbar)
 
 function PrimaryToolbar:shareButton()
 	if not self._shareButton then
-		self._shareButton = Button:new(self, function() return axutils.childFromRight(self:UI(), 1) end)
+		self._shareButton = Button.new(self, function() return axutils.childFromRight(self:UI(), 1) end)
 	end
 	return self._shareButton
 end
 
 function PrimaryToolbar:browserButton()
 	if not self._browserButton then
-		self._browserButton = CheckBox:new(self, function()
+		self._browserButton = CheckBox.new(self, function()
 			local group = axutils.childFromRight(self:UI(), 4)
 			if group and group:attributeValue("AXRole") == "AXGroup" then
 				return axutils.childWithRole(group, "AXCheckBox")

@@ -42,8 +42,7 @@ function Alert.matches(element)
 end
 
 -- TODO: Add documentation
--- TODO: Use a function instead of a method.
-function Alert:new(parent) -- luacheck: ignore
+function Alert.new(parent)
     return prop.extend({_parent = parent}, Alert)
 end
 
@@ -79,7 +78,7 @@ end
 
 function Alert:cancel()
     if not self._cancel then
-        self._cancel = Button:new(self, function()
+        self._cancel = Button.new(self, function()
             local ui = self:UI()
             return ui and ui:cancelButton()
         end)
@@ -89,7 +88,7 @@ end
 
 function Alert:default()
     if not self._default then
-        self._default = Button:new(self, function()
+        self._default = Button.new(self, function()
             local ui = self:UI()
             return ui and ui:defaultButton()
         end)

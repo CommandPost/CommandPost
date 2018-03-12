@@ -159,7 +159,7 @@ end
 -- TODO: Add documentation
 function Libraries:toggleViewMode()
 	if not self._viewMode then
-		self._viewMode = Button:new(self, function()
+		self._viewMode = Button.new(self, function()
 			return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 3)
 		end)
 	end
@@ -169,7 +169,7 @@ end
 -- TODO: Add documentation
 function Libraries:appearanceAndFiltering()
 	if not self._appearanceAndFiltering then
-		self._appearanceAndFiltering = Button:new(self, function()
+		self._appearanceAndFiltering = Button.new(self, function()
 			return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 2)
 		end)
 	end
@@ -179,7 +179,7 @@ end
 -- TODO: Add documentation
 function Libraries:searchToggle()
 	if not self._searchToggle then
-		self._searchToggle = Button:new(self, function()
+		self._searchToggle = Button.new(self, function()
 			return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 1)
 		end)
 	end
@@ -199,7 +199,7 @@ end
 -- TODO: Add documentation
 function Libraries:filterToggle()
 	if not self._filterToggle then
-		self._filterToggle = Button:new(self, function()
+		self._filterToggle = Button.new(self, function()
 			return axutils.childWithRole(self:mainGroupUI(), "AXButton")
 		end)
 	end

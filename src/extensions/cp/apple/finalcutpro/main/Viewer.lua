@@ -473,7 +473,7 @@ end
 -- TODO: Add documentation
 function Viewer:playButton()
     if not self._playButton then
-		self._playButton = Button:new(self, function()
+		self._playButton = Button.new(self, function()
             return axutils.childFromLeft(axutils.childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
         end)
     end

@@ -551,28 +551,28 @@ return test.suite("cp.prop"):with(
 	test("Prop Binary Functions", function()
 		local one, two, three = prop.THIS(1), prop.THIS(2), prop.THIS(3)
 
-		ok(one:IS(1):value() == true)
-		ok(one:IS(one):value() == true)
-		ok(one:IS(two):value() == false)
+		ok(eq(one:IS(1):value(), true))
+		ok(eq(one:IS(one):value(), true))
+		ok(eq(one:IS(two):value(), false))
 
-		ok(two:BELOW(one):value() == false)
-		ok(two:ABOVE(one):value() == true)
-		ok(two:BELOW(three):value() == true)
-		ok(two:ABOVE(three):value() == false)
+		ok(eq(two:BELOW(one):value(), false))
+		ok(eq(two:ABOVE(one):value(), true))
+		ok(eq(two:BELOW(three):value(), true))
+		ok(eq(two:ABOVE(three):value(), false))
 
-		ok(two:ATLEAST(3):value() == false)
-		ok(two:ATMOST(3):value() == true)
-		ok(two:ATLEAST(1):value() == true)
-		ok(two:ATMOST(1):value() == false)
-		ok(two:ATLEAST(2):value() == true)
-		ok(two:ATMOST(2):value() == true)
+		ok(eq(two:ATLEAST(3):value(), false))
+		ok(eq(two:ATMOST(3):value(), true))
+		ok(eq(two:ATLEAST(1):value(), true))
+		ok(eq(two:ATMOST(1):value(), false))
+		ok(eq(two:ATLEAST(2):value(), true))
+		ok(eq(two:ATMOST(2):value(), true))
 
 		local something = prop.THIS(1)
 		local comp = one:IS(something)
 
-		ok(comp:value() == true)
+		ok(eq(comp:value(), true))
 		something(0)
-		ok(comp:value() == false)
+		ok(eq(comp:value(), false))
 	end),
 
 	test("Prop Notify/Update Same Value", function()

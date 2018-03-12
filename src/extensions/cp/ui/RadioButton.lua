@@ -53,7 +53,7 @@ function RadioButton.matches(element)
 	return element:attributeValue("AXRole") == "AXRadioButton"
 end
 
---- cp.ui.RadioButton:new(axuielement, function) -> RadioButton
+--- cp.ui.RadioButton.new(axuielement, function) -> RadioButton
 --- Method
 --- Creates a new RadioButton.
 ---
@@ -63,7 +63,7 @@ end
 ---
 --- Returns:
 --- * The new `RadioButton`.
-function RadioButton:new(parent, finderFn)
+function RadioButton.new(parent, finderFn)
 	return prop.extend({_parent = parent, _finder = finderFn}, RadioButton)
 end
 
@@ -198,6 +198,24 @@ function RadioButton.__call(self, parent, value)
 		value = parent
 	end
 	return self:checked(value)
+end
+
+--- cp.ui.RadioButton:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function RadioButton:snapshot(path)
+	local ui = self:UI()
+	if ui then
+		return axutils.snapshot(ui, path)
+	end
+	return nil
 end
 
 return RadioButton

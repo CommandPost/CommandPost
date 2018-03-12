@@ -13,8 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("playbackPanel")
-local inspect							= require("hs.inspect")
+-- local log								= require("hs.logger").new("playbackPanel")
+-- local inspect							= require("hs.inspect")
 
 local axutils							= require("cp.ui.axutils")
 local just								= require("cp.just")
@@ -31,10 +31,33 @@ local id								= require("cp.apple.finalcutpro.ids") "PlaybackPanel"
 local PlaybackPanel = {}
 
 -- TODO: Add documentation
-function PlaybackPanel:new(preferencesDialog)
-	local o = {_parent = preferencesDialog}
-	
-	return prop.extend(o, PlaybackPanel)
+function PlaybackPanel.new(parent)
+	local o = prop.extend({_parent = parent}, PlaybackPanel)
+
+	-- TODO: Add documentation
+	local UI = parent.toolbarUI:mutate(function(original, self)
+		return axutils.cache(self, "_ui", function()
+			return axutils.childFromLeft(original(), id "ID")
+		end)
+	end)
+
+	-- TODO: Add documentation
+	local isShowing = parent.toolbarUI:mutate(function(original)
+		local toolbar = original()
+		if toolbar then
+			local selected = toolbar:selectedChildren()
+			return #selected == 1 and selected[1] == UI()
+		end
+		return false
+	end)
+
+	local contentsUI = prop.OR(isShowing:AND(parent.groupUI), prop.NIL)
+
+	prop.bind(o) {
+		UI = UI, isShowing = isShowing, contentsUI = contentsUI,
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -42,25 +65,8 @@ function PlaybackPanel:parent()
 	return self._parent
 end
 
--- TODO: Add documentation
-function PlaybackPanel:UI()
-	return axutils.cache(self, "_ui", function()
-		return axutils.childFromLeft(self:parent():toolbarUI(), id "ID")
-	end)
-end
-
--- TODO: Add documentation
-PlaybackPanel.isShowing = prop.new(function(self)
-	local toolbar = self:parent():toolbarUI()
-	if toolbar then
-		local selected = toolbar:selectedChildren()
-		return #selected == 1 and selected[1] == self:UI()
-	end
-	return false
-end):bind(PlaybackPanel)
-
-function PlaybackPanel:contentsUI()
-	return self:isShowing() and self:parent():groupUI() or nil
+function PlaybackPanel:app()
+	return self:parent():app()
 end
 
 -- TODO: Add documentation
@@ -84,7 +90,7 @@ end
 
 function PlaybackPanel:createMulticamOptimizedMedia()
 	if not self._createOptimizedMedia then
-		self._createOptimizedMedia = CheckBox:new(self, function()
+		self._createOptimizedMedia = CheckBox.new(self, function()
 			return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateMulticamOptimizedMedia")
 		end)
 	end
@@ -93,7 +99,7 @@ end
 
 function PlaybackPanel:backgroundRender()
 	if not self._backgroundRender then
-		self._backgroundRender = CheckBox:new(self, function()
+		self._backgroundRender = CheckBox.new(self, function()
 			return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "BackgroundRender")
 		end)
 	end

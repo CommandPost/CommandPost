@@ -13,8 +13,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("PrefsDlg")
-local inspect						= require("hs.inspect")
+-- local log							= require("hs.logger").new("PrefsDlg")
+-- local inspect						= require("hs.inspect")
 
 local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
@@ -22,8 +22,6 @@ local prop							= require("cp.prop")
 
 local PlaybackPanel					= require("cp.apple.finalcutpro.prefs.PlaybackPanel")
 local ImportPanel					= require("cp.apple.finalcutpro.prefs.ImportPanel")
-
-local id							= require("cp.apple.finalcutpro.ids") "PreferencesWindow"
 
 --------------------------------------------------------------------------------
 --
@@ -41,9 +39,50 @@ function PreferencesWindow.matches(element)
 end
 
 -- TODO: Add documentation
-function PreferencesWindow:new(app)
-	local o = {_app = app}
-	return prop.extend(o, PreferencesWindow)
+function PreferencesWindow._findWindowUI(windows)
+	return axutils.childMatching(windows, PreferencesWindow.matches)
+end
+
+-- TODO: Add documentation
+function PreferencesWindow.new(app)
+	local o = prop.extend({_app = app}, PreferencesWindow)
+
+	local UI = prop(function(self)
+		return axutils.cache(self, "_ui", function()
+			local windowsUI = self:app():windowsUI()
+			return windowsUI and PreferencesWindow._findWindowUI(windowsUI)
+		end)
+	end)
+
+	prop.bind(o) {
+		-- TODO: Add documentation
+		UI = UI,
+
+		-- TODO: Add documentation
+		isShowing = UI:ISNOT(nil),
+
+		-- TODO: Add documentation
+		-- Returns the UI for the AXToolbar containing this panel's buttons
+		toolbarUI = UI:mutate(function(original, self)
+			return axutils.cache(self, "_toolbar", function()
+				local ax = original()
+				return ax and axutils.childWithRole(ax, "AXToolbar") or nil
+			end)
+		end),
+
+		-- TODO: Add documentation
+		-- Returns the UI for the AXGroup containing this panel's elements
+		groupUI = UI:mutate(function(original, self)
+			return axutils.cache(self, "_group", function()
+				local ui = original()
+				local group = ui and axutils.childWithRole(ui, "AXGroup")
+				-- The group conains another single group that contains the actual checkboxes, etc.
+				return group and #group == 1 and group[1]
+			end)
+		end),
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -52,42 +91,9 @@ function PreferencesWindow:app()
 end
 
 -- TODO: Add documentation
-function PreferencesWindow:UI()
-	return axutils.cache(self, "_ui", function()
-		local windowsUI = self:app():windowsUI()
-		return windowsUI and self:_findWindowUI(windowsUI)
-	end)
-end
-
--- TODO: Add documentation
-function PreferencesWindow:_findWindowUI(windows)
-	return axutils.childMatching(windows, PreferencesWindow.matches)
-end
-
--- TODO: Add documentation
--- Returns the UI for the AXToolbar containing this panel's buttons
-function PreferencesWindow:toolbarUI()
-	return axutils.cache(self, "_toolbar", function()
-		local ax = self:UI()
-		return ax and axutils.childWith(ax, "AXRole", "AXToolbar") or nil
-	end)
-end
-
--- TODO: Add documentation
--- Returns the UI for the AXGroup containing this panel's elements
-function PreferencesWindow:groupUI()
-	return axutils.cache(self, "_group", function()
-		local ui = self:UI()
-		local group = ui and axutils.childWithRole(ui, "AXGroup")
-		-- The group conains another single group that contains the actual checkboxes, etc.
-		return group and #group == 1 and group[1]
-	end)
-end
-
--- TODO: Add documentation
 function PreferencesWindow:playbackPanel()
 	if not self._playbackPanel then
-		self._playbackPanel = PlaybackPanel:new(self)
+		self._playbackPanel = PlaybackPanel.new(self)
 	end
 	return self._playbackPanel
 end
@@ -95,15 +101,10 @@ end
 -- TODO: Add documentation
 function PreferencesWindow:importPanel()
 	if not self._importPanel then
-		self._importPanel = ImportPanel:new(self)
+		self._importPanel = ImportPanel.new(self)
 	end
 	return self._importPanel
 end
-
--- TODO: Add documentation
-PreferencesWindow.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
-end):bind(PreferencesWindow)
 
 -- TODO: Add documentation
 -- Ensures the PreferencesWindow is showing
@@ -113,7 +114,7 @@ function PreferencesWindow:show()
 		if self:app():menuBar():isEnabled({"Final Cut Pro", "Preferences…"}) then
 			self:app():menuBar():selectMenu({"Final Cut Pro", "Preferences…"})
 			-- wait for it to open.
-			local ui = just.doUntil(function() return self:UI() end)
+			just.doUntil(function() return self:UI() end)
 		end
 	end
 	return self

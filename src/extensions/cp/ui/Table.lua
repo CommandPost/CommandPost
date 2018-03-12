@@ -49,10 +49,10 @@ end
 ---
 --- Returns:
 ---  * The combined text value of the cell.
-function Table.cellTextValue(cell, value)
+function Table.cellTextValue(cell)
 	local textValue = nil
 	if #cell > 0 then
-		for i,item in ipairs(cell) do
+		for _,item in ipairs(cell) do
 			local itemValue = item:attributeValue("AXValue")
 			if type(itemValue) == "string" then
 				textValue = (textValue or "") .. itemValue
@@ -113,7 +113,7 @@ end
 function Table.findRow(rows, names)
 	if rows then
 		local name = table.remove(names, 1)
-		for i,row in ipairs(rows) do
+		for _,row in ipairs(rows) do
 			local cell = row[1]
 			if Table.cellTextValueIs(cell, name) then
 				if #names > 0 then
@@ -302,7 +302,7 @@ function Table.mt:rowsUI(filterFn)
 	local ui = self:contentUI()
 	if ui then
 		local rows = {}
-		for i,child in ipairs(ui) do
+		for _,child in ipairs(ui) do
 			if child:attributeValue("AXRole") == "AXRow" then
 				if not filterFn or filterFn(child) then
 					rows[#rows + 1] = child
@@ -344,7 +344,7 @@ function Table.mt:columnsUI()
 	local ui = self:contentUI()
 	if ui then
 		local columns = {}
-		for i,child in ipairs(ui) do
+		for _,child in ipairs(ui) do
 			if child:attributeValue("AXRole") == "AXColumn" then
 				columns[#columns + 1] = child
 			end
@@ -382,7 +382,7 @@ function Table.mt:selectedRowsUI()
 	local rows = self:rowsUI()
 	if rows then
 		local selected = {}
-		for i,row in ipairs(rows) do
+		for _,row in ipairs(rows) do
 			if row:attributeValue("AXSelected") then
 				selected[#selected + 1] = row
 			end
@@ -433,7 +433,7 @@ function Table.mt:showRow(rowUI)
 			local oFrame = self:contentUI():frame()
 			local scrollHeight = oFrame.h - vFrame.h
 
-			local vValue = nil
+			local vValue
 			if rowTop < top or rowFrame.h > scrollHeight then
 				vValue = (rowTop-oFrame.y)/scrollHeight
 			else
@@ -461,7 +461,7 @@ function Table.mt:showRowAt(index)
 end
 
 -- TODO: Add documentation
-function Table.mt:selectRow(rowUI)
+function Table.mt:selectRow(rowUI) -- luacheck: ignore
 	if rowUI then
 		rowUI:setAttributeValue("AXSelected", true)
 		return true
@@ -480,7 +480,7 @@ function Table.mt:selectRowAt(index)
 end
 
 -- TODO: Add documentation
-function Table.mt:deselectRow(rowUI)
+function Table.mt:deselectRow(rowUI) -- luacheck: ignore
 	if rowUI then
 		rowUI:setAttributeValue("AXSelected", false)
 		return true
@@ -515,7 +515,7 @@ end
 function Table.mt:deselectAll(rowsUI)
 	rowsUI = rowsUI or self:selectedRowsUI()
 	if rowsUI then
-		for i,row in ipairs(rowsUI) do
+		for _,row in ipairs(rowsUI) do
 			self:deselectRow(row)
 		end
 		return true
