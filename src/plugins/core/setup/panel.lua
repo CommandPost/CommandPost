@@ -87,18 +87,18 @@ local function getClass(params)
     return class
 end
 
---- plugins.core.setup.panel:addContent(content, unescaped) -> panel
+--- plugins.core.setup.panel:addContent(content[, escaped]) -> panel
 --- Method
 --- Adds the specified `content` to the panel.
 ---
 --- Parameters:
 --- * `content` - a value that can be converted to a string.
---- * `unescaped` - if `true`, the content will not be escaped. Defaults to true.
+--- * `escaped` - if `true`, the content will not be escaped. Defaults to true.
 ---
 --- Returns:
 --- * The panel.
-function panel:addContent(content, unescaped)
-    self._content(content, unescaped)
+function panel:addContent(content, escaped)
+    self._content(content, escaped)
     return self
 end
 
@@ -182,19 +182,19 @@ function panel:addHandler(event, id, handlerFn, keys)
     self._handlers[id] = handlerFn
 end
 
---- plugins.core.setup.panel:addParagraph(content, unescaped, class) -> panel
+--- plugins.core.setup.panel:addParagraph(content[, escaped[, class]]) -> panel
 --- Method
 --- Adds a Paragraph to the panel
 ---
 --- Parameters:
 ---  * content - The content as a string
----  * unescaped - Whether or not the HTML should be escaped as a boolean
+---  * escaped - Whether or not the HTML should be escaped as a boolean
 ---  * class - The class as a string
 ---
 --- Returns:
 --- * The panel object.
-function panel:addParagraph(content, unescaped, class)
-    return self:addContent(html.p { class=getClass({class=class}) } (content, unescaped))
+function panel:addParagraph(content, escaped, class)
+    return self:addContent(html.p { class=getClass({class=class}) } (content, escaped))
 end
 
 --- plugins.core.setup.panel:addCheckbox(params) -> panel

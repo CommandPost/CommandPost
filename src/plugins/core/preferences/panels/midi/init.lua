@@ -34,6 +34,7 @@ local timer                                     = require("hs.timer")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
@@ -176,7 +177,7 @@ local function generateContent()
                         groupID: this.value,
                     },
                 }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
+                webkit.messageHandlers.{{ label }}.postMessage(result);
             } catch(err) {
                 console.log("Error: " + err)
                 alert('An error has occurred. Does the controller exist yet?');
@@ -195,7 +196,7 @@ local function generateContent()
               }
             }
         }
-    ]])
+    ]], {label = mod._manager.getLabel()})
 
 
     local context = {
@@ -838,8 +839,8 @@ function mod.init(deps, env)
                 class       = "openAudioMIDISetup",
             }
         )
-        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod.enabled()) .. [[;">]], true)
-        :addContent(10, generateContent, true)
+        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod.enabled()) .. [[;">]], false)
+        :addContent(10, generateContent, false)
         :addButton(11,
             {
                 label       = i18n("refreshMidi"),
@@ -869,7 +870,7 @@ function mod.init(deps, env)
             }
         )
 
-        :addContent(23, [[</div>]], true)
+        :addContent(23, [[</div>]], false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

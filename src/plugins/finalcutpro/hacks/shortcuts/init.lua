@@ -724,7 +724,7 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     mod.panel = mod.setup.panel.new("hacksShortcuts", 50)
         :addIcon(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"))
-        :addParagraph(i18n("commandSetText"), true)
+        :addParagraph(i18n("commandSetText"), false)
         :addButton({
             label       = i18n("commandSetUseFCPX"),
             onclick     = function()

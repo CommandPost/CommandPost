@@ -28,6 +28,8 @@ local timer							= require("hs.timer")
 local config						= require("cp.config")
 local fcp							= require("cp.apple.finalcutpro")
 local tools							= require("cp.tools")
+local html							= require("cp.web.html")
+local ui							= require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -353,14 +355,12 @@ function plugin.init(deps)
 	--------------------------------------------------------------------------------
 	if deps.prefs.panel then
 		deps.prefs.panel
-			:addContent(2000, [[
-				<style>
-					.highLightPlayheadSelect {
-						width: 100px;
-						float: left;
-					}
-				</style>
-			]], true)
+			:addContent(2000, ui.style ([[
+				.highLightPlayheadSelect {
+					width: 100px;
+					float: left;
+				}
+			]]))
 			:addHeading(2000, i18n("highlightPlayhead"))
 			:addSelect(2001,
 			{

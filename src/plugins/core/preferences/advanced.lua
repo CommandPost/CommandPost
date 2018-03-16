@@ -13,14 +13,12 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("prefadv")
+-- local log				= require("hs.logger").new("prefadv")
 
-local console			= require("hs.console")
 local dialog			= require("hs.dialog")
 local ipc				= require("hs.ipc")
 
 local config			= require("cp.config")
-local fcp				= require("cp.apple.finalcutpro")
 local html				= require("cp.web.html")
 
 --------------------------------------------------------------------------------
@@ -233,7 +231,9 @@ function plugin.init(deps)
 				id		= "commandLineTool",
 			}
 		)
-		:addParagraph(76, [[<span class="tip">]]  .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("commandLineToolDescription") .. "</span>", true)
+		:addParagraph(76, html.span {class="tip"} (
+			html.strong(string.upper(i18n("tip") .. ": ")) .. html(i18n("commandLineToolDescription"), false)
+		))
 
 		:addHeading(80, i18n("advanced"))
 		:addButton(85,
@@ -243,7 +243,9 @@ function plugin.init(deps)
 				onclick	= mod.trashPreferences,
 			}
 		)
-		:addParagraph(85.1, [[<span class="tip">]]  .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" ..  i18n("trashPreferencesDescription") .. "</span>", true)
+		:addParagraph(85.1, html.span {class="tip"} (
+			html.strong(string.upper(i18n("tip")) .. ": ") .. html(i18n("trashPreferencesDescription"), false)
+		))
 
 end
 

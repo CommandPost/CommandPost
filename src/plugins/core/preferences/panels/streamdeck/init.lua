@@ -33,6 +33,7 @@ local image                                     = require("hs.image")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
@@ -446,8 +447,8 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("streamDeckAppTip") .. "</span>\n\n", true)
-        :addContent(10, generateContent, true)
+        :addParagraph(8, html.span {class="tip"} ( html.strong (string.upper(i18n("tip")) .. ": ") .. html(i18n("streamDeckAppTip"), false) ) .. "\n\n")
+        :addContent(10, generateContent, false)
 
     mod._panel:addButton(20,
         {

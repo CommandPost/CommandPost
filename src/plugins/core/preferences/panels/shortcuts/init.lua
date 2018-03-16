@@ -610,7 +610,7 @@ function mod.init(deps, env)
         height          = 490,
     })
     mod._panel
-        :addContent(10, generateContent, true)
+        :addContent(10, generateContent, false)
         :addButton(20,
             {
                 width       = 200,

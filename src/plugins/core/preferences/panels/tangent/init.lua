@@ -31,6 +31,7 @@ local tangent                                   = require("hs.tangent")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 
 --------------------------------------------------------------------------------
 --
@@ -76,33 +77,31 @@ function mod.init(deps, env)
         tooltip     = i18n("tangentPanelTooltip"),
         height      = 370,
     })
-        :addContent(1, [[
-            <style>
-                .tangentButtonOne {
-                    float:left;
-                    width: 192px;
-                }
-                .tangentButtonTwo {
-                    float:left;
-                    margin-left: 5px;
-                    width: 192px;
-                }
-                .tangentButtonThree {
-                    clear:both;
-                    float:left;
-                    margin-top: 5px;
-                    width: 192px;
-                }
-                .tangentButtonFour {
-                    float:left;
-                    margin-top: 5px;
-                    margin-left: 5px;
-                    width: 192px;
-                }
-            </style>
-        ]], true)
+        :addContent(1, html.style ([[
+            .tangentButtonOne {
+                float:left;
+                width: 192px;
+            }
+            .tangentButtonTwo {
+                float:left;
+                margin-left: 5px;
+                width: 192px;
+            }
+            .tangentButtonThree {
+                clear:both;
+                float:left;
+                margin-top: 5px;
+                width: 192px;
+            }
+            .tangentButtonFour {
+                float:left;
+                margin-top: 5px;
+                margin-left: 5px;
+                width: 192px;
+            }
+        ]], true))
         :addHeading(2, i18n("tangentPanelSupport"))
-        :addParagraph(3, i18n("tangentPreferencesInfo"), true)
+        :addParagraph(3, i18n("tangentPreferencesInfo"), false)
         --------------------------------------------------------------------------------
         -- Enable Tangent Support:
         --------------------------------------------------------------------------------
@@ -143,7 +142,7 @@ function mod.init(deps, env)
                 id = "enableTangentSupport",
             }
         )
-        :addParagraph(5, "<br />", true)
+        :addParagraph(5, html.br())
         --------------------------------------------------------------------------------
         -- Open Tangent Mapper:
         --------------------------------------------------------------------------------

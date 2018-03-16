@@ -38,47 +38,19 @@
 ---  * `CDATA`	- will generate a `&lt;![CDATA[ ... ]]&gt;` section with the content contained.
 ---  * `__`		- (double underscore) will generate a `&lt!-- ... --&gt` comment block.
 
-local log			= require "hs.logger" .new "html"
-local template 		= require "resty.template"
-local setmetatable	= setmetatable
-local escape		= template.escape
-local concat		= table.concat
-local pairs			= pairs
-local type			= type
+-- local log				= require "hs.logger" .new "html"
+-- local inspect			= require "hs.inspect"
 
--- Evalutates the content, converting it to a string.
-local function evaluate(content)
-	local contentType = type(content)
-	if contentType == "table" then
-		if #content > 0 then
-			local result = ""
-			for _,item in ipairs(content) do
-				result = result .. evaluate(item)
-			end
-			return result
-		end
-	elseif contentType == "function" then
-		content = evaluate(content())
-	end
-	
-	if content then
-		return tostring(content)
-	else
-		return ""
-	end
-end
+local template 			= require "resty.template"
+local is				= require "cp.is"
 
-local escaped = {}
-escaped.__index = escaped
+local setmetatable		= setmetatable
+local escape			= template.escape
+local concat, insert	= table.concat, table.insert
+local pairs				= pairs
+local type				= type
 
-function escaped.new(content)
-	local o = { content = content }
-	return setmetatable(o, escaped)
-end
-
-function escaped:__tostring()
-	return self.content and escape(evaluate(self.content)) or ""
-end
+local isFunction, isList	= is.fn, is.list
 
 local block = {}
 block.__index = block
@@ -87,18 +59,74 @@ local function isBlock(value)
 	return value and type(value) == "table" and getmetatable(value) == block
 end
 
+-- isEscaped(newContent, escaped)
+-- Private Function
+-- Determines if the content is escaped by default, based on the content type and the `escaped` value
+local function isEscaped(newContent, escaped)
+	if escaped ~= nil then
+		return escaped
+	else
+		return not isBlock(newContent)
+	end
+end
+
+local function nilContent() return "" end
+
+-- prepareContent(content, escaped) -> function
+-- Local Function
+-- Returns a function that can be executed to return the `string` value for the content,
+-- taking into account the `escaped` value. See `block:append(...)` for details.
+--
+-- Parameters:
+-- * content	- The content
+-- * escaped	- (optional) whether the content should be escaped.
+--
+-- Returns:
+-- * A `function` that can be called to get the current `string` value of the content.
+local function prepareContent(content, escaped)
+	if isFunction(content) then
+		return function()
+			-- recursively prepare the function results and execute
+			local value = content()
+			return prepareContent(value, escaped)()
+		end
+	elseif isList(content) then
+		return function()
+			-- recursively concatonate the results
+			local result = ""
+			for _,item in ipairs(content) do
+				result = result .. prepareContent(item, escaped)()
+			end
+			return result
+		end
+	elseif content ~= nil then
+		return function()
+			local result = tostring(content)
+			if isEscaped(content, escaped) then
+				result = escape(result)
+			end
+			return result
+		end
+	else
+		return nilContent
+	end
+end
+
 function block:tostring()
-	return block:__tostring()
+	return self:__tostring()
 end
 
 -- Implements the 'tostring' metamethod, converting the block to a string.
 function block:__tostring()
 	local metadata = self._metadata
-	local name, content, attr = metadata.name, metadata.content, metadata.attr
+	local name = escape(metadata.name)
+	local content, attr = metadata.content, metadata.attr
 	local r, a = {}, {}
 
 	if #metadata.pre > 0 then
-		r[#r + 1] = evaluate(metadata.pre)
+		for _,pre in ipairs(metadata.pre) do
+			r[#r + 1] = pre()
+		end
 	end
 
 	if metadata.open then
@@ -107,14 +135,14 @@ function block:__tostring()
 	    r[#r + 1] = "<"
 	    r[#r + 1] = name
 	    if attr then
-	        for k, v in pairs(attr) do
+			for k, v in pairs(attr) do
+				local value = v()
 	            if type(k) == "number" then
-					local value = evaluate(v)
 					if value and value ~= "" then
 						a[#a + 1] = value
 					end
 	            else
-	                a[#a + 1] = k .. '="' .. evaluate(v) .. '"'
+	                a[#a + 1] = escape(k) .. '="' .. value .. '"'
 	            end
 	        end
 	        if #a > 0 then
@@ -125,12 +153,14 @@ function block:__tostring()
 		if content then
 			r[#r + 1] = ">"
 		else
-			r[#r + 1] = " />"
+			r[#r + 1] = "/>"
 		end
 	end
-    if content then
-		r[#r + 1] = evaluate(content)
-		
+	if content then
+		for _,v in ipairs(content) do
+			r[#r + 1] = v()
+		end
+
 		if metadata.close then
 			r[#r + 1] = metadata.close
 		else
@@ -139,39 +169,74 @@ function block:__tostring()
 	        r[#r + 1] = ">"
 		end
     end
-	
+
 	if #metadata.post > 0 then
-		r[#r + 1] = evaluate(metadata.post)
+		for _,post in ipairs(metadata.post) do
+			r[#r + 1] = post()
+		end
 	end
-	
+
     return concat(r)
 end
 
--- Prepends the content inside the block.
-function block:prepend(newContent, unescaped)
+function block:_content()
 	local content = self._metadata.content
 	if not content then
 		content = {}
 		self._metadata.content = content
 	end
-	if not isBlock(newContent) and not unescaped then
-		newContent = escaped.new(newContent)
-	end
-	table.insert(content, 1, newContent)
+	return content
+end
+
+--- cp.web.html:prepend(newContent[, escaped]) -> self
+--- Method
+--- Prepends the content. If specified, the `escaped` value will override any default escaping for the content type.
+---
+--- Parameters:
+--- * newContent		- The content to prepend to the contents of the HTML block.
+--- * escaped			- May be set to override default escaping for the content.
+---
+--- Returns:
+--- * The same HTML block instance.
+---
+--- Notes:
+--- * The `newContent` may be almost any value. The default handling is below:
+--- ** `cp.web.html` instance: Any other HTML block can be added. Default escaping: `false`.
+--- ** `function`: Functions will be executed every time the HTML block is converted to a string. Default escaping: whatever the default is for the returned value.
+--- ** `list`: Tables which are lists will be iterrated and each item will be evaluated each time the HTML block is converted to a string. Default escaping: the default for each item.
+--- ** _everything else_: Converted to a string via the `tostring` function. Default escaping: `true`.
+function block:prepend(newContent, escaped)
+	local content = self:_content()
+
+	newContent = prepareContent(newContent, escaped)
+	insert(content, 1, newContent)
+
 	return self
 end
 
--- Appends the content inside the block.
-function block:append(newContent, unescaped)
-	local content = self._metadata.content
-	if not content then
-		content = {}
-		self._metadata.content = content
-	end
-	if not isBlock(newContent) and not unescaped then
-		newContent = escaped.new(newContent)
-	end
-	table.insert(content, newContent)
+--- cp.web.html:append(newContent[, escaped]) -> self
+--- Method
+--- Appends the content. If specified, the `escaped` value will override any default escaping for the content type.
+---
+--- Parameters:
+--- * newContent		- The content to append to the contents of the HTML block.
+--- * escaped			- May be set to override default escaping for the content.
+---
+--- Returns:
+--- * The same HTML block instance.
+---
+--- Notes:
+--- * The `newContent` may be almost any value. The default handling is below:
+--- ** `cp.web.html` instance: Any other HTML block can be added. Default escaping: `false`.
+--- ** `function`: Functions will be executed every time the HTML block is converted to a string. Default escaping: whatever the default is for the returned value.
+--- ** `list`: Tables which are lists will be iterrated and each item will be evaluated each time the HTML block is converted to a string. Default escaping: the default for each item.
+--- ** _everything else_: Converted to a string via the `tostring` function. Default escaping: `true`.
+function block:append(newContent, escaped)
+	local content = self:_content()
+
+	newContent = prepareContent(newContent, escaped)
+	insert(content, newContent)
+
 	return self
 end
 
@@ -179,11 +244,11 @@ end
 function block.__concat(left, right)
 	if isBlock(left) then
 		local post = left._metadata.post
-		post[#post+1] = right
+		post[#post+1] = prepareContent(right)
 		return left
 	else
 		local pre = right._metadata.pre
-		pre[#pre+1] = left
+		pre[#pre+1] = prepareContent(left)
 		return right
 	end
 end
@@ -221,15 +286,36 @@ function block.new(name, attr)
 			name	=	name,
 			open	=	openTag(name),
 			close	=	closeTag(name),
-			attr	=	attr,
 			pre		=	{},
 			post	=	{},
 		}
 	}
+
+	if attr then
+		local a = {}
+
+		for k,v in pairs(attr) do
+			a[k] = prepareContent(v, true) -- always escape attributes
+		end
+
+		o._metadata.attr = a
+	end
 	return setmetatable(o, block)
 end
 
 local html = {}
+
+--- cp.web.html.is(value) -> boolean
+--- Function
+--- Checks if the `value` is an `cp.web.html` block.
+---
+--- Parameters:
+--- * value		- the value to check
+---
+--- Returns:
+--- * `true` if it is an HTML block, or `false` otherwise.
+html.is = isBlock
+
 html.__index = function(_, name)
     return function(param, ...)
 		local pType = type(param)

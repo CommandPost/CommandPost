@@ -30,6 +30,7 @@ local dialog                                    = require("hs.dialog")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
+local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -221,26 +222,24 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs then
         deps.prefs
-            :addContent(PRIORITY, [[
-                <style>
-                    .validatePushover {
-                        float:left;
-                        margin-bottom: 10px;
-                    }
-                    .sendTestNotification {
-                        clear: both;
-                        float:left;
-                        margin-top: 5px;
-                        margin-bottom: 10px;
-                    }
-                    .pushoverButtons {
-                        float:left;
-                        margin-left: -15px;
-                        margin-top: 5px;
-                        margin-bottom: 10px;
-                    }
-                </style>
-            ]], true)
+            :addContent(PRIORITY, ui.style ([[
+                .validatePushover {
+                    float:left;
+                    margin-bottom: 10px;
+                }
+                .sendTestNotification {
+                    clear: both;
+                    float:left;
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                }
+                .pushoverButtons {
+                    float:left;
+                    margin-left: -15px;
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                }
+            ]]))
             :addHeading(PRIORITY+1, i18n("pushoverNotifications"))
             :addCheckbox(PRIORITY+2,
                 {
