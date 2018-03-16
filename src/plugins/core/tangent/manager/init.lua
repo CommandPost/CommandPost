@@ -40,6 +40,7 @@ local timer                                     = require("hs.timer")
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 local tools                                     = require("cp.tools")
+local x                                         = require("cp.web.html")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -227,29 +228,30 @@ function mod.writeControlsXML()
         --------------------------------------------------------------------------------
         local currentActionID = 131073 -- Action ID starts at 0x00020001
 
-        local result = ""
-        result = result .. [[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>]] .. "\n"
-        result = result .. [[<TangentWave fileType="ControlSystem" fileVersion="3.0">]] .. "\n"
+        local root = x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
+            --------------------------------------------------------------------------------
+            -- Capabilities:
+            --------------------------------------------------------------------------------
+            x.Capabilities (
+                x.Jog { enabled = true } ..
+                x.Shuttle { enabled = true } ..
+                x.StatusDisplay { lineCount = 3 }
+            ) ..
 
-        --------------------------------------------------------------------------------
-        -- Capabilities:
-        --------------------------------------------------------------------------------
-        result = result .. [[   <Capabilities>]] .. "\n"
-        result = result .. [[       <Jog enabled="true"/>]] .. "\n"
-        result = result .. [[       <Shuttle enabled="false"/>]] .. "\n"
-        result = result .. [[       <StatusDisplay lineCount="3"/>]] .. "\n"
-        result = result .. [[   </Capabilities>]] .. "\n"
+            --------------------------------------------------------------------------------
+            -- Modes:
+            --------------------------------------------------------------------------------
+            x.Modes (function()
+                local modes = x()
+                for modeID, metadata in tools.spairs(mod.MODES) do
+                    modes = modes .. x.Mode {id=modeID} (
+                        x.Name (metadata.name)
+                    )
+                end
+                return modes
+            end)
 
-        --------------------------------------------------------------------------------
-        -- Modes:
-        --------------------------------------------------------------------------------
-        result = result .. [[   <Modes>]] .. "\n"
-        for modeID, metadata in tools.spairs(mod.MODES) do
-            result = result .. [[       <Mode id="]] .. modeID .. [[">]] .. "\n"
-            result = result .. [[           <Name>]] .. metadata.name .. [[</Name>]] .. "\n"
-            result = result .. [[       </Mode>]] .. "\n"
-        end
-        result = result .. [[   </Modes>]] .. "\n"
+        )
 
         --------------------------------------------------------------------------------
         -- Get a list of Handler IDs:
@@ -271,7 +273,7 @@ function mod.writeControlsXML()
         --------------------------------------------------------------------------------
         -- Controls:
         --------------------------------------------------------------------------------
-        result = result .. [[   <Controls>]] .. "\n"
+        local controls = x.Controls {}
         for _, handlerID in pairs(handlerIds) do
 
             --------------------------------------------------------------------------------
@@ -290,7 +292,7 @@ function mod.writeControlsXML()
                     -- Start Group:
                     --------------------------------------------------------------------------------
                     local handlerLabel = i18n(handlerID .. "_action")
-                    result = result .. [[       <Group name="]] .. handlerLabel .. [[">]] .. "\n"
+                    local group = x.Group { name = handlerLabel }
 
                     --------------------------------------------------------------------------------
                     -- Sort table alphabetically by name:
@@ -303,30 +305,27 @@ function mod.writeControlsXML()
                     for _, id in pairs(sortedKeys) do
                         local metadata = customParameter[id]
                         if id == "bindings" then
-                            --------------------------------------------------------------------------------
-                            -- Add Bindings:
-                            --------------------------------------------------------------------------------
-                            result = result .. metadata.xml
+                            -- append the bindings XML unescaped
+                            group( metadata.xml, false)
                         else
                             --------------------------------------------------------------------------------
                             -- Add Parameter:
                             --------------------------------------------------------------------------------
-                            result = result .. [[           <Parameter id="]] .. id .. [[">]] .. "\n"
-                            result = result .. [[               <Name>]] .. metadata.name .. [[</Name>]] .. "\n"
-                            result = result .. [[               <Name9>]] .. metadata.name9 .. [[</Name9>]] .. "\n"
-                            result = result .. [[               <MinValue>]] .. metadata.minValue .. [[</MinValue>]] .. "\n"
-                            result = result .. [[               <MaxValue>]] .. metadata.maxValue .. [[</MaxValue>]] .. "\n"
-                            result = result .. [[               <StepSize>]] .. metadata.stepSize .. [[</StepSize>]] .. "\n"
-                            result = result .. [[           </Parameter>]] .. "\n"
+                            group(
+                                x.Parameter { id = id } (
+                                    x.Name( metadata.name ) ..
+                                    x.Name9( metadata.name9 ) ..
+                                    x.MinValue( metadata.minValue ) ..
+                                    x.MaxValue( metadata.maxValue ) ..
+                                    x.StepSize( metadata.stepSize )
+                                )
+                            )
+
                             currentActionID = currentActionID + 1
                         end
                     end
 
-                    --------------------------------------------------------------------------------
-                    -- End Group:
-                    --------------------------------------------------------------------------------
-                    result = result .. [[       </Group>]] .. "\n"
-
+                    controls:append(group)
                 end
             end
 
@@ -337,16 +336,21 @@ function mod.writeControlsXML()
                 local handler = mod._actionmanager.getHandler(handlerID)
                 if string.sub(handlerID, -7) ~= "widgets" and string.sub(handlerID, -12) ~= "midicontrols" then
                     local handlerLabel = i18n(handler:id() .. "_action")
-                    result = result .. [[       <Group name="]] .. handlerLabel .. [[">]] .. "\n"
+                    local group = x.Group { name = handlerLabel }
+
                     local choices = handler:choices()._choices
                     table.sort(choices, function(a, b) return a.text < b.text end)
+
                     for _, choice in pairs(choices) do
                         local friendlyName = makeStringTangentFriendly(choice.text)
                         if friendlyName and #friendlyName >= 1 then
                             local actionID = string.format("%#010x", currentActionID)
-                            result = result .. [[           <Action id="]] .. actionID .. [[">]] .. "\n"
-                            result = result .. [[               <Name>]] .. friendlyName .. [[</Name>]] .. "\n"
-                            result = result .. [[           </Action>]] .. "\n"
+
+                            group(
+                                x.Action { id = actionID } (
+                                    x.Name (friendlyName)
+                                )
+                            )
                             currentActionID = currentActionID + 1
                             table.insert(mapping, {
                                 [actionID] = {
@@ -356,32 +360,36 @@ function mod.writeControlsXML()
                             })
                         end
                     end
-                    result = result .. [[       </Group>]] .. "\n"
+                    controls:append(group)
                 end
             end
         end
-        result = result .. [[   </Controls>]] .. "\n"
+        root:append(controls)
 
         --------------------------------------------------------------------------------
         -- Default Global Settings:
         --------------------------------------------------------------------------------
-        result = result .. [[   <DefaultGlobalSettings>]] .. "\n"
-        result = result .. [[       <KnobSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <JogDialSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <TrackerballSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <TrackerballDialSensitivity std="5" alt="5"/>]] .. "\n"
-        result = result .. [[       <IndependentPanelBanks enabled="false"/>]] .. "\n"
-        result = result .. [[   </DefaultGlobalSettings>]] .. "\n"
+        root:append(
+            x.DefaultGlobalSettings (
+                x.KnobSensitivity { std = 5, alt = 5 } ..
+                x.JogDialSensitivity { std = 5, alt = 5 } ..
+                x.TrackerballSensitivity { std = 5, alt = 5 } ..
+                x.TrackerballDialSensitivity { std = 5, alt = 5 } ..
+                x.IndependentPanelBanks { enabled = false }
+            )
+        )
 
         --------------------------------------------------------------------------------
         -- End of XML:
         --------------------------------------------------------------------------------
-        result = result .. [[</TangentWave>]]
+
+        local output
+        output = x([[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>]], false) .. root
 
         --------------------------------------------------------------------------------
         -- Write to File & Close:
         --------------------------------------------------------------------------------
-        io.write(result)
+        io.write(tostring(output))
         io.close(controlsFile)
 
         --------------------------------------------------------------------------------
