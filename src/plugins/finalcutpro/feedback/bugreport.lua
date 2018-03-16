@@ -277,7 +277,11 @@ local function navigationCallback(action, webView)
         ]]
         webView:evaluateJavaScript(theScript, function(result, errorMessage)
             if not result then
-                log.ef("Javascript Error: %s", inspect(errorMessage))
+                if errorMessage and type(errorMessage) == "table" and errorMessage.code then
+                    if errorMessage.code ~= 0 then
+                        log.ef("Javascript Error: %s", inspect(errorMessage))
+                    end
+                end
             end
         end)
     end
