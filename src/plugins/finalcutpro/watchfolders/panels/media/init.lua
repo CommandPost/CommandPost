@@ -846,7 +846,7 @@ function mod.init(deps)
 		:addParagraph(11, i18n("watchFolderFCPMediaHelp"), false)
 		:addParagraph(12, "")
 		:addHeading(13, i18n("watchFolders"), 3)
-		:addContent(14, html.div { id=mod.watchFolderTableID } ( mod.generateTable() ))
+		:addContent(14, html.div { id=mod.watchFolderTableID } ( mod.generateTable(), false ))
 		:addButton(15,
 			{
 				label		= i18n("addWatchFolder"),
