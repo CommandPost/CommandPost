@@ -443,6 +443,142 @@ local function convertSingleHexStringToDecimalString(hex)
     return lookup[hex]
 end
 
+
+
+
+--- plugins.core.midi.manager.sendMMC(deviceName, virtual, commandType, parameters) -> boolean
+--- Function
+--- Sends MMC Data to a MIDI Device.
+---
+--- Parameters:
+---  * deviceName - The MIDI Device name.
+---  * virtual - Is this MIDI Device virtual as boolean?
+---  * channelNumber - "00" to "7F", where "7F" is all devices.
+---  * commandType - Command Type as string (see possible options in Notes below)
+---  * parameters - Optional parameters in a table.
+---
+--- Returns:
+---  * `true` if successfully sent otherwise `false`.
+---
+--- Notes:
+---  * The possible MMC commands are:
+---    * STOP
+---    * PLAY
+---    * DEFERRED_PLAY
+---    * FAST_FORWARD
+---    * REWIND
+---    * RECORD_STROBE
+---    * RECORD_EXIT
+---    * RECORD_PAUSE
+---    * PAUSE
+---    * EJECT
+---    * CHASE
+---    * MMC_RESET
+---    * WRITE
+---    * GOTO
+---      * timecode - Timecode as string, in the following format: "hh:mm:ss:fr" (i.e. "12:03:03:13").
+---      * frameRate - Frame Rate as string, possible options include: "24", "25", "30 DF" or "30 NDF".
+---      * subFrame - Subframe as string.
+---    * ERROR
+---    * SHUTTLE
+--- * Example Usage:
+---   ```lua
+---     _plugins("core.midi.manager").sendMMC("CommandPost", false, "7F", "GOTO", {timecode="01:02:03:04", frameRate="25", subFrame="00"})
+---   ```
+function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters)
+    if deviceName and virtual then
+        deviceName = "virtual_" .. deviceName
+    end
+    local device
+    if mod._midiDevices and mod._midiDevices[deviceName] then
+        device = mod._midiDevices[deviceName]
+    else
+        log.ef("MIDI Device not found: %s (virtual: %s)", deviceName, virtual)
+        return false
+    end
+
+    local parameterString
+    if commandType == "STOP" then
+    elseif commandType == "PLAY" then
+    elseif commandType == "DEFERRED_PLAY" then
+    elseif commandType == "FAST_FORWARD" then
+    elseif commandType == "REWIND" then
+    elseif commandType == "RECORD_STROBE" then
+    elseif commandType == "RECORD_EXIT" then
+    elseif commandType == "RECORD_PAUSE" then
+    elseif commandType == "PAUSE" then
+    elseif commandType == "EJECT" then
+    elseif commandType == "CHASE" then
+    elseif commandType == "MMC_RESET" then
+    elseif commandType == "WRITE" then
+    elseif commandType == "GOTO" then
+        if parameters and type(parameters) == "table" and parameters.timecode and parameters.frameRate and parameters.subFrame then
+
+            local timecode = parameters.timecode
+            local frameRate = parameters.frameRate
+            local subFrame = parameters.subFrame
+
+            --------------------------------------------------------------------------------
+            -- Only handle valid timecode values:
+            --------------------------------------------------------------------------------
+            if not string.find(timecode, "%d%d:%d%d:%d%d:%d%d") then
+                log.df("Invalid GOTO MMC Timecode: %s", timecode)
+                return
+            end
+
+            --------------------------------------------------------------------------------
+            -- Remove timecode formatting:
+            --------------------------------------------------------------------------------
+            local value = string.gsub(timecode, ":", "")
+
+            local decimalHours = tonumber(string.sub(value, 1, 2))
+            local decimalMinutes = tonumber(string.sub(value, 3, 4))
+            local decimalSeconds = tonumber(string.sub(value, 5, 6))
+            local decimalFrames = tonumber(string.sub(value, 7, 8))
+
+            --------------------------------------------------------------------------------
+            -- hr:
+            -- 7 65 43210
+            -- 0 yy zzzzz
+            --      yy: 00 = 24fps
+            --          01 = 25fps
+            --          10 = 30fps (drop frame)
+            --          11 = 30fps (non drop frame)
+            --      zzzzz: hours (00 -> 23)
+            --------------------------------------------------------------------------------
+
+            local frameRateAsDecimalCode = tonumber(mod.MMC_TIMECODE_TYPE[frameRate])
+
+            local hexHours = string.format("%02x", (frameRateAsDecimalCode << 5) + decimalHours)
+
+            --local hexHours = string.format("%02x", decimalHours)
+            local hexMinutes = string.format("%02x", decimalMinutes)
+            local hexSeconds = string.format("%02x", decimalSeconds)
+            local hexFrames = string.format("%02x", decimalFrames)
+
+            parameterString = "06 01 " .. hexHours .. " " .. hexMinutes .. " " .. hexSeconds .. " " .. hexFrames .. " " .. subFrame
+
+        else
+            log.ef("Bad GOTO MMC Parameters: %s", parameters and inspect(parameters))
+        end
+
+
+    elseif commandType == "ERROR" then
+    elseif commandType == "SHUTTLE" then
+    else
+        log.df("Invalid MMC Command: %s", commandType)
+        return false
+    end
+
+
+    local message = "F0 7F " .. channelNumber .. " 06 " .. mod.MMC_COMMAND_TYPE[commandType] .. parameterString .. " F7"
+
+    log.df("Message to send: %s", message)
+
+    device:sendSysex(message)
+
+end
+
 --- plugins.core.midi.manager.processMMC(sysexData) -> string, ...
 --- Function
 --- Process MMC Data
@@ -469,9 +605,9 @@ end
 ---    * MMC_RESET
 ---    * WRITE
 ---    * GOTO
----      * Timecode as string, in the following format: "hh:mm:ss:fr" (i.e. "12:03:03:13").
----      * Frame Rate as string, possible options include: "24", "25", "30 DF" or "30 NDF".
----      * Subframe as string.
+---      * timecode - Timecode as string, in the following format: "hh:mm:ss:fr" (i.e. "12:03:03:13").
+---      * frameRate - Frame Rate as string, possible options include: "24", "25", "30 DF" or "30 NDF".
+---      * subframe - Subframe as string.
 ---    * ERROR
 ---    * SHUTTLE
 function mod.processMMC(sysexData)
@@ -637,6 +773,27 @@ function mod.processMMC(sysexData)
     return nil
 end
 
+--- plugins.core.midi.manager.MMC_COMMAND_TYPE -> table
+--- Constant
+--- MMC Command Types
+mod.MMC_COMMAND_TYPE = {
+    ["STOP"]                = "01",
+    ["PLAY"]                = "02",
+    ["DEFERRED_PLAY"]       = "03",
+    ["FAST_FORWARD"]        = "04",
+    ["REWIND"]              = "05",
+    ["RECORD_STROBE"]       = "06",
+    ["RECORD_EXIT"]         = "07",
+    ["RECORD_PAUSE"]        = "08",
+    ["PAUSE"]               = "09",
+    ["EJECT"]               = "0A",
+    ["CHASE"]               = "0B",
+    ["MMC_RESET"]           = "0D",
+    ["WRITE"]               = "40",
+    ["GOTO"]                = "44",
+    ["SHUTTLE"]             = "47",
+}
+
 --- plugins.core.midi.manager.MMC_TIMECODE_TYPE -> table
 --- Constant
 --- MMC Timecode Type
@@ -645,6 +802,12 @@ mod.MMC_TIMECODE_TYPE = {
     ["01"] = "25",              -- 25 fps (EBU)
     ["10"] = "30 DF",           -- 30 fps (SMPTE drop-frame)
     ["11"] = "30 NDF",          -- 30 fps (SMPTE non-drop frame)
+
+    -- REVERSE:
+    ["24"] = "00",              -- 24 fps (Film)
+    ["25"] = "01",              -- 25 fps (EBU)
+    ["30 DF"] = "10",           -- 30 fps (SMPTE drop-frame)
+    ["30 NDF"] = "11",          -- 30 fps (SMPTE non-drop frame)
 }
 
 --- plugins.core.midi.manager.MTC_MESSAGE_TYPE -> table
@@ -1096,13 +1259,13 @@ function mod.start()
 		if not mod._midiDevices[deviceName] then
 		    if fnutils.contains(usedDevices, deviceName) then
                 if string.sub(deviceName, 1, 8) == "virtual_" then
-                    --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
+                    log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)
                     end
                 else
-                    --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
+                    log.df("Creating new Physical MIDI Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.new(deviceName)
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)
@@ -1199,6 +1362,7 @@ end
 mod.transmitMMC = config.prop("transmitMMC", false):watch(function(enabled)
     if enabled then
         log.df("Transmit MMC Enabled!")
+        mod.start()
     else
         log.df("Transmit MMC Disabled!")
     end
@@ -1222,6 +1386,7 @@ end)
 mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
     if enabled then
         log.df("Transmit MTC Enabled!")
+        mod.start()
     else
         log.df("Transmit MTC Disabled!")
     end
@@ -1338,7 +1503,7 @@ function plugin.postInit(deps, env)
     --------------------------------------------------------------------------------
     -- Start Plugin:
     --------------------------------------------------------------------------------
-	if mod.enabled() or mod.listenMTC() or mod.listenMMC() then
+	if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
 		mod.start()
 	end
 
