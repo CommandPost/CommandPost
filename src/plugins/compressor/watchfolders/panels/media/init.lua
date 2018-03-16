@@ -802,7 +802,7 @@ function mod.init(deps, env)
             try {
                 var p = {};
                 p["action"] = "refresh";
-                var result = { id: {{ id }}", params: p };
+                var result = { id: "{{ id }}", params: p };
                 webkit.messageHandlers.watchfolders.postMessage(result);
             } catch(err) {
                 alert('An error has occurred. Does the controller exist yet?');
