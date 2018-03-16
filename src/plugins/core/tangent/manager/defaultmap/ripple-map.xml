@@ -7,7 +7,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -27,7 +27,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -99,7 +99,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -163,7 +163,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -253,7 +253,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -269,7 +269,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -285,7 +285,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -301,7 +301,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -317,7 +317,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -333,7 +333,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -349,7 +349,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -365,7 +365,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
@@ -381,7 +381,7 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
