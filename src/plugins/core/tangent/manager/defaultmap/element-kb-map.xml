@@ -7,7 +7,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -27,7 +27,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -145,7 +145,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -241,7 +241,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -309,7 +309,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -325,7 +325,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -341,7 +341,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -357,7 +357,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -373,7 +373,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -389,7 +389,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -405,7 +405,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -421,7 +421,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
@@ -437,7 +437,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
