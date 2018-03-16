@@ -234,7 +234,7 @@ function mod.writeControlsXML()
             --------------------------------------------------------------------------------
             x.Capabilities (
                 x.Jog { enabled = true } ..
-                x.Shuttle { enabled = true } ..
+                x.Shuttle { enabled = false } ..
                 x.StatusDisplay { lineCount = 3 }
             ) ..
 
