@@ -490,7 +490,7 @@ function mod.init()
                 ["stepSize"] = 0.1,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():temperature() end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():temperatureSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():temperatureSlider():setValue(0) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():temperatureSlider():setValue(5000) end,
             },
             ["0x00030034"] = {
                 ["name"] = "Color Wheel - Tint",
@@ -525,7 +525,7 @@ function mod.init()
                 ["stepSize"] = 0.01,
                 ["getValue"] = function() return fcp:inspector():color():colorWheels():mix() end,
                 ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():mixSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():mixSlider():setValue(0) end,
+                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():mixSlider():setValue(1) end,
             },
 
             --------------------------------------------------------------------------------

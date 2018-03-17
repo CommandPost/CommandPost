@@ -209,6 +209,11 @@
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
                     <Bank>
+                        <Control type="Button" number="9"> <!-- Wave Alt -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
                         <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
                             <Mapping mode="Std">
                                 <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->

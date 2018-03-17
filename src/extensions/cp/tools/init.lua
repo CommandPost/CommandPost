@@ -434,7 +434,7 @@ function tools.getThunderboltDevices()
         local result = "THUNDERBOLT DEVICES:\n"
         local numberOfDevices = 0
         for _, value in pairs(devices) do
-            if string.sub(v, 1, 23) ~= "Vendor Name: Apple Inc." then
+            if string.sub(value, 1, 23) ~= "Vendor Name: Apple Inc." then
                 numberOfDevices = numberOfDevices + 1
                 local newResult = string.gsub(value, "Vendor Name: ", "- ")
                 newResult = string.gsub(newResult, "\nDevice Name: ", ": ")

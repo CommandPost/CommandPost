@@ -7,7 +7,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="18"> <!-- Element-Mf Button B -->
@@ -115,7 +115,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="18"> <!-- Element-Mf Button B -->
@@ -228,7 +228,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -327,7 +327,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="18"> <!-- Element-Mf Button B -->
@@ -453,7 +453,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -552,7 +552,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -651,7 +651,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -750,7 +750,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -849,7 +849,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -948,7 +948,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -1047,7 +1047,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -1146,7 +1146,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -1245,7 +1245,7 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Mf Button A -->
                             <Mapping mode="Std">
-                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
