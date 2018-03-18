@@ -3,7 +3,6 @@ local test 		= require("cp.test")
 return test.suite("cp"):with(
 	"tests.test_fcp",
 	"tests.test_fcpplugins",
-	"tests.test_html",
 	"tests.test_ids",
 	"tests.test_just",
 	"tests.test_localized",
@@ -13,5 +12,7 @@ return test.suite("cp"):with(
 	"tests.test_text",
 	"tests.test_utf16",
 	"cp.ui.notifier_test",
-	"cp.is_test"
+	"cp.is_test",
+	"cp.web.html_test",
+	"cp.web.xml_test"
 )

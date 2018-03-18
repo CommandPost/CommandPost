@@ -40,7 +40,7 @@ local timer                                     = require("hs.timer")
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 local tools                                     = require("cp.tools")
-local x                                         = require("cp.web.html")
+local x                                         = require("cp.web.xml")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:

@@ -38,6 +38,19 @@ local function is_nothing(value)
     return value == nil
 end
 
+--- cp.is.something(value) -> boolean
+--- Function
+--- Check if the value is not `nil`.
+---
+--- Parameters:
+--- * value     - the value to check
+---
+--- Returns:
+--- * `true` if it matches, `false` if not.
+local function is_something(value)
+    return value ~= nil
+end
+
 --- cp.is.string(value) -> boolean
 --- Function
 --- Check if the value is a string.
@@ -223,6 +236,7 @@ end
 
 local is = {
     nothing         = is_nothing,
+    something       = is_something,
     string          = is_string,
     fn              = is_fn,
     number          = is_number,
