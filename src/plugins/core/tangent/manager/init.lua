@@ -533,103 +533,123 @@ end
 --- Tangent Manager Callback Function
 ---
 --- Parameters:
----  * id - The ID of the Tangent Message
----  * metadata - A table of metadata
+---  * commands - A table of Tangent commands.
 ---
 --- Returns:
 ---  * None
-function mod.callback(id, metadata)
+function mod.callback(commands)
 
-    --log.df("Callback Triggered: %s", id)
+    --------------------------------------------------------------------------------
+    -- Process each individual command in the callback table:
+    --------------------------------------------------------------------------------
+    for _, command in ipairs(commands) do
 
-    if id == "CONNECTED" then
-        --------------------------------------------------------------------------------
-        -- Connected:
-        --------------------------------------------------------------------------------
-        log.df("Connection To Tangent Hub successfully established.")
-    elseif id == "INITIATE_COMMS" then
-        --------------------------------------------------------------------------------
-        -- InitiateComms:
-        --------------------------------------------------------------------------------
-        --[[
-        log.df("InitiateComms Received:")
-        log.df("    Protocol Revision: %s", metadata.protocolRev)
-        log.df("    Number of Panels: %s", metadata.numberOfPanels)
-        for _, v in pairs(metadata.panels) do
-            log.df("        Panel Type: %s (%s)", v.panelType, string.format("%#010x", v.panelID))
-        end
-        --]]
+        local id = command.id
+        local metadata = command.metadata
 
-        --------------------------------------------------------------------------------
-        -- Display CommandPost Version on Screen:
-        --------------------------------------------------------------------------------
-        timer.doAfter(1, function()
-            tangent.send("DISPLAY_TEXT", {["stringOne"]="CommandPost " .. config.appVersion,["stringOneDoubleHeight"]=false})
-        end)
-        --------------------------------------------------------------------------------
-        -- Update Mode:
-        --------------------------------------------------------------------------------
-        mod.update()
-    elseif id == "ACTION_ON" then
-        --------------------------------------------------------------------------------
-        -- Action On:
-        --------------------------------------------------------------------------------
-        if metadata and metadata.actionID then
-            local actionID = string.format("%#010x", metadata.actionID)
-            local mapping = nil
-            for _, v in pairs(mod._mapping) do
-                if v[actionID] then
-                    mapping = v[actionID]
+        if id == "CONNECTED" then
+            --------------------------------------------------------------------------------
+            -- Connected:
+            --------------------------------------------------------------------------------
+            log.df("Connection To Tangent Hub successfully established.")
+        elseif id == "INITIATE_COMMS" then
+            --------------------------------------------------------------------------------
+            -- InitiateComms:
+            --------------------------------------------------------------------------------
+            log.df("InitiateComms Received:")
+            log.df("    Protocol Revision: %s", metadata.protocolRev)
+            log.df("    Number of Panels: %s", metadata.numberOfPanels)
+            for _, v in pairs(metadata.panels) do
+                log.df("        Panel Type: %s (%s)", v.panelType, string.format("%#010x", v.panelID))
+            end
+
+            --------------------------------------------------------------------------------
+            -- Display CommandPost Version on Screen:
+            --------------------------------------------------------------------------------
+            timer.doAfter(1, function()
+                tangent.send("DISPLAY_TEXT", {["stringOne"]="CommandPost " .. config.appVersion,["stringOneDoubleHeight"]=false})
+            end)
+            --------------------------------------------------------------------------------
+            -- Update Mode:
+            --------------------------------------------------------------------------------
+            mod.update()
+        elseif id == "ACTION_ON" then
+            --------------------------------------------------------------------------------
+            -- Action On:
+            --------------------------------------------------------------------------------
+            if metadata and metadata.actionID then
+                local actionID = string.format("%#010x", metadata.actionID)
+                local mapping = nil
+                for _, v in pairs(mod._mapping) do
+                    if v[actionID] then
+                        mapping = v[actionID]
+                    end
+                end
+                if mapping then
+                    if string.sub(mapping.handlerID, 1, 4) == "fcpx" and fcp.isFrontmost() == false then
+                        --log.df("Final Cut Pro isn't actually frontmost so ignoring.")
+                        return
+                    end
+                    local handler = mod._actionmanager.getHandler(mapping.handlerID)
+                    handler:execute(mapping.action)
+                else
+                    log.ef("Could not find a Mapping with Action ID: '%s'", actionID)
                 end
             end
-            if mapping then
-                if string.sub(mapping.handlerID, 1, 4) == "fcpx" and fcp.isFrontmost() == false then
+        elseif id == "PARAMETER_CHANGE" then
+            --------------------------------------------------------------------------------
+            -- Parameter Change:
+            --------------------------------------------------------------------------------
+            if metadata and metadata.increment and metadata.paramID then
+                if fcp.isFrontmost() == false then
                     --log.df("Final Cut Pro isn't actually frontmost so ignoring.")
                     return
                 end
-                local handler = mod._actionmanager.getHandler(mapping.handlerID)
-                handler:execute(mapping.action)
-            else
-                log.ef("Could not find a Mapping with Action ID: '%s'", actionID)
-            end
-        end
-    elseif id == "PARAMETER_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Parameter Change:
-        --------------------------------------------------------------------------------
-        if metadata and metadata.increment and metadata.paramID then
-            if fcp.isFrontmost() == false then
-                --log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-                return
-            end
 
+                local paramID = string.format("%#010x", metadata.paramID)
+                local increment = metadata.increment
+
+                local customParameter = getCustomParameter(paramID)
+                if customParameter then
+                    --------------------------------------------------------------------------------
+                    -- Shift Value:
+                    --------------------------------------------------------------------------------
+                    local ok, result = xpcall(function()
+                        return customParameter.shiftValue(increment)
+                    end, debug.traceback)
+                    if not ok then
+                        log.ef("Error while executing Parameter Change: %s", result)
+                        return nil
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Send Values back to Tangent Hub:
+                    --------------------------------------------------------------------------------
+                    local value
+                    ok, value = xpcall(function()
+                        return customParameter.getValue()
+                    end, debug.traceback)
+                    if not ok then
+                        log.ef("Error while trying to send values back to Tangent during Parameter Change: %s", result)
+                        return nil
+                    end
+                    if value then
+                        tangent.send("PARAMETER_VALUE", {
+                            ["paramID"] = paramID,
+                            ["value"] = value,
+                            ["atDefault"] = false,
+                        })
+                    end
+                end
+            end
+        elseif id == "PARAMETER_VALUE_REQUEST" then
+            --------------------------------------------------------------------------------
+            -- Parameter Value Request:
+            --------------------------------------------------------------------------------
             local paramID = string.format("%#010x", metadata.paramID)
-            local increment = metadata.increment
-
             local customParameter = getCustomParameter(paramID)
             if customParameter then
-                --------------------------------------------------------------------------------
-                -- Shift Value:
-                --------------------------------------------------------------------------------
-                local ok, result = xpcall(function()
-                    return customParameter.shiftValue(increment)
-                end, debug.traceback)
-                if not ok then
-                    log.ef("Error while executing Parameter Change: %s", result)
-                    return nil
-                end
-
-                --------------------------------------------------------------------------------
-                -- Send Values back to Tangent Hub:
-                --------------------------------------------------------------------------------
-                local value
-                ok, value = xpcall(function()
-                    return customParameter.getValue()
-                end, debug.traceback)
-                if not ok then
-                    log.ef("Error while trying to send values back to Tangent during Parameter Change: %s", result)
-                    return nil
-                end
+                local value = customParameter.getValue()
                 if value then
                     tangent.send("PARAMETER_VALUE", {
                         ["paramID"] = paramID,
@@ -638,136 +658,120 @@ function mod.callback(id, metadata)
                     })
                 end
             end
-        end
-    elseif id == "PARAMETER_VALUE_REQUEST" then
-        --------------------------------------------------------------------------------
-        -- Parameter Value Request:
-        --------------------------------------------------------------------------------
-        local paramID = string.format("%#010x", metadata.paramID)
-        local customParameter = getCustomParameter(paramID)
-        if customParameter then
-            local value = customParameter.getValue()
-            if value then
-                tangent.send("PARAMETER_VALUE", {
-                    ["paramID"] = paramID,
-                    ["value"] = value,
-                    ["atDefault"] = false,
+        elseif id == "ACTION_OFF" then
+            --------------------------------------------------------------------------------
+            -- Action Off:
+            --------------------------------------------------------------------------------
+            --
+            -- A key has been released.
+            --
+            log.df("A key has been released.")
+        elseif id == "PARAMETER_RESET" then
+            --------------------------------------------------------------------------------
+            -- Parameter Reset:
+            --------------------------------------------------------------------------------
+            local paramID = string.format("%#010x", metadata.paramID)
+            local customParameter = getCustomParameter(paramID)
+            if customParameter then
+                customParameter.resetValue()
+            end
+        elseif id == "TRANSPORT" then
+            --------------------------------------------------------------------------------
+            -- Transport:
+            --------------------------------------------------------------------------------
+            if fcp.isFrontmost() then
+                if metadata.jogValue == 1 then
+                    fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
+                elseif metadata.jogValue == -1 then
+                    fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
+                end
+            end
+        elseif id == "MENU_CHANGE" then
+            --------------------------------------------------------------------------------
+            -- Menu Change:
+            --------------------------------------------------------------------------------
+            log.df("Menu Change")
+        elseif id == "MENU_RESET" then
+            --------------------------------------------------------------------------------
+            -- Menu Reset:
+            --------------------------------------------------------------------------------
+            log.df("Menu Reset")
+        elseif id == "MENU_STRING_REQUEST" then
+            --------------------------------------------------------------------------------
+            -- Menu String Request:
+            --------------------------------------------------------------------------------
+            log.df("Menu String Request")
+        elseif id == "MODE_CHANGE" then
+            --------------------------------------------------------------------------------
+            -- Mode Change:
+            --------------------------------------------------------------------------------
+            --log.df("Mode Change: %s", inspect(metadata))
+
+            local activeGroup = mod.activeGroup()
+            local modeID = metadata and metadata.modeID
+
+            if activeGroup and modeID then
+                local tangentID = getTangentIDFromGroupID(activeGroup)
+                if modeID ~= tangentID then
+                    local currentSubGroup = mod.currentSubGroup()
+                    currentSubGroup[activeGroup] = modeID
+                    mod.currentSubGroup(currentSubGroup)
+                    --log.df("SAVING SUBGROUP: %s, %s", activeGroup, modeID)
+                end
+
+                --------------------------------------------------------------------------------
+                -- Tell Tangent to Change Mode:
+                --------------------------------------------------------------------------------
+                tangent.send("MODE_VALUE", {
+                    ["modeID"] = modeID
                 })
             end
-        end
-    elseif id == "ACTION_OFF" then
-        --------------------------------------------------------------------------------
-        -- Action Off:
-        --------------------------------------------------------------------------------
-        --
-        -- A key has been released.
-        --
-        log.df("A key has been released.")
-    elseif id == "PARAMETER_RESET" then
-        --------------------------------------------------------------------------------
-        -- Parameter Reset:
-        --------------------------------------------------------------------------------
-        local paramID = string.format("%#010x", metadata.paramID)
-        local customParameter = getCustomParameter(paramID)
-        if customParameter then
-            customParameter.resetValue()
-        end
-    elseif id == "TRANSPORT" then
-        --------------------------------------------------------------------------------
-        -- Transport:
-        --------------------------------------------------------------------------------
-        if fcp.isFrontmost() then
-            if metadata.jogValue == 1 then
-                fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
-            elseif metadata.jogValue == -1 then
-                fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
-            end
-        end
-    elseif id == "MENU_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Menu Change:
-        --------------------------------------------------------------------------------
-        log.df("Menu Change")
-    elseif id == "MENU_RESET" then
-        --------------------------------------------------------------------------------
-        -- Menu Reset:
-        --------------------------------------------------------------------------------
-        log.df("Menu Reset")
-    elseif id == "MENU_STRING_REQUEST" then
-        --------------------------------------------------------------------------------
-        -- Menu String Request:
-        --------------------------------------------------------------------------------
-        log.df("Menu String Request")
-    elseif id == "MODE_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Mode Change:
-        --------------------------------------------------------------------------------
-        --log.df("Mode Change: %s", inspect(metadata))
-
-        local activeGroup = mod.activeGroup()
-        local modeID = metadata and metadata.modeID
-
-        if activeGroup and modeID then
-            local tangentID = getTangentIDFromGroupID(activeGroup)
-            if modeID ~= tangentID then
-                local currentSubGroup = mod.currentSubGroup()
-                currentSubGroup[activeGroup] = modeID
-                mod.currentSubGroup(currentSubGroup)
-                --log.df("SAVING SUBGROUP: %s, %s", activeGroup, modeID)
-            end
-
+        elseif id == "UNMANAGED_PANEL_CAPABILITIES" then
             --------------------------------------------------------------------------------
-            -- Tell Tangent to Change Mode:
+            -- Unmanaged Panel Capabilities:
+            --
+            -- Only used when working in Unmanaged panel mode.
             --------------------------------------------------------------------------------
-            tangent.send("MODE_VALUE", {
-                ["modeID"] = modeID
-            })
+            log.df("Unmanaged Panel Capabilities")
+        elseif id == "UNMANAGED_BUTTON_DOWN" then
+            --------------------------------------------------------------------------------
+            -- Unmanaged Button Down:
+            --
+            -- Only used when working in Unmanaged panel mode.
+            --------------------------------------------------------------------------------
+            log.df("Unmanaged Button Down")
+        elseif id == "UNMANAGED_BUTTON_UP" then
+            --------------------------------------------------------------------------------
+            -- Unmanaged Button Up:
+            --
+            -- Only used when working in Unmanaged panel mode.
+            --------------------------------------------------------------------------------
+            log.df("Unmanaged Button Up")
+        elseif id == "UNMANAGED_ENCODER_CHANGE" then
+            --------------------------------------------------------------------------------
+            -- Unmanaged Encoder Change:
+            --
+            -- Only used when working in Unmanaged panel mode.
+            --------------------------------------------------------------------------------
+            log.df("Unmanaged Encoder Change")
+        elseif id == "UNMANAGED_DISPLAY_REFRESH" then
+            --------------------------------------------------------------------------------
+            -- Unmanaged Display Refresh:
+            --
+            -- Only used when working in Unmanaged panel mode.
+            --------------------------------------------------------------------------------
+            log.df("Unmanaged Display Refresh")
+        elseif id == "PANEL_CONNECTION_STATE" then
+            --------------------------------------------------------------------------------
+            -- Panel Connection State:
+            --
+            -- Sent in response to a PanelConnectionStatesRequest (0xA5) command to report
+            -- the current connected/disconnected status of a configured panel.
+            --------------------------------------------------------------------------------
+            log.df("Panel Connection State")
+        else
+            log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, metadata and inspect(metadata))
         end
-    elseif id == "UNMANAGED_PANEL_CAPABILITIES" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Panel Capabilities:
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --------------------------------------------------------------------------------
-        log.df("Unmanaged Panel Capabilities")
-    elseif id == "UNMANAGED_BUTTON_DOWN" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Button Down:
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --------------------------------------------------------------------------------
-        log.df("Unmanaged Button Down")
-    elseif id == "UNMANAGED_BUTTON_UP" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Button Up:
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --------------------------------------------------------------------------------
-        log.df("Unmanaged Button Up")
-    elseif id == "UNMANAGED_ENCODER_CHANGE" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Encoder Change:
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --------------------------------------------------------------------------------
-        log.df("Unmanaged Encoder Change")
-    elseif id == "UNMANAGED_DISPLAY_REFRESH" then
-        --------------------------------------------------------------------------------
-        -- Unmanaged Display Refresh:
-        --
-        -- Only used when working in Unmanaged panel mode.
-        --------------------------------------------------------------------------------
-        log.df("Unmanaged Display Refresh")
-    elseif id == "PANEL_CONNECTION_STATE" then
-        --------------------------------------------------------------------------------
-        -- Panel Connection State:
-        --
-        -- Sent in response to a PanelConnectionStatesRequest (0xA5) command to report
-        -- the current connected/disconnected status of a configured panel.
-        --------------------------------------------------------------------------------
-        log.df("Panel Connection State")
-    else
-        log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, metadata and inspect(metadata))
     end
 end
 

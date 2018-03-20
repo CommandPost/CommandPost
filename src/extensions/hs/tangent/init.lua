@@ -25,7 +25,7 @@ local fs                                        = require("hs.fs")
 local socket                                    = require("hs.socket")
 local timer                                     = require("hs.timer")
 
-local unpack, pack 								= string.unpack, string.pack
+local unpack, pack                              = string.unpack, string.pack
 
 --------------------------------------------------------------------------------
 --
@@ -252,9 +252,77 @@ local function booleanToByteString(value)
     end
 end
 
+-- validCallback() -> boolean
+-- Function
+-- Checks to see if the callback is valid.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if valid otherwise `false`.
+local function validCallback()
+    return mod._callback and type(mod._callback) == "function"
+end
+
+-- resetBuffer() -> none
+-- Function
+-- Resets the buffer.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function resetBuffer()
+    for k,_ in pairs(mod._buffer) do
+      mod._buffer[k] = nil
+    end
+    mod._buffer = nil
+    mod._buffer = {}
+end
+
+-- addCommandToBuffer(id, metadata) -> none
+-- Function
+-- Adds a command to the buffer.
+--
+-- Parameters:
+--  * id - The ID of the command as a string.
+--  * metadata - A table containing all of the metadata of the command.
+--
+-- Returns:
+--  * None
+local function addCommandToBuffer(id, metadata)
+    table.insert(mod._buffer, {
+        ["id"] = id,
+        ["metadata"] = metadata,
+    })
+end
+
+-- processBuffer() -> none
+-- Function
+-- Triggers the callback using the contents of the buffer.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function processBuffer()
+    --------------------------------------------------------------------------------
+    -- Trigger the callback:
+    --------------------------------------------------------------------------------
+    mod._callback(mod._buffer)
+
+    --------------------------------------------------------------------------------
+    -- Reset the buffer:
+    --------------------------------------------------------------------------------
+    resetBuffer()
+end
+
 -- processHubCommand(data) -> none
 -- Function
--- Processes a HUB Command.
+-- Processes a single HUB Command.
 --
 -- Parameters:
 --  * data - The raw data from the socket.
@@ -301,8 +369,8 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         -- Trigger callback:
         --------------------------------------------------------------------------------
-        if protocolRev and numberOfPanels and mod._callback then
-            mod._callback("INITIATE_COMMS", {
+        if protocolRev and numberOfPanels and validCallback() then
+            addCommandToBuffer("INITIATE_COMMS", {
                 ["protocolRev"] = protocolRev,
                 ["numberOfPanels"] = numberOfPanels,
                 ["panels"] = panels,
@@ -331,15 +399,15 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         local paramID = byteStringToNumber(data, 5, 4)
         local increment = byteStringToFloat(data, 9, 4)
-        if paramID and increment and mod._callback then
-            mod._callback("PARAMETER_CHANGE", {
+        if paramID and increment and validCallback() then
+            addCommandToBuffer("PARAMETER_CHANGE", {
                 ["paramID"] = paramID,
                 ["increment"] = increment,
                 ["data"] = data,
             })
         else
             log.ef("Error translating PARAMETER_CHANGE.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -356,14 +424,14 @@ local function processHubCommand(data)
         -- paramID: The ID value of the parameter (Unsigned Int)
         --------------------------------------------------------------------------------
         local paramID = byteStringToNumber(data, 5, 4)
-        if paramID and mod._callback then
-            mod._callback("PARAMETER_RESET", {
+        if paramID then
+            addCommandToBuffer("PARAMETER_RESET", {
                 ["paramID"] = paramID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating PARAMETER_RESET.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -378,14 +446,14 @@ local function processHubCommand(data)
         -- paramID: The ID value of the parameter (Unsigned Int)
         --------------------------------------------------------------------------------
         local paramID = byteStringToNumber(data, 5, 4)
-        if paramID and mod._callback then
-            mod._callback("PARAMETER_VALUE_REQUEST", {
+        if paramID then
+            addCommandToBuffer("PARAMETER_VALUE_REQUEST", {
                 ["paramID"] = paramID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating PARAMETER_VALUE_REQUEST.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -405,15 +473,15 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         local menuID = byteStringToNumber(data, 5, 4)
         local increment = byteStringToNumber(data, 9, 4, true)
-        if menuID and increment and mod._callback then
-            mod._callback("MENU_CHANGE", {
+        if menuID and increment then
+            addCommandToBuffer("MENU_CHANGE", {
                 ["menuID"] = menuID,
                 ["increment"] = increment,
                 ["data"] = data,
             })
         else
             log.ef("Error translating MENU_CHANGE.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -427,14 +495,14 @@ local function processHubCommand(data)
         -- menuID: The ID value of the menu (Unsigned Int)
         --------------------------------------------------------------------------------
         local menuID = byteStringToNumber(data, 5, 4)
-        if menuID and mod._callback then
-            mod._callback("MENU_RESET", {
+        if menuID then
+            addCommandToBuffer("MENU_RESET", {
                 ["menuID"] = menuID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating MENU_RESET.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -450,14 +518,14 @@ local function processHubCommand(data)
         -- menuID: The ID value of the menu (Unsigned Int)
         --------------------------------------------------------------------------------
         local menuID = byteStringToNumber(data, 5, 4)
-        if menuID and mod._callback then
-            mod._callback("MENU_STRING_REQUEST", {
+        if menuID then
+            addCommandToBuffer("MENU_STRING_REQUEST", {
                 ["menuID"] = menuID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating MENU_STRING_REQUEST.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -471,14 +539,14 @@ local function processHubCommand(data)
         -- actionID: The ID value of the action (Unsigned Int)
         --------------------------------------------------------------------------------
         local actionID = byteStringToNumber(data, 5, 4)
-        if actionID and mod._callback then
-            mod._callback("ACTION_ON", {
+        if actionID then
+            addCommandToBuffer("ACTION_ON", {
                 ["actionID"] = actionID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating ACTION_ON.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -492,14 +560,14 @@ local function processHubCommand(data)
         -- modeID: The ID value of the mode (Unsigned Int)
         --------------------------------------------------------------------------------
         local modeID = byteStringToNumber(data, 5, 4)
-        if modeID and mod._callback then
-            mod._callback("MODE_CHANGE", {
+        if modeID then
+            addCommandToBuffer("MODE_CHANGE", {
                 ["modeID"] = modeID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating MODE_CHANGE.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -520,15 +588,15 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         local jogValue = byteStringToNumber(data, 5, 4, true)
         local shuttleValue = byteStringToNumber(data, 9, 4, true)
-        if jogValue and shuttleValue and mod._callback then
-            mod._callback("TRANSPORT", {
+        if jogValue and shuttleValue then
+            addCommandToBuffer("TRANSPORT", {
                 ["jogValue"] = jogValue,
                 ["shuttleValue"] = shuttleValue,
                 ["data"] = data,
             })
         else
             log.ef("Error translating TRANSPORT.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -543,14 +611,14 @@ local function processHubCommand(data)
         -- actionID: The ID value of the action (Unsigned Int)
         --------------------------------------------------------------------------------
         local actionID = byteStringToNumber(data, 5, 4)
-        if actionID and mod._callback then
-            mod._callback("ACTION_OFF", {
+        if actionID then
+            addCommandToBuffer("ACTION_OFF", {
                 ["actionID"] = actionID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating ACTION_OFF.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -577,8 +645,8 @@ local function processHubCommand(data)
         local numDisplays       = byteStringToNumber(data, 17, 4)
         local numDisplayLines   = byteStringToNumber(data, 21, 4)
         local numDisplayChars   = byteStringToNumber(data, 25, 4)
-        if panelID and numButtons and numEncoders and numDisplays and numDisplayLines and numDisplayChars and mod._callback then
-            mod._callback("UNMANAGED_PANEL_CAPABILITIES", {
+        if panelID and numButtons and numEncoders and numDisplays and numDisplayLines and numDisplayChars then
+            addCommandToBuffer("UNMANAGED_PANEL_CAPABILITIES", {
                 ["panelID"]             = panelID,
                 ["numButtons"]          = numButtons,
                 ["numEncoders"]         = numEncoders,
@@ -589,7 +657,7 @@ local function processHubCommand(data)
             })
         else
             log.ef("Error translating UNMANAGED_PANEL_CAPABILITIES.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -606,15 +674,15 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         local panelID = byteStringToNumber(data, 5, 4)
         local buttonID = byteStringToNumber(data, 9, 4)
-        if panelID and buttonID and mod._callback then
-            mod._callback("UNMANAGED_BUTTON_DOWN", {
+        if panelID and buttonID then
+            addCommandToBuffer("UNMANAGED_BUTTON_DOWN", {
                 ["panelID"] = panelID,
                 ["buttonID"] = buttonID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_BUTTON_DOWN.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -631,15 +699,15 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         local panelID = byteStringToNumber(data, 5, 4)
         local buttonID = byteStringToNumber(data, 9, 4)
-        if panelID and buttonID and mod._callback then
-            mod._callback("UNMANAGED_BUTTON_UP", {
+        if panelID and buttonID then
+            addCommandToBuffer("UNMANAGED_BUTTON_UP", {
                 ["panelID"] = panelID,
                 ["buttonID"] = buttonID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_BUTTON_UP.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -658,8 +726,8 @@ local function processHubCommand(data)
         local panelID = byteStringToNumber(data, 5, 4)
         local encoderID = byteStringToNumber(data, 9, 4)
         local increment = byteStringToFloat(data, 13, 4)
-        if panelID and encoderID and increment and mod._callback then
-            mod._callback("UNMANAGED_ENCODER_CHANGE", {
+        if panelID and encoderID and increment then
+            addCommandToBuffer("UNMANAGED_ENCODER_CHANGE", {
                 ["panelID"] = panelID,
                 ["encoderID"] = encoderID,
                 ["increment"] = increment,
@@ -667,7 +735,7 @@ local function processHubCommand(data)
             })
         else
             log.ef("Error translating UNMANAGED_ENCODER_CHANGE.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -685,14 +753,14 @@ local function processHubCommand(data)
         -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
         --------------------------------------------------------------------------------
         local panelID = byteStringToNumber(data, 5, 4)
-        if panelID and mod._callback then
-            mod._callback("UNMANAGED_DISPLAY_REFRESH", {
+        if panelID then
+            addCommandToBuffer("UNMANAGED_DISPLAY_REFRESH", {
                 ["panelID"] = panelID,
                 ["data"] = data,
             })
         else
             log.ef("Error translating UNMANAGED_DISPLAY_REFRESH.")
-            mod._callback("ERROR", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
@@ -710,33 +778,344 @@ local function processHubCommand(data)
         --------------------------------------------------------------------------------
         local panelID = byteStringToNumber(data, 5, 4)
         local state = byteStringToBoolean(data, 9, 4)
-        if panelID and state and mod._callback then
-            mod._callback("PANEL_CONNECTION_STATE", {
+        if panelID and state then
+            addCommandToBuffer("PANEL_CONNECTION_STATE", {
                 ["panelID"] = panelID,
                 ["state"] = state,
                 ["data"] = data,
             })
         else
             log.ef("Error translating PANEL_CONNECTION_STATE.")
-            mod._callback("ERROR", {
-                ["data"] = data
-            })
-        end
-    else
-        --------------------------------------------------------------------------------
-        -- Unknown Message:
-        --------------------------------------------------------------------------------
-        if mod._callback then
-            mod._callback("UNKNOWN", {
+            addCommandToBuffer("ERROR", {
                 ["data"] = data
             })
         end
     end
 end
 
+-- separateHubCommands(data) -> none
+-- Function
+-- Separates multiple Hub Commands for processing.
+--
+-- Parameters:
+--  * data - The raw data from the socket.
+--
+-- Returns:
+--  * None
+local function separateHubCommands(rawData)
+    if not validCallback() then
+        --------------------------------------------------------------------------------
+        -- There's no callback setup, so abort:
+        --------------------------------------------------------------------------------
+        return
+    end
+    local numberOfBytesLeft = string.len(rawData)
+    while numberOfBytesLeft ~= 0 do
+        local currentPosition = (string.len(rawData) - numberOfBytesLeft) + 1
+        local data = string.sub(rawData, currentPosition)
+        local id = byteStringToNumber(data, 1, 4)
+        if id == mod.HUB_MESSAGE["INITIATE_COMMS"] then
+            --------------------------------------------------------------------------------
+            -- InitiateComms (0x01)
+            --  * Initiates communication between the Hub and the application.
+            --  * Communicates the quantity, type and IDs of the panels which are
+            --    configured to be connected in the panel-list.xml file. Note that this is
+            --    not the same as the panels which are actually connected – just those
+            --    which are expected to be connected.
+            --  * The length is dictated by the number of panels connected as the details
+            --    of each panel occupies 5 bytes.
+            --  * On receipt the application should respond with the
+            --    ApplicationDefinition (0x81) command.
+            --
+            -- Format: 0x01, <protocolRev>, <numPanels>, (<mod.PANEL_TYPE>, <panelID>)...
+            --
+            -- protocolRev: The revision number of the protocol (Unsigned Int)
+            -- numPanels: The number of panels connected (Unsigned Int)
+            -- panelType: The code for the type of panel connected (Unsigned Int)
+            -- panelID: The ID of the panel (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local numberOfPanels = byteStringToNumber(data, 9, 4)
+            local length = (1 + 1 + 1 + (numberOfPanels * 1) + (numberOfPanels * 1)) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["PARAMETER_CHANGE"] then
+            --------------------------------------------------------------------------------
+            -- ParameterChange (0x02)
+            --  * Requests that the application increment a parameter. The application needs
+            --    to constrain the value to remain within its maximum and minimum values.
+            --  * On receipt the application should respond to the Hub with the new
+            --    absolute parameter value using the ParameterValue (0x82) command,
+            --    if the value has changed.
+            --
+            -- Format: 0x02, <paramID>, <increment>
+            --
+            -- paramID: The ID value of the parameter (Unsigned Int)
+            -- increment: The incremental value which should be applied to the parameter (Float)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["PARAMETER_RESET"] then
+            --------------------------------------------------------------------------------
+            -- ParameterReset (0x03)
+            --  * Requests that the application changes a parameter to its reset value.
+            --  * On receipt the application should respond to the Hub with the new absolute
+            --    parameter value using the ParameterValue (0x82) command, if the value
+            --    has changed.
+            --
+            -- Format: 0x03, <paramID>
+            --
+            -- paramID: The ID value of the parameter (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["PARAMETER_VALUE_REQUEST"] then
+            --------------------------------------------------------------------------------
+            -- ParameterValueRequest (0x04)
+            --  * Requests that the application sends a ParameterValue (0x82) command
+            --    to the Hub.
+            --
+            -- Format: 0x04, <paramID>
+            --
+            -- paramID: The ID value of the parameter (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["MENU_CHANGE"] then
+            --------------------------------------------------------------------------------
+            -- MenuChange (0x05)
+            --  * Requests the application change a menu index by +1 or -1.
+            --  * We recommend that menus that only have two values (e.g. on/off) should
+            --    toggle their state on receipt of either a +1 or -1 increment value.
+            --    This will allow a single button to toggle the state of such an item
+            --    without the need for separate ‘up’ and ‘down’ buttons.
+            --
+            -- Format: 0x05, <menuID>, < increment >
+            --
+            -- menuID: The ID value of the menu (Unsigned Int)
+            -- increment: The incremental amount by which the menu index should be changed which will always be an integer value of +1 or -1 (Signed Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["MENU_RESET"] then
+            --------------------------------------------------------------------------------
+            -- MenuReset (0x06)
+            --  * Requests that the application sends a MenuString (0x83) command to the Hub.
+            --
+            -- Format: 0x06, <menuID>
+            --
+            -- menuID: The ID value of the menu (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["MENU_STRING_REQUEST"] then
+            --------------------------------------------------------------------------------
+            -- MenuStringRequest (0x07)
+            --  * Requests that the application sends a MenuString (0x83) command to the Hub.
+            --  * On receipt, the application should respond to the Hub with the new menu
+            --    value using the MenuString (0x83) command, if the menu has changed.
+            --
+            -- Format: 0x07, <menuID>
+            --
+            -- menuID: The ID value of the menu (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["ACTION_ON"] then
+            --------------------------------------------------------------------------------
+            -- Action On (0x08)
+            --  * Requests that the application performs the specified action.
+            --
+            -- Format: 0x08, <actionID>
+            --
+            -- actionID: The ID value of the action (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["MODE_CHANGE"] then
+            --------------------------------------------------------------------------------
+            -- ModeChange (0x09)
+            --  * Requests that the application changes to the specified mode.
+            --
+            -- Format: 0x09, <modeID>
+            --
+            -- modeID: The ID value of the mode (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["TRANSPORT"] then
+            --------------------------------------------------------------------------------
+            -- Transport (0x0A)
+            --  * Requests the application to move the currently active transport.
+            --  * jogValue or shuttleValue will never both be set simultaneously
+            --  * One revolution of the control represents 32 counts by default.
+            --    The user will be able to adjust the sensitivity of Jog & Shuttle
+            --    independently in the TUBE Mapper tool to send more or less than
+            --    32 counts per revolution.
+            --
+            -- Format: 0x0A, <jogValue>, <shuttleValue>
+            --
+            -- jogValue: The number of jog steps to move the transport (Signed Int)
+            -- shuttleValue: An incremental value to add to the shuttle speed (Signed Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["ACTION_OFF"] then
+            --------------------------------------------------------------------------------
+            -- ActionOff (0x0B)
+            --  * Requests that the application cancels the specified action.
+            --  * This is typically sent when a button is released.
+            --
+            -- Format: 0x0B, <actionID>
+            --
+            -- actionID: The ID value of the action (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["UNMANAGED_PANEL_CAPABILITIES"] then
+            --------------------------------------------------------------------------------
+            -- UnmanagedPanelCapabilities (0x30)
+            --  * Only used when working in Unmanaged panel mode.
+            --  * Sent in response to a UnmanagedPanelCapabilitiesRequest (0xA0) command.
+            --  * The values returned are those given in the table in Section 18.
+            --    Panel Data for Unmanaged Mode.
+            --
+            -- Format: 0x30, <panelID>, <numButtons>, <numEncoders>, <numDisplays>, <numDisplayLines>, <numDisplayChars>
+            --
+            -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+            -- numButtons: The number of buttons on the panel (Unsigned Int)
+            -- numEncoders: The number of encoders on the panel (Unsigned Int)
+            -- numDisplays: The number of displays on the panel (Unsigned Int)
+            -- numDisplayLines: The number of lines for each display on the panel (Unsigned Int)
+            -- numDisplayChars: The number of characters on each line of each display on the panel (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = 7 * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["UNMANAGED_BUTTON_DOWN"] then
+            --------------------------------------------------------------------------------
+            -- UnmanagedButtonDown (0x31)
+            --  * Only used when working in Unmanaged panel mode
+            --  * Issued when a button has been pressed
+            --
+            -- Format: 0x31, <panelID>, <buttonID>
+            --
+            -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+            -- buttonID: The hardware ID of the button (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["UNMANAGED_BUTTON_UP"] then
+            --------------------------------------------------------------------------------
+            -- UnmanagedButtonUp (0x32)
+            --  * Only used when working in Unmanaged panel mode.
+            --  * Issued when a button has been released
+            --
+            -- Format: 0x32, <panelID>, <buttonID>
+            --
+            -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+            -- buttonID: The hardware ID of the button (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["UNMANAGED_ENCODER_CHANGE"] then
+            --------------------------------------------------------------------------------
+            -- UnmanagedEncoderChange (0x33)
+            --  * Only used when working in Unmanaged panel mode.
+            --  * Issued when an encoder has been moved.
+            --
+            -- Format: 0x33, <panelID>, <encoderID>, <increment>
+            --
+            -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+            -- paramID: The hardware ID of the encoder (Unsigned Int)
+            -- increment: The incremental value (Float)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["UNMANAGED_DISPLAY_REFRESH"] then
+            --------------------------------------------------------------------------------
+            -- UnmanagedDisplayRefresh (0x34)
+            --  * Only used when working in Unmanaged panel mode
+            --  * Issued when a panel has been connected or the focus of the panel has
+            --    been returned to your application.
+            --  * On receipt your application should send all the current information to
+            --    each display on the panel in question.
+            --
+            -- Format: 0x34, <panelID>
+            --
+            -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        elseif id == mod.HUB_MESSAGE["PANEL_CONNECTION_STATE"] then
+            --------------------------------------------------------------------------------
+            -- PanelConnectionState (0x35)
+            --  * Sent in response to a PanelConnectionStatesRequest (0xA5) command to
+            --    report the current connected/disconnected status of a configured panel.
+            --
+            -- Format: 0x35, <panelID>, <state>
+            --
+            -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+            -- state: The connected state of the panel: 1 if connected, 0 if disconnected (Bool)
+            --------------------------------------------------------------------------------
+            local length = (1 + 1 + 1) * 4
+            local commandData = string.sub(data, 1, length)
+            processHubCommand(commandData)
+            numberOfBytesLeft = numberOfBytesLeft - length
+        else
+            --------------------------------------------------------------------------------
+            -- Unknown Command:
+            --------------------------------------------------------------------------------
+            addCommandToBuffer("UNKNOWN", {
+                ["data"] = rawData
+            })
+            return
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- Process the buffer:
+    --------------------------------------------------------------------------------
+    processBuffer()
+end
+
 --------------------------------------------------------------------------------
 -- PRIVATE VARIABLES:
 --------------------------------------------------------------------------------
+
+-- hs.tangent._buffer -> table
+-- Variable
+-- The commands buffer.
+mod._buffer = {}
 
 -- hs.tangent._readBytesRemaining -> number
 -- Variable
@@ -801,11 +1180,10 @@ end
 --- Checks to see whether or not the Tangent Hub software is installed.
 ---
 --- Parameters:
----  * applicationName - Your application name as a string
----  * xmlPath - Path to the Tangent XML configuration files as a string
+---  * None
 ---
 --- Returns:
----  * `true` on successful connection, `false` on failed connection or `nil` on error.
+---  * `true` if Tangent Hub is installed otherwise `false`.
 function mod.isTangentHubInstalled()
     if doesFileExist("/Library/Application Support/Tangent/Hub/TangentHub") then
         return true
@@ -826,7 +1204,8 @@ end
 ---
 --- Notes:
 ---  * Full documentation for the Tangent API can be downloaded [here](http://www.tangentwave.co.uk/download/developer-support-pack/).
----  * The callback function should expect 2 arguments and should not return anything:
+---  * The callback function should expect 1 argument and should not return anything.
+--   * The 1 argument will be a table, which can contain one or many commands. Each command is it's own table with the following contents:
 ---    * id - the message ID of the incoming message
 ---    * metadata - A table of data for the Tangent command (see below).
 ---  * The metadata table will return the following, depending on the `id` for the callback:
@@ -1408,7 +1787,7 @@ function mod.disconnect()
     end
 end
 
---- hs.tangent.connect() -> boolean, errorMessage
+--- hs.tangent.connect(applicationName, systemPath[, userPath]) -> boolean, errorMessage
 --- Function
 --- Connects to the Tangent Hub.
 ---
@@ -1419,7 +1798,7 @@ end
 ---
 --- Returns:
 ---  * success - `true` on success, otherwise `nil`
----  * errorMessage - Any error messages as a string
+---  * errorMessage - The error messages as a string or `nil` if `success` is `true`.
 function mod.connect(applicationName, systemPath, userPath)
 
     --------------------------------------------------------------------------------
@@ -1465,13 +1844,13 @@ function mod.connect(applicationName, systemPath, userPath)
                 timer.doAfter(mod.interval, function() mod._socket:read(mod._readBytesRemaining) end)
             else
                 --------------------------------------------------------------------------------
-                -- We've read the rest of a command:
+                -- We've read the rest of series of commands:
                 --------------------------------------------------------------------------------
                 mod._readBytesRemaining = 0
-                processHubCommand(data)
+                separateHubCommands(data)
 
                 --------------------------------------------------------------------------------
-                -- Get set up for the next command:
+                -- Get set up for the next series of commands:
                 --------------------------------------------------------------------------------
                 timer.doAfter(mod.interval, function() mod._socket:read(4) end)
             end
