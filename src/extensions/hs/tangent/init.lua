@@ -81,28 +81,28 @@ mod.fromHub = {
     panelConnectionState                        = 0x35,
 }
 
---- hs.tangent.APP_MESSAGE -> table
+--- hs.tangent.toHub -> table
 --- Constant
 --- Definitions for IPC Commands from Hammerspoon to the HUB.
-mod.APP_MESSAGE = {
-    APPLICATION_DEFINITION                      = 0x81,
-    PARAMETER_VALUE                             = 0x82,
-    MENU_STRING                                 = 0x83,
-    ALL_CHANGE                                  = 0x84,
-    MODE_VALUE                                  = 0x85,
-    DISPLAY_TEXT                                = 0x86,
-    unmanagedPanelCapabilities_REQUEST        = 0xA0,
-    UNMANAGED_DISPLAY_WRITE                     = 0xA1,
-    RENAME_CONTROL                              = 0xA2,
-    HIGHLIGHT_CONTROL                           = 0xA3,
-    INDICATE_CONTROL                            = 0xA4,
-    REQUEST_panelConnectionStateS             = 0xA5,
+mod.toHub = {
+    applicationDefinition                       = 0x81,
+    parameterValue                              = 0x82,
+    menuString                                  = 0x83,
+    allChange                                   = 0x84,
+    modeValue                                   = 0x85,
+    displayText                                 = 0x86,
+    unmanagedPanelCapabilitiesRequest           = 0xA0,
+    unmanagedDisplayWrite                       = 0xA1,
+    renameControl                               = 0xA2,
+    highlightControl                            = 0xA3,
+    indicateControl                             = 0xA4,
+    panelConnectionStatesRequest                = 0xA5,
 }
 
---- hs.tangent.PANEL_TYPE -> table
+--- hs.tangent.panelType -> table
 --- Constant
 --- Tangent Panel Types.
-mod.PANEL_TYPE = {
+mod.panelType = {
     [0x03]  = "CP200-BK",
     [0x04]  = "CP200-K",
     [0x05]  = "CP200-TS",
@@ -168,7 +168,7 @@ end
 -- Returns:
 --  * Panel Type as string
 local function getPanelType(id)
-    return mod.PANEL_TYPE[id]
+    return mod.panelType[id]
 end
 
 -- byteStringToNumber(str, offset, numberOfBytes[, signed]) -> number, number
@@ -186,23 +186,22 @@ end
 --  * The new offset
 local function byteStringToNumber(str, offset, numberOfBytes, signed)
     local fmt = (signed and ">i" or ">I") .. tostring(numberOfBytes)
-    return unpack(fmt, str:sub(offset, offset + numberOfBytes - 1)), offset + numberOfBytes
+    return unpack(fmt, str, offset)
 end
 
--- byteStringToFloat(str, offset, numberOfBytes) -> number, number
+-- byteStringToFloat(str, offset) -> number, number
 -- Function
 -- Translates a Byte String into a Float Number
 --
 -- Parameters:
 --  * str - The string you want to translate
 --  * offset - An offset
---  * numberOfBytes - Number of bytes
 --
 -- Returns:
 --  * A number value
 --  * The new offset
-local function byteStringToFloat(str, offset, numberOfBytes)
-    return unpack(">f", str:sub(offset, offset + numberOfBytes - 1)), offset + numberOfBytes
+local function byteStringToFloat(str, offset)
+    return unpack(">f", str, offset)
 end
 
 -- byteStringToBoolean(str, offset, numberOfBytes) -> boolean, number
@@ -323,7 +322,7 @@ local receiveHandler = {
     --  * On receipt the application should respond with the
     --    ApplicationDefinition (0x81) command.
     --
-    -- Format: 0x01, <protocolRev>, <numPanels>, (<mod.PANEL_TYPE>, <panelID>)...
+    -- Format: 0x01, <protocolRev>, <numPanels>, (<mod.panelType>, <panelID>)...
     --
     -- protocolRev: The revision number of the protocol (Unsigned Int)
     -- numPanels: The number of panels connected (Unsigned Int)
@@ -383,7 +382,7 @@ local receiveHandler = {
     [mod.fromHub.parameterChange] = function(data, offset)
         local paramID, increment
         paramID, offset = byteStringToNumber(data, offset, 4)
-        increment, offset = byteStringToFloat(data, offset, 4)
+        increment, offset = byteStringToFloat(data, offset)
         if paramID and increment and validCallback() then
             return {
                 paramID = paramID,
@@ -700,7 +699,7 @@ local receiveHandler = {
         local panelID, encoderID, increment
         panelID, offset = byteStringToNumber(data, offset, 4)
         encoderID, offset = byteStringToNumber(data, offset, 4)
-        increment, offset = byteStringToFloat(data, offset, 4)
+        increment, offset = byteStringToFloat(data, offset)
         if panelID and encoderID and increment then
             return {
                 panelID = panelID,
@@ -1106,7 +1105,7 @@ function mod.sendApplicationDefinition(appName, systemPath, userPath)
     -- usrDirStrLen: The length of usrDirStr (Unsigned Int)
     -- usrDirStr: A string containing the absolute path of the directory that contains the User’s Default Map XML files (Path String)
     --------------------------------------------------------------------------------
-    local byteString =  numberToByteString(mod.APP_MESSAGE.APPLICATION_DEFINITION) ..
+    local byteString =  numberToByteString(mod.toHub.applicationDefinition) ..
                         numberToByteString(#appName) ..
                         appName ..
                         numberToByteString(#systemPath) ..
@@ -1146,7 +1145,7 @@ function mod.sendParameterValue(paramID, value, atDefault)
     end
     atDefault = atDefault == true
 
-    local byteString = numberToByteString(mod.APP_MESSAGE.PARAMETER_VALUE) ..
+    local byteString = numberToByteString(mod.toHub.parameterValue) ..
                     numberToByteString(paramID) ..
                     floatToByteString(value) ..
                     booleanToByteString(atDefault)
@@ -1184,7 +1183,7 @@ function mod.sendMenuString(menuID, value, atDefault)
     value = value or ""
     atDefault = atDefault == true
 
-    local byteString = numberToByteString(mod.APP_MESSAGE.MENU_STRING) ..
+    local byteString = numberToByteString(mod.toHub.menuString) ..
                         numberToByteString(menuID) ..
                         numberToByteString(#value) ..
                         value  ..
@@ -1208,7 +1207,7 @@ function mod.sendAllChange()
     --------------------------------------------------------------------------------
     -- Format: 0x84
     --------------------------------------------------------------------------------
-    local byteString = numberToByteString(mod.APP_MESSAGE.ALL_CHANGE)
+    local byteString = numberToByteString(mod.toHub.allChange)
     return mod.send(byteString)
 end
 
@@ -1232,7 +1231,7 @@ function mod.sendModeValue(modeID)
     if not isNumber(modeID) then
         return false, format("Missing or invalid `modeID`: %s", inspect(modeID))
     end
-    local byteString = numberToByteString(mod.APP_MESSAGE.MODE_VALUE) ..
+    local byteString = numberToByteString(mod.toHub.modeValue) ..
                         numberToByteString(modeID)
 
     return mod.send(byteString)
@@ -1303,7 +1302,7 @@ function mod.sendDisplayText(messages, doubleHeight)
         return false, format("Invalid `doubleHeight` parameter: %s", inspect(doubleHeight))
     end
 
-    local byteString = numberToByteString(mod.APP_MESSAGE.DISPLAY_TEXT) ..
+    local byteString = numberToByteString(mod.toHub.displayText) ..
                         numberToByteString(#messages)
 
     for i,value in ipairs(messages) do
@@ -1344,7 +1343,7 @@ function mod.sendUnmanagedPanelCapabilitiesRequest(panelID)
     if not isNumber(panelID) then
         return false, format("Missing or invalid panel ID: %s", inspect(panelID))
     end
-    local byteString = numberToByteString(mod.APP_MESSAGE.unmanagedPanelCapabilities_REQUEST) ..
+    local byteString = numberToByteString(mod.toHub.unmanagedPanelCapabilitiesRequest) ..
                         numberToByteString(panelID)
 
     return mod.send(byteString)
@@ -1393,7 +1392,7 @@ function mod.sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message
         return false, format("Missing or invalid message: %s", inspect(message))
     end
 
-    local byteString =  numberToByteString(mod.APP_MESSAGE.UNMANAGED_DISPLAY_WRITE) ..
+    local byteString =  numberToByteString(mod.toHub.unmanagedDisplayWrite) ..
                         numberToByteString(panelID) ..
                         numberToByteString(displayID) ..
                         numberToByteString(lineNum-1) ..
@@ -1435,7 +1434,7 @@ function mod.sendRenameControl(targetID, newName)
         return false, format("Missing or invalid name: %s", inspect(newName))
     end
 
-    local byteString =  numberToByteString(mod.APP_MESSAGE.RENAME_CONTROL) ..
+    local byteString =  numberToByteString(mod.toHub.renameControl) ..
                         numberToByteString(targetID) ..
                         numberToByteString(#newName) ..
                         newName
@@ -1465,7 +1464,7 @@ function mod.sendHighlightControl(targetID, active)
     end
     local state = active == true and 1 or 0
 
-    local byteString = numberToByteString(mod.APP_MESSAGE.HIGHLIGHT_CONTROL) ..
+    local byteString = numberToByteString(mod.toHub.highlightControl) ..
                         numberToByteString(targetID) ..
                         numberToByteString(state)
 
@@ -1500,7 +1499,7 @@ function mod.sendIndicateControl(targetID, active)
     end
     local state = active == true and 1 or 0
 
-    local byteString = numberToByteString(mod.APP_MESSAGE.INDICATE_CONTROL) ..
+    local byteString = numberToByteString(mod.toHub.indicateControl) ..
                         numberToByteString(targetID) ..
                         numberToByteString(state)
 
@@ -1523,7 +1522,7 @@ function mod.sendPanelConnectionStatesRequest()
     --------------------------------------------------------------------------------
     -- Format: 0xA5
     --------------------------------------------------------------------------------
-    local byteString = numberToByteString(mod.APP_MESSAGE.REQUEST_panelConnectionStateS)
+    local byteString = numberToByteString(mod.toHub.panelConnectionStatesRequest)
 
     return mod.send(byteString)
 end
