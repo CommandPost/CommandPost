@@ -774,6 +774,7 @@ local function processHubCommand(data, offset)
     local id, command
 
     id, offset = byteStringToNumber(data, offset, 4)
+    -- log.df("Processing command %#010x, offset: %d", id, offset)
 
     local fn = receiveHandler[id]
     if fn then
@@ -808,7 +809,7 @@ local function processHubCommand(data, offset)
     return command, offset
 end
 
--- separateHubCommands(data) -> none
+-- processDataFromHub(data) -> none
 -- Function
 -- Separates multiple Hub Commands for processing.
 --
@@ -817,7 +818,7 @@ end
 --
 -- Returns:
 --  * None
-local function separateHubCommands(data)
+local function processDataFromHub(data)
     if not validCallback() then
         --------------------------------------------------------------------------------
         -- There's no callback setup, so abort:
@@ -1063,6 +1064,7 @@ function mod.send(byteString)
         end
 
         mod._socket:send(numberToByteString(#byteString)..byteString)
+        return true
     end
     return false, "Not connected"
 end
@@ -1539,10 +1541,10 @@ function mod.disconnect()
     if mod._socket then
         mod._socket:disconnect()
         if mod._callback then
-            mod._callback(mod.fromHub.disconnected, {
+            mod._callback({{id=mod.fromHub.disconnected, metadata={
                 ipAddress = mod.ipAddress,
                 port = mod.port,
-            })
+            }}})
         end
         mod._socket = nil
     end
@@ -1595,10 +1597,10 @@ function mod.connect(applicationName, systemPath, userPath)
     --------------------------------------------------------------------------------
     -- Connect to Tangent Hub:
     --------------------------------------------------------------------------------
-    log.df("Connecting to Tangent Hub via socket...")
     mod._socket = socket.new()
     if mod._socket then
         mod._socket:setCallback(function(data, tag)
+            -- log.df("Received data: size=%s; tag=%s", #data, inspect(tag))
             if tag == MESSAGE_SIZE then
                 --------------------------------------------------------------------------------
                 -- Each message starts with an integer value indicating the number of bytes.
@@ -1609,7 +1611,7 @@ function mod.connect(applicationName, systemPath, userPath)
                 --------------------------------------------------------------------------------
                 -- We've read the rest of series of commands:
                 --------------------------------------------------------------------------------
-                separateHubCommands(data)
+                processDataFromHub(data)
 
                 --------------------------------------------------------------------------------
                 -- Get set up for the next series of commands:
@@ -1622,10 +1624,10 @@ function mod.connect(applicationName, systemPath, userPath)
             -- Trigger Callback when connected:
             --------------------------------------------------------------------------------
             if mod._callback then
-                mod._callback(mod.fromHub.connected, {
+                mod._callback({{id=mod.fromHub.connected, metadata={
                     ipAddress = mod.ipAddress,
                     port = mod.port,
-                })
+                }}})
             end
 
             --------------------------------------------------------------------------------

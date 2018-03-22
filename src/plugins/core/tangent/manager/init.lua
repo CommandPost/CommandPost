@@ -47,16 +47,6 @@ local x                                         = require("cp.web.xml")
 --------------------------------------------------------------------------------
 local moses                                     = require("moses")
 
-local function lpad(text, amount, padChar)
-    padChar = padChar or " "
-
-    for _ = 1,amount do
-        text = padChar .. text
-    end
-
-    return text
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -165,11 +155,6 @@ local function makeStringTangentFriendly(value)
     if #result == 0 then
         return nil
     else
-        --------------------------------------------------------------------------------
-        -- Replace Ampersand's as we're building an XML file:
-        --------------------------------------------------------------------------------
-        result = string.gsub(result, "&", "&amp;")
-
         --------------------------------------------------------------------------------
         -- Trim Results, just to be safe:
         --------------------------------------------------------------------------------
@@ -553,14 +538,7 @@ local fromHub = {
         --------------------------------------------------------------------------------
         timer.doAfter(1, function()
             local version = tostring(config.appVersion)
-            local padding = math.modf((32 - #version) / 2)
-            tangent.sendDisplayText(
-                {
-                    "   CommandPost",
-                    "",
-                    lpad(version, padding)
-                }, {true}
-            )
+            tangent.sendDisplayText({"CommandPost "..version})
         end)
         --------------------------------------------------------------------------------
         -- Update Mode:
@@ -817,9 +795,9 @@ function mod.start()
         -- Connect to Tangent Hub:
         --------------------------------------------------------------------------------
         log.df("Connecting to Tangent Hub...")
+        tangent.callback(mod.callback)
         local result, errorMessage = tangent.connect("CommandPost", mod._configPath)
         if result then
-            tangent.callback(mod.callback)
             return true
         else
             log.ef("Failed to start Tangent Support: %s", errorMessage)
