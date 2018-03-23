@@ -709,14 +709,7 @@ function mod.callback(commands)
         if fn then
             fn(metadata)
         else
-            log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, metadata and inspect(metadata))
-            if id == "connected" then
-                --------------------------------------------------------------------------------
-                -- Connected:
-                --------------------------------------------------------------------------------
-                log.df("Connection To Tangent Hub successfully established.")
-
-            end
+            log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
         end
     end
 end
