@@ -833,14 +833,18 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Alternate 'require' function that caches plugin resources locally:
     --------------------------------------------------------------------------------
-    local pluginRequire = function(name)
+    local pluginRequire
+    pluginRequire = function(name)
         if cache[name] then
             return cache[name]
         end
         local file = package.searchpath(name, searchPath) -- luacheck: ignore
         if file then
-            local result = dofile(file)
+            local gRequire = _G.require
+            _G.require = pluginRequire
+                local result = dofile(file)
             cache[name] = result
+            _G.require = gRequire
             return result
         end
         return globalRequire(name)
@@ -849,7 +853,7 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Replace default 'require':
     --------------------------------------------------------------------------------
-    require = pluginRequire -- luacheck: ignore
+    _G.require = pluginRequire
 
     --------------------------------------------------------------------------------
     -- Load the plugin:
@@ -862,7 +866,7 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Reset 'require' to the global require:
     --------------------------------------------------------------------------------
-    require = globalRequire -- luacheck: ignore
+    _G.require = globalRequire
 
     return result
 end
