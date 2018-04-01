@@ -171,14 +171,7 @@ function mod.init(deps, env)
                             --------------------------------------------------------------------------------
                             -- Write Controls XMLs:
                             --------------------------------------------------------------------------------
-                            deps.tangentManager.writeControlsXML()
-                            if mod.enabled() then
-                                --------------------------------------------------------------------------------
-                                -- Restart Tangent:
-                                --------------------------------------------------------------------------------
-                                mod.enabled(false)
-                                mod.enabled(true)
-                            end
+                            deps.tangentManager.updateControls()
 
                             dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("rebuildComplete") .. "!", i18n("rebuildCompleteMessage"), i18n("ok"))
                         end
@@ -220,7 +213,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.preferences.panels.tangent",
+    id              = "core.tangent.prefs",
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]    = "prefsManager",

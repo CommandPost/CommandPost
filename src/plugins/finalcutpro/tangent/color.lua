@@ -35,32 +35,6 @@ local format                                    = string.format
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.touchbar.manager.enabled <cp.prop: boolean>
---- Field
---- Is `true` if the plugin is enabled.
-mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
-    if enabled then
-        --------------------------------------------------------------------------------
-        -- Update Touch Bar Buttons when FCPX is active:
-        --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp:watch({
-            active      = function() mod._manager.groupStatus("fcpx", true) end,
-            show        = function() mod._manager.groupStatus("fcpx", true) end,
-            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
-            hide        = function() mod._manager.groupStatus("fcpx", false) end,
-        })
-
-    else
-        --------------------------------------------------------------------------------
-        -- Destroy Watchers:
-        --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
-    end
-end)
-
 --- plugins.finalcutpro.tangent.manager.init() -> none
 --- Function
 --- Initialises the module.
@@ -70,37 +44,27 @@ end)
 ---
 --- Returns:
 ---  * None
-function mod.init()
+function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Modes:
     --------------------------------------------------------------------------------
-    local manager = mod._manager
+    mod._manager = tangentManager
 
-    manager.addMode(0x00010002, "FCP: Edit")
-    manager.addMode(0x00010003, "FCP: Board")
+    tangentManager.addMode(0x00010003, "FCP: Board")
         :onActivate(function()
             fcp:colorBoard():show()
         end)
 
-    manager.addMode(0x00010004, "FCP: Wheels")
+    tangentManager.addMode(0x00010004, "FCP: Wheels")
         :onActivate(function()
             fcp:inspector():color():colorWheels():show()
         end)
-    -- manager.addMode(0x00010005, "FCP: Prep")
-    -- manager.addMode(0x00010006, "FCP: Keyword")
-    -- manager.addMode(0x00010007, "FCP: Speed")
-    -- manager.addMode(0x00010008, "FCP: Audition")
-    -- manager.addMode(0x00010009, "FCP: Multicam")
-    -- manager.addMode(0x00010010, "FCP: Marker")
-    -- manager.addMode(0x00010011, "FCP: Sound")
-    -- manager.addMode(0x00010012, "FCP: Function")
-    -- manager.addMode(0x00010013, "FCP: View")
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
     --------------------------------------------------------------------------------
 
-    local ciGroup = manager.controls:group(i18n("fcpx_colorInspector_action"))
+    local ciGroup = fcpGroup:group(i18n("fcpx_colorInspector_action"))
 
     -- The section all Color Inspector controls are in.
     local baseID = 0x00300000
@@ -294,22 +258,6 @@ function mod.init()
         :onGet(function() return cw:mix() end)
         :onChange(function(value) return cw:show():mixSlider():shiftValue(value) end)
         :onReset(function() cw:show():mix(1) end)
-
-    -- TIMELINE ZOOM:
-    local tlGroup = manager.controls:group(i18n("timeline"))
-    local tlBaseID = 0x00040000
-
-    local appearance = fcp:timeline():toolbar():appearance()
-    local zoom = appearance:zoomAmount()
-    tlGroup:parameter(tlBaseID + 0x01)
-        :name(i18n("timelineZoom"))
-        :name9(i18n("timelineZoom9"))
-        :minValue(0)
-        :maxValue(10)
-        :stepSize(0.2)
-        :onGet(function() zoom:getValue() end)
-        :onChange(function(value) zoom:show():shiftValue(value) end)
-        :onReset(function() zoom:show():setValue(10) end)
 end
 
 --------------------------------------------------------------------------------
@@ -318,10 +266,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id = "finalcutpro.tangent.manager",
+    id = "finalcutpro.tangent.color",
     group = "finalcutpro",
     dependencies = {
         ["core.tangent.manager"]       = "manager",
+        ["finalcutpro.tangent.group"]  = "fcpGroup",
     }
 }
 
@@ -329,27 +278,13 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    --------------------------------------------------------------------------------
-    -- Connect to Manager:
-    --------------------------------------------------------------------------------
-    mod._manager = deps.manager
 
     --------------------------------------------------------------------------------
     -- Initalise the Module:
     --------------------------------------------------------------------------------
-    mod.init()
+    mod.init(deps.manager, deps.fcpGroup)
 
     return mod
-end
-
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
-function plugin.postInit()
-    --------------------------------------------------------------------------------
-    -- Update visibility:
-    --------------------------------------------------------------------------------
-    mod.enabled:update()
 end
 
 return plugin
