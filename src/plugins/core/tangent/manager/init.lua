@@ -23,6 +23,8 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
+local require                                   = require
+
 local log                                       = require("hs.logger").new("tangentMan")
 
 --------------------------------------------------------------------------------
@@ -30,7 +32,6 @@ local log                                       = require("hs.logger").new("tang
 --------------------------------------------------------------------------------
 local fs                                        = require("hs.fs")
 local inspect                                   = require("hs.inspect")
-local json                                      = require("hs.json")
 local tangent                                   = require("hs.tangent")
 local timer                                     = require("hs.timer")
 
@@ -42,10 +43,13 @@ local fcp                                       = require("cp.apple.finalcutpro"
 local tools                                     = require("cp.tools")
 local x                                         = require("cp.web.xml")
 
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local moses                                     = require("moses")
+local mode                                      = require("mode")
+local controls                                  = require("controls")
+local action                                    = require("action")
+local parameter                                 = require("parameter")
+local menu                                      = require("menu")
+
+local insert, sort                              = table.insert, table.sort
 
 --------------------------------------------------------------------------------
 --
@@ -58,6 +62,11 @@ local mod = {}
 -- Variable
 -- Group Statuses.
 mod._groupStatus = {}
+
+-- plugins.core.touchbar.manager._modes -> table
+-- Variable
+-- Modesf
+mod._modes = {}
 
 --- plugins.core.touchbar.manager.defaultGroup -> string
 --- Variable
@@ -74,93 +83,10 @@ mod.MODES = {
     },
 }
 
---- plugins.core.tangent.manager.customParameters
+--- plugins.core.tangent.manager.controls
 --- Constant
---- Table containing custom Tangent parameters.
-mod.CUSTOM_PARAMETERS = {}
-
--- getCustomParameter(id) -> table
--- Function
--- Returns a custom parameter table.
---
--- Parameters:
---  * id - The ID of the table as string.
---
--- Returns:
---  * table or `nil` if no match.
-local function getCustomParameter(id)
-    for _, group in pairs(mod.CUSTOM_PARAMETERS) do
-        for parameterID, parameter in pairs(group) do
-            if parameterID == id then
-                return parameter
-            end
-        end
-    end
-    return nil
-end
-
--- loadMapping() -> none
--- Function
--- Loads the Tangent Mapping file from the Application Support folder.
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if successful, otherwise `false`
-local function loadMapping()
-    local mappingFilePath = mod._configPath .. "/mapping.json"
-    if not tools.doesFileExist(mappingFilePath) then
-        log.ef("Tangent Mapping could not be found.")
-        return false
-    end
-    local file = io.open(mappingFilePath, "r")
-    if file then
-        local content = file:read("*all")
-        file:close()
-        if not moses.isEmpty(content) then
-            --log.df("Loaded Tangent Mappings.")
-            mod._mapping = json.decode(content)
-            return true
-        else
-            log.ef("Empty Tangent Mapping: '%s'", mappingFilePath)
-            return false
-        end
-    else
-        log.ef("Unable to load Tangent Mapping: '%s'", mappingFilePath)
-        return false
-    end
-end
-
--- makeStringTangentFriendly(value) -> none
--- Function
--- Removes any illegal characters from the value
---
--- Parameters:
---  * value - The string you want to process
---
--- Returns:
---  * A string that's valid for Tangent's panels
-local function makeStringTangentFriendly(value)
-    local result = ""
-    for i = 1, #value do
-        local letter = value:sub(i,i)
-        local byte = string.byte(letter)
-        if byte >= 32 and byte <= 126 then
-            result = result .. letter
-        --else
-            --log.df("Illegal Character: %s", letter)
-        end
-    end
-    if #result == 0 then
-        return nil
-    else
-        --------------------------------------------------------------------------------
-        -- Trim Results, just to be safe:
-        --------------------------------------------------------------------------------
-        return tools.trim(result)
-    end
-end
+--- The set of controls currently registered.
+mod.controls = controls.new()
 
 --- plugins.core.tangent.manager.writeControlsXML() -> boolean, string
 --- Function
@@ -173,11 +99,6 @@ end
 ---  *  `true` if successfully created otherwise `false` if an error occurred.
 ---  *  If an error occurs an error message will also be returned as a string.
 function mod.writeControlsXML()
-
-    --------------------------------------------------------------------------------
-    -- TODO: One day I'm sure David will re-write this using SLAXML. Until that day,
-    --       we're just going to generate this XML file manually.
-    --------------------------------------------------------------------------------
 
     --------------------------------------------------------------------------------
     -- Create folder if it doesn't exist:
@@ -212,16 +133,8 @@ function mod.writeControlsXML()
     --------------------------------------------------------------------------------
     -- Create "controls.xml" file:
     --------------------------------------------------------------------------------
-    local mapping = {}
     local controlsFile = io.open(mod._configPath .. "/controls.xml", "w")
     if controlsFile then
-
-        io.output(controlsFile)
-
-        --------------------------------------------------------------------------------
-        -- Set starting values:
-        --------------------------------------------------------------------------------
-        local currentActionID = 131073 -- Action ID starts at 0x00020001
 
         local root = x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
             --------------------------------------------------------------------------------
@@ -234,177 +147,87 @@ function mod.writeControlsXML()
             ) ..
 
             --------------------------------------------------------------------------------
-            -- Modes:
+            -- Default Global Settings:
             --------------------------------------------------------------------------------
-            x.Modes (function()
-                local modes = x()
-                for modeID, metadata in tools.spairs(mod.MODES) do
-                    modes = modes .. x.Mode {id=modeID} (
-                        x.Name (metadata.name)
-                    )
-                end
-                return modes
-            end)
-
-        )
-
-        --------------------------------------------------------------------------------
-        -- Get a list of Handler IDs:
-        --------------------------------------------------------------------------------
-        local handlerIds = mod._actionmanager.handlerIds()
-
-        --------------------------------------------------------------------------------
-        -- Add Custom Parameters to Handler IDs:
-        --------------------------------------------------------------------------------
-        for id, _ in pairs(mod.CUSTOM_PARAMETERS) do
-            table.insert(handlerIds, id)
-        end
-
-        --------------------------------------------------------------------------------
-        -- Sort the Handler IDs alphabetically:
-        --------------------------------------------------------------------------------
-        table.sort(handlerIds, function(a, b) return i18n(a .. "_action") < i18n(b .. "_action") end)
-
-        --------------------------------------------------------------------------------
-        -- Controls:
-        --------------------------------------------------------------------------------
-        local controls = x.Controls {}
-        for _, handlerID in pairs(handlerIds) do
-
-            --------------------------------------------------------------------------------
-            -- Add Custom Parameters & Bindings:
-            --------------------------------------------------------------------------------
-            local match = false
-            for customParameterID, customParameter in pairs(mod.CUSTOM_PARAMETERS) do
-                if handlerID == customParameterID then
-
-                    --------------------------------------------------------------------------------
-                    -- Found a match:
-                    --------------------------------------------------------------------------------
-                    match = true
-
-                    --------------------------------------------------------------------------------
-                    -- Start Group:
-                    --------------------------------------------------------------------------------
-                    local handlerLabel = i18n(handlerID .. "_action")
-                    local group = x.Group { name = handlerLabel }
-
-                    --------------------------------------------------------------------------------
-                    -- Sort table alphabetically by name:
-                    --------------------------------------------------------------------------------
-                    local sortedKeys = tools.getKeysSortedByValue(customParameter, function(a, b) return a.name < b.name end)
-
-                    --------------------------------------------------------------------------------
-                    -- Process the Custom Parameters:
-                    --------------------------------------------------------------------------------
-                    for _, id in pairs(sortedKeys) do
-                        local metadata = customParameter[id]
-                        if id == "bindings" then
-                            -- append the bindings XML unescaped
-                            group( metadata.xml, false)
-                        else
-                            --------------------------------------------------------------------------------
-                            -- Add Parameter:
-                            --------------------------------------------------------------------------------
-                            group(
-                                x.Parameter { id = id } (
-                                    x.Name( metadata.name ) ..
-                                    x.Name9( metadata.name9 ) ..
-                                    x.MinValue( metadata.minValue ) ..
-                                    x.MaxValue( metadata.maxValue ) ..
-                                    x.StepSize( metadata.stepSize )
-                                )
-                            )
-
-                            currentActionID = currentActionID + 1
-                        end
-                    end
-
-                    controls:append(group)
-                end
-            end
-
-            if not match then
-                --------------------------------------------------------------------------------
-                -- Action Manager Actions:
-                --------------------------------------------------------------------------------
-                local handler = mod._actionmanager.getHandler(handlerID)
-                if string.sub(handlerID, -7) ~= "widgets" and string.sub(handlerID, -12) ~= "midicontrols" then
-                    local handlerLabel = i18n(handler:id() .. "_action")
-                    local group = x.Group { name = handlerLabel }
-
-                    local choices = handler:choices()._choices
-                    table.sort(choices, function(a, b) return a.text < b.text end)
-
-                    for _, choice in pairs(choices) do
-                        local friendlyName = makeStringTangentFriendly(choice.text)
-                        if friendlyName and #friendlyName >= 1 then
-                            local actionID = string.format("%#010x", currentActionID)
-
-                            group(
-                                x.Action { id = actionID } (
-                                    x.Name (friendlyName)
-                                )
-                            )
-                            currentActionID = currentActionID + 1
-                            table.insert(mapping, {
-                                [actionID] = {
-                                    ["handlerID"] = handlerID,
-                                    ["action"] = choice.params,
-                                }
-                            })
-                        end
-                    end
-                    controls:append(group)
-                end
-            end
-        end
-        root:append(controls)
-
-        --------------------------------------------------------------------------------
-        -- Default Global Settings:
-        --------------------------------------------------------------------------------
-        root:append(
             x.DefaultGlobalSettings (
                 x.KnobSensitivity { std = 5, alt = 5 } ..
                 x.JogDialSensitivity { std = 5, alt = 5 } ..
                 x.TrackerballSensitivity { std = 5, alt = 5 } ..
                 x.TrackerballDialSensitivity { std = 5, alt = 5 } ..
                 x.IndependentPanelBanks { enabled = false }
-            )
+            ) ..
+
+            --------------------------------------------------------------------------------
+            -- Modes:
+            --------------------------------------------------------------------------------
+            x.Modes (function()
+                local modes = x()
+
+                for _,m in ipairs(mod._modes) do
+                    modes = modes .. m:xml()
+                end
+
+                return modes
+            end) ..
+
+            mod.controls:xml()
+
         )
 
-        --------------------------------------------------------------------------------
-        -- End of XML:
-        --------------------------------------------------------------------------------
-
-        local output
-        output = x([[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>]], false) .. root
+        local output = x._xml() .. root
 
         --------------------------------------------------------------------------------
         -- Write to File & Close:
         --------------------------------------------------------------------------------
+        io.output(controlsFile)
         io.write(tostring(output))
         io.close(controlsFile)
-
-        --------------------------------------------------------------------------------
-        -- Save Mapping File:
-        --------------------------------------------------------------------------------
-        local mappingFile = io.open(mod._configPath .. "/mapping.json", "w")
-        if mappingFile then
-            io.output(mappingFile)
-            io.write(json.encode(mapping))
-            io.close(mappingFile)
-            mod._mapping = mapping
-            return true
-        else
-            log.ef("Failed to open mapping.json file in write mode")
-            return false, "Failed to open mapping.json file in write mode"
-        end
     else
         log.ef("Failed to open controls.xml file in write mode")
         return false, "Failed to open controls.xml file in write mode"
     end
+end
+
+function mod.updateControls()
+    mod.writeControlsXML()
+    if mod.connected() then
+        tangent.sendApplicationDefinition()
+    end
+end
+
+--- plugins.core.tangent.manager.addMode(id, name) -> plugins.core.tangent.manager.mode
+--- Function
+--- Adds a new `mode` with the specified details and returns it.
+---
+--- Parameters:
+--- * id            - The id number of the Mode.
+--- * name          - The name of the Mode.
+---
+--- Returns:
+--- * The new `mode`
+function mod.addMode(id, name)
+    local m = mode.new(id, name)
+    insert(mod._modes, m)
+    sort(mod._modes, function(a,b) return a.name < b.name end)
+    return m
+end
+
+--- plubins.core.tangent.manager.getMode(id) -> plugins.core.tangent.manager.mode
+--- Function
+--- Returns the `mode` with the specified ID, or `nil`.
+---
+--- Parameters:
+--- * id    - The ID to find.
+---
+--- Returns:
+--- * The `mode`, or `nil`.
+function mod.getMode(id)
+    for _,m in mod._modes do
+        if m.id == id then
+            return m
+        end
+    end
+    return nil
 end
 
 --- plugins.core.tangent.manager.addModes(modes) -> none
@@ -419,21 +242,6 @@ end
 function mod.addModes(modes)
     if modes and type(modes) == "table" then
         mod.MODES = tools.mergeTable(mod.MODES, modes)
-    end
-end
-
---- plugins.core.tangent.manager.addParameters(modes) -> none
---- Function
---- Adds modes to the existing modes table.
----
---- Parameters:
----  * modes - a table containing the new modes items.
----
---- Returns:
----  * None
-function mod.addParameters(parameters)
-    if parameters and type(parameters) == "table" then
-        mod.CUSTOM_PARAMETERS = tools.mergeTable(mod.CUSTOM_PARAMETERS, parameters)
     end
 end
 
@@ -547,89 +355,45 @@ local fromHub = {
     end,
 
     [tangent.fromHub.actionOn] = function(metadata)
-        if metadata and metadata.actionID then
-            local actionID = string.format("%#010x", metadata.actionID)
-            local mapping = nil
-            for _, v in pairs(mod._mapping) do
-                if v[actionID] then
-                    mapping = v[actionID]
-                end
-            end
-            if mapping then
-                -- TODO: FCPX specific code should not be in `core`.
-                if string.sub(mapping.handlerID, 1, 4) == "fcpx" and fcp:isFrontmost() == false then
-                    --log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-                    return
-                end
-                local handler = mod._actionmanager.getHandler(mapping.handlerID)
-                handler:execute(mapping.action)
-            else
-                log.ef("Could not find a Mapping with Action ID: '%s'", actionID)
-            end
+        local control = mod.controls:findByID(metadata.actionID)
+        if action.is(control) then
+            control:press()
         end
     end,
 
     [tangent.fromHub.actionOff] = function(metadata)
-        -- A key has been released.
-        log.df("A key has been released: %#010x", metadata.actionID)
+        local control = mod.controls:findByID(metadata.actionID)
+        if action.is(control) then
+            control:release()
+        end
     end,
 
     [tangent.fromHub.parameterChange] = function(metadata)
-        if metadata and metadata.increment and metadata.paramID then
-            if fcp.isFrontmost() == false then
-                --log.df("Final Cut Pro isn't actually frontmost so ignoring.")
-                return
-            end
-
-            local paramID = string.format("%#010x", metadata.paramID)
-            local increment = metadata.increment
-
-            local customParameter = getCustomParameter(paramID)
-            if customParameter then
-                --------------------------------------------------------------------------------
-                -- Shift Value:
-                --------------------------------------------------------------------------------
-                local ok, result = xpcall(function()
-                    return customParameter.shiftValue(increment)
-                end, debug.traceback)
-                if not ok then
-                    log.ef("Error while executing Parameter Change: %s", result)
-                    return nil
-                end
-
-                --------------------------------------------------------------------------------
-                -- Send Values back to Tangent Hub:
-                --------------------------------------------------------------------------------
-                local value
-                ok, value = xpcall(function()
-                    return customParameter.getValue()
-                end, debug.traceback)
-                if not ok then
-                    log.ef("Error while trying to send values back to Tangent during Parameter Change: %s", result)
-                    return nil
-                end
-                if value then
-                    tangent.sendParameterValue(paramID, value)
-                end
+        local control = mod.controls:findByID(metadata.paramID)
+        if parameter.is(control) then
+            local newValue = control:change(metadata.increment)
+            if newValue ~= nil then
+                tangent.sendParameterValue(control.id, newValue)
             end
         end
     end,
 
     [tangent.fromHub.parameterReset] = function(metadata)
-        local paramID = string.format("%#010x", metadata.paramID)
-        local customParameter = getCustomParameter(paramID)
-        if customParameter then
-            customParameter.resetValue()
+        local control = mod.controls:findByID(metadata.paramID)
+        if parameter.is(control) then
+            local newValue = control:reset()
+            if newValue ~= nil then
+                tangent.sendParameterValue(control.id, newValue)
+            end
         end
     end,
 
     [tangent.fromHub.parameterValueRequest] = function(metadata)
-        local paramID = string.format("%#010x", metadata.paramID)
-        local customParameter = getCustomParameter(paramID)
-        if customParameter then
-            local value = customParameter.getValue()
-            if value then
-                tangent.sendParameterValue(paramID, value)
+        local control = mod.controls:findByID(metadata.paramID)
+        if parameter.is(control) then
+            local value = control:get()
+            if value ~= nil then
+                tangent.sendParameterValue(control.id, value)
             end
         end
     end,
@@ -646,34 +410,56 @@ local fromHub = {
     end,
 
     [tangent.fromHub.menuChange] = function(metadata)
-        log.df("Menu Change: %#010x; %d", metadata.menuID, metadata.increment)
+        -- log.df("Menu Change: %#010x; %d", metadata.menuID, metadata.increment)
+        local control = mod.controls:findByID(metadata.menuID)
+        local increment = metadata.increment
+        if menu.is(control) then
+            if increment == 1 then
+                control:next()
+            elseif increment == -1 then
+                control:prev()
+            else
+                log.ef("Unexpected 'menu change' increment from Tangent: %s", increment)
+            end
+            local value = control:get()
+            if value ~= nil then
+                tangent.sendMenuString(control.id, value)
+            end
+        end
     end,
 
     [tangent.fromHub.menuReset] = function(metadata)
-        log.df("Menu Reset: %#010x", metadata.menuID)
+        -- log.df("Menu Reset: %#010x", metadata.menuID)
+        local control = mod.controls:findByID(metadata.menuID)
+        if menu.is(control) then
+            control:reset()
+            local value = control:get()
+            if value ~= nil then
+                tangent.sendMenuString(control.id, value)
+            end
+        end
     end,
 
     [tangent.fromHub.menuStringRequest] = function(metadata)
-        log.df("Menu String Request: %#010x; %d", metadata.menuID, metadata.increment)
+        local control = mod.controls:findByID(metadata.menuID)
+        if menu.is(control) then
+            local value = control:get()
+            if value ~= nil then
+                tangent.sendMenuString(control.id, value)
+            end
+        end
     end,
 
     [tangent.fromHub.modeChange] = function(metadata)
-        local activeGroup = mod.activeGroup()
-        local modeID = metadata and metadata.modeID
-
-        if activeGroup and modeID then
-            local tangentID = getTangentIDFromGroupID(activeGroup)
-            if modeID ~= tangentID then
-                local currentSubGroup = mod.currentSubGroup()
-                currentSubGroup[activeGroup] = modeID
-                mod.currentSubGroup(currentSubGroup)
-                --log.df("SAVING SUBGROUP: %s, %s", activeGroup, modeID)
+        local newMode = mod.getMode(metadata.modeID)
+        if newMode then
+            local oldMode = mod.currentMode
+            if oldMode.id ~= newMode.id then
+                oldMode:deactivate()
+                mod.currentMode = newMode
+                newMode:activate()
+                tangent.sendModeValue(newMode.id)
             end
-
-            --------------------------------------------------------------------------------
-            -- Tell Tangent to Change Mode:
-            --------------------------------------------------------------------------------
-            tangent.sendModeValue(modeID)
         end
     end,
 
@@ -801,6 +587,10 @@ function mod.start()
     end
 end
 
+function mod.connected()
+    return tangent.connected()
+end
+
 --- plugins.core.tangent.manager.stop() -> boolean
 --- Function
 --- Stops the Tangent Plugin
@@ -828,7 +618,7 @@ end
 --- Returns:
 ---  * `true` if mapping files are installed otherwise `false`
 function mod.areMappingsInstalled()
-    return tools.doesFileExist(mod._configPath .. "/controls.xml") and tools.doesFileExist(mod._configPath .. "/mapping.json")
+    return tools.doesFileExist(mod._configPath .. "/controls.xml")
 end
 
 --- plugins.core.tangent.manager.enabled <cp.prop: boolean>
@@ -847,11 +637,6 @@ mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
             disableFinalCutProInTangentHub()
 
             --------------------------------------------------------------------------------
-            -- Load Mappings:
-            --------------------------------------------------------------------------------
-            loadMapping()
-
-            --------------------------------------------------------------------------------
             -- Start Module:
             --------------------------------------------------------------------------------
             mod.start()
@@ -866,6 +651,11 @@ mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
     end
 end)
 
+-- secret test function...
+function mod._test(...)
+    return require("all_tests")(...)
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -875,20 +665,12 @@ local plugin = {
     id          = "core.tangent.manager",
     group       = "core",
     required    = true,
-    dependencies    = {
-        ["core.action.manager"]                         = "actionmanager",
-    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
-
-    --------------------------------------------------------------------------------
-    -- Action Manager:
-    --------------------------------------------------------------------------------
-    mod._actionmanager = deps.actionmanager
+function plugin.init(_, env)
 
     --------------------------------------------------------------------------------
     -- Get XML Path:

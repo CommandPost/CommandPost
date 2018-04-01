@@ -56,6 +56,27 @@ local mod = {}
 --- hs.tangent.fromHub -> table
 --- Constant
 --- Definitions for IPC Commands from the HUB to Hammerspoon.
+---
+--- Notes:
+--- * `connected`                       - a connection is established with the Hub.
+--- * `disconnected`                    - the connection is dropped with the Hub.
+--- * `initiateComms`                   - sent when the Hub wants to initiate communications.
+--- * `parameterChange`                 - a parameter was incremented.
+--- * `parameterReset`                  - a parameter was reset.
+--- * `parameterValueRequest`           - the Hub wants the current value of the parameter.
+--- * `menuChange`                      - The menu was changed, `+1` or `-1`.
+--- * `menuReset`                       - The menu was reset.
+--- * `menuStringRequest`               - The application should send a `menuString` with the current value.
+--- * `actionOn`                        - An action button was pressed.
+--- * `actionOff`                       - An action button was released.
+--- * `modeChange`                      - The current mode was changed.
+--- * `transport`                       - The transport.
+--- * `unmanagedPanelCapabilities`      - Send by the Hub to advertise an unmanaged panel.
+--- * `unmanagedButtonDown`             - A button on an unmanaged panel was pressed.
+--- * `unmanagedButtonUp`               - A button on an unmanaged panel was released.
+--- * `unmanagedEncoderChange`          - An encoder (dial/wheel) on an unmanaged panel changed.
+--- * `unmanagedDisplayRefresh`         - Triggered when an unmanaged panel's display needs to update.
+--- * `panelConnectionState`            - A panel's connection state changed.
 mod.fromHub = {
     -- custom notifications
     connected                                   = 0xFF01,
@@ -97,6 +118,67 @@ mod.toHub = {
     highlightControl                            = 0xA3,
     indicateControl                             = 0xA4,
     panelConnectionStatesRequest                = 0xA5,
+}
+
+mod.reserved = {
+--- hs.tangent.reserved.action -> table
+--- Constant
+--- Definitions for reserved action IDs.
+---
+--- Notes:
+--- * `alt`                     - toggles the 'ALT' function.
+--- * `nextKnobBank`            - switches to the next knob bank.
+--- * `prevKnobBank`            - switches to the previous knob bank.
+--- * `nextButtonBank`          - switches to the next button bank.
+--- * `prevBasketBank`          - switches to the previous button bank.
+--- * `nextTrackerballBank`     - switches to the next trackerball bank.
+--- * `prevTrackerballBank`     - switches to the previous trackerball bank.
+--- * `nextMode`                - switches to the next mode.
+--- * `prevMode`                - switches to the previous mode.
+--- * `goToMode`                - switches to the specified mode, requiring a Argument with the mode ID.
+--- * `toggleJogShuttle`        - toggles jog/shuttle mode.
+--- * `toggleMouseEmulation`    - toggles mouse emulation.
+--- * `fakeKeypress`            - generates a keypress, requiring an Argument with the key code.
+--- * `showHUD`                 - shows the HUD on screen.
+--- * `goToKnobBank`            - goes to the specific knob bank, requiring an Argument with the bank number.
+--- * `goToButtonBank`          - goes to the specific button bank, requiring an Argument with the bank number.
+--- * `goToTrackerballBank`     - goes to the specific trackerball bank, requiring an Argument with the bank number.
+    action = {
+        _                                       = 0x80000000,
+        alt                                     = 0x80000001,
+        nextKnobBank                            = 0x80000002,
+        prevKnobBank                            = 0x80000003,
+        nextButtonBank                          = 0x80000004,
+        prevButtonBank                          = 0x80000005,
+        nextTrackerballBank                     = 0x80000006,
+        prevTrackerballBank                     = 0x80000007,
+        nextMode                                = 0x80000009,
+        prevMode                                = 0x8000000A,
+        goToMode                                = 0x8000000B,
+        toggleJogShuttle                        = 0x8000000C,
+        toggleMouseEmulation                    = 0x8000000D,
+        fakeKeypress                            = 0x8000000E,
+        showHUD                                 = 0x8000000F,
+        goToKnobBank                            = 0x80000010,
+        goToButtonBank                          = 0x80000011,
+        goToTrackerballBank                     = 0x80000012,
+    },
+
+--- hs.tangent.reserved.parameter -> table
+--- Constant
+--- A table of reserved parameter IDs.
+---
+--- Notes:
+--- * `transportRing`           - transport ring.
+--- * `fakeKeypress`            - sends a fake keypress.
+    parameter = {
+        _                                       = 0x81000000,
+        transportRing                           = 0x81000001,
+        fakeKeypress                            = 0x81000002,
+    },
+    menu = {
+        _                                       = 0x82000000,
+    }
 }
 
 --- hs.tangent.panelType -> table

@@ -143,7 +143,7 @@ end
 --- If set to `true` (the default), any choices created will be cached until [reset] is called.
 handler.mt.cached = prop.TRUE()
 :bind(handler.mt)
-:watch(function(cached, self)
+:watch(function(_, self)
     -- reset the cache
     self:reset()
 end)

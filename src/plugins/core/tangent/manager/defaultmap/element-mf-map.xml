@@ -429,19 +429,19 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Element-Mf Trackerball X -->
                             <Mapping mode="Std">
-                                <Key>0x00030017</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Mf Trackerball Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030018</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
                             <Mapping mode="Std">
-                                <Key>0x00030025</Key> <!-- Color Wheel - Master - Saturation -->
+                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>

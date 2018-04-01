@@ -96,19 +96,19 @@ function Puck.matches(element)
     return element and element:attributeValue("AXRole") == "AXButton"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorPuck:new(parent, puckNumber, labelKeys) -> ColorPuck object
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.new(parent, puckNumber, labelKeys, hasAngle) -> ColorPuck
+--- Constructor
 --- Creates a new `ColorPuck` object
 ---
 --- Parameters:
----  * `parent` - The parent
+---  * `parent`     - The parent
 ---  * `puckNumber` - The puck number
----  * `labelKeys` - Label Keys
+---  * `labelKeys`  - Label Keys
+---  * `hasAngle`   - If `true`, the puck has an `angle` parameter.
 ---
 --- Returns:
 ---  * A ColorInspector object
--- TODO: Use a Function instead of a Method.
-function Puck:new(parent, puckNumber, labelKeys) -- luacheck: ignore
+function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 
     assert(
         puckNumber >= Puck.RANGE.master and puckNumber <= Puck.RANGE.highlights,
@@ -116,9 +116,10 @@ function Puck:new(parent, puckNumber, labelKeys) -- luacheck: ignore
     )
 
     local o = prop.extend({
-        _parent = parent,
+        _parent     = parent,
         _puckNumber = puckNumber,
-        _labelKeys = labelKeys,
+        _labelKeys  = labelKeys,
+        _hasAngle   = hasAngle,
         xShift = 0,
         yShift = 0
     }, Puck)
@@ -145,8 +146,12 @@ function Puck:new(parent, puckNumber, labelKeys) -- luacheck: ignore
     --- Field
     --- The 'angle' text field (only present for the 'color' aspect).
     o.angle = TextField:new(o, function()
-        local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
-        return fields and #fields > 1 and fields[1] or nil
+        if o._hasAngle then
+            local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
+            return fields and #fields > 1 and fields[1] or nil
+        else
+            return nil
+        end
     end, tonumber)
 
     return o
@@ -163,6 +168,20 @@ end
 --- * The puck number.
 function Puck:index()
     return self._puckNumber
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:hasAngle() -> boolean
+--- Method
+--- Indicates if the puck has an `angle` parameter. The `angle` `cp.prop` will always
+--- exist regardless, but if this is `false`, it will never return a result.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the puck has an `angle`.
+function Puck:hasAngle()
+    return self._hasAngle
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:parent() -> object

@@ -41,52 +41,52 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
@@ -113,45 +113,45 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
@@ -177,70 +177,70 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030019</Key> <!-- Color Wheel - Shadows - Horizontal -->
+                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030017</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030020</Key> <!-- Color Wheel - Shadows - Vertical -->
+                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030018</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00030026</Key> <!-- Color Wheel - Shadows - Saturation -->
+                                <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
                                 <Display>Number</Display>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030025</Key> <!-- Color Wheel - Master - Saturation -->
+                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
                                 <Display>Number</Display>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030021</Key> <!-- Color Wheel - Midtones - Horizontal -->
+                                <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030022</Key> <!-- Color Wheel - Midtones - Vertical -->
+                                <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
                             <Mapping mode="Std">
-                                <Key>0x00030027</Key> <!-- Color Wheel - Midtones - Saturation -->
+                                <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
                                 <Display>Number</Display>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030023</Key> <!-- Color Wheel - Highlights - Horizontal -->
+                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030024</Key> <!-- Color Wheel - Highlights - Vertical -->
+                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="8"> <!-- Ripple Dial 3 -->
                             <Mapping mode="Std">
-                                <Key>0x00030028</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
                                 <Display>Number</Display>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>

@@ -20,6 +20,10 @@
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 
+local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
+
+local format                                    = string.format
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -66,531 +70,223 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Modes:
     --------------------------------------------------------------------------------
-    local modes = {
-        ["0x00010002"] = {
-            ["name"]        =   "FCP: Edit",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "edit",
-        },
-        ["0x00010003"] = {
-            ["name"]        =   "FCP: Board",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "board",
-        },
-        ["0x00010004"] = {
-            ["name"]        =   "FCP: Wheels",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "wheels",
-        },
-        ["0x00010005"] = {
-            ["name"]        =   "FCP: Prep",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "prep",
-        },
-        ["0x00010006"] = {
-            ["name"]        =   "FCP: Keyword",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "keyword",
-        },
-        ["0x00010007"] = {
-            ["name"]        =   "FCP: Speed",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "speed",
-        },
-        ["0x00010008"] = {
-            ["name"]        =   "FCP: Audition",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "audition",
-        },
-        ["0x00010009"] = {
-            ["name"]        =   "FCP: Multicam",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "multicam",
-        },
-        ["0x00010010"] = {
-            ["name"]        =   "FCP: Marker",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "marker",
-        },
-        ["0x00010011"] = {
-            ["name"]        =   "FCP: Sound",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "sound",
-        },
-        ["0x00010012"] = {
-            ["name"]        =   "FCP: Function",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "function",
-        },
-        ["0x00010013"] = {
-            ["name"]        =   "FCP: View",
-            ["groupID"]     =   "fcpx",
-            ["groupSubID"]  =   "view",
-        },
-    }
-    mod._manager.addModes(modes)
+    local manager = mod._manager
+
+    manager.addMode(0x00010002, "FCP: Edit")
+    manager.addMode(0x00010003, "FCP: Board")
+        :onActivate(function()
+            fcp:colorBoard():show()
+        end)
+
+    manager.addMode(0x00010004, "FCP: Wheels")
+        :onActivate(function()
+            fcp:inspector():color():colorWheels():show()
+        end)
+    -- manager.addMode(0x00010005, "FCP: Prep")
+    -- manager.addMode(0x00010006, "FCP: Keyword")
+    -- manager.addMode(0x00010007, "FCP: Speed")
+    -- manager.addMode(0x00010008, "FCP: Audition")
+    -- manager.addMode(0x00010009, "FCP: Multicam")
+    -- manager.addMode(0x00010010, "FCP: Marker")
+    -- manager.addMode(0x00010011, "FCP: Sound")
+    -- manager.addMode(0x00010012, "FCP: Function")
+    -- manager.addMode(0x00010013, "FCP: View")
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
     --------------------------------------------------------------------------------
-    local parameters = {
-        ["fcpx_colorInspector"] = {
-            --------------------------------------------------------------------------------
-            -- COLOR BOARD - COLOR:
-            --------------------------------------------------------------------------------
-            ["0x00030001"] = {
-                ["name"] = "Color Board - Color - Master - Angle",
-                ["name9"] = "CB MS ANG",
-                ["minValue"] = 0,
-                ["maxValue"] = 359,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():master():angle() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():master():show():shiftAngle(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():master():show():reset() end,
-            },
-            ["0x00030002"] = {
-                ["name"] = "Color Board - Color - Master - Percentage",
-                ["name9"] = "CB MS PER",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():master():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():master():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():master():show():reset() end,
-            },
-            ["0x00030003"] = {
-                ["name"] = "Color Board - Color - Shadows - Angle",
-                ["name9"] = "CB SD ANG",
-                ["minValue"] = 0,
-                ["maxValue"] = 359,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():shadows():angle() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():shadows():show():shiftAngle(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():shadows():show():reset() end,
-            },
-            ["0x00030004"] = {
-                ["name"] = "Color Board - Color - Shadows - Percentage",
-                ["name9"] = "CB SD PER",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():shadows():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():shadows():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():shadows():show():reset() end,
-            },
-            ["0x00030005"] = {
-                ["name"] = "Color Board - Color - Midtones - Angle",
-                ["name9"] = "CB MT ANG",
-                ["minValue"] = 0,
-                ["maxValue"] = 359,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():midtones():angle() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():midtones():show():shiftAngle(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():midtones():show():reset() end,
-            },
-            ["0x00030006"] = {
-                ["name"] = "Color Board - Color - Midtones - Percentage",
-                ["name9"] = "CB HL PER",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():midtones():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():midtones():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():midtones():show():reset() end,
-            },
-            ["0x00030007"] = {
-                ["name"] = "Color Board - Color - Highlights - Angle",
-                ["name9"] = "CB HL ANG",
-                ["minValue"] = 0,
-                ["maxValue"] = 359,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():highlights():angle() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():highlights():show():shiftAngle(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():highlights():show():reset() end,
-            },
-            ["0x00030008"] = {
-                ["name"] = "Color Board - Color - Highlights - Percentage",
-                ["name9"] = "CB HL PER",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():color():highlights():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():color():highlights():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():color():highlights():show():reset() end,
-            },
 
-            --------------------------------------------------------------------------------
-            -- COLOR BOARD - SATURATION:
-            --------------------------------------------------------------------------------
-            ["0x00030009"] = {
-                ["name"] = "Color Board - Saturation - Master",
-                ["name9"] = "CB SAT MS",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():saturation():master():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():master():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():saturation():master():show():reset() end,
-            },
-            ["0x00030010"] = {
-                ["name"] = "Color Board - Saturation - Shadows",
-                ["name9"] = "CB SAT SD",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():saturation():shadows():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():shadows():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():saturation():shadows():show():reset() end,
-            },
-            ["0x00030011"] = {
-                ["name"] = "Color Board - Saturation - Midtones",
-                ["name9"] = "CB SAT MT",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():saturation():midtones():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():midtones():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():saturation():midtones():show():reset() end,
-            },
-            ["0x00030012"] = {
-                ["name"] = "Color Board - Saturation - Highlights",
-                ["name9"] = "CB SAT HL",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():saturation():highlights():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():saturation():highlights():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():saturation():highlights():show():reset() end,
-            },
+    local ciGroup = manager.controls:group(i18n("fcpx_colorInspector_action"))
 
-            --------------------------------------------------------------------------------
-            -- COLOR BOARD - EXPOSURE:
-            --------------------------------------------------------------------------------
-            ["0x00030013"] = {
-                ["name"] = "Color Board - Exposure - Master",
-                ["name9"] = "CB EXP MS",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():exposure():master():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():master():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():exposure():master():show():reset() end,
-            },
-            ["0x00030014"] = {
-                ["name"] = "Color Board - Exposure - Shadows",
-                ["name9"] = "CB EXP SD",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():exposure():shadows():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():shadows():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():exposure():shadows():show():reset() end,
-            },
-            ["0x00030015"] = {
-                ["name"] = "Color Board - Exposure - Midtones",
-                ["name9"] = "CB EXP MT",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():exposure():midtones():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():midtones():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():exposure():midtones():show():reset() end,
-            },
-            ["0x00030016"] = {
-                ["name"] = "Color Board - Exposure - Highlights",
-                ["name9"] = "CB EXP HL",
-                ["minValue"] = -100,
-                ["maxValue"] = 100,
-                ["stepSize"] = 1,
-                ["getValue"] = function() return fcp:colorBoard():exposure():highlights():percent() end,
-                ["shiftValue"] = function(value) return fcp:colorBoard():exposure():highlights():show():shiftPercent(value) end,
-                ["resetValue"] = function() fcp:colorBoard():exposure():highlights():show():reset() end,
-            },
+    -- The section all Color Inspector controls are in.
+    local baseID = 0x00300000
 
-            --------------------------------------------------------------------------------
-            -- COLOR WHEELS - WHEELS:
-            --------------------------------------------------------------------------------
-            ["0x00030017"] = {
-                ["name"] = "Color Wheel - Master - Horizontal",
-                ["name9"] = "MSTR HORZ",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():master():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():colorOrientation() and fcp:inspector():color():colorWheels():master():colorOrientation().right end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030018"] = {
-                ["name"] = "Color Wheel - Master - Vertical",
-                ["name9"] = "MSTR VERT",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():master():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():colorOrientation() and fcp:inspector():color():colorWheels():master():colorOrientation().up end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030019"] = {
-                ["name"] = "Color Wheel - Shadows - Horizontal",
-                ["name9"] = "SHDW HORZ",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():shadows():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():colorOrientation() and fcp:inspector():color():colorWheels():shadows():colorOrientation().right end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030020"] = {
-                ["name"] = "Color Wheel - Shadows - Vertical",
-                ["name9"] = "SHDW VERT",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():shadows():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():colorOrientation() and fcp:inspector():color():colorWheels():shadows():colorOrientation().up end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030021"] = {
-                ["name"] = "Color Wheel - Midtones - Horizontal",
-                ["name9"] = "MIDT HORZ",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():midtones():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():colorOrientation() and fcp:inspector():color():colorWheels():midtones():colorOrientation().right end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030022"] = {
-                ["name"] = "Color Wheel - Midtones - Vertical",
-                ["name9"] = "MIDT VERT",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():midtones():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():colorOrientation() and fcp:inspector():color():colorWheels():midtones():colorOrientation().up end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030023"] = {
-                ["name"] = "Color Wheel - Highlights - Horizontal",
-                ["name9"] = "HIGH HORZ",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():highlights():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():colorOrientation() and fcp:inspector():color():colorWheels():highlights():colorOrientation().right end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():nudgeColor(value, 0) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():colorPosition({x=0, y=0}) end,
-            },
-            ["0x00030024"] = {
-                ["name"] = "Color Wheel - Highlights - Vertical",
-                ["name9"] = "HIGH VERT",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = fcp:inspector():color():colorWheels():highlights():colorWell().KEY_PRESS,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():colorOrientation() and fcp:inspector():color():colorWheels():highlights():colorOrientation().up end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():nudgeColor(0, value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():colorPosition({x=0, y=0}) end,
-            },
+    local aspects = { "color", "saturation", "exposure" }
 
-            --------------------------------------------------------------------------------
-            -- COLOR WHEELS - SATURATION:
-            --------------------------------------------------------------------------------
-            ["0x00030025"] = {
-                ["name"] = "Color Wheel - Master - Saturation",
-                ["name9"] = "MSTR SAT",
-                ["minValue"] = 0,
-                ["maxValue"] = 2,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():saturation():value(1) end,
-            },
-            ["0x00030026"] = {
-                ["name"] = "Color Wheel - Shadows - Saturation",
-                ["name9"] = "LOW SAT",
-                ["minValue"] = 0,
-                ["maxValue"] = 2,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():saturation():value(1) end,
-            },
-            ["0x00030027"] = {
-                ["name"] = "Color Wheel - Midtones - Saturation",
-                ["name9"] = "MID SAT",
-                ["minValue"] = 0,
-                ["maxValue"] = 2,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():saturation():value(1) end,
-            },
-            ["0x00030028"] = {
-                ["name"] = "Color Wheel - Highlights - Saturation",
-                ["name9"] = "HIGH SAT",
-                ["minValue"] = 0,
-                ["maxValue"] = 2,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():saturation():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():saturation():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():saturation():value(1) end,
-            },
+    local ranges = { "master", "shadows", "midtones", "highlights" }
 
-            --------------------------------------------------------------------------------
-            -- COLOR WHEELS - BRIGHTNESS:
-            --------------------------------------------------------------------------------
-            ["0x00030029"] = {
-                ["name"] = "Color Wheel - Master - Brightness",
-                ["name9"] = "MSTR BRIG",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():master():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():master():show():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():master():show():brightness():value(0) end,
-            },
-            ["0x00030030"] = {
-                ["name"] = "Color Wheel - Shadows - Brightness",
-                ["name9"] = "LOW BRIG",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():shadows():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():shadows():show():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():shadows():show():brightness():value(0) end,
-            },
-            ["0x00030031"] = {
-                ["name"] = "Color Wheel - Midtones - Brightness",
-                ["name9"] = "MID BRIG",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():midtones():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():midtones():show():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():midtones():show():brightness():value(0) end,
-            },
-            ["0x00030032"] = {
-                ["name"] = "Color Wheel - Highlights - Brightness",
-                ["name9"] = "HIGH BRIG",
-                ["minValue"] = -1,
-                ["maxValue"] = 1,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():highlights():brightness():value() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():highlights():show():brightness():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():highlights():show():brightness():value(0) end,
-            },
+    -- Handle the Color Board
+    local cbGroup = ciGroup:group(i18n("colorBoard"))
+    local cb = fcp:colorBoard()
 
-            --------------------------------------------------------------------------------
-            -- COLOR WHEELS - TEMPERATURE, TINT, HUE, MIX:
-            --------------------------------------------------------------------------------
-            ["0x00030033"] = {
-                ["name"] = "Color Wheel - Temperature",
-                ["name9"] = "COLR TEMP",
-                ["minValue"] = 2500,
-                ["maxValue"] = 10000,
-                ["stepSize"] = 0.1,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():temperature() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():temperatureSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():temperatureSlider():setValue(5000) end,
-            },
-            ["0x00030034"] = {
-                ["name"] = "Color Wheel - Tint",
-                ["name9"] = "COLR TINT",
-                ["minValue"] = -50,
-                ["maxValue"] = 50,
-                ["stepSize"] = 0.1,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():tint() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():tintSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():tintSlider():setValue(0) end,
-            },
-            ["0x00030035"] = {
-                ["name"] = "Color Wheel - Hue",
-                ["name9"] = "COLR HUE",
-                ["minValue"] = 0,
-                ["maxValue"] = 360,
-                ["stepSize"] = 0.1,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():hue() end,
-                ["shiftValue"] = function(value)
-                        local currentValue = fcp:inspector():color():colorWheels():show():hue()
-                        if currentValue then
-                            fcp:inspector():color():colorWheels():hue(currentValue + value)
-                        end
-                    end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():hue(0) end,
-            },
-            ["0x00030036"] = {
-                ["name"] = "Color Wheel - Mix",
-                ["name9"] = "COLR MIX",
-                ["minValue"] = 0,
-                ["maxValue"] = 1,
-                ["stepSize"] = 0.01,
-                ["getValue"] = function() return fcp:inspector():color():colorWheels():mix() end,
-                ["shiftValue"] = function(value) fcp:inspector():color():colorWheels():show():mixSlider():shiftValue(value) end,
-                ["resetValue"] = function() fcp:inspector():color():colorWheels():show():mixSlider():setValue(1) end,
-            },
+    -- The multiplier for aspects (color/saturation/exposure).
+    local aspectBaseID = 0x01000
+    -- The multiplier for ranges.
+    local rangeBaseID = 0x00100
 
-            --------------------------------------------------------------------------------
-            -- BINDINGS:
-            --------------------------------------------------------------------------------
-            ["bindings"] = {
-                ["name"] = "zzzzzzzzzzz", -- This is just to put the binding alphabetically last.
-                ["xml"] = [[
-                    <Binding name="Color Board Master Color">
-                        <Member id="0x00030001"/>
-                        <Member id="0x00030002"/>
-                    </Binding>
-                    <Binding name="Color Board Shadows Color">
-                        <Member id="0x00030003"/>
-                        <Member id="0x00030004"/>
-                    </Binding>
-                    <Binding name="Color Board Midtones Color">
-                        <Member id="0x00030005"/>
-                        <Member id="0x00030006"/>
-                    </Binding>
-                    <Binding name="Color Board Highlights Color">
-                        <Member id="0x00030007"/>
-                        <Member id="0x00030008"/>
-                    </Binding>
-                    <Binding name="Color Wheels Master">
-                        <Member id="0x00030017"/>
-                        <Member id="0x00030018"/>
-                        <Member id="0x00030025"/>
-                    </Binding>
-                    <Binding name="Color Wheels Shadows">
-                        <Member id="0x00030019"/>
-                        <Member id="0x00030020"/>
-                        <Member id="0x00030026"/>
-                    </Binding>
-                    <Binding name="Color Wheels Midtones">
-                        <Member id="0x00030021"/>
-                        <Member id="0x00030022"/>
-                        <Member id="0x00030027"/>
-                    </Binding>
-                    <Binding name="Color Wheels Highlights">
-                        <Member id="0x00030023"/>
-                        <Member id="0x00030024"/>
-                        <Member id="0x00030028"/>
-                    </Binding>
-                    ]],
-                },
-            },
-        ["fcpx_timeline"] = {
-            --------------------------------------------------------------------------------
-            -- TIMELINE ZOOM:
-            --------------------------------------------------------------------------------
-            ["0x00040001"] = {
-                ["name"] = "Timeline Zoom",
-                ["name9"] = "Zoom",
-                ["minValue"] = 0,
-                ["maxValue"] = 10,
-                ["stepSize"] = 0.2,
-                ["getValue"] = function() return fcp:timeline():toolbar():appearance():zoomAmount():getValue() end,
-                ["shiftValue"] = function(value) return fcp:timeline():toolbar():appearance():show():zoomAmount():shiftValue(value) end,
-                ["resetValue"] = function() fcp:timeline():toolbar():appearance():show():zoomAmount():setValue(10) end,
-            },
-        },
-    }
-    mod._manager.addParameters(parameters)
+    -- look up some terms
+    local iColorBoard, iColorBoard2, iAngle, iAngle3, iPercentage, iPercentage3 =
+        i18n("colorBoard"), i18n("colorBoard2"), i18n("angle"), i18n("angle3"), i18n("percentage"), i18n("percentage3")
 
+    for i,aKey in ipairs(aspects) do
+        local aspect = cb[aKey](cb)
+        local aspectID = baseID + i*aspectBaseID
+
+        local aName = i18n(aKey)
+        for j,pKey in ipairs(ranges) do
+            local puck = aspect[pKey](aspect)
+            local rangeID = aspectID + j*rangeBaseID
+
+            local pName, pName2 = i18n(pKey), i18n(pKey.."2")
+
+            local percent = cbGroup:parameter(rangeID + 2)
+                :name(format("%s - %s - %s - %s", iColorBoard, aName, pName, iPercentage))
+                :name9(format("%s %s %s", iColorBoard2, pName2, iPercentage3))
+                :minValue(-100)
+                :maxValue(100)
+                :stepSize(1)
+                :onGet(function() return puck:show():percent() end)
+                :onChange(function(value) return puck:show():shiftPercent(value) end)
+                :onReset(function() puck:show():reset() end)
+
+            if puck:hasAngle() then
+                local angle = cbGroup:parameter(rangeID + 1)
+                    :name(format("%s - %s - %s - %s", iColorBoard, aName, pName, iAngle))
+                    :name9(format("%s %s %s", iColorBoard2, pName2, iAngle3))
+                    :minValue(0)
+                    :maxValue(359)
+                    :stepSize(1)
+                    :onGet(function() return puck:show():angle() end)
+                    :onChange(function(value) return puck:show():shiftAngle(value) end)
+                    :onReset(function() puck:show():reset() end)
+
+                cbGroup:binding(format("%s %s %s", iColorBoard, pName, aName))
+                    :member(angle)
+                    :member(percent)
+            end
+        end
+    end
+
+    -- handle the color wheels
+    local cwGroup = ciGroup:group(i18n("colorWheels"))
+    local cw = fcp:inspector():color():colorWheels()
+
+    local wheelsBaseID = baseID + 0x010000
+    local wheelID = 0x010
+    local iColorWheel, iHorizontal, iHorizontal4, iVertical, iVertical4 =
+        i18n("colorWheel"), i18n("horizontal"), i18n("horizontal4"), i18n("vertical"), i18n("vertical4")
+    local iSaturation, iSaturation4, iBrightness, iBrightness4 = i18n("saturation"), i18n("saturation4"), i18n("brightness"), i18n("brightness4")
+
+    for i,pKey in ipairs(ranges) do
+        local wheel = cw[pKey]
+        local id = wheelsBaseID + i*wheelID
+
+        local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
+
+        local horiz = cwGroup:parameter(id + 1)
+            :name(format("%s - %s - %s", iColorWheel, iWheel, iHorizontal))
+            :name9(format("%s %s", iWheel4, iHorizontal4))
+            :minValue(-1)
+            :maxValue(1)
+            :stepSize(ColorWell.KEY_PRESS)
+            :onGet(function()
+                local orientation = wheel:colorOrientation()
+                return orientation and orientation.right
+            end)
+            :onChange(function(value) wheel:show():nudgeColor(0, value) end)
+            :onReset(function() wheel:colorWell():reset() end)
+
+        local vert = cwGroup:parameter(id + 2)
+            :name(format("%s - %s - %s", iColorWheel, iWheel, iVertical))
+            :name9(format("%s %s", iWheel4, iVertical4))
+            :minValue(-1)
+            :maxValue(1)
+            :stepSize(ColorWell.KEY_PRESS)
+            :onGet(function()
+                local orientation = wheel:colorOrientation()
+                return orientation and orientation.up
+            end)
+            :onChange(function(value) wheel:show():nudgeColor(value, 0) end)
+            :onReset(function() wheel:colorWell():reset() end)
+
+        local sat = cwGroup:parameter(id + 3)
+            :name(format("%s - %s - %s", iColorWheel, iWheel, iSaturation))
+            :name9(format("%s %s", iWheel4, iSaturation4))
+            :minValue(0)
+            :maxValue(2)
+            :stepSize(0.01)
+            :onGet(function() wheel:saturation():value() end)
+            :onChange(function(value) wheel:show():saturation():shiftValue(value) end)
+            :onReset(function() wheel:show():saturation():value(1) end)
+
+        cwGroup:parameter(id + 4)
+            :name(format("%s - %s - %s", iColorWheel, iWheel, iBrightness))
+            :name9(format("%s %s", iWheel4, iBrightness4))
+            :minValue(-1)
+            :maxValue(1)
+            :stepSize(0.01)
+            :onGet(function() wheel:brightness():value() end)
+            :onChange(function(value) wheel:show():brightness():shiftValue(value) end)
+            :onReset(function() wheel:show():brightness():value(0) end)
+
+        cwGroup:binding(format("%s %s", iColorBoard, iWheel))
+            :members(vert, horiz, sat)
+    end
+
+    local iColorWheel4 = i18n("colorWheel4")
+
+    -- Color Wheel Temperature
+    cwGroup:parameter(wheelsBaseID+0x0101)
+        :name(format("%s - %s", iColorWheel, i18n("temperature")))
+        :name9(format("%s %s", iColorWheel4, i18n("temperature4")))
+        :minValue(2500)
+        :maxValue(10000)
+        :stepSize(0.1)
+        :onGet(function() return cw:temperature() end)
+        :onChange(function(value) return cw:show():temperatureSlider():shiftValue(value) end)
+        :onReset(function() cw:show():temperatureSlider():setValue(5000) end)
+
+    cwGroup:parameter(wheelsBaseID+0x0102)
+        :name(format("%s - %s", iColorWheel, i18n("tint")))
+        :name9(format("%s %s", iColorWheel4, i18n("tint4")))
+        :minValue(-50)
+        :maxValue(50)
+        :stepSize(0.1)
+        :onGet(function() return cw:tint() end)
+        :onChange(function(value) return cw:show():tintSlider():shiftValue(value) end)
+        :onReset(function() cw:show():tintSlider():setValue(0) end)
+
+    cwGroup:parameter(wheelsBaseID+0x0103)
+        :name(format("%s - %s", iColorWheel, i18n("hue")))
+        :name9(format("%s %s", iColorWheel4, i18n("hue4")))
+        :minValue(0)
+        :maxValue(360)
+        :stepSize(0.1)
+        :onGet(function() return cw:hue() end)
+        :onChange(function(value)
+            local currentValue = cw:show():hue()
+            if currentValue then
+                cw:hue(currentValue+value)
+                return cw:hue()
+            end
+        end)
+        :onReset(function() cw:show():hue(0) end)
+
+    cwGroup:parameter(wheelsBaseID+0x0104)
+        :name(format("%s - %s", iColorWheel, i18n("mix")))
+    :name9(format("%s %s", iColorWheel4, i18n("mix4")))
+        :minValue(0)
+        :maxValue(1)
+        :stepSize(0.01)
+        :onGet(function() return cw:mix() end)
+        :onChange(function(value) return cw:show():mixSlider():shiftValue(value) end)
+        :onReset(function() cw:show():mix(1) end)
+
+    -- TIMELINE ZOOM:
+    local tlGroup = manager.controls:group(i18n("timeline"))
+    local tlBaseID = 0x00040000
+
+    local appearance = fcp:timeline():toolbar():appearance()
+    local zoom = appearance:zoomAmount()
+    tlGroup:parameter(tlBaseID + 0x01)
+        :name(i18n("timelineZoom"))
+        :name9(i18n("timelineZoom9"))
+        :minValue(0)
+        :maxValue(10)
+        :stepSize(0.2)
+        :onGet(function() zoom:getValue() end)
+        :onChange(function(value) zoom:show():shiftValue(value) end)
+        :onReset(function() zoom:show():setValue(10) end)
 end
 
 --------------------------------------------------------------------------------
