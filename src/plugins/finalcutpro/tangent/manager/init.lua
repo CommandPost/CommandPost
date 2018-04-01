@@ -17,6 +17,10 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+-- local log                                       = require("hs.logger").new("fcp_tangent")
+
+local delayed                                   = require("hs.timer").delayed
+
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 
@@ -168,10 +172,19 @@ function mod.init()
     local iSaturation, iSaturation4, iBrightness, iBrightness4 = i18n("saturation"), i18n("saturation4"), i18n("brightness"), i18n("brightness4")
 
     for i,pKey in ipairs(ranges) do
-        local wheel = cw[pKey]
+        local wheel = cw[pKey](cw)
         local id = wheelsBaseID + i*wheelID
 
         local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
+
+        -- set up an accumulator/timer to update changes
+        local right, up = 0, 0
+        local changeTimer = delayed.new(0.01, function()
+            if right ~= 0 or up ~= 0 then
+                wheel:show():nudgeColor(right, up)
+                right, up = 0, 0
+            end
+        end)
 
         local horiz = cwGroup:parameter(id + 1)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iHorizontal))
@@ -183,7 +196,12 @@ function mod.init()
                 local orientation = wheel:colorOrientation()
                 return orientation and orientation.right
             end)
-            :onChange(function(value) wheel:show():nudgeColor(0, value) end)
+            :onChange(function(value)
+                right = right + value
+                if not changeTimer:running() then
+                    changeTimer:start()
+                end
+            end)
             :onReset(function() wheel:colorWell():reset() end)
 
         local vert = cwGroup:parameter(id + 2)
@@ -196,7 +214,12 @@ function mod.init()
                 local orientation = wheel:colorOrientation()
                 return orientation and orientation.up
             end)
-            :onChange(function(value) wheel:show():nudgeColor(value, 0) end)
+            :onChange(function(value)
+                up = up + value
+                if not changeTimer:running() then
+                    changeTimer:start()
+                end
+            end)
             :onReset(function() wheel:colorWell():reset() end)
 
         local sat = cwGroup:parameter(id + 3)
@@ -220,7 +243,7 @@ function mod.init()
             :onReset(function() wheel:show():brightness():value(0) end)
 
         cwGroup:binding(format("%s %s", iColorBoard, iWheel))
-            :members(vert, horiz, sat)
+            :members(horiz, vert, sat)
     end
 
     local iColorWheel4 = i18n("colorWheel4")
