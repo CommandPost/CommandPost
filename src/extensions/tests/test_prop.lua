@@ -5,6 +5,12 @@ local test		= require("cp.test")
 local prop		= require("cp.prop")
 
 return test.suite("cp.prop"):with(
+	test("is", function()
+		ok(eq(prop.is(1), false))
+		ok(eq(prop.is({}), false))
+		ok(eq(prop.is(prop.TRUE()), true))
+	end),
+
 	test("Prop Prepare Value", function()
 		local prep = prop._prepareValue
 
@@ -361,13 +367,24 @@ return test.suite("cp.prop"):with(
 		source.isFunction = prop.TRUE()
 		source.isRealFunction = function() return true end
 
+		target.isInstanceTable = {}
+		target.isInstanceProp = prop.TRUE()
+
+		ok(eq(prop.is(target.isInstanceTable), false))
+		ok(eq(target.isInstanceProp:owner(), nil))
+		ok(eq(target.isInstanceProp._label, nil))
+
 		prop.extend(target, source)
 
-		ok(target.isMethod:owner() == target)
+		ok(eq(target.isMethod:owner(), target))
 		ok(target.isMethod ~= source.isMethod)
-		ok(target.isFunction:owner() == nil)
-		ok(target.isFunction == source.isFunction)
-		ok(target.isRealFunction == source.isRealFunction)
+		ok(eq(target.isFunction:owner(), nil))
+		ok(eq(target.isFunction, source.isFunction))
+		ok(eq(target.isRealFunction, source.isRealFunction))
+
+		ok(eq(prop.is(target.isInstanceTable), false))
+		ok(eq(target.isInstanceProp:owner(), target))
+		ok(eq(target.isInstanceProp._label, "isInstanceProp"))
 	end),
 
 	test("Prop Notify Loop", function()

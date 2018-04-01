@@ -330,7 +330,7 @@ prop._prepareValue = prepareValue
 function prop.is(value)
     if value and type(value) == "table" then
         local mt = getmetatable(value)
-        return mt and (mt.__index == prop.mt or prop.is(mt.__index))
+        return mt == prop.mt
     end
     return false
 end
@@ -555,10 +555,12 @@ function prop.mt:bind(owner, key)
         if type(key) ~= "string" then
             error(format("The key must be a string: %s", inspect(key)))
         end
-        if owner[key] then
+        local existing = owner[key]
+        if not existing then
+            owner[key] = self
+        elseif existing ~= self then
             error(format("The owner already has a property named '%s'", key))
         end
-        owner[key] = self
 
         if not self._label then
             self._label = key
@@ -1611,12 +1613,17 @@ end
 --- Returns:
 ---  * The `target`, now extending the `source`.
 function prop.extend(target, source)
+    -- bind any props to itself
+    prop.bind(target, true)(target)
+    -- rebind any props in the source to the target
     rebind(target, source)
-    source.__index = source
+    if source.__index == nil then
+        source.__index = source
+    end
     return setmetatable(target, source)
 end
 
---- cp.prop.bind(owner) -> function
+--- cp.prop.bind(owner[, relaxed]) -> function
 --- Function
 --- This provides a utility function for binding multiple properties to a single owner in
 --- a simple way. To use, do something like this:
@@ -1643,6 +1650,7 @@ end
 ---
 --- Parameters:
 --- * owner     - The owner table to bind the properties to.
+--- * relaxed   - If `true`, then non-`cp.prop` fields will be ignored. Otherwise they generate an error.
 ---
 --- Returns:
 --- * A function which should be called, passing in a table of key/value pairs which are `string`/`cp.prop` value.
@@ -1651,17 +1659,18 @@ end
 --- * If you are binding multiple `cp.prop` values that are dependent on other `cp.prop` values on the same owner (e.g. via `mutate` or a boolean join), you
 ---   will have to break it up into multiple `prop.bind(...) {...}` calls, so that the dependent property can access the bound property.
 --- * If a `cp.prop` provided as bindings already has a bound owner, it will be wrapped instead of bound directly.
-function prop.bind(owner)
+function prop.bind(owner, relaxed)
     return function(bindings)
         for k,v in pairs(bindings) do
-            if not prop.is(v) then
+            if prop.is(v) then
+                local vOwner = v:owner()
+                if vOwner == nil then -- it's unowned.
+                    v:bind(owner, k)
+                elseif vOwner ~= owner then -- it's already owned. wrap instead.
+                    v:wrap(owner, k)
+                end
+            elseif not relaxed then
                 error(format("The binding value must be a `cp.prop`, but was a `%s`.", type(v)))
-            end
-            local vOwner = v:owner()
-            if vOwner == nil then -- it's unowned.
-                v:bind(owner, k)
-            elseif vOwner ~= owner then -- it's already owned. wrap instead.
-                v:wrap(owner, k)
             end
         end
         return owner

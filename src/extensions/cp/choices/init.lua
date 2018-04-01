@@ -64,10 +64,10 @@ end
 
 --- cp.choices.builder:id(value) -> builder
 --- Method
---- Indicates the choice is a favorite.
+--- Sets the ID of the choice.
 ---
 --- Parameters:
---- * `value`	- True or false.
+--- * `value`	- The ID.
 ---
 --- Returns:
 --- * The choice builder.
@@ -107,7 +107,7 @@ mod.builder = builder
 
 --- cp.choices.new(type) -> choices
 --- Function
---- Creates a new `cp.plugin.chooser.choices` instance for the specified type.
+--- Creates a new `cp.choices` instance for the specified type.
 ---
 --- Parameters:
 --- * `type`	- The unique ID for the type.

@@ -1,6 +1,6 @@
 local test 		= require("cp.test")
 
-return test.suite("cp"):with(
+return test.suite("cp"):with {
 	"tests.test_fcp",
 	"tests.test_fcpplugins",
 	"tests.test_ids",
@@ -14,5 +14,5 @@ return test.suite("cp"):with(
 	"cp.ui.notifier_test",
 	"cp.is_test",
 	"cp.web.html_test",
-	"cp.web.xml_test"
-)
+	"cp.web.xml_test",
+}

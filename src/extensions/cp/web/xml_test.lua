@@ -5,7 +5,7 @@ local test = require("cp.test")
 
 local xml = require("cp.web.xml")
 
-return test.suite("cp.web.xml"):with(
+return test.suite("cp.web.xml"):with {
 	test("Is", function()
 		ok(eq(xml.is("text"), false))
 		ok(eq(xml.is({}), false))
@@ -95,5 +95,11 @@ return test.suite("cp.web.xml"):with(
 	test("Concatination", function()
 		ok(eq(tostring(xml.a() .. xml.b()), "<a/><b/>"))
 		ok(eq(tostring("before " .. xml.a() .. " after"), "before <a/> after"))
-	end)
-)
+	end),
+
+	test("Declaration", function()
+		ok(eq(tostring(xml._xml()), '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'))
+		ok(eq(tostring(xml._xml({standalone="no"})), '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'))
+		ok(eq(tostring(xml._xml({encoding="UTF-16"})), '<?xml version="1.0" encoding="UTF-16" standalone="yes"?>'))
+	end),
+}

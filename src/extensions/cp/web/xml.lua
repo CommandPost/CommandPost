@@ -43,7 +43,7 @@
 
 local block				= require "cp.web.block"
 
-local gsub              = string.gsub
+local gsub, format      = string.gsub, string.format
 
 local XML_ENTITIES = {
     ["&"] = "&amp;",
@@ -52,6 +52,9 @@ local XML_ENTITIES = {
     ['"'] = "&quot;",
     ["'"] = "&apos;",
 }
+
+local DEFAULT_ENCODING = "UTF-8"
+local DEFAULT_STANDALONE = "yes"
 
 local function xmlEscape(s)
     return gsub(s, "[\"><'&]", XML_ENTITIES)
@@ -84,6 +87,18 @@ end
 
 xml.__call = function(_, content, ...)
 	return block.is(content) and content or block.new("_", nil, xmlEscape)(content, ...)
+end
+
+xml._xml = function(attrs)
+    attrs = attrs or {}
+
+    local result = [[<?xml version="1.0"]]
+
+    result = result .. ' encoding="' ..xmlEscape( attrs.encoding or DEFAULT_ENCODING )..'"'
+    result = result .. ' standalone="'..xmlEscape( attrs.standalone or DEFAULT_STANDALONE )..'"'
+
+    result = result .. [[?>]]
+    return xml(result, false)
 end
 
 return setmetatable(xml, xml)
