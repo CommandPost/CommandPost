@@ -21,7 +21,6 @@
 
 local delayed                                   = require("hs.timer").delayed
 
-local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 
 local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
@@ -135,20 +134,25 @@ function mod.init(tangentManager, fcpGroup)
         i18n("colorWheel"), i18n("horizontal"), i18n("horizontal4"), i18n("vertical"), i18n("vertical4")
     local iSaturation, iSaturation4, iBrightness, iBrightness4 = i18n("saturation"), i18n("saturation4"), i18n("brightness"), i18n("brightness4")
 
+    -- set up an accumulator/timer to update changes
+    local changes = {}
+    local changeTimer = delayed.new(0.02, function()
+        for _,v in ipairs(changes) do
+            if v.right ~= 0 or v.up ~= 0 then
+                v.wheel:show():nudgeColor(v.right, v.up)
+                v.right, v.up = 0, 0
+            end
+        end
+    end)
+
     for i,pKey in ipairs(ranges) do
         local wheel = cw[pKey](cw)
         local id = wheelsBaseID + i*wheelID
 
-        local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
+        local change = {wheel = wheel, right=0, up=0}
+        changes[i] = change
 
-        -- set up an accumulator/timer to update changes
-        local right, up = 0, 0
-        local changeTimer = delayed.new(0.01, function()
-            if right ~= 0 or up ~= 0 then
-                wheel:show():nudgeColor(right, up)
-                right, up = 0, 0
-            end
-        end)
+        local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
 
         local horiz = cwGroup:parameter(id + 1)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iHorizontal))
@@ -161,7 +165,7 @@ function mod.init(tangentManager, fcpGroup)
                 return orientation and orientation.right
             end)
             :onChange(function(value)
-                right = right + value
+                change.right = change.right + value
                 if not changeTimer:running() then
                     changeTimer:start()
                 end
@@ -179,7 +183,7 @@ function mod.init(tangentManager, fcpGroup)
                 return orientation and orientation.up
             end)
             :onChange(function(value)
-                up = up + value
+                change.up = change.up + value
                 if not changeTimer:running() then
                     changeTimer:start()
                 end

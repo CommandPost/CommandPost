@@ -248,11 +248,13 @@
                         <Control type="Encoder" number="10"> <!-- Wave Dial 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="11"> <!-- Wave Dial 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                     </Bank>
