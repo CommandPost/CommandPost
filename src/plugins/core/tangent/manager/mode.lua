@@ -7,7 +7,7 @@
 --- === plugins.core.tangent.mode ===
 ---
 --- Represents a Tangent Mode
-local log               = require("hs.logger").new("tng_mode")
+-- local log               = require("hs.logger").new("tng_mode")
 
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
@@ -70,12 +70,9 @@ end
 --- Returns:
 --- * `nil`
 function mode.mt:activate()
-    log.df("activate: called...")
     if self._activate then
-        log.df("activate: running activation function...")
         self._activate()
     end
-    log.df("")
     self.manager.currentMode(self)
 end
 

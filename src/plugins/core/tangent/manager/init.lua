@@ -239,7 +239,6 @@ mod.currentMode = prop(
         return mod._currentMode
     end,
     function(newMode)
-        log.df("currentMode: ")
         newMode = mode.is(newMode) and newMode or mod.getMode(newMode)
         mod._currentMode = newMode
         if newMode then
@@ -388,15 +387,11 @@ local fromHub = {
     end,
 
     [tangent.fromHub.modeChange] = function(metadata)
-        log.df("modeChange: called: %#010x", metadata.modeID)
         local newMode = mod.getMode(metadata.modeID)
         if newMode then
-            log.df("modeChange: found mode: %#010x", newMode.id)
             local oldMode = mod.currentMode()
             if oldMode == nil or oldMode.id ~= newMode.id then
-                log.df("modeChange: deactivating %s", oldMode)
                 if oldMode then oldMode:deactivate() end
-                log.df("modeChange: activating %s", newMode)
                 newMode:activate()
             end
         end
