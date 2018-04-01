@@ -42,6 +42,7 @@ local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 local tools                                     = require("cp.tools")
 local x                                         = require("cp.web.xml")
+local prop                                      = require("cp.prop")
 
 local mode                                      = require("mode")
 local controls                                  = require("controls")
@@ -206,13 +207,13 @@ end
 --- Returns:
 --- * The new `mode`
 function mod.addMode(id, name)
-    local m = mode.new(id, name)
+    local m = mode.new(id, name, mod)
     insert(mod._modes, m)
     sort(mod._modes, function(a,b) return a.name < b.name end)
     return m
 end
 
---- plubins.core.tangent.manager.getMode(id) -> plugins.core.tangent.manager.mode
+--- plugins.core.tangent.manager.getMode(id) -> plugins.core.tangent.manager.mode
 --- Function
 --- Returns the `mode` with the specified ID, or `nil`.
 ---
@@ -222,7 +223,7 @@ end
 --- Returns:
 --- * The `mode`, or `nil`.
 function mod.getMode(id)
-    for _,m in mod._modes do
+    for _,m in ipairs(mod._modes) do
         if m.id == id then
             return m
         end
@@ -230,62 +231,22 @@ function mod.getMode(id)
     return nil
 end
 
---- plugins.core.tangent.manager.addModes(modes) -> none
---- Function
---- Adds modes to the existing modes table.
----
---- Parameters:
----  * modes - a table containing the new modes items.
----
---- Returns:
----  * None
-function mod.addModes(modes)
-    if modes and type(modes) == "table" then
-        mod.MODES = tools.mergeTable(mod.MODES, modes)
-    end
-end
-
--- getTangentIDFromGroupID(groupID) -> none
--- Function
--- Get Tangent ID from Group ID.
---
--- Parameters:
---  * groupID - the plain text group ID.
---
--- Returns:
---  * The ID used by Tangent as a string - for example: "0x00010001".
-local function getTangentIDFromGroupID(groupID)
-    for id, metadata in pairs(mod.MODES) do
-        if metadata.groupID == groupID then
-            return id
+--- plugins.core.tangent.manager.currentMode <cp.prop: mode>
+--- Constant
+--- Represents the currently active `mode`.
+mod.currentMode = prop(
+    function()
+        return mod._currentMode
+    end,
+    function(newMode)
+        log.df("currentMode: ")
+        newMode = mode.is(newMode) and newMode or mod.getMode(newMode)
+        mod._currentMode = newMode
+        if newMode then
+            tangent.sendModeValue(newMode.id)
         end
     end
-    return nil
-end
-
---- plugins.core.touchbar.manager.currentSubGroup -> table
---- Variable
---- Current Tangent Sub Group.
-mod.currentSubGroup = config.prop("tangentCurrentSubGroup", {})
-
---- plugins.core.touchbar.manager.activeGroup() -> string
---- Function
---- Returns the active group.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Returns the active group or `manager.defaultGroup` as a string.
-function mod.activeGroup()
-    local groupStatus = mod._groupStatus
-    for group, status in pairs(groupStatus) do
-        if status then
-            return group
-        end
-    end
-    return mod.defaultGroup
-end
+)
 
 --- plugins.core.touchbar.manager.update() -> none
 --- Function
@@ -297,36 +258,12 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-    local activeGroup = mod.activeGroup()
-    if activeGroup then
-
-        local currentSubGroup = mod.currentSubGroup()
-        local tangentID = currentSubGroup and currentSubGroup[activeGroup] or getTangentIDFromGroupID(activeGroup)
-
-        --log.df("UPDATE TANGENT GROUP: %s (%s)", mod.activeGroup(), tangentID)
-
-        --------------------------------------------------------------------------------
-        -- Send Mode to Tangent:
-        --------------------------------------------------------------------------------
-        if tangentID then
-            tangent.sendModeValue(tonumber(tangentID))
+    if mod.connected() then
+        local currentMode = mod.currentMode()
+        if currentMode then
+            tangent.sendModeValue(currentMode.id)
         end
     end
-end
-
---- plugins.core.touchbar.manager.groupStatus(groupID, status) -> none
---- Function
---- Updates a group's visibility status.
----
---- Parameters:
----  * groupID - the group you want to update as a string.
----  * status - the status of the group as a boolean.
----
---- Returns:
----  * None
-function mod.groupStatus(groupID, status)
-    mod._groupStatus[groupID] = status
-    mod.update()
 end
 
 local fromHub = {
@@ -451,14 +388,16 @@ local fromHub = {
     end,
 
     [tangent.fromHub.modeChange] = function(metadata)
+        log.df("modeChange: called: %#010x", metadata.modeID)
         local newMode = mod.getMode(metadata.modeID)
         if newMode then
-            local oldMode = mod.currentMode
-            if oldMode.id ~= newMode.id then
-                oldMode:deactivate()
-                mod.currentMode = newMode
+            log.df("modeChange: found mode: %#010x", newMode.id)
+            local oldMode = mod.currentMode()
+            if oldMode == nil or oldMode.id ~= newMode.id then
+                log.df("modeChange: deactivating %s", oldMode)
+                if oldMode then oldMode:deactivate() end
+                log.df("modeChange: activating %s", newMode)
                 newMode:activate()
-                tangent.sendModeValue(newMode.id)
             end
         end
     end,
@@ -493,7 +432,10 @@ function mod.callback(commands)
 
         local fn = fromHub[id]
         if fn then
-            fn(metadata)
+            local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
+            if not ok then
+                log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
+            end
         else
             log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
         end

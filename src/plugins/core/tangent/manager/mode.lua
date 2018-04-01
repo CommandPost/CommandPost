@@ -7,6 +7,7 @@
 --- === plugins.core.tangent.mode ===
 ---
 --- Represents a Tangent Mode
+local log               = require("hs.logger").new("tng_mode")
 
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
@@ -25,20 +26,18 @@ mode.mt = {}
 --- Parameters:
 --- * id        - The ID number of the mode.
 --- * name      - The name of the mode.
-function mode.new(id, name)
+function mode.new(id, name, manager)
     local o = prop.extend({
         id = id,
         name = name,
+        manager = manager,
     }, mode.mt)
 
-    prop.bind(o) {
-        --- plugins.core.tanget.mode.enabled <cp.prop: boolean>
-        --- Field
-        --- Indicates if the mode is enabled.
-        enabled = prop.FALSE(),
-    }
-
     return o
+end
+
+function mode.is(other)
+    return is.table(other) and getmetatable(other) == mode.mt
 end
 
 --- plugins.core.tangent.manager.mode:onActivate(activateFn) -> self
@@ -71,9 +70,13 @@ end
 --- Returns:
 --- * `nil`
 function mode.mt:activate()
+    log.df("activate: called...")
     if self._activate then
+        log.df("activate: running activation function...")
         self._activate()
     end
+    log.df("")
+    self.manager.currentMode(self)
 end
 
 --- plugins.core.tangent.manager.mode:onDeactivate(deactivateFn) -> self

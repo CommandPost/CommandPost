@@ -622,7 +622,6 @@ local receiveHandler = {
         if modeID then
             return {
                 modeID = modeID,
-                data = data,
             }, offset
         else
             return errorResponse("Error translating modeChange.")
@@ -672,7 +671,6 @@ local receiveHandler = {
         if actionID then
             return {
                 actionID = actionID,
-                data = data,
             }, offset
         else
             return errorResponse("Error translating actionOff.")
@@ -735,7 +733,6 @@ local receiveHandler = {
             return {
                 panelID = panelID,
                 buttonID = buttonID,
-                data = data,
             }, offset
         else
             return errorResponse("Error translating unmanagedButtonDown.")

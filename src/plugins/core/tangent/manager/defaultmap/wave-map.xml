@@ -50,18 +50,18 @@
                     <Bank>
                         <Control type="Button" number="25"> <!-- Wave Up Arrow -->
                             <Mapping mode="Std">
-                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
+                                <Key>0x80000005</Key> <!--Previous Button Bank -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="26"> <!-- Wave Down Arrow -->
                             <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
+                                <Key>0x80000009</Key> <!-- Next Mode -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
+                                <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
@@ -189,6 +189,22 @@
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
                     <Bank>
+                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!--Previous Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000004</Key> <!-- Next Button Bank -->
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
@@ -291,6 +307,27 @@
             <Mode id="0x00010003"> <!-- FCP: Board -->
                 <ControlBank id="Standard">
                     <Bank>
+                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!--Previous Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000004</Key> <!-- Next Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Wave Alt -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
                         <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
                             <Mapping mode="Std">
                                 <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
