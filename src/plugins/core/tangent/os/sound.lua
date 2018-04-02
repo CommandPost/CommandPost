@@ -1,6 +1,7 @@
 -- local log                   = require("hs.logger").new("tng_sound")
 
 local audiodevice           = require("hs.audiodevice")
+local audiowatcher          = require("hs.audiodevice.watcher")
 
 local prop                  = require("cp.prop")
 
@@ -62,7 +63,9 @@ function mod.init(osGroup)
         :onPrev(toggleMute)
 
     mod.currentOutputDevice:watch(function(device)
-        device:watcherCallback(function(uid, name, scope, element)
+        volume:update()
+        mute:update()
+        device:watcherCallback(function(_, name, scope, _)
             -- log.df("audio device '%s' event: %s; %s; %s", uid, name, scope, element)
             if scope == "outp" then
                 if name == "vmvc" then
@@ -76,6 +79,15 @@ function mod.init(osGroup)
             device:watcherStart()
         end
     end, true)
+
+    audiowatcher.setCallback(function(event)
+        if event == "dOut" then
+            mod.currentOutputDevice:update()
+        end
+    end)
+    if not audiowatcher.isRunning() then
+        audiowatcher.start()
+    end
 end
 
 
