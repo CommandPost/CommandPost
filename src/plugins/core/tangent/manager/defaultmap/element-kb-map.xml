@@ -2,7 +2,7 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Kb">
-            <Mode id="0x00010001"> <!-- All Applications -->
+            <Mode id="0x0000000A"> <!-- All Applications -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->

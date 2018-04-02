@@ -2,7 +2,7 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Wave">
-            <Mode id="0x00000001"> <!-- All Applications -->
+            <Mode id="0x0000000A"> <!-- All Applications -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="25"> <!-- Wave Up Arrow -->
@@ -37,6 +37,7 @@
                             <Mapping mode="Std">
                                 <Key>0x0AD00001</Key> <!-- Display Brightness -->
                                 <Display>Percentage</Display>
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -297,7 +298,7 @@
                         <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310104</Key> <!-- Color Wheel - Mix -->
-                                <Display>Number</Display>
+                                <Display>Percentage</Display>
                             </Mapping>
                         </Control>
                     </Bank>

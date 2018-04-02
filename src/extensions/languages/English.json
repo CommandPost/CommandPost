@@ -964,6 +964,10 @@
         "cpMoveAndResizeCenter_title"                          : "Move & Resize Focussed Window: Center",
         "cpTransition7_title"                                  : "Apply Transition 7",
         "validate"                                             : "Validate",
-        "showAll"                                              : "Show All"
+        "showAll"                                              : "Show All",
+        "macOS"                                                : "macOS",
+        "display"                                              : "Display",
+        "brightness9"                                          : "BRGHTNESS",
+        "brightness10"                                         : "BRIGHTNESS"
     }
 }

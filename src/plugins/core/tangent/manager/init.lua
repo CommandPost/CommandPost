@@ -137,10 +137,10 @@ function mod.writeControlsXML()
             -- Default Global Settings:
             --------------------------------------------------------------------------------
             x.DefaultGlobalSettings (
-                x.KnobSensitivity { std = 5, alt = 5 } ..
-                x.JogDialSensitivity { std = 5, alt = 5 } ..
-                x.TrackerballSensitivity { std = 5, alt = 5 } ..
-                x.TrackerballDialSensitivity { std = 5, alt = 5 } ..
+                x.KnobSensitivity { std = 3, alt = 5 } ..
+                x.JogDialSensitivity { std = 1, alt = 5 } ..
+                x.TrackerballSensitivity { std = 1, alt = 5 } ..
+                x.TrackerballDialSensitivity { std = 1, alt = 5 } ..
                 x.IndependentPanelBanks { enabled = false }
             ) ..
 

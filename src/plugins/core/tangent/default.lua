@@ -7,7 +7,7 @@ local plugin = {
 }
 
 function plugin.init(deps)
-    local globalMode = deps.tangentManager.addMode(0x000001, i18n("global"))
+    local globalMode = deps.tangentManager.addMode(0x0000000A, i18n("global"))
     return globalMode
 end
 
