@@ -973,6 +973,9 @@
         "volume"                                               : "Volume",
         "volume9"                                              : "VOLUME",
         "volume10"                                             : "VOLUME",
+        "mute"                                                 : "Mute",
+        "mute9"                                                : "MUTE",
+        "mute10"                                               : "MUTE",
         "muted"                                                : "MUTED",
         "unmuted"                                              : "UNMUTED"
     }
