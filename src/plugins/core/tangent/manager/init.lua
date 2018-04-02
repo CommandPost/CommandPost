@@ -60,11 +60,6 @@ local insert, sort                              = table.insert, table.sort
 --------------------------------------------------------------------------------
 local mod = {}
 
--- plugins.core.touchbar.manager._groupStatus -> table
--- Variable
--- Group Statuses.
-mod._groupStatus = {}
-
 -- plugins.core.touchbar.manager._modes -> table
 -- Variable
 -- Modesf
@@ -200,7 +195,7 @@ end
 function mod.addMode(id, name)
     local m = mode.new(id, name, mod)
     insert(mod._modes, m)
-    sort(mod._modes, function(a,b) return a.name < b.name end)
+    sort(mod._modes, function(a,b) return a.id < b.id end)
     return m
 end
 

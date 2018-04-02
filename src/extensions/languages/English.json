@@ -267,6 +267,7 @@
         "showTransitions"                                  : "Show Transitions",
         "yes"                                              : "Yes",
         "global_widgets_action"                            : "Global Touch Bar Widgets",
+        "global"                                           : "Global",
         "noPluginShortcut"                                 : "There is no ${plugin} assigned to this shortcut.\n\nYou can assign Shortcuts via the CommandPost menu bar.",
         "leaveFilesInPlaceOnImport"                        : "Leave Files In Place On Import",
         "finalcutpro_touchbar_widgets_colorboard_label"    : "Widget: Color Board",
