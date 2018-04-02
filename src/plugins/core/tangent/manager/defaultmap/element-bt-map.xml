@@ -2,7 +2,7 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Bt">
-            <Mode id="0x0000000A"> <!-- All Applications -->
+            <Mode id="0x0000000A"> <!-- Global -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Bt Button A -->
@@ -14,27 +14,10 @@
                             <Mapping mode="Std">
                                 <Key>0x80000009</Key> <!-- Next Mode -->
                             </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010002"> <!-- FCP: Edit -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                         </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Button">
-                    <Bank>
                     </Bank>
                 </ControlBank>
             </Mode>
@@ -49,6 +32,9 @@
                         <Control type="Button" number="13"> <!-- Element-Bt Button B -->
                             <Mapping mode="Std">
                                 <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -66,149 +52,8 @@
                             <Mapping mode="Std">
                                 <Key>0x80000009</Key> <!-- Next Mode -->
                             </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010005"> <!-- FCP: Prep -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010006"> <!-- FCP: Keyword -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010007"> <!-- FCP: Speed -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010008"> <!-- FCP: Audition -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010009"> <!-- FCP: Multicam -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010010"> <!-- FCP: Marker -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010011"> <!-- FCP: Sound -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010012"> <!-- FCP: Function -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010013"> <!-- FCP: View -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="12"> <!-- Element-Bt Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="13"> <!-- Element-Bt Button B -->
-                            <Mapping mode="Std">
-                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                         </Control>
                     </Bank>

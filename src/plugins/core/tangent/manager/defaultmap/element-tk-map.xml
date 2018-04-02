@@ -2,7 +2,7 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Element-Tk">
-            <Mode id="0x0000000A"> <!-- All Applications -->
+            <Mode id="0x0000000A"> <!-- Global -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="0"> <!-- Element-Tk Button A -->
@@ -10,77 +10,18 @@
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Trackerball">
-                    <Bank>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010002"> <!-- FCP: Edit -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
+                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                         </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Trackerball">
                     <Bank>
-                        <Control type="Encoder" number="0"> <!-- Element-Tk Trackerball 1 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="3"> <!-- Element-Tk Trackerball 2 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="4"> <!-- Element-Tk Trackerball 2 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="6"> <!-- Element-Tk Trackerball 3 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
@@ -90,6 +31,14 @@
                         <Control type="Button" number="0"> <!-- Element-Tk Button A -->
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Tk Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -154,6 +103,9 @@
                         <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
                                 <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -233,105 +185,6 @@
                             <Mapping mode="Std">
                                 <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010005"> <!-- FCP: Prep -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010006"> <!-- FCP: Keyword -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010007"> <!-- FCP: Speed -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010008"> <!-- FCP: Audition -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010009"> <!-- FCP: Multicam -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010010"> <!-- FCP: Marker -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010011"> <!-- FCP: Sound -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010012"> <!-- FCP: Function -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010013"> <!-- FCP: View -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="0"> <!-- Element-Tk Button A -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>
