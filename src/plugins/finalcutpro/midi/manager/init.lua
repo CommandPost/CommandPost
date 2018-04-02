@@ -78,10 +78,85 @@ end)
 --- Field
 --- Enable or disable Transmit MMC Support.
 mod.transmitMMC = config.prop("transmitMMC", false):watch(function(enabled)
-    if enabled then
-        log.df("FCPX Transmit MMC Enabled!")
+
+    --------------------------------------------------------------------------------
+    -- Get Transmit MMC Device Name:
+    --------------------------------------------------------------------------------
+    local device = mod._manager.transmitMMCDevice() and mod._manager.transmitMMCDevice() ~= "" and mod._manager.transmitMMCDevice()
+    local virtual = false
+    if device and string.sub(device, 1, 8) == "virtual_" then
+        device = string.sub(device, 9)
+        virtual = true
+    end
+
+    if enabled and device then
+
+        --------------------------------------------------------------------------------
+        -- Transmit MMC Enabled:
+        --------------------------------------------------------------------------------
+        --log.df("FCPX Transmit MMC Enabled!")
+
+        --------------------------------------------------------------------------------
+        -- Setup Watcher:
+        --------------------------------------------------------------------------------
+        mod._mmcPlayWatcher, mod._mmcPlayWatcherFn = fcp:viewer().isPlaying:watch(function(value)
+
+            --------------------------------------------------------------------------------
+            -- Get current timecode:
+            --------------------------------------------------------------------------------
+            local timecode = fcp:viewer():timecode()
+
+            --------------------------------------------------------------------------------
+            -- Supported MIDI Frame Rates: "24", "25", "30 DF" or "30 NDF".
+            --------------------------------------------------------------------------------
+            local framerate = fcp:viewer():framerate()
+            local framerateString
+
+            if framerate == 25 then
+                framerateString = "25"
+            elseif framerate == 30 then
+                framerateString = "30"
+            elseif framerate == 24 then
+                framerateString = "24"
+            else
+                log.wf("Non-standard Framerate: %s", framerate)
+                framerateString = "25"
+            end
+
+            if value then
+                --------------------------------------------------------------------------------
+                -- Final Cut Pro is playing:
+                --------------------------------------------------------------------------------
+                if timecode and framerateString then
+                    --log.df("SENDING GOTO & PLAY: %s", timecode)
+                    mod._manager.sendMMC(device, virtual, "7F", "PLAY")
+                    mod._manager.sendMMC(device, virtual, "7F", "GOTO", {timecode=timecode, frameRate=framerateString, subFrame="00"})
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- Final Cut Pro has stopped playing:
+                --------------------------------------------------------------------------------
+                --log.df("SENDING STOP: %s", timecode)
+                if timecode and framerateString then
+                    mod._manager.sendMMC(device, virtual, "7F", "STOP")
+                    mod._manager.sendMMC(device, virtual, "7F", "GOTO", {timecode=timecode, frameRate=framerateString, subFrame="00"})
+                end
+            end
+        end)
     else
-        log.df("FCPX Transmit MMC Disabled!")
+        --------------------------------------------------------------------------------
+        -- Transmit MMC Disabled:
+        --------------------------------------------------------------------------------
+        --log.df("FCPX Transmit MMC Disabled!")
+
+        --------------------------------------------------------------------------------
+        -- Destroy Watcher:
+        --------------------------------------------------------------------------------
+        if mod._mmcPlayWatcherFn then
+            fcp:viewer().isPlaying:unwatch(mod._mmcPlayWatcherFn)
+        end
+        mod._mmcPlayWatcher = nil
+        mod._mmcPlayWatcherFn = nil
     end
 end)
 
@@ -116,6 +191,8 @@ function plugin.postInit()
         -- Update Watchers:
         --------------------------------------------------------------------------------
         mod.enabled:update()
+        mod.transmitMMC:update()
+        mod.transmitMTC:update()
 
         --------------------------------------------------------------------------------
         -- Listen to MMC Commands in Final Cut Pro:

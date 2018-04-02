@@ -443,9 +443,6 @@ local function convertSingleHexStringToDecimalString(hex)
     return lookup[hex]
 end
 
-
-
-
 --- plugins.core.midi.manager.sendMMC(deviceName, virtual, commandType, parameters) -> boolean
 --- Function
 --- Sends MMC Data to a MIDI Device.
@@ -486,6 +483,7 @@ end
 ---     _plugins("core.midi.manager").sendMMC("CommandPost", false, "7F", "GOTO", {timecode="01:02:03:04", frameRate="25", subFrame="00"})
 ---   ```
 function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters)
+
     if deviceName and virtual then
         deviceName = "virtual_" .. deviceName
     end
@@ -497,7 +495,7 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
         return false
     end
 
-    local parameterString
+    local parameterString = ""
     if commandType == "STOP" then
     elseif commandType == "PLAY" then
     elseif commandType == "DEFERRED_PLAY" then
@@ -550,8 +548,6 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
             local frameRateAsDecimalCode = tonumber(mod.MMC_TIMECODE_TYPE[frameRate])
 
             local hexHours = string.format("%02x", (frameRateAsDecimalCode << 5) + decimalHours)
-
-            --local hexHours = string.format("%02x", decimalHours)
             local hexMinutes = string.format("%02x", decimalMinutes)
             local hexSeconds = string.format("%02x", decimalSeconds)
             local hexFrames = string.format("%02x", decimalFrames)
@@ -570,12 +566,10 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
         return false
     end
 
-
-    local message = "F0 7F " .. channelNumber .. " 06 " .. mod.MMC_COMMAND_TYPE[commandType] .. parameterString .. " F7"
-
-    log.df("Message to send: %s", message)
-
-    device:sendSysex(message)
+    if channelNumber and commandType and parameterString then
+        local message = "F0 7F " .. channelNumber .. " 06 " .. mod.MMC_COMMAND_TYPE[commandType] .. parameterString .. " F7"
+        device:sendSysex(message)
+    end
 
 end
 
@@ -803,7 +797,9 @@ mod.MMC_TIMECODE_TYPE = {
     ["10"] = "30 DF",           -- 30 fps (SMPTE drop-frame)
     ["11"] = "30 NDF",          -- 30 fps (SMPTE non-drop frame)
 
+    --------------------------------------------------------------------------------
     -- REVERSE:
+    --------------------------------------------------------------------------------
     ["24"] = "00",              -- 24 fps (Film)
     ["25"] = "01",              -- 25 fps (EBU)
     ["30 DF"] = "10",           -- 30 fps (SMPTE drop-frame)
@@ -1318,8 +1314,20 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-	--log.df("Updating MIDI Watchers")
-	mod.start()
+	log.df("Updating MIDI Watchers")
+
+	if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
+		mod.start()
+
+		--------------------------------------------------------------------------------
+		-- Update the prop, so that any other plugins watching this prop also update:
+		--------------------------------------------------------------------------------
+		mod.transmitMTC:update()
+		mod.transmitMTCDevice:update()
+	else
+	    mod.stop()
+	end
+
 end
 
 --- plugins.core.midi.manager.enabled <cp.prop: boolean>
@@ -1327,12 +1335,11 @@ end
 --- Enable or disable MIDI Support.
 mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
 	if enabled then
-		mod.start()
+		log.df("MIDI Support Enabled!")
 	else
-    	if not mod.listenMTC() and not mod.listenMMC() then
-	    	mod.stop()
-	    end
+	    log.df("MIDI Support Disabled!")
 	end
+	mod.update()
 end)
 
 --- plugins.core.midi.manager.init(deps, env) -> none
@@ -1362,7 +1369,6 @@ end
 mod.transmitMMC = config.prop("transmitMMC", false):watch(function(enabled)
     if enabled then
         log.df("Transmit MMC Enabled!")
-        mod.start()
     else
         log.df("Transmit MMC Disabled!")
     end
@@ -1374,7 +1380,6 @@ end)
 mod.listenMMC = config.prop("listenMMC", false):watch(function(enabled)
     if enabled then
         log.df("Listen MMC Enabled!")
-        mod.start()
     else
         log.df("Listen MMC Disabled!")
     end
@@ -1386,7 +1391,6 @@ end)
 mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
     if enabled then
         log.df("Transmit MTC Enabled!")
-        mod.start()
     else
         log.df("Transmit MTC Disabled!")
     end
@@ -1398,7 +1402,6 @@ end)
 mod.listenMTC = config.prop("listenMTC", false):watch(function(enabled)
     if enabled then
         log.df("Listen MTC Enabled!")
-        mod.start()
     else
         log.df("Listen MTC Disabled!")
     end
@@ -1443,7 +1446,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
 	--------------------------------------------------------------------------------
 	-- Get list of MIDI devices:
 	--------------------------------------------------------------------------------
@@ -1503,9 +1505,7 @@ function plugin.postInit(deps, env)
     --------------------------------------------------------------------------------
     -- Start Plugin:
     --------------------------------------------------------------------------------
-	if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
-		mod.start()
-	end
+    mod.update()
 
 end
 
