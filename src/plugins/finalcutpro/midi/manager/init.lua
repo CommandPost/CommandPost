@@ -67,11 +67,13 @@ end)
 --- Field
 --- Enable or disable Transmit MTC Support.
 mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
+    --[[
     if enabled then
         log.df("FCPX Transmit MTC Enabled!")
     else
         log.df("FCPX Transmit MTC Disabled!")
     end
+    --]]
 end)
 
 --- plugins.finalcutpro.midi.manager.transmitMMC <cp.prop: boolean>
@@ -215,24 +217,36 @@ function plugin.postInit()
         -- * SHUTTLE
         --------------------------------------------------------------------------------
         mod._manager.registerListenMMCFunction(mod.ID, function(mmcType, timecode)
+
+            --------------------------------------------------------------------------------
+            -- Make sure FCPX is active:
+            --------------------------------------------------------------------------------
+            fcp:launch()
+
+            --------------------------------------------------------------------------------
+            -- Wait until FCPX is active:
+            --------------------------------------------------------------------------------
+            just.doUntil(function()
+                return fcp:isFrontmost()
+            end, 3)
+
+            --------------------------------------------------------------------------------
+            -- Trigger MMC Functions:
+            --------------------------------------------------------------------------------
             if mmcType == "GOTO" then
                 if timecode then
-                    --------------------------------------------------------------------------------
-                    -- Make sure FCPX is active:
-                    --------------------------------------------------------------------------------
-                    fcp:launch()
-
-                    --------------------------------------------------------------------------------
-                    -- Wait until FCPX is active:
-                    --------------------------------------------------------------------------------
-                    just.doUntil(function()
-                        return fcp:isFrontmost()
-                    end, 3)
-
                     --------------------------------------------------------------------------------
                     -- Jump to the correct timecode:
                     --------------------------------------------------------------------------------
                     fcp:timeline():playhead():setTimecode(timecode)
+                end
+            elseif mmcType == "PLAY" then
+                if not fcp:viewer().isPlaying() then
+                    fcp:viewer():playButton():press()
+                end
+            elseif mmcType == "STOP" then
+                if fcp:viewer().isPlaying() then
+                    fcp:viewer():playButton():press()
                 end
             end
         end)
@@ -241,7 +255,17 @@ function plugin.postInit()
         -- Listen to MTC Commands in Final Cut Pro:
         --------------------------------------------------------------------------------
         mod._manager.registerListenMTCFunction(mod.ID, function(mtcType, timecode, framerate)
-            log.df("mtcType: %s, timecode: %s, framerate: %s", mtcType, timecode, framerate)
+
+            --------------------------------------------------------------------------------
+            -- NOTE: Currently there's nothing really useful we can trigger in Final Cut Pro
+            --       using MTC, because the only way to move the playhead to a specific
+            --       position is via manually entering in the timecode value with
+            --       keyboard simulation. It's much better/easier to use MMC instead.
+            --       I'm leaving this function here just in case we can somehow make use
+            --       of MTC in the future.
+            --------------------------------------------------------------------------------
+
+            --log.df("mtcType: %s, timecode: %s, framerate: %s", mtcType, timecode, framerate)
         end)
 
     end
