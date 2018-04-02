@@ -999,6 +999,25 @@ function prop.mt:wrap(owner, key)
     return wrapper
 end
 
+--- cp.prop:mirror(otherProp) -> self
+--- Method
+--- Configures this prop and the other prop to mirror each other's values.
+--- When one changes the other will change with it. Only one prop needs to mirror.
+---
+--- Parameters:
+--- * `otherProp`   - The other prop to mirror.
+---
+--- Returns:
+--- The same property.
+function prop.mt:mirror(otherProp)
+    self:watch(function(value)
+        otherProp:set(value)
+    end)
+    otherProp:watch(function(value)
+        self:set(value)
+    end)
+end
+
 --- cp.prop:IS(something) -> cp.prop <boolean; read-only>
 --- Method
 --- Returns a new property returning `true` if the value is equal to `something`.
