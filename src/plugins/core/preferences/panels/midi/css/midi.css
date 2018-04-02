@@ -96,23 +96,31 @@ midiRowType {
 	color: white;
 }
 
+.openAudioMIDISetup {
+	margin: 0px 0px 5px;
+	float: left;
+	width: 200px;
+}
+
 .refreshMidi {
-	margin: 10px 0px;
+	margin: 0px 0px 0px 5px;
 	text-align: center;
 	float: left;
-	width: 170px;
+	width: 200px;
 }
 
 .applyTopDeviceToAll {
 	margin: 10px 0px;
 	text-align: center;
 	float: left;
-	width: 170px;
-	margin-left: 5px;
+	width: 200px;
 }
 
-.openAudioMIDISetup {
-	margin: 10px 0px;
+.midiResetGroup {
+	margin: 10px 0px 0px 5px;
+	text-align: center;
+	float: left;
+	width: 200px;
 }
 
 .resetShortcutsToNone {

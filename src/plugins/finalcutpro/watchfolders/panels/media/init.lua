@@ -39,6 +39,7 @@ local timer				= require("hs.timer")
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
+local just              = require("cp.just")
 local tools				= require("cp.tools")
 local html				= require("cp.web.html")
 local ui				= require("cp.web.ui")
@@ -384,21 +385,21 @@ function mod.insertFilesIntoFinalCutPro(files)
 		local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
 		local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 		if mod.videoTag() ~= "" then
-			if (fnutils.contains(videoExtensions, file:sub(-3)) or fnutils.contains(videoExtensions, file:sub(-4))) and tools.doesFileExist(file) then
+			if (fnutils.contains(videoExtensions, string.lower(file:sub(-3))) or fnutils.contains(videoExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
 				if not fs.tagsAdd(file, {mod.videoTag()}) then
 					log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
 				end
 			end
 		end
 		if mod.audioTag() ~= "" then
-			if (fnutils.contains(audioExtensions, file:sub(-3)) or fnutils.contains(audioExtensions, file:sub(-4))) and tools.doesFileExist(file) then
+			if (fnutils.contains(audioExtensions, string.lower(file:sub(-3))) or fnutils.contains(audioExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
 				if not fs.tagsAdd(file, {mod.audioTag()}) then
 					log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
 				end
 			end
 		end
 		if mod.imageTag() ~= "" then
-			if (fnutils.contains(imageExtensions, file:sub(-3)) or fnutils.contains(imageExtensions, file:sub(-4))) and tools.doesFileExist(file) then
+			if (fnutils.contains(imageExtensions, string.lower(file:sub(-3))) or fnutils.contains(imageExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
 				if not fs.tagsAdd(file, {mod.imageTag()}) then
 					log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
 				end
@@ -434,13 +435,25 @@ function mod.insertFilesIntoFinalCutPro(files)
 		return nil
 	end
 
+    --------------------------------------------------------------------------------
+    -- Make sure Final Cut Pro is Active:
+    --------------------------------------------------------------------------------
+    result = just.doUntil(function()
+        fcp:launch()
+        return fcp:isFrontmost()
+    end, 5, 0.1)
+    if not result then
+        dialog.displayErrorMessage("Failed to launch to Final Cut Pro. Error occured in Final Cut Pro Media Watch Folder.")
+        return false
+    end
+
 	--------------------------------------------------------------------------------
 	-- Check if Timeline can be enabled:
 	--------------------------------------------------------------------------------
-	result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
-	if result then
-		fcp:selectMenu({"Window", "Go To", "Timeline"})
-	else
+	result = just.doUntil(function()
+	    return fcp:selectMenu({"Window", "Go To", "Timeline"})
+	end, 5, 0.1)
+	if not result then
 		dialog.displayErrorMessage("Failed to activate timeline. Error occured in Final Cut Pro Media Watch Folder.")
 		return nil
 	end
@@ -448,10 +461,10 @@ function mod.insertFilesIntoFinalCutPro(files)
 	--------------------------------------------------------------------------------
 	-- Perform Paste:
 	--------------------------------------------------------------------------------
-	result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
-	if result then
-		fcp:selectMenu({"Edit", "Paste as Connected Clip"})
-	else
+	result = just.doUntil(function()
+	    return fcp:selectMenu({"Edit", "Paste as Connected Clip"})
+	end, 5, 0.1)
+	if not result then
 		dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut. Error occured in Final Cut Pro Media Watch Folder.")
 		return nil
 	end
@@ -695,7 +708,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 				-- Check Extensions:
 				--------------------------------------------------------------------------------
 				local allowedExtensions = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
-				if (fnutils.contains(allowedExtensions, file:sub(-3)) or fnutils.contains(allowedExtensions, file:sub(-4))) and tools.doesFileExist(file) then
+				if (fnutils.contains(allowedExtensions, string.lower(file:sub(-3))) or fnutils.contains(allowedExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
 					if newFile or movedFile then
 						--log.df("File finished copying: %s", file)
 						if mod.automaticallyImport() then

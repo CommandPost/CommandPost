@@ -30,7 +30,6 @@ local fs            = require("hs.fs")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local commands      = require("cp.commands")
-local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
 local prop          = require("cp.prop")
 local tools         = require("cp.tools")
@@ -297,8 +296,6 @@ end
 function private.updateHacksShortcuts(install)
 
     if not mod.supported() then
-        dialog.webviewAlert(mod._manager._webview, function() end, i18n("noSupportedVersionsOfFCPX"), "")
-        mod._manager.refresh()
         return false
     end
 
@@ -310,7 +307,6 @@ function private.updateHacksShortcuts(install)
     -- Always copy the originals back into FCPX, just in case the user has
     -- previously removed them or used an old version of CommandPost or FCPX Hacks:
     --------------------------------------------------------------------------------
-
     private.copyFiles(batch, private.hacksOriginalPath(""), private.resourcePath(""))
 
     --------------------------------------------------------------------------------
@@ -377,12 +373,12 @@ function private.updateFCPXCommands(enable, silently)
             prompt = prompt .. " " .. i18n("hacksShortcutAdminPassword")
         end
 
-        local whichWebview = mod._manager.webview
-        if whichWebview == nil then
-            whichWebview = mod._setup.webview
+        local webview = mod._preferencesManager.getWebview()
+        if not webview then
+            log.ef("Could not find WebView.")
+            return nil
         end
-
-        dialog.webviewAlert(whichWebview, function(result)
+        dialog.webviewAlert(webview, function(result)
             if result == i18n("yes") then
 
                 --------------------------------------------------------------------------------
@@ -399,22 +395,19 @@ function private.updateFCPXCommands(enable, silently)
                     --------------------------------------------------------------------------------
                     -- Failed to restart Final Cut Pro:
                     --------------------------------------------------------------------------------
-                    dialog.webviewAlert(whichWebview, function()
+                    dialog.webviewAlert(webview, function()
                         --------------------------------------------------------------------------------
-                        -- Refresh the Preferences Panel and/or Move to next Setup Screen:
+                        -- Refresh the Preferences Panel:
                         --------------------------------------------------------------------------------
                         if mod._manager then
                             mod._manager.refresh()
-                        end
-                        if mod.setup then
-                            mod.setup.nextPanel()
                         end
                     end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")
                 end
 
             end
             --------------------------------------------------------------------------------
-            -- Refresh the Preferences Panel and/or Move to next Setup Screen:
+            -- Refresh the Preferences Panel:
             --------------------------------------------------------------------------------
             if mod._manager then
                 if enable then
@@ -423,9 +416,6 @@ function private.updateFCPXCommands(enable, silently)
                     mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), nil)
                 end
                 mod._manager.refresh()
-            end
-            if mod.setup then
-                mod.setup.nextPanel()
             end
         end, prompt, i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))
 
@@ -477,7 +467,7 @@ end
 function private.applyCommandSetShortcuts()
     local commandSet = fcp:getActiveCommandSet(true)
 
-    log.df("Applying Final Cut Pro Shortcuts to Final Cut Pro Commands.")
+    --log.df("Applying Final Cut Pro Shortcuts to Final Cut Pro Commands.")
     private.applyShortcuts(mod.fcpxCmds, commandSet)
 
     mod.fcpxCmds:watch({
@@ -530,7 +520,7 @@ mod.supported = prop(function()
     return private.hacksModifiedPath("") ~= nil
 end)
 
---- plugins.finalcutpro.hacks.shortcuts.installed <cp.prop: boolean; read-only>
+--- _.installed <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
 mod.installed = prop(function()
@@ -548,11 +538,6 @@ end)
 --- Constant
 --- A property that returns `true` if shortcuts is working on something.
 mod.working = prop.FALSE()
-
---- plugins.finalcutpro.hacks.shortcuts.uninstalled <cp.prop: boolean; read-only>
---- Constant
---- A property that returns `true` if the shortcuts are neither original or installed correctly.
-mod.outdated = mod.supported:AND(mod.working:NOT()):AND(mod.installed:NOT()):AND(mod.uninstalled:NOT())
 
 --- plugins.finalcutpro.hacks.shortcuts.active <cp.prop: boolean; read-only>
 --- Constant
@@ -606,24 +591,6 @@ mod.requiresDeactivation = prop.NOT(mod.installed):AND(mod.active):watch(
     end
 )
 
---- plugins.finalcutpro.hacks.shortcuts.onboardingRequired <cp.prop: boolean>
---- Constant
---- If `true`, the initial setup has been completed.
-mod.onboardingRequired  = config.prop("hacksShortcutsOnboardingRequired", true)
-
---- plugins.finalcutpro.hacks.shortcuts.setupRequired <cp.prop: boolean; read-only>
---- Constant
---- If `true`, the user needs to configure Hacks Shortcuts.
-mod.setupRequired   = mod.supported:AND(mod.onboardingRequired:OR(mod.outdated)):watch(function(required)
-    if required then
-        if mod.panel then
-            mod.setup.show()
-        else
-            mod.setup.addPanel(mod.panel).show()
-        end
-    end
-end, true)
-
 --- plugins.finalcutpro.hacks.shortcuts.update() -> none
 --- Function
 --- Read shortcut keys from the Final Cut Pro Preferences.
@@ -636,7 +603,6 @@ end, true)
 function mod.update()
     mod.installed:update()
     mod.uninstalled:update()
-    mod.onboardingRequired:update()
 end
 
 --- plugins.finalcutpro.hacks.shortcuts.refresh() -> none
@@ -668,19 +634,39 @@ end
 function mod.init(deps, env)
 
     --------------------------------------------------------------------------------
-    -- Setup:
+    -- Webview Manger:
     --------------------------------------------------------------------------------
-    mod.setup = deps.setup
     mod._shortcuts = deps.shortcuts
-    mod.fcpxCmds    = deps.fcpxCmds
-    mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
+    mod._manager = deps.shortcuts._manager
+    mod._preferencesManager = deps.preferencesManager
 
     --------------------------------------------------------------------------------
-    -- Uninstall Hacks Shortcuts if the app config is reset:
+    -- Add Preferences:
     --------------------------------------------------------------------------------
-    config.watch({
-        reset = function() mod.uninstall() end,
-    })
+    if deps.prefs.panel then
+        deps.prefs.panel
+            :addHeading(50, i18n("keyboardShortcuts"))
+            :addCheckbox(51,
+                {
+                    label       = i18n("enableHacksShortcuts"),
+                    onchange    = function(_,params)
+                        if params.checked then
+                            mod.install()
+                        else
+                            mod.uninstall()
+                        end
+                    end,
+                    checked=function() return mod.active() end,
+                    disabled=function() return not mod.supported() end,
+                }
+            )
+    end
+
+    --------------------------------------------------------------------------------
+    -- Setup:
+    --------------------------------------------------------------------------------
+    mod.fcpxCmds    = deps.fcpxCmds
+    mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
 
     --------------------------------------------------------------------------------
     -- Cache the last Command Set Path:
@@ -693,7 +679,7 @@ function mod.init(deps, env)
     fcp:watch({
         preferences = function()
             local activeCommandSetPath = fcp:getActiveCommandSetPath()
-            if mod.lastCommandSetPath ~= fcp:getActiveCommandSetPath() then
+            if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
                 --------------------------------------------------------------------------------
                 -- Refreshing Hacks Shortcuts:
                 --------------------------------------------------------------------------------
@@ -719,32 +705,6 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     mod.editorRenderer = env:compileTemplate("html/editor.html")
 
-    --------------------------------------------------------------------------------
-    -- Create the Setup Panel:
-    --------------------------------------------------------------------------------
-    mod.panel = mod.setup.panel.new("hacksShortcuts", 50)
-        :addIcon(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"))
-        :addParagraph(i18n("commandSetText"), false)
-        :addButton({
-            label       = i18n("commandSetUseFCPX"),
-            onclick     = function()
-                mod.install()
-                mod.onboardingRequired(false)
-                --mod.setup.nextPanel()
-            end,
-        })
-        :addButton({
-            label       = i18n("commandSetUseCP"),
-            onclick     = function()
-                mod.uninstall()
-                mod.onboardingRequired(false)
-                mod.setup.nextPanel()
-            end,
-        })
-    if mod.onboardingRequired() then
-        mod.setup.addPanel(mod.panel)
-    end
-
     return mod
 end
 
@@ -757,11 +717,10 @@ local plugin = {
     id              = "finalcutpro.hacks.shortcuts",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.top"]                            = "top",
         ["finalcutpro.commands"]                            = "fcpxCmds",
         ["finalcutpro.preferences.app"]                     = "prefs",
-        ["core.setup"]                                      = "setup",
         ["core.preferences.panels.shortcuts"]               = "shortcuts",
+        ["core.preferences.manager"]                        = "preferencesManager",
     }
 }
 
@@ -769,35 +728,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-
-    --------------------------------------------------------------------------------
-    -- Webview Manger:
-    --------------------------------------------------------------------------------
-    mod._setup = deps.setup
-    mod._shortcuts = deps.shortcuts
-    mod._manager = deps.shortcuts._manager
-
-    --------------------------------------------------------------------------------
-    -- Add Preferences:
-    --------------------------------------------------------------------------------
-    if deps.prefs.panel then
-        deps.prefs.panel
-            :addHeading(50, i18n("keyboardShortcuts"))
-            :addCheckbox(51,
-                {
-                    label       = i18n("enableHacksShortcuts"),
-                    onchange    = function(_,params)
-                        if params.checked then
-                            mod.install()
-                        else
-                            mod.uninstall()
-                        end
-                    end,
-                    checked=function() return mod.active() end
-                }
-            )
-    end
-
     return mod.init(deps, env)
 end
 
@@ -806,13 +736,6 @@ end
 --------------------------------------------------------------------------------
 function plugin.postInit()
     mod.update()
-end
-
---------------------------------------------------------------------------------
--- DISABLE PLUGIN:
---------------------------------------------------------------------------------
-function plugin.disable()
-    return mod.uninstall()
 end
 
 return plugin

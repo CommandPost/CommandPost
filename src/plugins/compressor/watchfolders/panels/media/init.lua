@@ -622,7 +622,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- Check Extensions:
                 --------------------------------------------------------------------------------
-                if ((fnutils.contains(allowedExtensions, file:sub(-3)) or fnutils.contains(allowedExtensions, file:sub(-4)))) and tools.doesFileExist(file) then
+                if ((fnutils.contains(allowedExtensions, string.lower(file:sub(-3))) or fnutils.contains(allowedExtensions, string.lower(file:sub(-4))))) and tools.doesFileExist(file) then
                     autoFiles[#autoFiles + 1] = file
                 end
             end
