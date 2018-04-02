@@ -526,7 +526,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- Check Extensions:
                 --------------------------------------------------------------------------------
-                if file:sub(-7) == ".fcpxml" and tools.doesFileExist(file) then
+                if string.lower(file:sub(-7)) == ".fcpxml" and tools.doesFileExist(file) then
                     if mod.automaticallyImport() then
                         autoFiles[#autoFiles + 1] = file
                     else
