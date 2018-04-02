@@ -29,9 +29,16 @@
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
+                    </Bank>
                 </ControlBank>
                 <ControlBank id="Encoder">
                     <Bank>
+                        <Control type="Encoder" number="0"> <!-- Wave Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AD00001</Key> <!-- Display Brightness -->
+                                <Display>Percentage</Display>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Button">
@@ -171,8 +178,6 @@
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
-                    </Bank>
-                    <Bank>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Button">
