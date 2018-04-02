@@ -520,7 +520,7 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
             -- Only handle valid timecode values:
             --------------------------------------------------------------------------------
             if not string.find(timecode, "%d%d:%d%d:%d%d:%d%d") then
-                log.df("Invalid GOTO MMC Timecode: %s", timecode)
+                log.ef("Invalid GOTO MMC Timecode: %s", timecode)
                 return
             end
 
@@ -562,7 +562,7 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
     elseif commandType == "ERROR" then
     elseif commandType == "SHUTTLE" then
     else
-        log.df("Invalid MMC Command: %s", commandType)
+        log.ef("Invalid MMC Command: %s", commandType)
         return false
     end
 
@@ -1255,13 +1255,13 @@ function mod.start()
 		if not mod._midiDevices[deviceName] then
 		    if fnutils.contains(usedDevices, deviceName) then
                 if string.sub(deviceName, 1, 8) == "virtual_" then
-                    log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
+                    --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)
                     end
                 else
-                    log.df("Creating new Physical MIDI Watcher: %s", deviceName)
+                    --log.df("Creating new Physical MIDI Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.new(deviceName)
                     if mod._midiDevices[deviceName] then
                         mod._midiDevices[deviceName]:callback(mod.midiCallback)
@@ -1314,31 +1314,35 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-	log.df("Updating MIDI Watchers")
-
+	--log.df("Updating MIDI Watchers")
 	if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
+
+	    --------------------------------------------------------------------------------
+	    -- Start MIDI:
+	    --------------------------------------------------------------------------------
 		mod.start()
 
 		--------------------------------------------------------------------------------
 		-- Update the prop, so that any other plugins watching this prop also update:
 		--------------------------------------------------------------------------------
 		mod.transmitMTC:update()
-		mod.transmitMTCDevice:update()
+		mod.transmitMMC:update()
 	else
 	    mod.stop()
 	end
-
 end
 
 --- plugins.core.midi.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable MIDI Support.
 mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
+    --[[
 	if enabled then
 		log.df("MIDI Support Enabled!")
 	else
 	    log.df("MIDI Support Disabled!")
 	end
+	--]]
 	mod.update()
 end)
 
@@ -1367,44 +1371,52 @@ end
 --- Field
 --- Enable or disable Transmit MMC Support.
 mod.transmitMMC = config.prop("transmitMMC", false):watch(function(enabled)
+    --[[
     if enabled then
         log.df("Transmit MMC Enabled!")
     else
         log.df("Transmit MMC Disabled!")
     end
+    --]]
 end)
 
 --- plugins.core.midi.manager.listenMMC <cp.prop: boolean>
 --- Field
 --- Enable or disable Listen MMC Support.
 mod.listenMMC = config.prop("listenMMC", false):watch(function(enabled)
+    --[[
     if enabled then
         log.df("Listen MMC Enabled!")
     else
         log.df("Listen MMC Disabled!")
     end
+    --]]
 end)
 
 --- plugins.core.midi.manager.transmitMTC <cp.prop: boolean>
 --- Field
 --- Enable or disable Transmit MTC Support.
 mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
+    --[[
     if enabled then
         log.df("Transmit MTC Enabled!")
     else
         log.df("Transmit MTC Disabled!")
     end
+    --]]
 end)
 
 --- plugins.core.midi.manager.listenMTC <cp.prop: boolean>
 --- Field
 --- Enable or disable Listen MTC Support.
 mod.listenMTC = config.prop("listenMTC", false):watch(function(enabled)
+    --[[
     if enabled then
         log.df("Listen MTC Enabled!")
     else
         log.df("Listen MTC Disabled!")
     end
+    --]]
 end)
 
 --- plugins.core.midi.manager.transmitMMCDevice <cp.prop: string>

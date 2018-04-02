@@ -41,7 +41,7 @@ mod.ID = "fcpx"
 --- plugins.finalcutpro.midi.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable MIDI Support.
-mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
+mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
     if enabled then
         --------------------------------------------------------------------------------
         -- Update MIDI Commands when Final Cut Pro is shown or hidden:
@@ -190,7 +190,7 @@ function plugin.postInit()
         --------------------------------------------------------------------------------
         -- Update Watchers:
         --------------------------------------------------------------------------------
-        mod.enabled:update()
+        mod.enableMIDI:update()
         mod.transmitMMC:update()
         mod.transmitMTC:update()
 
