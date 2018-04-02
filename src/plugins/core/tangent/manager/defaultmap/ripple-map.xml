@@ -22,6 +22,18 @@
                 </ControlBank>
                 <ControlBank id="Trackerball">
                     <Bank>
+                        <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00001</Key> <!-- Volume -->
+                                <Display>Percentage</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AD00001</Key> <!-- Brightness -->
+                                <Display>Percentage</Display>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>

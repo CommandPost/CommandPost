@@ -25,7 +25,13 @@
                         <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
                             <Mapping mode="Std">
                                 <Key>0x0AD00001</Key> <!-- Brightness -->
-                                <Display>Number</Display>
+                                <Display>Percentage</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00001</Key> <!-- Volume -->
+                                <Display>Percentage</Display>
                             </Mapping>
                         </Control>
                     </Bank>
