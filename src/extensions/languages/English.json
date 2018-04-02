@@ -976,7 +976,7 @@
         "mute"                                                 : "Mute",
         "mute9"                                                : "MUTE",
         "mute10"                                               : "MUTE",
-        "muted"                                                : "MUTED",
-        "unmuted"                                              : "UNMUTED"
+        "on"                                                   : "ON",
+        "off"                                                  : "OFF"
     }
 }

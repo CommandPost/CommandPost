@@ -42,7 +42,7 @@
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x0AA00001</Key> <!-- Sound Volume -->
+                                <Key>0x0AA00001</Key> <!-- Volume -->
                                 <Display>Percentage</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
@@ -51,6 +51,11 @@
                 </ControlBank>
                 <ControlBank id="Button">
                     <Bank>
+                        <Control type="Button" number="15"> <!-- Wave Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00002</Key> <!-- Mute -->
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>

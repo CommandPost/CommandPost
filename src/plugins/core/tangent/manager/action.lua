@@ -53,6 +53,10 @@ function action.new(id, name, parent)
     return o
 end
 
+function action.is(otherThing)
+    return is.table(otherThing) and getmetatable(otherThing) == action.mt
+end
+
 --- plugins.core.tangent.manager.action:parent() -> group | controls
 --- Method
 --- Returns the `group` or `controls` that contains this action.

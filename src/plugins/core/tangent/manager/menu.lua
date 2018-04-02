@@ -9,6 +9,7 @@
 --- Represents a Tangent Menu. Menus are controls that have a fixed set of
 --- non-numerical values. This could be as simple as "On" and "Off", or a long
 --- list of options.
+local tangent           = require("hs.tangent")
 
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
@@ -213,6 +214,22 @@ function menu.mt:prev()
     end
 end
 
+--- plugins.core.tangent.manager.menu:update() -> nil
+--- Method
+--- Updates the Tangent panel with the current value.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the update was sent.
+function menu.mt:update()
+    if self:active() then
+        return tangent.sendMenuString(self.id, self:get())
+    end
+    return false
+end
+
 --- plugins.core.tangent.manager.menu:xml() -> cp.web.xml
 --- Method
 --- Returns the `xml` configuration for the Action.
@@ -223,7 +240,7 @@ end
 --- Returns:
 --- * The `xml` for the Action.
 function menu.mt:xml()
-    return x.Action { id=format("%#010x", self.id) } (
+    return x.Menu { id=format("%#010x", self.id) } (
         named.xml(self)
     )
 end

@@ -535,7 +535,7 @@ local receiveHandler = {
     [mod.fromHub.menuChange] = function(data, offset)
         local menuID, increment
         menuID, offset = byteStringToNumber(data, offset, 4)
-        increment, offset = byteStringToNumber(data, 9, offset, true)
+        increment, offset = byteStringToNumber(data, offset, 4)
         if menuID and increment then
             return {
                 menuID = menuID,

@@ -1,4 +1,5 @@
-local audiodevice            = require("hs.audiodevice")
+local log                   = require("hs.logger").new("tng_sound")
+local audiodevice           = require("hs.audiodevice")
 
 local plugin = {
     id = "core.tangent.os.sound",
@@ -14,6 +15,7 @@ function plugin.init(deps)
     local toggleMute = function()
         local output = audiodevice.defaultOutputDevice()
         if output then
+            log.df("toggling mute...")
             output:setOutputMuted(not output:outputMuted())
         end
     end
@@ -43,7 +45,7 @@ function plugin.init(deps)
         :onReset(toggleMute)
 
     local iMuted, iUnmuted = i18n("muted"), i18n("unmuted")
-    soundGroup:menu(0x0AA00002)
+    local mute = soundGroup:menu(0x0AA00002)
         :name(i18n("mute"))
         :name9(i18n("mute9"))
         :name10(i18n("mute10"))
