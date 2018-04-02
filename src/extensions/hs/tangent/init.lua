@@ -313,7 +313,7 @@ end
 -- Returns:
 --  * A string
 local function numberToByteString(n)
-    if not type(n) == "number" then
+    if type(n) ~= "number" then
         log.ef("numberToByteString() was fed something other than a number")
         return nil
     end
@@ -330,7 +330,7 @@ end
 -- Returns:
 --  * A string
 local function floatToByteString(n)
-    if not type(n) == "number" then
+    if type(n) ~= "number" then
         log.ef("floatToByteString() was fed something other than a number")
         return nil
     end
@@ -1219,7 +1219,7 @@ function mod.sendParameterValue(paramID, value, atDefault)
     if not paramID then
         return false, format("Missing or invalid parameter ID: %s", inspect(paramID))
     end
-    if not value then
+    if not value or type(value) ~= "number" then
         return false, format("Missing or invalid value: %s", inspect(value))
     end
     atDefault = atDefault == true

@@ -70,7 +70,7 @@ end
 --- Returns:
 --- * `nil`
 function mode.mt:activate()
-    self.manager.currentMode(self)
+    self.manager.activeMode(self)
 end
 
 --- plugins.core.tangent.manager.mode:onDeactivate(deactivateFn) -> self

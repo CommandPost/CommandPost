@@ -43,6 +43,7 @@ local fcp                                       = require("cp.apple.finalcutpro"
 local tools                                     = require("cp.tools")
 local x                                         = require("cp.web.xml")
 local prop                                      = require("cp.prop")
+local is                                        = require("cp.is")
 
 local mode                                      = require("mode")
 local controls                                  = require("controls")
@@ -73,16 +74,6 @@ mod._modes = {}
 --- Variable
 --- The default group.
 mod.defaultGroup = "global"
-
---- plugins.core.tangent.manager.MODES() -> table
---- Constant
---- The default Modes for CommandPost in the Tangent Mapper.
-mod.MODES = {
-    ["0x00010001"] = {
-        ["name"]    =   i18n("global_command_group"),
-        ["groupID"] =   "global",
-    },
-}
 
 --- plugins.core.tangent.manager.controls
 --- Constant
@@ -231,21 +222,21 @@ function mod.getMode(id)
     return nil
 end
 
---- plugins.core.tangent.manager.currentMode <cp.prop: mode>
+--- plugins.core.tangent.manager.activeMode <cp.prop: mode>
 --- Constant
 --- Represents the currently active `mode`.
-mod.currentMode = prop(
+mod.activeMode = prop(
     function()
-        return mod._currentMode
+        return mod._activeMode
     end,
     function(newMode)
         local m = mode.is(newMode) and newMode or mod.getMode(newMode)
         if m then
-            local oldMode = mod._currentMode
+            local oldMode = mod._activeMode
             if oldMode and oldMode._deactivate then
                 oldMode._deactivate()
             end
-            mod._currentMode = m
+            mod._activeMode = m
             if m._activate then
                 m._activate()
             end
@@ -267,9 +258,9 @@ mod.currentMode = prop(
 ---  * None
 function mod.update()
     if mod.connected() then
-        local currentMode = mod.currentMode()
-        if currentMode then
-            tangent.sendModeValue(currentMode.id)
+        local activeMode = mod.activeMode()
+        if activeMode then
+            tangent.sendModeValue(activeMode.id)
         end
     end
 end
@@ -317,7 +308,10 @@ local fromHub = {
         local control = mod.controls:findByID(metadata.paramID)
         if parameter.is(control) then
             local newValue = control:change(metadata.increment)
-            if newValue ~= nil then
+            if newValue == nil then
+                newValue = control:get()
+            end
+            if is.number(newValue) then
                 tangent.sendParameterValue(control.id, newValue)
             end
         end
@@ -327,7 +321,10 @@ local fromHub = {
         local control = mod.controls:findByID(metadata.paramID)
         if parameter.is(control) then
             local newValue = control:reset()
-            if newValue ~= nil then
+            if newValue == nil then
+                newValue = control:get()
+            end
+            if is.number(newValue) then
                 tangent.sendParameterValue(control.id, newValue)
             end
         end
@@ -337,7 +334,7 @@ local fromHub = {
         local control = mod.controls:findByID(metadata.paramID)
         if parameter.is(control) then
             local value = control:get()
-            if value ~= nil then
+            if is.number(value) then
                 tangent.sendParameterValue(control.id, value)
             end
         end
@@ -398,7 +395,7 @@ local fromHub = {
     [tangent.fromHub.modeChange] = function(metadata)
         local newMode = mod.getMode(metadata.modeID)
         if newMode then
-            mod.currentMode(newMode)
+            mod.activeMode(newMode)
         end
     end,
 

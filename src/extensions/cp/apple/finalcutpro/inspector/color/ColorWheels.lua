@@ -167,7 +167,7 @@ function ColorWheels.new(parent)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
 --- Field
---- The hue for the corrector. A number from `0` to `50`.
+--- The hue for the corrector. A number from `0` to `360`.
 	o.hue = o:hueTextField().value:wrap(o)
 
     return o
@@ -483,7 +483,8 @@ function ColorWheels:hueTextField()
 			function()
 				local ui = self:hueRow():children()
 				return ui and axutils.childWithRole(ui, "AXTextField")
-			end
+			end,
+			tonumber
 		)
 	end
 	return self._hueTextField
