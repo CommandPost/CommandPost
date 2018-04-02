@@ -4,6 +4,7 @@
 local test = require("cp.test")
 
 local action = require("action")
+local group  = require("group")
 
 return test.suite("action"):with {
     test("new", function()
@@ -27,6 +28,26 @@ return test.suite("action"):with {
         ok(eq(tostring(o:xml()), [[<Action id="0x00000001"><Name>Foobar</Name><Name3>Foo</Name3></Action>]]))
     end),
 
+    test("active", function()
+        local g = group.new("Foo")
+        local o = action.new(0x01, "Bar", g)
+
+        ok(eq(o:parent(), g))
+        ok(eq(o:active(), true))
+
+        g:enabled(false)
+        ok(eq(o:active(), false))
+
+        o:enabled(false)
+        ok(eq(o:active(), false))
+
+        g:enabled(true)
+        ok(eq(o:active(), false))
+
+        o:enabled(true)
+        ok(eq(o:active(), true))
+    end),
+
     test("press", function()
         local pressed = false
         local o = action.new(0x01)
@@ -34,6 +55,11 @@ return test.suite("action"):with {
 
         ok(eq(pressed, false))
 
+        o:enabled(false)
+        o:press()
+        ok(eq(pressed, false))
+
+        o:enabled(true)
         o:press()
         ok(eq(pressed, true))
     end),
@@ -45,7 +71,13 @@ return test.suite("action"):with {
 
         ok(eq(released, false))
 
+        o:enabled(false)
+        o:release()
+        ok(eq(released, false))
+
+        o:enabled(true)
         o:release()
         ok(eq(released, true))
     end),
+
 }

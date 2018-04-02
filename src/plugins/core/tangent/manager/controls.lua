@@ -30,13 +30,47 @@ controls.mt = {}
 function controls.new()
     local o = prop.extend({
         ids = {},
-        --- plugins.core.tanget.controls.enabled <cp.prop: boolean>
+
+        --- plugins.core.tangent.controls.enabled <cp.prop: boolean>
         --- Field
-        --- Indicates if the controls is enabled.
-        enabled = prop.FALSE(),
+        --- Indicates if the controls are enabled.
+        enabled = prop.TRUE(),
     }, controls.mt)
 
+    prop.bind(o) {
+        --- plugins.core.tangent.controls.active <cp.prop: boolean; read-only>
+        --- Field
+        --- Indicates if the controls are active. They will be active if `enabled` is `true`.
+        active = o.enabled:IMMUTABLE()
+    }
+
     return o
+end
+
+--- plugins.core.tangent.manager.controls:parent() -> nil
+--- Method
+--- Always returns `nil`, sinces `controls` have no parent.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `nil`.
+function controls.mt.parent()
+    return nil
+end
+
+--- plugins.core.tangent.manager.controls:controls() -> controls
+--- Method
+--- Returns this `controls` instance.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `controls instance.
+function controls.mt:controls()
+    return self
 end
 
 --- plugins.core.tangent.manager.controls:register(control) -> self
@@ -113,7 +147,7 @@ function controls.mt:action(id, name)
         self._actions = actions
     end
 
-    local a = action.new(id, name)
+    local a = action.new(id, name, self)
     insert(actions, a)
     self:register(a)
 
@@ -137,7 +171,7 @@ function controls.mt:parameter(id, name)
         self._parameters = parameters
     end
 
-    local a = parameter.new(id, name)
+    local a = parameter.new(id, name, self)
     insert(parameters, a)
     self:register(a)
 
@@ -161,7 +195,7 @@ function controls.mt:menu(id, name)
         self._menus = menus
     end
 
-    local a = menu.new(id, name)
+    local a = menu.new(id, name, self)
     insert(menus, a)
     self:register(a)
 

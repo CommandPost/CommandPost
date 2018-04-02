@@ -6,7 +6,8 @@
 
 --- === plugins.core.tangent.manager.group ===
 ---
---- Represents a Tangent Group
+--- Represents a Tangent Group. Groups can also be used to enable/disable multiple
+--- Parameters/Actions/Menus by enabling/disabling the containing group.
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
 local is                = require("cp.is")
@@ -23,28 +24,80 @@ local group = {}
 
 group.mt = {}
 
---- plugins.core.tangent.manager.group.new(name, controls)
+--- plugins.core.tangent.manager.group.new(name, parent, controls)
 --- Constructor
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
 --- * name      - The name of the group.
---- * controls  - The `controls` instance
-function group.new(name, controls)
+--- * parent    - The parent group.
+function group.new(name, parent)
     if is.blank(name) then
         error("Group names cannot be empty")
     end
     local o = prop.extend({
         name = name,
-        controls = controls,
+        _parent = parent,
 
-        --- plugins.core.tanget.group.enabled <cp.prop: boolean>
+        --- plugins.core.tangent.manager.group.enabled <cp.prop: boolean>
         --- Field
         --- Indicates if the group is enabled.
-        enabled = prop.FALSE(),
+        enabled = prop.TRUE(),
     }, group.mt)
 
+    prop.bind(o) {
+        --- plugin.core.tangent.manager.group.active <cp.prop: boolean; read-only>
+        --- Field
+        --- Indicates if the group is active. It will only be active if
+        --- the current group is `enabled` and if the parent group (if present) is `active`.
+        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE(),
+    }
+
     return o
+end
+
+--- plugins.core.tangent.manager.group.is(otherThing) -> boolean
+--- Function
+--- Checks if the `otherThing` is a `group`.
+---
+--- Parameters:
+--- * otherThing    - The thing to check.
+---
+--- Returns:
+--- * `true` if it is a `group`, `false` otherwise.
+function group.is(otherThing)
+    return is.table(otherThing) and getmetatable(otherThing) == group.mt
+end
+
+--- plugins.core.tangent.manager.group:parent() -> group | controls
+--- Method
+--- Returns the parent of the group, which should be either a `group`, `controls` or `nil`.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The group's parents.
+function group.mt:parent()
+    return self._parent
+end
+
+--- plugins.core.tangent.manager.group:controls() -> controls
+--- Method
+--- Retrieves the `controls` for this group. May be `nil` if the group was created independently.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `controls`, or `nil`.
+function group.mt:controls()
+    local parent = self:parent()
+    if group.is(parent) then
+        return parent:controls()
+    else
+        return parent
+    end
 end
 
 --- plugins.core.tangent.manager.group:group(name) -> group
@@ -63,10 +116,17 @@ function group.mt:group(name)
         self._groups = groups
     end
 
-    local g = group.new(name, self.controls)
+    local g = group.new(name, self)
     insert(groups, g)
 
     return g
+end
+
+function group.mt:_register(control)
+    local controls = self:controls()
+    if controls then
+        controls:register(control)
+    end
 end
 
 --- plugins.core.tangent.manager.group:action(id[, name]) -> action
@@ -86,11 +146,10 @@ function group.mt:action(id, name)
         self._actions = actions
     end
 
-    local a = action.new(id, name)
+    local a = action.new(id, name, self)
     insert(actions, a)
-    if self.controls then
-        self.controls:register(a)
-    end
+
+    self:_register(a)
 
     return a
 end
@@ -112,11 +171,10 @@ function group.mt:parameter(id, name)
         self._parameters = parameters
     end
 
-    local a = parameter.new(id, name)
+    local a = parameter.new(id, name, self)
     insert(parameters, a)
-    if self.controls then
-        self.controls:register(a)
-    end
+
+    self:_register(a)
 
     return a
 end
@@ -138,11 +196,10 @@ function group.mt:menu(id, name)
         self._menus = menus
     end
 
-    local a = menu.new(id, name)
+    local a = menu.new(id, name, self)
     insert(menus, a)
-    if self.controls then
-        self.controls:register(a)
-    end
+
+    self:_register(a)
 
     return a
 end
@@ -164,7 +221,7 @@ function group.mt:binding(name)
         self._bindings = bindings
     end
 
-    local a = binding.new(name)
+    local a = binding.new(name, self)
     insert(bindings, a)
 
     return a

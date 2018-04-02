@@ -22,24 +22,82 @@ local menu = {}
 
 menu.mt = named({})
 
---- plugins.core.tangent.manager.menu.new(id[, name]) -> menu
+--- plugins.core.tangent.manager.menu.new(id[, name[, parent]]) -> menu
 --- Constructor
 --- Creates a new `Action` instance.
 ---
 --- Parameters:
 --- * id        - The ID number of the menu.
 --- * name      - The name of the menu.
+--- * parent    - The parent of the menu.
 ---
 --- Returns:
 --- * the new `menu`.
-function menu.new(id, name)
+function menu.new(id, name, parent)
     local o = prop.extend({
         id = id,
+        _parent = parent,
+
+        --- plugins.core.tangent.manager.menu.enabled <cp.prop: boolean>
+        --- Field
+        --- Indicates if the menu is enabled.
+        enabled = prop.TRUE(),
     }, menu.mt)
+
+    prop.bind(o) {
+        --- plugin.core.tangent.manager.menu.active <cp.prop: boolean; read-only>
+        --- Field
+        --- Indicates if the menu is active. It will only be active if
+        --- the current menu is `enabled` and if the parent group (if present) is `active`.
+        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE()
+    }
 
     o:name(name)
 
     return o
+end
+
+--- plugins.core.tangent.manager.menu.is(other) -> boolean
+--- Function
+--- Checks if the `other` is a `menu` instance.
+---
+--- Parameters:
+--- * other     - The other object to test.
+---
+--- Returns:
+--- * `true` if it is a `menu`, `false` if not.
+function menu.is(other)
+    return type(other) == "table" and getmetatable(other) == menu.mt
+end
+
+--- plugins.core.tangent.manager.menu:parent() -> group | controls
+--- Method
+--- Returns the `group` or `controls` that contains this menu.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The parent.
+function menu.mt:parent()
+    return self._parent
+end
+
+--- plugins.core.tangent.manager.menu:controls()
+--- Method
+--- Returns the `controls` the menu belongs to.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `controls`, or `nil` if not specified.
+function menu.mt:controls()
+    local parent = self:parent()
+    if parent then
+        return parent:controls()
+    end
+    return nil
 end
 
 --- plugins.core.tangent.manager.menu:onGet(getFn) -> self
@@ -72,7 +130,7 @@ end
 --- Returns:
 --- * `nil`
 function menu.mt:get()
-    if self._get then
+    if self._get and self:active() then
         return self._get()
     end
 end
@@ -111,7 +169,7 @@ end
 --- Returns:
 --- * `nil`
 function menu.mt:next()
-    if self._next then
+    if self._next and self:active() then
         self._next()
     end
 end
@@ -150,7 +208,7 @@ end
 --- Returns:
 --- * `nil`
 function menu.mt:prev()
-    if self._prev then
+    if self._prev and self:active() then
         self._prev()
     end
 end

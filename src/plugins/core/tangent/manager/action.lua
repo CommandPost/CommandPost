@@ -29,14 +29,58 @@ action.mt = named({})
 ---
 --- Returns:
 --- * the new `action`.
-function action.new(id, name)
+function action.new(id, name, parent)
     local o = prop.extend({
         id = id,
+        _parent = parent,
+
+        --- plugins.core.tangent.manager.action.enabled <cp.prop: boolean>
+        --- Field
+        --- Indicates if the action is enabled.
+        enabled = prop.TRUE(),
     }, action.mt)
+
+    prop.bind(o) {
+        --- plugin.core.tangent.manager.action.active <cp.prop: boolean; read-only>
+        --- Field
+        --- Indicates if the action is active. It will only be active if
+        --- the current action is `enabled` and if the parent group (if present) is `active`.
+        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE()
+    }
 
     o:name(name)
 
     return o
+end
+
+--- plugins.core.tangent.manager.action:parent() -> group | controls
+--- Method
+--- Returns the `group` or `controls` that contains this action.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The action's parent.
+function action.mt:parent()
+    return self._parent
+end
+
+--- plugins.core.tangent.manager.action:controls()
+--- Method
+--- Returns the `controls` the action belongs to.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `controls`, or `nil` if not specified.
+function action.mt:controls()
+    local parent = self:parent()
+    if parent then
+        return parent:controls()
+    end
+    return nil
 end
 
 --- plugins.core.tangent.manager.action:onPress(pressFn) -> self
@@ -69,7 +113,7 @@ end
 --- Returns:
 --- * `nil`
 function action.mt:press()
-    if self._press then
+    if self._press and self:active() then
         self._press()
     end
 end
@@ -104,7 +148,7 @@ end
 --- Returns:
 --- * `nil`
 function action.mt:release()
-    if self._release then
+    if self._release and self:active() then
         self._release()
     end
 end
@@ -122,6 +166,10 @@ function action.mt:xml()
     return x.Action { id=format("%#010x", self.id) } (
         named.xml(self)
     )
+end
+
+function action.mt:__tostring()
+    return format("action: %s (%#010x)", self:name(), self.id)
 end
 
 return action

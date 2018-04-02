@@ -30,4 +30,29 @@ return test.suite("group"):with {
 
         ok(eq(tostring(o:xml()), [[<Group name="Foo"><Group name="Bar"></Group></Group>]]))
     end),
+
+    test("enabled", function()
+        local o = group.new("Foo")
+
+        ok(eq(o:enabled(), true))
+        ok(eq(o:enabled(false), false))
+        ok(eq(o:enabled(), false))
+    end),
+
+    test("active", function()
+        local o = group.new("Foo")
+
+        ok(eq(o:enabled(), true))
+        ok(eq(o:active(), true))
+        o.enabled:toggle()
+
+        ok(eq(o:active(), false))
+
+        local bar = o:group("Bar")
+        ok(eq(bar:enabled(), true))
+        ok(eq(bar:active(), false))
+
+        o.enabled:toggle()
+        ok(eq(bar:active(), true))
+    end)
 }

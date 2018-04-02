@@ -19,20 +19,35 @@ local parameter = {}
 
 parameter.mt = named({})
 
---- plugins.core.tangent.manager.parameter.new(id[, name]) -> parameter
+--- plugins.core.tangent.manager.parameter.new(id[, name[, parent]) -> parameter
 --- Constructor
 --- Creates a new `Parameter` instance.
 ---
 --- Parameters:
 --- * id        - The ID number of the parameter.
 --- * name      - The name of the parameter.
+--- * parent    - The parent of the parameter.
 ---
 --- Returns:
 --- * the new `parameter`.
-function parameter.new(id, name)
+function parameter.new(id, name, parent)
     local o = prop.extend({
         id = id,
+        _parent = parent,
+
+        --- plugins.core.tangent.manager.parameter.enabled <cp.prop: boolean>
+        --- Field
+        --- Indicates if the parameter is enabled.
+        enabled = prop.TRUE(),
     }, parameter.mt)
+
+    prop.bind(o) {
+        --- plugin.core.tangent.manager.parameter.active <cp.prop: boolean; read-only>
+        --- Field
+        --- Indicates if the parameter is active. It will only be active if
+        --- the current parameter is `enabled` and if the parent group (if present) is `active`.
+        active = parent and parent.active:AND(o.enabled) or o.enabled:IMMUTABLE()
+    }
 
     o:name(name)
 
@@ -50,6 +65,36 @@ end
 --- * `true` if it is a `parameter`, `false` if not.
 function parameter.is(other)
     return type(other) == "table" and getmetatable(other) == parameter.mt
+end
+
+--- plugins.core.tangent.manager.parameter:parent() -> group | controls
+--- Method
+--- Returns the `group` or `controls` that contains this parameter.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The parent.
+function parameter.mt:parent()
+    return self._parent
+end
+
+--- plugins.core.tangent.manager.parameter:controls()
+--- Method
+--- Returns the `controls` the parameter belongs to.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `controls`, or `nil` if not specified.
+function parameter.mt:controls()
+    local parent = self:parent()
+    if parent then
+        return parent:controls()
+    end
+    return nil
 end
 
 --- plugins.core.tangent.manager.parameter:minValue([value]) -> number | self
@@ -138,7 +183,7 @@ end
 --- Returns:
 --- * The current value, or `nil` if it can't be accessed.
 function parameter.mt:get()
-    if self._get then
+    if self._get and self:active() then
         return self._get()
     end
     return nil
@@ -177,7 +222,7 @@ end
 --- Returns:
 --- * The current value, or `nil` if it can't be accessed.
 function parameter.mt:change(amount)
-    if self._change then
+    if self._change and self:active() then
         local value = self._change(amount)
         return value or self:get()
     end
@@ -214,7 +259,7 @@ end
 --- Returns:
 --- * The current value, or `nil` if it can't be accessed.
 function parameter.mt:reset()
-    if self._reset then
+    if self._reset and self:active() then
         self._reset()
     end
     return self:get()
