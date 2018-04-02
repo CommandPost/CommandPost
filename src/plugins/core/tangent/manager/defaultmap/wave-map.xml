@@ -40,6 +40,13 @@
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
+                        <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00001</Key> <!-- Sound Volume -->
+                                <Display>Percentage</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Button">

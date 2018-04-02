@@ -25,6 +25,8 @@ function plugin.init(deps)
             brightness.set(brightness.get() + increment)
         end)
         :onReset(function() brightness.set(brightness.ambient()) end)
+
+    return displayGroup
 end
 
 return plugin

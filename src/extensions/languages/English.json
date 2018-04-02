@@ -968,6 +968,12 @@
         "macOS"                                                : "macOS",
         "display"                                              : "Display",
         "brightness9"                                          : "BRGHTNESS",
-        "brightness10"                                         : "BRIGHTNESS"
+        "brightness10"                                         : "BRIGHTNESS",
+        "sound"                                                : "Sound",
+        "volume"                                               : "Volume",
+        "volume9"                                              : "VOLUME",
+        "volume10"                                             : "VOLUME",
+        "muted"                                                : "MUTED",
+        "unmuted"                                              : "UNMUTED"
     }
 }
