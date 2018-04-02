@@ -70,9 +70,6 @@ end
 --- Returns:
 --- * `nil`
 function mode.mt:activate()
-    if self._activate then
-        self._activate()
-    end
     self.manager.currentMode(self)
 end
 
@@ -94,21 +91,6 @@ function mode.mt:onDeactivate(deactivateFn)
     end
     self._deactivate = deactivateFn
     return self
-end
-
---- plugins.core.tangent.manager.mode:deactivate() -> nil
---- Method
---- Executes the `deactivate` function, if present.
----
---- Parameters:
---- * None
----
---- Returns:
---- * `nil`
-function mode.mt:deactivate()
-    if self._deactivate then
-        self._deactivate()
-    end
 end
 
 --- plugins.core.tangent.mode:xml() -> cp.web.xml

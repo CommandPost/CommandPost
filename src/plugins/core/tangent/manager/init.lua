@@ -239,10 +239,19 @@ mod.currentMode = prop(
         return mod._currentMode
     end,
     function(newMode)
-        newMode = mode.is(newMode) and newMode or mod.getMode(newMode)
-        mod._currentMode = newMode
-        if newMode then
+        local m = mode.is(newMode) and newMode or mod.getMode(newMode)
+        if m then
+            local oldMode = mod._currentMode
+            if oldMode and oldMode._deactivate then
+                oldMode._deactivate()
+            end
+            mod._currentMode = m
+            if m._activate then
+                m._activate()
+            end
             tangent.sendModeValue(newMode.id)
+        else
+            error("Expected a `mode` or a valid mode `ID`: %s", inspect(newMode))
         end
     end
 )
@@ -389,11 +398,7 @@ local fromHub = {
     [tangent.fromHub.modeChange] = function(metadata)
         local newMode = mod.getMode(metadata.modeID)
         if newMode then
-            local oldMode = mod.currentMode()
-            if oldMode == nil or oldMode.id ~= newMode.id then
-                if oldMode then oldMode:deactivate() end
-                newMode:activate()
-            end
+            mod.currentMode(newMode)
         end
     end,
 
