@@ -17,28 +17,21 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("midiManager")
+local log                                       = require("hs.logger").new("midiManager")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local application								= require("hs.application")
-local canvas 									= require("hs.canvas")
-local drawing									= require("hs.drawing")
-local eventtap									= require("hs.eventtap")
 local fnutils                                   = require("hs.fnutils")
-local image										= require("hs.image")
-local inspect									= require("hs.inspect")
-local midi										= require("hs.midi")
-local styledtext								= require("hs.styledtext")
-local timer										= require("hs.timer")
+local inspect                                   = require("hs.inspect")
+local midi                                      = require("hs.midi")
+local timer                                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config									= require("cp.config")
-local prop										= require("cp.prop")
-local tools										= require("cp.tools")
+local config                                    = require("cp.config")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -62,24 +55,24 @@ mod.controls = controls
 --- Creates a new MIDI control.
 ---
 --- Parameters:
---- * `id`		- The unique ID for this widget.
+--- * `id`      - The unique ID for this widget.
 ---
 --- Returns:
 ---  * table that has been created
 function controls:new(id, params)
 
-	if controls._items[id] ~= nil then
-		error("Duplicate Control ID: " .. id)
-	end
-	local o = {
-		_id = id,
-		_params = params,
-	}
-	setmetatable(o, self)
-	self.__index = self
+    if controls._items[id] ~= nil then
+        error("Duplicate Control ID: " .. id)
+    end
+    local o = {
+        _id = id,
+        _params = params,
+    }
+    setmetatable(o, self)
+    self.__index = self
 
-	controls._items[id] = o
-	return o
+    controls._items[id] = o
+    return o
 
 end
 
@@ -88,12 +81,12 @@ end
 --- Gets a MIDI control.
 ---
 --- Parameters:
---- * `id`		- The unique ID for the widget you want to return.
+--- * `id`      - The unique ID for the widget you want to return.
 ---
 --- Returns:
 ---  * table containing the widget
 function controls:get(id)
-	return self._items[id]
+    return self._items[id]
 end
 
 --- plugins.core.midi.manager.controls:getAll() -> table
@@ -106,7 +99,7 @@ end
 --- Returns:
 ---  * table containing all of the created callbacks
 function controls:getAll()
-	return self._items
+    return self._items
 end
 
 --- plugins.core.midi.manager.controls:id() -> string
@@ -119,7 +112,7 @@ end
 --- Returns:
 ---  * The ID of the widget as a `string`
 function controls:id()
-	return self._id
+    return self._id
 end
 
 --- plugins.core.midi.manager.controls:params() -> function
@@ -132,7 +125,7 @@ end
 --- Returns:
 ---  * The paramaters of the widget
 function controls:params()
-	return self._params
+    return self._params
 end
 
 --- plugins.core.midi.manager.controls.allGroups() -> table
@@ -145,17 +138,17 @@ end
 --- Returns:
 ---  * Table
 function controls.allGroups()
-	local result = {}
-	local controls = controls:getAll()
-	for id, widget in pairs(controls) do
-		local params = widget:params()
-		if params and params.group then
-			if not tools.tableContains(result, params.group) then
-				table.insert(result, params.group)
-			end
-		end
-	end
-	return result
+    local result = {}
+    local allControls = controls:getAll()
+    for _, widget in pairs(allControls) do
+        local params = widget:params()
+        if params and params.group then
+            if not tools.tableContains(result, params.group) then
+                table.insert(result, params.group)
+            end
+        end
+    end
+    return result
 end
 
 --------------------------------------------------------------------------------
@@ -178,11 +171,11 @@ mod._groupStatus = {}
 --
 -- Used to prevent callback delays:
 --
-mod._alreadyProcessingCallback 	= false
-mod._lastControllerNumber 		= nil
-mod._lastControllerValue 		= nil
-mod._lastControllerChannel 		= nil
-mod._lastTimestamp 				= nil
+mod._alreadyProcessingCallback  = false
+mod._lastControllerNumber       = nil
+mod._lastControllerValue        = nil
+mod._lastControllerChannel      = nil
+mod._lastTimestamp              = nil
 mod._lastPitchChange            = nil
 
 -- mod._listenMMCFunctions -> table
@@ -225,8 +218,8 @@ mod.defaultGroup = "global"
 --- Returns:
 ---  * None
 function mod.clear()
-	mod._items({})
-	mod.update()
+    mod._items({})
+    mod.update()
 end
 
 --- plugins.core.midi.manager.updateAction(button, group, actionTitle, handlerID, action) -> none
@@ -244,21 +237,21 @@ end
 ---  * None
 function mod.updateAction(button, group, actionTitle, handlerID, action)
 
-	local buttons = mod._items()
+    local buttons = mod._items()
 
-	button = tostring(button)
-	if not buttons[group] then
-		buttons[group] = {}
-	end
-	if not buttons[group][button] then
-		buttons[group][button] = {}
-	end
-	buttons[group][button]["actionTitle"] = actionTitle
-	buttons[group][button]["handlerID"] = handlerID
-	buttons[group][button]["action"] = action
+    button = tostring(button)
+    if not buttons[group] then
+        buttons[group] = {}
+    end
+    if not buttons[group][button] then
+        buttons[group][button] = {}
+    end
+    buttons[group][button]["actionTitle"] = actionTitle
+    buttons[group][button]["handlerID"] = handlerID
+    buttons[group][button]["action"] = action
 
-	mod._items(buttons)
-	mod.update()
+    mod._items(buttons)
+    mod.update()
 
 end
 
@@ -275,20 +268,20 @@ end
 --- Returns:
 ---  * None
 function mod.setItem(item, button, group, value)
-	local buttons = mod._items()
+    local buttons = mod._items()
 
-	button = tostring(button)
+    button = tostring(button)
 
-	if not buttons[group] then
-		buttons[group] = {}
-	end
-	if not buttons[group][button] then
-		buttons[group][button] = {}
-	end
-	buttons[group][button][item] = value
+    if not buttons[group] then
+        buttons[group] = {}
+    end
+    if not buttons[group][button] then
+        buttons[group][button] = {}
+    end
+    buttons[group][button][item] = value
 
-	mod._items(buttons)
-	mod.update()
+    mod._items(buttons)
+    mod.update()
 end
 
 --- plugins.core.midi.manager.getItem(item, button, group) -> table
@@ -303,12 +296,12 @@ end
 --- Returns:
 ---  * A table otherwise `nil`
 function mod.getItem(item, button, group)
-	local items = mod._items()
-	if items[group] and items[group][button] and items[group][button][item] then
-		return items[group][button][item]
-	else
-		return nil
-	end
+    local items = mod._items()
+    if items[group] and items[group][button] and items[group][button][item] then
+        return items[group][button][item]
+    else
+        return nil
+    end
 end
 
 --- plugins.core.midi.manager.getItems() -> tables
@@ -334,13 +327,13 @@ end
 --- Returns:
 ---  * Returns the active group or `manager.defaultGroup` as a string.
 function mod.activeGroup()
-	local groupStatus = mod._groupStatus
-	for group, status in pairs(groupStatus) do
-		if status then
-			return group
-		end
-	end
-	return mod.defaultGroup
+    local groupStatus = mod._groupStatus
+    for group, status in pairs(groupStatus) do
+        if status then
+            return group
+        end
+    end
+    return mod.defaultGroup
 end
 
 --- plugins.core.midi.manager.groupStatus(groupID, status) -> none
@@ -354,8 +347,8 @@ end
 --- Returns:
 ---  * None
 function mod.groupStatus(groupID, status)
-	mod._groupStatus[groupID] = status
-	mod.update()
+    mod._groupStatus[groupID] = status
+    mod.update()
 end
 
 --- plugins.core.midi.manager.registerListenMMCFunction(id, fn) -> none
@@ -423,22 +416,22 @@ end
 --  * A four character string
 local function convertSingleHexStringToDecimalString(hex)
     local lookup = {
-        ["0"]	= "0000",
-        ["1"]	= "0001",
-        ["2"]	= "0010",
-        ["3"]	= "0011",
-        ["4"]	= "0100",
-        ["5"]	= "0101",
-        ["6"]	= "0110",
-        ["7"]	= "0111",
-        ["8"]	= "1000",
-        ["9"]	= "1001",
-        ["A"]	= "1010",
-        ["B"]	= "1011",
-        ["C"]	= "1100",
-        ["D"]	= "1101",
+        ["0"]   = "0000",
+        ["1"]   = "0001",
+        ["2"]   = "0010",
+        ["3"]   = "0011",
+        ["4"]   = "0100",
+        ["5"]   = "0101",
+        ["6"]   = "0110",
+        ["7"]   = "0111",
+        ["8"]   = "1000",
+        ["9"]   = "1001",
+        ["A"]   = "1010",
+        ["B"]   = "1011",
+        ["C"]   = "1100",
+        ["D"]   = "1101",
         ["E"]   = "1110",
-        ["F"]	= "1111",
+        ["F"]   = "1111",
     }
     return lookup[hex]
 end
@@ -496,71 +489,56 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
     end
 
     local parameterString = ""
-    if commandType == "STOP" then
-    elseif commandType == "PLAY" then
-    elseif commandType == "DEFERRED_PLAY" then
-    elseif commandType == "FAST_FORWARD" then
-    elseif commandType == "REWIND" then
-    elseif commandType == "RECORD_STROBE" then
-    elseif commandType == "RECORD_EXIT" then
-    elseif commandType == "RECORD_PAUSE" then
-    elseif commandType == "PAUSE" then
-    elseif commandType == "EJECT" then
-    elseif commandType == "CHASE" then
-    elseif commandType == "MMC_RESET" then
-    elseif commandType == "WRITE" then
-    elseif commandType == "GOTO" then
-        if parameters and type(parameters) == "table" and parameters.timecode and parameters.frameRate and parameters.subFrame then
+    if commandType and mod.MMC_COMMAND_TYPE[commandType] then
+        if commandType == "GOTO" then
+            if parameters and type(parameters) == "table" and parameters.timecode and parameters.frameRate and parameters.subFrame then
 
-            local timecode = parameters.timecode
-            local frameRate = parameters.frameRate
-            local subFrame = parameters.subFrame
+                local timecode = parameters.timecode
+                local frameRate = parameters.frameRate
+                local subFrame = parameters.subFrame
 
-            --------------------------------------------------------------------------------
-            -- Only handle valid timecode values:
-            --------------------------------------------------------------------------------
-            if not string.find(timecode, "%d%d:%d%d:%d%d:%d%d") then
-                log.ef("Invalid GOTO MMC Timecode: %s", timecode)
-                return
+                --------------------------------------------------------------------------------
+                -- Only handle valid timecode values:
+                --------------------------------------------------------------------------------
+                if not string.find(timecode, "%d%d:%d%d:%d%d:%d%d") then
+                    log.ef("Invalid GOTO MMC Timecode: %s", timecode)
+                    return
+                end
+
+                --------------------------------------------------------------------------------
+                -- Remove timecode formatting:
+                --------------------------------------------------------------------------------
+                local value = string.gsub(timecode, ":", "")
+
+                local decimalHours = tonumber(string.sub(value, 1, 2))
+                local decimalMinutes = tonumber(string.sub(value, 3, 4))
+                local decimalSeconds = tonumber(string.sub(value, 5, 6))
+                local decimalFrames = tonumber(string.sub(value, 7, 8))
+
+                --------------------------------------------------------------------------------
+                -- hr:
+                -- 7 65 43210
+                -- 0 yy zzzzz
+                --      yy: 00 = 24fps
+                --          01 = 25fps
+                --          10 = 30fps (drop frame)
+                --          11 = 30fps (non drop frame)
+                --      zzzzz: hours (00 -> 23)
+                --------------------------------------------------------------------------------
+
+                local frameRateAsDecimalCode = tonumber(mod.MMC_TIMECODE_TYPE[frameRate])
+
+                local hexHours = string.format("%02x", (frameRateAsDecimalCode << 5) + decimalHours)
+                local hexMinutes = string.format("%02x", decimalMinutes)
+                local hexSeconds = string.format("%02x", decimalSeconds)
+                local hexFrames = string.format("%02x", decimalFrames)
+
+                parameterString = "06 01 " .. hexHours .. " " .. hexMinutes .. " " .. hexSeconds .. " " .. hexFrames .. " " .. subFrame
+
+            else
+                log.ef("Bad GOTO MMC Parameters: %s", parameters and inspect(parameters))
             end
-
-            --------------------------------------------------------------------------------
-            -- Remove timecode formatting:
-            --------------------------------------------------------------------------------
-            local value = string.gsub(timecode, ":", "")
-
-            local decimalHours = tonumber(string.sub(value, 1, 2))
-            local decimalMinutes = tonumber(string.sub(value, 3, 4))
-            local decimalSeconds = tonumber(string.sub(value, 5, 6))
-            local decimalFrames = tonumber(string.sub(value, 7, 8))
-
-            --------------------------------------------------------------------------------
-            -- hr:
-            -- 7 65 43210
-            -- 0 yy zzzzz
-            --      yy: 00 = 24fps
-            --          01 = 25fps
-            --          10 = 30fps (drop frame)
-            --          11 = 30fps (non drop frame)
-            --      zzzzz: hours (00 -> 23)
-            --------------------------------------------------------------------------------
-
-            local frameRateAsDecimalCode = tonumber(mod.MMC_TIMECODE_TYPE[frameRate])
-
-            local hexHours = string.format("%02x", (frameRateAsDecimalCode << 5) + decimalHours)
-            local hexMinutes = string.format("%02x", decimalMinutes)
-            local hexSeconds = string.format("%02x", decimalSeconds)
-            local hexFrames = string.format("%02x", decimalFrames)
-
-            parameterString = "06 01 " .. hexHours .. " " .. hexMinutes .. " " .. hexSeconds .. " " .. hexFrames .. " " .. subFrame
-
-        else
-            log.ef("Bad GOTO MMC Parameters: %s", parameters and inspect(parameters))
         end
-
-
-    elseif commandType == "ERROR" then
-    elseif commandType == "SHUTTLE" then
     else
         log.ef("Invalid MMC Command: %s", commandType)
         return false
@@ -758,7 +736,7 @@ function mod.processMMC(sysexData)
                 --------------------------------------------------------------------------------
                 return "SHUTTLE"
             end
-        elseif data[1] == "0" and data[2] == "7" then
+        --elseif data[1] == "0" and data[2] == "7" then
             --------------------------------------------------------------------------------
             -- We have a response:
             --------------------------------------------------------------------------------
@@ -939,12 +917,12 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     --------------------------------------------------------------------------------
     -- Get Active Group:
     --------------------------------------------------------------------------------
-	local activeGroup = mod.activeGroup()
+    local activeGroup = mod.activeGroup()
 
-	--------------------------------------------------------------------------------
-	-- Get Items:
-	--------------------------------------------------------------------------------
-	local items = mod._items()
+    --------------------------------------------------------------------------------
+    -- Get Items:
+    --------------------------------------------------------------------------------
+    local items = mod._items()
 
     --------------------------------------------------------------------------------
     -- Prefix Virtual Devices:
@@ -1000,68 +978,68 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
         controllerValue = metadata.fourteenBitValue
     end
 
-	if items[activeGroup] then
-		for _, item in pairs(items[activeGroup]) do
-			if deviceName == item.device and item.channel == metadata.channel and item.commandType == commandType then
-			    --------------------------------------------------------------------------------
-			    -- Note On:
-			    --------------------------------------------------------------------------------
-				if commandType == "noteOn" and metadata.velocity ~= 0 then
-					if tostring(item.number) == tostring(metadata.note) then
-						if item.handlerID and item.action then
-							local handler = mod._actionmanager.getHandler(item.handlerID)
-							handler:execute(item.action)
-						end
-						return
-					end
-				--------------------------------------------------------------------------------
-				-- Control Change:
-				--------------------------------------------------------------------------------
-				elseif commandType == "controlChange" then
-					if tostring(item.number) == tostring(metadata.controllerNumber) then
-						if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
-							--------------------------------------------------------------------------------
-							-- MIDI Controls:
-							--------------------------------------------------------------------------------
-							local id = item.action.id
-							local control = controls:get(id)
-							local params = control:params()
-							if mod._alreadyProcessingCallback then
-								if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
-									if mod._lastControllerValue == controllerValue then
-										return
-									else
-										timer.doAfter(0.0001, function()
-											if metadata.timestamp == mod._lastTimestamp then
-												params.fn(metadata, deviceName)
-												mod._alreadyProcessingCallback = false
-											end
-										end)
-									end
-								end
-								mod._lastTimestamp = metadata and metadata.timestamp
-							else
-								mod._alreadyProcessingCallback = true
-								timer.doAfter(0.000000000000000000001, function()
-									params.fn(metadata, deviceName)
-									mod._alreadyProcessingCallback = false
-								end)
-								mod._lastControllerNumber = metadata and metadata.controllerNumber
-								mod._lastControllerValue = metadata and controllerValue
-								mod._lastControllerChannel = metadata and metadata.channel
-							end
-						elseif tostring(item.value) == tostring(controllerValue) then
-							if item.handlerID and item.action then
-								local handler = mod._actionmanager.getHandler(item.handlerID)
-								handler:execute(item.action)
-							end
-							return
-						end
-					end
-				--------------------------------------------------------------------------------
-				-- Pitch Wheel Change:
-				--------------------------------------------------------------------------------
-				elseif commandType == "pitchWheelChange" then
+    if items[activeGroup] then
+        for _, item in pairs(items[activeGroup]) do
+            if deviceName == item.device and item.channel == metadata.channel and item.commandType == commandType then
+                --------------------------------------------------------------------------------
+                -- Note On:
+                --------------------------------------------------------------------------------
+                if commandType == "noteOn" and metadata.velocity ~= 0 then
+                    if tostring(item.number) == tostring(metadata.note) then
+                        if item.handlerID and item.action then
+                            local handler = mod._actionmanager.getHandler(item.handlerID)
+                            handler:execute(item.action)
+                        end
+                        return
+                    end
+                --------------------------------------------------------------------------------
+                -- Control Change:
+                --------------------------------------------------------------------------------
+                elseif commandType == "controlChange" then
+                    if tostring(item.number) == tostring(metadata.controllerNumber) then
+                        if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
+                            --------------------------------------------------------------------------------
+                            -- MIDI Controls:
+                            --------------------------------------------------------------------------------
+                            local id = item.action.id
+                            local control = controls:get(id)
+                            local params = control:params()
+                            if mod._alreadyProcessingCallback then
+                                if mod._lastControllerNumber == metadata.controllerNumber and mod._lastControllerChannel == metadata.channel then
+                                    if mod._lastControllerValue == controllerValue then
+                                        return
+                                    else
+                                        timer.doAfter(0.0001, function()
+                                            if metadata.timestamp == mod._lastTimestamp then
+                                                params.fn(metadata, deviceName)
+                                                mod._alreadyProcessingCallback = false
+                                            end
+                                        end)
+                                    end
+                                end
+                                mod._lastTimestamp = metadata and metadata.timestamp
+                            else
+                                mod._alreadyProcessingCallback = true
+                                timer.doAfter(0.000000000000000000001, function()
+                                    params.fn(metadata, deviceName)
+                                    mod._alreadyProcessingCallback = false
+                                end)
+                                mod._lastControllerNumber = metadata and metadata.controllerNumber
+                                mod._lastControllerValue = metadata and controllerValue
+                                mod._lastControllerChannel = metadata and metadata.channel
+                            end
+                        elseif tostring(item.value) == tostring(controllerValue) then
+                            if item.handlerID and item.action then
+                                local handler = mod._actionmanager.getHandler(item.handlerID)
+                                handler:execute(item.action)
+                            end
+                            return
+                        end
+                    end
+                --------------------------------------------------------------------------------
+                -- Pitch Wheel Change:
+                --------------------------------------------------------------------------------
+                elseif commandType == "pitchWheelChange" then
                     if item.handlerID and string.sub(item.handlerID, -13) and string.sub(item.handlerID, -13) == "_midicontrols" then
                         --------------------------------------------------------------------------------
                         -- MIDI Controls for Pitch Wheel:
@@ -1100,10 +1078,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                         handler:execute(item.action)
                         return
                     end
-				end
-			end
-		end
-	end
+                end
+            end
+        end
+    end
 
 end
 
@@ -1117,7 +1095,7 @@ end
 --- Returns:
 ---  * A table of Physical MIDI Device Names.
 function mod.devices()
-	return mod._deviceNames
+    return mod._deviceNames
 end
 
 --- plugins.core.midi.manager.virtualDevices() -> table
@@ -1182,19 +1160,19 @@ end
 --- Returns:
 ---  * None
 function mod.start()
-	if not mod._midiDevices then
-		--log.df("Starting MIDI Watchers")
-		mod._midiDevices = {}
-	end
+    if not mod._midiDevices then
+        --log.df("Starting MIDI Watchers")
+        mod._midiDevices = {}
+    end
 
-	--------------------------------------------------------------------------------
-	-- Setup MIDI Device Callback:
-	--------------------------------------------------------------------------------
-	midi.deviceCallback(function(devices, virtualDevices)
-		mod._deviceNames = devices
-		mod._virtualDevices = virtualDevices
-		--log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
-	end)
+    --------------------------------------------------------------------------------
+    -- Setup MIDI Device Callback:
+    --------------------------------------------------------------------------------
+    midi.deviceCallback(function(devices, virtualDevices)
+        mod._deviceNames = devices
+        mod._virtualDevices = virtualDevices
+        --log.df("MIDI Devices Updated (%s physical, %s virtual)", #devices, #virtualDevices)
+    end)
 
     --------------------------------------------------------------------------------
     -- For performance, we only use watchers for USED devices:
@@ -1251,9 +1229,9 @@ function mod.start()
     --------------------------------------------------------------------------------
     -- Create MIDI Watchers for MIDI Devices that have actions assigned to them:
     --------------------------------------------------------------------------------
-	for _, deviceName in ipairs(devices) do
-		if not mod._midiDevices[deviceName] then
-		    if fnutils.contains(usedDevices, deviceName) then
+    for _, deviceName in ipairs(devices) do
+        if not mod._midiDevices[deviceName] then
+            if fnutils.contains(usedDevices, deviceName) then
                 if string.sub(deviceName, 1, 8) == "virtual_" then
                     --log.df("Creating new Virtual MIDI Source Watcher: %s", deviceName)
                     mod._midiDevices[deviceName] = midi.newVirtualSource(string.sub(deviceName, 9))
@@ -1268,8 +1246,8 @@ function mod.start()
                     end
                 end
             end
-		end
-	end
+        end
+    end
 end
 
 --- plugins.core.midi.manager.start() -> boolean
@@ -1285,23 +1263,23 @@ function mod.stop()
     --------------------------------------------------------------------------------
     -- Destroy MIDI Watchers:
     --------------------------------------------------------------------------------
-	--log.df("Stopping MIDI Watchers")
-	if mod._midiDevices and type(mod._midiDevices) == "table" then
+    --log.df("Stopping MIDI Watchers")
+    if mod._midiDevices and type(mod._midiDevices) == "table" then
         for _, id in pairs(mod._midiDevices) do
             mod._midiDevices[id] = nil
         end
         mod._midiDevices = nil
     end
 
-	--------------------------------------------------------------------------------
-	-- Destroy MIDI Device Callback:
-	--------------------------------------------------------------------------------
-	midi.deviceCallback(nil)
+    --------------------------------------------------------------------------------
+    -- Destroy MIDI Device Callback:
+    --------------------------------------------------------------------------------
+    midi.deviceCallback(nil)
 
     --------------------------------------------------------------------------------
     -- Garbage Collection:
     --------------------------------------------------------------------------------
-	collectgarbage()
+    collectgarbage()
 end
 
 --- plugins.core.midi.manager.update() -> none
@@ -1314,36 +1292,29 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-	--log.df("Updating MIDI Watchers")
-	if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
+    --log.df("Updating MIDI Watchers")
+    if mod.enabled() or mod.listenMTC() or mod.listenMMC() or mod.transmitMMC() or mod.transmitMTC() then
 
-	    --------------------------------------------------------------------------------
-	    -- Start MIDI:
-	    --------------------------------------------------------------------------------
-		mod.start()
+        --------------------------------------------------------------------------------
+        -- Start MIDI:
+        --------------------------------------------------------------------------------
+        mod.start()
 
-		--------------------------------------------------------------------------------
-		-- Update the prop, so that any other plugins watching this prop also update:
-		--------------------------------------------------------------------------------
-		mod.transmitMTC:update()
-		mod.transmitMMC:update()
-	else
-	    mod.stop()
-	end
+        --------------------------------------------------------------------------------
+        -- Update the prop, so that any other plugins watching this prop also update:
+        --------------------------------------------------------------------------------
+        mod.transmitMTC:update()
+        mod.transmitMMC:update()
+    else
+        mod.stop()
+    end
 end
 
 --- plugins.core.midi.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable MIDI Support.
-mod.enabled = config.prop("enableMIDI", false):watch(function(enabled)
-    --[[
-	if enabled then
-		log.df("MIDI Support Enabled!")
-	else
-	    log.df("MIDI Support Disabled!")
-	end
-	--]]
-	mod.update()
+mod.enabled = config.prop("enableMIDI", false):watch(function()
+    mod.update()
 end)
 
 --- plugins.core.midi.manager.init(deps, env) -> none
@@ -1356,9 +1327,9 @@ end)
 ---
 --- Returns:
 ---  * None
-function mod.init(deps, env)
-	mod._actionmanager = deps.actionmanager
-	return mod
+function mod.init(deps)
+    mod._actionmanager = deps.actionmanager
+    return mod
 end
 
 --------------------------------------------------------------------------------
@@ -1370,54 +1341,22 @@ end
 --- plugins.core.midi.manager.transmitMMC <cp.prop: boolean>
 --- Field
 --- Enable or disable Transmit MMC Support.
-mod.transmitMMC = config.prop("transmitMMC", false):watch(function(enabled)
-    --[[
-    if enabled then
-        log.df("Transmit MMC Enabled!")
-    else
-        log.df("Transmit MMC Disabled!")
-    end
-    --]]
-end)
+mod.transmitMMC = config.prop("transmitMMC", false)
 
 --- plugins.core.midi.manager.listenMMC <cp.prop: boolean>
 --- Field
 --- Enable or disable Listen MMC Support.
-mod.listenMMC = config.prop("listenMMC", false):watch(function(enabled)
-    --[[
-    if enabled then
-        log.df("Listen MMC Enabled!")
-    else
-        log.df("Listen MMC Disabled!")
-    end
-    --]]
-end)
+mod.listenMMC = config.prop("listenMMC", false)
 
 --- plugins.core.midi.manager.transmitMTC <cp.prop: boolean>
 --- Field
 --- Enable or disable Transmit MTC Support.
-mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
-    --[[
-    if enabled then
-        log.df("Transmit MTC Enabled!")
-    else
-        log.df("Transmit MTC Disabled!")
-    end
-    --]]
-end)
+mod.transmitMTC = config.prop("transmitMTC", false)
 
 --- plugins.core.midi.manager.listenMTC <cp.prop: boolean>
 --- Field
 --- Enable or disable Listen MTC Support.
-mod.listenMTC = config.prop("listenMTC", false):watch(function(enabled)
-    --[[
-    if enabled then
-        log.df("Listen MTC Enabled!")
-    else
-        log.df("Listen MTC Disabled!")
-    end
-    --]]
-end)
+mod.listenMTC = config.prop("listenMTC", false)
 
 --- plugins.core.midi.manager.transmitMMCDevice <cp.prop: string>
 --- Field
@@ -1445,74 +1384,73 @@ mod.listenMTCDevice = config.prop("listenMTCDevice", "")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id			= "core.midi.manager",
-	group		= "core",
-	required	= true,
-	dependencies	= {
-		["core.action.manager"]				= "actionmanager",
-		["core.commands.global"] 			= "global",
-	}
+    id          = "core.midi.manager",
+    group       = "core",
+    required    = true,
+    dependencies    = {
+        ["core.action.manager"]             = "actionmanager",
+        ["core.commands.global"]            = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-	--------------------------------------------------------------------------------
-	-- Get list of MIDI devices:
-	--------------------------------------------------------------------------------
-	mod._deviceNames = midi.devices() or {}
+    --------------------------------------------------------------------------------
+    -- Get list of MIDI devices:
+    --------------------------------------------------------------------------------
+    mod._deviceNames = midi.devices() or {}
 
-	--------------------------------------------------------------------------------
-	-- Setup Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpMIDI")
-		:whenActivated(mod.toggle)
-		:groupedBy("commandPost")
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpMIDI")
+        :whenActivated(mod.toggle)
+        :groupedBy("commandPost")
 
-	return mod.init(deps, env)
+    return mod.init(deps, env)
 end
 
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps, env)
+function plugin.postInit(deps)
 
-	--------------------------------------------------------------------------------
-	-- Setup Actions:
-	--------------------------------------------------------------------------------
-	mod._handlers = {}
-	local controlGroups = controls.allGroups()
-	for _, groupID in pairs(controlGroups) do
-		mod._handlers[groupID] = deps.actionmanager.addHandler(groupID .. "_" .. "midicontrols", groupID)
-			:onChoices(function(choices)
-				--------------------------------------------------------------------------------
-				-- Choices:
-				--------------------------------------------------------------------------------
-				local allControls = controls:getAll()
-				for _, control in pairs(allControls) do
+    --------------------------------------------------------------------------------
+    -- Setup Actions:
+    --------------------------------------------------------------------------------
+    mod._handlers = {}
+    local controlGroups = controls.allGroups()
+    for _, groupID in pairs(controlGroups) do
+        mod._handlers[groupID] = deps.actionmanager.addHandler(groupID .. "_" .. "midicontrols", groupID)
+            :onChoices(function(choices)
+                --------------------------------------------------------------------------------
+                -- Choices:
+                --------------------------------------------------------------------------------
+                local allControls = controls:getAll()
+                for _, control in pairs(allControls) do
 
-					local id = control:id()
-					local params = control:params()
+                    local id = control:id()
+                    local params = control:params()
 
-					local action = {
-						id		= id,
-					}
+                    local action = {
+                        id      = id,
+                    }
 
-					if params.group == groupID then
-						choices:add(params.text)
-							:subText(params.subText)
-							:params(action)
-							:id(id)
-					end
+                    if params.group == groupID then
+                        choices:add(params.text)
+                            :subText(params.subText)
+                            :params(action)
+                            :id(id)
+                    end
 
-				end
-				return choices
-			end)
-			:onExecute(function() end)
-			:onActionId(function() return id end)
-	end
+                end
+                return choices
+            end)
+            :onExecute(function() end)
+    end
 
     --------------------------------------------------------------------------------
     -- Start Plugin:

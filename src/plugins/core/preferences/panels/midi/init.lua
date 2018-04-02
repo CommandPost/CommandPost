@@ -91,26 +91,6 @@ function mod._resetMIDIGroup()
     end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 end
 
--- renderRows(context) -> none
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * context - Table of data that you want to share with the renderer
---
--- Returns:
---  * HTML content as string
-local function renderRows(context)
-    if not mod._renderRows then
-        local err
-        mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
-        if err then
-            error(err)
-        end
-    end
-    return mod._renderRows(context)
-end
-
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.
@@ -767,7 +747,7 @@ function mod._applyTopDeviceToAll()
 end
 
 
-function getMIDIDeviceList()
+local function getMIDIDeviceList()
     local midiDevices = mod._midi.devices()
     local virtualMidiDevices = mod._midi.virtualDevices()
 

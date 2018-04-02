@@ -66,7 +66,7 @@ end)
 --- plugins.finalcutpro.midi.manager.transmitMTC <cp.prop: boolean>
 --- Field
 --- Enable or disable Transmit MTC Support.
-mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
+--mod.transmitMTC = config.prop("transmitMTC", false):watch(function()
     --[[
     if enabled then
         log.df("FCPX Transmit MTC Enabled!")
@@ -74,7 +74,7 @@ mod.transmitMTC = config.prop("transmitMTC", false):watch(function(enabled)
         log.df("FCPX Transmit MTC Disabled!")
     end
     --]]
-end)
+--end)
 
 --- plugins.finalcutpro.midi.manager.transmitMMC <cp.prop: boolean>
 --- Field
@@ -194,7 +194,7 @@ function plugin.postInit()
         --------------------------------------------------------------------------------
         mod.enableMIDI:update()
         mod.transmitMMC:update()
-        mod.transmitMTC:update()
+        --mod.transmitMTC:update()
 
         --------------------------------------------------------------------------------
         -- Listen to MMC Commands in Final Cut Pro:
@@ -254,7 +254,7 @@ function plugin.postInit()
         --------------------------------------------------------------------------------
         -- Listen to MTC Commands in Final Cut Pro:
         --------------------------------------------------------------------------------
-        mod._manager.registerListenMTCFunction(mod.ID, function(mtcType, timecode, framerate)
+        --mod._manager.registerListenMTCFunction(mod.ID, function(mtcType, timecode, framerate)
 
             --------------------------------------------------------------------------------
             -- NOTE: Currently there's nothing really useful we can trigger in Final Cut Pro
@@ -266,7 +266,7 @@ function plugin.postInit()
             --------------------------------------------------------------------------------
 
             --log.df("mtcType: %s, timecode: %s, framerate: %s", mtcType, timecode, framerate)
-        end)
+        --end)
 
     end
 end
