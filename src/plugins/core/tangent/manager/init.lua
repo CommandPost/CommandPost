@@ -347,7 +347,6 @@ local fromHub = {
     end,
 
     [tangent.fromHub.menuChange] = function(metadata)
-        log.df("Menu Change: %#010x; %d", metadata.menuID, metadata.increment)
         local control = mod.controls:findByID(metadata.menuID)
         local increment = metadata.increment
         if menu.is(control) then

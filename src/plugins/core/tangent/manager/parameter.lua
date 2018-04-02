@@ -7,6 +7,11 @@
 --- === plugins.core.tangent.manager.parameter ===
 ---
 --- Represents a Tangent Parameter
+
+local log               = require("hs.logger").new("tng_param")
+
+local tangent           = require("hs.tangent")
+
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
 local is                = require("cp.is")
@@ -263,6 +268,15 @@ function parameter.mt:reset()
         self._reset()
     end
     return self:get()
+end
+
+function parameter.mt:update()
+    if self:active() and tangent.connected() then
+        local value = self:get()
+        if value ~= nil then
+            tangent.sendParameterValue(self.id, value)
+        end
+    end
 end
 
 --- plugins.core.tangent.manager.parameter:xml() -> cp.web.xml
