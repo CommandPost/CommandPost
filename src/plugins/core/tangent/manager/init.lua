@@ -8,7 +8,7 @@
 ---
 --- Tangent Control Surface Manager
 ---
---- This plugin allows Hammerspoon to communicate with Tangent's range of
+--- This plugin allows CommandPost to communicate with Tangent's range of
 --- panels (Element, Virtual Element Apps, Wave, Ripple and any future panels).
 ---
 --- Download the Tangent Developer Support Pack & Tangent Hub Installer for Mac
@@ -65,10 +65,7 @@ local mod = {}
 -- Modesf
 mod._modes = {}
 
---- plugins.core.touchbar.manager.defaultGroup -> string
---- Variable
---- The default group.
-mod.defaultGroup = "global"
+mod._connectionConfirmed = false
 
 --- plugins.core.tangent.manager.controls
 --- Constant
@@ -395,43 +392,16 @@ local fromHub = {
 
     [tangent.fromHub.connected] = function(metadata)
         log.df("Connection To Tangent Hub (%s:%s) successfully established.", metadata.ipAddress, metadata.port)
+        mod._connectionConfirmed = true
+        mod.connected:update()
     end,
 
     [tangent.fromHub.disconnected] = function(metadata)
         log.df("Connection To Tangent Hub (%s:%s) closed.", metadata.ipAddress, metadata.port)
+        mod._connectionConfirmed = false
+        mod.connected:update()
     end,
 }
-
---- plugins.core.tangent.manager.callback(id, metadata) -> none
---- Function
---- Tangent Manager Callback Function
----
---- Parameters:
----  * commands - A table of Tangent commands.
----
---- Returns:
----  * None
-function mod.callback(commands)
-
-    --------------------------------------------------------------------------------
-    -- Process each individual command in the callback table:
-    --------------------------------------------------------------------------------
-    for _, command in ipairs(commands) do
-
-        local id = command.id
-        local metadata = command.metadata
-
-        local fn = fromHub[id]
-        if fn then
-            local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
-            if not ok then
-                log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
-            end
-        else
-            log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
-        end
-    end
-end
 
 -- disableFinalCutProInTangentHub() -> none
 -- Function
@@ -492,54 +462,94 @@ local function disableFinalCutProInTangentHub()
     end
 end
 
---- plugins.core.tangent.manager.start() -> boolean
---- Function
---- Starts the Tangent Plugin
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successfully started, otherwise `false`
-function mod.start()
-    if tangent.isTangentHubInstalled() then
-        --------------------------------------------------------------------------------
-        -- Connect to Tangent Hub:
-        --------------------------------------------------------------------------------
-        log.df("Connecting to Tangent Hub...")
-        tangent.callback(mod.callback)
-        local result, errorMessage = tangent.connect("CommandPost", mod._configPath)
-        if result then
-            return true
+--- plugins.core.tangent.manager.enabled <cp.prop: boolean>
+--- Variable
+--- Enable or disables the Tangent Manager.
+mod.enabled = config.prop("enableTangent", false)
+
+-- plugins.core.tangent.manager.callback(id, metadata) -> none
+-- Function
+-- Tangent Manager Callback Function
+--
+-- Parameters:
+--  * commands - A table of Tangent commands.
+--
+-- Returns:
+--  * None
+local function callback(commands)
+    --------------------------------------------------------------------------------
+    -- Process each individual command in the callback table:
+    --------------------------------------------------------------------------------
+    for _, command in ipairs(commands) do
+
+        local id = command.id
+        local metadata = command.metadata
+
+        local fn = fromHub[id]
+        if fn then
+            local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
+            if not ok then
+                log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
+            end
         else
-            log.ef("Failed to start Tangent Support: %s", errorMessage)
-            return false
+            log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
         end
-    else
-        return false
     end
 end
 
-function mod.connected()
-    return tangent.connected()
-end
+--- plugins.core.tangent.manager.connected <cp.prop: boolean>
+--- Variable
+--- A `cp.prop` that tracks the connection status to the Tangent Hub.
+mod.connected = prop(
+    function()
+        return mod._connectionConfirmed and tangent.connected()
+    end,
+    function(value)
+        if value and not tangent.connected() then
+            mod.writeControlsXML()
+            --------------------------------------------------------------------------------
+            -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
+            --------------------------------------------------------------------------------
+            disableFinalCutProInTangentHub()
+            tangent.callback(callback)
+            local ok, errorMessage = tangent.connect("CommandPost", mod._configPath)
+            if not ok then
+                log.ef("Failed to start Tangent Support: %s", errorMessage)
+                return false
+            end
+        elseif not value then
+            if tangent.connected() then
+                tangent.disconnect()
+            end
+        end
+    end
+)
 
---- plugins.core.tangent.manager.stop() -> boolean
---- Function
---- Stops the Tangent Plugin
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.stop()
-    --------------------------------------------------------------------------------
-    -- Disconnect from Tangent:
-    --------------------------------------------------------------------------------
-    tangent.disconnect()
-    --log.df("Disconnected from Tangent Hub.")
-end
+-- tries to reconnect to Tangent Hub when disconnected.
+local ensureConnection
+ensureConnection = timer.new(1.0, function()
+    mod.connected(true)
+end)
+
+--- plugins.core.tangent.manager.requiresConnection <cp.prop: boolean; read-only>
+--- Variable
+--- Is `true` when the Tangent Manager is both `enabled` but not `connected`.
+mod.requiresConnection = mod.enabled:AND(mod.connected:NOT()):watch(function(required)
+    if required then
+        ensureConnection:start()
+    else
+        ensureConnection:stop()
+    end
+end, true)
+
+--- plugins.core.tangent.manager.requiresDisconnection <cp.prop: boolean; read-only>
+--- Variable
+--- Is `true` when the Tangent Manager is both not `enabled` but is `connected`.
+mod.requiresDisconnection = mod.connected:AND(mod.enabled:NOT()):watch(function(required)
+    if required then
+        mod.connected(false)
+    end
+end, true)
 
 --- plugins.core.tangent.manager.areMappingsInstalled() -> boolean
 --- Function
@@ -553,36 +563,6 @@ end
 function mod.areMappingsInstalled()
     return tools.doesFileExist(mod._configPath .. "/controls.xml")
 end
-
---- plugins.core.tangent.manager.enabled <cp.prop: boolean>
---- Field
---- Enable or disables the Tangent Manager.
-mod.enabled = config.prop("enableTangent", false):watch(function(enabled)
-    log.df("Checking if Tangent Support is enabled...")
-    if enabled then
-        if not mod.areMappingsInstalled() then
-            log.ef("Tangent Control and/or Mapping File doesn't exist, so disabling Tangent Support.")
-            mod.enabled(false)
-        else
-            --------------------------------------------------------------------------------
-            -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
-            --------------------------------------------------------------------------------
-            disableFinalCutProInTangentHub()
-
-            --------------------------------------------------------------------------------
-            -- Start Module:
-            --------------------------------------------------------------------------------
-            mod.start()
-            log.df("Tangent Support Started.")
-        end
-    else
-        --------------------------------------------------------------------------------
-        -- Stop Module:
-        --------------------------------------------------------------------------------
-        mod.stop()
-        log.df("Tangent Support Stopped.")
-    end
-end)
 
 -- secret test function...
 function mod._test(...)

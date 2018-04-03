@@ -1,5 +1,5 @@
 local plugin = {
-    id = "core.tangent.default",
+    id = "core.tangent.global",
     group = "core",
     dependencies = {
         ["core.tangent.manager"]    = "tangentManager",

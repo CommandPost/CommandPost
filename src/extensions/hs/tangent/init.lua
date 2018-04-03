@@ -1021,7 +1021,8 @@ end
 ---    * id - the message ID of the incoming message
 ---    * metadata - A table of data for the Tangent command (see below).
 ---  * The metadata table will return the following, depending on the `id` for the callback:
----    * `connected` - Connection To Tangent Hub successfully established.
+---    * `connected` - Connection to Tangent Hub successfully established.
+---    * `disconnected` - The connection to Tangent Hub was dropped.
 ---    * `initiateComms` - Initiates communication between the Hub and the application.
 ---      * `protocolRev` - The revision number of the protocol.
 ---      * `numPanels` - The number of panels connected.
@@ -1032,36 +1033,26 @@ end
 ---    * `parameterChange` - Requests that the application increment a parameter.
 ---      * `paramID` - The ID value of the parameter.
 ---      * `increment` - The incremental value which should be applied to the parameter.
----      * `data` - The raw data from the Tangent Hub
 ---    * `parameterReset` - Requests that the application changes a parameter to its reset value.
 ---      * `paramID` - The ID value of the parameter.
----      * `data` - The raw data from the Tangent Hub
 ---    * `parameterValueRequest` - Requests that the application sends a `ParameterValue (0x82)` command to the Hub.
 ---      * `paramID` - The ID value of the parameter.
----      * `data` - The raw data from the Tangent Hub
 ---    * `menuChange` - Requests the application change a menu index by +1 or -1.
 ---      * `menuID` - The ID value of the menu.
 ---      * `increment` - The incremental amount by which the menu index should be changed which will always be an integer value of +1 or -1.
----      * `data` - The raw data from the Tangent Hub
 ---    * `menuReset` - Requests that the application changes a menu to its reset value.
 ---      * `menuID` - The ID value of the menu.
----      * `data` - The raw data from the Tangent Hub
 ---    * `menuStringRequest` - Requests that the application sends a `MenuString (0x83)` command to the Hub.
 ---      * `menuID` - The ID value of the menu.
----      * `data` - The raw data from the Tangent Hub
 ---    * `actionOn` - Requests that the application performs the specified action.
 ---      * `actionID` - The ID value of the action.
----      * `data` - The raw data from the Tangent Hub
 ---    * `modeChange` - Requests that the application changes to the specified mode.
 ---      * `modeID` - The ID value of the mode.
----      * `data` - The raw data from the Tangent Hub
 ---    * `transport` - Requests the application to move the currently active transport.
 ---      * `jogValue` - The number of jog steps to move the transport.
 ---      * `shuttleValue` - An incremental value to add to the shuttle speed.
----      * `data` - The raw data from the Tangent Hub
 ---    * `actionOff` - Requests that the application cancels the specified action.
 ---      * `actionID` - The ID value of the action.
----      * `data` - The raw data from the Tangent Hub
 ---    * `unmanagedPanelCapabilities` - Only used when working in Unmanaged panel mode. Sent in response to a `UnmanagedPanelCapabilitiesRequest (0xA0)` command.
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
 ---      * `numButtons` - The number of buttons on the panel.
@@ -1069,27 +1060,21 @@ end
 ---      * `numDisplays` - The number of displays on the panel.
 ---      * `numDisplayLines` - The number of lines for each display on the panel.
 ---      * `numDisplayChars` - The number of characters on each line of each display on the panel.
----      * `data` - The raw data from the Tangent Hub
 ---    * `unmanagedButtonDown` - Only used when working in Unmanaged panel mode. Issued when a button has been pressed.
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
 ---      * `buttonID` - The hardware ID of the button
----      * `data` - The raw data from the Tangent Hub.
 ---    * `unmanagedButtonUp` - Only used when working in Unmanaged panel mode. Issued when a button has been released.
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
 ---      * `buttonID` - The hardware ID of the button.
----      * `data` - The raw data from the Tangent Hub
 ---    * `unmanagedEncoderChange` - Only used when working in Unmanaged panel mode. Issued when an encoder has been moved.
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
 ---      * `paramID` - The hardware ID of the encoder.
 ---      * `increment` - The incremental value.
----      * `data` - The raw data from the Tangent Hub
 ---    * `unmanagedDisplayRefresh` - Only used when working in Unmanaged panel mode. Issued when a panel has been connected or the focus of the panel has been returned to your application.
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
----      * `data` - The raw data from the Tangent Hub
 ---    * `panelConnectionState`
 ---      * `panelID` - The ID of the panel as reported in the `InitiateComms` command.
 ---      * `state` - The connected state of the panel, `true` if connected, `false` if disconnected.
----      * `data` - The raw data from the Tangent Hub
 function mod.callback(callbackFn)
     if type(callbackFn) == "function" then
         mod._callback = callbackFn
@@ -1113,7 +1098,7 @@ end
 --- Returns:
 ---  * `true` if connected, otherwise `false`
 function mod.connected()
-    return mod._socket and mod._socket:connected()
+    return mod._socket ~= nil and mod._socket:connected()
 end
 
 --- hs.tangent.send(byteString) -> boolean, string
@@ -1606,6 +1591,26 @@ function mod.sendPanelConnectionStatesRequest()
     return mod.send(byteString)
 end
 
+local connectionWatcher = nil
+
+local function notifyDisconnected()
+    if mod._callback then
+        mod._callback({{id=mod.fromHub.disconnected, metadata={
+            ipAddress = mod.ipAddress,
+            port = mod.port,
+        }}})
+    end
+    if connectionWatcher then connectionWatcher:stop() end
+end
+
+-- tracks the tangent socket connection
+connectionWatcher = timer.new(1.0, function()
+    if not mod.connected() then
+        mod._socket = nil
+        notifyDisconnected()
+    end
+end)
+
 --- hs.tangent.disconnect() -> none
 --- Function
 --- Disconnects from the Tangent Hub.
@@ -1618,13 +1623,9 @@ end
 function mod.disconnect()
     if mod._socket then
         mod._socket:disconnect()
-        if mod._callback then
-            mod._callback({{id=mod.fromHub.disconnected, metadata={
-                ipAddress = mod.ipAddress,
-                port = mod.port,
-            }}})
-        end
         mod._socket = nil
+        notifyDisconnected()
+        connectionWatcher:stop()
     end
 end
 
@@ -1707,6 +1708,9 @@ function mod.connect(applicationName, systemPath, userPath)
                     port = mod.port,
                 }}})
             end
+
+            -- watch for disconnections.
+            connectionWatcher:start()
 
             --------------------------------------------------------------------------------
             -- Read the first 4 bytes, which will trigger the callback:
