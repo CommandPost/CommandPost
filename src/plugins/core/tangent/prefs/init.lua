@@ -24,13 +24,10 @@
 --------------------------------------------------------------------------------
 local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
-local tangent                                   = require("hs.tangent")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config                                    = require("cp.config")
-local tools                                     = require("cp.tools")
 local html                                      = require("cp.web.html")
 
 --------------------------------------------------------------------------------
@@ -50,11 +47,6 @@ mod.TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 --- URL to download Tangent Hub Application.
 mod.DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
 
---- plugins.core.preferences.panels.tangent.enabled <cp.prop: boolean>
---- Field
---- Enable or disables the Tangent Manager.
-mod.enabled = config.prop("enableTangent", false)
-
 --- plugins.core.preferences.panels.tangent.init() -> none
 --- Function
 --- Initialise Module.
@@ -64,18 +56,18 @@ mod.enabled = config.prop("enableTangent", false)
 ---
 --- Returns:
 ---  * None
-function mod.init(deps, env)
+function mod.init(prefsManager, tangentManager, env)
 
     --------------------------------------------------------------------------------
     -- Setup Tangent Preferences Panel:
     --------------------------------------------------------------------------------
-    mod._panel = deps.prefsManager.addPanel({
+    mod._panel = prefsManager.addPanel({
         priority    = 2032.1,
         id          = "tangent",
         label       = i18n("tangentPanelLabel"),
         image       = image.imageFromPath(env:pathToAbsolute("/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 370,
+        height      = 320,
     })
         :addContent(1, html.style ([[
             .tangentButtonOne {
@@ -109,36 +101,18 @@ function mod.init(deps, env)
             {
                 label = i18n("enableTangentPanelSupport"),
                 onchange = function(_, params)
-                    if params.checked then
-                        --------------------------------------------------------------------------------
-                        -- Enable Tangent:
-                        --------------------------------------------------------------------------------
-                        if not tangent.isTangentHubInstalled() then
-                            dialog.webviewAlert(deps.prefsManager.getWebview(), function()
-                                mod.enabled(false)
-                                deps.prefsManager.injectScript([[
-                                    document.getElementById("enableTangentSupport").checked = false;
-                                ]])
-                            end, i18n("tangentPanelSupport"), i18n("mustInstallTangentMapper"), i18n("ok"))
-                        else
-                            if deps.tangentManager.areMappingsInstalled() then
-                                mod.enabled(true)
-                            else
-                                dialog.webviewAlert(deps.prefsManager.getWebview(), function()
-                                    deps.tangentManager.writeControlsXML()
-                                    mod.enabled(true)
-                                    dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("rebuildComplete") .. "!", i18n("rebuildCompleteMessage"), i18n("ok"))
-                                end, i18n("existingControlMapDoesNotExist"), i18n("rebuildControlMapTakesTimes"), i18n("ok"))
-                            end
-                        end
+                    if params.checked and not tangentManager.tangentHubInstalled() then
+                        dialog.webviewAlert(prefsManager.getWebview(), function()
+                            tangentManager.enabled(false)
+                            prefsManager.injectScript([[
+                                document.getElementById("enableTangentSupport").checked = false;
+                            ]])
+                        end, i18n("tangentPanelSupport"), i18n("mustInstallTangentMapper"), i18n("ok"))
                     else
-                        --------------------------------------------------------------------------------
-                        -- Disable Tangent:
-                        --------------------------------------------------------------------------------
-                        mod.enabled(false)
+                        tangentManager.enabled(params.checked)
                     end
                 end,
-                checked = mod.enabled,
+                checked = tangentManager.enabled,
                 id = "enableTangentSupport",
             }
         )
@@ -150,34 +124,13 @@ function mod.init(deps, env)
             {
                 label = i18n("openTangentMapper"),
                 onclick = function()
-                    if tools.doesFileExist("/Applications/Tangent/Tangent Mapper.app") then
-                        os.execute('open "/Applications/Tangent/Tangent Mapper.app"')
+                    if tangentManager.tangentMapperInstalled() then
+                        tangentManager.launchTangentMapper()
                     else
-                        dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
+                        dialog.webviewAlert(prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
                     end
                 end,
                 class = "tangentButtonOne",
-            }
-        )
-        --------------------------------------------------------------------------------
-        -- Rebuild Control Map:
-        --------------------------------------------------------------------------------
-        :addButton(7,
-            {
-                label = i18n("rebuildControlMap"),
-                onclick = function()
-                    dialog.webviewAlert(deps.prefsManager.getWebview(), function(result)
-                        if result == i18n("ok") then
-                            --------------------------------------------------------------------------------
-                            -- Write Controls XMLs:
-                            --------------------------------------------------------------------------------
-                            deps.tangentManager.updateControls()
-
-                            dialog.webviewAlert(deps.prefsManager.getWebview(), function() end, i18n("rebuildComplete") .. "!", i18n("rebuildCompleteMessage"), i18n("ok"))
-                        end
-                    end, i18n("rebuildControlMap"), i18n("rebuildControlMapMessage") .. "\n\n" .. i18n("rebuildControlMapTakesTimes"), i18n("ok"), i18n("cancel"))
-                end,
-                class = "tangentButtonTwo",
             }
         )
         --------------------------------------------------------------------------------
@@ -225,7 +178,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-    return mod.init(deps, env)
+    return mod.init(deps.prefsManager, deps.tangentManager, env)
 end
 
 return plugin

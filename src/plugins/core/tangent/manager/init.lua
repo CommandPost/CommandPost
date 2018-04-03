@@ -30,6 +30,7 @@ local log                                       = require("hs.logger").new("tang
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local application                               = require("hs.application")
 local fs                                        = require("hs.fs")
 local inspect                                   = require("hs.inspect")
 local tangent                                   = require("hs.tangent")
@@ -60,6 +61,8 @@ local insert, sort                              = table.insert, table.sort
 --------------------------------------------------------------------------------
 local mod = {}
 
+local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
+
 -- plugins.core.touchbar.manager._modes -> table
 -- Variable
 -- Modesf
@@ -71,6 +74,23 @@ mod._connectionConfirmed = false
 --- Constant
 --- The set of controls currently registered.
 mod.controls = controls.new()
+
+function mod.backupControlsXML()
+    if tools.doesDirectoryExist(mod._configPath) then
+        --------------------------------------------------------------------------------
+        -- Backup old files first just to be safe:
+        --------------------------------------------------------------------------------
+        if not tools.doesDirectoryExist(mod._backupPath) then
+            log.df("Tangent Backup folder did not exist, so creating one.")
+            fs.mkdir(mod._backupPath)
+        end
+        local executeString = string.format([[cd "%s"; zip -r "%s/Tangent Settings Backup %s.zip" *]], mod._configPath, mod._backupPath, os.date("%Y%m%d %H%M"))
+        local _, status = hs.execute(executeString)
+        if not status then
+            log.ef("Failed to backup Tangent Settings.")
+        end
+    end
+end
 
 --- plugins.core.tangent.manager.writeControlsXML() -> boolean, string
 --- Function
@@ -90,19 +110,10 @@ function mod.writeControlsXML()
     if not tools.doesDirectoryExist(mod._configPath) then
         --log.df("Tangent Settings folder did not exist, so creating one.")
         fs.mkdir(mod._configPath)
-    else
-        --------------------------------------------------------------------------------
-        -- Backup old files first just to be safe:
-        --------------------------------------------------------------------------------
-        if not tools.doesDirectoryExist(mod._backupPath) then
-            log.df("Tangent Backup folder did not exist, so creating one.")
-            fs.mkdir(mod._backupPath)
-        end
-        local executeString = [[zip -r "]] .. mod._backupPath .. [[/Tangent Settings Backup ]] .. os.date("%Y%m%d %H%M") .. [[.zip" "]] .. mod._configPath .. [["]]
-        local _, status = hs.execute(executeString)
-        if not status then
-            log.ef("Failed to backup Tangent Settings.")
-        end
+
+    -- NOTE: Shouldn't be necessary any more.
+    -- else
+    --     mod.backupControlsXML()
     end
 
     --------------------------------------------------------------------------------
@@ -255,6 +266,23 @@ function mod.update()
             tangent.sendModeValue(activeMode.id)
         end
     end
+end
+
+mod.tangentHubInstalled = prop(function()
+    return tangent.isTangentHubInstalled()
+end)
+
+mod.tangentMapperInstalled = prop(function()
+    local info = application.infoForBundleID(TANGENT_MAPPER_BUNDLE_ID)
+    return info ~= nil
+end)
+
+mod.tangentMapperRunning = prop(function()
+    return application.applicationsForBundleID(TANGENT_MAPPER_BUNDLE_ID) ~= nil
+end)
+
+function mod.launchTangentMapper()
+    application.launchOrFocusByBundleID(TANGENT_MAPPER_BUNDLE_ID)
 end
 
 local fromHub = {
@@ -525,16 +553,17 @@ mod.connected = prop(
     end
 )
 
+mod.connectable = mod.enabled:AND(mod.tangentHubInstalled)
+
 -- tries to reconnect to Tangent Hub when disconnected.
-local ensureConnection
-ensureConnection = timer.new(1.0, function()
+local ensureConnection = timer.new(1.0, function()
     mod.connected(true)
 end)
 
 --- plugins.core.tangent.manager.requiresConnection <cp.prop: boolean; read-only>
 --- Variable
 --- Is `true` when the Tangent Manager is both `enabled` but not `connected`.
-mod.requiresConnection = mod.enabled:AND(mod.connected:NOT()):watch(function(required)
+mod.requiresConnection = mod.connectable:AND(prop.NOT(mod.connected)):watch(function(required)
     if required then
         ensureConnection:start()
     else
@@ -545,7 +574,7 @@ end, true)
 --- plugins.core.tangent.manager.requiresDisconnection <cp.prop: boolean; read-only>
 --- Variable
 --- Is `true` when the Tangent Manager is both not `enabled` but is `connected`.
-mod.requiresDisconnection = mod.connected:AND(mod.enabled:NOT()):watch(function(required)
+mod.requiresDisconnection = mod.connected:AND(prop.NOT(mod.connectable)):watch(function(required)
     if required then
         mod.connected(false)
     end
