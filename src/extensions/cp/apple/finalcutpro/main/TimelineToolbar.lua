@@ -16,7 +16,6 @@
 local axutils							= require("cp.ui.axutils")
 local prop								= require("cp.prop")
 
-local CheckBox							= require("cp.ui.CheckBox")
 local RadioButton						= require("cp.ui.RadioButton")
 
 local TimelineAppearance				= require("cp.apple.finalcutpro.main.TimelineAppearance")
@@ -36,9 +35,42 @@ function TimelineToolbar.matches(element)
 end
 
 -- TODO: Add documentation
-function TimelineToolbar:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, TimelineToolbar)
+function TimelineToolbar.new(parent)
+	local o = prop.extend({_parent = parent}, TimelineToolbar)
+
+	-- TODO: Add documentation
+	local UI = prop(function(self)
+		return axutils.cache(self, "_ui", function()
+			return axutils.childMatching(self:parent():UI(), TimelineToolbar.matches)
+		end,
+		TimelineToolbar.matches)
+	end)
+
+	prop.bind(o) {
+		UI = UI,
+
+		-- TODO: Add documentation
+		isShowing = UI:mutate(function(original)
+			return original() ~= nil
+		end),
+
+		-- TODO: Add documentation
+		-- Contains buttons relating to mouse skimming behaviour:
+		skimmingGroupUI = UI:mutate(function(original, self)
+			return axutils.cache(self, "_skimmingGroup", function()
+				return axutils.childWithID(original(), id "SkimmingGroup")
+			end)
+		end),
+
+		-- TODO: Add documentation
+		effectsGroupUI = UI:mutate(function(original, self)
+			return axutils.cache(self, "_effectsGroup", function()
+				return axutils.childWithID(original(), id "EffectsGroup")
+			end)
+		end)
+	}
+
+	return o
 end
 
 -- TODO: Add documentation
@@ -53,40 +85,6 @@ end
 
 -----------------------------------------------------------------------
 --
--- TIMELINE UI:
---
------------------------------------------------------------------------
-
--- TODO: Add documentation
-function TimelineToolbar:UI()
-	return axutils.cache(self, "_ui", function()
-		return axutils.childMatching(self:parent():UI(), TimelineToolbar.matches)
-	end,
-	TimelineToolbar.matches)
-end
-
--- TODO: Add documentation
-TimelineToolbar.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
-end):bind(TimelineToolbar)
-
--- TODO: Add documentation
--- Contains buttons relating to mouse skimming behaviour:
-function TimelineToolbar:skimmingGroupUI()
-	return axutils.cache(self, "_skimmingGroup", function()
-		return axutils.childWithID(self:UI(), id "SkimmingGroup")
-	end)
-end
-
--- TODO: Add documentation
-function TimelineToolbar:effectsGroupUI()
-	return axutils.cache(self, "_effectsGroup", function()
-		return axutils.childWithID(self:UI(), id "EffectsGroup")
-	end)
-end
-
------------------------------------------------------------------------
---
 -- THE BUTTONS:
 --
 -----------------------------------------------------------------------
@@ -94,7 +92,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:appearance()
 	if not self._appearance then
-		self._appearance = TimelineAppearance:new(self)
+		self._appearance = TimelineAppearance.new(self)
 	end
 	return self._appearance
 end
@@ -102,7 +100,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:effectsToggle()
 	if not self._effectsToggle then
-		self._effectsToggle = RadioButton:new(self, function()
+		self._effectsToggle = RadioButton.new(self, function()
 			local effectsGroup = self:effectsGroupUI()
 			return effectsGroup and effectsGroup[1]
 		end)
@@ -113,7 +111,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:transitionsToggle()
 	if not self._transitionsToggle then
-		self._transitionsToggle = RadioButton:new(self, function()
+		self._transitionsToggle = RadioButton.new(self, function()
 			local effectsGroup = self:effectsGroupUI()
 			return effectsGroup and effectsGroup[2]
 		end)

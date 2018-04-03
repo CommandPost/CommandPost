@@ -236,7 +236,7 @@ function Viewer.new(app, eventViewer)
     end)
 
     -- The StaticText that contains the timecode.
-    o._timecode = StaticText:new(o, function()
+    o._timecode = StaticText.new(o, function()
         local ui = bottomToolbarUI()
         return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
     end)
@@ -482,7 +482,7 @@ end
 -- TODO: Add documentation
 function Viewer:playButton()
     if not self._playButton then
-        self._playButton = Button:new(self, function()
+		self._playButton = Button.new(self, function()
             return axutils.childFromLeft(axutils.childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
         end)
     end

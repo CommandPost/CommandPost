@@ -239,7 +239,7 @@ end
 --- * The `MenuButton` for the View mode.
 function ColorWheels:viewMode()
 	if not self._viewMode then
-		self._viewMode = MenuButton:new(self, function()
+		self._viewMode = MenuButton.new(self, function()
 			local ui = self:contentUI()
 			if ui then
 				return axutils.childWithRole(ui, "AXMenuButton")
@@ -372,7 +372,7 @@ end
 ---  * The Mix `Slider`.
 function ColorWheels:mixSlider()
 	if not self._mixSlider then
-		self._mixSlider = Slider:new(self,
+		self._mixSlider = Slider.new(self,
 			function()
 				local ui = self:mixRow():children()
 				return ui and axutils.childWithRole(ui, "AXSlider")
@@ -423,7 +423,7 @@ end
 ---  * The Temperatures `Slider`.
 function ColorWheels:temperatureSlider()
 	if not self._temperatureSlider then
-		self._temperatureSlider = Slider:new(self,
+		self._temperatureSlider = Slider.new(self,
 			function()
 				local ui = self:temperatureRow():children()
 				return ui and axutils.childWithRole(ui, "AXSlider")
@@ -474,7 +474,7 @@ end
 ---  * The Tint `Slider`.
 function ColorWheels:tintSlider()
 	if not self._tintSlider then
-		self._tintSlider = Slider:new(self,
+		self._tintSlider = Slider.new(self,
 			function()
 				local ui = self:tintRow():children()
 				return ui and axutils.childWithRole(ui, "AXSlider")

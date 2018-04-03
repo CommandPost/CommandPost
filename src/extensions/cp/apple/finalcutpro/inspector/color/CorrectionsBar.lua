@@ -175,7 +175,7 @@ end
 ---  * A `menuButton` object.
 function CorrectionsBar:menuButton()
     if not self._menuButton then
-        self._menuButton = MenuButton:new(self, function()
+        self._menuButton = MenuButton.new(self, function()
             return axutils.childWithRole(self:UI(), "AXMenuButton")
         end)
     end

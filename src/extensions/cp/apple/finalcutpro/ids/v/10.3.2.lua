@@ -106,7 +106,4 @@ return {
 		CreateMulticamOptimizedMedia		= 2,
 		BackgroundRender					= 1,
 	},
-	PreferencesWindow = {
-		Group								= "_NS:9"
-	},
 }

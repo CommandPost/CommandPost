@@ -13,8 +13,9 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+-- local log								= require("hs.logger").new("ScrollArea")
+
 local axutils							= require("cp.ui.axutils")
-local log								= require("hs.logger").new("ScrollArea")
 
 --------------------------------------------------------------------------------
 --
@@ -98,7 +99,7 @@ end
 function ScrollArea:childrenUI(filterFn)
 	local ui = self:contentsUI()
 	if ui then
-		local children = nil
+		local children
 		if filterFn then
 			children = axutils.childrenMatching(ui, filterFn)
 		else
@@ -174,13 +175,16 @@ function ScrollArea:showChild(childUI)
 			local oFrame = self:contentsUI():frame()
 			local scrollHeight = oFrame.h - vFrame.h
 
-			local vValue = nil
+			local vValue
 			if childTop < top or childFrame.h > vFrame.h then
 				vValue = (childTop-oFrame.y)/scrollHeight
 			else
 				vValue = 1.0 - (oFrame.y + oFrame.h - childBottom)/scrollHeight
 			end
-			vScroll:setAttributeValue("AXValue", vValue)
+			local vScroll = self:verticalScrollBarUI()
+			if vScroll then
+				vScroll:setAttributeValue("AXValue", vValue)
+			end
 		end
 	end
 	return self
@@ -216,8 +220,8 @@ end
 function ScrollArea:selectAll(childrenUI)
 	childrenUI = childrenUI or self:childrenUI()
 	if childrenUI then
-		for i,clip in ipairs(childrenUI) do
-			self:selectChild(child)
+		for _,clip in ipairs(childrenUI) do
+			self:selectChild(clip)
 		end
 	end
 	return self
@@ -261,6 +265,24 @@ function ScrollArea:loadLayout(layout)
 			hScroll:setValue(layout.horizontalScrollBar)
 		end
 	end
+end
+
+--- cp.ui.ScrollArea:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function ScrollArea:snapshot(path)
+	local ui = self:UI()
+	if ui then
+		return axutils.snapshot(ui, path)
+	end
+	return nil
 end
 
 return ScrollArea

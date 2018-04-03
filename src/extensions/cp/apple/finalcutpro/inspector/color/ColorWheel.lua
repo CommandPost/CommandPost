@@ -271,7 +271,7 @@ end
 --- * The reset `Button` instance.
 function ColorWheel:resetButton()
 	if not self._resetButton then
-		self._resetButton = Button:new(self, function()
+		self._resetButton = Button.new(self, function()
 			return axutils.childWithRole(self:UI(), "AXButton")
 		end)
 	end

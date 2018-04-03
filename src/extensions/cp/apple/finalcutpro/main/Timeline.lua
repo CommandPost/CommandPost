@@ -43,34 +43,8 @@ function Timeline.matches(element)
 end
 
 -- TODO: Add documentation
-function Timeline:new(app)
-	local o = prop.extend({
-		_app = app
-	},	Timeline)
-
-	o.isLoaded = o:contents().isLoaded:wrap(o)
-
-	return o
-end
-
--- TODO: Add documentation
-function Timeline:app()
-	return self._app
-end
-
------------------------------------------------------------------------
---
--- TIMELINE UI:
---
------------------------------------------------------------------------
-
--- TODO: Add documentation
-function Timeline:UI()
-	return axutils.cache(self, "_ui", function()
-		local app = self:app()
-		return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
-	end,
-	Timeline.matches)
+function Timeline.matchesMain(element)
+	return element:attributeValue("AXIdentifier") == id "Contents"
 end
 
 -- TODO: Add documentation
@@ -89,22 +63,65 @@ function Timeline._findTimeline(...)
 end
 
 -- TODO: Add documentation
-Timeline.isOnSecondary = prop.new(function(self)
-	local ui = self:UI()
-	return ui and SecondaryWindow.matches(ui:window())
-end):bind(Timeline)
+function Timeline.new(app)
+	local o = prop.extend({
+		_app = app
+	},	Timeline)
+
+	-- TODO: Add documentation
+	local UI = prop(function(self)
+		return axutils.cache(self, "_ui", function()
+			return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
+		end,
+		Timeline.matches)
+	end)
+
+	prop.bind(o) {
+		UI = UI,
+
+		-- TODO: Add documentation
+		isOnSecondary = UI:mutate(function(original)
+			local ui = original()
+			return ui ~= nil and SecondaryWindow.matches(ui:window())
+		end),
+
+		-- TODO: Add documentation
+		isOnPrimary = UI:mutate(function(original)
+			local ui = original()
+			return ui ~= nil and PrimaryWindow.matches(ui:window())
+		end),
+
+		-- TODO: Add documentation
+		isShowing = UI:mutate(function(original)
+			local ui = original()
+			return ui ~= nil and #ui > 0
+		end),
+
+		-- TODO: Add documentation
+		mainUI = UI:mutate(function(original, self)
+			return axutils.cache(self, "_main", function()
+				local ui = original()
+				return ui and axutils.childMatching(ui, Timeline.matchesMain)
+			end,
+			Timeline.matchesMain)
+		end),
+
+		isLoaded = o:contents().isLoaded,
+	}
+
+	return o
+end
 
 -- TODO: Add documentation
-Timeline.isOnPrimary = prop.new(function(self)
-	local ui = self:UI()
-	return ui and PrimaryWindow.matches(ui:window())
-end):bind(Timeline)
+function Timeline:app()
+	return self._app
+end
 
--- TODO: Add documentation
-Timeline.isShowing = prop.new(function(self)
-	local ui = self:UI()
-	return ui ~= nil and #ui > 0
-end):bind(Timeline)
+-----------------------------------------------------------------------
+--
+-- TIMELINE UI:
+--
+-----------------------------------------------------------------------
 
 -- TODO: Add documentation
 function Timeline:show()
@@ -142,28 +159,6 @@ function Timeline:hide()
 	menuBar:uncheckMenu({"Window", "Show in Secondary Display", "Timeline"})
 	menuBar:uncheckMenu({"Window", "Show in Workspace", "Timeline"})
 	return self
-end
-
------------------------------------------------------------------------
---
--- MAIN UI
--- The Canvas is the main body of the timeline, containing the
--- Timeline Index, the canvas, and the Effects/Transitions panels.
---
------------------------------------------------------------------------
-
--- TODO: Add documentation
-function Timeline:mainUI()
-	return axutils.cache(self, "_main", function()
-		local ui = self:UI()
-		return ui and axutils.childMatching(ui, Timeline.matchesMain)
-	end,
-	Timeline.matchesMain)
-end
-
--- TODO: Add documentation
-function Timeline.matchesMain(element)
-	return element:attributeValue("AXIdentifier") == id "Contents"
 end
 
 -----------------------------------------------------------------------
@@ -246,7 +241,7 @@ end
 -- TODO: Add documentation
 function Timeline:toolbar()
 	if not self._toolbar then
-		self._toolbar = TimelineToolbar:new(self)
+		self._toolbar = TimelineToolbar.new(self)
 	end
 	return self._toolbar
 end

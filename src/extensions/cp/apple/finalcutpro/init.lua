@@ -852,7 +852,7 @@ end
 ---  * The Preferences Window
 function App:preferencesWindow()
 	if not self._preferencesWindow then
-		self._preferencesWindow = PreferencesWindow:new(self)
+		self._preferencesWindow = PreferencesWindow.new(self)
 	end
 	return self._preferencesWindow
 end
@@ -1015,7 +1015,7 @@ end
 ---  * the Timeline
 function App:timeline()
 	if not self._timeline then
-		self._timeline = Timeline:new(self)
+		self._timeline = Timeline.new(self)
 	end
 	return self._timeline
 end
