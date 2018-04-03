@@ -46,7 +46,7 @@ function StaticText.matches(element)
 	return element:attributeValue("AXRole") == "AXStaticText"
 end
 
---- cp.ui.StaticText:new(parent, finderFn[, convertFn]) -> StaticText
+--- cp.ui.StaticText.new(parent, finderFn[, convertFn]) -> StaticText
 --- Method
 --- Creates a new StaticText. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -59,7 +59,7 @@ end
 --- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
 ---
 --- ```lua
---- local numberField = StaticText:new(parent, function() return ... end, tonumber)
+--- local numberField = StaticText.new(parent, function() return ... end, tonumber)
 --- ```
 ---
 --- Parameters:
@@ -69,13 +69,66 @@ end
 ---
 --- Returns:
 --- * The new `StaticText`.
--- TODO: Use a function instead of a method.
-function StaticText:new(parent, finderFn, convertFn) -- luacheck: ignore
-	local o = prop.extend({
+function StaticText.new(parent, finderFn, convertFn)
+	local o
+
+	o = prop.extend({
 		_parent = parent,
 		_finder = finderFn,
 		_convert = convertFn,
+
+		--- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil>
+		--- Field
+		--- The `axuielement` or `nil` if it's not available currently.
+		UI = prop(function()
+			return axutils.cache(o, "_ui", function()
+				return finderFn()
+			end,
+			StaticText.matches)
+		end),
 	}, StaticText)
+
+	--- cp.ui.StaticText.value <cp.prop: anything>
+	--- Field
+	--- The current value of the text field.
+	prop.bind(o) {
+
+		--- cp.ui.StaticText:isShowing() -> boolean
+		--- Method
+		--- Checks if the static text is currently showing.
+		---
+		--- Parameters:
+		--- * None
+		---
+		--- Returns:
+		--- * `true` if it's visible.
+		isShowing = o.UI:mutate(function(original, self)
+			local ui = original()
+			return ui ~= nil and self:parent():isShowing()
+		end),
+
+		value = o.UI:mutate(
+			function(original)
+				local ui = original()
+				local value = ui and ui:attributeValue("AXValue") or nil
+				if value and convertFn then
+					value = convertFn(value)
+				end
+				return value
+			end,
+			function(value, original)
+				local ui = original()
+				if ui then
+					value = tostring(value)
+					local focused = ui:attributeValue("AXFocused")
+					ui:setAttributeValue("AXFocused", true)
+					ui:setAttributeValue("AXValue", value)
+					ui:setAttributeValue("AXFocused", focused)
+					ui:performAction("AXConfirm")
+				end
+			end
+		),
+	}
 
 	o._notifier = notifier.new(o:app():bundleID(), function() return o:UI() end)
 
@@ -86,7 +139,8 @@ function StaticText:new(parent, finderFn, convertFn) -- luacheck: ignore
 
 	-- watch for changes in parent visibility, and update the notifier if it changes.
 	if prop.is(parent.isShowing) then
-		parent.isShowing:watch(function()
+		o.isShowing:monitor(parent.isShowing)
+		o.isShowing:watch(function()
 			o._notifier:update()
 		end)
 	end
@@ -119,61 +173,6 @@ end
 function StaticText:app()
 	return self:parent():app()
 end
-
---- cp.ui.StaticText:UI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` or `nil` if it's not available currently.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `axuielement` or `nil`.
-function StaticText:UI()
-	return axutils.cache(self, "_ui", function()
-		return self._finder()
-	end,
-	StaticText.matches)
-end
-
---- cp.ui.StaticText:isShowing() -> boolean
---- Method
---- Checks if the static text is currently showing.
----
---- Parameters:
---- * None
----
---- Returns:
---- * `true` if it's visible.
-function StaticText:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
-end
-
---- cp.ui.StaticText.value <cp.prop: anything>
---- Field
---- The current value of the text field.
-StaticText.value = prop(
-	function(self)
-		local ui = self:UI()
-		local value = ui and ui:attributeValue("AXValue") or nil
-		if value and self._convert then
-			value = self._convert(value)
-		end
-		return value
-	end,
-	function(value, self)
-		local ui = self:UI()
-		if ui then
-			value = tostring(value)
-			local focused = ui:attributeValue("AXFocused")
-			ui:setAttributeValue("AXFocused", true)
-			ui:setAttributeValue("AXValue", value)
-			ui:setAttributeValue("AXFocused", focused)
-			ui:performAction("AXConfirm")
-		end
-
-	end
-):bind(StaticText)
 
 -- TODO: Add documentation
 function StaticText:getValue()

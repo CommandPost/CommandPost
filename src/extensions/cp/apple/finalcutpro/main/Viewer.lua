@@ -236,7 +236,7 @@ function Viewer.new(app, eventViewer)
     end)
 
     -- The StaticText that contains the timecode.
-    o._timecode = StaticText:new(o, function()
+    o._timecode = StaticText.new(o, function()
         local ui = bottomToolbarUI()
         return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
     end)
