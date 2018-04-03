@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("tangentPref")
+local log                                       = require("hs.logger").new("tangentPref")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -28,7 +28,13 @@ local image                                     = require("hs.image")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local commands                                  = require("cp.commands")
 local html                                      = require("cp.web.html")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local _                                         = require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -47,6 +53,102 @@ mod.TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 --- URL to download Tangent Hub Application.
 mod.DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
 
+mod.MAX_ITEMS = 50
+
+-- renderPanel(context) -> none
+-- Function
+-- Generates the Preference Panel HTML Content.
+--
+-- Parameters:
+--  * context - Table of data that you want to share with the renderer
+--
+-- Returns:
+--  * HTML content as string
+local function renderPanel(context)
+    if not mod._renderPanel then
+        local errorMessage
+        mod._renderPanel, errorMessage = mod._env:compileTemplate("html/panel.html")
+        if errorMessage then
+            log.ef(errorMessage)
+            return nil
+        end
+    end
+    return mod._renderPanel(context)
+end
+
+-- generateContent() -> string
+-- Function
+-- Generates the Preference Panel HTML Content.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * HTML content as string
+local function generateContent()
+    local context = {
+        _                       = _,
+        webviewLabel            = mod._prefsManager.getLabel(),
+        maxItems                = mod.MAX_ITEMS,
+    }
+    return renderPanel(context)
+end
+
+-- tangentPanelCallback() -> none
+-- Function
+-- JavaScript Callback for the Preferences Panel
+--
+-- Parameters:
+--  * id - ID as string
+--  * params - Table of paramaters
+--
+-- Returns:
+--  * None
+local function tangentPanelCallback(id, params)
+    if params and params["type"] then
+        if params["type"] == "updateAction" then
+
+            --------------------------------------------------------------------------------
+            -- Setup Activators:
+            --------------------------------------------------------------------------------
+            if not mod.activator then
+                --------------------------------------------------------------------------------
+                -- Create new Activator:
+                --------------------------------------------------------------------------------
+                local handlerIds = mod._actionManager.handlerIds()
+                mod.activator = mod._actionManager.getActivator("tangentPreferences")
+                mod.activator:preloadChoices()
+            end
+
+            --------------------------------------------------------------------------------
+            -- Setup Activator Callback:
+            --------------------------------------------------------------------------------
+            mod.activator:onActivate(function(handler, action, text)
+                    local actionTitle = text
+                    local handlerID = handler:id()
+
+                    --mod._sd.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+                    mod._prefsManager.refresh()
+                end)
+
+            --------------------------------------------------------------------------------
+            -- Show Activator:
+            --------------------------------------------------------------------------------
+            mod.activator:show()
+        elseif params["type"] == "clearAction" then
+            --mod._sd.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
+            --mod._prefsManager.refresh()
+        else
+            --------------------------------------------------------------------------------
+            -- Unknown Callback:
+            --------------------------------------------------------------------------------
+            log.df("Unknown Callback in Tangent Preferences Panel:")
+            log.df("id: %s", hs.inspect(id))
+            log.df("params: %s", hs.inspect(params))
+        end
+    end
+end
+
 --- plugins.core.preferences.panels.tangent.init() -> none
 --- Function
 --- Initialise Module.
@@ -56,18 +158,26 @@ mod.DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-in
 ---
 --- Returns:
 ---  * None
-function mod.init(prefsManager, tangentManager, env)
+function mod.init(deps, env)
+
+    --------------------------------------------------------------------------------
+    -- Inter-plugin Connectivity:
+    --------------------------------------------------------------------------------
+    mod._actionManager  = deps.actionManager
+    mod._prefsManager   = deps.prefsManager
+    mod._tangentManager = deps.tangentManager
+    mod._env            = env
 
     --------------------------------------------------------------------------------
     -- Setup Tangent Preferences Panel:
     --------------------------------------------------------------------------------
-    mod._panel = prefsManager.addPanel({
+    mod._panel = mod._prefsManager.addPanel({
         priority    = 2032.1,
         id          = "tangent",
         label       = i18n("tangentPanelLabel"),
-        image       = image.imageFromPath(env:pathToAbsolute("/tangent.icns")),
+        image       = image.imageFromPath(env:pathToAbsolute("/images/tangent.icns")),
         tooltip     = i18n("tangentPanelTooltip"),
-        height      = 320,
+        height      = 650,
     })
         :addContent(1, html.style ([[
             .tangentButtonOne {
@@ -94,6 +204,7 @@ function mod.init(prefsManager, tangentManager, env)
         ]], true))
         :addHeading(2, i18n("tangentPanelSupport"))
         :addParagraph(3, i18n("tangentPreferencesInfo"), false)
+        :addParagraph(3.2, html.br())
         --------------------------------------------------------------------------------
         -- Enable Tangent Support:
         --------------------------------------------------------------------------------
@@ -101,18 +212,18 @@ function mod.init(prefsManager, tangentManager, env)
             {
                 label = i18n("enableTangentPanelSupport"),
                 onchange = function(_, params)
-                    if params.checked and not tangentManager.tangentHubInstalled() then
-                        dialog.webviewAlert(prefsManager.getWebview(), function()
-                            tangentManager.enabled(false)
-                            prefsManager.injectScript([[
+                    if params.checked and not mod._tangentManager.tangentHubInstalled() then
+                        dialog.webviewAlert(mod._prefsManager.getWebview(), function()
+                            mod._tangentManager.enabled(false)
+                            mod._prefsManager.injectScript([[
                                 document.getElementById("enableTangentSupport").checked = false;
                             ]])
                         end, i18n("tangentPanelSupport"), i18n("mustInstallTangentMapper"), i18n("ok"))
                     else
-                        tangentManager.enabled(params.checked)
+                        mod._tangentManager.enabled(params.checked)
                     end
                 end,
-                checked = tangentManager.enabled,
+                checked = mod._tangentManager.enabled,
                 id = "enableTangentSupport",
             }
         )
@@ -124,10 +235,10 @@ function mod.init(prefsManager, tangentManager, env)
             {
                 label = i18n("openTangentMapper"),
                 onclick = function()
-                    if tangentManager.tangentMapperInstalled() then
-                        tangentManager.launchTangentMapper()
+                    if mod._tangentManager.tangentMapperInstalled() then
+                        mod._tangentManager.launchTangentMapper()
                     else
-                        dialog.webviewAlert(prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
+                        dialog.webviewAlert(mod._prefsManager.getWebview(), function() end, i18n("tangentMapperNotFound"), i18n("tangentMapperNotFoundMessage"), i18n("ok"))
                     end
                 end,
                 class = "tangentButtonOne",
@@ -157,6 +268,16 @@ function mod.init(prefsManager, tangentManager, env)
                 class = "tangentButtonTwo",
             }
         )
+        :addParagraph(10, html.br())
+        :addParagraph(11, html.br())
+        :addHeading(12, "Tangent Favourites")
+        :addParagraph(13, "You can assign any action in CommandPost to a Favourite below, which is then accessible in the Tangent Mapper.", false)
+        :addContent(14, generateContent, false)
+
+        --------------------------------------------------------------------------------
+        -- Setup Callback Manager:
+        --------------------------------------------------------------------------------
+        :addHandler("onchange", "tangentPanelCallback", tangentPanelCallback)
 
 end
 
@@ -171,6 +292,7 @@ local plugin = {
     dependencies    = {
         ["core.preferences.manager"]    = "prefsManager",
         ["core.tangent.manager"]        = "tangentManager",
+        ["core.action.manager"]         = "actionManager",
     }
 }
 
@@ -178,7 +300,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-    return mod.init(deps.prefsManager, deps.tangentManager, env)
+    return mod.init(deps, env)
 end
 
 return plugin
