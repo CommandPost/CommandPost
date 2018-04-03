@@ -34,6 +34,7 @@ local timer                                     = require("hs.timer")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
@@ -47,11 +48,6 @@ local _                                         = require("moses")
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- plugins.core.preferences.panels.midi.enabled <cp.prop: boolean>
---- Field
---- Enable or disable Stream Deck Support.
-mod.enabled = config.prop("enableMIDI", false)
 
 --- plugins.core.preferences.panels.midi.lastGroup <cp.prop: string>
 --- Field
@@ -94,26 +90,6 @@ function mod._resetMIDIGroup()
             mod._manager.refresh()
         end
     end, i18n("midiResetGroupConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
--- renderRows(context) -> none
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * context - Table of data that you want to share with the renderer
---
--- Returns:
---  * HTML content as string
-local function renderRows(context)
-    if not mod._renderRows then
-        local err
-        mod._renderRows, err = mod._env:compileTemplate("html/rows.html")
-        if err then
-            error(err)
-        end
-    end
-    return mod._renderRows(context)
 end
 
 -- renderPanel(context) -> none
@@ -176,7 +152,7 @@ local function generateContent()
                         groupID: this.value,
                     },
                 }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
+                webkit.messageHandlers.{{ label }}.postMessage(result);
             } catch(err) {
                 console.log("Error: " + err)
                 alert('An error has occurred. Does the controller exist yet?');
@@ -195,7 +171,7 @@ local function generateContent()
               }
             }
         }
-    ]])
+    ]], {label = mod._manager.getLabel()})
 
 
     local context = {
@@ -739,10 +715,10 @@ end
 -- Returns:
 --  * A number
 function mod._calculateHeight()
-    if mod.enabled() then
-        return 610
+    if mod._midi.enabled() then
+        return 780
     else
-        return 210
+        return 400
     end
 end
 
@@ -769,6 +745,34 @@ function mod._applyTopDeviceToAll()
             end
         end
     end, i18n("midiTopDeviceToAll"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
+end
+
+
+local function getMIDIDeviceList()
+    local midiDevices = mod._midi.devices()
+    local virtualMidiDevices = mod._midi.virtualDevices()
+
+    local result = {}
+
+    table.insert(result, {
+        value = "",
+        label = i18n("none"),
+    })
+
+    for _, device in pairs(midiDevices) do
+        table.insert(result, {
+            value = device,
+            label = device,
+        })
+    end
+
+    for _, device in pairs(virtualMidiDevices) do
+        table.insert(result, {
+            value = "virtual_" .. device,
+            label = device,
+        })
+    end
+    return result
 end
 
 --- plugins.core.preferences.panels.midi.init(deps, env) -> module
@@ -804,16 +808,168 @@ function mod.init(deps, env)
         height          = mod._calculateHeight,
         closeFn         = mod._destroyMIDIWatchers,
     })
+        --------------------------------------------------------------------------------
+        --
+        -- MIDI TOOLS:
+        --
+        --------------------------------------------------------------------------------
+        :addHeading(0.1, i18n("midiTools"))
+        :addButton(0.2,
+            {
+                width       = 200,
+                label       = i18n("openAudioMIDISetup"),
+                onclick     = function() hs.open("/Applications/Utilities/Audio MIDI Setup.app") end,
+                class       = "openAudioMIDISetup",
+            }
+        )
+        :addButton(0.3,
+            {
+                width       = 200,
+                label       = i18n("refreshMidi"),
+                onclick     = mod._manager.refresh,
+                class       = "refreshMidi",
+            }
+        )
+        :addParagraph(5, html.br())
+        :addContent(1, ui.style([[
+            .midiColumn {
+                float: left;
+                width: 50%;
+            }
+
+            .midiRow {
+                clear: left;
+            }
+
+            /* Clear floats after the columns */
+            .midiRow:after {
+                content: "";
+                display: table;
+                clear: both;
+            }
+        ]]))
+        :addContent(1.01, [[<div class="midiRow">
+            <div class="midiColumn">
+        ]], false)
+        --------------------------------------------------------------------------------
+        --
+        -- MIDI Machine Control:
+        --
+        --------------------------------------------------------------------------------
+        :addHeading(1.1, i18n("midiMachineControl"))
+        :addCheckbox(1.2,
+            {
+                label       = i18n("transmitMMC"),
+                checked     = mod._midi.transmitMMC,
+                onchange    = function(_, params)
+                    mod._midi.transmitMMC(params.checked)
+                end,
+            }
+        )
+        :addSelect(1.3,
+            {
+                label       = i18n("device"),
+                width       = 250,
+                value       = mod._midi.transmitMMCDevice,
+                options     = getMIDIDeviceList,
+                required    = true,
+                onchange    = function(_, params)
+                    mod._midi.transmitMMCDevice(params.value)
+                end,
+            }
+        )
+        :addCheckbox(1.4,
+            {
+                label       = i18n("listenMMC"),
+                checked     = mod._midi.listenMMC,
+                onchange    = function(_, params)
+                    mod._midi.listenMMC(params.checked)
+                end,
+            }
+        )
+        :addSelect(1.5,
+            {
+                label       = i18n("device"),
+                width       = 250,
+                value       = mod._midi.listenMMCDevice,
+                options     = getMIDIDeviceList,
+                required    = true,
+                onchange    = function(_, params)
+                    mod._midi.listenMMCDevice(params.value)
+                end,
+            }
+        )
+        :addContent(1.6, [[
+            </div>
+            <div class="midiColumn">
+        ]], false)
+        --------------------------------------------------------------------------------
+        --
+        -- MIDI TIMECODE (MTC):
+        --
+        --------------------------------------------------------------------------------
+        :addHeading(2, i18n("midiTimecode"))
+        :addCheckbox(2.1,
+            {
+                label       = i18n("transmitMTC"),
+                checked     = mod._midi.transmitMTC,
+                onchange    = function(_, params)
+                    mod._midi.transmitMTC(params.checked)
+                end,
+            }
+        )
+        :addSelect(2.2,
+            {
+                label       = i18n("device"),
+                width       = 250,
+                value       = mod._midi.transmitMTCDevice,
+                options     = getMIDIDeviceList,
+                required    = true,
+                onchange    = function(_, params)
+                    mod._midi.transmitMTCDevice(params.value)
+                end,
+            }
+        )
+        :addCheckbox(2.3,
+            {
+                label       = i18n("listenMTC"),
+                checked     = mod._midi.listenMTC,
+                onchange    = function(_, params)
+                    mod._midi.listenMTC(params.checked)
+                end,
+            }
+        )
+        :addSelect(2.4,
+            {
+                label       = i18n("device"),
+                width       = 250,
+                value       = mod._midi.listenMTCDevice,
+                options     = getMIDIDeviceList,
+                required    = true,
+                onchange    = function(_, params)
+                    mod._midi.listenMTCDevice(params.value)
+                end,
+            }
+        )
+        :addContent(2.5, [[
+                </div>
+            </div>
+        ]], false)
+        --------------------------------------------------------------------------------
+        --
+        -- MIDI CONTROLS:
+        --
+        --------------------------------------------------------------------------------
         :addHeading(6, i18n("midiControls"))
         :addCheckbox(7,
             {
                 label       = i18n("enableMIDI"),
-                checked     = mod.enabled,
+                checked     = mod._midi.enabled,
                 onchange    = function(_, params)
                     --------------------------------------------------------------------------------
                     -- Toggle Preference:
                     --------------------------------------------------------------------------------
-                    mod.enabled(params.checked)
+                    mod._midi.enabled(params.checked)
 
                     --------------------------------------------------------------------------------
                     -- Resize Window:
@@ -831,22 +987,8 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addButton(7.1,
-            {
-                label       = i18n("openAudioMIDISetup"),
-                onclick     = function() hs.open("/Applications/Utilities/Audio MIDI Setup.app") end,
-                class       = "openAudioMIDISetup",
-            }
-        )
-        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod.enabled()) .. [[;">]], true)
-        :addContent(10, generateContent, true)
-        :addButton(11,
-            {
-                label       = i18n("refreshMidi"),
-                onclick     = mod._manager.refresh,
-                class       = "refreshMidi",
-            }
-        )
+        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod._midi.enabled()) .. [[;">]], false)
+        :addContent(10, generateContent, false)
         :addButton(12,
             {
                 label       = i18n("applyTopDeviceToAll"),
@@ -858,18 +1000,18 @@ function mod.init(deps, env)
             {
                 label       = i18n("midiResetGroup"),
                 onclick     = mod._resetMIDIGroup,
-                class       = "applyTopDeviceToAll",
+                class       = "midiResetGroup",
             }
         )
         :addButton(14,
             {
                 label       = i18n("midiResetAll"),
                 onclick     = mod._resetMIDI,
-                class       = "applyTopDeviceToAll",
+                class       = "midiResetGroup",
             }
         )
 
-        :addContent(23, [[</div>]], true)
+        :addContent(23, [[</div>]], false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

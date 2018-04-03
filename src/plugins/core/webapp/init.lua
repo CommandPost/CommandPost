@@ -183,7 +183,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     deps.webappPreferences
         :addHeading(10, i18n ("webappIntroduction"))
-        :addParagraph(15, i18n("webappInstructions"), true)
+        :addParagraph(15, i18n("webappInstructions"), false)
         :addHeading(25, i18n("webappSettings"))
         :addCheckbox(30,
             {

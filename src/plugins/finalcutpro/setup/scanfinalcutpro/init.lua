@@ -22,6 +22,7 @@ local fcp               = require("cp.apple.finalcutpro")
 local feedback          = require("cp.feedback")
 local guiscan           = require("cp.apple.finalcutpro.plugins.guiscan")
 local just              = require("cp.just")
+local html              = require("cp.web.html")
 
 --------------------------------------------------------------------------------
 --
@@ -107,7 +108,9 @@ function plugin.init(deps)
                     onclick = mod.scanFinalCutPro,
                 }
             )
-            :addParagraph(61.2, [[<span class="tip">]]  .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("scanFinalCutProDescription") .. [[</span>]], true)
+            :addParagraph(61.2, html.span {class="tip"} (
+                html.strong ( string.upper(i18n("tip")) .. ": " ) .. i18n("scanFinalCutProDescription")
+            ) )
     end
 
     return mod

@@ -429,10 +429,10 @@ end
 ---
 --- Returns:
 ---  * an array of the dependencies required by the plugin, or `nil` if any could not be loaded.
-function mod.loadDependencies(plugin)
+function mod.loadDependencies(thePlugin)
     local dependencies = {}
-    if plugin.dependencies then
-        for path,alias in pairs(plugin.dependencies) do
+    if thePlugin.dependencies then
+        for path,alias in pairs(thePlugin.dependencies) do
             if type(path) == "number" then
                 --------------------------------------------------------------------------------
                 -- No alias:
@@ -447,12 +447,12 @@ function mod.loadDependencies(plugin)
                 if alias then
                     dependencies[alias] = dependency
                 end
-                mod.addDependent(path, plugin)
+                mod.addDependent(path, thePlugin)
             else
                 --------------------------------------------------------------------------------
                 -- Unable to load the dependency. Fail:
                 --------------------------------------------------------------------------------
-                log.ef("Unable to load dependency for plugin '%s': %s", plugin.id, path)
+                log.ef("Unable to load dependency for plugin '%s': %s", thePlugin.id, path)
                 return nil
             end
         end
@@ -833,14 +833,18 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Alternate 'require' function that caches plugin resources locally:
     --------------------------------------------------------------------------------
-    local pluginRequire = function(name)
+    local pluginRequire
+    pluginRequire = function(name)
         if cache[name] then
             return cache[name]
         end
         local file = package.searchpath(name, searchPath) -- luacheck: ignore
         if file then
-            local result = dofile(file)
+            local gRequire = _G.require
+            _G.require = pluginRequire
+                local result = dofile(file)
             cache[name] = result
+            _G.require = gRequire
             return result
         end
         return globalRequire(name)
@@ -849,7 +853,7 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Replace default 'require':
     --------------------------------------------------------------------------------
-    require = pluginRequire -- luacheck: ignore
+    _G.require = pluginRequire
 
     --------------------------------------------------------------------------------
     -- Load the plugin:
@@ -862,7 +866,7 @@ function mod.loadComplexPlugin(path)
     --------------------------------------------------------------------------------
     -- Reset 'require' to the global require:
     --------------------------------------------------------------------------------
-    require = globalRequire -- luacheck: ignore
+    _G.require = globalRequire
 
     return result
 end

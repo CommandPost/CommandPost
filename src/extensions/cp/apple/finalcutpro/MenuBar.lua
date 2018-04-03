@@ -132,8 +132,11 @@ end
 ---    `require("cp.apple.finalcutpro"):menuBar():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
 function MenuBar:selectMenu(path)
     local menuItemUI = self:findMenuUI(path)
-    if menuItemUI then
-        return menuItemUI:performAction("AXPress")
+    if menuItemUI and menuItemUI:attributeValue("AXEnabled") then
+        local result = menuItemUI:performAction("AXPress")
+        if result then
+            return true
+        end
     end
     return false
 end

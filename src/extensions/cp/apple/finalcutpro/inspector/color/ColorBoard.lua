@@ -22,15 +22,12 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop                              = require("cp.prop")
-local axutils                           = require("cp.ui.axutils")
-
-local Button                            = require("cp.ui.Button")
-local RadioGroup                        = require("cp.ui.RadioGroup")
-
 local Aspect                            = require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
-
+local axutils                           = require("cp.ui.axutils")
+local Button                            = require("cp.ui.Button")
 local id                                = require("cp.apple.finalcutpro.ids") "ColorBoard"
+local prop                              = require("cp.prop")
+local RadioGroup                        = require("cp.ui.RadioGroup")
 
 --------------------------------------------------------------------------------
 --
@@ -214,10 +211,21 @@ function ColorBoard:UI()
     end, ColorBoard.matches)
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:contentUI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Color Board's content.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object
 function ColorBoard:contentUI()
     return axutils.cache(self, "_content", function()
         local ui = self:UI()
-        -- returns the appropriate UI depending on the version.
+        -----------------------------------------------------------------------
+        -- Returns the appropriate UI depending on the version:
+        -----------------------------------------------------------------------
         return ui and ((#ui == 1 and ui[1]) or ui) or nil
     end)
 end
@@ -288,13 +296,13 @@ end
 --- Returns a `Button` to access the 'Back' button, if present.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Button` for 'back'.
+---  * The `Button` for 'back'.
 ---
 --- Notes:
---- * This no longer exists in FCP 10.4+, so will always be non-functional.
+---  * This no longer exists in FCP 10.4+, so will always be non-functional.
 function ColorBoard:backButton()
     if not self._backButton then
         self._backButton = Button.new(self, function()
@@ -366,7 +374,7 @@ end
 --- * The `ColorBoardAspect`.
 function ColorBoard:color()
     if not self._color then
-        self._color = Aspect:new(self, 1)
+        self._color = Aspect:new(self, 1, true)
     end
     return self._color
 end

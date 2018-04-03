@@ -499,4 +499,17 @@ function ColorWell:nudge(right, up)
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWell:reset() -> self
+--- Method
+--- Resets the color wheel.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `ColorWell` instance.
+function ColorWell:reset()
+    self:value({})
+end
+
 return ColorWell

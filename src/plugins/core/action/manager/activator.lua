@@ -795,6 +795,8 @@ end
 function activator.mt:refreshChooser()
     local theChooser = self:chooser()
     theChooser:refreshChoicesCallback()
+    theChooser:hide()
+    theChooser:show()
 end
 
 --- plugins.core.action.activator:show()
@@ -1075,8 +1077,14 @@ function activator.mt:rightClickAction(index)
         sort(actionItems, function(a, b) return a.title < b.title end)
 
         local allItems = {
-            { title = i18n("consoleSectionsShowAll"), fn = function() self:enableAllHandlers() end, disabled = allEnabled },
-            { title = i18n("consoleSectionsHideAll"), fn = function() self:disableAllHandlers() end, disabled = allDisabled },
+            { title = i18n("consoleSectionsShowAll"), fn = function()
+                self:enableAllHandlers()
+                self:refreshChooser()
+            end, disabled = allEnabled },
+            { title = i18n("consoleSectionsHideAll"), fn = function()
+                self:disableAllHandlers()
+                self:refreshChooser()
+            end, disabled = allDisabled },
             { title = "-" }
         }
         fnutils.concat(allItems, actionItems)

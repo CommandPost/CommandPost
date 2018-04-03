@@ -13,6 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require		= require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -315,6 +316,10 @@ function test.suite.mt:with(...)
 
 		if test.case.is(t) or test.suite.is(t) then
 			insert(self.tests, t)
+		elseif type(t) == "table" and #t > 0 then
+			for _,x in ipairs(t) do
+				insert(self.tests, x)
+			end
 		else
 			error(format("Unsupported test type: %s", tt))
 		end

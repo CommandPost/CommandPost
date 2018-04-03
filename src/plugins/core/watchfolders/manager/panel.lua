@@ -134,23 +134,23 @@ local function getClass(params)
     return class
 end
 
---- plugins.core.watchfolders.manager.panel:addContent(priority, content) -> panel
+--- plugins.core.watchfolders.manager.panel:addContent(priority, content[, escaped]) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
 --- Parameters:
 ---  * `priority` - the priority order of the content.
 ---  * `content` - a value that can be converted to a string.
----  * `unescaped` - if `true`, the content will not be escaped. Defaults to `true`.
+---  * `escaped` - if `true`, the content will be escaped.
 ---
 --- Returns:
 ---  * The panel object
-function panel:addContent(priority, content, unescaped)
+function panel:addContent(priority, content, escaped)
     priority = priority or DEFAULT_PRIORITY
     local items = self._uiItems
     items[#items+1] = {
         priority = priority,
-        html = html(content, unescaped),
+        html = html(content, escaped),
     }
     return self
 end
@@ -207,20 +207,20 @@ function panel:addHandler(event, id, handlerFn, keys)
     self.manager.addHandler(id, handlerFn)
 end
 
---- plugins.core.watchfolders.manager.panel:addParagraph(priority, content, unescaped, class) -> panel
+--- plugins.core.watchfolders.manager.panel:addParagraph(priority, content[, escaped[, class]]) -> panel
 --- Method
 --- Adds a paragraph to the panel with the specified `priority` and `content`.
 ---
 --- Parameters:
 ---  * `priority` - The priority number for the paragraph.
 ---  * `content` - The content you want to include as a string.
----  * `unescaped` - Whether or not the HTML is escaped as a boolean.
+---  * `escaped` - Whether or not the HTML is escaped as a boolean.
 ---  * `class` - The class name as a string.
 ---
 --- Returns:
 ---  * The panel object
-function panel:addParagraph(priority, content, unescaped, class)
-    return self:addContent(priority, html.p { class=getClass({class=class}) } (content, unescaped))
+function panel:addParagraph(priority, content, escaped, class)
+    return self:addContent(priority, html.p { class=getClass({class=class}) } (content, escaped))
 end
 
 --- plugins.core.watchfolders.manager.panel:addCheckbox(priority, params) -> panel

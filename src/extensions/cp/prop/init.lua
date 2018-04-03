@@ -251,7 +251,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log             = require("hs.logger").new("prop")
+local log             = require("hs.logger").new("prop")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -339,7 +339,7 @@ prop._prepareValue = prepareValue
 function prop.is(value)
     if value and type(value) == "table" then
         local mt = getmetatable(value)
-        return mt and (mt.__index == prop.mt or prop.is(mt.__index))
+        return mt == prop.mt
     end
     return false
 end
@@ -521,8 +521,9 @@ function prop.mt:set(newValue)
             self._cachedValue = newValue
         end
         self._set(newValue, self._owner, self)
-        self:_notify(newValue)
-        return self:get()
+        local actualValue = self:get()
+        self:_notify(actualValue)
+        return actualValue
     end
 end
 
@@ -564,10 +565,12 @@ function prop.mt:bind(owner, key)
         if type(key) ~= "string" then
             error(format("The key must be a string: %s", inspect(key)))
         end
-        if owner[key] then
+        local existing = owner[key]
+        if not existing then
+            owner[key] = self
+        elseif existing ~= self then
             error(format("The owner already has a property named '%s'", key))
         end
-        owner[key] = self
 
         if not self._label then
             self._label = key
@@ -999,6 +1002,25 @@ function prop.mt:wrap(owner, key)
     return wrapper
 end
 
+--- cp.prop:mirror(otherProp) -> self
+--- Method
+--- Configures this prop and the other prop to mirror each other's values.
+--- When one changes the other will change with it. Only one prop needs to mirror.
+---
+--- Parameters:
+--- * `otherProp`   - The other prop to mirror.
+---
+--- Returns:
+--- The same property.
+function prop.mt:mirror(otherProp)
+    self:watch(function(value)
+        otherProp:set(value)
+    end)
+    otherProp:watch(function(value)
+        self:set(value)
+    end)
+end
+
 --- cp.prop:IS(something) -> cp.prop <boolean; read-only>
 --- Method
 --- Returns a new property returning `true` if the value is equal to `something`.
@@ -1165,7 +1187,10 @@ local function _notifyWatchers(watchers, value, owner, theProp)
         for _,watcher in ipairs(watchers) do
             if watcher.lastValue ~= value then
                 watcher.lastValue = value
-                watcher.fn(value, owner, theProp)
+                local ok, result = xpcall(function() watcher.fn(value, owner, theProp) end, debug.traceback)
+                if not ok then
+                    log.ef("Error while notifying a watcher: %s", result)
+                end
             end
         end
     end
@@ -1396,7 +1421,7 @@ function prop.NOT(propValue)
     if not prop.is(propValue) then error "Expected a `cp.prop` at argument #1" end
     local notProp = prop.new(
         function() return negate(propValue:get()) end,
-        function(newValue) propValue:set(negate(newValue)) end
+        function(newValue) return propValue:set(negate(newValue)) end
     )
     -- notify the 'not' watchers if the original value changes.
     :monitor(propValue)
@@ -1612,12 +1637,17 @@ end
 --- Returns:
 ---  * The `target`, now extending the `source`.
 function prop.extend(target, source)
+    -- bind any props to itself
+    prop.bind(target, true)(target)
+    -- rebind any props in the source to the target
     rebind(target, source)
-    source.__index = source
+    if source.__index == nil then
+        source.__index = source
+    end
     return setmetatable(target, source)
 end
 
---- cp.prop.bind(owner) -> function
+--- cp.prop.bind(owner[, relaxed]) -> function
 --- Function
 --- This provides a utility function for binding multiple properties to a single owner in
 --- a simple way. To use, do something like this:
@@ -1644,6 +1674,7 @@ end
 ---
 --- Parameters:
 --- * owner     - The owner table to bind the properties to.
+--- * relaxed   - If `true`, then non-`cp.prop` fields will be ignored. Otherwise they generate an error.
 ---
 --- Returns:
 --- * A function which should be called, passing in a table of key/value pairs which are `string`/`cp.prop` value.
@@ -1652,17 +1683,18 @@ end
 --- * If you are binding multiple `cp.prop` values that are dependent on other `cp.prop` values on the same owner (e.g. via `mutate` or a boolean join), you
 ---   will have to break it up into multiple `prop.bind(...) {...}` calls, so that the dependent property can access the bound property.
 --- * If a `cp.prop` provided as bindings already has a bound owner, it will be wrapped instead of bound directly.
-function prop.bind(owner)
+function prop.bind(owner, relaxed)
     return function(bindings)
         for k,v in pairs(bindings) do
-            if not prop.is(v) then
+            if prop.is(v) then
+                local vOwner = v:owner()
+                if vOwner == nil then -- it's unowned.
+                    v:bind(owner, k)
+                elseif vOwner ~= owner then -- it's already owned. wrap instead.
+                    v:wrap(owner, k)
+                end
+            elseif not relaxed then
                 error(format("The binding value must be a `cp.prop`, but was a `%s`.", type(v)))
-            end
-            local vOwner = v:owner()
-            if vOwner == nil then -- it's unowned.
-                v:bind(owner, k)
-            elseif vOwner ~= owner then -- it's already owned. wrap instead.
-                v:wrap(owner, k)
             end
         end
         return owner

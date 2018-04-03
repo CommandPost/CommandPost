@@ -145,4 +145,18 @@ function Button:snapshot(path)
 	return nil
 end
 
+--- cp.ui.Button:frame() -> table | nil
+--- Method
+--- Returns the `frame` of the `Button`, if available.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Button` frame.
+function Button:frame()
+    local ui = self:UI()
+    return ui and ui:attributeValue("AXFrame")
+end
+
 return Button

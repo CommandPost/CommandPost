@@ -4,7 +4,13 @@ local test		= require("cp.test")
 
 local prop		= require("cp.prop")
 
-return test.suite("cp.prop"):with(
+return test.suite("cp.prop"):with {
+	test("is", function()
+		ok(eq(prop.is(1), false))
+		ok(eq(prop.is({}), false))
+		ok(eq(prop.is(prop.TRUE()), true))
+	end),
+
 	test("Prop Prepare Value", function()
 		local prep = prop._prepareValue
 
@@ -133,17 +139,17 @@ return test.suite("cp.prop"):with(
 	test("Prop Unwatch", function()
 		local log = {}
 		-- watch the property, keep the watcher instance
-		local prop, watcher = prop.TRUE():watch(function(value) log[#log+1] = value end)
+		local p, watcher = prop.TRUE():watch(function(value) log[#log+1] = value end)
 		ok(eq(log, {}))
 
-		prop:update()
+		p:update()
 		ok(eq(log, {true}))
 
-		ok(eq(prop(false), false))
+		ok(eq(p(false), false))
 		ok(eq(log, {true, false}))
 
-		prop:unwatch(watcher)
-		ok(eq(prop(true), true))
+		p:unwatch(watcher)
+		ok(eq(p(true), true))
 		ok(eq(log, {true, false}))
 	end),
 
@@ -361,13 +367,24 @@ return test.suite("cp.prop"):with(
 		source.isFunction = prop.TRUE()
 		source.isRealFunction = function() return true end
 
+		target.isInstanceTable = {}
+		target.isInstanceProp = prop.TRUE()
+
+		ok(eq(prop.is(target.isInstanceTable), false))
+		ok(eq(target.isInstanceProp:owner(), nil))
+		ok(eq(target.isInstanceProp._label, nil))
+
 		prop.extend(target, source)
 
-		ok(target.isMethod:owner() == target)
+		ok(eq(target.isMethod:owner(), target))
 		ok(target.isMethod ~= source.isMethod)
-		ok(target.isFunction:owner() == nil)
-		ok(target.isFunction == source.isFunction)
-		ok(target.isRealFunction == source.isRealFunction)
+		ok(eq(target.isFunction:owner(), nil))
+		ok(eq(target.isFunction, source.isFunction))
+		ok(eq(target.isRealFunction, source.isRealFunction))
+
+		ok(eq(prop.is(target.isInstanceTable), false))
+		ok(eq(target.isInstanceProp:owner(), target))
+		ok(eq(target.isInstanceProp._label, "isInstanceProp"))
 	end),
 
 	test("Prop Notify Loop", function()
@@ -709,7 +726,7 @@ return test.suite("cp.prop"):with(
 		local preWatched = 0
 
 		local a = prop.TRUE()
-		a:preWatch(function(self) preWatched = preWatched + 1 end)
+		a:preWatch(function(_) preWatched = preWatched + 1 end)
 
 		ok(eq(preWatched, 0))
 
@@ -718,7 +735,7 @@ return test.suite("cp.prop"):with(
 		ok(eq(preWatched, 0))
 
 		local watched = 0
-		a:watch(function(value, self) watched = watched + 1 end)
+		a:watch(function(_) watched = watched + 1 end)
 
 		a:toggle()
 		ok(eq(a(), true))
@@ -727,7 +744,7 @@ return test.suite("cp.prop"):with(
 
 		-- happens after a watcher has been added. Better late than never!
 		local instantPreWatch = 0
-		a:preWatch(function(self) instantPreWatch = instantPreWatch + 1 end)
+		a:preWatch(function(_) instantPreWatch = instantPreWatch + 1 end)
 		ok(eq(instantPreWatch, 1))
 
 		a:toggle()
@@ -748,9 +765,9 @@ return test.suite("cp.prop"):with(
 		local valueCount, deepCount, shallowCount = 0, 0, 0
 
 		-- print a message when the prop value is updated
-		valueProp:watch(function(v) valueCount = valueCount + 1 end)
-		deepProp:watch(function(v) deepCount = deepCount + 1 end)
-		shallowProp:watch(function(v) shallowCount = shallowCount + 1 end)
+		valueProp:watch(function(_) valueCount = valueCount + 1 end)
+		deepProp:watch(function(_) deepCount = deepCount + 1 end)
+		shallowProp:watch(function(_) shallowCount = shallowCount + 1 end)
 
 		-- change the original table:
 		value.a				= 2
@@ -828,5 +845,109 @@ return test.suite("cp.prop"):with(
 
 		p:update()
 		ok(eq(p(), 3), "p result has now updated to 3")
+	end),
+
+	test("Default Prop Watching", function()
+		local value = nil
+		local watchedValue = nil
+		local watchCount = 0
+		local p = prop(
+			function() return value ~= nil and value or false end,
+			function(newValue) value = newValue end
+		):deepTable()
+
+		p:NOT():watch(function(newValue)
+			watchedValue = newValue
+			watchCount = watchCount + 1
+		end, true)
+
+		ok(eq(value, false))
+		ok(eq(watchedValue, true))
+		ok(eq(watchCount, 1))
+
+		p(false)
+		ok(eq(value, false))
+		ok(eq(watchedValue, true))
+		ok(eq(watchCount, 1))
+
+		p(true)
+		ok(eq(value, true))
+		ok(eq(watchedValue, false))
+		ok(eq(watchCount, 2))
+	end),
+
+	test("AND NOT", function()
+		local a = prop.TRUE()
+		local b = prop.FALSE()
+
+		local watchValue = nil
+		local watchCount = 0
+
+		-- will trigger when a = true and b = false
+		a:AND(b:NOT()):watch(function(value)
+			watchValue = value
+			watchCount = watchCount + 1
+		end, true)
+
+		ok(eq(watchValue, true))
+		ok(eq(watchCount, 1))
+
+		b(true)
+		ok(eq(watchValue, false))
+		ok(eq(watchCount, 2))
+
+		a(false)
+		ok(eq(watchValue, false))
+		ok(eq(watchCount, 2))
+
+		a(true)
+		b(false)
+		ok(eq(watchValue, true))
+		ok(eq(watchCount, 3))
+	end),
+
+	test("Delayed get change", function()
+		local value = true
+		local aCount, bCount = 0, 0
+		local aValue, bValue = nil, nil
+		local a = prop(
+			function() return value end,
+			function(_) end
+		):watch(function(newValue)
+			aValue = newValue
+			aCount = aCount + 1
+		end)
+
+		local b = a:NOT():watch(function(newValue)
+			bValue = newValue
+			bCount = bCount + 1
+		end)
+
+		ok(eq(a(), true))
+		ok(eq(aValue, nil))
+		ok(eq(aCount, 0))
+		ok(eq(b(), false))
+		ok(eq(bValue, nil))
+		ok(eq(bCount, 0))
+
+		a(false)
+		-- no change
+		ok(eq(a(), true))
+		ok(eq(aValue, true))
+		ok(eq(aCount, 1))
+		ok(eq(b(), false))
+		ok(eq(bValue, false))
+		ok(eq(bCount, 1))
+
+		-- delayed change, then update...
+		value = false
+		a:update()
+
+		ok(eq(a(), false))
+		ok(eq(aValue, false))
+		ok(eq(aCount, 2))
+		ok(eq(b(), true))
+		ok(eq(bValue, true))
+		ok(eq(bCount, 2))
 	end)
-)
+}
