@@ -7,7 +7,7 @@ return test.suite("cp"):with {
 	"tests.test_just",
 	"tests.test_localized",
 	"tests.test_matcher",
-	"tests.test_prop",
+	"cp.prop.test",
 	"tests.test_strings",
 	"tests.test_text",
 	"tests.test_utf16",
