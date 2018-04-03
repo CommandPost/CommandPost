@@ -7,7 +7,6 @@
 
 local log										= require("hs.logger").new("webui")
 
-local base64									= require("hs.base64")
 local fs										= require("hs.fs")
 local image										= require("hs.image")
 
@@ -15,7 +14,6 @@ local html										= require("cp.web.html")
 local tools										= require("cp.tools")
 
 local _											= require("moses")
-local mimetypes									= require("mimetypes")
 local template									= require("resty.template")
 
 local compile									= template.compile
@@ -24,7 +22,7 @@ local compile									= template.compile
 local ui = {}
 ui.__index = ui
 
-function evaluate(value)
+local function evaluate(value)
 	if _.isCallable(value) then
 		return value()
 	else
@@ -32,7 +30,7 @@ function evaluate(value)
 	end
 end
 
---- cp.web.ui.javascript(script, context) -> cp.web.html
+--- cp.web.ui.javascript(script[, context]) -> cp.web.html
 --- Function
 --- Generates an HTML script element which will execute the provided
 --- JavaScript immediately. The script is self-contained and only has
@@ -49,15 +47,39 @@ end
 ---
 --- Parameters:
 ---  * script 	- String containing the JavaScript to execute.
----  * context	- Table containing any values to inject into the script.
+---  * context	- (optional) Table containing any values to inject into the script.
 ---
 --- Returns:
 ---  * a `cp.web.html` element representing the JavaScript block.
----
 function ui.javascript(script, context)
 	local t = compile(script, "no-cache", true)
 	return html.script { type = "text/javascript" } (
-		"(function(){\n" .. t(context) .. "\n})();", true
+		"(function(){\n" .. t(context) .. "\n})();", false
+	)
+end
+
+--- cp.web.ui.style(rules[, context]) -> cp.web.html
+--- Function
+--- Generates an HTML `style` element which will contain the provided rules.
+---
+--- The `rules` will be evaluated as a `resty.template`, and variables can be
+--- injected from the `context` table. For example, this will create a set of rules
+--- that injects the provided color:
+---
+--- ```lua
+--- ui.style([[ body { color: {{ bodyColor }}; } ]], { bodyColor = "#FFFFFF"})
+--- ```
+---
+--- Parameters:
+---  * rules 	- String containing the CSS rules.
+---  * context	- (optional) Table containing any values to inject into the script.
+---
+--- Returns:
+---  * a `cp.web.html` element representing the JavaScript block.
+function ui.style(rules, context)
+	local t = compile(rules, "no-cache", true)
+	return html.style { type = "text/css" } (
+		t(context), false
 	)
 end
 
@@ -275,7 +297,7 @@ function ui.select(params)
 		style   = style,
 		name	= params.name or params.id,
 		class	= params.class,
-	} (optionGenerator, true)
+	} (optionGenerator, false)
 end
 
 -- Reads the file at the specified path as binary and returns it as a BASE64 stream of text.

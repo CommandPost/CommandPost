@@ -71,7 +71,7 @@ function plugin.init(deps)
 					:addHeading(i18n("finalcutproUnsupportedVersionTitle"))
 					:addParagraph(i18n("finalcutproUnsupportedVersionText", {
 						thisVersion = fcp:getVersion(), minVersion = minVersion
-					}), true)
+					}), false)
 					:addButton({
 						label		= i18n("continue"),
 						onclick		= function()

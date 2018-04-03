@@ -150,6 +150,12 @@ function ColorWheels.new(parent)
 		end
 	):bind(o)
 
+	-- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
+	-- link these fields so they mirror each other.
+	o:temperatureSlider().value:mirror(o:temperatureTextField().value)
+	o:tintSlider().value:mirror(o:tintTextField().value)
+	o:mixSlider().value:mirror(o:mixTextField().value)
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.mix <cp.prop: number>
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
@@ -160,6 +166,7 @@ function ColorWheels.new(parent)
 --- The color temperature for this corrector. A number from 2500 to 10000.
 	o.temperature = o:temperatureSlider().value:wrap(o)
 
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.tint <cp.prop: number>
 --- Field
 --- The tint for the corrector. A number from `-50` to `50`.
@@ -167,7 +174,7 @@ function ColorWheels.new(parent)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.hue <cp.prop: number>
 --- Field
---- The hue for the corrector. A number from `0` to `50`.
+--- The hue for the corrector. A number from `0` to `360`.
 	o.hue = o:hueTextField().value:wrap(o)
 
     return o
@@ -375,6 +382,19 @@ function ColorWheels:mixSlider()
 	return self._mixSlider
 end
 
+function ColorWheels:mixTextField()
+	if not self._mixTextField then
+		self._mixTextField = TextField:new(self,
+			function()
+				local ui = self:mixRow():children()
+				return ui and axutils.childMatching(ui, TextField.matches)
+			end,
+			tonumber
+		)
+	end
+	return self._mixTextField
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:temperatureRow() -> cp.ui.PropertyRow
 --- Method
 --- Returns a `PropertyRow` that provides access to the 'Temperatures' parameter, and `axuielement`
@@ -411,6 +431,19 @@ function ColorWheels:temperatureSlider()
 		)
 	end
 	return self._temperatureSlider
+end
+
+function ColorWheels:temperatureTextField()
+	if not self._temperatureTextField then
+		self._temperatureTextField = TextField:new(self,
+			function()
+				local ui = self:temperatureRow():children()
+				return ui and axutils.childMatching(ui, TextField.matches)
+			end,
+			tonumber
+		)
+	end
+	return self._temperatureTextField
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:tintRow() -> cp.ui.PropertyRow
@@ -451,6 +484,19 @@ function ColorWheels:tintSlider()
 	return self._tintSlider
 end
 
+function ColorWheels:tintTextField()
+	if not self._tintTextField then
+		self._tintTextField = TextField:new(self,
+			function()
+				local ui = self:tintRow():children()
+				return ui and axutils.childMatching(ui, TextField.matches)
+			end,
+			tonumber
+		)
+	end
+	return self._tintTextField
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels:hueRow() -> cp.ui.PropertyRow
 --- Method
 --- Returns a `PropertyRow` that provides access to the 'Hue' parameter, and `axuielement`
@@ -482,8 +528,9 @@ function ColorWheels:hueTextField()
 		self._hueTextField = TextField:new(self,
 			function()
 				local ui = self:hueRow():children()
-				return ui and axutils.childWithRole(ui, "AXTextField")
-			end
+				return ui and axutils.childMatching(ui, TextField.matches)
+			end,
+			tonumber
 		)
 	end
 	return self._hueTextField

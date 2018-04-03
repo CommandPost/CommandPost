@@ -33,6 +33,7 @@ local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
@@ -88,27 +89,6 @@ local function resetTouchBar()
             mod._manager.refresh()
         end
     end, i18n("touchBarResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
-end
-
--- renderRows(context) -> none
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * context - Table of data that you want to share with the renderer
---
--- Returns:
---  * HTML content as string
-local function renderRows(context)
-    if not mod._renderRows then
-        local errorMessage
-        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
-        if errorMessage then
-            log.ef(errorMessage)
-            return nil
-        end
-    end
-    return mod._renderRows(context)
 end
 
 -- renderPanel(context) -> none
@@ -560,7 +540,7 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod.virtual.enabled(params.checked) end,
             }
         )
-        :addParagraph(2.1, "<br />", true)
+        :addParagraph(2.1, html.br())
         :addSelect(3,
             {
                 label       = i18n("visibility"),
@@ -581,12 +561,15 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod._tb.virtual.location(params.value) end,
             }
         )
-        :addParagraph(5, [[<span style="display: clear;" class="tbTip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarDragTip") .. "</span>\n\n", true)
+        :addParagraph(5, html.span {style="display: clear;", class="tbTip"} (
+            html.strong (string.upper(i18n("tip")) .. ": ") .. i18n("touchBarDragTip") ) ..
+            "\n\n"
+        )
 
         --------------------------------------------------------------------------------
         -- Customise Touch Bar:
         --------------------------------------------------------------------------------
-        :addParagraph(5.1, [[<div style="clear: both;"></div>]], true)
+        :addParagraph(5.1, html.div {style="clear: both;"} (""))
         :addHeading(6, i18n("customTouchBar"))
         :addCheckbox(7,
             {
@@ -595,8 +578,8 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod.enabled(params.checked) end,
             }
         )
-        :addParagraph(8, [[<span class="tbTip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("touchBarSetupTip") .. "</span>\n\n", true)
-        :addContent(10, generateContent, true)
+        :addParagraph(8, html.span { class="tbTip" } ( html.strong (string.upper(i18n("tip")) .. ": ") .. i18n("touchBarSetupTip") ).. "\n\n")
+        :addContent(10, generateContent, false)
 
     mod._panel:addButton(20,
         {

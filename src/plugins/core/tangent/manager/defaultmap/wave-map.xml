@@ -2,23 +2,23 @@
 <TangentWave fileType="PanelMap" fileVersion="3.0">
     <Panels>
         <Panel type="Wave">
-            <Mode id="0x00010001"> <!-- All Applications -->
+            <Mode id="0x0000000A"> <!-- Global -->
                 <ControlBank id="Standard">
                     <Bank>
                         <Control type="Button" number="25"> <!-- Wave Up Arrow -->
                             <Mapping mode="Std">
-                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="26"> <!-- Wave Down Arrow -->
                             <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
+                                <Key>0x80000009</Key> <!-- Next Mode -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
+                                <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
@@ -27,108 +27,6 @@
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
-                            <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
-                            <Mapping mode="Alt">
-                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
-                            <Mapping mode="Alt">
-                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Encoder">
-                    <Bank>
-                    </Bank>
-                </ControlBank>
-                <ControlBank id="Button">
-                    <Bank>
-                    </Bank>
-                </ControlBank>
-            </Mode>
-            <Mode id="0x00010002"> <!-- FCP: Edit -->
-                <ControlBank id="Standard">
-                    <Bank>
-                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
-                            <Mapping mode="Std">
-                                <Key>0x80000002</Key> <!-- Next Knob Bank -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000003</Key> <!-- Previous Knob Bank -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
-                            <Mapping mode="Std">
-                                <Key>0x80000004</Key> <!-- Next Button Bank -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Button" number="9"> <!-- Wave Alt -->
-                            <Mapping mode="Std">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
-                            <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
-                            <Mapping mode="Std">
-                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="14"> <!-- Wave Trackerball 1 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="16"> <!-- Wave Trackerball 2 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
-                            <Mapping mode="Std">
-                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
-                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -137,78 +35,49 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Wave Knob 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00030016</Key> <!-- Color Board - Exposure - Highlights -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="1"> <!-- Wave Knob 2 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030015</Key> <!-- Color Board - Exposure - Midtones -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="2"> <!-- Wave Knob 3 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030014</Key> <!-- Color Board - Exposure - Shadows -->
-                                <Display>Number</Display>
+                                <Key>0x0AD00001</Key> <!-- Brightness -->
+                                <Display>Percentage</Display>
                                 <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x00030014</Key> <!-- Color Board - Exposure - Shadows -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="4"> <!-- Wave Knob 5 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030015</Key> <!-- Color Board - Exposure - Midtones -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="5"> <!-- Wave Knob 6 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030016</Key> <!-- Color Board - Exposure - Highlights -->
-                                <Display>Number</Display>
-                                <Sensitivity>5</Sensitivity>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="6"> <!-- Wave Knob 7 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030013</Key> <!-- Color Board - Exposure - Master -->
-                                <Display>Number</Display>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="7"> <!-- Wave Knob 8 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030009</Key> <!-- Color Board - Saturation - Master -->
-                                <Display>Number</Display>
-                            </Mapping>
-                        </Control>
-                        <Control type="Encoder" number="8"> <!-- Wave Knob 9 -->
-                            <Mapping mode="Std">
-                                <Key>0x00030018</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Key>0x0AA00001</Key> <!-- Volume -->
                                 <Display>Percentage</Display>
                                 <Sensitivity>5</Sensitivity>
-                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
-                    </Bank>
-                    <Bank>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Button">
                     <Bank>
+                        <Control type="Button" number="15"> <!-- Wave Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00002</Key> <!-- Mute -->
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
                     <Bank>
+                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000004</Key> <!-- Next Button Bank -->
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
@@ -221,58 +90,60 @@
                         </Control>
                         <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030019</Key> <!-- Color Wheel - Shadows - Horizontal -->
+                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030017</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030021</Key> <!-- Color Wheel - Midtones - Horizontal -->
+                                <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030023</Key> <!-- Color Wheel - Highlights - Horizontal -->
+                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="14"> <!-- Wave Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030020</Key> <!-- Color Wheel - Shadows - Vertical -->
+                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030018</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="16"> <!-- Wave Trackerball 2 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030022</Key> <!-- Color Wheel - Midtones - Vertical -->
+                                <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030024</Key> <!-- Color Wheel - Highlights - Vertical -->
+                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="9"> <!-- Wave Dial 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00030026</Key> <!-- Color Wheel - Shadows - Saturation -->
+                                <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030025</Key> <!-- Color Wheel - Master - Saturation -->
+                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="10"> <!-- Wave Dial 2 -->
                             <Mapping mode="Std">
-                                <Key>0x00030027</Key> <!-- Color Wheel - Midtones - Saturation -->
+                                <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="11"> <!-- Wave Dial 3 -->
                             <Mapping mode="Std">
-                                <Key>0x00030028</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -281,26 +152,26 @@
                     <Bank>
                         <Control type="Encoder" number="0"> <!-- Wave Knob 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00030033</Key> <!-- Color Wheel - Temperature -->
+                                <Key>0x00310101</Key> <!-- Color Wheel - Temperature -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Wave Knob 2 -->
                             <Mapping mode="Std">
-                                <Key>0x00030034</Key> <!-- Color Wheel - Tint -->
+                                <Key>0x00310102</Key> <!-- Color Wheel - Tint -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Wave Knob 3 -->
                             <Mapping mode="Std">
-                                <Key>0x00030035</Key> <!-- Color Wheel - Hue -->
+                                <Key>0x00310103</Key> <!-- Color Wheel - Hue -->
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
                             <Mapping mode="Std">
-                                <Key>0x00030036</Key> <!-- Color Wheel - Mix -->
-                                <Display>Number</Display>
+                                <Key>0x00310104</Key> <!-- Color Wheel - Mix -->
+                                <Display>Percentage</Display>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -309,40 +180,61 @@
             <Mode id="0x00010003"> <!-- FCP: Board -->
                 <ControlBank id="Standard">
                     <Bank>
-                        <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
+                        <Control type="Button" number="25"> <!-- Wave Up Arrow -->
                             <Mapping mode="Std">
-                                <Key>0x00030003</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030001</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Key>0x80000005</Key> <!-- Previous Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="26"> <!-- Wave Down Arrow -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000004</Key> <!-- Next Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Wave Alt -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030005</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00030007</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="14"> <!-- Wave Trackerball 1 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030004</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00030002</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="16"> <!-- Wave Trackerball 2 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030006</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00030008</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
                             </Mapping>
                         </Control>
                     </Bank>

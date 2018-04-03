@@ -33,6 +33,7 @@ local image                                     = require("hs.image")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
@@ -85,27 +86,6 @@ local function resetStreamDeck()
         end
     end, i18n("streamDeckResetConfirmation"), i18n("doYouWantToContinue"), i18n("yes"), i18n("no"), "informational")
 
-end
-
--- renderRows(context) -> none
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * context - Table of data that you want to share with the renderer
---
--- Returns:
---  * HTML content as string
-local function renderRows(context)
-    if not mod._renderRows then
-        local errorMessage
-        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
-        if errorMessage then
-            log.ef(errorMessage)
-            return nil
-        end
-    end
-    return mod._renderRows(context)
 end
 
 -- renderPanel(context) -> none
@@ -446,8 +426,8 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addParagraph(8, [[<span class="tip">]] .. "<strong>" .. string.upper(i18n("tip")) .. ": </strong>" .. i18n("streamDeckAppTip") .. "</span>\n\n", true)
-        :addContent(10, generateContent, true)
+        :addParagraph(8, html.span {class="tip"} ( html.strong (string.upper(i18n("tip")) .. ": ") .. html(i18n("streamDeckAppTip"), false) ) .. "\n\n")
+        :addContent(10, generateContent, false)
 
     mod._panel:addButton(20,
         {

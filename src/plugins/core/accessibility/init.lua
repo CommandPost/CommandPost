@@ -104,7 +104,7 @@ function mod.init(setup)
     mod.setup = setup
     mod.panel = setup.panel.new("accessibility", 10)
         :addIcon(tools.iconFallback("/System/Library/PreferencePanes/UniversalAccessPref.prefPane/Contents/Resources/UniversalAccessPref.icns"))
-        :addParagraph(i18n("accessibilityNote"), true)
+        :addParagraph(i18n("accessibilityNote"), false)
         :addButton({
             label       = i18n("enableAccessibility"),
             onclick     = function()
@@ -152,7 +152,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
     return mod.init(deps.setup)
 end
 

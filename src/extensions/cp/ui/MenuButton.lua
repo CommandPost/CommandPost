@@ -18,6 +18,7 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
+local just							= require("cp.just")
 
 --------------------------------------------------------------------------------
 --
@@ -72,7 +73,8 @@ end
 function MenuButton:selectItem(index)
 	local ui = self:UI()
 	if ui then
-		local items = ui:doPress()[1]
+		ui:doPress()
+		local items = just.doUntil(function() return ui[1] end, 3)
 		if items then
 			local item = items[index]
 			if item then
@@ -91,7 +93,8 @@ end
 function MenuButton:selectItemMatching(pattern)
 	local ui = self:UI()
 	if ui then
-		local items = ui:doPress()[1]
+		ui:doPress()
+		local items = just.doUntil(function() return ui[1] end, 3)
 		if items then
 			for _,item in ipairs(items) do
 				local title = item:attributeValue("AXTitle")

@@ -34,6 +34,7 @@ local timer                                     = require("hs.timer")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
+local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
@@ -151,7 +152,7 @@ local function generateContent()
                         groupID: this.value,
                     },
                 }
-                webkit.messageHandlers.]] .. mod._manager.getLabel() .. [[.postMessage(result);
+                webkit.messageHandlers.{{ label }}.postMessage(result);
             } catch(err) {
                 console.log("Error: " + err)
                 alert('An error has occurred. Does the controller exist yet?');
@@ -170,7 +171,7 @@ local function generateContent()
               }
             }
         }
-    ]])
+    ]], {label = mod._manager.getLabel()})
 
 
     local context = {
@@ -829,9 +830,8 @@ function mod.init(deps, env)
                 class       = "refreshMidi",
             }
         )
-        :addParagraph(5, "<br />", true)
-        :addContent(1, [[
-        <style>
+        :addParagraph(5, html.br())
+        :addContent(1, ui.style([[
             .midiColumn {
                 float: left;
                 width: 50%;
@@ -847,10 +847,10 @@ function mod.init(deps, env)
                 display: table;
                 clear: both;
             }
-        </style>
-        <div class="midiRow">
+        ]]))
+        :addContent(1.01, [[<div class="midiRow">
             <div class="midiColumn">
-        ]], true)
+        ]], false)
         --------------------------------------------------------------------------------
         --
         -- MIDI Machine Control:
@@ -902,7 +902,7 @@ function mod.init(deps, env)
         :addContent(1.6, [[
             </div>
             <div class="midiColumn">
-        ]], true)
+        ]], false)
         --------------------------------------------------------------------------------
         --
         -- MIDI TIMECODE (MTC):
@@ -954,7 +954,7 @@ function mod.init(deps, env)
         :addContent(2.5, [[
                 </div>
             </div>
-        ]], true)
+        ]], false)
         --------------------------------------------------------------------------------
         --
         -- MIDI CONTROLS:
@@ -987,8 +987,8 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod._midi.enabled()) .. [[;">]], true)
-        :addContent(10, generateContent, true)
+        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod._midi.enabled()) .. [[;">]], false)
+        :addContent(10, generateContent, false)
         :addButton(12,
             {
                 label       = i18n("applyTopDeviceToAll"),
@@ -1011,7 +1011,7 @@ function mod.init(deps, env)
             }
         )
 
-        :addContent(23, [[</div>]], true)
+        :addContent(23, [[</div>]], false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:

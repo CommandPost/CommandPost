@@ -24,6 +24,8 @@ local dialog                                    = require("hs.dialog")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
+local html                                      = require("cp.web.html")
+local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -135,28 +137,26 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.prefs then
         deps.prefs
-            :addContent(PRIORITY+1, [[
-                <style>
-                    .iMessageEnable {
-                        margin-bottom: 10px !important;
-                    }
-                    .testiMessage {
-                        float:left;
-                        margin-top: 5px;
-                        margin-bottom: 10px;
-                        clear: both;
-                    }
-                    .openMessages {
-                        float:left;
-                        margin-top: 5px;
-                        margin-bottom: 10px;
-                        margin-left:-15px;
-                    }
-                </style>
-                <br />
-                <br />
-                <hr />
-            ]], true)
+            :addContent(PRIORITY+1, ui.style ([[
+                .iMessageEnable {
+                    margin-bottom: 10px !important;
+                }
+                .testiMessage {
+                    float:left;
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                    clear: both;
+                }
+                .openMessages {
+                    float:left;
+                    margin-top: 5px;
+                    margin-bottom: 10px;
+                    margin-left:-15px;
+                }
+                ]]) ..
+                html.br() ..
+                html.br() ..
+                html.hr())
             :addHeading(PRIORITY+2, i18n("iMessageNotifications"))
             :addCheckbox(PRIORITY+3,
                 {
