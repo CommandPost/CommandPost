@@ -77,6 +77,18 @@
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
+                        <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303102</Key> <!-- Color Board - Exposure - Master - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
                         <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
                             <Mapping mode="Std">
                                 <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
@@ -89,6 +101,13 @@
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
+                        <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
                         <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
                             <Mapping mode="Std">
                                 <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
@@ -99,6 +118,13 @@
                             <Mapping mode="Std">
                                 <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                                 <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Ripple Dial 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>

@@ -42,6 +42,12 @@
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
                             </Mapping>
                         </Control>
+                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00002</Key> <!-- Mute -->
+                                <CustomName>Mute</CustomName>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Trackerball">
@@ -69,6 +75,32 @@
                 </ControlBank>
                 <ControlBank id="Button">
                     <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <Argument>0x0000000A</Argument> <!-- Global -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>Board</CustomName>
+                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>Wheels</CustomName>
+                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00002</Key> <!-- Mute -->
+                                <CustomName>Mute</CustomName>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
@@ -92,6 +124,32 @@
                 </ControlBank>
                 <ControlBank id="Button">
                     <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <Argument>0x0000000A</Argument> <!-- Global -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>Board</CustomName>
+                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>Wheels</CustomName>
+                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00002</Key> <!-- Mute -->
+                                <CustomName>Mute</CustomName>
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Trackerball">
