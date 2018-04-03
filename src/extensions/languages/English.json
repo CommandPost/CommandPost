@@ -1,5 +1,7 @@
 {
     "en": {
+    	"core_tangent_commandpost_label"			: "Tangent: CommandPost Group",
+    	"core_tangent_commandpost_favourites_label" : "Tangent: Favourites",
     	"previous"									: "Previous",
     	"next"										: "Next",
     	"midiBank"									: "MIDI Bank",
