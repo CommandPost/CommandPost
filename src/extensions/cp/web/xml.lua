@@ -43,7 +43,7 @@
 
 local block				= require "cp.web.block"
 
-local gsub, format      = string.gsub, string.format
+local gsub              = string.gsub
 
 local XML_ENTITIES = {
     ["&"] = "&amp;",

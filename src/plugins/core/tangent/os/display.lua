@@ -1,4 +1,4 @@
-local log                   = require("hs.logger").new("tg_dsply")
+-- local log                   = require("hs.logger").new("tg_dsply")
 
 local brightness            = require("hs.brightness")
 

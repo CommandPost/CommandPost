@@ -216,7 +216,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.controllerCallback(id, params)
+function mod.controllerCallback(_, params)
     if params and params.action and params.action == "remove" then
         mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
         mod.removeWatcher(params.path)
@@ -749,7 +749,7 @@ end
 ---
 --- Returns:
 ---  * Table of the module.
-function mod.init(deps, env)
+function mod.init(deps)
 
     --------------------------------------------------------------------------------
     -- Ignore Panel if Compressor isn't installed.

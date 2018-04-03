@@ -245,7 +245,7 @@ end
 --
 -- Returns:
 --  * None
-local function updateShortcut(id, params)
+local function updateShortcut(_, params)
 
     --------------------------------------------------------------------------------
     -- Save Selected Group:
@@ -456,27 +456,6 @@ local function keyCodeOptions(shortcut)
         options = options .. ("<option%s>%s</option>"):format(selected, kc)
     end
     return options
-end
-
--- renderRows(context) -> string
--- Function
--- Gets the HTML render of the row
---
--- Parameters:
---  * context - The context of the panel
---
--- Returns:
---  * The rendered HTML as string
-local function renderRows(context)
-    if not mod._renderRows then
-        local errorMessage
-        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
-        if errorMessage then
-            log.ef(errorMessage)
-            return nil
-        end
-    end
-    return mod._renderRows(context)
 end
 
 -- renderPanel(context) -> string
@@ -694,7 +673,7 @@ end
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps)
+function plugin.postInit()
 
     --------------------------------------------------------------------------------
     -- Cache all the default shortcuts:

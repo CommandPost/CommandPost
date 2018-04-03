@@ -255,7 +255,7 @@ end
 --
 -- Returns:
 --  * Table
-local function windowCallback(action, webview, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod.webview = nil
@@ -491,14 +491,14 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(_, env)
     return mod.init(env)
 end
 
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps, env)
+function plugin.postInit()
     mod.onboardingRequired:watch(function(required)
         if required then
 

@@ -62,7 +62,7 @@ end
 --
 -- Returns:
 --  * `true` if successful, otherwise `false`
-local function loadMapping()
+local function loadMapping() --luacheck:ignore
     local mappingFilePath = mod._configPath .. "/mapping.json"
     if not tools.doesFileExist(mappingFilePath) then
         log.ef("Tangent Mapping could not be found.")
@@ -173,7 +173,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps)
+function plugin.init(_)
 
     -- TODO: Figure out what to do with actions.
     -- mod.init(deps.tangentmanager, deps.actionmanager)

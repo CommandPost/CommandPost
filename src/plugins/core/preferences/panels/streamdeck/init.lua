@@ -88,27 +88,6 @@ local function resetStreamDeck()
 
 end
 
--- renderRows(context) -> none
--- Function
--- Generates the Preference Panel HTML Content.
---
--- Parameters:
---  * context - Table of data that you want to share with the renderer
---
--- Returns:
---  * HTML content as string
-local function renderRows(context)
-    if not mod._renderRows then
-        local errorMessage
-        mod._renderRows, errorMessage = mod._env:compileTemplate("html/rows.html")
-        if errorMessage then
-            log.ef(errorMessage)
-            return nil
-        end
-    end
-    return mod._renderRows(context)
-end
-
 -- renderPanel(context) -> none
 -- Function
 -- Generates the Preference Panel HTML Content.

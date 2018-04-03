@@ -8,7 +8,7 @@
 ---
 --- Represents a Tangent Parameter
 
-local log               = require("hs.logger").new("tng_param")
+-- local log               = require("hs.logger").new("tng_param")
 
 local tangent           = require("hs.tangent")
 

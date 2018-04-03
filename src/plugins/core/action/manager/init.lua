@@ -31,7 +31,6 @@ local urlevent					= require("hs.urlevent")
 local dialog					= require("cp.dialog")
 local prop						= require("cp.prop")
 local tools                     = require("cp.tools")
-local choices					= require("cp.choices")
 
 --------------------------------------------------------------------------------
 -- Module Extensions:
@@ -211,12 +210,6 @@ end)
 --- * The action handler, or `nil`
 function mod.getHandler(id)
 	return mod._handlers[id]
-end
-
-function mod.getAllChoices()
-	local c = choices.new()
-	for _,handler in pairs(mod._handlers) do
-	end
 end
 
 --- plugins.core.action.manager.getActivator(id) -> activator

@@ -152,7 +152,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
     return mod.init(deps.setup)
 end
 

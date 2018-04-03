@@ -31,8 +31,8 @@
 --- Returns:
 --- * `self`
 
-local log               = require("hs.logger").new("tg_named")
-local inspect           = require("hs.inspect")
+-- local log               = require("hs.logger").new("tg_named")
+-- local inspect           = require("hs.inspect")
 
 local x                 = require("cp.web.xml")
 
