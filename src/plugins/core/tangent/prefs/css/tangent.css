@@ -1,8 +1,3 @@
-.tangentDropdown {
-	width: 200px;
-	float: left;
-}
-
 .tangent {
 	margin-top: 10px;
 	table-layout: fixed;
@@ -38,20 +33,16 @@
 	width: 290px;
 }
 
-.tangentRowIcon {
-	width: 10%;
+.tangentRowFavourite {
+	width: 15%;
 }
 
 .tangentRowAction {
-	width: 40%;
+	width: 73%;
 }
 
 .tangentRowActionButton {
-	width: 10%;
-}
-
-.tangentRowLabel {
-	width: 35%;
+	width: 12%;
 }
 
 .tangent thead {
@@ -86,23 +77,6 @@
 	color: white;
 }
 
-.resetShortcuts {
-	margin: 10px 0px;
-	text-align: left;
-	float: left;
-}
-
-.resetShortcutsToNone {
-	margin: 10px 0px;
-	text-align: right;
-	float: right;
-}
-
-.buttonDisabled {
-	pointer-events:none;
-	opacity: 0.4;
-}
-
 .tangentControl {
 	padding-top: 0px;
 	padding-bottom: 3pt;
@@ -129,7 +103,7 @@
 	cursor: default;
 	font-family: -apple-system;
 	font-size: 13px;
-	width: 400px;
+	width: 630px;
 }
 
 .tangentActionButton {
@@ -138,69 +112,4 @@
 
 #tangentController {
 	font-weight: bold;
-}
-
-#tangentGroupControls {
-	min-height: 295px;
-}
-
-#tangentGroupControls .tangentGroup {
-	display: none;
-}
-
-#tangentGroupControls .tangentGroup.selected {
-	display: block;
-}
-
-.tangentGroupSelect {
-	float: right;
-}
-
-/* ICON DROP ZONE: */
-
-.dropzone {
-  position: relative;
-  border: 2.5px dotted #FFF;
-  border-radius: 5px;
-  color: white;
-  font: bold 12px/50px arial;
-  height: 50px;
-  margin: 7.5px auto;
-  text-align: center;
-  width: 50px;
-}
-
-.dropzone.hover {
-  border: 2.5px solid #5760e7;
-  color: #5760e7;
-}
-
-.dropzone.dropped {
-  background: #222;
-  border: 2.5px solid #444;
-}
-
-.dropzone div {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.dropzone img {
-  border-radius: 2.5px;
-  vertical-align: middle;
-  max-width: 95%;
-  max-height: 95%;
-}
-
-.dropzone [type="file"] {
-  cursor: pointer;
-  position: absolute;
-  opacity: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
 }
