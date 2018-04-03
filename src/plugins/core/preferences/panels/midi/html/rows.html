@@ -1,5 +1,4 @@
 {%
-	local groupID = group:id()
 	for i=1,maxItems,1 do
 		local buttonID 		= tostring(i)
 		local actionTitle 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["actionTitle"] or i18nNone
