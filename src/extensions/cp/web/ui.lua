@@ -23,11 +23,11 @@ local ui = {}
 ui.__index = ui
 
 local function evaluate(value)
-	if _.isCallable(value) then
-		return value()
-	else
-		return value
-	end
+    if _.isCallable(value) then
+        return value()
+    else
+        return value
+    end
 end
 
 --- cp.web.ui.javascript(script[, context]) -> cp.web.html
@@ -52,10 +52,10 @@ end
 --- Returns:
 ---  * a `cp.web.html` element representing the JavaScript block.
 function ui.javascript(script, context)
-	local t = compile(script, "no-cache", true)
-	return html.script { type = "text/javascript" } (
-		"(function(){\n" .. t(context) .. "\n})();", false
-	)
+    local t = compile(script, "no-cache", true)
+    return html.script { type = "text/javascript" } (
+        "(function(){\n" .. t(context) .. "\n})();", false
+    )
 end
 
 --- cp.web.ui.style(rules[, context]) -> cp.web.html
@@ -77,10 +77,10 @@ end
 --- Returns:
 ---  * a `cp.web.html` element representing the JavaScript block.
 function ui.style(rules, context)
-	local t = compile(rules, "no-cache", true)
-	return html.style { type = "text/css" } (
-		t(context), false
-	)
+    local t = compile(rules, "no-cache", true)
+    return html.style { type = "text/css" } (
+        t(context), false
+    )
 end
 
 --- cp.web.ui.heading(params) -> cp.web.html
@@ -99,12 +99,12 @@ end
 ---  ** `level` 		- The heading level (or function) (1-7). Defaults to 3.
 ---  ** `class`		- The CSS class (or function) for the heading tag.
 function ui.heading(params)
-	-- the level must be a number between 1 and 7.
-	local level = evaluate(params.level) or 3
-	assert(type(level) == "number" and level >= 1 and level <= 7)
-	local tag = "h" .. level
+    -- the level must be a number between 1 and 7.
+    local level = evaluate(params.level) or 3
+    assert(type(level) == "number" and level >= 1 and level <= 7)
+    local tag = "h" .. level
 
-	return html[tag] { class=params.class } (params.text)
+    return html[tag] { class=params.class } (params.text)
 end
 
 --- cp.web.ui.template(params) -> hs.web.html
@@ -123,8 +123,8 @@ end
 ---  ** `context`	- The table containing the context to execute the template in.
 ---  ** `unescaped`	- If true, the template will not be escaped before outputting.
 function ui.template(params)
-	local renderer = compile(params.view)
-	return html(function() return renderer(params.context) end, params.unescaped)
+    local renderer = compile(params.view)
+    return html(function() return renderer(params.context) end, params.unescaped)
 end
 
 --- cp.web.ui.textbox(params) -> hs.web.html
@@ -145,7 +145,7 @@ end
 ---  ** `placeholder`	- Placeholder text.
 ---  ** `value`			- The default value of the textbox.
 function ui.textbox(params)
-	return html.input { type = "text", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder, value = params.value }
+    return html.input { type = "text", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder, value = params.value }
 end
 
 --- cp.web.ui.password(params) -> hs.web.html
@@ -165,7 +165,7 @@ end
 ---  ** `class`			- The CSS classname.
 ---  ** `placeholder`	- Placeholder text
 function ui.password(params)
-	return html.input { type = "password", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
+    return html.input { type = "password", id = params.id, name = params.name, class = params.class, placeholder = params.placeholder }
 end
 
 --- cp.web.ui.checkbox(params) -> cp.web.html
@@ -188,21 +188,21 @@ end
 ---  ** `class`		- (optional) the CSS class list.
 function ui.checkbox(params)
 
-	if params then
-		local checked = function() return evaluate(params.checked) and "checked" or nil end
-		local disabled = function() return evaluate(params.disabled) and "disabled" or nil end
-		return html.input {
-			type = "checkbox",
-			name = params.name,
-			id = params.id,
-			value = params.value,
-			checked,
-			class = params.class,
-			disabled,
-		}
-	else
-		return ""
-	end
+    if params then
+        local checked = function() return evaluate(params.checked) and "checked" or nil end
+        local disabled = function() return evaluate(params.disabled) and "disabled" or nil end
+        return html.input {
+            type = "checkbox",
+            name = params.name,
+            id = params.id,
+            value = params.value,
+            checked,
+            class = params.class,
+            disabled,
+        }
+    else
+        return ""
+    end
 
 end
 
@@ -222,26 +222,26 @@ end
 ---  ** `label`		- The text label for the button. Defaults to the `value` if not provided.
 ---  ** `width`		- The width of the button in pixels.
 function ui.button(params)
-	params.label = params.label or params.value
+    params.label = params.label or params.value
 
-	local style = nil
-	if params.width then
-		style = "width: " .. params.width .. "px;"
-	end
-	local class = "button"
-	if params.class then
-		class = class .. " " .. params.class
-	end
+    local style = nil
+    if params.width then
+        style = "width: " .. params.width .. "px;"
+    end
+    local class = "button"
+    if params.class then
+        class = class .. " " .. params.class
+    end
 
-	local result = html.a {
-		id=params.id,
-		style=style,
-		class=class,
-		href="#",
-		value=params.value
-	} (params.label)
+    local result = html.a {
+        id=params.id,
+        style=style,
+        class=class,
+        href="#",
+        value=params.value
+    } (params.label)
 
-	return result
+    return result
 end
 
 --- cp.web.ui.select(params) -> cp.web.html
@@ -265,55 +265,55 @@ end
 ---  ** `required`	- (optional) if `true`, there will not be a 'blank' option at the top of the list.
 ---  ** `blankLabel`	- (optional) if specified, the value will be used for the 'blank' option label.
 function ui.select(params)
-	-- This will update the available/checked options every time the select is output.
-	local optionGenerator = function()
-		local options = ""
-		local value = evaluate(params.value)
+    -- This will update the available/checked options every time the select is output.
+    local optionGenerator = function()
+        local options = ""
+        local value = evaluate(params.value)
 
-		if not params.required then
-			options = options .. html.option { value = "" } (evaluate(params.blankLabel) or "")
-		end
+        if not params.required then
+            options = options .. html.option { value = "" } (evaluate(params.blankLabel) or "")
+        end
 
-		local opts = evaluate(params.options)
-		if opts then
-			for _,opt in ipairs(opts) do
-				local optValue = evaluate(opt.value)
-				local label = evaluate(opt.label) or optValue
-				local selected = optValue == value and "selected" or nil
-				options = options .. html.option { value = optValue, selected } (label)
-			end
-		end
-		return options
-	end
+        local opts = evaluate(params.options)
+        if opts then
+            for _,opt in ipairs(opts) do
+                local optValue = evaluate(opt.value)
+                local label = evaluate(opt.label) or optValue
+                local selected = optValue == value and "selected" or nil
+                options = options .. html.option { value = optValue, selected } (label)
+            end
+        end
+        return options
+    end
 
-	local style
-	if params.width then
-		style = "width: " .. params.width .. "px;"
-	end
+    local style
+    if params.width then
+        style = "width: " .. params.width .. "px;"
+    end
 
-	-- create the
-	return html.select {
-		id 		= params.id,
-		style   = style,
-		name	= params.name or params.id,
-		class	= params.class,
-	} (optionGenerator, false)
+    -- create the
+    return html.select {
+        id 		= params.id,
+        style   = style,
+        name	= params.name or params.id,
+        class	= params.class,
+    } (optionGenerator, false)
 end
 
 -- Reads the file at the specified path as binary and returns it as a BASE64 stream of text.
 local function imageToBase64(pathToImage)
 
-	if not tools.doesFileExist(pathToImage) then
-		log.ef("imageToBase64 failed - could not find file: %s", pathToImage)
-		return ""
-	end
+    if not tools.doesFileExist(pathToImage) then
+        log.ef("imageToBase64 failed - could not find file: %s", pathToImage)
+        return ""
+    end
 
-	local tempImage = image.imageFromPath(pathToImage)
-	if tempImage then
-		return tempImage:encodeAsURLString(false, "PNG")
-	end
+    local tempImage = image.imageFromPath(pathToImage)
+    if tempImage then
+        return tempImage:encodeAsURLString(false, "PNG")
+    end
 
-	return ""
+    return ""
 
 end
 
@@ -334,14 +334,14 @@ end
 ---  ** `width`		- The width of the image.
 ---  ** `height`	- The height of the image.
 function ui.img(params)
-	-- if the src is a local file path, load it as BASE64:
-	assert(params.src ~= nil, "`ui.image` requires `params.src` to have a value.")
-	local srcFile = fs.pathToAbsolute(params.src)
-	if srcFile then
-		params.src = imageToBase64(srcFile)
-	end
+    -- if the src is a local file path, load it as BASE64:
+    assert(params.src ~= nil, "`ui.image` requires `params.src` to have a value.")
+    local srcFile = fs.pathToAbsolute(params.src)
+    if srcFile then
+        params.src = imageToBase64(srcFile)
+    end
 
-	return html.img(params)
+    return html.img(params)
 end
 
 return ui

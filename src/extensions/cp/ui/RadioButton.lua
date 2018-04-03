@@ -50,10 +50,10 @@ local RadioButton = {}
 --- Returns:
 --- * `true` if it's a match, or `false` if not.
 function RadioButton.matches(element)
-	return element:attributeValue("AXRole") == "AXRadioButton"
+    return element:attributeValue("AXRole") == "AXRadioButton"
 end
 
---- cp.ui.RadioButton:new(axuielement, function) -> RadioButton
+--- cp.ui.RadioButton.new(axuielement, function) -> RadioButton
 --- Method
 --- Creates a new RadioButton.
 ---
@@ -63,8 +63,8 @@ end
 ---
 --- Returns:
 --- * The new `RadioButton`.
-function RadioButton:new(parent, finderFn)
-	return prop.extend({_parent = parent, _finder = finderFn}, RadioButton)
+function RadioButton.new(parent, finderFn)
+    return prop.extend({_parent = parent, _finder = finderFn}, RadioButton)
 end
 
 --- cp.ui.RadioButton:parent() -> table
@@ -77,7 +77,7 @@ end
 --- Returns:
 --- * The parent object.
 function RadioButton:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.ui.RadioButton:app() -> table
@@ -90,14 +90,14 @@ end
 --- Returns:
 --- * The application object.
 function RadioButton:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --- cp.ui.RadioButton.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- If `true`, it is visible on screen.
 RadioButton.isShowing = prop(function(self)
-	return self:UI() ~= nil and self:parent():isShowing()
+    return self:UI() ~= nil and self:parent():isShowing()
 end):bind(RadioButton)
 
 --- cp.ui.RadioButton:UI() -> hs._asm.axuielement | nil
@@ -110,10 +110,10 @@ end):bind(RadioButton)
 --- Return:
 --- * The `axuielement` or `nil`.
 function RadioButton:UI()
-	return axutils.cache(self, "_ui", function()
-		return self._finder()
-	end,
-	RadioButton.matches)
+    return axutils.cache(self, "_ui", function()
+        return self._finder()
+    end,
+    RadioButton.matches)
 end
 
 --- cp.ui.RadioButton.checked <cp.prop: boolean>
@@ -121,16 +121,16 @@ end
 --- Indicates if the checkbox is currently checked.
 --- May be set by calling as a function with `true` or `false` to the function.
 RadioButton.checked = prop(
-	function(self) -- get
-		local ui = self:UI()
-		return ui and ui:value() == 1
-	end,
-	function(value, self) -- set
-		local ui = self:UI()
-		if ui and value ~= (ui:value() == 1) then
-			ui:doPress()
-		end
-	end
+    function(self) -- get
+        local ui = self:UI()
+        return ui and ui:value() == 1
+    end,
+    function(value, self) -- set
+        local ui = self:UI()
+        if ui and value ~= (ui:value() == 1) then
+            ui:doPress()
+        end
+    end
 ):bind(RadioButton)
 
 --- cp.ui.RadioButton:toggle() -> self
@@ -143,8 +143,8 @@ RadioButton.checked = prop(
 --- Returns:
 --- * The `RadioButton` instance.
 function RadioButton:toggle()
-	self.checked:toggle()
-	return self
+    self.checked:toggle()
+    return self
 end
 
 --- cp.ui.RadioButton:isEnabled() -> boolean
@@ -157,8 +157,8 @@ end
 --- Returns:
 --- `true` or `false`.
 function RadioButton:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 --- cp.ui.RadioButton:press() -> self
@@ -171,33 +171,51 @@ end
 --- Returns:
 --- The `RadioButton` instance.
 function RadioButton:press()
-	local ui = self:UI()
-	if ui then
-		ui:doPress()
-	end
-	return self
+    local ui = self:UI()
+    if ui then
+        ui:doPress()
+    end
+    return self
 end
 
 -- TODO: Add documentation
 function RadioButton:saveLayout()
-	return {
-		checked = self:checked()
-	}
+    return {
+        checked = self:checked()
+    }
 end
 
 -- TODO: Add documentation
 function RadioButton:loadLayout(layout)
-	if layout then
-		self:checked(layout.checked)
-	end
+    if layout then
+        self:checked(layout.checked)
+    end
 end
 
 -- Allows the RadioButton to be called as a function and will return the `checked` value.
 function RadioButton.__call(self, parent, value)
-	if parent and parent ~= self:parent() then
-		value = parent
-	end
-	return self:checked(value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:checked(value)
+end
+
+--- cp.ui.RadioButton:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function RadioButton:snapshot(path)
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return RadioButton

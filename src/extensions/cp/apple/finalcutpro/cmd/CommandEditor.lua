@@ -180,7 +180,7 @@ end
 ---  * The `axuielementObject` of the Save Button or nil.
 function CommandEditor:saveButton()
     if not self._saveButton then
-        self._saveButton = Button:new(self, function()
+        self._saveButton = Button.new(self, function()
             return axutils.childWithID(self:UI(), id "SaveButton")
         end)
     end

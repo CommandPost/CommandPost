@@ -38,22 +38,23 @@
 ---
 --- This module provides support for loading, manipulating, and comparing unicode text data.
 
-local log					= require("hs.logger").new("text")
+-- local log					= require("hs.logger").new("text")
 
-local utf16LE				= require("cp.utf16.le")
-local utf16BE				= require("cp.utf16.be")
-local protect				= require("cp.protect")
+local utf16LE							= require("cp.utf16.le")
+local utf16BE							= require("cp.utf16.be")
+local protect							= require("cp.protect")
 
-local utf8char, utf8codepoint, utf8codes, utf8len, utf8offset = utf8.char, utf8.codepoint, utf8.codes, utf8.len, utf8.offset
-local utf16LEchar, utf16LEcodepoint, utf16LEcodes, utf16LElen, utf16LEoffset = utf16LE.char, utf16LE.codepoint, utf16LE.codes, utf16LE.len, utf16LE.offset
-local utf16BEchar, utf16BEcodepoint, utf16BEcodes, utf16BElen, utf16BEoffset = utf16BE.char, utf16BE.codepoint, utf16BE.codes, utf16BE.len, utf16BE.offset
-local unpack				= table.unpack
-local floor					= math.floor
+local utf8char, utf8codepoint 			= utf8.char, utf8.codepoint
+local utf16LEchar, utf16LEcodepoint 	= utf16LE.char, utf16LE.codepoint
+local utf16BEchar, utf16BEcodepoint 	= utf16BE.char, utf16BE.codepoint
+local unpack, pack						= table.unpack, table.pack
+local floor								= math.floor
 
 -- Loads the 'cp.text.matcher' module on demand, to avoid a dependency loop.
-local matcher				= function(...)
-	matcher = require("cp.text.matcher")
-	return matcher(...)
+local matcher
+matcher = function(...)
+    matcher = require("cp.text.matcher")
+    return matcher(...)
 end
 
 local text = {}
@@ -68,40 +69,40 @@ text.mt.__index = text.mt
 ---  * `utf16le`	- UTF-16 (little-endian). Commonly used in Windows and Mac text files.
 ---  * `utf16be`	- UTF-16 (big-endian). Alternate 16-bit format, common on Linux and PowerPC-based architectures.
 text.encoding = protect {
-	utf8	= "utf8",
-	utf16le	= "utf16le",
-	utf16be	= "utf16be",
+    utf8	= "utf8",
+    utf16le	= "utf16le",
+    utf16be	= "utf16be",
 }
 
 local decoders = {
-	utf8	= utf8codepoint,
-	utf16le	= utf16LEcodepoint,
-	utf16be	= utf16BEcodepoint,
+    utf8	= utf8codepoint,
+    utf16le	= utf16LEcodepoint,
+    utf16be	= utf16BEcodepoint,
 }
 
 local encoders = {
-	utf8	= utf8char,
-	utf16le	= utf16LEchar,
-	utf16be	= utf16BEchar,
+    utf8	= utf8char,
+    utf16le	= utf16LEchar,
+    utf16be	= utf16BEchar,
 }
 
 local BOM = 0xFEFF
 local boms = {
-	utf8	= string.char(239, 187, 191),
-	utf16le	= string.char(255, 254),
-	utf16be = string.char(254, 255),
+    utf8	= string.char(239, 187, 191),
+    utf16le	= string.char(255, 254),
+    utf16be = string.char(254, 255),
 }
 
 local function startsWith(self, otherString)
-	local len = otherString:len()
+    local len = otherString:len()
 
-	if self:len() >= len then
-		for i = 1,len do
-			if self:byte(i) ~= otherString:byte(i) then return false end
-		end
-		return true
-	end
-	return false
+    if self:len() >= len then
+        for i = 1,len do
+            if self:byte(i) ~= otherString:byte(i) then return false end
+        end
+        return true
+    end
+    return false
 end
 
 local function isint(n)
@@ -109,19 +110,20 @@ local function isint(n)
 end
 
 local function constrain(value, min, max)
-	if value < min then return min end
-	if value > max then return max end
-	return value
+    if value < min then return min end
+    if value > max then return max end
+    return value
 end
 
+local codesKey = "codes"
 -- gets the 'codes' value for a text value
-local function getCodes(text)
-	return rawget(text, "codes")
+local function getCodes(txt)
+    return rawget(txt, codesKey)
 end
 
 -- sets the 'codes' value for a text value.
-local function setCodes(text, value)
-	rawset(text, "codes", value)
+local function setCodes(txt, value)
+    rawset(txt, codesKey, value)
 end
 
 --- cp.text.fromString(value[, encoding]) -> text
@@ -139,25 +141,25 @@ end
 --- Notes:
 ---  * Calling `text(value)` is the same as calling `text.fromString(value, text.encoding.utf8)`, so simple text can be initialized via `local x = text "foo"` when the `.lua` file's encoding is UTF-8.
 function text.fromString(value, encoding)
-	local start = 1
-	value = tostring(value)
-	if not encoding then
-		-- first, check if there are any BOMs
-		for enc,bom in pairs(boms) do
-			if startsWith(value, bom) then
-				encoding = enc
-				start = start + bom:len()
-				break
-			end
-		end
-		encoding = encoding or text.encoding.utf8
-	end
+    local start = 1
+    value = tostring(value)
+    if not encoding then
+        -- first, check if there are any BOMs
+        for enc,bom in pairs(boms) do
+            if startsWith(value, bom) then
+                encoding = enc
+                start = start + bom:len()
+                break
+            end
+        end
+        encoding = encoding or text.encoding.utf8
+    end
 
-	local decoder = decoders[encoding]
-	if not decoder then
-		error(string.format("unsupported encoding: %s", encoding))
-	end
-	return text.fromCodepoints({decoder(value, start, -1)})
+    local decoder = decoders[encoding]
+    if not decoder then
+        error(string.format("unsupported encoding: %s", encoding))
+    end
+    return text.fromCodepoints({decoder(value, start, -1)})
 end
 
 --- cp.text.fromCodepoints(codepoints[, i[, j]]) -> text
@@ -177,48 +179,48 @@ end
 ---  * You can use a *negative* value for `i` and `j`. If so, it will count back from then end of the `codepoints` array.
 ---  * If the codepoint array begins with a Byte-Order Marker (BOM), the BOM is skipped in the resulting text.
 function text.fromCodepoints(codepoints, i, j)
-	local result = {}
-	local len = #codepoints
+    local result = {}
+    local len = #codepoints
 
-	if len > 0 then
-		i = i or 1
-		j = j or -1
-		if type(i) ~= "number" then
-			error("bad argument #2 (integer expected, got "..type(i)..")")
-		end
-		if type(j) ~= "number" then
-			error("bad argument #3 (integer expected, got "..type(i)..")")
-		end
-		if not isint(i) then
-			error(string.format("bad argument #2 (number has no integer representation: %s)", i))
-		end
-		if not isint(j) then
-			error(string.format("bad argument #3 (number has no integer representation: %s)", j))
-		end
+    if len > 0 then
+        i = i or 1
+        j = j or -1
+        if type(i) ~= "number" then
+            error("bad argument #2 (integer expected, got "..type(i)..")")
+        end
+        if type(j) ~= "number" then
+            error("bad argument #3 (integer expected, got "..type(i)..")")
+        end
+        if not isint(i) then
+            error(string.format("bad argument #2 (number has no integer representation: %s)", i))
+        end
+        if not isint(j) then
+            error(string.format("bad argument #3 (number has no integer representation: %s)", j))
+        end
 
-		if i < 0 then i = len + 1 + i end
-		if j < 0 then j = len + 1 + j end
+        if i < 0 then i = len + 1 + i end
+        if j < 0 then j = len + 1 + j end
 
-		i = constrain(i, 1, len+1)
-		j = constrain(j, 0, len)
+        i = constrain(i, 1, len+1)
+        j = constrain(j, 0, len)
 
-		if codepoints[i] == BOM then
-			i = i+1
-		end
+        if codepoints[i] == BOM then
+            i = i+1
+        end
 
-		for x = i,j do
-			local cp = codepoints[x]
-			if type(cp) ~= "number" then
-				error("bad argument #1 for 'fromCodepoints (integer expected, got "..type(cp).." for codepoint #"..x..")")
-			end
-			result[x-i+1] = cp
-		end
-	end
+        for x = i,j do
+            local cp = codepoints[x]
+            if type(cp) ~= "number" then
+                error("bad argument #1 for 'fromCodepoints (integer expected, got "..type(cp).." for codepoint #"..x..")")
+            end
+            result[x-i+1] = cp
+        end
+    end
 
-	local o = {}
-	setmetatable(o, text.mt)
-	setCodes(o, result)
-	return o
+    local o = {}
+    setmetatable(o, text.mt)
+    setCodes(o, result)
+    return o
 end
 
 --- cp.text.fromFile(path[, encoding]) -> text
@@ -233,14 +235,14 @@ end
 --- Returns:
 ---  * A new `text` instance.
 function text.fromFile(path, encoding)
-	local file = io.open(path, "r") 		-- r read mode
+    local file = io.open(path, "r") 		-- r read mode
     if not file then
-		error(string.format("Unable to open '%s'", path))
-	end
+        error(string.format("Unable to open '%s'", path))
+    end
     local content = file:read "*a" 					-- *a or *all reads the whole file
     file:close()
 
-	return text.fromString(content, encoding)
+    return text.fromString(content, encoding)
 end
 
 --- cp.text.char(...) -> text
@@ -253,7 +255,7 @@ end
 --- Returns:
 ---  * The `cp.text` value for the list of codepoint values.
 function text.char(...)
-	return text.fromCodepoints(pack(...))
+    return text.fromCodepoints(pack(...))
 end
 
 --- cp.text.is(value) -> boolean
@@ -266,7 +268,7 @@ end
 --- Returns:
 ---  * `true` if the value is a `text` instance.
 function text.is(value)
-	return value and getmetatable(value) == text.mt
+    return value and getmetatable(value) == text.mt
 end
 
 --- cp.text:sub(i [, j]) -> cp.text
@@ -275,8 +277,8 @@ end
 --- If `j` is absent, then it is assumed to be equal to `-1` (which is the same as the string length).
 --- In particular, the call `cp.text:sub(1,j)` returns a prefix of `s` with length `j`, and `cp.text:sub(-i)` (for a positive `i`) returns a suffix of s with length i.
 function text.mt:sub(i, j)
-	j = j or -1
-	return text.fromCodepoints(getCodes(self), i, j)
+    j = j or -1
+    return text.fromCodepoints(getCodes(self), i, j)
 end
 
 --- cp.text:find(pattern [, init [, plain]])
@@ -293,7 +295,7 @@ end
 --- Returns:
 ---  * the start index, the end index, followed by any captures
 function text.mt:find(pattern, init, plain)
-	return matcher(pattern):find(self, init, plain)
+    return matcher(pattern):find(self, init, plain)
 end
 
 --- cp.text:match(pattern[, start]) -> ...
@@ -307,7 +309,7 @@ end
 --- Returns:
 ---  * The capture results, the whole match, or `nil`.
 function text.mt:match(pattern, start)
-	return matcher(pattern):match(self, start)
+    return matcher(pattern):match(self, start)
 end
 
 --- cp.text.matcher:gmatch(pattern[, start]) -> function
@@ -320,7 +322,7 @@ end
 --- Returns:
 ---  * The iterator function.
 function text.mt:gmatch(pattern, all)
-	return matcher(pattern):gmatch(self, all)
+    return matcher(pattern):gmatch(self, all)
 end
 
 --- cp.text.matcher:gsub(value, repl, limit) -> text, number
@@ -342,28 +344,28 @@ end
 ---  * If `repl` is a function, then this function is called every time a match occurs, with all captured substrings passed as arguments, in order; if the pattern specifies no captures, then the whole match is passed as a sole argument.
 ---  * If the value returned by the table query or by the function call is a string or a number, then it is used as the replacement string; otherwise, if it is `false` or `nil`, then there is no replacement (that is, the original match is kept in the string).
 function text.mt:gsub(pattern, repl, limit)
-	return matcher(pattern):gsub(self, repl, limit)
+    return matcher(pattern):gsub(self, repl, limit)
 end
 
 -- provides access to the internal codes array
 function text.mt:__index(key)
-	if type(key) == "number" then
-		local codes = getCodes(self)
-		return codes[key]
-	elseif key ~= codesKey then
-		return rawget(text.mt, key)
-	end
-	return nil
+    if type(key) == "number" then
+        local codes = getCodes(self)
+        return codes[key]
+    elseif key ~= codesKey then
+        return rawget(text.mt, key)
+    end
+    return nil
 end
 
 -- prevents codes getting updated directly.
-function text.mt:__newindex(k, v)
-	error("read-only text value", 2)
+function text.mt.__newindex(_, _)
+    error("read-only text value", 2)
 end
 
 function text.mt:__len()
-	local codes = getCodes(self)
-	return #codes
+    local codes = getCodes(self)
+    return #codes
 end
 
 --- cp.text:len() -> number
@@ -379,7 +381,7 @@ text.mt.len = text.mt.__len
 
 -- concatenates the left and right values into a single text value.
 function text.mt.__concat(left, right)
-	return text.fromString(tostring(left) .. tostring(right), text.encoding.utf8)
+    return text.fromString(tostring(left) .. tostring(right), text.encoding.utf8)
 end
 
 --- cp.text:encode([encoding]) -> string
@@ -392,12 +394,12 @@ end
 -- Returns:
 --  * The `string` version of the `cp.text` value with the specified encoding..
 function text.mt:encode(encoding)
-	encoding = encoding or text.encoding.utf8
-	local encoder = encoders[encoding]
-	if not encoder then
-		error(string.format("Unsupported encoding: %s", encoding))
-	end
-	return encoder(unpack(self))
+    encoding = encoding or text.encoding.utf8
+    local encoder = encoders[encoding]
+    if not encoder then
+        error(string.format("Unsupported encoding: %s", encoding))
+    end
+    return encoder(unpack(self))
 end
 
 -- cp.text:__tostring() -> string
@@ -410,7 +412,7 @@ end
 -- Returns:
 --  * The `string` version of the `cp.text` value.
 function text.mt:__tostring()
-	return self:encode(text.encoding.utf8)
+    return self:encode(text.encoding.utf8)
 end
 
 -- cp.text:__eq(other) -> boolean
@@ -423,23 +425,23 @@ end
 -- Returns:
 --  * `true` if `other` is a `cp.text` and all codepoints are present in the same order.
 function text.mt:__eq(other)
-	if text.is(other) then
-		local localCodes, otherCodes = getCodes(self), getCodes(other)
-		local len = #localCodes
-		if len == #otherCodes then
-			for i = 1,len do
-				if localCodes[i] ~= otherCodes[i] then
-					return false
-				end
-			end
-			return true
-		end
-	end
-	return false
+    if text.is(other) then
+        local localCodes, otherCodes = getCodes(self), getCodes(other)
+        local len = #localCodes
+        if len == #otherCodes then
+            for i = 1,len do
+                if localCodes[i] ~= otherCodes[i] then
+                    return false
+                end
+            end
+            return true
+        end
+    end
+    return false
 end
 
 function text.__call(_, ...)
-	return text.fromString(..., text.encoding.utf8)
+    return text.fromString(..., text.encoding.utf8)
 end
 
 return setmetatable(text, text)

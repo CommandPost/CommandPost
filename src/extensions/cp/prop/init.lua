@@ -315,6 +315,15 @@ local function prepareValue(value, tableCopy, skipMetatable)
     return result
 end
 
+local function monitorProps(watcher, ...)
+    -- loop through the other props
+    for _, p in ipairs(table.pack(...)) do
+        if prop.is(p) then
+            watcher:monitor(p)
+        end
+    end
+end
+
 -- private export for testing.
 prop._prepareValue = prepareValue
 
@@ -782,28 +791,31 @@ function prop.mt:_monitored(hasWatchers)
     return monitored
 end
 
---- cp.prop:monitor(otherProp) -> cp.prop
+--- cp.prop:monitor(...) -> cp.prop
 --- Method
 --- Adds an uncloned watch to the `otherProp` which will trigger an [update](#update) check in this property.
 ---
 --- Parameters:
----  * `otherProp`  - the property to monitor
+---  * `...`  - a list of other `cp.prop` values to monitor.
 ---
 --- Returns:
 ---  * `cp.prop`    - This prop value.
-function prop.mt:monitor(otherProp)
-    if not prop.is(otherProp) then
-        error("Please provide a cp.prop to monitor.")
-    end
+function prop.mt:monitor(...)
+    for i = 1,select("#", ...) do
+        local otherProp = select(i, ...)
+        if not prop.is(otherProp) then
+            error("Item "..i.." is not a `cp.prop` instance: "..type(otherProp))
+        end
 
-    local hasWatchers = self:hasWatchers()
-    local monitored = self:_monitored(hasWatchers)
+        local hasWatchers = self:hasWatchers()
+        local monitored = self:_monitored(hasWatchers)
 
-    if not monitored[otherProp:id()] then
-        -- log it as being monitored
-        monitored[otherProp:id()] = otherProp
-        if hasWatchers then
-            _monitorOther(self, otherProp)
+        if not monitored[otherProp:id()] then
+            -- log it as being monitored
+            monitored[otherProp:id()] = otherProp
+            if hasWatchers then
+                _monitorOther(self, otherProp)
+            end
         end
     end
 
@@ -872,16 +884,6 @@ local function evaluate(something)
         return something()
     else
         return something
-    end
-end
-
-local function watchProps(watcher, ...)
-    local watcherFn = function() watcher:update() end
-    -- loop through the other props
-    for _, p in ipairs(table.pack(...)) do
-        if prop.is(p) then
-            p:watch(watcherFn)
-        end
     end
 end
 
@@ -1037,7 +1039,7 @@ function prop.mt:IS(something)
     end)
 
     -- add watchers
-    watchProps(result, left, something)
+    monitorProps(result, left, something)
 
     return result
 end
@@ -1070,8 +1072,8 @@ function prop.mt:ISNOT(something)
         return evaluate(left) ~= evaluate(something)
     end)
 
-    -- add watchers
-    watchProps(result, left, something)
+    -- monitor the originals
+    monitorProps(result, left, something)
 
     return result
 end
@@ -1105,7 +1107,7 @@ function prop.mt:BELOW(something)
     end)
 
     -- add watchers
-    watchProps(result, left, something)
+    monitorProps(result, left, something)
 
     return result
 end
@@ -1128,7 +1130,7 @@ function prop.mt:ABOVE(something)
     end)
 
     -- add watchers
-    watchProps(result, left, something)
+    monitorProps(result, left, something)
 
     return result
 end
@@ -1151,7 +1153,7 @@ function prop.mt:ATMOST(something)
     end)
 
     -- add watchers
-    watchProps(result, left, something)
+    monitorProps(result, left, something)
 
     return result
 end
@@ -1174,7 +1176,7 @@ function prop.mt:ATLEAST(something)
     end)
 
     -- add watchers
-    watchProps(result, left, something)
+    monitorProps(result, left, something)
 
     return result
 end

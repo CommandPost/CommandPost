@@ -26,12 +26,12 @@ local builder = {}
 --- Returns:
 --- * The new choice builder.
 function builder.new(choice)
-	local o = {
-		_choice 		= choice,
-	}
-	setmetatable(o, builder)
-	builder.__index = builder
-	return o
+    local o = {
+        _choice 		= choice,
+    }
+    setmetatable(o, builder)
+    builder.__index = builder
+    return o
 end
 
 --- cp.choices.builder:text(value) -> builder
@@ -44,8 +44,8 @@ end
 --- Returns:
 --- * The choice builder, added to the choices set.
 function builder:text(value)
-	self._choice.text = value
-	return self
+    self._choice.text = value
+    return self
 end
 
 --- cp.choices.builder:subText(value) -> builder
@@ -58,8 +58,8 @@ end
 --- Returns:
 --- * The choice builder.
 function builder:subText(value)
-	self._choice.subText = value
-	return self
+    self._choice.subText = value
+    return self
 end
 
 --- cp.choices.builder:id(value) -> builder
@@ -72,8 +72,8 @@ end
 --- Returns:
 --- * The choice builder.
 function builder:id(value)
-	self._choice.id = value
-	return self
+    self._choice.id = value
+    return self
 end
 
 --- cp.choices.builder:params(value) -> builder
@@ -87,8 +87,8 @@ end
 --- Returns:
 --- * The choice builder, added to the choices set.
 function builder:params(value)
-	self._choice.params = value
-	return self
+    self._choice.params = value
+    return self
 end
 
 --- === cp.choices ===
@@ -115,16 +115,16 @@ mod.builder = builder
 --- Returns:
 --- * The new `choices` instance.
 function mod.new(type)
-	if type == nil then
-		error(string.format("cp.choice instances require a type, but was provided `nil`."))
-	end
-	local o = {
-		_type 		= type,
-		_choices	= {},
-	}
-	setmetatable(o, mod)
-	mod.__index = mod
-	return o
+    if type == nil then
+        error(string.format("cp.choice instances require a type, but was provided `nil`."))
+    end
+    local o = {
+        _type 		= type,
+        _choices	= {},
+    }
+    setmetatable(o, mod)
+    mod.__index = mod
+    return o
 end
 
 --- cp.choices:new(choiceType) -> choices.builder
@@ -147,12 +147,12 @@ end
 --- Returns:
 ---  * The choice builder, added to the choices set.
 function mod:add(text)
-	local choice = {
-		type	= self._type
-	}
-	local bldr = builder.new(choice):text(text)
-	self._choices[#self._choices + 1] = choice
-	return bldr
+    local choice = {
+        type	= self._type
+    }
+    local bldr = builder.new(choice):text(text)
+    self._choices[#self._choices + 1] = choice
+    return bldr
 end
 
 --- cp.choices:getChoices() -> array of choices
@@ -165,7 +165,7 @@ end
 --- Returns:
 ---  * The array of choices.
 function mod:getChoices()
-	return self._choices
+    return self._choices
 end
 
 return mod

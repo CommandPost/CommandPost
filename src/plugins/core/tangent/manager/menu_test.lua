@@ -13,7 +13,7 @@ return test.suite("menu"):with {
         ok(eq(o.id, 0x01))
     end),
 
-	test("names", function()
+    test("names", function()
         local o = menu.new(0x02)
 
         ok(eq(o:name("Foobar"), o))

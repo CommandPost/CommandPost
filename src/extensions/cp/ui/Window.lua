@@ -256,4 +256,22 @@ function Window:focus()
     return hsWindow ~= nil and hsWindow:focus()
 end
 
+--- cp.ui.Window:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function Window:snapshot(path)
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
+end
+
 return Window

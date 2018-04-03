@@ -31,23 +31,23 @@ local TimelineAppearance = {}
 
 -- TODO: Add documentation
 function TimelineAppearance.matches(element)
-	return element and element:attributeValue("AXRole") == "AXPopover"
+    return element and element:attributeValue("AXRole") == "AXPopover"
 end
 
 -- TODO: Add documentation
-function TimelineAppearance:new(parent)
-	local o = {_parent = parent}
-	return prop.extend(o, TimelineAppearance)
+function TimelineAppearance.new(parent)
+    local o = prop.extend({_parent = parent}, TimelineAppearance)
+    return o
 end
 
 -- TODO: Add documentation
 function TimelineAppearance:parent()
-	return self._parent
+    return self._parent
 end
 
 -- TODO: Add documentation
 function TimelineAppearance:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 -----------------------------------------------------------------------
@@ -58,50 +58,50 @@ end
 
 -- TODO: Add documentation
 function TimelineAppearance:toggleUI()
-	return axutils.cache(self, "_toggleUI", function()
-		return axutils.childWithID(self:parent():UI(), id "Toggle")
-	end)
+    return axutils.cache(self, "_toggleUI", function()
+        return axutils.childWithID(self:parent():UI(), id "Toggle")
+    end)
 end
 
 -- TODO: Add documentation
 function TimelineAppearance:toggle()
-	if not self._toggle then
-		self._toggle = CheckBox:new(self:parent(), function()
-			return self:toggleUI()
-		end)
-	end
-	return self._toggle
+    if not self._toggle then
+        self._toggle = CheckBox.new(self:parent(), function()
+            return self:toggleUI()
+        end)
+    end
+    return self._toggle
 end
 
 -- TODO: Add documentation
 function TimelineAppearance:UI()
-	return axutils.cache(self, "_ui", function()
-		return axutils.childMatching(self:toggleUI(), TimelineAppearance.matches)
-	end,
-	TimelineAppearance.matches)
+    return axutils.cache(self, "_ui", function()
+        return axutils.childMatching(self:toggleUI(), TimelineAppearance.matches)
+    end,
+    TimelineAppearance.matches)
 end
 
 -- TODO: Add documentation
 TimelineAppearance.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
+    return self:UI() ~= nil
 end):bind(TimelineAppearance)
 
 -- TODO: Add documentation
 function TimelineAppearance:show()
-	if not self:isShowing() then
-		self:toggle():checked(true)
-	end
-	return self
+    if not self:isShowing() then
+        self:toggle():checked(true)
+    end
+    return self
 end
 
 -- TODO: Add documentation
 function TimelineAppearance:hide()
-	local ui = self:UI()
-	if ui then
-		ui:doCancel()
-	end
-	just.doWhile(function() return self:isShowing() end)
-	return self
+    local ui = self:UI()
+    if ui then
+        ui:doCancel()
+    end
+    just.doWhile(function() return self:isShowing() end)
+    return self
 end
 
 -----------------------------------------------------------------------
@@ -112,23 +112,23 @@ end
 
 -- TODO: Add documentation
 function TimelineAppearance:clipHeight()
-	if not self._clipHeight then
-		self._clipHeight = Slider:new(self, function()
-			return axutils.childMatching(self:UI(), function(e)
-				return e:attributeValue("AXRole") == "AXSlider" and e:attributeValue("AXMaxValue") == 210
-			end)
-		end)
-	end
-	return self._clipHeight
+    if not self._clipHeight then
+        self._clipHeight = Slider.new(self, function()
+            return axutils.childMatching(self:UI(), function(e)
+                return e:attributeValue("AXRole") == "AXSlider" and e:attributeValue("AXMaxValue") == 210
+            end)
+        end)
+    end
+    return self._clipHeight
 end
 
 function TimelineAppearance:zoomAmount()
-	if not self._zoomAmount then
-		self._zoomAmount = Slider:new(self, function()
-			return axutils.childWithID(self:UI(), id "ZoomAmount")
-		end)
-	end
-	return self._zoomAmount
+    if not self._zoomAmount then
+        self._zoomAmount = Slider.new(self, function()
+            return axutils.childWithID(self:UI(), id "ZoomAmount")
+        end)
+    end
+    return self._zoomAmount
 end
 
 return TimelineAppearance

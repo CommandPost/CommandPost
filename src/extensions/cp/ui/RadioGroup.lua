@@ -47,7 +47,7 @@ local RadioGroup = {}
 --- Returns:
 --- * `true` if the element is a RadioGroup.
 function RadioGroup.matches(element)
-	return element and element:attributeValue("AXRole") == "AXRadioGroup"
+    return element and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
 --- cp.ui.RadioGroup:new(parent, finderFn[, cached]) -> RadioGroup
@@ -63,12 +63,12 @@ end
 --- * The new `RadioGroup` instance.
 -- TODO: Use a function instead of a method.
 function RadioGroup:new(parent, finderFn, cached) -- luacheck: ignore
-	local o = prop.extend({
-		_parent = parent,
-		_finder = finderFn,
-		_cached = cached ~= false and true or false,
-	}, RadioGroup)
-	return o
+    local o = prop.extend({
+        _parent = parent,
+        _finder = finderFn,
+        _cached = cached ~= false and true or false,
+    }, RadioGroup)
+    return o
 end
 
 --- cp.ui.RadioGroup:parent() -> table
@@ -81,7 +81,7 @@ end
 --- Returns:
 --- * The parent object.
 function RadioGroup:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.ui.RadioGroup:isShowing() -> boolean
@@ -94,7 +94,7 @@ end
 --- Returns:
 --- * `true` if the RadioGroup is visible.
 function RadioGroup:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
+    return self:UI() ~= nil and self:parent():isShowing()
 end
 
 --- cp.ui.RadioGroup:UI() -> axuielement
@@ -107,14 +107,14 @@ end
 --- Returns:
 --- * The `asuielement` or `nil`.
 function RadioGroup:UI()
-	if self._cached then
-		return axutils.cache(self, "_ui", function()
-			return self._finder()
-		end,
-		RadioGroup.matches)
-	else
-		return self._finder()
-	end
+    if self._cached then
+        return axutils.cache(self, "_ui", function()
+            return self._finder()
+        end,
+        RadioGroup.matches)
+    else
+        return self._finder()
+    end
 end
 
 --- cp.ui.RadioGroup:isEnabled()
@@ -127,18 +127,18 @@ end
 --- Returns:
 --- * `true` if the RadioGroup is showing and enabled.
 function RadioGroup:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 --- cp.ui.RadioGroup.optionCount <cp.prop: number; read-only>
 --- Field
 --- The number of options in the group.
 RadioGroup.optionCount = prop(
-	function(self)
-		local ui = self:UI()
-		return ui and #ui or 0
-	end
+    function(self)
+        local ui = self:UI()
+        return ui and #ui or 0
+    end
 ):bind(RadioGroup)
 
 
@@ -147,30 +147,30 @@ RadioGroup.optionCount = prop(
 --- Field
 --- The currently selected option number.
 RadioGroup.selectedOption = prop(
-	function(self)
-		local ui = self:UI()
-		if ui then
-			for i,item in ipairs(ui:children()) do
-				if item:attributeValue("AXValue") == 1 then
-					return i
-				end
-			end
-		end
-		return nil
-	end,
-	function(index, self)
-		local ui = self:UI()
-		if ui then
-			if index >= 1 and index <= #ui then
-				local item = ui[index]
-				if item and item:attributeValue("AXValue") ~= 1 then
-					item:doPress()
-					return index
-				end
-			end
-		end
-		return nil
-	end
+    function(self)
+        local ui = self:UI()
+        if ui then
+            for i,item in ipairs(ui:children()) do
+                if item:attributeValue("AXValue") == 1 then
+                    return i
+                end
+            end
+        end
+        return nil
+    end,
+    function(index, self)
+        local ui = self:UI()
+        if ui then
+            if index >= 1 and index <= #ui then
+                local item = ui[index]
+                if item and item:attributeValue("AXValue") ~= 1 then
+                    item:doPress()
+                    return index
+                end
+            end
+        end
+        return nil
+    end
 ):bind(RadioGroup)
 
 --- cp.ui.RadioGroup:nextOption() -> self
@@ -183,11 +183,11 @@ RadioGroup.selectedOption = prop(
 --- Returns:
 --- * The `RadioGroup`.
 function RadioGroup:nextOption()
-	local selected = self:selectedOption()
-	local count = self:optionCount()
-	selected = selected >= count and 1 or selected + 1
-	self:selectedOption(selected)
-	return self
+    local selected = self:selectedOption()
+    local count = self:optionCount()
+    selected = selected >= count and 1 or selected + 1
+    self:selectedOption(selected)
+    return self
 end
 
 --- cp.ui.RadioGroup:previousOption() -> self
@@ -200,11 +200,29 @@ end
 --- Returns:
 --- * The `RadioGroup`.
 function RadioGroup:previousOption()
-	local selected = self:selectedOption()
-	local count = self:optionCount()
-	selected = selected <= 1 and count or selected - 1
-	self:selectedOption(selected)
-	return self
+    local selected = self:selectedOption()
+    local count = self:optionCount()
+    selected = selected <= 1 and count or selected - 1
+    self:selectedOption(selected)
+    return self
+end
+
+--- cp.ui.RadioGroup:snapshot([path]) -> hs.image | nil
+--- Method
+--- Takes a snapshot of the UI in its current state as a PNG and returns it.
+--- If the `path` is provided, the image will be saved at the specified location.
+---
+--- Parameters:
+--- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---
+--- Return:
+--- * The `hs.image` that was created, or `nil` if the UI is not available.
+function RadioGroup:snapshot(path)
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return RadioGroup

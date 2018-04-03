@@ -57,11 +57,11 @@ function mod.startShiftingPuck(puck, property, amount)
         return false
     end
 
-	mod.puckShifting = true
-	timer.doWhile(function() return mod.puckShifting end, function()
-		local value = property()
-		if value ~= nil then property(value + amount) end
-	end, eventtap.keyRepeatInterval())
+    mod.puckShifting = true
+    timer.doWhile(function() return mod.puckShifting end, function()
+        local value = property()
+        if value ~= nil then property(value + amount) end
+    end, eventtap.keyRepeatInterval())
 end
 
 --- plugins.finalcutpro.timeline.colorboard.stopShiftingPuck() -> none
@@ -99,11 +99,11 @@ function mod.startMousePuck(puck)
     end
 
     --------------------------------------------------------------------------------
-	-- Start the puck:
-	--------------------------------------------------------------------------------
-	puck:start()
-	mod.colorPuck = puck
-	return true
+    -- Start the puck:
+    --------------------------------------------------------------------------------
+    puck:start()
+    mod.colorPuck = puck
+    return true
 end
 
 --- plugins.finalcutpro.timeline.colorboard.colorBoardMousePuckRelease() -> none
@@ -140,7 +140,7 @@ function mod.nextAspect()
         dialog.displayNotification(i18n("colorBoardCouldNotBeActivated"))
         return "Failed"
     end
-	colorBoard:nextAspect()
+    colorBoard:nextAspect()
 end
 
 --------------------------------------------------------------------------------
@@ -165,23 +165,23 @@ function plugin.init(deps)
     mod.playhead = deps.playhead
 
     local fcpxCmds = deps.fcpxCmds
-	local colorBoard = fcp:colorBoard()
+    local colorBoard = fcp:colorBoard()
 
-	local colorBoardAspects = {
-		{ title = "Color", control = colorBoard:color(), hasAngle = true },
-		{ title = "Saturation", control = colorBoard:saturation() },
-		{ title = "Exposure", control = colorBoard:exposure() },
-	}
+    local colorBoardAspects = {
+        { title = "Color", control = colorBoard:color(), hasAngle = true },
+        { title = "Saturation", control = colorBoard:saturation() },
+        { title = "Exposure", control = colorBoard:exposure() },
+    }
 
-	local pucks = {
-		{ title = "Master", fn = ColorBoardAspect.master, shortcut = "m" },
-		{ title = "Shadows", fn = ColorBoardAspect.shadows, shortcut = "," },
-		{ title = "Midtones", fn = ColorBoardAspect.midtones, shortcut = "." },
-		{ title = "Highlights", fn = ColorBoardAspect.highlights, shortcut = "/" },
-	}
+    local pucks = {
+        { title = "Master", fn = ColorBoardAspect.master, shortcut = "m" },
+        { title = "Shadows", fn = ColorBoardAspect.shadows, shortcut = "," },
+        { title = "Midtones", fn = ColorBoardAspect.midtones, shortcut = "." },
+        { title = "Highlights", fn = ColorBoardAspect.highlights, shortcut = "/" },
+    }
 
-	for i,puck in ipairs(pucks) do
-		local iWord = tools.numberToWord(i)
+    for i,puck in ipairs(pucks) do
+        local iWord = tools.numberToWord(i)
         fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
             :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
             :groupedBy("colorboard")
@@ -194,14 +194,14 @@ function plugin.init(deps)
             :whenActivated(function() mod.startMousePuck(puck.fn( colorBoard:current() )) end)
             :whenReleased(function() mod.stopMousePuck() end)
 
-		for _, aspect in ipairs(colorBoardAspects) do
-		    --------------------------------------------------------------------------------
-			-- Find the puck for the current aspect (eg. "color > master"):
-			--------------------------------------------------------------------------------
-			local puckControl = puck.fn( aspect.control )
-			if not puckControl then
-				log.ef("Unable to find the %s puck control for the %s aspect.", puck.title, aspect.title)
-			end
+        for _, aspect in ipairs(colorBoardAspects) do
+            --------------------------------------------------------------------------------
+            -- Find the puck for the current aspect (eg. "color > master"):
+            --------------------------------------------------------------------------------
+            local puckControl = puck.fn( aspect.control )
+            if not puckControl then
+                log.ef("Unable to find the %s puck control for the %s aspect.", puck.title, aspect.title)
+            end
 
             fcpxCmds:add("cp" .. aspect.title .. "Puck" .. iWord)
                 :titled(i18n("cpPuck_customTitle", {count = i, panel = aspect.title}))

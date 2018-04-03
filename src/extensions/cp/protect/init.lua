@@ -11,13 +11,13 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-function protect(tbl)
+local function protect(tbl)
     return setmetatable({}, {
         __index			= tbl,
-        __newindex		= function(t, key, value)
+        __newindex		= function(_, key, value)
             error(string.format("unable to modify read-only value for '%s' to %s", key, value), 2)
         end,
-		__len			= function() return #tbl end,
+        __len			= function() return #tbl end,
     })
 end
 

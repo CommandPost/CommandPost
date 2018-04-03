@@ -60,15 +60,15 @@ mod.translationURL      = "https://poeditor.com/join/project/QWvOQlF1Sy"
 --- Constant
 --- Path to where Application Scripts are stored
 if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
-	-------------------------------------------------------------------------------
-	-- Use assets in either the Developer or User Library directory:
-	-------------------------------------------------------------------------------
-	mod.scriptPath			= hs.configdir
+    -------------------------------------------------------------------------------
+    -- Use assets in either the Developer or User Library directory:
+    -------------------------------------------------------------------------------
+    mod.scriptPath			= hs.configdir
 else
-	-------------------------------------------------------------------------------
-	-- Use assets within the Application Bundle:
-	-------------------------------------------------------------------------------
-	mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions"
+    -------------------------------------------------------------------------------
+    -- Use assets within the Application Bundle:
+    -------------------------------------------------------------------------------
+    mod.scriptPath			= hs.processInfo["resourcePath"] .. "/extensions"
 end
 
 --- cp.config.assetsPath -> string
@@ -100,8 +100,8 @@ mod.userPluginsPath		= mod.userConfigRootPath .. "/Plugins"
 --- Constant
 --- Table of Plugins Paths. Earlier entries take precedence.
 mod.pluginPaths			= {
-	mod.userPluginsPath,
-	mod.bundledPluginsPath,
+    mod.userPluginsPath,
+    mod.bundledPluginsPath,
 }
 
 --- cp.config.iconPath -> string
@@ -149,20 +149,20 @@ mod.processID			= hs.processInfo["processID"]
 --- Returns:
 ---  * hs.application object
 function mod.application()
-	if not mod._application then
-		mod._application = application.applicationForPID(mod.processID)
-	end
-	return mod._application
+    if not mod._application then
+        mod._application = application.applicationForPID(mod.processID)
+    end
+    return mod._application
 end
 
 --- cp.config.frontmost <cp.prop: boolean; read-only>
 --- Field
 --- Returns whether or not the Application is frontmost.
 mod.frontmost = prop.new(function()
-	local app = mod.application()
-	local fw = window.focusedWindow()
+    local app = mod.application()
+    local fw = window.focusedWindow()
 
-	return fw ~= nil and fw:application() == app
+    return fw ~= nil and fw:application() == app
 end)
 
 --- cp.config.get(key[, defaultValue]) -> string or boolean or number or nil or table or binary data
@@ -176,11 +176,11 @@ end)
 --- Returns:
 ---  * The value of the setting
 function mod.get(key, defaultValue)
-	local value = settings.get(mod.configPrefix .. "." .. key)
-	if value == nil then
-		value = defaultValue
-	end
-	return value
+    local value = settings.get(mod.configPrefix .. "." .. key)
+    if value == nil then
+        value = defaultValue
+    end
+    return value
 end
 
 --- cp.config.set(key, value)
@@ -203,16 +203,16 @@ end
 --- Notes:
 ---  * This function cannot set dates or raw data types
 function mod.set(key, value)
-	if type(key) ~= "string" then
-		error("The key must be a string: %s", hs.inspect(key))
-	end
-	settings.set(mod.configPrefix .. "." .. key, value)
-	if mod._propCache then
-		local p = mod._propCache[key]
-		if p then
-			p:update()
-		end
-	end
+    if type(key) ~= "string" then
+        error("The key must be a string: %s", hs.inspect(key))
+    end
+    settings.set(mod.configPrefix .. "." .. key, value)
+    if mod._propCache then
+        local p = mod._propCache[key]
+        if p then
+            p:update()
+        end
+    end
 end
 
 --- cp.config.prop(key[, defaultValue]) -> cp.prop
@@ -226,22 +226,22 @@ end
 --- Returns:
 --- * A `cp.prop` instance for the key.
 function mod.prop(key, defaultValue)
-	local propValue = nil
-	if not mod._propCache then
-		mod._propCache = {}
-	else
-		propValue = mod._propCache[key]
-	end
+    local propValue = nil
+    if not mod._propCache then
+        mod._propCache = {}
+    else
+        propValue = mod._propCache[key]
+    end
 
-	if not propValue then
-		propValue = prop.new(
-			function() return mod.get(key, defaultValue) end,
-			function(value) mod.set(key, value) end
-		):deepTable()
-		mod._propCache[key] = propValue
-	end
+    if not propValue then
+        propValue = prop.new(
+            function() return mod.get(key, defaultValue) end,
+            function(value) mod.set(key, value) end
+        ):deepTable()
+        mod._propCache[key] = propValue
+    end
 
-	return propValue
+    return propValue
 end
 
 --- cp.config.reset()
@@ -254,12 +254,12 @@ end
 --- Returns:
 ---  * None
 function mod.reset()
-	for _,v in ipairs(settings.getKeys()) do
-		settings.set(v, nil)
-	end
-	mod.watcher:notify("reset")
-	console.clearConsole()
-	hs.reload()
+    for _,v in ipairs(settings.getKeys()) do
+        settings.set(v, nil)
+    end
+    mod.watcher:notify("reset")
+    console.clearConsole()
+    hs.reload()
 end
 
 mod.watcher = watcher.new("reset")
@@ -278,7 +278,7 @@ mod.watcher = watcher.new("reset")
 ---  * Supported events:
 ---  ** `reset()`	- occurs after CommandPost's settings are reset.
 function mod.watch(events)
-	return mod.watcher:watch(events)
+    return mod.watcher:watch(events)
 end
 
 --- cp.config.unwatch(id)
@@ -291,31 +291,31 @@ end
 --- Returns:
 ---  * `true` if a watcher with the ID existed and was successfully removed.
 function mod.unwatch(id)
-	return mod.watcher:unwatch(id)
+    return mod.watcher:unwatch(id)
 end
 
 --- cp.config.developerMode <cp.prop: boolean>
 --- Constant
 --- When `true`, the app is in developer mode.
 mod.developerMode = mod.prop("debugMode", false):watch(function(value)
-	if value then
-		log.df("Developer Mode Enabled")
-	else
-		log.df("Developer Mode Disabled")
-	end
+    if value then
+        log.df("Developer Mode Enabled")
+    else
+        log.df("Developer Mode Disabled")
+    end
 end)
 
 --- cp.config.automaticScriptReloading <cp.prop: boolean>
 --- Variable
 --- Automatic Script Reloading.
 mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(function(value)
-	if value then
-		log.df("Automatic Script Reloading Enabled")
-		mod.sourceWatcher:start()
-	else
-		log.df("Automatic Script Reloading Disabled")
-		mod.sourceWatcher:stop()
-	end
+    if value then
+        log.df("Automatic Script Reloading Enabled")
+        mod.sourceWatcher:start()
+    else
+        log.df("Automatic Script Reloading Disabled")
+        mod.sourceWatcher:stop()
+    end
 end)
 
 --------------------------------------------------------------------------------
@@ -344,18 +344,18 @@ mod.shutdownCallback = shutdownCallback
 ---  * table that has been created
 function shutdownCallback:new(id, callbackFn)
 
-	if shutdownCallback._items[id] ~= nil then
-		error("Duplicate Shutdown Callback: " .. id)
-	end
-	local o = {
-		_id = id,
-		_callbackFn = callbackFn,
-	}
-	setmetatable(o, self)
-	self.__index = self
+    if shutdownCallback._items[id] ~= nil then
+        error("Duplicate Shutdown Callback: " .. id)
+    end
+    local o = {
+        _id = id,
+        _callbackFn = callbackFn,
+    }
+    setmetatable(o, self)
+    self.__index = self
 
-	shutdownCallback._items[id] = o
-	return o
+    shutdownCallback._items[id] = o
+    return o
 
 end
 
@@ -369,7 +369,7 @@ end
 --- Returns:
 ---  * table containing the callback
 function shutdownCallback:get(id)
-	return self._items[id]
+    return self._items[id]
 end
 
 --- cp.config.shutdownCallback:getAll() -> table
@@ -382,7 +382,7 @@ end
 --- Returns:
 ---  * table containing all of the created callbacks
 function shutdownCallback:getAll()
-	return self._items
+    return self._items
 end
 
 --- cp.config.shutdownCallback:id() -> string
@@ -395,7 +395,7 @@ end
 --- Returns:
 ---  * The ID of the current Shutdown Callback as a `string`
 function shutdownCallback:id()
-	return self._id
+    return self._id
 end
 
 --- cp.config.shutdownCallback:callbackFn() -> function
@@ -408,7 +408,7 @@ end
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
 function shutdownCallback:callbackFn()
-	return self._callbackFn
+    return self._callbackFn
 end
 
 --------------------------------------------------------------------------------
@@ -437,18 +437,18 @@ mod.textDroppedToDockIconCallback = textDroppedToDockIconCallback
 ---  * table that has been created
 function textDroppedToDockIconCallback:new(id, callbackFn)
 
-	if textDroppedToDockIconCallback._items[id] ~= nil then
-		error("Duplicate Text Dropped to Dock Icon Callback: " .. id)
-	end
-	local o = {
-		_id = id,
-		_callbackFn = callbackFn,
-	}
-	setmetatable(o, self)
-	self.__index = self
+    if textDroppedToDockIconCallback._items[id] ~= nil then
+        error("Duplicate Text Dropped to Dock Icon Callback: " .. id)
+    end
+    local o = {
+        _id = id,
+        _callbackFn = callbackFn,
+    }
+    setmetatable(o, self)
+    self.__index = self
 
-	textDroppedToDockIconCallback._items[id] = o
-	return o
+    textDroppedToDockIconCallback._items[id] = o
+    return o
 
 end
 
@@ -462,7 +462,7 @@ end
 --- Returns:
 ---  * table containing the callback
 function textDroppedToDockIconCallback:get(id)
-	return self._items[id]
+    return self._items[id]
 end
 
 --- cp.config.textDroppedToDockIconCallback:getAll() -> table
@@ -475,7 +475,7 @@ end
 --- Returns:
 ---  * table containing all of the created callbacks
 function textDroppedToDockIconCallback:getAll()
-	return self._items
+    return self._items
 end
 
 --- cp.config.textDroppedToDockIconCallback:id() -> string
@@ -488,7 +488,7 @@ end
 --- Returns:
 ---  * The ID of the current Shutdown Callback as a `string`
 function textDroppedToDockIconCallback:id()
-	return self._id
+    return self._id
 end
 
 --- cp.config.textDroppedToDockIconCallback:callbackFn() -> function
@@ -501,7 +501,7 @@ end
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
 function textDroppedToDockIconCallback:callbackFn()
-	return self._callbackFn
+    return self._callbackFn
 end
 
 --------------------------------------------------------------------------------
@@ -530,18 +530,18 @@ mod.fileDroppedToDockIconCallback = fileDroppedToDockIconCallback
 ---  * table that has been created
 function fileDroppedToDockIconCallback:new(id, callbackFn)
 
-	if fileDroppedToDockIconCallback._items[id] ~= nil then
-		error("Duplicate File Dropped to Dock Icon Callback: " .. id)
-	end
-	local o = {
-		_id = id,
-		_callbackFn = callbackFn,
-	}
-	setmetatable(o, self)
-	self.__index = self
+    if fileDroppedToDockIconCallback._items[id] ~= nil then
+        error("Duplicate File Dropped to Dock Icon Callback: " .. id)
+    end
+    local o = {
+        _id = id,
+        _callbackFn = callbackFn,
+    }
+    setmetatable(o, self)
+    self.__index = self
 
-	fileDroppedToDockIconCallback._items[id] = o
-	return o
+    fileDroppedToDockIconCallback._items[id] = o
+    return o
 
 end
 
@@ -555,7 +555,7 @@ end
 --- Returns:
 ---  * table containing the callback
 function fileDroppedToDockIconCallback:get(id)
-	return self._items[id]
+    return self._items[id]
 end
 
 --- cp.config.fileDroppedToDockIconCallback:getAll() -> table
@@ -568,7 +568,7 @@ end
 --- Returns:
 ---  * table containing all of the created callbacks
 function fileDroppedToDockIconCallback:getAll()
-	return self._items
+    return self._items
 end
 
 --- cp.config.fileDroppedToDockIconCallback:id() -> string
@@ -581,7 +581,7 @@ end
 --- Returns:
 ---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
 function fileDroppedToDockIconCallback:id()
-	return self._id
+    return self._id
 end
 
 --- cp.config.fileDroppedToDockIconCallback:callbackFn() -> function
@@ -594,7 +594,7 @@ end
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
 function fileDroppedToDockIconCallback:callbackFn()
-	return self._callbackFn
+    return self._callbackFn
 end
 
 --------------------------------------------------------------------------------
@@ -623,18 +623,18 @@ mod.dockIconClickCallback = dockIconClickCallback
 ---  * table that has been created
 function dockIconClickCallback:new(id, callbackFn)
 
-	if dockIconClickCallback._items[id] ~= nil then
-		error("Duplicate Dock Icon Click Callback: " .. id)
-	end
-	local o = {
-		_id = id,
-		_callbackFn = callbackFn,
-	}
-	setmetatable(o, self)
-	self.__index = self
+    if dockIconClickCallback._items[id] ~= nil then
+        error("Duplicate Dock Icon Click Callback: " .. id)
+    end
+    local o = {
+        _id = id,
+        _callbackFn = callbackFn,
+    }
+    setmetatable(o, self)
+    self.__index = self
 
-	dockIconClickCallback._items[id] = o
-	return o
+    dockIconClickCallback._items[id] = o
+    return o
 
 end
 
@@ -648,7 +648,7 @@ end
 --- Returns:
 ---  * table containing the callback
 function dockIconClickCallback:get(id)
-	return self._items[id]
+    return self._items[id]
 end
 
 --- cp.config.dockIconClickCallback:getAll() -> table
@@ -661,7 +661,7 @@ end
 --- Returns:
 ---  * table containing all of the created callbacks
 function dockIconClickCallback:getAll()
-	return self._items
+    return self._items
 end
 
 --- cp.config.dockIconClickCallback:id() -> string
@@ -674,7 +674,7 @@ end
 --- Returns:
 ---  * The ID of the current File Dropped to Dock Icon Callback as a `string`
 function dockIconClickCallback:id()
-	return self._id
+    return self._id
 end
 
 --- cp.config.dockIconClickCallback:callbackFn() -> function
@@ -687,7 +687,7 @@ end
 --- Returns:
 ---  * The callbackFn of the current Shutdown Callback
 function dockIconClickCallback:callbackFn()
-	return self._callbackFn
+    return self._callbackFn
 end
 
 return mod

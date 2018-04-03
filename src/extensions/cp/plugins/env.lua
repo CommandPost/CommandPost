@@ -32,10 +32,10 @@ local env = {}
 --- Returns:
 --- * The new `env` instance.
 function env.new(rootPath)
-	local o = {
-		rootPath = rootPath,
-	}
-	return setmetatable(o, { __index = env })
+    local o = {
+        rootPath = rootPath,
+    }
+    return setmetatable(o, { __index = env })
 end
 
 --- cp.plugins.env:pathToAbsolute(resourcePath) -> string
@@ -48,17 +48,17 @@ end
 --- Returns:
 --- * The absolute path to the resource, or `nil` if it does not exist.
 function env:pathToAbsolute(resourcePath)
-	local path = nil
-	if self.rootPath then
-		path = fs.pathToAbsolute(self.rootPath .. "/" .. resourcePath)
-	end
+    local path = nil
+    if self.rootPath then
+        path = fs.pathToAbsolute(self.rootPath .. "/" .. resourcePath)
+    end
 
-	if path == nil then
-		-- look in the assets path
-		path = fs.pathToAbsolute(config.assetsPath .. "/" .. resourcePath)
-	end
+    if path == nil then
+        -- look in the assets path
+        path = fs.pathToAbsolute(config.assetsPath .. "/" .. resourcePath)
+    end
 
-	return path
+    return path
 end
 
 --- cp.plugins.env:pathToURL(resourcePath) -> string
@@ -71,12 +71,12 @@ end
 --- Returns:
 --- * The absolute URL to the resource, or `nil` if it does not exist.
 function env:pathToURL(resourcePath)
-	local path = self:pathToAbsolute(resourcePath)
-	if path then
-		return "file://" .. path
-	else
-		return nil
-	end
+    local path = self:pathToAbsolute(resourcePath)
+    if path then
+        return "file://" .. path
+    else
+        return nil
+    end
 end
 
 --- cp.plugins.env:readResource(resourcePath) -> string
@@ -89,18 +89,18 @@ end
 --- Returns:
 --- * The contents of the resouce, or `nil` if the file does not exist.
 function env:readResource(resourcePath)
-	local name = self:pathToAbsolute(resourcePath)
-	if not name then
-		return nil, ("Unable to read resource file: '%s'"):format(resourcePath)
-	end
+    local name = self:pathToAbsolute(resourcePath)
+    if not name then
+        return nil, ("Unable to read resource file: '%s'"):format(resourcePath)
+    end
 
-	local f, err = io.open(name, "rb")
-	if not f then
-	    return nil, err
-	end
-	local t = f:read("*all")
-	f:close()
-	return t
+    local f, err = io.open(name, "rb")
+    if not f then
+        return nil, err
+    end
+    local t = f:read("*all")
+    f:close()
+    return t
 end
 
 --- cp.plugins.env:compileTemplate(view[, layout]) -> function
@@ -116,40 +116,40 @@ end
 --- Returns:
 --- * A function which will render the template.
 function env:compileTemplate(view, layout)
-	-- replace the load function to allow loading from the plugin
-	local oldLoader = template.load
-	local load_plugin = function(path)
-		local content, err = self:readResource(path)
-		if err then
-			log.df("Unable to load '%s': %s", path, err)
-			return path
-		else
-			return content
-		end
-	end
+    -- replace the load function to allow loading from the plugin
+    local oldLoader = template.load
+    local load_plugin = function(path)
+        local content, err = self:readResource(path)
+        if err then
+            log.df("Unable to load '%s': %s", path, err)
+            return path
+        else
+            return content
+        end
+    end
 
-	template.load = load_plugin
-	local result, err = template.compile(view, layout)
-	if err then
-		log.ef("Error while compiling template at '%s':\n%s", view, err)
-		return result, err
-	end
-	template.load = oldLoader
+    template.load = load_plugin
+    local result, err = template.compile(view, layout)
+    if err then
+        log.ef("Error while compiling template at '%s':\n%s", view, err)
+        return result, err
+    end
+    template.load = oldLoader
 
-	-- replace the render function to replace the loader when rendering
-	return function(...)
-		local oldLoad = template.load
-		template.load = load_plugin
-		local content, err = result(...)
-		template.load = oldLoad
-		return content, err
-	end
+    -- replace the render function to replace the loader when rendering
+    return function(...)
+        local oldLoad = template.load
+        template.load = load_plugin
+        local content, e = result(...)
+        template.load = oldLoad
+        return content, e
+    end
 end
 
 --- cp.plugins.env:renderTemplate(view[, model[, layout]]) -> string
 --- Method
 --- Renders a Resty Template within the context of the plugin. The `view` may be a resource path pointing at a template file in the plugin, or may be raw template markup. The `layout` is an optional path/template for a layout template. See the [Resty Template](https://github.com/bungle/lua-resty-template) documentation for details.
---- 
+---
 --- The `model` is a table which will provide variables/functions/etc that the template can access while rendering.
 ---
 --- Parameters:
@@ -160,7 +160,7 @@ end
 --- Returns:
 --- * A function which will render the template.
 function env:renderTemplate(view, model, layout)
-	return self:compileTemplate(view, layout)(model)
+    return self:compileTemplate(view, layout)(model)
 end
 
 return env

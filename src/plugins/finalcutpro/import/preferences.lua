@@ -76,15 +76,15 @@ mod.createOptimizedMedia = prop.new(
         --------------------------------------------------------------------------------
         fcp:launch()
 
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		local panel = fcp:preferencesWindow():importPanel()
-		if panel:show():isShowing() then
-			panel:createOptimizedMedia():toggle()
-		else
-			dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in createOptimizedMedia().")
-		end
+        --------------------------------------------------------------------------------
+        -- Toggle the checkbox:
+        --------------------------------------------------------------------------------
+        local panel = fcp:preferencesWindow():importPanel()
+        if panel:show():isShowing() then
+            panel:createOptimizedMedia():toggle()
+        else
+            dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in createOptimizedMedia().")
+        end
 
         --------------------------------------------------------------------------------
         -- Close the Preferences window:
@@ -144,15 +144,15 @@ mod.createProxyMedia = prop.new(
         --------------------------------------------------------------------------------
         fcp:launch()
 
-		--------------------------------------------------------------------------------
-		-- Toggle the checkbox:
-		--------------------------------------------------------------------------------
-		local panel = fcp:preferencesWindow():importPanel()
-		if panel:show():isShowing() then
-			panel:createProxyMedia():toggle()
-		else
-			dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in createProxyMedia().")
-		end
+        --------------------------------------------------------------------------------
+        -- Toggle the checkbox:
+        --------------------------------------------------------------------------------
+        local panel = fcp:preferencesWindow():importPanel()
+        if panel:show():isShowing() then
+            panel:createProxyMedia():toggle()
+        else
+            dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in createProxyMedia().")
+        end
 
         --------------------------------------------------------------------------------
         -- Close the Preferences window:

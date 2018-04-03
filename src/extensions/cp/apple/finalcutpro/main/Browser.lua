@@ -194,7 +194,7 @@ end
 -- TODO: Add documentation
 function Browser:showLibraries()
     if not self._showLibraries then
-        self._showLibraries = CheckBox:new(self, function()
+        self._showLibraries = CheckBox.new(self, function()
             local ui = self:UI()
             if ui and #ui > 3 then
                 -- The library toggle is always the last element.
@@ -209,7 +209,7 @@ end
 -- TODO: Add documentation
 function Browser:showMedia()
     if not self._showMedia then
-        self._showMedia = CheckBox:new(self, function()
+        self._showMedia = CheckBox.new(self, function()
             local ui = self:UI()
             if ui and #ui > 3 then
                 -- The media toggle is always the second-last element.
@@ -224,7 +224,7 @@ end
 -- TODO: Add documentation
 function Browser:showGenerators()
     if not self._showGenerators then
-        self._showGenerators = CheckBox:new(self, function()
+        self._showGenerators = CheckBox.new(self, function()
             local ui = self:UI()
             if ui and #ui > 3 then
                 -- The generators toggle is always the third-last element.
@@ -255,7 +255,7 @@ end
 -- TODO: Add documentation
 function Browser:generators()
     if not self._generators then
-        self._generators = GeneratorsBrowser:new(self)
+        self._generators = GeneratorsBrowser.new(self)
     end
     return self._generators
 end

@@ -17,20 +17,19 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("menumgr")
+-- local log										= require("hs.logger").new("menumgr")
+-- local inspect									= require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local image										= require("hs.image")
-local inspect									= require("hs.inspect")
 local menubar									= require("hs.menubar")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config									= require("cp.config")
-local fcp										= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 -- Module Extensions:
@@ -71,24 +70,24 @@ manager.titleSuffix	= {}
 --- Returns:
 ---  * None
 function manager.init()
-	-------------------------------------------------------------------------------
-	-- Set up Menubar:
-	--------------------------------------------------------------------------------
-	manager.menubar = menubar.new()
+    -------------------------------------------------------------------------------
+    -- Set up Menubar:
+    --------------------------------------------------------------------------------
+    manager.menubar = menubar.new()
 
-	--------------------------------------------------------------------------------
-	-- Set Tool Tip:
-	--------------------------------------------------------------------------------
-	manager.menubar:setTooltip(config.appName .. " " .. i18n("version") .. " " .. config.appVersion)
+    --------------------------------------------------------------------------------
+    -- Set Tool Tip:
+    --------------------------------------------------------------------------------
+    manager.menubar:setTooltip(config.appName .. " " .. i18n("version") .. " " .. config.appVersion)
 
-	--------------------------------------------------------------------------------
-	-- Work out Menubar Display Mode:
-	--------------------------------------------------------------------------------
-	manager.updateMenubarIcon()
+    --------------------------------------------------------------------------------
+    -- Work out Menubar Display Mode:
+    --------------------------------------------------------------------------------
+    manager.updateMenubarIcon()
 
-	manager.menubar:setMenu(manager.generateMenuTable)
+    manager.menubar:setMenu(manager.generateMenuTable)
 
-	return manager
+    return manager
 end
 
 --- plugins.core.menu.manager.disable(priority) -> menubaritem
@@ -101,9 +100,9 @@ end
 --- Returns:
 ---  * the menubaritem
 function manager.disable()
-	if manager.menubar then
-		return manager.menubar:removeFromMenuBar()
-	end
+    if manager.menubar then
+        return manager.menubar:removeFromMenuBar()
+    end
 end
 
 --- plugins.core.menu.manager.enable(priority) -> menubaritem
@@ -116,9 +115,9 @@ end
 --- Returns:
 ---  * the menubaritem
 function manager.enable()
-	if manager.menubar then
-		return manager.menubar:returnToMenuBar()
-	end
+    if manager.menubar then
+        return manager.menubar:returnToMenuBar()
+    end
 end
 
 --- plugins.core.menu.manager.updateMenubarIcon(priority) -> none
@@ -131,39 +130,39 @@ end
 --- Returns:
 ---  * None
 function manager.updateMenubarIcon()
-	if not manager.menubar then
-		return
-	end
+    if not manager.menubar then
+        return
+    end
 
-	local displayMenubarAsIcon = manager.displayMenubarAsIcon()
+    local displayMenubarAsIcon = manager.displayMenubarAsIcon()
 
-	local title = config.appName
-	local icon = nil
+    local title = config.appName
+    local icon = nil
 
-	if displayMenubarAsIcon then
-		local iconImage = image.imageFromPath(config.menubarIconPath)
-		icon = iconImage:setSize({w=18,h=18})
-		title = ""
-	end
+    if displayMenubarAsIcon then
+        local iconImage = image.imageFromPath(config.menubarIconPath)
+        icon = iconImage:setSize({w=18,h=18})
+        title = ""
+    end
 
-	--------------------------------------------------------------------------------
-	-- Add any Title Suffix's:
-	--------------------------------------------------------------------------------
-	local titleSuffix = ""
-	for i, v in ipairs(manager.titleSuffix) do
+    --------------------------------------------------------------------------------
+    -- Add any Title Suffix's:
+    --------------------------------------------------------------------------------
+    local titleSuffix = ""
+    for _,v in ipairs(manager.titleSuffix) do
 
-		if type(v) == "function" then
-			titleSuffix = titleSuffix .. v()
-		end
+        if type(v) == "function" then
+            titleSuffix = titleSuffix .. v()
+        end
 
-	end
+    end
 
-	title = title .. titleSuffix
+    title = title .. titleSuffix
 
-	manager.menubar:setIcon(icon)
-	-- HACK for #406: For some reason setting the title to " " temporarily fixes El Capitan
-	manager.menubar:setTitle(" ")
-	manager.menubar:setTitle(title)
+    manager.menubar:setIcon(icon)
+    -- HACK for #406: For some reason setting the title to " " temporarily fixes El Capitan
+    manager.menubar:setTitle(" ")
+    manager.menubar:setTitle(title)
 
 end
 
@@ -182,7 +181,7 @@ manager.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", DEFAULT_DISPL
 --- Returns:
 ---  * section - The section that was created.
 function manager.addSection(priority)
-	return manager.rootSection:addSection(priority)
+    return manager.rootSection:addSection(priority)
 end
 
 --- plugins.core.menu.manager.addTitleSuffix(fnTitleSuffix)
@@ -196,8 +195,8 @@ end
 ---  * None
 function manager.addTitleSuffix(fnTitleSuffix)
 
-	manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
-	manager.updateMenubarIcon()
+    manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
+    manager.updateMenubarIcon()
 end
 
 --- plugins.core.menu.manager.generateMenuTable()
@@ -210,7 +209,7 @@ end
 --- Returns:
 ---  * The Menu Table
 function manager.generateMenuTable()
-	return manager.rootSection:generateMenuTable()
+    return manager.rootSection:generateMenuTable()
 end
 
 --------------------------------------------------------------------------------
@@ -219,35 +218,35 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id			= "core.menu.manager",
-	group		= "core",
-	required	= true,
-	dependencies	= {
-		["core.setup"] 			= "setup",
-	}
+    id			= "core.menu.manager",
+    group		= "core",
+    required	= true,
+    dependencies	= {
+        ["core.setup"] 			= "setup",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-	-- Disable the menu when the Setup Panel is open:
-	--------------------------------------------------------------------------------
-	deps.setup.visible:watch(function(visible)
-		if visible then
-			manager.disable()
-		else
-			if manager.menubar then
-				manager.enable()
-			else
-				manager.init()
-			end
-		end
-	end, true)
+    -- Disable the menu when the Setup Panel is open:
+    --------------------------------------------------------------------------------
+    deps.setup.visible:watch(function(visible)
+        if visible then
+            manager.disable()
+        else
+            if manager.menubar then
+                manager.enable()
+            else
+                manager.init()
+            end
+        end
+    end, true)
 
-	return manager
+    return manager
 end
 
 return plugin

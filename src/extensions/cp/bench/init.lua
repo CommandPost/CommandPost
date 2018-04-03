@@ -46,61 +46,60 @@ local _timeindent = 0
 local _timelog = {}
 
 function mod.mark(label, fn, ...)
-	loops = loops or 1
-	local result = nil
-	local t = _timelog
+    local result
+    local t = _timelog
 
-	t[#t+1] = {label = label, indent = _timeindent}
-	_timeindent = _timeindent + 2
-	local start = clock()
-	for i=1,loops do result = fn(...) end
-	local stop = clock()
-	local total = stop - start
-	_timeindent = _timeindent - 2
-	t[#t+1] = {label = label, indent = _timeindent, value = total}
+    t[#t+1] = {label = label, indent = _timeindent}
+    _timeindent = _timeindent + 2
+    local start = clock()
+    result = fn(...)
+    local stop = clock()
+    local total = stop - start
+    _timeindent = _timeindent - 2
+    t[#t+1] = {label = label, indent = _timeindent, value = total}
 
-	if _timeindent == 0 then
-		-- print when we are back at zero indents.
-		local text = nil
-		for i,v in ipairs(_timelog) do
-			text = v.value and string.format("%0.3fms", v.value*1000) or "START"
-			inOut = v.value and "<" or ">"
-			log.df(string.format("%"..v.indent.."s%40s %s %"..(30-v.indent).."s", "", v.label, inOut, text))
-		end
-		-- clear the log
-		_timelog = {}
-	end
+    if _timeindent == 0 then
+        -- print when we are back at zero indents.
+        local text
+        for _,v in ipairs(_timelog) do
+            text = v.value and string.format("%0.3fms", v.value*1000) or "START"
+            local inOut = v.value and "<" or ">"
+            log.df(string.format("%"..v.indent.."s%40s %s %"..(30-v.indent).."s", "", v.label, inOut, text))
+        end
+        -- clear the log
+        _timelog = {}
+    end
 
-	return result
+    return result
 end
 
 local function set(list)
-	if list then
-		local set = {}
-		for _, l in ipairs(list) do set[l] = true end
-		return set
-	else
-		return nil
-	end
+    if list then
+        local s = {}
+        for _, l in ipairs(list) do s[l] = true end
+        return s
+    else
+        return nil
+    end
 end
 
 function mod.press(label, value, names)
-	if not value.___benched then
-		names = set(names)
-		for k,v in pairs(value) do
-			if type(v) == "function" and (names == nil or names[k]) then
-				value[k] = function(...)
-					return mod.mark(label.."."..k, v, ...)
-				end
-			end
-		end
-		value.___benched = true
-		local mt = getmetatable(value)
-		if mt then
-			mod.press(label, mt, names)
-		end
-	end
-	return value
+    if not value.___benched then
+        names = set(names)
+        for k,v in pairs(value) do
+            if type(v) == "function" and (names == nil or names[k]) then
+                value[k] = function(...)
+                    return mod.mark(label.."."..k, v, ...)
+                end
+            end
+        end
+        value.___benched = true
+        local mt = getmetatable(value)
+        if mt then
+            mod.press(label, mt, names)
+        end
+    end
+    return value
 end
 
 setmetatable(mod, {__call = function(_, ...) return mod.mark(...) end})

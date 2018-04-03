@@ -14,7 +14,6 @@
 --
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local just							= require("cp.just")
 local prop							= require("cp.prop")
 local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 
@@ -26,95 +25,96 @@ local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 local FullScreenWindow = {}
 
 -- TODO: Add documentation
-function FullScreenWindow.matches(element)
-	if element and element:attributeValue("AXSubrole") == "AXUnknown"
-	and element:attributeValue("AXTitle") == "" then
-		local children = element:attributeValue("AXChildren")
-		return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
-	end
-	return false
+local function _findWindowUI(windows)
+    for _,w in ipairs(windows) do
+        if FullScreenWindow.matches(w) then return w end
+    end
+    return nil
 end
 
 -- TODO: Add documentation
-function FullScreenWindow:new(app)
-	local o = {
-		_app = app
-	}
-	return prop.extend(o, FullScreenWindow)
+function FullScreenWindow.matches(element)
+    if element and element:attributeValue("AXSubrole") == "AXUnknown"
+    and element:attributeValue("AXTitle") == "" then
+        local children = element:attributeValue("AXChildren")
+        return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
+    end
+    return false
+end
+
+-- TODO: Add documentation
+-- TODO: Convert to a Constructor Function
+function FullScreenWindow:new(app) --luacheck:ignore
+    local o = {
+        _app = app
+    }
+    return prop.extend(o, FullScreenWindow)
 end
 
 -- TODO: Add documentation
 function FullScreenWindow:app()
-	return self._app
+    return self._app
 end
 
 -- TODO: Add documentation
-function FullScreenWindow:show()
-	-- Currently a null-op. Determin if there are any scenarios where we need to force this.
-	return true
+function FullScreenWindow:show() -- luacheck:ignore
+    -- Currently a null-op. Determine if there are any scenarios where we need to force this.
+    return true
 end
 
 -- TODO: Add documentation
 function FullScreenWindow:UI()
-	return axutils.cache(self, "_ui", function()
-		local ui = self:app():UI()
-		if ui then
-			if FullScreenWindow.matches(ui:mainWindow()) then
-				return ui:mainWindow()
-			else
-				local windowsUI = self:app():windowsUI()
-				return windowsUI and self:_findWindowUI(windowsUI)
-			end
-		end
-		return nil
-	end,
-	FullScreenWindow.matches)
+    return axutils.cache(self, "_ui", function()
+        local ui = self:app():UI()
+        if ui then
+            if FullScreenWindow.matches(ui:mainWindow()) then
+                return ui:mainWindow()
+            else
+                local windowsUI = self:app():windowsUI()
+                return windowsUI and _findWindowUI(windowsUI)
+            end
+        end
+        return nil
+    end,
+    FullScreenWindow.matches)
 end
 
 -- TODO: Add documentation
 FullScreenWindow.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
+    return self:UI() ~= nil
 end):bind(FullScreenWindow)
 
 -- TODO: Add documentation
 FullScreenWindow.isFullScreen = prop.new(function(self)
-	local ui = self:rootGroupUI()
-	if ui then
-		-- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
-		local group = nil
-		if #ui == 1 then
-			group = ui[1]
-		else
-			group = axutils.childMatching(ui, function(element) return #element == 2 end)
-		end
-		if #group == 2 then
-			local image = axutils.childWithRole(group, "AXImage")
-			return image ~= nil
-		end
-	end
-	return false
+    local ui = self:rootGroupUI()
+    if ui then
+        -- In full-screen, it can either be a single group, or a sub-group containing the event viewer.
+        local group
+        if #ui == 1 then
+            group = ui[1]
+        else
+            group = axutils.childMatching(ui, function(element) return #element == 2 end)
+        end
+        if #group == 2 then
+            local image = axutils.childWithRole(group, "AXImage")
+            return image ~= nil
+        end
+    end
+    return false
 end):bind(FullScreenWindow)
 
 -- TODO: Add documentation
-function FullScreenWindow:_findWindowUI(windows)
-	for i,w in ipairs(windows) do
-		if FullScreenWindow.matches(w) then return w end
-	end
-	return nil
-end
-
--- TODO: Add documentation
 function FullScreenWindow:setFullScreen(isFullScreen)
-	local ui = self:UI()
-	if ui then ui:setFullScreen(isFullScreen) end
-	return self
+    local ui = self:UI()
+    if ui then ui:setFullScreen(isFullScreen) end
+    return self
 end
 
 -- TODO: Add documentation
 function FullScreenWindow:toggleFullScreen()
-	local ui = self:UI()
-	if ui then ui:setFullScreen(not self:isFullScreen()) end
-	return self
+    local ui = self:UI()
+    if ui then ui:setFullScreen(not self:isFullScreen()) end
+    return self
 end
 
 -----------------------------------------------------------------------
@@ -126,10 +126,10 @@ end
 -- TODO: Add documentation
 -- The top AXSplitGroup contains the
 function FullScreenWindow:rootGroupUI()
-	return axutils.cache(self, "_rootGroup", function()
-		local ui = self:UI()
-		return ui and axutils.childWithRole(ui, "AXSplitGroup")
-	end)
+    return axutils.cache(self, "_rootGroup", function()
+        local ui = self:UI()
+        return ui and axutils.childWithRole(ui, "AXSplitGroup")
+    end)
 end
 
 -----------------------------------------------------------------------
@@ -140,19 +140,19 @@ end
 
 -- TODO: Add documentation
 function FullScreenWindow:viewerGroupUI()
-	local ui = self:rootGroupUI()
-	if ui then
-		local group = nil
-		if #ui == 1 then
-			group = ui[1]
-		else
-			group = axutils.childMatching(ui, function(element) return #element == 2 end)
-		end
-		if #group == 2 and axutils.childWithRole(group, "AXImage") ~= nil then
-			return group
-		end
-	end
-	return nil
+    local ui = self:rootGroupUI()
+    if ui then
+        local group
+        if #ui == 1 then
+            group = ui[1]
+        else
+            group = axutils.childMatching(ui, function(element) return #element == 2 end)
+        end
+        if #group == 2 and axutils.childWithRole(group, "AXImage") ~= nil then
+            return group
+        end
+    end
+    return nil
 end
 
 -----------------------------------------------------------------------
@@ -175,10 +175,10 @@ end
 --- Returns:
 ---  * A table containing an ID which can be passed to `unwatch` to stop watching.
 function FullScreenWindow:watch(events)
-	if not self._watcher then
-		self._watcher = WindowWatcher:new(self)
-	end
-	return self._watcher:watch(events)
+    if not self._watcher then
+        self._watcher = WindowWatcher:new(self)
+    end
+    return self._watcher:watch(events)
 end
 
 --- cp.apple.finalcutpro.main.FullScreenWindow:unwatch(id) -> none
@@ -191,9 +191,9 @@ end
 --- Returns:
 ---  * None
 function FullScreenWindow:unwatch(id)
-	if self._watcher then
-		self._watcher:unwatch(id)
-	end
+    if self._watcher then
+        self._watcher:unwatch(id)
+    end
 end
 
 return FullScreenWindow

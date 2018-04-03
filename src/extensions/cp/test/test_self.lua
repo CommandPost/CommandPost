@@ -1,18 +1,17 @@
 -- A test script to test cp.test.lua
 
-local test		= require("cp.test.neu")
+local test		= require("cp.test")
 
-return test("cp.test", function()
-	test("passes", function()
-		ok(eq(1+1, 2))
-	end)
+return test.suite("cp.test"):with {
+    test("passes", function()
+        ok(eq(1+1, 2))
+    end),
 
-	test("error happens", function()
-		local str = nil .. "foo"
-	end)
+    test("error happens", function()
+        local _ = nil .. "foo"
+    end),
 
-	test("fails", function()
-		ok(false, "This should be true.")
-	end)
-
-end)
+    test("fails", function()
+        ok(false, "This should be true.")
+    end),
+}

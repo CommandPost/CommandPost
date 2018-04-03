@@ -47,23 +47,23 @@ local mod = {}
 ---  * `true` if successful otherwise `false`
 function mod.moveToPlayhead()
 
-	local clipboardManager = mod.clipboardManager
+    local clipboardManager = mod.clipboardManager
 
-	clipboardManager.stopWatching()
+    clipboardManager.stopWatching()
 
-	if not fcp:performShortcut("Cut") then
-		log.ef("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
-		timer.doAfter(2, function() clipboardManager.startWatching() end)
-		return false
-	end
+    if not fcp:performShortcut("Cut") then
+        log.ef("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
+        timer.doAfter(2, function() clipboardManager.startWatching() end)
+        return false
+    end
 
-	if not fcp:performShortcut("Paste") then
-		log.ef("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
-		timer.doAfter(2, function() clipboardManager.startWatching() end)
-		return false
-	end
+    if not fcp:performShortcut("Paste") then
+        log.ef("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
+        timer.doAfter(2, function() clipboardManager.startWatching() end)
+        return false
+    end
 
-	return true
+    return true
 
 end
 
@@ -73,12 +73,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.movetoplayhead",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.commands"]			= "fcpxCmds",
-		["finalcutpro.clipboard.manager"]	= "clipboardManager",
-	}
+    id = "finalcutpro.timeline.movetoplayhead",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]			= "fcpxCmds",
+        ["finalcutpro.clipboard.manager"]	= "clipboardManager",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
-	mod.clipboardManager = deps.clipboardManager
+    mod.clipboardManager = deps.clipboardManager
 
     --------------------------------------------------------------------------------
     -- Setup Command:
@@ -99,7 +99,7 @@ function plugin.init(deps)
             :whenActivated(function() mod.moveToPlayhead() end)
     end
 
-	return mod
+    return mod
 end
 
 return plugin

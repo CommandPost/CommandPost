@@ -632,39 +632,39 @@ function plugin.init(deps)
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             })
-			:addSelect(102,
-			{
-				label		= i18n("modifierKey"),
-				value		= mod.customModifier,
-				options		= {
-					{
-						label = "command ⌘",
-						value = "cmd",
-					},
-					{
-						label = "option ⌥",
-						value = "alt",
-					},
-					{
-						label = "shift ⇧",
-						value = "shift",
-					},
-					{
-						label = "control ⌃",
-						value = "ctrl",
-					},
-					{
-						label = "caps lock",
-						value = "capslock",
-					},
-					{
-						label = "fn",
-						value = "fn",
-					},
-				},
-				required	= true,
-				onchange	= function(_, params) mod.customModifier(params.value) end,
-			})
+            :addSelect(102,
+            {
+                label		= i18n("modifierKey"),
+                value		= mod.customModifier,
+                options		= {
+                    {
+                        label = "command ⌘",
+                        value = "cmd",
+                    },
+                    {
+                        label = "option ⌥",
+                        value = "alt",
+                    },
+                    {
+                        label = "shift ⇧",
+                        value = "shift",
+                    },
+                    {
+                        label = "control ⌃",
+                        value = "ctrl",
+                    },
+                    {
+                        label = "caps lock",
+                        value = "capslock",
+                    },
+                    {
+                        label = "fn",
+                        value = "fn",
+                    },
+                },
+                required	= true,
+                onchange	= function(_, params) mod.customModifier(params.value) end,
+            })
     end
 
     return mod

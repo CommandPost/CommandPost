@@ -12,7 +12,7 @@ return test.suite("named"):with(
         ok(eq(o:name(), nil))
     end),
 
-	test("name", function()
+    test("name", function()
         local o = named({})
 
         ok(eq(tostring(named.xml(o)), ""))
