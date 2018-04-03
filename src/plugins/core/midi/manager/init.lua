@@ -163,10 +163,20 @@ end
 mod._deviceNames = {}
 mod._virtualDevices = {}
 
---
--- Group Statuses:
---
+-- plugins.core.midi.manager._groupStatus -> table
+-- Variable
+-- Group Statuses.
 mod._groupStatus = {}
+
+-- plugins.core.midi.manager._currentSubGroup -> table
+-- Variable
+-- Current Touch Bar Sub Group Statuses.
+mod._currentSubGroup = config.prop("midiCurrentSubGroup", {})
+
+--- plugins.core.midi.manager.numberOfSubGroups -> number
+--- Variable
+--- The number of Sub Groups per Touch Bar Group.
+mod.numberOfSubGroups = 5
 
 --
 -- Used to prevent callback delays:
@@ -317,7 +327,7 @@ function mod.getItems()
     return mod._items()
 end
 
---- plugins.core.midi.manager.activeGroup() -> none
+--- plugins.core.midi.manager.activeGroup() -> string
 --- Function
 --- Returns the active group.
 ---
@@ -327,6 +337,7 @@ end
 --- Returns:
 ---  * Returns the active group or `manager.defaultGroup` as a string.
 function mod.activeGroup()
+
     local groupStatus = mod._groupStatus
     for group, status in pairs(groupStatus) do
         if status then
@@ -334,6 +345,84 @@ function mod.activeGroup()
         end
     end
     return mod.defaultGroup
+
+end
+
+--- plugins.core.midi.manager.activeSubGroup() -> string
+--- Function
+--- Returns the active sub-group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Returns the active sub group as string
+function mod.activeSubGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    local result = 1
+    local activeGroup = mod.activeGroup()
+    if currentSubGroup[activeGroup] then
+        result = currentSubGroup[activeGroup]
+    end
+    return tostring(result)
+end
+
+--- plugins.core.midi.manager.gotoSubGroup() -> none
+--- Function
+--- Loads a specific sub-group.
+---
+--- Parameters:
+---  * id - The ID of the sub-group.
+---
+--- Returns:
+---  * None
+function mod.gotoSubGroup(id)
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    currentSubGroup[activeGroup] = id
+    mod._currentSubGroup(currentSubGroup)
+end
+
+--- plugins.core.midi.manager.nextSubGroup() -> none
+--- Function
+--- Goes to the next sub-group for the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.nextSubGroup()
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
+    if currentSubGroupValue < mod.numberOfSubGroups then
+        currentSubGroup[activeGroup] = currentSubGroupValue + 1
+    else
+        currentSubGroup[activeGroup] = 1
+    end
+    mod._currentSubGroup(currentSubGroup)
+end
+
+--- plugins.core.midi.manager.previousSubGroup() -> none
+--- Function
+--- Goes to the previous sub-group for the active group.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.previousSubGroup()
+    local activeGroup = mod.activeGroup()
+    local currentSubGroup = mod._currentSubGroup()
+    local currentSubGroupValue = currentSubGroup[activeGroup] or 1
+    if currentSubGroupValue == 1 then
+        currentSubGroup[activeGroup] = mod.numberOfSubGroups
+    else
+        currentSubGroup[activeGroup] = currentSubGroupValue - 1
+    end
+    mod._currentSubGroup(currentSubGroup)
 end
 
 --- plugins.core.midi.manager.groupStatus(groupID, status) -> none
@@ -917,7 +1006,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     --------------------------------------------------------------------------------
     -- Get Active Group:
     --------------------------------------------------------------------------------
-    local activeGroup = mod.activeGroup()
+    local activeGroup = mod.activeGroup() .. mod.activeSubGroup()
 
     --------------------------------------------------------------------------------
     -- Get Items:

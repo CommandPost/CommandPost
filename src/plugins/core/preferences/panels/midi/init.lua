@@ -126,15 +126,18 @@ local function generateContent()
     --------------------------------------------------------------------------------
     -- The Group Select:
     --------------------------------------------------------------------------------
+    local groups = {}
     local groupOptions = {}
     local defaultGroup = nil
     if mod.lastGroup() then defaultGroup = mod.lastGroup() end -- Get last group from preferences.
     for _,id in ipairs(commands.groupIds()) do
-        defaultGroup = defaultGroup or id
-        groupOptions[#groupOptions+1] = { value = id, label = i18n("shortcut_group_"..id, {default = id})}
+        for subGroupID=1, mod._midi.numberOfSubGroups do
+            defaultGroup = defaultGroup or id .. subGroupID
+            groupOptions[#groupOptions+1] = { value = id .. subGroupID, label = i18n("shortcut_group_" .. id, {default = id}) .. " (Bank " .. tostring(subGroupID) .. ")"}
+            groups[#groups + 1] = id .. subGroupID
+        end
     end
     table.sort(groupOptions, function(a, b) return a.label < b.label end)
-    mod.lastGroup(defaultGroup)
 
     local midiGroupSelect = ui.select({
         id          = "midiGroupSelect",
@@ -177,7 +180,7 @@ local function generateContent()
     local context = {
         _                           = _,
         midiGroupSelect             = midiGroupSelect,
-        groups                      = commands.groups(),
+        groups                      = groups,
         defaultGroup                = defaultGroup,
         webviewLabel                = mod._manager.getLabel(),
         maxItems                    = mod._midi.maxItems,
@@ -573,30 +576,31 @@ local function midiPanelCallback(id, params)
                 mod.activator = {}
                 local handlerIds = mod._actionmanager.handlerIds()
                 for _,groupID in ipairs(commands.groupIds()) do
+                    for subGroupID=1, mod._midi.numberOfSubGroups do
+                        --------------------------------------------------------------------------------
+                        -- Create new Activator:
+                        --------------------------------------------------------------------------------
+                        mod.activator[groupID .. subGroupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID .. subGroupID)
 
-                    --------------------------------------------------------------------------------
-                    -- Create new Activator:
-                    --------------------------------------------------------------------------------
-                    mod.activator[groupID] = mod._actionmanager.getActivator("midiPreferences" .. groupID)
-
-                    --------------------------------------------------------------------------------
-                    -- Restrict Allowed Handlers for Activator to current group (and global):
-                    --------------------------------------------------------------------------------
-                    local allowedHandlers = {}
-                    for _,v in pairs(handlerIds) do
-                        local handlerTable = tools.split(v, "_")
-                        if handlerTable[1] == groupID or handlerTable[1] == "global" then
-                            --------------------------------------------------------------------------------
-                            -- Don't include "widgets" (that are used for the Touch Bar):
-                            --------------------------------------------------------------------------------
-                            if handlerTable[2] ~= "widgets" then
-                                table.insert(allowedHandlers, v)
+                        --------------------------------------------------------------------------------
+                        -- Restrict Allowed Handlers for Activator to current group (and global):
+                        --------------------------------------------------------------------------------
+                        local allowedHandlers = {}
+                        for _,v in pairs(handlerIds) do
+                            local handlerTable = tools.split(v, "_")
+                            if handlerTable[1] == groupID or handlerTable[1] == "global" then
+                                --------------------------------------------------------------------------------
+                                -- Don't include "widgets" (that are used for the Touch Bar):
+                                --------------------------------------------------------------------------------
+                                if handlerTable[2] ~= "widgets" then
+                                    table.insert(allowedHandlers, v)
+                                end
                             end
                         end
+                        local unpack = table.unpack
+                        mod.activator[groupID .. subGroupID]:allowHandlers(unpack(allowedHandlers))
+                        mod.activator[groupID .. subGroupID]:preloadChoices()
                     end
-                    local unpack = table.unpack
-                    mod.activator[groupID]:allowHandlers(unpack(allowedHandlers))
-                    mod.activator[groupID]:preloadChoices()
                 end
             end
 

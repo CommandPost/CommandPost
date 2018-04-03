@@ -1,5 +1,9 @@
 {
     "en": {
+    	"previous"									: "Previous",
+    	"next"										: "Next",
+    	"midiBank"									: "MIDI Bank",
+    	"midiBankDescription"						: "Changes the MIDI Control Bank",
     	"midiTools"                                 : "MIDI Tools",
     	"midiMachineControl"                        : "MIDI Machine Control (MMC)",
     	"transmitMMC"                               : "Transmit MMC",
@@ -793,6 +797,8 @@
         "enableMIDI"                                           : "Enable MIDI Controls",
         "failedToRestart"                                      : "Failed to restart Final Cut Pro. You will need to restart manually.",
         "fcpx_midicontrols_action"                             : "MIDI Controls",
+        "global_midibanks_action"                              : "MIDI Banks",
+        "core_midi_controls_banks_label"				       : "MIDI: Banks",
         "finalcutproUnsupportedVersionText"                    : "CommandPost requires Final Cut Pro <strong>%{minVersion}</strong> or later, but you have version <strong>%{thisVersion}</strong>.<br /><br />Most Final Cut Pro functionality will be disabled or unreliable. Please upgrade to get best results.",
         "core_preferences_advanced_label"                      : "Preferences: Advanced",
         "core_preferences_manager_label"                       : "Manager: Preferences",
