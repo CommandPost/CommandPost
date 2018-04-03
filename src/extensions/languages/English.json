@@ -1,5 +1,14 @@
 {
     "en": {
+    	"finalcutpro_tangent_color_label": "Tangent: Color",
+    	"finalcutpro_tangent_group_label": "Tangent: Group",
+    	"finalcutpro_tangent_timeline_label": "Tangent: Timeline",
+    	"core_tangent_actions_label": "Tangent: Actions",
+    	"core_tangent_default_label": "Tangent: Default",
+    	"core_tangent_os_label": "Tangent: OS",
+    	"core_tangent_os_display_label": "Tangent: OS - Display",
+    	"core_tangent_os_sound_label": "Tangent: OS - Sound",
+    	"core_tangent_prefs_label": "Preferences: Tangent",
     	"midiTools": "MIDI Tools",
     	"midiMachineControl": "MIDI Machine Control (MMC)",
     	"transmitMMC": "Transmit MMC",
@@ -21,7 +30,7 @@
         "finalcutpro_clipboard_manager_label": "Manager: Clipboard",
         "finalcutpro_preferences_clearcache_label": "Preferences: Clear Cache",
         "angle": "Angle",
-    	"angle3"                                    : "ANG",
+    	"angle3": "ANG",
         "finalcutpro_open_label": "Open Final Cut Pro",
         "touchBarWidget": "Touch Bar Widget",
         "enableTimelinePlayheadLock": "Enable Timeline Playhead Lock",
