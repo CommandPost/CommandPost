@@ -282,7 +282,7 @@ function mod.init(deps, env)
         height      = 492,
     })
 
-    mod.panel:addContent(10, generateContent, true)
+    mod.panel:addContent(10, generateContent, false)
 
     return mod
 end

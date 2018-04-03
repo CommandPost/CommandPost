@@ -142,25 +142,25 @@ local function getClass(params)
     return class
 end
 
---- plugins.core.preferences.manager.panel:addContent(priority, content, unescaped) -> panel
+--- plugins.core.preferences.manager.panel:addContent(priority, content[, escaped]) -> panel
 --- Method
 --- Adds the specified `content` to the panel, with the specified `priority` order.
 ---
 --- Parameters:
 --- * `priority`        - the priority order of the content.
 --- * `content`         - a value that can be converted to a string.
---- * `unescaped`       - if `true`, the content will not be escaped. Defaults to `false`.
+--- * `escaped`         - if `true`, the content will be escaped.
 ---
 --- Returns:
 --- * The panel.
-function panel:addContent(priority, content, unescaped)
+function panel:addContent(priority, content, escaped)
     -- log.df("addContent to '%s': %s", self.id, hs.inspect(content))
     priority = priority or DEFAULT_PRIORITY
 
     local items = self._uiItems
     items[#items+1] = {
         priority = priority,
-        html = html(content, unescaped),
+        html = html(content, escaped),
     }
     return self
 end
@@ -218,19 +218,19 @@ function panel:addHandler(event, id, handlerFn, keys)
     self.manager.addHandler(id, handlerFn)
 end
 
---- plugins.core.preferences.manager.panel:addParagraph(content, unescaped, class) -> panel
+--- plugins.core.preferences.manager.panel:addParagraph(content[, escaped[, class]]) -> panel
 --- Method
 --- Adds a Paragraph to the panel
 ---
 --- Parameters:
 ---  * content - The content as a string
----  * unescaped - Whether or not the HTML should be escaped as a boolean
+---  * escaped - Whether or not the HTML should be escaped as a boolean. Defaults to `true` for simple text.
 ---  * class - The class as a string
 ---
 --- Returns:
 --- * The panel object.
-function panel:addParagraph(priority, content, unescaped, class)
-    return self:addContent(priority, html.p { class=getClass({class=class}) } (content, unescaped))
+function panel:addParagraph(priority, content, escaped, class)
+    return self:addContent(priority, html.p { class=getClass({class=class}) } (content, escaped))
 end
 
 --- plugins.core.preferences.manager.panel:addCheckbox(priority, params) -> panel

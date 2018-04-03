@@ -58,4 +58,8 @@ function plugin:getDependents()
 	return self._dependents
 end
 
+function plugin:__tostring()
+	return string.format("plugin: %s", self.id)
+end
+
 return plugin

@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsGenerate")
+-- local log										= require("hs.logger").new("prefsGenerate")
 local mimetypes									= require("mimetypes")
 local base64									= require("hs.base64")
 local fs										= require("hs.fs")
@@ -51,7 +51,7 @@ end
 --------------------------------------------------------------------------------
 local function randomWord(length)
 	local result = ""
-	for i=1, length do
+	for _ = 1,length do
 		result = result .. randomLetter()
 	end
 	return result
@@ -109,7 +109,7 @@ function mod.checkbox(data, customTrigger, customID)
 
 end
 
---- cp.web.generate.javascript(script, context) -> cp.web.html.block
+--- cp.web.generate.javascript(script, context) -> cp.web.html
 --- Function
 --- Generates a HTML Heading
 ---
@@ -122,7 +122,7 @@ end
 function mod.javascript(script, context)
 	local t = compile(script, "no-cache", true)
 	return html.script { type = "text/javascript" } (
-		"(function(){\n" .. t(context) .. "\n})();", true
+		"(function(){\n" .. t(context) .. "\n})();", false
 	)
 end
 
@@ -217,7 +217,7 @@ function mod.dropdown(title, data, customTrigger)
 
 	local options = ""
 
-	for i, v in ipairs(data) do
+	for _,v in ipairs(data) do
 		local selected = nil
 		if v.checked then selected = "selected" end
 

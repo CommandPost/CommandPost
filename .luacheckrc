@@ -1,4 +1,4 @@
-globals = {
+globals = { -- luacheck:ignore
 	"hs",
 	"rawrequire",
 	"i18n",
@@ -7,9 +7,9 @@ globals = {
 	"history",
 	"string",
 	-- used in cp.test
-	"ok", "eq",
+	"ok", "eq", "spy",
 }
 
-ignore = {
+ignore = { -- luacheck:ignore
 	"631",
 }

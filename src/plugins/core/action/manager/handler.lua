@@ -143,7 +143,7 @@ end
 --- If set to `true` (the default), any choices created will be cached until [reset] is called.
 handler.mt.cached = prop.TRUE()
 :bind(handler.mt)
-:watch(function(cached, self)
+:watch(function(_, self)
     -- reset the cache
     self:reset()
 end)
@@ -179,11 +179,11 @@ end)
 --
 -- Returns:
 -- * Nothing
-function handler.mt:_onChoices(choices)
+function handler.mt._onChoices(_)
     log.df("unimplemented: handler:onChoices(choicesFn)")
 end
 
-function handler.mt:_onActionId(action)
+function handler.mt._onActionId(_)
     log.df("unimplemented: handler:onActionId(actionFn)")
 end
 
@@ -203,7 +203,7 @@ end
 --
 -- Returns:
 -- * Nothing
-function handler.mt._onExecute(action)
+function handler.mt._onExecute(_)
     log.df("unimplemented: handler:onExecute(executeFn)")
 end
 

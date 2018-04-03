@@ -255,7 +255,7 @@ end
 --
 -- Returns:
 --  * Table
-local function windowCallback(action, webview, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod.webview = nil
@@ -491,14 +491,14 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(_, env)
     return mod.init(env)
 end
 
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps, env)
+function plugin.postInit()
     mod.onboardingRequired:watch(function(required)
         if required then
 
@@ -510,7 +510,7 @@ function plugin.postInit(deps, env)
                     :addIcon(config.iconPath)
                     :addHeading(config.appName)
                     :addSubHeading(i18n("introTagLine"))
-                    :addParagraph(i18n("introText"), true)
+                    :addParagraph(i18n("introText"), false)
                     :addButton({
                         value   = i18n("continue"),
                         onclick = function() mod.nextPanel() end,
@@ -528,7 +528,7 @@ function plugin.postInit(deps, env)
                 panel.new("outro", mod.LAST_PRIORITY)
                     :addIcon(config.iconPath)
                     :addSubHeading(i18n("outroTitle"))
-                    :addParagraph(i18n("outroText"), true)
+                    :addParagraph(i18n("outroText"), false)
                     :addButton({
                         value   = i18n("close"),
                         onclick = function()

@@ -22,7 +22,6 @@ local window			= require("hs.window")
 local console			= require("hs.console")
 local sourcewatcher		= require("cp.sourcewatcher")
 local prop				= require("cp.prop")
-local v					= require("semver")
 local watcher			= require("cp.watcher")
 
 --------------------------------------------------------------------------------
@@ -208,10 +207,10 @@ function mod.set(key, value)
 		error("The key must be a string: %s", hs.inspect(key))
 	end
 	settings.set(mod.configPrefix .. "." .. key, value)
-	if mod._isCache then
-		local prop = mod._isCache[key]
-		if prop then
-			prop:update()
+	if mod._propCache then
+		local p = mod._propCache[key]
+		if p then
+			p:update()
 		end
 	end
 end
@@ -228,10 +227,10 @@ end
 --- * A `cp.prop` instance for the key.
 function mod.prop(key, defaultValue)
 	local propValue = nil
-	if not mod._isCache then
-		mod._isCache = {}
+	if not mod._propCache then
+		mod._propCache = {}
 	else
-		propValue = mod._isCache[key]
+		propValue = mod._propCache[key]
 	end
 
 	if not propValue then
@@ -239,7 +238,7 @@ function mod.prop(key, defaultValue)
 			function() return mod.get(key, defaultValue) end,
 			function(value) mod.set(key, value) end
 		):deepTable()
-		mod._isCache[key] = propValue
+		mod._propCache[key] = propValue
 	end
 
 	return propValue
@@ -255,7 +254,7 @@ end
 --- Returns:
 ---  * None
 function mod.reset()
-	for i, v in ipairs(settings.getKeys()) do
+	for _,v in ipairs(settings.getKeys()) do
 		settings.set(v, nil)
 	end
 	mod.watcher:notify("reset")

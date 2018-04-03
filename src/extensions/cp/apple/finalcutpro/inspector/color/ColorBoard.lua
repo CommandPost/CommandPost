@@ -374,7 +374,7 @@ end
 --- * The `ColorBoardAspect`.
 function ColorBoard:color()
     if not self._color then
-        self._color = Aspect:new(self, 1)
+        self._color = Aspect:new(self, 1, true)
     end
     return self._color
 end

@@ -32,6 +32,8 @@ local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
+local html              = require("cp.web.html")
+local ui                = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -194,7 +196,7 @@ function mod.controllerCallback(_, params)
     end
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.styleSheet() -> string
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.styleSheet() -> cp.web.html
 --- Function
 --- Generates Style Sheet
 ---
@@ -204,103 +206,99 @@ end
 --- Returns:
 ---  * Returns Style Sheet as a string
 function mod.styleSheet()
-    local result = [[
-        <style>
-            .btnAddWatchFolder {
-                margin-top: 10px;
-            }
-            .watchfolders {
-                float: left;
-                margin-left: 20px;
-                table-layout: fixed;
-                width: 92%;
-                white-space: nowrap;
-                border: 1px solid #cccccc;
-                padding: 8px;
-                background-color: #161616 !important;
-                text-align: left;
-            }
+    return ui.style ([[
+        .btnAddWatchFolder {
+            margin-top: 10px;
+        }
+        .watchfolders {
+            float: left;
+            margin-left: 20px;
+            table-layout: fixed;
+            width: 92%;
+            white-space: nowrap;
+            border: 1px solid #cccccc;
+            padding: 8px;
+            background-color: #161616 !important;
+            text-align: left;
+        }
 
-            .watchfolders td {
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-            }
+        .watchfolders td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-            .rowPath {
-                width:80%;
-            }
+        .rowPath {
+            width:80%;
+        }
 
-            .rowRemove {
-                width:20%;
-                text-align:right;
-            }
+        .rowRemove {
+            width:20%;
+            text-align:right;
+        }
 
-            .watchfolders thead, .watchfolders tbody tr {
-                display:table;
-                table-layout:fixed;
-                width: calc( 100% - 1.5em );
-            }
+        .watchfolders thead, .watchfolders tbody tr {
+            display:table;
+            table-layout:fixed;
+            width: calc( 100% - 1.5em );
+        }
 
-            .watchfolders tbody {
-                display:block;
-                height: 80px;
-                font-weight: normal;
-                font-size: 10px;
+        .watchfolders tbody {
+            display:block;
+            height: 80px;
+            font-weight: normal;
+            font-size: 10px;
 
-                overflow-x: hidden;
-                overflow-y: auto;
-            }
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
 
-            .watchfolders tbody tr {
-                display:table;
-                width:100%;
-                table-layout:fixed;
-            }
+        .watchfolders tbody tr {
+            display:table;
+            width:100%;
+            table-layout:fixed;
+        }
 
-            .watchfolders thead {
-                font-weight: bold;
-                font-size: 12px;
-            }
+        .watchfolders thead {
+            font-weight: bold;
+            font-size: 12px;
+        }
 
-            .watchfolders tbody {
-                font-weight: normal;
-                font-size: 10px;
-            }
+        .watchfolders tbody {
+            font-weight: normal;
+            font-size: 10px;
+        }
 
-            .watchfolders tbody tr:nth-child(even) {
-                background-color: #f5f5f5
-            }
+        .watchfolders tbody tr:nth-child(even) {
+            background-color: #f5f5f5
+        }
 
-            .watchfolders tbody tr:hover {
-                background-color: #006dd4;
-                color: white;
-            }
+        .watchfolders tbody tr:hover {
+            background-color: #006dd4;
+            color: white;
+        }
 
-            .watchFolderTextBox {
-                vertical-align: middle;
-            }
+        .watchFolderTextBox {
+            vertical-align: middle;
+        }
 
-            .watchFolderTextBox label {
-                display: inline-block;
-                width: 100px;
-                height: 25px;
-            }
+        .watchFolderTextBox label {
+            display: inline-block;
+            width: 100px;
+            height: 25px;
+        }
 
-            .watchFolderTextBox input {
-                display: inline-block;
-                background-color: #161616 !important;
-                color: #999999 !important;
-            }
+        .watchFolderTextBox input {
+            display: inline-block;
+            background-color: #161616 !important;
+            color: #999999 !important;
+        }
 
-            .deleteNote {
-                font-size: 10px;
-                margin-left: 20px;
-            }
-
-        </style>
-    ]]
-    return result
+        .deleteNote {
+            font-size: 10px;
+            margin-left: 20px;
+        }
+    ]])
 end
 
 --- plugins.finalcutpro.watchfolders.panels.fcpxml.insertFilesIntoFinalCutPro(files) -> none
@@ -688,12 +686,12 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     if mod.panel then
         mod.panel
-            :addContent(1, mod.styleSheet(), true)
+            :addContent(1, mod.styleSheet())
             :addHeading(10, i18n("description"))
-            :addParagraph(11, i18n("watchFolderXMLHelp"), true)
+            :addParagraph(11, i18n("watchFolderXMLHelp"), false)
             :addParagraph(12, "")
             :addHeading(13, i18n("watchFolders"), 3)
-            :addContent(14, [[<div id="]] .. mod.watchFolderTableID .. [[">]] .. mod.generateTable() .. [[</div>]], true)
+            :addContent(14, html.div { id=mod.watchFolderTableID } ( mod.generateTable() ) )
             :addButton(15,
                 {
                     label       = i18n("addWatchFolder"),
@@ -718,20 +716,18 @@ function mod.init(deps)
             )
             local uniqueUUID = string.gsub(uuid(), "-", "")
             mod.manager.addHandler(uniqueUUID, mod.controllerCallback)
-            mod.panel:addContent(27, [[
-                <script>
-                    window.onload = function() {
-                        try {
-                            var p = {};
-                            p["action"] = "refresh";
-                            var result = { id: "]] .. uniqueUUID .. [[", params: p };
-                            webkit.messageHandlers.watchfolders.postMessage(result);
-                        } catch(err) {
-                            alert('An error has occurred. Does the controller exist yet?');
-                        }
+            mod.panel:addContent(27, ui.javascript ([[
+                window.onload = function() {
+                    try {
+                        var p = {};
+                        p["action"] = "refresh";
+                        var result = { id: "{{ id }}", params: p };
+                        webkit.messageHandlers.watchfolders.postMessage(result);
+                    } catch(err) {
+                        alert('An error has occurred. Does the controller exist yet?');
                     }
-                </script>
-            ]],true)
+                }
+            ]], { id = uniqueUUID }))
     end
 
     --------------------------------------------------------------------------------

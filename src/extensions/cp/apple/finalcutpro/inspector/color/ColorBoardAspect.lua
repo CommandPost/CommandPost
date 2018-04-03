@@ -53,18 +53,19 @@ function ColorBoardAspect.matches(element)
     return element and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:new(app) -> ColorBoardAspect
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:new(parent, index[, hasAngle]) -> ColorBoardAspect
 --- Function
 --- Creates a new `ColorBoardAspect` object.
 ---
 --- Parameters:
 ---  * parent - The parent object.
 ---  * index - The Color Board Aspect Index.
+---  * hasAngle - If `true`, the aspect has an `angle` parameter. Defaults to `false`
 ---
 --- Returns:
 ---  * A new `ColorBoardAspect object.
 -- TODO: Use a function instead of a method.
-function ColorBoardAspect:new(parent, index) -- luacheck: ignore
+function ColorBoardAspect:new(parent, index, hasAngle) -- luacheck: ignore
     if index < 1 or index > #ColorBoardAspect.ids then
         error(format("The index must be between 1 and %s: %s", #ColorBoardAspect.ids, inspect(index)))
     end
@@ -72,6 +73,7 @@ function ColorBoardAspect:new(parent, index) -- luacheck: ignore
     local o = prop.extend({
         _parent = parent,
         _index = index,
+        _hasAngle = hasAngle,
     }, ColorBoardAspect)
 
     return o
@@ -165,6 +167,16 @@ function ColorBoardAspect:index()
     return self._index
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:hasAngle() -> boolean
+--- Method
+--- Checks if the aspect has an `angle` property.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if it has an `angle` propery.
+
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:id() -> string
 --- Method
 --- Gets the Color Board Aspect ID.
@@ -220,9 +232,10 @@ end
 ---  * The Master ColorPuck object.
 function ColorBoardAspect:master()
     if not self._master then
-        self._master = ColorPuck:new(
+        self._master = ColorPuck.new(
             self, ColorPuck.RANGE.master,
-            {"PAECorrectorEffectMaster", "cb master puck display name"}
+            {"PAECorrectorEffectMaster", "cb master puck display name"},
+            self._hasAngle
         )
     end
     return self._master
@@ -239,9 +252,10 @@ end
 ---  * The Shadows ColorPuck object.
 function ColorBoardAspect:shadows()
     if not self._shadows then
-        self._shadows = ColorPuck:new(
+        self._shadows = ColorPuck.new(
             self, ColorPuck.RANGE.shadows,
-            {"PAECorrectorEffectShadows", "cb shadow puck display name"}
+            {"PAECorrectorEffectShadows", "cb shadow puck display name"},
+            self._hasAngle
         )
     end
     return self._shadows
@@ -258,9 +272,10 @@ end
 ---  * The Midtones ColorPuck object.
 function ColorBoardAspect:midtones()
     if not self._midtones then
-        self._midtones = ColorPuck:new(
+        self._midtones = ColorPuck.new(
             self, ColorPuck.RANGE.midtones,
-            {"PAECorrectorEffectMidtones", "cb midtone puck display name"}
+            {"PAECorrectorEffectMidtones", "cb midtone puck display name"},
+            self._hasAngle
         )
     end
     return self._midtones
@@ -277,9 +292,10 @@ end
 ---  * The Highlights ColorPuck object.
 function ColorBoardAspect:highlights()
     if not self._highlights then
-        self._highlights = ColorPuck:new(
+        self._highlights = ColorPuck.new(
             self, ColorPuck.RANGE.highlights,
-            {"PAECorrectorEffectHighlights", "cb highlight puck display name"}
+            {"PAECorrectorEffectHighlights", "cb highlight puck display name"},
+            self._hasAngle
         )
     end
     return self._highlights
