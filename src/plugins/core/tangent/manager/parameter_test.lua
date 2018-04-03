@@ -13,7 +13,7 @@ return test.suite("action"):with {
         ok(eq(o:name(), "Foobar"))
     end),
 
-	test("names", function()
+    test("names", function()
         local o = parameter.new(0x01)
 
         ok(eq(o:name("Foobar"), o))

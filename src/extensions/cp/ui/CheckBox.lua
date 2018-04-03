@@ -51,7 +51,7 @@ local CheckBox = {}
 --- Returns:
 --- * `true` if it's a match, or `false` if not.
 function CheckBox.matches(element)
-	return element:attributeValue("AXRole") == "AXCheckBox"
+    return element:attributeValue("AXRole") == "AXCheckBox"
 end
 
 --- cp.ui.CheckBox.new(axuielement, function) -> cp.ui.CheckBox
@@ -65,53 +65,53 @@ end
 --- Returns:
 --- * The new `CheckBox`.
 function CheckBox.new(parent, finderFn)
-	local o = prop.extend({_parent = parent, _finder = finderFn}, CheckBox)
+    local o = prop.extend({_parent = parent, _finder = finderFn}, CheckBox)
 
-	--- cp.ui.CheckBox:UI() -> hs._asm.axuielement | nil
-	--- Method
-	--- Returns the `axuielement` representing the CheckBox, or `nil` if not available.
-	---
-	--- Parameters:
-	--- * None
-	---
-	--- Return:
-	--- * The `axuielement` or `nil`.
-	local UI = prop(function(self)
-		return axutils.cache(self, "_ui", function()
-			return self._finder()
-		end,
-		CheckBox.matches)
-	end)
+    --- cp.ui.CheckBox:UI() -> hs._asm.axuielement | nil
+    --- Method
+    --- Returns the `axuielement` representing the CheckBox, or `nil` if not available.
+    ---
+    --- Parameters:
+    --- * None
+    ---
+    --- Return:
+    --- * The `axuielement` or `nil`.
+    local UI = prop(function(self)
+        return axutils.cache(self, "_ui", function()
+            return self._finder()
+        end,
+        CheckBox.matches)
+    end)
 
-	--- cp.ui.CheckBox.isShowing <cp.prop: boolean; read-only>
-	--- Field
-	--- If `true`, it is visible on screen.
-	local isShowing = UI:mutate(function(original, self)
-		return original() ~= nil and self:parent():isShowing()
-	end)
+    --- cp.ui.CheckBox.isShowing <cp.prop: boolean; read-only>
+    --- Field
+    --- If `true`, it is visible on screen.
+    local isShowing = UI:mutate(function(original, self)
+        return original() ~= nil and self:parent():isShowing()
+    end)
 
-	--- cp.ui.CheckBox.checked <cp.prop: boolean>
-	--- Field
-	--- Indicates if the checkbox is currently checked.
-	--- May be set by calling as a function with `true` or `false` to the function.
-	local checked = UI:mutate(
-		function(original) -- get
-			local ui = original()
-			return ui ~= nil and ui:value() == 1
-		end,
-		function(value, original) -- set
-			local ui = original()
-			if ui and value ~= (ui:value() == 1) then
-				ui:doPress()
-			end
-		end
-	)
+    --- cp.ui.CheckBox.checked <cp.prop: boolean>
+    --- Field
+    --- Indicates if the checkbox is currently checked.
+    --- May be set by calling as a function with `true` or `false` to the function.
+    local checked = UI:mutate(
+        function(original) -- get
+            local ui = original()
+            return ui ~= nil and ui:value() == 1
+        end,
+        function(value, original) -- set
+            local ui = original()
+            if ui and value ~= (ui:value() == 1) then
+                ui:doPress()
+            end
+        end
+    )
 
-	prop.bind(o) {
-		UI = UI, isShowing = isShowing, checked = checked,
-	}
+    prop.bind(o) {
+        UI = UI, isShowing = isShowing, checked = checked,
+    }
 
-	return o
+    return o
 end
 
 --- cp.ui.CheckBox:parent() -> table
@@ -124,7 +124,7 @@ end
 --- Returns:
 --- * The parent object.
 function CheckBox:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.ui.CheckBox:toggle() -> self
@@ -137,8 +137,8 @@ end
 --- Returns:
 --- * The `CheckBox` instance.
 function CheckBox:toggle()
-	self.checked:toggle()
-	return self
+    self.checked:toggle()
+    return self
 end
 
 --- cp.ui.CheckBox:isEnabled() -> boolean
@@ -151,8 +151,8 @@ end
 --- Returns:
 --- `true` or `false`.
 function CheckBox:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 --- cp.ui.CheckBox:press() -> self
@@ -165,11 +165,11 @@ end
 --- Returns:
 --- The `CheckBox` instance.
 function CheckBox:press()
-	local ui = self:UI()
-	if ui then
-		ui:doPress()
-	end
-	return self
+    local ui = self:UI()
+    if ui then
+        ui:doPress()
+    end
+    return self
 end
 
 --- cp.ui.CheckBox:saveLayout() -> table
@@ -183,9 +183,9 @@ end
 --- Returns:
 --- * A settings table.
 function CheckBox:saveLayout()
-	return {
-		checked = self:checked()
-	}
+    return {
+        checked = self:checked()
+    }
 end
 
 --- cp.ui.CheckBox:loadLayout(layout) -> nil
@@ -198,17 +198,17 @@ end
 --- Returns:
 --- * nil
 function CheckBox:loadLayout(layout)
-	if layout then
-		self:checked(layout.checked)
-	end
+    if layout then
+        self:checked(layout.checked)
+    end
 end
 
 -- Allows the CheckBox to be called as a function and will return the `checked` value.
 function CheckBox.__call(self, parent, value)
-	if parent and parent ~= self:parent() then
-		value = parent
-	end
-	return self:checked(value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:checked(value)
 end
 
 --- cp.ui.CheckBox:snapshot([path]) -> hs.image | nil
@@ -222,11 +222,11 @@ end
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.
 function CheckBox:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return CheckBox

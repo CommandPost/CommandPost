@@ -75,18 +75,18 @@ xml.is = block.is
 
 xml.__index = function(_, name)
     return function(param, ...)
-		local pType = type(param)
+        local pType = type(param)
         if param ~= nil and (pType ~= "table" or block.is(param)) then
-			-- it's content, not attributes
-			return block.new(name, nil, xmlEscape)(param, ...)
-		else
+            -- it's content, not attributes
+            return block.new(name, nil, xmlEscape)(param, ...)
+        else
             return block.new(name, param, xmlEscape)
         end
     end
 end
 
 xml.__call = function(_, content, ...)
-	return block.is(content) and content or block.new("_", nil, xmlEscape)(content, ...)
+    return block.is(content) and content or block.new("_", nil, xmlEscape)(content, ...)
 end
 
 xml._xml = function(attrs)

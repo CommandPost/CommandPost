@@ -61,18 +61,18 @@ html.is = block.is
 
 html.__index = function(_, name)
     return function(param, ...)
-		local pType = type(param)
+        local pType = type(param)
         if param ~= nil and (pType ~= "table" or block.is(param)) then
-			-- it's content, not attributes
-			return block.new(name, nil, htmlEscape)(param, ...)
-		else
+            -- it's content, not attributes
+            return block.new(name, nil, htmlEscape)(param, ...)
+        else
             return block.new(name, param, htmlEscape)
         end
     end
 end
 
 html.__call = function(_, content, ...)
-	return block.is(content) and content or block.new("_", nil, htmlEscape)(content, ...)
+    return block.is(content) and content or block.new("_", nil, htmlEscape)(content, ...)
 end
 
 return setmetatable(html, html)

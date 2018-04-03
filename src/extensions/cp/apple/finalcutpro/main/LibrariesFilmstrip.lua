@@ -33,69 +33,69 @@ local Filmstrip = {}
 
 -- TODO: Add documentation
 function Filmstrip.matches(element)
-	return element and element:attributeValue("AXIdentifier") == id("Content")
+    return element and element:attributeValue("AXIdentifier") == id("Content")
 end
 
 -- TODO: Add documentation
 function Filmstrip:new(parent)
-	local o = prop.extend({_parent = parent}, Filmstrip)
+    local o = prop.extend({_parent = parent}, Filmstrip)
 
-	local UI = parent.mainGroupUI:mutate(function(original)
-		return axutils.cache(self, "_ui", function()
-			local main = original()
-			if main then
-				for _,child in ipairs(main) do
-					if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
-						if Filmstrip.matches(child[1]) then
-							return child[1]
-						end
-					end
-				end
-			end
-			return nil
-		end,
-		Filmstrip.matches)
-	end)
+    local UI = parent.mainGroupUI:mutate(function(original)
+        return axutils.cache(self, "_ui", function()
+            local main = original()
+            if main then
+                for _,child in ipairs(main) do
+                    if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
+                        if Filmstrip.matches(child[1]) then
+                            return child[1]
+                        end
+                    end
+                end
+            end
+            return nil
+        end,
+        Filmstrip.matches)
+    end)
 
-	prop.bind(o) {
-		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.UI <cp.prop: hs._asm.axuielement; read-only>
-		--- Field
-		--- The `axuielement` for the Libraries List, or `nil` if not available.
-		UI = UI,
+    prop.bind(o) {
+        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.UI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- The `axuielement` for the Libraries List, or `nil` if not available.
+        UI = UI,
 
-		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.isShowing <cp.prop: boolean; read-only>
-		--- Field
-		--- Checks if the Libraries Filmstrip is showing on screen.
-		isShowing = parent.isShowing:AND(UI:ISNOT(nil)),
+        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.isShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Libraries Filmstrip is showing on screen.
+        isShowing = parent.isShowing:AND(UI:ISNOT(nil)),
 
-		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
-		--- Field
-		--- Returns the `axuielement` representing the 'vertical scroll bar', or `nil` if not available.
-		verticalScrollBarUI = UI:mutate(function(original)
-			local ui = original()
-			return ui and ui:attributeValue("AXVerticalScrollBar")
-		end),
+        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Returns the `axuielement` representing the 'vertical scroll bar', or `nil` if not available.
+        verticalScrollBarUI = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXVerticalScrollBar")
+        end),
 
-		--- cp.apple.finalcutpro.main.LibrariesFilmstrip.contentsUI <cp.prop: hs._asm.axuielement; read-only>
-		--- Field
-		--- Returns the `axuielement` representing the 'content', or `nil` if not available.
-		contentsUI = UI:mutate(function(original)
-			local ui = original()
-			return ui and ui:contents()[1]
-		end),
-	}
+        --- cp.apple.finalcutpro.main.LibrariesFilmstrip.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Returns the `axuielement` representing the 'content', or `nil` if not available.
+        contentsUI = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:contents()[1]
+        end),
+    }
 
-	return o
+    return o
 end
 
 -- TODO: Add documentation
 function Filmstrip:parent()
-	return self._parent
+    return self._parent
 end
 
 -- TODO: Add documentation
 function Filmstrip:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 -----------------------------------------------------------------------
@@ -106,9 +106,9 @@ end
 
 
 function Filmstrip:show()
-	if not self:isShowing() and self:parent():show():isShowing() then
-		self:parent():toggleViewMode():press()
-	end
+    if not self:isShowing() and self:parent():show():isShowing() then
+        self:parent():toggleViewMode():press()
+    end
 end
 
 -----------------------------------------------------------------------
@@ -119,22 +119,22 @@ end
 
 -- TODO: Add documentation
 function Filmstrip:playhead()
-	if not self._playhead then
-		self._playhead = Playhead:new(self, false, function()
-			return self:contentsUI()
-		end)
-	end
-	return self._playhead
+    if not self._playhead then
+        self._playhead = Playhead:new(self, false, function()
+            return self:contentsUI()
+        end)
+    end
+    return self._playhead
 end
 
 -- TODO: Add documentation
 function Filmstrip:skimmingPlayhead()
-	if not self._skimmingPlayhead then
-		self._skimmingPlayhead = Playhead:new(self, true, function()
-			return self:contentsUI()
-		end)
-	end
-	return self._skimmingPlayhead
+    if not self._skimmingPlayhead then
+        self._skimmingPlayhead = Playhead:new(self, true, function()
+            return self:contentsUI()
+        end)
+    end
+    return self._skimmingPlayhead
 end
 
 -----------------------------------------------------------------------
@@ -145,164 +145,165 @@ end
 
 -- TODO: Add documentation
 function Filmstrip.sortClips(a, b)
-	local aFrame = a:frame()
-	local bFrame = b:frame()
-	if aFrame.y < bFrame.y then -- a is above b
-		return true
-	elseif aFrame.y == bFrame.y then
-		if aFrame.x < bFrame.x then -- a is left of b
-			return true
-		elseif aFrame.x == bFrame.x
-		   and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
-			return true
-		end
-	end
-	return false -- b is first
+    local aFrame = a:frame()
+    local bFrame = b:frame()
+    if aFrame.y < bFrame.y then -- a is above b
+        return true
+    elseif aFrame.y == bFrame.y then
+        if aFrame.x < bFrame.x then -- a is left of b
+            return true
+        elseif aFrame.x == bFrame.x
+           and aFrame.w < bFrame.w then -- a starts with but finishes before b, so b must be multi-line
+            return true
+        end
+    end
+    return false -- b is first
 end
 
-function Filmstrip:_uiToClips(clipsUI)
-	return _.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
+local function _uiToClips(clipsUI)
+    return _.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
 end
 
-function Filmstrip:_clipsToUI(clips)
-	return _.map(clips, function(_,clip) return clip:UI() end)
+local function _clipsToUI(clips)
+    return _.map(clips, function(_,clip) return clip:UI() end)
 end
 
 -- TODO: Add documentation
 function Filmstrip:clipsUI(filterFn)
-	local ui = self:contentsUI()
-	if ui then
-		local clips = axutils.childrenMatching(ui, function(child)
-			return child:attributeValue("AXRole") == "AXGroup"
-			   and (filterFn == nil or filterFn(child))
-		end)
-		if clips then
-			table.sort(clips, Filmstrip.sortClips)
-			return clips
-		end
-	end
-	return nil
+    local ui = self:contentsUI()
+    if ui then
+        local clips = axutils.childrenMatching(ui, function(child)
+            return child:attributeValue("AXRole") == "AXGroup"
+               and (filterFn == nil or filterFn(child))
+        end)
+        if clips then
+            table.sort(clips, Filmstrip.sortClips)
+            return clips
+        end
+    end
+    return nil
 end
 
 function Filmstrip:clips(filterFn)
-	local clips = self:_uiToClips(self:clipsUI())
-	if filterFn then
-		clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
-	end
-	return clips
+    local clips = _uiToClips(self:clipsUI())
+    if filterFn then
+        clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+    end
+    return clips
 end
 
 -- TODO: Add documentation
 function Filmstrip:selectedClipsUI()
-	local ui = self:contentsUI()
-	if ui then
-		local children = ui:selectedChildren()
-		local clips = {}
-		for i,child in ipairs(children) do
-			clips[i] = child
-		end
-		table.sort(clips, Filmstrip.sortClips)
-		return clips
-	end
-	return nil
+    local ui = self:contentsUI()
+    if ui then
+        local children = ui:selectedChildren()
+        local clips = {}
+        for i,child in ipairs(children) do
+            clips[i] = child
+        end
+        table.sort(clips, Filmstrip.sortClips)
+        return clips
+    end
+    return nil
 end
 
 function Filmstrip:selectedClips()
-	return self:_uiToClips(self:selectedClipsUI())
+    return _uiToClips(self:selectedClipsUI())
 end
 
 -- TODO: Add documentation
 function Filmstrip:showClip(clip)
-	local clipUI = clip:UI()
-	local ui = self:UI()
-	if ui then
-		local vScroll = self:verticalScrollBarUI()
-		local vFrame = vScroll:frame()
-		local clipFrame = clipUI:frame()
+    local clipUI = clip:UI()
+    local ui = self:UI()
+    if ui then
+        local vScroll = self:verticalScrollBarUI()
+        local vFrame = vScroll:frame()
+        local clipFrame = clipUI:frame()
 
-		local top = vFrame.y
-		local bottom = vFrame.y + vFrame.h
+        local top = vFrame.y
+        local bottom = vFrame.y + vFrame.h
 
-		local clipTop = clipFrame.y
-		local clipBottom = clipFrame.y + clipFrame.h
+        local clipTop = clipFrame.y
+        local clipBottom = clipFrame.y + clipFrame.h
 
-		if clipTop < top or clipBottom > bottom then
-			-- we need to scroll
-			local oFrame = self:contentsUI():frame()
-			local scrollHeight = oFrame.h - vFrame.h
+        if clipTop < top or clipBottom > bottom then
+            -- we need to scroll
+            local oFrame = self:contentsUI():frame()
+            local scrollHeight = oFrame.h - vFrame.h
 
-			local vValue = nil
-			if clipTop < top or clipFrame.h > vFrame.h then
-				vValue = (clipTop-oFrame.y)/scrollHeight
-			else
-				vValue = 1.0 - (oFrame.y + oFrame.h - clipBottom)/scrollHeight
-			end
-			vScroll:setAttributeValue("AXValue", vValue)
-		end
-		return true
-	end
-	return false
+            local vValue
+            if clipTop < top or clipFrame.h > vFrame.h then
+                vValue = (clipTop-oFrame.y)/scrollHeight
+            else
+                vValue = 1.0 - (oFrame.y + oFrame.h - clipBottom)/scrollHeight
+            end
+            vScroll:setAttributeValue("AXValue", vValue)
+        end
+        return true
+    end
+    return false
 end
 
 -- TODO: Add documentation
 function Filmstrip:showClipAt(index)
-	local ui = self:clips()
-	if ui and #ui >= index then
-		return self:showClip(ui[index])
-	end
-	return false
+    local ui = self:clips()
+    if ui and #ui >= index then
+        return self:showClip(ui[index])
+    end
+    return false
 end
 
 -- TODO: Add documentation
-function Filmstrip:selectClip(clip)
-	if clip then
-		local clipUI = clip:UI()
-		if axutils.isValid(clipUI) then
-			clipUI:parent():setSelectedChildren( { clipUI } )
-			return true
-		end
-	end
-	return false
+function Filmstrip:selectClip(clip) -- luacheck: ignore
+    if clip then
+        local clipUI = clip:UI()
+        if axutils.isValid(clipUI) then
+            clipUI:parent():setSelectedChildren( { clipUI } )
+            return true
+        end
+    end
+    return false
 end
 
 -- TODO: Add documentation
 function Filmstrip:selectClipAt(index)
-	local ui = self:clips()
-	if ui and #ui >= index then
-		return self:selectClip(ui[index])
-	end
-	return false
+    local ui = self:clips()
+    if ui and #ui >= index then
+        return self:selectClip(ui[index])
+    end
+    return false
 end
 
 function Filmstrip:selectClipTitled(title)
-	local clips = self:clips()
-	for _,clip in ipairs(clips) do
-		if clip:getTitle() == title then
-			return self:selectClip(clip)
-		end
-	end
-	return false
+    local clips = self:clips()
+    for _,clip in ipairs(clips) do
+        if clip:getTitle() == title then
+            return self:selectClip(clip)
+        end
+    end
+    return false
 end
 
 -- TODO: Add documentation
 function Filmstrip:selectAll(clips)
-	clips = clips or self:clips()
-	if clips then
-		for i,clip in ipairs(clips) do
-			return self:selectClip(clip)
-		end
-	end
-	return false
+    clips = clips or self:clips()
+    local contents = self:contentsUI()
+    if clips and contents then
+        local clipsUI = _clipsToUI(clips)
+        contents:setSelectedChildren(clipsUI)
+        return true
+    end
+    return false
 end
 
 -- TODO: Add documentation
 function Filmstrip:deselectAll()
-	local contents = self:contentsUI()
-	if contents then
-		contents:setSelectedChildren({})
-		return true
-	end
-	return false
+    local contents = self:contentsUI()
+    if contents then
+        contents:setSelectedChildren({})
+        return true
+    end
+    return false
 end
 
 return Filmstrip

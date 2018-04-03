@@ -25,7 +25,7 @@ local Slider = {}
 
 -- TODO: Add documentation
 function Slider.matches(element)
-	return element:attributeValue("AXRole") == "AXSlider"
+    return element:attributeValue("AXRole") == "AXSlider"
 end
 
 --- cp.ui.Slider.new(parent, finderFn) -> cp.ui.Slider
@@ -39,123 +39,123 @@ end
 --- Returns:
 --- * A new `Slider` instance.
 function Slider.new(parent, finderFn)
-	local o = prop.extend({_parent = parent, _finder = finderFn}, Slider)
+    local o = prop.extend({_parent = parent, _finder = finderFn}, Slider)
 
-	-- TODO: Add documentation
-	local UI = prop(function(self)
-		return axutils.cache(self, "_ui", function()
-			return self._finder()
-		end,
-		Slider.matches)
-	end)
+    -- TODO: Add documentation
+    local UI = prop(function(self)
+        return axutils.cache(self, "_ui", function()
+            return self._finder()
+        end,
+        Slider.matches)
+    end)
 
-	prop.bind(o) {
-		UI = UI,
+    prop.bind(o) {
+        UI = UI,
 
-		isShowing = parent.isShowing:AND(UI),
+        isShowing = parent.isShowing:AND(UI),
 
-		value = UI:mutate(
-			function(original)
-				local ui = original()
-				return ui and ui:attributeValue("AXValue")
-			end,
-			function(value, self)
-				local ui = self:UI()
-				if ui then
-					ui:setAttributeValue("AXValue", value)
-				end
-			end
-		),
+        value = UI:mutate(
+            function(original)
+                local ui = original()
+                return ui and ui:attributeValue("AXValue")
+            end,
+            function(value, self)
+                local ui = self:UI()
+                if ui then
+                    ui:setAttributeValue("AXValue", value)
+                end
+            end
+        ),
 
-		-- TODO: Add documentation
-		minValue = UI:mutate(function(original)
-			local ui = original()
-			return ui and ui:attributeValue("AXMinValue")
-		end),
+        -- TODO: Add documentation
+        minValue = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXMinValue")
+        end),
 
-		-- TODO: Add documentation
-		maxValue = UI:mutate(function(original)
-			local ui = original()
-			return ui and ui:attributeValue("AXMaxValue")
-		end),
-	}
+        -- TODO: Add documentation
+        maxValue = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXMaxValue")
+        end),
+    }
 
-	return o
+    return o
 end
 
 -- TODO: Add documentation
 function Slider:parent()
-	return self._parent
+    return self._parent
 end
 
 function Slider:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 -- TODO: Add documentation
 function Slider:getValue()
-	return self:value()
+    return self:value()
 end
 
 -- TODO: Add documentation
 function Slider:setValue(value)
-	self.value:set(value)
-	return self
+    self.value:set(value)
+    return self
 end
 
 -- TODO: Add documentation
 function Slider:shiftValue(value)
-	local currentValue = self:value()
-	self.value:set(currentValue - value)
-	return self
+    local currentValue = self:value()
+    self.value:set(currentValue - value)
+    return self
 end
 
 -- TODO: Add documentation
 function Slider:getMinValue()
-	return self:minValue()
+    return self:minValue()
 end
 
 -- TODO: Add documentation
 function Slider:getMaxValue()
-	return self:maxValue()
+    return self:maxValue()
 end
 
 -- TODO: Add documentation
 function Slider:increment()
-	local ui = self:UI()
-	if ui then
-		ui:doIncrement()
-	end
-	return self
+    local ui = self:UI()
+    if ui then
+        ui:doIncrement()
+    end
+    return self
 end
 
 -- TODO: Add documentation
 function Slider:decrement()
-	local ui = self:UI()
-	if ui then
-		ui:doDecrement()
-	end
-	return self
+    local ui = self:UI()
+    if ui then
+        ui:doDecrement()
+    end
+    return self
 end
 
 -- TODO: Add documentation
 function Slider:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
 function Slider:saveLayout()
-	local layout = {}
-	layout.value = self:getValue()
-	return layout
+    local layout = {}
+    layout.value = self:getValue()
+    return layout
 end
 
 -- TODO: Add documentation
 function Slider:loadLayout(layout)
-	if layout then
-		self:setValue(layout.value)
-	end
+    if layout then
+        self:setValue(layout.value)
+    end
 end
 
 --- cp.ui.Slider:snapshot([path]) -> hs.image | nil
@@ -169,11 +169,11 @@ end
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.
 function Slider:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return Slider

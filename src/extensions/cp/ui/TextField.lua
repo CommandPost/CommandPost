@@ -34,7 +34,7 @@ local TextField = {}
 
 -- TODO: Add documentation
 function TextField.matches(element)
-	return element:attributeValue("AXRole") == "AXTextField"
+    return element:attributeValue("AXRole") == "AXTextField"
 end
 
 --- cp.ui.TextField:new(parent, finderFn[, convertFn]) -> TextField
@@ -62,98 +62,98 @@ end
 --- * The new `TextField`.
 -- TODO: Use a function instead of a method.
 function TextField:new(parent, finderFn, convertFn) -- luacheck: ignore
-	return prop.extend({
-		_parent = parent,
-		_finder = finderFn,
-		_convert = convertFn,
-	}, TextField)
+    return prop.extend({
+        _parent = parent,
+        _finder = finderFn,
+        _convert = convertFn,
+    }, TextField)
 end
 
 -- TODO: Add documentation
 function TextField:parent()
-	return self._parent
+    return self._parent
 end
 
 -- TODO: Add documentation
 function TextField:UI()
-	return axutils.cache(self, "_ui", function()
-		return self._finder()
-	end,
-	TextField.matches)
+    return axutils.cache(self, "_ui", function()
+        return self._finder()
+    end,
+    TextField.matches)
 end
 
 -- TODO: Add documentation
 function TextField:isShowing()
-	return self:UI() ~= nil and self:parent():isShowing()
+    return self:UI() ~= nil and self:parent():isShowing()
 end
 
 --- cp.ui.TextField.value <cp.prop: anything>
 --- Field
 --- The current value of the text field.
 TextField.value = prop(
-	function(self)
-		local ui = self:UI()
-		local value = ui and ui:attributeValue("AXValue") or nil
-		if value and self._convert then
-			value = self._convert(value)
-		end
-		return value
-	end,
-	function(value, self)
-		local ui = self:UI()
-		if ui then
-			value = tostring(value)
-			local focused = ui:attributeValue("AXFocused")
-			ui:setAttributeValue("AXFocused", true)
-			ui:setAttributeValue("AXValue", value)
-			ui:setAttributeValue("AXFocused", focused)
-			ui:performAction("AXConfirm")
-		end
+    function(self)
+        local ui = self:UI()
+        local value = ui and ui:attributeValue("AXValue") or nil
+        if value and self._convert then
+            value = self._convert(value)
+        end
+        return value
+    end,
+    function(value, self)
+        local ui = self:UI()
+        if ui then
+            value = tostring(value)
+            local focused = ui:attributeValue("AXFocused")
+            ui:setAttributeValue("AXFocused", true)
+            ui:setAttributeValue("AXValue", value)
+            ui:setAttributeValue("AXFocused", focused)
+            ui:performAction("AXConfirm")
+        end
 
-	end
+    end
 ):bind(TextField)
 
 -- TODO: Add documentation
 function TextField:getValue()
-	return self:value()
+    return self:value()
 end
 
 -- TODO: Add documentation
 function TextField:setValue(value)
-	self.value:set(value)
+    self.value:set(value)
 end
 
 -- TODO: Add documentation
 function TextField:clear()
-	self.value:set("")
+    self.value:set("")
 end
 
 -- TODO: Add documentation
 function TextField:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
 function TextField:saveLayout()
-	local layout = {}
-	layout.value = self:getValue()
-	return layout
+    local layout = {}
+    layout.value = self:getValue()
+    return layout
 end
 
 -- TODO: Add documentation
 function TextField:loadLayout(layout)
-	if layout then
-		self:setValue(layout.value)
-	end
+    if layout then
+        self:setValue(layout.value)
+    end
 end
 
 -- TODO: Add documentation
 function TextField.__call(self, parent, value)
-	if parent and parent ~= self:parent() then
-		value = parent
-	end
-	return self:value(value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:value(value)
 end
 
 --- cp.ui.TextField:snapshot([path]) -> hs.image | nil
@@ -167,11 +167,11 @@ end
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.
 function TextField:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return TextField

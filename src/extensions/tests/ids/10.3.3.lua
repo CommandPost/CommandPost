@@ -1,5 +1,5 @@
 return {
-	Alpha	= {
-		Two		= "2",
-	}
+    Alpha	= {
+        Two		= "2",
+    }
 }

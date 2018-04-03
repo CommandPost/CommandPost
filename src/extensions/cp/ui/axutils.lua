@@ -29,7 +29,7 @@ local axutils = {}
 
 -- TODO: Add documentation
 function axutils.hasAttributeValue(element, name, value)
-	return element and element:attributeValue(name) == value
+    return element and element:attributeValue(name) == value
 end
 
 --- cp.ui.axutils.childWith(element, name, value) -> axuielement
@@ -44,7 +44,7 @@ end
 --- Returns:
 ---  * The first matching child, or nil if none was found
 function axutils.childWith(element, name, value)
-	return axutils.childMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
+    return axutils.childMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
 end
 
 --- cp.ui.axutils.childWithID(element, value) -> axuielement
@@ -58,7 +58,7 @@ end
 --- Returns:
 ---  * The first matching child, or `nil` if none was found
 function axutils.childWithID(element, value)
-	return axutils.childWith(element, "AXIdentifier", value)
+    return axutils.childWith(element, "AXIdentifier", value)
 end
 
 --- cp.ui.axutils.childWithRole(element, value) -> axuielement
@@ -72,7 +72,7 @@ end
 --- Returns:
 ---  * The first matching child, or `nil` if none was found
 function axutils.childWithRole(element, value)
-	return axutils.childWith(element, "AXRole", value)
+    return axutils.childWith(element, "AXRole", value)
 end
 
 --- cp.ui.axutils.childWithDescription(element, value) -> axuielement
@@ -86,7 +86,7 @@ end
 --- Returns:
 ---  * The first matching child, or `nil` if none was found
 function axutils.childWithDescription(element, value)
-	return axutils.childWith(element, "AXDescription", value)
+    return axutils.childWith(element, "AXDescription", value)
 end
 
 --- cp.ui.axutils.childMatching(element, matcherFn[, index]) -> axuielement
@@ -102,27 +102,27 @@ end
 --- Returns:
 ---  * The first matching child, or nil if none was found
 function axutils.childMatching(element, matcherFn, index)
-	index = index or 1
-	if element then
-		local children = element
-		-- Try to get the children array directly, if present, to optimise the loop.
-		-- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-		if element.attributeValue then -- it's an AXUIElement
-			children = element:attributeValue("AXChildren") or element
-		end
-		if #children > 0 then
-			local count = 0
-			for _,child in ipairs(children) do
-				if matcherFn(child) then
-					count = count + 1
-					if count == index then
-						return child
-					end
-				end
-			end
-		end
-	end
-	return nil
+    index = index or 1
+    if element then
+        local children = element
+        -- Try to get the children array directly, if present, to optimise the loop.
+        -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
+        if element.attributeValue then -- it's an AXUIElement
+            children = element:attributeValue("AXChildren") or element
+        end
+        if #children > 0 then
+            local count = 0
+            for _,child in ipairs(children) do
+                if matcherFn(child) then
+                    count = count + 1
+                    if count == index then
+                        return child
+                    end
+                end
+            end
+        end
+    end
+    return nil
 end
 
 --- cp.ui.axutils.childAtIndex(element, index, compareFn) -> axuielement
@@ -137,19 +137,19 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childAtIndex(element, index, compareFn)
-	if element and index > 0 then
-		local children = element
-		-- Try to get the children array directly, if present, to optimise the loop.
-		-- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-		if element.attributeValue then -- it's an AXUIElement
-			children = element:attributeValue("AXChildren") or element
-		end
-		if #children >= index then
-			table.sort(children, compareFn)
-			return children[index]
-		end
-	end
-	return nil
+    if element and index > 0 then
+        local children = element
+        -- Try to get the children array directly, if present, to optimise the loop.
+        -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
+        if element.attributeValue then -- it's an AXUIElement
+            children = element:attributeValue("AXChildren") or element
+        end
+        if #children >= index then
+            table.sort(children, compareFn)
+            return children[index]
+        end
+    end
+    return nil
 end
 
 --- cp.ui.axutils.compareLeftToRight(a, b) -> boolean
@@ -163,8 +163,8 @@ end
 --- Returns:
 --- * `true` if `a` is left of `b`.
 function axutils.compareLeftToRight(a, b)
-	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-	return aFrame and bFrame and aFrame.x < bFrame.x or false
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    return aFrame and bFrame and aFrame.x < bFrame.x or false
 end
 
 --- cp.ui.axutils.compareRightToLeft(a, b) -> boolean
@@ -178,8 +178,8 @@ end
 --- Returns:
 --- * `true` if `a` is right of `b`.
 function axutils.compareRightToLeft(a, b)
-	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-	return aFrame and bFrame and aFrame.x + aFrame.w > bFrame.x + bFrame.w or false
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    return aFrame and bFrame and aFrame.x + aFrame.w > bFrame.x + bFrame.w or false
 end
 
 --- cp.ui.axutils.compareTopToBottom(a, b) -> boolean
@@ -193,8 +193,8 @@ end
 --- Returns:
 --- * `true` if `a` is above `b`.
 function axutils.compareTopToBottom(a, b)
-	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-	return aFrame and bFrame and aFrame.y < bFrame.y or false
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    return aFrame and bFrame and aFrame.y < bFrame.y or false
 end
 
 
@@ -209,8 +209,8 @@ end
 --- Returns:
 --- * `true` if `a` is below `b`.
 function axutils.compareBottomToTop(a, b)
-	local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
-	return aFrame and bFrame and aFrame.y + aFrame.h > bFrame.y + bFrame.h or false
+    local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
+    return aFrame and bFrame and aFrame.y + aFrame.h > bFrame.y + bFrame.h or false
 end
 
 --- cp.ui.axutils.childFromLeft(element, index) -> axuielement
@@ -224,7 +224,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromLeft(element, index)
-	return axutils.childAtIndex(element, index, axutils.compareLeftToRight)
+    return axutils.childAtIndex(element, index, axutils.compareLeftToRight)
 end
 
 --- cp.ui.axutils.childFromRight(element, index) -> axuielement
@@ -238,7 +238,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromRight(element, index)
-	return axutils.childAtIndex(element, index, axutils.compareRightToLeft)
+    return axutils.childAtIndex(element, index, axutils.compareRightToLeft)
 end
 
 --- cp.ui.axutils.childFromTop(element, index) -> axuielement
@@ -252,7 +252,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromTop(element, index)
-	return axutils.childAtIndex(element, index, axutils.compareTopToBottom)
+    return axutils.childAtIndex(element, index, axutils.compareTopToBottom)
 end
 
 --- cp.ui.axutils.childFromBottom(element, index) -> axuielement
@@ -266,7 +266,7 @@ end
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childFromBottom(element, index)
-	return axutils.childAtIndex(element, index, axutils.compareBottomToTop)
+    return axutils.childAtIndex(element, index, axutils.compareBottomToTop)
 end
 
 --- cp.ui.axutils.childrenWith(element, name, value) -> axuielement
@@ -281,7 +281,7 @@ end
 --- Returns:
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenWith(element, name, value)
-	return axutils.childrenMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
+    return axutils.childrenMatching(element, function(child) return axutils.hasAttributeValue(child, name, value) end)
 end
 
 --- cp.ui.axutils.childrenWithRole(element, value) -> axuielement
@@ -295,7 +295,7 @@ end
 --- Returns:
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenWithRole(element, value)
-	return axutils.childrenWith(element, "AXRole", value)
+    return axutils.childrenWith(element, "AXRole", value)
 end
 
 --- cp.ui.axutils.childrenMatching(element, matcherFn) -> { axuielement }
@@ -310,10 +310,10 @@ end
 --- Returns:
 ---  * All matching children, or `nil` if none was found
 function axutils.childrenMatching(element, matcherFn)
-	if element then
-		return fnutils.ifilter(element, matcherFn)
-	end
-	return nil
+    if element then
+        return fnutils.ifilter(element, matcherFn)
+    end
+    return nil
 end
 
 --- cp.ui.axutils.isValid(element) -> boolean
@@ -326,7 +326,7 @@ end
 --- Returns:
 ---  * `true` if the element is valid.
 function axutils.isValid(element)
-	return element ~= nil and element.role
+    return element ~= nil and element.role
 end
 
 --- cp.ui.axutils.cache(source, key, finderFn, [verifyFn]) -> axuielement
@@ -347,16 +347,16 @@ end
 --- Returns:
 ---  * The valid cached value.
 function axutils.cache(source, key, finderFn, verifyFn)
-	local value = source[key]
-	if not axutils.isValid(value) or verifyFn and not verifyFn(value) then
-		value = finderFn()
-		if axutils.isValid(value) then
-			source[key] = value
-		else
-			return nil
-		end
-	end
-	return value
+    local value = source[key]
+    if not axutils.isValid(value) or verifyFn and not verifyFn(value) then
+        value = finderFn()
+        if axutils.isValid(value) then
+            source[key] = value
+        else
+            return nil
+        end
+    end
+    return value
 end
 
 --- cp.ui.axutils.snapshot(element, [filename]) -> hs.image
@@ -371,43 +371,43 @@ end
 --- Returns:
 --- * An `hs.image` file, or `nil` if the element could not be snapped.
 function axutils.snapshot(element, filename)
-	if axutils.isValid(element) then
-		local window = element:attributeValue("AXWindow")
-		if window then
-			local hsWindow = window:asHSWindow()
-			local windowSnap = hsWindow:snapshot()
-			local windowFrame = window:frame()
-			local shotSize = windowSnap:size()
+    if axutils.isValid(element) then
+        local window = element:attributeValue("AXWindow")
+        if window then
+            local hsWindow = window:asHSWindow()
+            local windowSnap = hsWindow:snapshot()
+            local windowFrame = window:frame()
+            local shotSize = windowSnap:size()
 
-			local ratio = shotSize.h/windowFrame.h
-			local elementFrame = element:frame()
+            local ratio = shotSize.h/windowFrame.h
+            local elementFrame = element:frame()
 
-			local imageFrame = {
-				x = (windowFrame.x-elementFrame.x)*ratio,
-				y = (windowFrame.y-elementFrame.y)*ratio,
-				w = shotSize.w,
-				h = shotSize.h,
-			}
+            local imageFrame = {
+                x = (windowFrame.x-elementFrame.x)*ratio,
+                y = (windowFrame.y-elementFrame.y)*ratio,
+                w = shotSize.w,
+                h = shotSize.h,
+            }
 
-			local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
-			c[1] = {
-				type = "image",
-				image = windowSnap,
-				imageScaling = "none",
-				imageAlignment = "topLeft",
-				frame = imageFrame,
-			}
+            local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
+            c[1] = {
+                type = "image",
+                image = windowSnap,
+                imageScaling = "none",
+                imageAlignment = "topLeft",
+                frame = imageFrame,
+            }
 
-			local elementSnap = c:imageFromCanvas()
+            local elementSnap = c:imageFromCanvas()
 
-			if filename then
-				elementSnap:saveToFile(filename)
-			end
+            if filename then
+                elementSnap:saveToFile(filename)
+            end
 
-			return elementSnap
-		end
-	end
-	return nil
+            return elementSnap
+        end
+    end
+    return nil
 end
 
 return axutils

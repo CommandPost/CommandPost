@@ -35,7 +35,7 @@ local Button = {}
 --- Returns:
 --- * `true` if the `element` is a `Button`, or `false` if not.
 function Button.matches(element)
-	return element and element:attributeValue("AXRole") == "AXButton"
+    return element and element:attributeValue("AXRole") == "AXButton"
 end
 
 --- cp.ui.Button.new(parent, finderFn) -> cp.ui.Button
@@ -49,51 +49,51 @@ end
 --- Returns:
 --- The new `Button` instance.
 function Button.new(parent, finderFn)
-	local o = prop.extend(
-		{
-			_parent = parent,
-			_finder = finderFn,
+    local o = prop.extend(
+        {
+            _parent = parent,
+            _finder = finderFn,
 
 --- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
-			UI = prop(function(self)
-				return axutils.cache(self, "_ui", finderFn, Button.matches)
-			end),
-		}, Button
-	)
+            UI = prop(function(self)
+                return axutils.cache(self, "_ui", finderFn, Button.matches)
+            end),
+        }, Button
+    )
 
-	prop.bind(o) {
+    prop.bind(o) {
 --- cp.ui.Button.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- If `true`, the `Button` is showing on screen.
-		isShowing = o.UI:mutate(function(original, self)
-			return original() ~= nil and self:parent():isShowing()
-		end),
+        isShowing = o.UI:mutate(function(original, self)
+            return original() ~= nil and self:parent():isShowing()
+        end),
 
 --- cp.ui.Button.frame <cp.prop: table; read-only>
 --- Field
 --- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
-		frame = o.UI:mutate(function(original)
-			local ui = original()
-			return ui and ui:frame() or nil
-		end),
-	}
+        frame = o.UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:frame() or nil
+        end),
+    }
 
-	if prop.is(parent.UI) then
-		o.UI:monitor(parent.UI)
-	end
+    if prop.is(parent.UI) then
+        o.UI:monitor(parent.UI)
+    end
 
-	if prop.is(parent.isShowing) then
-		o.isShowing:monitor(parent.isShowing)
-	end
+    if prop.is(parent.isShowing) then
+        o.isShowing:monitor(parent.isShowing)
+    end
 
-	return o
+    return o
 end
 
 -- TODO: Add documentation
 function Button:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.ui.Button:isEnabled() -> boolean
@@ -106,8 +106,8 @@ end
 --- Returns:
 --- * `true` if the button is visible and enabled.
 function Button:isEnabled()
-	local ui = self:UI()
-	return ui ~= nil and ui:enabled()
+    local ui = self:UI()
+    return ui ~= nil and ui:enabled()
 end
 
 --- cp.ui.Button:press() -> self
@@ -120,9 +120,9 @@ end
 --- Returns:
 --- * The `Button` instance.
 function Button:press()
-	local ui = self:UI()
-	if ui then ui:doPress() end
-	return self
+    local ui = self:UI()
+    if ui then ui:doPress() end
+    return self
 end
 
 --- cp.ui.Button:snapshot([path]) -> hs.image | nil
@@ -136,11 +136,11 @@ end
 --- Return:
 --- * The `hs.image` that was created.
 function Button:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return Button

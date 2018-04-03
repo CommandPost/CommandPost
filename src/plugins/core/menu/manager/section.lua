@@ -17,14 +17,12 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log									= require("hs.logger").new("section")
+-- local log									= require("hs.logger").new("section")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local fnutils 								= require("hs.fnutils")
-local inspect								= require("hs.inspect")
-local timer                                 = require("hs.timer")
 
 --------------------------------------------------------------------------------
 --
@@ -53,13 +51,13 @@ section.WARNING_LIMIT = 0.005
 --- Returns:
 ---  * section - The section that was created.
 function section:new()
-	local o = {
-		_generators = {}
-	}
-	setmetatable(o, self)
-	self.__index = self
+    local o = {
+        _generators = {}
+    }
+    setmetatable(o, self)
+    self.__index = self
 
-	return o
+    return o
 end
 
 --- plugins.core.menu.manager.section:setDisabledFn(disabledFn) -> none
@@ -72,7 +70,7 @@ end
 --- Returns:
 ---  * None
 function section:setDisabledFn(disabledFn)
-	self._disabledFn = disabledFn
+    self._disabledFn = disabledFn
 end
 
 --- plugins.core.menu.manager.section:isDisabled() -> voolean
@@ -85,7 +83,7 @@ end
 --- Returns:
 ---  * `true` if the section is disabled, otherwise `false`
 function section:isDisabled()
-	return self._disabledFn and self._disabledFn()
+    return self._disabledFn and self._disabledFn()
 end
 
 --- plugins.core.menu.manager.section:_addGenerator() -> section
@@ -98,9 +96,9 @@ end
 --- Returns:
 ---  * section - The section.
 function section:_addGenerator(generator)
-	self._generators[#self._generators + 1] = generator
-	table.sort(self._generators, function(a, b) return a.priority < b.priority end)
-	return self
+    self._generators[#self._generators + 1] = generator
+    table.sort(self._generators, function(a, b) return a.priority < b.priority end)
+    return self
 end
 
 --- plugins.core.menu.manager.section:addItem(priority, itemFn) -> section
@@ -114,12 +112,12 @@ end
 --- Returns:
 ---  * section - The section the item was added to.
 function section:addItem(priority, itemFn)
-	priority = priority or section.DEFAULT_PRIORITY
-	self:_addGenerator({
-		priority = priority,
-		itemFn = itemFn
-	})
-	return self
+    priority = priority or section.DEFAULT_PRIORITY
+    self:_addGenerator({
+        priority = priority,
+        itemFn = itemFn
+    })
+    return self
 end
 
 --- plugins.core.menu.manager.section:addItems(priority, itemsFn) -> section
@@ -133,12 +131,12 @@ end
 --- Returns:
 ---  * section - The section the item was added to.
 function section:addItems(priority, itemsFn)
-	priority = priority or section.DEFAULT_PRIORITY
-	self:_addGenerator({
-		priority = priority,
-		itemsFn = itemsFn
-	})
-	return self
+    priority = priority or section.DEFAULT_PRIORITY
+    self:_addGenerator({
+        priority = priority,
+        itemsFn = itemsFn
+    })
+    return self
 end
 
 --- plugins.core.menu.manager.section:addSeparator(priority) -> section
@@ -151,9 +149,9 @@ end
 --- Returns:
 ---  * section - The new section that was created.
 function section:addSeparator(priority)
-	return self:addItem(priority, function()
-		return { title = "-" }
-	end)
+    return self:addItem(priority, function()
+        return { title = "-" }
+    end)
 end
 
 --- plugins.core.menu.manager.section:addMenu(priority, titleFn) -> section
@@ -168,14 +166,14 @@ end
 --- Returns:
 ---  * section - The new section that was created.
 function section:addMenu(priority, titleFn)
-	local menuSection = section:new()
-	self:addItem(priority, function()
-		local title = titleFn()
-		local menuTable = menuSection:generateMenuTable()
-		local disabled = menuTable == nil or #menuTable == 0
-		return { title = title, menu = menuTable, disabled = disabled }
-	end)
-	return menuSection
+    local menuSection = section:new()
+    self:addItem(priority, function()
+        local title = titleFn()
+        local menuTable = menuSection:generateMenuTable()
+        local disabled = menuTable == nil or #menuTable == 0
+        return { title = title, menu = menuTable, disabled = disabled }
+    end)
+    return menuSection
 end
 
 --- plugins.core.menu.manager.section:addSection(priority, itemFn) -> section
@@ -188,13 +186,13 @@ end
 --- Returns:
 ---  * section - The new section that was created.
 function section:addSection(priority)
-	priority = priority or section.DEFAULT_PRIORITY
-	local newSection = section:new()
-	self:_addGenerator({
-		priority = priority,
-		section = newSection
-	})
-	return newSection
+    priority = priority or section.DEFAULT_PRIORITY
+    local newSection = section:new()
+    self:_addGenerator({
+        priority = priority,
+        section = newSection
+    })
+    return newSection
 end
 
 --- plugins.core.menu.manager.section:generateTable() -> table
@@ -207,42 +205,29 @@ end
 --- Returns:
 ---  * `table`	- The menu table for this section. See `hs.menubar` for details on the format.
 function section:generateMenuTable()
-	if self:isDisabled() then
-		return nil
-	end
-	local menuTable = {}
-	for _,generator in ipairs(self._generators) do
-		local start = timer.secondsSinceEpoch()
-		if generator.itemFn then
-			local item = generator.itemFn()
-			local diff = timer.secondsSinceEpoch() - start
-			if diff > section.WARNING_LIMIT then
-				--log.wf([[Generated "%s" menu in %f seconds]], item and item.title or "N/A", diff)
-			end
-			if item then
-				menuTable[#menuTable + 1] = item
-			end
-		elseif generator.section then
-			local items = generator.section:generateMenuTable()
-			local diff = timer.secondsSinceEpoch() - start
-			if diff > section.WARNING_LIMIT then
-				--log.wf([[Generated "%s" menu in %f seconds]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
-			end
-			if items then
-				fnutils.concat(menuTable, items)
-			end
-		elseif generator.itemsFn then
-			local items = generator.itemsFn()
-			local diff = timer.secondsSinceEpoch() - start
-			if diff > section.WARNING_LIMIT then
-				--log.wf([[Generated "%s" menu in %f seconds.]], table.concat(fnutils.imap(items, function(a) return string.format("'%s'", a.title) end), ", "), diff)
-			end
-			if items then
-				fnutils.concat(menuTable, items)
-			end
-		end
-	end
-	return menuTable
+    if self:isDisabled() then
+        return nil
+    end
+    local menuTable = {}
+    for _,generator in ipairs(self._generators) do
+        if generator.itemFn then
+            local item = generator.itemFn()
+            if item then
+                menuTable[#menuTable + 1] = item
+            end
+        elseif generator.section then
+            local items = generator.section:generateMenuTable()
+            if items then
+                fnutils.concat(menuTable, items)
+            end
+        elseif generator.itemsFn then
+            local items = generator.itemsFn()
+            if items then
+                fnutils.concat(menuTable, items)
+            end
+        end
+    end
+    return menuTable
 end
 
 return section

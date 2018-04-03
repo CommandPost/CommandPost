@@ -29,9 +29,9 @@ local UNFOUND = {}
 --- Returns:
 ---  * The current `cp.strings` instance.
 function mod.mt:from(source)
-	table.insert(self._sources, source)
-	self._cache = {}
-	return self
+    table.insert(self._sources, source)
+    self._cache = {}
+    return self
 end
 
 --- cp.strings:fromPlist(pathPattern) -> cp.strings
@@ -44,7 +44,7 @@ end
 --- Returns:
 ---  * The current `cp.strings` instance.
 function mod.mt:fromPlist(pathPattern)
-	return self:from(plistSrc.new(pathPattern))
+    return self:from(plistSrc.new(pathPattern))
 end
 
 --- cp.strings:findInSources(language, key[, quiet]) -> string | nil
@@ -59,11 +59,11 @@ end
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
 function mod.mt:findInSources(language, key, quiet)
-	for _,source in ipairs(self._sources) do
-		local value = source:find(language, key, quiet)
-		if value then return value end
-	end
-	return nil
+    for _,source in ipairs(self._sources) do
+        local value = source:find(language, key, quiet)
+        if value then return value end
+    end
+    return nil
 end
 
 --- cp.strings:findKeysInSources(language, value) -> string | nil
@@ -77,11 +77,11 @@ end
 --- Returns:
 ---  * The array of keys, or `{}` if not found.
 function mod.mt:findKeysInSources(language, value)
-	local keys = {}
-	for i,source in ipairs(self._sources) do
-		keys = _.append(keys, source:findKeys(language, value))
-	end
-	return keys
+    local keys = {}
+    for _,source in ipairs(self._sources) do
+        keys = _.append(keys, source:findKeys(language, value))
+    end
+    return keys
 end
 
 
@@ -97,24 +97,24 @@ end
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
 function mod.mt:find(language, key, quiet)
-	-- ensure we have a cache for the specific language
-	self._cache[language] = self._cache[language] or {}
-	local cache = self._cache[language]
-	local value = cache[key]
+    -- ensure we have a cache for the specific language
+    self._cache[language] = self._cache[language] or {}
+    local cache = self._cache[language]
+    local value = cache[key]
 
-	if value == nil then
-		value = self:findInSources(language, key) or UNFOUND
-		cache[key] = value
-	end
+    if value == nil then
+        value = self:findInSources(language, key) or UNFOUND
+        cache[key] = value
+    end
 
-	if value == UNFOUND then
-		if not quiet then
-			log.wf("Unable to find '%s' in '%s'", key, language)
-		end
-		return nil
-	else
-		return value
-	end
+    if value == UNFOUND then
+        if not quiet then
+            log.wf("Unable to find '%s' in '%s'", key, language)
+        end
+        return nil
+    else
+        return value
+    end
 end
 
 --- cp.strings:findKeysIn(language, value) -> string | nil
@@ -128,8 +128,8 @@ end
 --- Returns:
 ---  * The array of keys, or `{}` if not found.
 function mod.mt:findKeys(language, value)
-	-- NOTE: Not bothering to cache results currently, since it should not be a frequent operation.
-	return self:findKeysInSources(language, value)
+    -- NOTE: Not bothering to cache results currently, since it should not be a frequent operation.
+    return self:findKeysInSources(language, value)
 end
 
 --- cp.strings.new() -> cp.strings
@@ -142,11 +142,11 @@ end
 --- Returns:
 ---  * The new `cp.strings`
 function mod.new()
-	local o = {
-		_sources = {},
-		_cache = {},
-	}
-	return setmetatable(o, {__index = mod.mt})
+    local o = {
+        _sources = {},
+        _cache = {},
+    }
+    return setmetatable(o, {__index = mod.mt})
 end
 
 return mod

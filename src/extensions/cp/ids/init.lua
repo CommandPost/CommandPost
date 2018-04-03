@@ -13,14 +13,14 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("ids")
+-- local log				= require("hs.logger").new("ids")
 
 local fs				= require("hs.fs")
 local tools				= require("cp.tools")
 
 local v					= require("semver")
 
-local insert, remove	= table.insert, table.remove
+local insert			= table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -41,10 +41,10 @@ mod.mt.__index = mod.mt
 -- Returns:
 -- * The value as a `semver`, or `nil` if it's not a valid version value.
 local function toVersion(value)
-	if value then
-		return type(value) == "string" and v(value) or value
-	end
-	return nil
+    if value then
+        return type(value) == "string" and v(value) or value
+    end
+    return nil
 end
 
 --- cp.ids.new(path[, currentVersionFn]) -> cp.ids
@@ -59,13 +59,13 @@ end
 --- Returns:
 --- * A new `cp.ids` instance.
 function mod.new(path, currentVersionFn)
-	local o = {
-		cache = {},
-		path = path,
-		_currentVersion = currentVersionFn,
-	}
+    local o = {
+        cache = {},
+        path = path,
+        _currentVersion = currentVersionFn,
+    }
 
-	return setmetatable(o, mod.mt)
+    return setmetatable(o, mod.mt)
 end
 
 --- cp.ids:currentVersion() -> semver
@@ -78,26 +78,26 @@ end
 --- Returns:
 ---  * A `semver` with the version number or `nil` if none is available.
 function mod.mt:currentVersion()
-	return toVersion(self._currentVersion and self._currentVersion() or nil)
+    return toVersion(self._currentVersion and self._currentVersion() or nil)
 end
 
 function mod.mt:versions()
-	if not self._versions then
-		local versions = {}
-		local path = fs.pathToAbsolute(self.path)
-		for file in fs.dir(path) do
-			if file:sub(-4) == ".lua" then
-				local versionString = file:sub(1, -5)
-				local version = toVersion(versionString)
-				if version then
-					insert(versions, version)
-				end
-			end
-		end
-		table.sort(versions)
-		self._versions = versions
-	end
-	return self._versions
+    if not self._versions then
+        local versions = {}
+        local path = fs.pathToAbsolute(self.path)
+        for file in fs.dir(path) do
+            if file:sub(-4) == ".lua" then
+                local versionString = file:sub(1, -5)
+                local version = toVersion(versionString)
+                if version then
+                    insert(versions, version)
+                end
+            end
+        end
+        table.sort(versions)
+        self._versions = versions
+    end
+    return self._versions
 end
 
 --- cp.ids:previousVersion([version]) -> semver
@@ -110,25 +110,25 @@ end
 --- Returns:
 ---  * A `semver` instance for the previous version.
 function mod.mt:previousVersion(version)
-	version = toVersion(version or self:currentVersion())
+    version = toVersion(version or self:currentVersion())
 
-	-- check if we're working with a specific version
-	local versions = self:versions()
-	if version == nil then
-		return #versions > 0 and versions[#versions] or nil
-	end
+    -- check if we're working with a specific version
+    local versions = self:versions()
+    if version == nil then
+        return #versions > 0 and versions[#versions] or nil
+    end
 
-	local prev = nil
+    local prev = nil
 
-	for i,ver in ipairs(versions) do
-		if ver < version then
-			prev = ver
-		end
-		if ver >= version then
-			break
-		end
-	end
-	return prev
+    for _,ver in ipairs(versions) do
+        if ver < version then
+            prev = ver
+        end
+        if ver >= version then
+            break
+        end
+    end
+    return prev
 end
 
 --- cp.ids:load([version]) -> table
@@ -142,46 +142,46 @@ end
 --- Returns:
 ---  * A table containing all the IDs
 function mod.mt:load(version)
-	version = toVersion(version or self:currentVersion())
+    version = toVersion(version or self:currentVersion())
 
-	if not version then
-		return {}
-	end
+    if not version then
+        return {}
+    end
 
-	----------------------------------------------------------------------------------------
-	-- Restore from cache:
-	----------------------------------------------------------------------------------------
-	local vStr = tostring(version)
+    ----------------------------------------------------------------------------------------
+    -- Restore from cache:
+    ----------------------------------------------------------------------------------------
+    local vStr = tostring(version)
 
-	local vIds = self.cache[vStr]
+    local vIds = self.cache[vStr]
 
-	if vIds then
-		return vIds
-	end
+    if vIds then
+        return vIds
+    end
 
-	local prevVersion = self:previousVersion(version)
-	if prevVersion then
-		vIds = self:load(self:previousVersion(version))
-	else
-		vIds = {}
-	end
+    local prevVersion = self:previousVersion(version)
+    if prevVersion then
+        vIds = self:load(self:previousVersion(version))
+    else
+        vIds = {}
+    end
 
-	----------------------------------------------------------------------------------------
-	-- Load current version ID:
-	----------------------------------------------------------------------------------------
-	local vFile = fs.pathToAbsolute(("%s/%s.lua"):format(self.path, vStr))
+    ----------------------------------------------------------------------------------------
+    -- Load current version ID:
+    ----------------------------------------------------------------------------------------
+    local vFile = fs.pathToAbsolute(("%s/%s.lua"):format(self.path, vStr))
 
-	if vFile then
-		local currentIds = dofile(vFile)
-		vIds = tools.mergeTable({}, vIds, currentIds)
-	end
+    if vFile then
+        local currentIds = dofile(vFile)
+        vIds = tools.mergeTable({}, vIds, currentIds)
+    end
 
-	----------------------------------------------------------------------------------------
-	-- Save to cache:
-	----------------------------------------------------------------------------------------
-	self.cache[vStr] = vIds
+    ----------------------------------------------------------------------------------------
+    -- Save to cache:
+    ----------------------------------------------------------------------------------------
+    self.cache[vStr] = vIds
 
-	return vIds
+    return vIds
 end
 
 --- cp.ids:of(version, subset) -> function
@@ -201,11 +201,11 @@ end
 --- Returns:
 ---  * A function that will return the value of the specified `subset` ID for the specified version.
 function mod.mt:of(version, subset)
-	local data = self:load(version)
-	local subsetData = data[subset] or {}
-	return function(name)
-		return subsetData[name]
-	end
+    local data = self:load(version)
+    local subsetData = data[subset] or {}
+    return function(name)
+        return subsetData[name]
+    end
 end
 
 --- cp.ids:ofCurrent(subset) -> function
@@ -218,22 +218,22 @@ end
 --- Returns:
 ---  * A function that will return the value of the specified `subset` ID for the current version.
 function mod.mt:ofCurrent(subset)
-	local currentVersion = nil
-	local ofFn = nil
-	return function(name)
-		local newVersion = self:currentVersion()
-		if not ofFn or currentVersion ~= newVersion then
-			ofFn = self:of(newVersion, subset)
-		end
-		return ofFn(name)
-	end
+    local currentVersion = nil
+    local ofFn = nil
+    return function(name)
+        local newVersion = self:currentVersion()
+        if not ofFn or currentVersion ~= newVersion then
+            ofFn = self:of(newVersion, subset)
+        end
+        return ofFn(name)
+    end
 end
 
 --
 -- Allows you to call `cp.ids "subset"` directly for ease of use:
 --
 function mod.mt:__call(...)
-	return self:ofCurrent(...)
+    return self:ofCurrent(...)
 end
 
 return setmetatable(mod, mod)

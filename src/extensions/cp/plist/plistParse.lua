@@ -29,6 +29,7 @@ function plp.array(s, i)
         assert(ni)
 
         if c == "" then
+            local _
             if empty == "/" then
                 if label == "dict" or label == "array" then
                     arr[#arr+1] = {}
@@ -36,12 +37,12 @@ function plp.array(s, i)
                     arr[#arr+1] = (label == "true") and true or false
                 end
             elseif label == "array" then
-                arr[#arr+1], i, j = array(s, j+1)
+                arr[#arr+1], _, j = array(s, j+1)
             elseif label == "dict" then
-                arr[#arr+1], i, j = dictionary(s, j+1)
+                arr[#arr+1], _, j = dictionary(s, j+1)
             else
                 i = j + 1
-                ni, j, c, label, empty = nextTag(s, i)
+                ni, j, _, label, _ = nextTag(s, i)
 
                 local val = string.sub(s, i, ni-1)
                 if label == "integer" or label == "real" then
@@ -61,22 +62,22 @@ end
 
 function plp.dictionary(s, i)
     local dict, nextTag, array, dictionary = {}, plp.nextTag, plp.array, plp.dictionary
-    local ni, j, c, label, empty
+    local ni, j, c, label, empty, _
 
     while true do
-        ni, j, c, label, empty = nextTag(s, i)
+        ni, j, c, label = nextTag(s, i)
         assert(ni)
 
         if c == "" then
             if label == "key" then
                 i = j + 1
-                ni, j, c, label, empty = nextTag(s, i)
+                ni, j, c, label = nextTag(s, i)
                 assert(c == "/" and label == "key")
 
                 local key = string.sub(s, i, ni-1)
 
                 i = j + 1
-                ni, j, c, label, empty = nextTag(s, i)
+                _, j, _, label, empty = nextTag(s, i)
 
                 if empty == "/" then
                     if label == "dict" or label == "array" then
@@ -86,12 +87,12 @@ function plp.dictionary(s, i)
                     end
                 else
                     if label == "dict" then
-                        dict[key], i, j = dictionary(s, j+1)
+                        dict[key], _, j = dictionary(s, j+1)
                     elseif label == "array" then
-                        dict[key], i, j = array(s, j+1)
+                        dict[key], _, j = array(s, j+1)
                     else
                         i = j + 1
-                        ni, j, c, label, empty = nextTag(s, i)
+                        ni, j, _, label, _ = nextTag(s, i)
 
                         local val = string.sub(s, i, ni-1)
                         if label == "integer" or label == "real" then
@@ -116,24 +117,25 @@ local function plistParse(s)
         return nil
     end
 
-    local i, ni, tag, version, empty = 0
+    local i = 0
+    local ni, label, empty, _
 
     while label ~= "plist" do
-        ni, i, label, version = string.find(s, "<([%w:]+)(.-)>", i+1)
+        ni, i, label, _ = string.find(s, "<([%w:]+)(.-)>", i+1)
 
 
         -- BUG: Something is going funky here with complex plist's:
 
         if ni == nil then
-        	print("Fatal Error: Something has gone wrong in plistParse. Giving up.")
-        	return nil
+            print("Fatal Error: Something has gone wrong in plistParse. Giving up.")
+            return nil
         else
-        	assert(ni)
+            assert(ni)
         end
 
     end
 
-    ni, i, _, label, empty = plp.nextTag(s, i)
+    _, i, _, label, empty = plp.nextTag(s, i)
 
     if empty == "/" then
         return {}

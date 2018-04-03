@@ -10,7 +10,8 @@
 ---
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
 --- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
-local log				= require("hs.logger").new("tblsrc")
+
+-- local log				= require("hs.logger").new("tblsrc")
 
 local _					= require("moses")
 local find, len			= string.find, string.len
@@ -30,8 +31,8 @@ mod.mt = {}
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
 function mod.mt:add(language, keyValues)
-	self._cache[language] = _.extend(self._cache[language] or {}, keyValues)
-	return self
+    self._cache[language] = _.extend(self._cache[language] or {}, keyValues)
+    return self
 end
 
 --- cp.strings.source.table:find(language) -> string
@@ -45,7 +46,7 @@ end
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
 function mod.mt:find(language, key)
-	return self._cache[language] and self._cache[language][key]
+    return self._cache[language] and self._cache[language][key]
 end
 
 --- cp.strings.source.plist:findKeys(language, pattern) -> {string}
@@ -60,22 +61,22 @@ end
 ---  * The array of keys, or `{}` if none were fround
 function mod.mt:findKeys(language, pattern)
 
-	local cache = self._cache[language]
-	local keys = {}
+    local cache = self._cache[language]
+    local keys = {}
 
-	if cache then
-		for k,v in pairs(cache) do
-			local s, e = find(v, pattern)
-			if s == 1 and e == len(v) then
-				insert(keys, k)
-			end
-		end
-	end
-	return keys
+    if cache then
+        for k,v in pairs(cache) do
+            local s, e = find(v, pattern)
+            if s == 1 and e == len(v) then
+                insert(keys, k)
+            end
+        end
+    end
+    return keys
 end
 
 function mod.mt:reset()
-	self._cache = {}
+    self._cache = {}
 end
 
 --- cp.strings.source.table.new(language) -> source
@@ -89,10 +90,10 @@ end
 --- Returns:
 ---  * The new plist `source` instance.
 mod.new = function()
-	local o = {
-		_cache = {},
-	}
-	return setmetatable(o, {__index = mod.mt})
+    local o = {
+        _cache = {},
+    }
+    return setmetatable(o, {__index = mod.mt})
 end
 
 return mod

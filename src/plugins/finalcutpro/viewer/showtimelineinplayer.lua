@@ -53,32 +53,32 @@ local mod = {}
 --- Variable
 --- Show Timeline in Player Enabled?
 mod.enabled = prop.new(
-	function()
-		local value = fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-		if value == 1 then
-			value = true
-		else
-			value = false
-		end
-		return value
-	end,
+    function()
+        local value = fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+        if value == 1 then
+            value = true
+        else
+            value = false
+        end
+        return value
+    end,
 
-	function(value)
+    function(value)
 
-		if value then
-			value = 1
-		else
-			value = 0
-		end
+        if value then
+            value = 1
+        else
+            value = 0
+        end
 
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-			return
-		end
-	end
+        --------------------------------------------------------------------------------
+        -- Update plist:
+        --------------------------------------------------------------------------------
+        if fcp:setPreference(PREFERENCES_KEY, value) == nil then
+            dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
+            return
+        end
+    end
 )
 
 --------------------------------------------------------------------------------
@@ -87,12 +87,12 @@ mod.enabled = prop.new(
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.viewer.showtimelineinplayer",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.menu.viewer"]		= "menu",
-		["finalcutpro.commands"] 		= "fcpxCmds",
-	}
+    id				= "finalcutpro.viewer.showtimelineinplayer",
+    group			= "finalcutpro",
+    dependencies	= {
+        ["finalcutpro.menu.viewer"]		= "menu",
+        ["finalcutpro.commands"] 		= "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -109,16 +109,16 @@ function plugin.init(deps)
         end)
     end
 
-	--------------------------------------------------------------------------------
-	-- Setup Commands:
-	--------------------------------------------------------------------------------
-	if deps.fcpxCmds then
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
         deps.fcpxCmds:add("cpShowTimelineInPlayer")
             :groupedBy("hacks")
             :whenActivated(function() mod.enabled:toggle() end)
     end
 
-	return mod
+    return mod
 end
 
 return plugin

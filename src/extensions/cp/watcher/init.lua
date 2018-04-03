@@ -41,10 +41,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+-- local log							= require("hs.logger").new("watcher")
+
 local uuid							= require("hs.host").uuid
 local fnutils						= require("hs.fnutils")
-
-local log							= require("hs.logger").new("watcher")
 
 --------------------------------------------------------------------------------
 --
@@ -64,12 +65,12 @@ mod.mt = {}
 --- Returns:
 ---  * a new watcher instance
 function mod.new(...)
-	local o = {
-		_events 		= table.pack(...),
-		_watchers 		= {},
-		_watchersCount 	= 0,
-	}
-	return setmetatable(o, { __index = mod.mt })
+    local o = {
+        _events 		= table.pack(...),
+        _watchers 		= {},
+        _watchersCount 	= 0,
+    }
+    return setmetatable(o, { __index = mod.mt })
 end
 
 --- cp.watcher:events()
@@ -82,7 +83,7 @@ end
 --- Returns:
 ---  * The table of event names.
 function mod.mt:events()
-	return fnutils.copy(self._events)
+    return fnutils.copy(self._events)
 end
 
 -- cp.watcher:_prepareWatcher(events)
@@ -95,14 +96,14 @@ end
 -- Returns:
 --  * The table of valid events that can be watched.
 function mod.mt:_prepareWatcher(events)
-	local watcher = {}
-	for _,name in ipairs(self._events) do
-		local fn = events[name]
-		if fn and type(fn) == "function" then
-			watcher[name] = fn
-		end
-	end
-	return watcher
+    local watcher = {}
+    for _,name in ipairs(self._events) do
+        local fn = events[name]
+        if fn and type(fn) == "function" then
+            watcher[name] = fn
+        end
+    end
+    return watcher
 end
 
 --- cp.watcher:watch(events) -> id
@@ -115,10 +116,10 @@ end
 --- Returns:
 --- * A unique ID that can be passed to `unwatch` to stop watching.
 function mod.mt:watch(events)
-	local id = uuid()
-	self._watchers[id] = self:_prepareWatcher(events)
-	self._watchersCount = self._watchersCount + 1
-	return {id=id}
+    local id = uuid()
+    self._watchers[id] = self:_prepareWatcher(events)
+    self._watchersCount = self._watchersCount + 1
+    return {id=id}
 end
 
 --- cp.watcher:unwatch(id) -> boolean
@@ -131,14 +132,14 @@ end
 --- Returns:
 ---  * `true` if a watcher with the specified ID exists and was successfully removed.
 function mod.mt:unwatch(id)
-	if self._watchers and id then
-		if self._watchers[id.id] ~= nil then
-			self._watchers[id.id] = nil
-			self._watchersCount = self._watchersCount - 1
-			return true
-		end
-	end
-	return false
+    if self._watchers and id then
+        if self._watchers[id.id] ~= nil then
+            self._watchers[id.id] = nil
+            self._watchersCount = self._watchersCount - 1
+            return true
+        end
+    end
+    return false
 end
 
 --- cp.watcher:notify(type, ...) -> nil
@@ -152,13 +153,13 @@ end
 --- Returns:
 ---  * Nothing.
 function mod.mt:notify(type, ...)
-	if self._watchers then
-		for _,watcher in pairs(self._watchers) do
-			if watcher[type] then
-				watcher[type](...)
-			end
-		end
-	end
+    if self._watchers then
+        for _,watcher in pairs(self._watchers) do
+            if watcher[type] then
+                watcher[type](...)
+            end
+        end
+    end
 end
 
 --- cp.watcher:getCount()
@@ -171,7 +172,7 @@ end
 --- Returns:
 ---  * The number of watchers.
 function mod.mt:getCount()
-	return self._watchersCount
+    return self._watchersCount
 end
 
 return mod

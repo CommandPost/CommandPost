@@ -37,19 +37,19 @@ local mod = {}
 ---  * None
 function mod.enable(value)
 
-	--------------------------------------------------------------------------------
-	-- Set Stabilization:
-	--------------------------------------------------------------------------------
-	local inspector = fcp:inspector():video()
-	if type(value) == "boolean" then
-		inspector:stabilization(value)
-	else
-		--------------------------------------------------------------------------------
-		-- Toggle:
-		--------------------------------------------------------------------------------
-		local result = inspector:stabilization()
-		inspector:stabilization(not result)
-	end
+    --------------------------------------------------------------------------------
+    -- Set Stabilization:
+    --------------------------------------------------------------------------------
+    local inspector = fcp:inspector():video()
+    if type(value) == "boolean" then
+        inspector:stabilization(value)
+    else
+        --------------------------------------------------------------------------------
+        -- Toggle:
+        --------------------------------------------------------------------------------
+        local result = inspector:stabilization()
+        inspector:stabilization(not result)
+    end
 
 end
 

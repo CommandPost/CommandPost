@@ -1,8 +1,8 @@
 return {
-	Alpha = {
-		One									= "1",
-	},
-	Beta = {
-		A									= "A",
-	},
+    Alpha = {
+        One									= "1",
+    },
+    Beta = {
+        A									= "A",
+    },
 }

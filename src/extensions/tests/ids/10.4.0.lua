@@ -1,9 +1,9 @@
 return {
-	Alpha	= {
-		One	= "Uno",
-	},
-	Beta	= {
-		A	= "ay",
-		B	= "bee",
-	},
+    Alpha	= {
+        One	= "Uno",
+    },
+    Beta	= {
+        A	= "ay",
+        B	= "bee",
+    },
 }

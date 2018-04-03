@@ -267,11 +267,11 @@ end
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.
 function Window:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return Window

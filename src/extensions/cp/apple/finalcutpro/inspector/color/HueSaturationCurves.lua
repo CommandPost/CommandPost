@@ -83,12 +83,12 @@ HueSaturationCurves.CURVES = {
 ---  * A HueSaturationCurves object
 -- TODO: Use a function instead of a method.
 function HueSaturationCurves:new(parent) -- luacheck: ignore
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
 
-	return prop.extend(o, HueSaturationCurves)
+    return prop.extend(o, HueSaturationCurves)
 end
 
 --- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:parent() -> table
@@ -101,7 +101,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function HueSaturationCurves:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:app() -> table
@@ -114,7 +114,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function HueSaturationCurves:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
@@ -149,7 +149,7 @@ function HueSaturationCurves:show()
     if not self:isShowing() then
         self:parent():activateCorrection(CORRECTION_TYPE)
     end
-	return self
+    return self
 end
 
 --- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:viewMode([value]) -> string | nil
@@ -321,7 +321,7 @@ end
 ---  * A number containing the mix value or `nil` if an error occurs.
 function HueSaturationCurves:mix(value)
 
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
     -- Validation:
     --------------------------------------------------------------------------------
     if value then
@@ -341,9 +341,9 @@ function HueSaturationCurves:mix(value)
         return nil
     end
 
-	--------------------------------------------------------------------------------
-	-- Find Mix Slider:
-	--------------------------------------------------------------------------------
+    --------------------------------------------------------------------------------
+    -- Find Mix Slider:
+    --------------------------------------------------------------------------------
     local ui = self:parent():UI()
     local slider = nil
     for _, v in ipairs(ui) do
@@ -351,22 +351,22 @@ function HueSaturationCurves:mix(value)
         slider = v
       end
     end
-	if not slider then
-		log.ef("Could not find slider.")
-		return nil
-	end
+    if not slider then
+        log.ef("Could not find slider.")
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Setter:
-	--------------------------------------------------------------------------------
-	if value then
-		slider:setAttributeValue("AXValue", value)
-	end
+    --------------------------------------------------------------------------------
+    -- Setter:
+    --------------------------------------------------------------------------------
+    if value then
+        slider:setAttributeValue("AXValue", value)
+    end
 
-	--------------------------------------------------------------------------------
-	-- Getter:
-	--------------------------------------------------------------------------------
-	return slider:attributeValue("AXValue")
+    --------------------------------------------------------------------------------
+    -- Getter:
+    --------------------------------------------------------------------------------
+    return slider:attributeValue("AXValue")
 
 end
 

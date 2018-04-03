@@ -25,7 +25,7 @@ local PopUpButton = {}
 
 -- TODO: Add documentation
 function PopUpButton.matches(element)
-	return element:attributeValue("AXRole") == "AXPopUpButton"
+    return element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
 --- cp.ui.PopUpButton.new(axuielement, function) -> cp.ui.PopUpButton
@@ -38,113 +38,113 @@ end
 --- Returns:
 --- * The new `PopUpButton` instance.
 function PopUpButton.new(parent, finderFn)
-	local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
+    local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
 
-	-- TODO: Add documentation
-	local UI = prop(function(self)
-		return axutils.cache(self, "_ui", function()
-			return self._finder()
-		end,
-		PopUpButton.matches)
-	end)
+    -- TODO: Add documentation
+    local UI = prop(function(self)
+        return axutils.cache(self, "_ui", function()
+            return self._finder()
+        end,
+        PopUpButton.matches)
+    end)
 
-	if prop.is(parent.UI) then
-		UI:monitor(parent.UI)
-	end
+    if prop.is(parent.UI) then
+        UI:monitor(parent.UI)
+    end
 
-	local isShowing = UI:mutate(function(original, self)
-		return original() ~= nil and self:parent():isShowing()
-	end)
+    local isShowing = UI:mutate(function(original, self)
+        return original() ~= nil and self:parent():isShowing()
+    end)
 
-	local value = UI:mutate(
-		function(original)
-			local ui = original()
-			return ui and ui:value()
-		end,
-		function(value, original)
-			local ui = original()
-			if ui and not ui:value() == value then
-				local items = ui:doPress()[1]
-				for _,item in items do
-					if item:title() == value then
-						item:doPress()
-						return
-					end
-				end
-				items:doCancel()
-			end
-		end
-	)
+    local value = UI:mutate(
+        function(original)
+            local ui = original()
+            return ui and ui:value()
+        end,
+        function(value, original)
+            local ui = original()
+            if ui and not ui:value() == value then
+                local items = ui:doPress()[1]
+                for _,item in items do
+                    if item:title() == value then
+                        item:doPress()
+                        return
+                    end
+                end
+                items:doCancel()
+            end
+        end
+    )
 
-	return prop.bind(o) {
-		UI = UI,
-		isShowing, isShowing,
-		value = value,
-	}
+    return prop.bind(o) {
+        UI = UI,
+        isShowing, isShowing,
+        value = value,
+    }
 end
 
 -- TODO: Add documentation
 function PopUpButton:parent()
-	return self._parent
+    return self._parent
 end
 
 -- TODO: Add documentation
 function PopUpButton:selectItem(index)
-	local ui = self:UI()
-	if ui then
-		local items = ui:doPress()[1]
-		if items then
-			local item = items[index]
-			if item then
-				-- select the menu item
-				item:doPress()
-			else
-				-- close the menu again
-				items:doCancel()
-			end
-		end
-	end
-	return self
+    local ui = self:UI()
+    if ui then
+        local items = ui:doPress()[1]
+        if items then
+            local item = items[index]
+            if item then
+                -- select the menu item
+                item:doPress()
+            else
+                -- close the menu again
+                items:doCancel()
+            end
+        end
+    end
+    return self
 end
 
 -- TODO: Add documentation
 function PopUpButton:getValue()
-	return self:value()
+    return self:value()
 end
 
 -- TODO: Add documentation
 function PopUpButton:setValue(value)
-	self.value:set(value)
-	return self
+    self.value:set(value)
+    return self
 end
 
 -- TODO: Add documentation
 function PopUpButton:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
 function PopUpButton:press()
-	local ui = self:UI()
-	if ui then
-		ui:doPress()
-	end
-	return self
+    local ui = self:UI()
+    if ui then
+        ui:doPress()
+    end
+    return self
 end
 
 -- TODO: Add documentation
 function PopUpButton:saveLayout()
-	local layout = {}
-	layout.value = self:getValue()
-	return layout
+    local layout = {}
+    layout.value = self:getValue()
+    return layout
 end
 
 -- TODO: Add documentation
 function PopUpButton:loadLayout(layout)
-	if layout then
-		self:setValue(layout.value)
-	end
+    if layout then
+        self:setValue(layout.value)
+    end
 end
 
 --- cp.ui.PopUpButton:snapshot([path]) -> hs.image | nil
@@ -158,11 +158,11 @@ end
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.
 function PopUpButton:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return PopUpButton

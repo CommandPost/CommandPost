@@ -13,15 +13,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("preferences")
-
-local application		= require("hs.application")
-local console			= require("hs.console")
+-- local log				= require("hs.logger").new("preferences")
 
 local config			= require("cp.config")
 local prop				= require("cp.prop")
-local fcp				= require("cp.apple.finalcutpro")
-local dialog			= require("cp.dialog")
 
 --------------------------------------------------------------------------------
 --
@@ -34,16 +29,16 @@ local mod = {}
 --- Field
 --- Controls if CommandPost will automatically launch when the user logs in.
 mod.autoLaunch = prop.new(
-	function() return hs.autoLaunch() end,
-	function(value) hs.autoLaunch(value) end
+    function() return hs.autoLaunch() end,
+    function(value) hs.autoLaunch(value) end
 )
 
 --- plugins.core.preferences.general.autoLaunch <cp.prop: boolean>
 --- Field
 --- Controls if CommandPost will automatically upload crash data to the developer.
 mod.uploadCrashData = prop.new(
-	function() return hs.uploadCrashData() end,
-	function(value) hs.uploadCrashData(value) end
+    function() return hs.uploadCrashData() end,
+    function(value) hs.uploadCrashData(value) end
 )
 
 --- plugins.core.preferences.general.openPrivacyPolicy() -> none
@@ -56,7 +51,7 @@ mod.uploadCrashData = prop.new(
 --- Returns:
 ---  * None
 function mod.openPrivacyPolicy()
-	hs.execute("open '" .. config.privacyPolicyURL .. "'")
+    hs.execute("open '" .. config.privacyPolicyURL .. "'")
 end
 
 --------------------------------------------------------------------------------
@@ -65,55 +60,55 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.preferences.general",
-	group			= "core",
-	dependencies	= {
-		["core.preferences.panels.general"]	= "general",
-	}
+    id				= "core.preferences.general",
+    group			= "core",
+    dependencies	= {
+        ["core.preferences.panels.general"]	= "general",
+    }
 }
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Cache Values:
-	--------------------------------------------------------------------------------
-	mod._autoLaunch 		= hs.autoLaunch()
-	mod._uploadCrashData 	= hs.uploadCrashData()
+    --------------------------------------------------------------------------------
+    -- Cache Values:
+    --------------------------------------------------------------------------------
+    mod._autoLaunch 		= hs.autoLaunch()
+    mod._uploadCrashData 	= hs.uploadCrashData()
 
-	--------------------------------------------------------------------------------
-	-- Setup General Preferences Panel:
-	--------------------------------------------------------------------------------
-	deps.general:addHeading(1, i18n("general"))
+    --------------------------------------------------------------------------------
+    -- Setup General Preferences Panel:
+    --------------------------------------------------------------------------------
+    deps.general:addHeading(1, i18n("general"))
 
-	:addCheckbox(3,
-		{
-			label		= i18n("launchAtStartup"),
-			checked		= mod.autoLaunch,
-			onchange	= function(id, params) mod.autoLaunch(params.checked) end,
-		}
-	)
+    :addCheckbox(3,
+        {
+            label		= i18n("launchAtStartup"),
+            checked		= mod.autoLaunch,
+            onchange	= function(_, params) mod.autoLaunch(params.checked) end,
+        }
+    )
 
-	:addHeading(50, i18n("privacy"))
+    :addHeading(50, i18n("privacy"))
 
-	:addCheckbox(51,
-		{
-			label		= i18n("sendCrashData"),
-			checked		= mod.uploadCrashData,
-			onchange	= function(id, params) mod.uploadCrashData(params.checked) end,
-		}
-	)
+    :addCheckbox(51,
+        {
+            label		= i18n("sendCrashData"),
+            checked		= mod.uploadCrashData,
+            onchange	= function(_, params) mod.uploadCrashData(params.checked) end,
+        }
+    )
 
-	:addButton(52,
-		{
-			label 		= i18n("openPrivacyPolicy"),
-			width		= 200,
-			onclick		= mod.openPrivacyPolicy,
-		}
-	)
+    :addButton(52,
+        {
+            label 		= i18n("openPrivacyPolicy"),
+            width		= 200,
+            onclick		= mod.openPrivacyPolicy,
+        }
+    )
 
-	return mod
+    return mod
 
 end
 

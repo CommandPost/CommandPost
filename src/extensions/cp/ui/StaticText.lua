@@ -43,7 +43,7 @@ local StaticText = {}
 --- Returns:
 --- * If `true`, the element is a Static Text element.
 function StaticText.matches(element)
-	return element:attributeValue("AXRole") == "AXStaticText"
+    return element:attributeValue("AXRole") == "AXStaticText"
 end
 
 --- cp.ui.StaticText.new(parent, finderFn[, convertFn]) -> StaticText
@@ -70,82 +70,82 @@ end
 --- Returns:
 --- * The new `StaticText`.
 function StaticText.new(parent, finderFn, convertFn)
-	local o
+    local o
 
-	o = prop.extend({
-		_parent = parent,
-		_finder = finderFn,
-		_convert = convertFn,
+    o = prop.extend({
+        _parent = parent,
+        _finder = finderFn,
+        _convert = convertFn,
 
-		--- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil>
-		--- Field
-		--- The `axuielement` or `nil` if it's not available currently.
-		UI = prop(function()
-			return axutils.cache(o, "_ui", function()
-				return finderFn()
-			end,
-			StaticText.matches)
-		end),
-	}, StaticText)
+        --- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil>
+        --- Field
+        --- The `axuielement` or `nil` if it's not available currently.
+        UI = prop(function()
+            return axutils.cache(o, "_ui", function()
+                return finderFn()
+            end,
+            StaticText.matches)
+        end),
+    }, StaticText)
 
-	--- cp.ui.StaticText.value <cp.prop: anything>
-	--- Field
-	--- The current value of the text field.
-	prop.bind(o) {
+    --- cp.ui.StaticText.value <cp.prop: anything>
+    --- Field
+    --- The current value of the text field.
+    prop.bind(o) {
 
-		--- cp.ui.StaticText:isShowing() -> boolean
-		--- Method
-		--- Checks if the static text is currently showing.
-		---
-		--- Parameters:
-		--- * None
-		---
-		--- Returns:
-		--- * `true` if it's visible.
-		isShowing = o.UI:mutate(function(original, self)
-			local ui = original()
-			return ui ~= nil and self:parent():isShowing()
-		end),
+        --- cp.ui.StaticText:isShowing() -> boolean
+        --- Method
+        --- Checks if the static text is currently showing.
+        ---
+        --- Parameters:
+        --- * None
+        ---
+        --- Returns:
+        --- * `true` if it's visible.
+        isShowing = o.UI:mutate(function(original, self)
+            local ui = original()
+            return ui ~= nil and self:parent():isShowing()
+        end),
 
-		value = o.UI:mutate(
-			function(original)
-				local ui = original()
-				local value = ui and ui:attributeValue("AXValue") or nil
-				if value and convertFn then
-					value = convertFn(value)
-				end
-				return value
-			end,
-			function(value, original)
-				local ui = original()
-				if ui then
-					value = tostring(value)
-					local focused = ui:attributeValue("AXFocused")
-					ui:setAttributeValue("AXFocused", true)
-					ui:setAttributeValue("AXValue", value)
-					ui:setAttributeValue("AXFocused", focused)
-					ui:performAction("AXConfirm")
-				end
-			end
-		),
-	}
+        value = o.UI:mutate(
+            function(original)
+                local ui = original()
+                local value = ui and ui:attributeValue("AXValue") or nil
+                if value and convertFn then
+                    value = convertFn(value)
+                end
+                return value
+            end,
+            function(value, original)
+                local ui = original()
+                if ui then
+                    value = tostring(value)
+                    local focused = ui:attributeValue("AXFocused")
+                    ui:setAttributeValue("AXFocused", true)
+                    ui:setAttributeValue("AXValue", value)
+                    ui:setAttributeValue("AXFocused", focused)
+                    ui:performAction("AXConfirm")
+                end
+            end
+        ),
+    }
 
-	o._notifier = notifier.new(o:app():bundleID(), function() return o:UI() end)
+    o._notifier = notifier.new(o:app():bundleID(), function() return o:UI() end)
 
-	-- wire up a notifier to watch for value changes.
-	o.value:preWatch(function()
-		o._notifier:addWatcher("AXValueChanged", function() o.value:update() end):start()
-	end)
+    -- wire up a notifier to watch for value changes.
+    o.value:preWatch(function()
+        o._notifier:addWatcher("AXValueChanged", function() o.value:update() end):start()
+    end)
 
-	-- watch for changes in parent visibility, and update the notifier if it changes.
-	if prop.is(parent.isShowing) then
-		o.isShowing:monitor(parent.isShowing)
-		o.isShowing:watch(function()
-			o._notifier:update()
-		end)
-	end
+    -- watch for changes in parent visibility, and update the notifier if it changes.
+    if prop.is(parent.isShowing) then
+        o.isShowing:monitor(parent.isShowing)
+        o.isShowing:watch(function()
+            o._notifier:update()
+        end)
+    end
 
-	return o
+    return o
 end
 
 --- cp.ui.StaticText:parent() -> table
@@ -158,7 +158,7 @@ end
 --- Returns:
 --- * The parent.
 function StaticText:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.ui.StaticText:app() -> table
@@ -171,50 +171,50 @@ end
 --- Returns:
 --- * The app.
 function StaticText:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 -- TODO: Add documentation
 function StaticText:getValue()
-	return self:value()
+    return self:value()
 end
 
 -- TODO: Add documentation
 function StaticText:setValue(value)
-	self.value:set(value)
+    self.value:set(value)
 end
 
 -- TODO: Add documentation
 function StaticText:clear()
-	self.value:set("")
+    self.value:set("")
 end
 
 -- TODO: Add documentation
 function StaticText:isEnabled()
-	local ui = self:UI()
-	return ui and ui:enabled()
+    local ui = self:UI()
+    return ui and ui:enabled()
 end
 
 -- TODO: Add documentation
 function StaticText:saveLayout()
-	local layout = {}
-	layout.value = self:getValue()
-	return layout
+    local layout = {}
+    layout.value = self:getValue()
+    return layout
 end
 
 -- TODO: Add documentation
 function StaticText:loadLayout(layout)
-	if layout then
-		self:setValue(layout.value)
-	end
+    if layout then
+        self:setValue(layout.value)
+    end
 end
 
 -- TODO: Add documentation
 function StaticText.__call(self, parent, value)
-	if parent and parent ~= self:parent() then
-		value = parent
-	end
-	return self:value(value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:value(value)
 end
 
 --- cp.ui.StaticText:snapshot([path]) -> hs.image | nil
@@ -228,11 +228,11 @@ end
 --- Return:
 --- * The `hs.image` that was created, or `nil` if the UI is not available.
 function StaticText:snapshot(path)
-	local ui = self:UI()
-	if ui then
-		return axutils.snapshot(ui, path)
-	end
-	return nil
+    local ui = self:UI()
+    if ui then
+        return axutils.snapshot(ui, path)
+    end
+    return nil
 end
 
 return StaticText

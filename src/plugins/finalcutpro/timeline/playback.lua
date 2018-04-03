@@ -36,7 +36,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.play()
-	fcp:performShortcut("PlayPause")
+    fcp:performShortcut("PlayPause")
 end
 
 --- plugins.finalcutpro.timeline.playback.pause() -> none
@@ -49,7 +49,7 @@ end
 --- Returns:
 ---  * None
 function mod.pause()
-	mod.play()
+    mod.play()
 end
 
 --------------------------------------------------------------------------------
@@ -58,11 +58,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.playback",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.commands"]	= "fcpxCmds",
-	}
+    id = "finalcutpro.timeline.playback",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]	= "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ function plugin.init(deps)
             :whenActivated(mod.pause)
     end
 
-	return mod
+    return mod
 end
 
 return plugin

@@ -63,7 +63,7 @@ local function len(s, i, j) return utf16len(true, s, i, j) end
 --- cp.utf16.be.offset (s, n [, i]) -> number
 --- Function
 --- Returns the position (in bytes) where the encoding of the `n`-th character of `s` (counting from position `i`) starts. A negative `n` gets characters before position `i`. The default for `i` is 1 when `n` is non-negative and `#s + 1` otherwise, so that `utf8.offset(s, -n)` gets the offset of the `n`-th character from the end of the string. If the specified character is neither in the subject nor right after its end, the function returns nil.
---- 
+---
 --- As a special case, when `n` is 0 the function returns the start of the encoding of the character that contains the `i`-th byte of `s`.
 ---
 --- This function assumes that `s` is a valid UTF-16 string
@@ -78,9 +78,9 @@ local function len(s, i, j) return utf16len(true, s, i, j) end
 local function offset(s, n, i) return utf16offset(true, s, n, i) end
 
 return {
-	char		= char,
-	codepoint	= codepoint,
-	codes		= codes,
-	len			= len,
-	offset		= offset,
+    char		= char,
+    codepoint	= codepoint,
+    codes		= codes,
+    len			= len,
+    offset		= offset,
 }

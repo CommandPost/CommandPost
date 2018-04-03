@@ -13,7 +13,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log					= require("hs.logger").new("command")
+-- local log					= require("hs.logger").new("command")
 
 local shortcut				= require("cp.commands.shortcut")
 local prop					= require("cp.prop")
@@ -39,28 +39,28 @@ command.mt.__index = command.mt
 ---  * command - The command that was created.
 ---
 function command.new(id, parent)
-	local o = {
-		_id = id,
-		_parent = parent,
-		_shortcuts = {},
-	}
-	prop.extend(o, command.mt)
+    local o = {
+        _id = id,
+        _parent = parent,
+        _shortcuts = {},
+    }
+    prop.extend(o, command.mt)
 
 --- cp.commands.command.isEnabled <cp.prop: boolean>
 --- Field
 --- If set to `true`, the command is enabled.
-	o.isEnabled = prop.TRUE():bind(o)
+    o.isEnabled = prop.TRUE():bind(o)
 
 --- cp.commands.command.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
-	o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active)
-		for _,shortcut in ipairs(o._shortcuts) do
-			shortcut:isEnabled(active)
-		end
-	end, true)
+    o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active)
+        for _,sc in ipairs(o._shortcuts) do
+            sc:isEnabled(active)
+        end
+    end, true)
 
-	return o
+    return o
 end
 
 --- cp.commands.command:id() -> string
@@ -73,7 +73,7 @@ end
 --- Returns:
 --- * The ID.
 function command.mt:id()
-	return self._id
+    return self._id
 end
 
 --- cp.commands.command:parent() -> cp.commands
@@ -86,7 +86,7 @@ end
 --- Returns
 --- * The parent `cp.commands`.
 function command.mt:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.commands.command:titled(title) -> command
@@ -100,8 +100,8 @@ end
 ---  * command - The command that was created.
 ---
 function command.mt:titled(title)
-	self._title = title
-	return self
+    self._title = title
+    return self
 end
 
 --- cp.commands.command:getTitle() -> string
@@ -114,11 +114,11 @@ end
 --- Returns
 --- * The human-readable command title.
 function command.mt:getTitle()
-	if self._title then
-		return self._title
-	else
-		return i18n(self:id() .. "_title", {default = self:id()})
-	end
+    if self._title then
+        return self._title
+    else
+        return i18n(self:id() .. "_title", {default = self:id()})
+    end
 end
 
 --- cp.commands.command:subtitled(subtitle) -> cp.commands.command
@@ -131,8 +131,8 @@ end
 --- Parameters:
 --- * `subtitle`	- The new subtitle.
 function command.mt:subtitled(subtitle)
-	self._subtitle = subtitle
-	return self
+    self._subtitle = subtitle
+    return self
 end
 
 --- cp.commands.command:getSubtitle() -> string
@@ -146,11 +146,11 @@ end
 --- Returns:
 --- * The subtitle value or `nil`.
 function command.mt:getSubtitle()
-	if self._subtitle then
-		return self._subtitle
-	else
-		return i18n(self:id() .. "_subtitle")
-	end
+    if self._subtitle then
+        return self._subtitle
+    else
+        return i18n(self:id() .. "_subtitle")
+    end
 end
 
 --- cp.commands.command:groupedBy(group) -> cp.commands.command
@@ -164,8 +164,8 @@ end
 --- Returns:
 --- * The `cp.commands.command` instance.
 function command.mt:groupedBy(group)
-	self._group = group
-	return self
+    self._group = group
+    return self
 end
 
 --- cp.commands.command:getGroup() -> string
@@ -178,7 +178,7 @@ end
 --- Returns:
 --- * The group ID.
 function command.mt:getGroup()
-	return self._group
+    return self._group
 end
 
 --- cp.commands.command:activatedBy([modifiers,] [keyCode]) -> command/modifier
@@ -209,23 +209,23 @@ end
 --- Returns:
 ---  * `command` if a `keyCode` was provided, or `modifier` if not.
 function command.mt:activatedBy(modifiers, keyCode)
-	if keyCode and not modifiers then
-		modifiers = {}
-	elseif modifiers and not keyCode then
-		keyCode = modifiers
-		modifiers = {}
-	end
+    if keyCode and not modifiers then
+        modifiers = {}
+    elseif modifiers and not keyCode then
+        keyCode = modifiers
+        modifiers = {}
+    end
 
-	if keyCode then
-		self:addShortcut(shortcut.new(modifiers, keyCode))
-		return self
-	else
-		return shortcut.build(
-			function(newShortcut)
-				return self:addShortcut(newShortcut)
-			end
-		)
-	end
+    if keyCode then
+        self:addShortcut(shortcut.new(modifiers, keyCode))
+        return self
+    else
+        return shortcut.build(
+            function(newShortcut)
+                return self:addShortcut(newShortcut)
+            end
+        )
+    end
 end
 
 --- cp.commands.command:deleteShortcuts() -> command
@@ -239,11 +239,11 @@ end
 ---  * command - The current command
 ---
 function command.mt:deleteShortcuts()
-	for i,shortcut in ipairs(self._shortcuts) do
-		shortcut:delete()
-	end
-	self._shortcuts = {}
-	return self
+    for _,sc in ipairs(self._shortcuts) do
+        sc:delete()
+    end
+    self._shortcuts = {}
+    return self
 end
 
 --- cp.commands.command:setShortcuts(shortcuts) -> command
@@ -256,11 +256,11 @@ end
 --- Returns:
 --- * The `cp.commands.command` instance.
 function command.mt:setShortcuts(shortcuts)
-	self:deleteShortcuts()
-	for _,newShortcut in ipairs(shortcuts) do
-		self:addShortcut(newShortcut)
-	end
-	return self
+    self:deleteShortcuts()
+    for _,newShortcut in ipairs(shortcuts) do
+        self:addShortcut(newShortcut)
+    end
+    return self
 end
 
 --- cp.commands.command:addShortcut(newShortcut) -> command
@@ -274,19 +274,19 @@ end
 --- Returns:
 ---  * `self`
 function command.mt:addShortcut(newShortcut)
-	newShortcut:bind(
-		function() return self:pressed() end,
-		function() return self:released() end,
-		function() return self:repeated() end
-	)
+    newShortcut:bind(
+        function() return self:pressed() end,
+        function() return self:released() end,
+        function() return self:repeated() end
+    )
 
-	--------------------------------------------------------------------------------
-	-- Mark it as a 'command' hotkey:
-	--------------------------------------------------------------------------------
-	local shortcuts = self._shortcuts
-	shortcuts[#shortcuts + 1] = newShortcut
-	newShortcut:isEnabled(self:isActive())
-	return self
+    --------------------------------------------------------------------------------
+    -- Mark it as a 'command' hotkey:
+    --------------------------------------------------------------------------------
+    local shortcuts = self._shortcuts
+    shortcuts[#shortcuts + 1] = newShortcut
+    newShortcut:isEnabled(self:isActive())
+    return self
 end
 
 --- cp.commands.command:getShortcuts() -> command
@@ -299,7 +299,7 @@ end
 --- Returns:
 ---  * The associated shortcuts.
 function command.mt:getShortcuts()
-	return self._shortcuts
+    return self._shortcuts
 end
 
 --- cp.commands.command:getFirstShortcut() -> command
@@ -312,7 +312,7 @@ end
 --- Returns:
 ---  * The first shortcut, or `nil`.
 function command.mt:getFirstShortcut()
-	return self._shortcuts and #self._shortcuts > 0 and self._shortcuts[1] or nil
+    return self._shortcuts and #self._shortcuts > 0 and self._shortcuts[1] or nil
 end
 
 --- cp.commands.command:whenActivated(activatedFn) -> command
@@ -328,7 +328,7 @@ end
 ---  * command - The current command
 ---
 function command.mt:whenActivated(activatedFn)
-	return self:whenPressed(activatedFn)
+    return self:whenPressed(activatedFn)
 end
 
 --- cp.commands.command:whenPressed(pressedFn) -> command
@@ -342,8 +342,8 @@ end
 ---  * command - The current command
 ---
 function command.mt:whenPressed(pressedFn)
-	self.pressedFn = pressedFn
-	return self
+    self.pressedFn = pressedFn
+    return self
 end
 
 --- cp.commands.command:whenReleased(releasedFn) -> command
@@ -357,8 +357,8 @@ end
 ---  * command - The current command
 ---
 function command.mt:whenReleased(releasedFn)
-	self.releasedFn = releasedFn
-	return self
+    self.releasedFn = releasedFn
+    return self
 end
 
 --- cp.commands.command:whenRepeated(repeatedFn) -> command
@@ -372,8 +372,8 @@ end
 ---  * command - The current command
 ---
 function command.mt:whenRepeated(repeatedFn)
-	self.repeatedFn = repeatedFn
-	return self
+    self.repeatedFn = repeatedFn
+    return self
 end
 
 --- cp.commands.command:pressed() -> command
@@ -387,8 +387,8 @@ end
 ---  * the result of the function, or `nil` if none is present.
 ---
 function command.mt:pressed()
-	if self:isActive() and self.pressedFn then return self.pressedFn() end
-	return nil
+    if self:isActive() and self.pressedFn then return self.pressedFn() end
+    return nil
 end
 
 --- cp.commands.command:released() -> command
@@ -402,8 +402,8 @@ end
 ---  * the result of the function, or `nil` if none is present.
 ---
 function command.mt:released()
-	if self:isActive() and self.releasedFn then return self.releasedFn() end
-	return nil
+    if self:isActive() and self.releasedFn then return self.releasedFn() end
+    return nil
 end
 
 --- cp.commands.command:repeated(repeats) -> command
@@ -417,18 +417,16 @@ end
 ---  * the last result.
 ---
 function command.mt:repeated(repeats)
-	if not self:isActive() then return nil end
+    if not self:isActive() then return nil end
 
-	if repeats == nil then
-		repeats = 1
-	end
-	local result = nil
-	if self.repeatedFn then
-		for i = 1, repeats do
-			result = self.repeatedFn()
-		end
-	end
-	return result
+    repeats = repeats or 1
+    local result = nil
+    if self.repeatedFn then
+        for _ = 1,repeats do
+            result = self.repeatedFn()
+        end
+    end
+    return result
 end
 
 --- cp.commands.command:activated(repeats) -> command
@@ -442,13 +440,13 @@ end
 ---  * the last 'truthy' result (non-nil/false).
 ---
 function command.mt:activated(repeats)
-	if not self:isActive() then return nil end
+    if not self:isActive() then return nil end
 
-	local result = nil
-	result = self:pressed()
-	result = self:repeated(repeats) or result
-	result = self:released() or result
-	return result
+    local result
+    result = self:pressed()
+    result = self:repeated(repeats) or result
+    result = self:released() or result
+    return result
 end
 
 --- cp.commands.command:enable() -> cp.commands.command
@@ -461,8 +459,8 @@ end
 --- Returns:
 --- * The `cp.commands.command` instance.
 function command.mt:enable()
-	self:isEnabled(true)
-	return self
+    self:isEnabled(true)
+    return self
 end
 
 --- cp.commands.command:disable() -> cp.commands.command
@@ -475,12 +473,12 @@ end
 --- Returns:
 --- * The `cp.commands.command` instance.
 function command.mt:disable()
-	self:isEnabled(false)
-	return self
+    self:isEnabled(false)
+    return self
 end
 
 function command.mt:__tostring()
-	local result = string.format("command: %s (enabled: %s; active: %s)", self:id(), self:isEnabled(), self:isActive())
+    return string.format("command: %s (enabled: %s; active: %s)", self:id(), self:isEnabled(), self:isActive())
 end
 
 return command

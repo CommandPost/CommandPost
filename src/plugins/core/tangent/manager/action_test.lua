@@ -14,7 +14,7 @@ return test.suite("action"):with {
         ok(eq(o.id, 0x01))
     end),
 
-	test("names", function()
+    test("names", function()
         local o = action.new(0x01)
 
         ok(eq(o:name("Foobar"), o))

@@ -42,11 +42,11 @@ local TransitionInspector = {}
 ---  * A TransitionInspector object
 -- TODO: Use a function instead of a method.
 function TransitionInspector:new(parent) -- luacheck: ignore
-	local o = {
-		_parent = parent,
-		_child = {}
-	}
-	return prop.extend(o, TransitionInspector)
+    local o = {
+        _parent = parent,
+        _child = {}
+    }
+    return prop.extend(o, TransitionInspector)
 end
 
 --- cp.apple.finalcutpro.inspector.transition.TransitionInspector:parent() -> table
@@ -59,7 +59,7 @@ end
 --- Returns:
 ---  * The parent object as a table
 function TransitionInspector:parent()
-	return self._parent
+    return self._parent
 end
 
 --- cp.apple.finalcutpro.inspector.transition.TransitionInspector:app() -> table
@@ -72,7 +72,7 @@ end
 --- Returns:
 ---  * The application object as a table
 function TransitionInspector:app()
-	return self:parent():app()
+    return self:parent():app()
 end
 
 --------------------------------------------------------------------------------
