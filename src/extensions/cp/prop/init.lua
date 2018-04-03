@@ -251,7 +251,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log             = require("hs.logger").new("prop")
+local log             = require("hs.logger").new("prop")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -512,8 +512,9 @@ function prop.mt:set(newValue)
             self._cachedValue = newValue
         end
         self._set(newValue, self._owner, self)
-        self:_notify(newValue)
-        return self:get()
+        local actualValue = self:get()
+        self:_notify(actualValue)
+        return actualValue
     end
 end
 
@@ -1184,7 +1185,10 @@ local function _notifyWatchers(watchers, value, owner, theProp)
         for _,watcher in ipairs(watchers) do
             if watcher.lastValue ~= value then
                 watcher.lastValue = value
-                watcher.fn(value, owner, theProp)
+                local ok, result = xpcall(function() watcher.fn(value, owner, theProp) end, debug.traceback)
+                if not ok then
+                    log.ef("Error while notifying a watcher: %s", result)
+                end
             end
         end
     end
@@ -1415,7 +1419,7 @@ function prop.NOT(propValue)
     if not prop.is(propValue) then error "Expected a `cp.prop` at argument #1" end
     local notProp = prop.new(
         function() return negate(propValue:get()) end,
-        function(newValue) propValue:set(negate(newValue)) end
+        function(newValue) return propValue:set(negate(newValue)) end
     )
     -- notify the 'not' watchers if the original value changes.
     :monitor(propValue)
@@ -1451,10 +1455,9 @@ prop.mt.NOT = prop.NOT
 -- Returns:
 -- * The `andOrProp`.
 local function _watchAndOr(andOrProp, props)
-    local watcher = function() andOrProp:update() end
     for i,p in ipairs(props) do
         if not prop.is(p) then error(format("Expected a `cp.prop` at argument #%d: %s", i, inspect(p))) end
-        p:watch(watcher, false, true)
+        andOrProp:monitor(p)
     end
     return andOrProp
 end
