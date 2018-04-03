@@ -49,46 +49,44 @@ end
 --- Returns:
 --- The new `Button` instance.
 function Button.new(parent, finderFn)
-	local o = prop.extend({_parent = parent, _finder = finderFn}, Button)
+	local o = prop.extend(
+		{
+			_parent = parent,
+			_finder = finderFn,
 
-	-- TODO: Add documentation
-	local UI = prop(function(self)
-		return axutils.cache(self, "_ui", finderFn, Button.matches)
-	end)
-
-	if prop.is(parent.UI) then
-		UI:monitor(parent.UI)
-	end
-
-	local isShowing = UI:mutate(function(original, self)
-		return original() ~= nil and self:parent():isShowing()
-	end)
-
-	if prop.is(parent.isShowing) then
-		isShowing.monitor(parent.isShowing)
-	end
-
-	local frame = UI:mutate(function(original)
-		local ui = original()
-		return ui and ui:frame() or nil
-	end)
+--- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
+			UI = prop(function(self)
+				return axutils.cache(self, "_ui", finderFn, Button.matches)
+			end),
+		}, Button
+	)
 
 	prop.bind(o) {
-		--- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
-		--- Field
-		--- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
-		UI = UI,
+--- cp.ui.Button.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- If `true`, the `Button` is showing on screen.
+		isShowing = o.UI:mutate(function(original, self)
+			return original() ~= nil and self:parent():isShowing()
+		end),
 
-		--- cp.ui.Button.isShowing <cp.prop: boolean; read-only>
-		--- Field
-		--- If `true`, the `Button` is showing on screen.
-		isShowing = isShowing,
-
-		--- cp.ui.Button.frame <cp.prop: table; read-only>
-		--- Field
-		--- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
-		frame = frame,
+--- cp.ui.Button.frame <cp.prop: table; read-only>
+--- Field
+--- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
+		frame = o.UI:mutate(function(original)
+			local ui = original()
+			return ui and ui:frame() or nil
+		end),
 	}
+
+	if prop.is(parent.UI) then
+		o.UI:monitor(parent.UI)
+	end
+
+	if prop.is(parent.isShowing) then
+		o.isShowing:monitor(parent.isShowing)
+	end
 
 	return o
 end
@@ -143,20 +141,6 @@ function Button:snapshot(path)
 		return axutils.snapshot(ui, path)
 	end
 	return nil
-end
-
---- cp.ui.Button:frame() -> table | nil
---- Method
---- Returns the `frame` of the `Button`, if available.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The `Button` frame.
-function Button:frame()
-    local ui = self:UI()
-    return ui and ui:attributeValue("AXFrame")
 end
 
 return Button
