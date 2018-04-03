@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.tangent.global ===
+--- === plugins.core.tangent.commandpost ===
 ---
---- Global Group for the Tangent.
+--- CommandPost Group for the Tangent.
 
 --------------------------------------------------------------------------------
 --
@@ -14,10 +14,10 @@
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id = "core.tangent.global",
+    id = "core.tangent.commandpost",
     group = "core",
     dependencies = {
-        ["core.tangent.manager"]    = "tangentManager",
+        ["core.tangent.manager"] = "tangentManager",
     }
 }
 
@@ -25,8 +25,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    local globalMode = deps.tangentManager.addMode(0x0000000A, i18n("global"))
-    return globalMode
+    return deps.tangentManager.controls:group(i18n("appName"))
 end
 
 return plugin

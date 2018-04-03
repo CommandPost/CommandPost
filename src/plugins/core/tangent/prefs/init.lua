@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.core.preferences.panels.tangent ===
+--- === plugins.core.tangent.prefs ===
 ---
 --- Tangent Preferences Panel
 
@@ -43,16 +43,19 @@ local _                                         = require("moses")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.preferences.panels.tangent.TANGENT_WEBSITE() -> string
+--- plugins.core.tangent.prefs.TANGENT_WEBSITE -> string
 --- Constant
 --- Tangent Website URL.
 mod.TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 
---- plugins.core.preferences.panels.tangent.DOWNLOAD_TANGENT_HUB() -> string
+--- plugins.core.tangent.prefs.DOWNLOAD_TANGENT_HUB -> string
 --- Constant
 --- URL to download Tangent Hub Application.
 mod.DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
 
+--- plugins.core.tangent.prefs.MAX_ITEMS -> number
+--- Constant
+--- Maximum number of Favourites available in the Tangent Preferences.
 mod.MAX_ITEMS = 50
 
 -- renderPanel(context) -> none
@@ -127,7 +130,10 @@ local function tangentPanelCallback(id, params)
                     local actionTitle = text
                     local handlerID = handler:id()
 
-                    --mod._sd.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+                    -- TODO: This should actually do something.
+
+                    log.df("SAVE ACTION: %s", hs.inspect(params))
+
                     mod._prefsManager.refresh()
                 end)
 
@@ -136,8 +142,12 @@ local function tangentPanelCallback(id, params)
             --------------------------------------------------------------------------------
             mod.activator:show()
         elseif params["type"] == "clearAction" then
-            --mod._sd.updateAction(params["buttonID"], params["groupID"], nil, nil, nil)
-            --mod._prefsManager.refresh()
+
+            -- TODO: This should actually do something.
+
+            log.df("CLEAR ACTION: %s", hs.inspect(params))
+
+            mod._prefsManager.refresh()
         else
             --------------------------------------------------------------------------------
             -- Unknown Callback:
@@ -149,7 +159,7 @@ local function tangentPanelCallback(id, params)
     end
 end
 
---- plugins.core.preferences.panels.tangent.init() -> none
+--- plugins.core.tangent.prefs.init() -> none
 --- Function
 --- Initialise Module.
 ---
@@ -278,6 +288,8 @@ function mod.init(deps, env)
         -- Setup Callback Manager:
         --------------------------------------------------------------------------------
         :addHandler("onchange", "tangentPanelCallback", tangentPanelCallback)
+
+    return mod
 
 end
 
