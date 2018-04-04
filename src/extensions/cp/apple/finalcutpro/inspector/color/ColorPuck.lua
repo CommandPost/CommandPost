@@ -137,7 +137,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.percent <cp.prop: TextField>
     --- Field
     --- The 'percent' text field.
-    o.percent = TextField:new(o, function()
+    o.percent = TextField.new(o, function()
         local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
         return fields and fields[#fields] or nil
     end, tonumber)
@@ -145,7 +145,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.prop: TextField>
     --- Field
     --- The 'angle' text field (only present for the 'color' aspect).
-    o.angle = TextField:new(o, function()
+    o.angle = TextField.new(o, function()
         if o._hasAngle then
             local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
             return fields and #fields > 1 and fields[1] or nil

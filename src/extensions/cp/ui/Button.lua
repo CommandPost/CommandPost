@@ -71,6 +71,14 @@ function Button.new(parent, finderFn)
             return original() ~= nil and self:parent():isShowing()
         end),
 
+--- cp.ui.Button.title <cp.prop: string; read-only>
+--- Field
+--- The button title, if available.
+        title   = o.UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXTitle")
+        end),
+
 --- cp.ui.Button.frame <cp.prop: table; read-only>
 --- Field
 --- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
@@ -94,6 +102,10 @@ end
 -- TODO: Add documentation
 function Button:parent()
     return self._parent
+end
+
+function Button:app()
+    return self:parent():app()
 end
 
 --- cp.ui.Button:isEnabled() -> boolean

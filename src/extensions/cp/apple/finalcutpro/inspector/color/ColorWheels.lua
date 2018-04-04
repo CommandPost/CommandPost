@@ -384,7 +384,7 @@ end
 
 function ColorWheels:mixTextField()
     if not self._mixTextField then
-        self._mixTextField = TextField:new(self,
+        self._mixTextField = TextField.new(self,
             function()
                 local ui = self:mixRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)
@@ -435,7 +435,7 @@ end
 
 function ColorWheels:temperatureTextField()
     if not self._temperatureTextField then
-        self._temperatureTextField = TextField:new(self,
+        self._temperatureTextField = TextField.new(self,
             function()
                 local ui = self:temperatureRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)
@@ -486,7 +486,7 @@ end
 
 function ColorWheels:tintTextField()
     if not self._tintTextField then
-        self._tintTextField = TextField:new(self,
+        self._tintTextField = TextField.new(self,
             function()
                 local ui = self:tintRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)
@@ -525,7 +525,7 @@ end
 ---  * The Hue `Slider`.
 function ColorWheels:hueTextField()
     if not self._hueTextField then
-        self._hueTextField = TextField:new(self,
+        self._hueTextField = TextField.new(self,
             function()
                 local ui = self:hueRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)

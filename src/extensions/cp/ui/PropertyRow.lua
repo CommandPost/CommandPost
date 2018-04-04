@@ -18,6 +18,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("propertyRow")
+local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -55,18 +56,22 @@ function PropertyRow.matches(element)
     return element ~= nil
 end
 
---- cp.ui.PropertyRow.new(parent, labelKey[, propertiesUI]) -> cp.ui.PropertyRow
+--- cp.ui.PropertyRow.new(parent, labelKey[, propertiesUI[, index]]) -> cp.ui.PropertyRow
 --- Constructor
 --- Creates a new `PropertyRow` with the specified parent and label key.
+---
+--- If you have more than one row with the same label, specify the `index` - specifying `2` will
+--- match with the second instance, for example.
 ---
 --- Parameters:
 --- * parent        - The parent object.
 --- * labelKey      - The key of the label that the row will map to.
 --- * propertiesUI  - The name of the key in the parent to find the properties in. Defaults to `UI`.
+--- * index         - The row number with the same label to get. Defaults to `1`.
 ---
 --- Returns:
 --- * The new `PropertyRow` instance.
-function PropertyRow.new(parent, labelKey, propertiesUI)
+function PropertyRow.new(parent, labelKey, propertiesUI, index)
     local o
     propertiesUI = propertiesUI or "UI"
     local propertiesFn = parent[propertiesUI]
@@ -74,9 +79,12 @@ function PropertyRow.new(parent, labelKey, propertiesUI)
         error(format("Unable to find a `%s` property in the parent: %s", propertiesUI, type(propertiesFn)))
     end
 
+    index = index or 1
+
     o = prop.extend({
         _parent = parent,
         _labelKeys = type(labelKey) == "string" and {labelKey} or labelKey,
+        _index = index,
         _propertiesUI = propertiesUI,
         _children = nil,
     }, PropertyRow)
@@ -110,7 +118,7 @@ function PropertyRow.new(parent, labelKey, propertiesUI)
                     return axutils.childMatching(ui, function(child)
                         return child:attributeValue("AXRole") == "AXStaticText"
                             and child:attributeValue("AXValue") == label
-                    end)
+                    end, index)
                 end
                 return nil
             end)
@@ -127,7 +135,7 @@ function PropertyRow.new(parent, labelKey, propertiesUI)
                     return label
                 end
             end
-            log.wf("Unabled to find a string for property row titles: %s", string.join(self._labelKeys, ", ")) -- luacheck: ignore
+            log.wf("Unabled to find a label with these keys: %s", index, inspect(self._labelKeys))
             return nil
         end):cached():monitor(parent:app().currentLanguage),
     }

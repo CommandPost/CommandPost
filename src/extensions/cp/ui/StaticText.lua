@@ -82,7 +82,8 @@ function StaticText.new(parent, finderFn, convertFn)
         --- The `axuielement` or `nil` if it's not available currently.
         UI = prop(function()
             return axutils.cache(o, "_ui", function()
-                return finderFn()
+                local ui = finderFn()
+                return StaticText.matches(ui) and ui or nil
             end,
             StaticText.matches)
         end),

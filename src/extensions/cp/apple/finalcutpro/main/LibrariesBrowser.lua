@@ -189,7 +189,7 @@ end
 -- TODO: Add documentation
 function Libraries:search()
     if not self._search then
-        self._search = TextField:new(self, function()
+        self._search = TextField.new(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Search")
         end)
     end

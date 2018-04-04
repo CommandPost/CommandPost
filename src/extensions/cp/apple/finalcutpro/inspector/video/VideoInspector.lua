@@ -7,6 +7,46 @@
 --- === cp.apple.finalcutpro.inspector.video.VideoInspector ===
 ---
 --- Video Inspector Module.
+---
+--- Header Rows (`compositing`, `transform`, etc.) have the following properties:
+--- * enabled   - (cp.ui.CheckBox) Indicates if the section is enabled.
+--- * toggle    - (cp.ui.Button) Will toggle the Hide/Show button.
+--- * reset     - (cp.ui.Button) Will reset the contents of the section.
+--- * expanded  - (cp.prop <boolean>) Get/sets whether the section is expanded.
+---
+--- Property Rows depend on the type of property:
+---
+--- Menu Property:
+--- * value     - (cp.ui.PopUpButton) The current value of the property.
+---
+--- Slider Property:
+--- * value     - (cp.ui.Slider) The current value of the property.
+---
+--- XY Property:
+--- * x         - (cp.ui.TextField) The current 'X' value.
+--- * y         - (cp.ui.TextField) The current 'Y' value.
+---
+--- CheckBox Property:
+--- * value     - (cp.ui.CheckBox) The currently value.
+---
+--- For example:
+--- ```lua
+--- local video = fcp:inspector():video()
+--- -- Menu Property:
+--- video:compositing():blendMode():value("Subtract")
+--- -- Slider Property:
+--- video:compositing():opacity():value(50.0)
+--- -- XY Property:
+--- video:transform():position():x(-10.0)
+--- -- CheckBox property:
+--- video:stabilization():tripodMode():value(true)
+--- ```
+---
+--- You should also be able to show a specific property and it will be revealed:
+--- ```lua
+--- video:stabilization():smoothing():show():value(1.5)
+--- ```
+
 
 --------------------------------------------------------------------------------
 --
@@ -17,15 +57,19 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("videoInspect")
+-- local log								= require("hs.logger").new("videoInspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils							= require("cp.ui.axutils")
-local PropertyRow                       = require("cp.ui.PropertyRow")
-local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 local prop								= require("cp.prop")
+local axutils							= require("cp.ui.axutils")
+local Button                            = require("cp.ui.Button")
+local CheckBox                          = require("cp.ui.CheckBox")
+local PropertyRow                       = require("cp.ui.PropertyRow")
+local TextField                         = require("cp.ui.TextField")
+local Slider                            = require("cp.ui.Slider")
+local PopUpButton                       = require("cp.ui.PopUpButton")
 
 --------------------------------------------------------------------------------
 --
@@ -33,6 +77,107 @@ local prop								= require("cp.prop")
 --
 --------------------------------------------------------------------------------
 local VideoInspector = {}
+
+local function propShow(self)
+    local parent = self:parent()
+    parent:show()
+    self.header:expanded(true)
+    return self
+end
+
+local function propHide(self)
+    self.header:expanded(false)
+    return self
+end
+
+local function rowRow(row, lKey, index)
+    return row:parent():row(lKey, index)
+end
+
+-- creates a new header row PropertyRow with some additional properties:
+-- * enabled - The 'enabled' checkbox.
+-- * toggle - the Hide/Show toggle button
+-- * reset  - The reset button
+-- * expanded - a cp.prop which gets/sets whether the row is expanded.
+local function headerRow(labelKey, index)
+    return function(subProps)
+        local header = prop(function(self)
+            local row = self:row(labelKey, index)
+            row.enabled     = CheckBox.new(row, function() return axutils.childFromLeft(row:children(), 1) end)
+            row.toggle      = Button.new(row, function() return axutils.childFromRight(row:children(), 2) end)
+            row.reset       = Button.new(row, function() return axutils.childFromRight(row:children(), 1) end)
+            row.expanded    = prop(
+                function(theRow)
+                    local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
+                    return theRow.toggle:title() == iHide
+                end,
+                function(newValue, theRow, theProp)
+                    local currentValue = theProp:get()
+                    if newValue ~= currentValue then
+                        theRow.toggle()
+                    end
+                end
+            ):bind(row)
+
+            -- gets called by propertyRows
+            row.row = rowRow
+
+            if subProps then
+                prop.bind(row)(subProps)
+                -- hijack the 'show' function
+                for _,p in pairs(subProps) do
+                    local subRow = p()
+                    subRow.header = row
+                    subRow.show = propShow
+                    subRow.hide = propHide
+                end
+            end
+
+            return row
+        end):cached()
+
+
+        return header
+    end
+end
+
+local function propertyRow(labelKey, prepareFn, index)
+    return prop(function(self)
+        local row = self:row(labelKey, index)
+        row.reset       = Button.new(row, function() return axutils.childFromRight(row:children(), 1) end)
+
+        if prepareFn then
+            prepareFn(row)
+        end
+
+        return row
+    end):cached()
+end
+
+local function xyProperty(labelKey, index)
+    return propertyRow(labelKey, function(row)
+        row.x = TextField.new(row, function() return axutils.childFromLeft(axutils.childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
+        row.y = TextField.new(row, function() return axutils.childFromLeft(axutils.childrenMatching(row:children(), TextField.matches), 2) end, tonumber)
+    end, index)
+end
+
+local function sliderProperty(labelKey, index)
+    return propertyRow(labelKey, function(row)
+        row.value = Slider.new(row, function() return axutils.childFromLeft(axutils.childMatching(row:children(), Slider.matches), 1) end)
+    end, index)
+end
+
+local function menuProperty(labelKey, index)
+    return propertyRow(labelKey, function(row)
+        row.value = PopUpButton.new(row, function() return axutils.childFromRight(row:children(), 2) end)
+    end, index)
+end
+
+local function checkBoxProperty(labelKey, index)
+    return propertyRow(labelKey, function(row)
+        row.value = CheckBox.new(row, function() return axutils.childFromLeft(axutils.childMatching(row:children(), CheckBox.matches), 1) end)
+    end, index)
+end
 
 --- cp.apple.finalcutpro.inspector.video.VideoInspector.matches(element)
 --- Function
@@ -109,6 +254,46 @@ function VideoInspector.new(parent) -- luacheck: ignore
                 return nil
             end)
         end),
+
+        effects             = headerRow "FFInspectorBrickEffects" {},
+        compositing         = headerRow "FFHeliumBlendCompositingEffect" {
+            blendMode       = menuProperty "FFHeliumBlendMode",
+            opacity         = sliderProperty "FFHeliumBlendOpacity",
+        },
+
+        transform           = headerRow "FFHeliumXFormEffect" {
+            position        = xyProperty "FFHeliumXFormPosition",
+            rotation        = sliderProperty "FFHeliumXFormRotation",
+            scaleAll        = sliderProperty "FFHeliumXFormScaleInspector",
+            scaleX          = sliderProperty "FFHeliumXFormScaleXInspector",
+            scaleY          = sliderProperty "FFHeliumXFormScaleYInspector",
+            anchor          = xyProperty "FFHeliumXFormAnchor",
+        },
+
+        crop                = headerRow "FFHeliumCropEffect" {
+            type            = menuProperty "FFType",
+            left            = sliderProperty "FFCropLeft",
+            right           = sliderProperty "FFCropRight",
+            top             = sliderProperty "FFCropTop",
+            bottom          = sliderProperty "FFCropBottom",
+        },
+        distort             = headerRow "FFHeliumDistortEffect" {
+            bottomLeft      = xyProperty "PerspectiveTile::Bottom Left",
+            bottomRight     = xyProperty "PerspectiveTile::Bottom Right",
+            topRight        = xyProperty "PerspectiveTile::Top Right",
+            topLeft         = xyProperty "PerspectiveTile::Top Left",
+        },
+        stabilization       = headerRow "FFStabilizationEffect" {
+            method          = menuProperty "FFStabilizationAlgorithmRequested",
+            smoothing       = sliderProperty "FFStabilizationInertiaCamSmooth",
+            tripodMode      = checkBoxProperty "FFStabilizationUseTripodMode",
+        },
+        rollingShutter      = headerRow "FFRollingShutterEffect" {
+            amount          = menuProperty "FFRollingShutterAmount",
+        },
+        spatialConform      = headerRow "FFHeliumConformEffect" {
+            type            = menuProperty("FFType", 2),
+        },
     }
 
     return o
@@ -160,7 +345,7 @@ function VideoInspector:show()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector:row(labelKey) -> PropertyRow
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:row(labelKey, index) -> PropertyRow
 --- Method
 --- Returns a `PropertyRow` for a row with the specified label key.
 ---
@@ -169,97 +354,20 @@ end
 ---
 --- Returns:
 --- * The `PropertyRow`.
-function VideoInspector:row(labelKey)
-    local row = self._rows[labelKey]
+function VideoInspector:row(labelKey, index)
+    local key = labelKey
+    if index ~= nil and index > 1 then
+        key = labelKey .. "_" .. tostring(index)
+    end
+
+    local row = self._rows[key]
 
     if not row then
-        row = PropertyRow.new(self, labelKey, "contentUI")
-        self._rows[labelKey] = row
+        row = PropertyRow.new(self, labelKey, "contentUI", index)
+        self._rows[key] = row
     end
 
     return row
-end
-
---- cp.apple.finalcutpro.inspector.video.VideoInspector:stabilization([value]) -> boolean
---- Method
---- Sets or returns the stabilization setting for a clip.
----
---- Parameters:
----  * [value] - A boolean value you want to set the stabilization setting for the clip to.
----
---- Returns:
----  * The value of the stabilization settings, or `nil` if an error has occurred.
----
---- Notes:
----  * This method will open the Inspector if it's closed, and close it again after adjusting the stablization settings.
-function VideoInspector:stabilization(value)
-    local inspectorOriginallyClosed = false
-    if not self:isShowing() then
-        self:show()
-        if not self.isShowing() then
-            log.ef("Failed to open Inspector")
-            return nil
-        end
-        inspectorOriginallyClosed = true
-    end
-    local app = self:app()
-    local contents = app:timeline():contents()
-    local selectedClips = contents:selectedClipsUI()
-    if selectedClips and #selectedClips >= 1 then
-        local ui = self:parent():UI()
-        if value == nil or type(value) == "boolean" then
-            self:parent():selectTab("Video")
-            if self:parent():selectedTab() == "Video" then
-                local inspectorContent = axutils.childWithID(ui, id "DetailsPanel")
-                if inspectorContent then
-                    for theID,child in ipairs(inspectorContent[1][1]) do
-                        if child:attributeValue("AXValue") == app:string("FFStabilizationEffect") then
-                            if inspectorContent[1][1][theID - 1] then
-                                local checkbox = inspectorContent[1][1][theID - 1]
-                                if checkbox then
-                                    local checkboxValue = checkbox:attributeValue("AXValue")
-                                    if value == nil then
-                                        if checkboxValue == 1 then
-                                            return true
-                                        else
-                                            return false
-                                        end
-                                    else
-                                        if (checkboxValue == 1 and value == true) or (checkboxValue == 0 and value == false) then
-                                            return value
-                                        else
-                                            local result = checkbox:performAction("AXPress")
-                                            if result then
-                                                return not value
-                                            else
-                                                log.ef("Failed to press checkbox.")
-                                                return nil
-                                            end
-                                        end
-                                    end
-                                else
-                                    log.ef("Could not find stabilization checkbox.")
-                                end
-                            end
-                        end
-                    end
-                else
-                    log.ef("Could not find Inspector UI.")
-                end
-                log.ef("Could not find stabilization checkbox.")
-            else
-                log.ef("Could not select the video tab.")
-            end
-        else
-            log.ef("The optional value parameter should be a boolean.")
-        end
-    else
-        log.ef("No clip(s) selected.")
-    end
-    if inspectorOriginallyClosed then
-        self:parent():hide()
-    end
-    return nil
 end
 
 return VideoInspector
