@@ -72,8 +72,7 @@ end
 ---
 --- Returns:
 --- * A new `ColorWheel` instance.
--- TODO: Use a Function instead of a Method.
-function ColorWheel.new(parent, type) -- luacheck: ignore
+function ColorWheel.new(parent, type)
     local o = prop.extend({
         _parent = parent,
         _type = type,
@@ -186,7 +185,6 @@ function ColorWheel:select()
     self:show():focused(true)
     return self
 end
-
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:colorWell() -> ColorWell
 --- Method
