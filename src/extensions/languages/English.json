@@ -1,5 +1,8 @@
 {
     "en": {
+    	"favourite"									: "Favourite",
+    	"favourites"								: "Favourites",
+    	"missingTangentAction"						: "There isn't any action assigned to this favourite.\n\nPlease check your Favourite allocations within the Tangent tab in CommandPost Preferences and try again.",
     	"core_tangent_commandpost_label"			: "Tangent: CommandPost Group",
     	"core_tangent_commandpost_favourites_label" : "Tangent: Favourites",
     	"previous"									: "Previous",

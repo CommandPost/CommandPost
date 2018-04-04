@@ -1,18 +1,59 @@
--- local log                   = require("hs.logger").new("tng_sound")
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
+--- === plugins.core.tangent.os.sound ===
+---
+--- Tangent Display Functions.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local audiodevice           = require("hs.audiodevice")
 local audiowatcher          = require("hs.audiodevice.watcher")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop                  = require("cp.prop")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
+
+--- plugins.core.tangent.os.sound.currentOutputDevice <cp.prop: audio>
+--- Variable
+--- Current Output Device.
 mod.currentOutputDevice = prop(function()
     return audiodevice.defaultOutputDevice()
 end)
 
+--- plugins.core.tangent.os.sound.group <cp.prop: audio>
+--- Variable
+--- Tangent Sound Group.
 mod.group = nil
 
+--- plugins.core.tangent.os.sound.init() -> none
+--- Function
+--- Initialise the module.
+---
+--- Parameters:
+---  * osGroup - The Tangent Sound Group.
+---
+--- Returns:
+---  * None
 function mod.init(osGroup)
     local soundGroup = osGroup:group(i18n("sound"))
     mod.group = soundGroup
@@ -90,8 +131,11 @@ function mod.init(osGroup)
     end
 end
 
-
-
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
     id = "core.tangent.os.sound",
     group = "core",
@@ -100,9 +144,11 @@ local plugin = {
     }
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
     mod.init(deps.osGroup)
-
     return mod
 end
 

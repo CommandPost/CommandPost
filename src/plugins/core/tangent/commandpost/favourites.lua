@@ -17,7 +17,13 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                   = require("hs.logger").new("tanFav")
+local log                                       = require("hs.logger").new("tanFav")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local dialog                                    = require("cp.dialog")
+local inspect                                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 --
@@ -28,8 +34,9 @@ local plugin = {
     id = "core.tangent.commandpost.favourites",
     group = "core",
     dependencies = {
-        ["core.tangent.commandpost"] = "cpGroup",
-        ["core.tangent.prefs"] = "prefs",
+        ["core.tangent.commandpost"]    = "cpGroup",
+        ["core.tangent.prefs"]          = "prefs",
+        ["core.action.manager"]         = "actionManager",
     }
 }
 
@@ -38,14 +45,34 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-    local max = deps.prefs.MAX_ITEMS
-    local group = deps.cpGroup:group("Favourites")
+    local prefs = deps.prefs
+    local cpGroup = deps.cpGroup
+    local actionManager = deps.actionManager
+
+    local max = prefs.MAX_ITEMS
+    local group = cpGroup:group(i18n("favourites"))
 
     local id = 0x0F100000
     for i = 1, max do
-        group:action(id, "Favourite #" .. i)
+        group:action(id, i18n("favourite") .. " #" .. i)
             :onPress(function()
-                log.df("Trigger Favourite: %s", i)
+                local favourites = prefs.favourites
+                if favourites and favourites[tostring(i)] then
+
+                    local favourite = favourites[tostring(i)]
+
+                    local handlerID = favourite.handlerID
+                    local action = favourite.action
+
+                    if handlerID and action then
+                        local handler = actionManager.getHandler(handlerID)
+                        handler:execute(action)
+                    else
+                        log.ef("Invalid handlerID or Action: %s, %s", handlerID, hs.inspect(action))
+                    end
+                else
+                    dialog.displayMessage(i18n("missingTangentAction"))
+                end
             end)
 
         id = id + 1

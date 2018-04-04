@@ -6,7 +6,7 @@
 					Tangent Favourite #{{ i }}
 				</td>
 				<td class="tangentRowAction">
-					<input type="text" id="tangent_button{{ i }}_action" class="tangentActionTextbox" value="None" disabled>
+					<input type="text" id="tangent_button{{ i }}_action" class="tangentActionTextbox" value="{{ favourites[tostring(i)] and favourites[tostring(i)].actionTitle or none }}" disabled>
 				</td>
 				<td class="tangentRowActionButton">
 					<a id="tangent_button{{ i }}_actionButton" href="#" class="button sdActionButton">Select</a>
@@ -32,7 +32,6 @@
 									id: "tangentPanelCallback",
 									params: {
 										type: "updateAction",
-										groupID: "",
 										buttonID: "{{ i }}",
 									},
 								}
@@ -62,7 +61,6 @@
 									id: "tangentPanelCallback",
 									params: {
 										type: "clearAction",
-										groupID: "",
 										buttonID: "{{ i }}",
 									},
 								}
