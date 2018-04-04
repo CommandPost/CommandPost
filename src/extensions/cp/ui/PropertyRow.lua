@@ -222,4 +222,8 @@ function PropertyRow:children()
     return children
 end
 
+function PropertyRow:__tostring()
+    return self:label() or self._labelKeys()[1]
+end
+
 return PropertyRow

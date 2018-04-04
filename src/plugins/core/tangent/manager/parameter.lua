@@ -8,7 +8,7 @@
 ---
 --- Represents a Tangent Parameter
 
--- local log               = require("hs.logger").new("tng_param")
+local log               = require("hs.logger").new("tng_param")
 
 local tangent           = require("hs.tangent")
 
@@ -228,8 +228,12 @@ end
 --- * The current value, or `nil` if it can't be accessed.
 function parameter.mt:change(amount)
     if self._change and self:active() then
-        local value = self._change(amount)
-        return value or self:get()
+        local ok, result = xpcall(function() return self._change(amount) end, debug.traceback)
+        if not ok then
+            log.ef("Error while changing parameter (%#010x): %s", self.id, result)
+        end
+
+        return self:get()
     end
     return nil
 end
