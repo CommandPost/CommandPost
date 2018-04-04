@@ -141,6 +141,9 @@ end
 ---  * None
 function mod.init(deps)
 
+    --------------------------------------------------------------------------------
+    -- Color Wheels:
+    --------------------------------------------------------------------------------
     deps.manager.controls:new("masterHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Master (Horizontal)",
@@ -155,7 +158,49 @@ function mod.init(deps)
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, true),
     })
 
+    deps.manager.controls:new("shadowsHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Shadows (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, false),
+    })
+
+    deps.manager.controls:new("shadowsVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Shadows (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, true),
+    })
+
+    deps.manager.controls:new("midtonesHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Midtones (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, false),
+    })
+
+    deps.manager.controls:new("midtonesVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Midtones (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, true),
+    })
+
+    deps.manager.controls:new("highlightsHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Highlights (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, false),
+    })
+
+    deps.manager.controls:new("highlightsVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Highlights (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, true),
+    })
     return mod
+
 end
 
 --------------------------------------------------------------------------------
