@@ -13,18 +13,31 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log						= require("hs.logger").new("commands")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fs						= require("hs.fs")
 local json						= require("hs.json")
 local timer						= require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local command					= require("cp.commands.command")
 local config					= require("cp.config")
 local prop						= require("cp.prop")
 local tools						= require("cp.tools")
 
-local _							= require("moses")
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local moses						= require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -79,7 +92,7 @@ end
 --- Returns:
 ---  * `cp.commands` - The command group with the specified ID, or `nil` if none exists.
 function commands.groups()
-    return _.clone(commands._groups, true)
+    return moses.clone(commands._groups, true)
 end
 
 --- cp.commands.new(id) -> cp.commands
@@ -335,7 +348,7 @@ function commands.mt:saveShortcuts()
         local commandData = {}
         for _,shortcut in ipairs(cmd:getShortcuts()) do
             commandData[#commandData + 1] = {
-                modifiers = _.clone(shortcut:getModifiers()),
+                modifiers = moses.clone(shortcut:getModifiers()),
                 keyCode = shortcut:getKeyCode(),
             }
         end
@@ -412,7 +425,7 @@ function commands.loadFromFile(name)
         log.df("Loading shortcuts: '%s'", filePath)
         local content = file:read("*all")
         file:close()
-        if not _.isEmpty(content) then
+        if not moses.isEmpty(content) then
             groupData = json.decode(content)
         else
             log.df("Empty shortcut file: '%s'", filePath)
