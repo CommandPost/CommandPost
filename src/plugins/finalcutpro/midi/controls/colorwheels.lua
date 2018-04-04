@@ -78,8 +78,7 @@ end
 local MAX_14BIT = 0x3FFF    -- 16383
 local MAX_7BIT  = 0x7F      -- 127
 
-local UNSHIFTED_SCALE = 0.5 -- scale unshifted 7-bit by 50%
-
+local UNSHIFTED_SCALE = 20/100 -- Scale unshifted 7-bit by 20%
 
 -- makeWheelHandler(puckFinderFn) -> function
 -- Function
@@ -93,10 +92,6 @@ local UNSHIFTED_SCALE = 0.5 -- scale unshifted 7-bit by 50%
 local function makeWheelHandler(wheelFinderFn, vertical)
     return function(metadata)
 
-        --log.df("Doing stuff: %s", hs.inspect(metadata))
-
-        log.df("-----------------------")
-
         local midiValue, value
         local wheel = wheelFinderFn()
 
@@ -104,7 +99,6 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             --------------------------------------------------------------------------------
             -- 14bit:
             --------------------------------------------------------------------------------
-            log.df("14bit")
             midiValue = metadata.pitchChange or metadata.fourteenBitValue
             if type(midiValue) == "number" then
                 value = (midiValue / MAX_14BIT) * 2 - 1
@@ -113,7 +107,6 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             --------------------------------------------------------------------------------
             -- 7bit:
             --------------------------------------------------------------------------------
-            log.df("7bit")
             midiValue = metadata.controllerValue
             if type(midiValue) == "number" then
                 value = (midiValue / MAX_7BIT) * 2 - 1
@@ -126,16 +119,12 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
         end
 
-        log.df("value: %s", value)
-
         local current = wheel:colorOrientation()
         if current then
             if vertical then
-                log.df("vertical: %s", wheel:colorOrientation())
-                wheel:colorOrientation({right=current.right,up=value})
+                wheel:show():colorOrientation({right=current.right,up=value})
             else
-                log.df("horizontal")
-                wheel:colorOrientation({right=value,up=current.up})
+                wheel:show():colorOrientation({right=value,up=current.up})
             end
         end
     end
@@ -154,9 +143,16 @@ function mod.init(deps)
 
     deps.manager.controls:new("masterHorizontal", {
         group = "fcpx",
-        text = "Color Wheel: Master (Horizontal)",
+        text = "MIDI: Color Wheel Master (Horizontal)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, false),
+    })
+
+    deps.manager.controls:new("masterVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Master (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, true),
     })
 
     return mod
