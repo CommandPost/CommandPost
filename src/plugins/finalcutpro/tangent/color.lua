@@ -294,20 +294,6 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     local colorShortcutGroup = fcpGroup:group(i18n("colorShortcuts"))
 
-    --[[
-     Enable/Disable Balance Color
-     Go to Color Inspector
-     Match Color...
-     Save Color Effect Preset
-     Toggle Color Correction Effects on/off
-     Toggle Effects on/off
-     View All Color Channels
-     View Alpha Color Channel
-     View Blue Color Channel
-     View Green Color Channel
-     View Red Color Channel
-     --]]
-
     colorShortcutGroup:action(wheelsBaseID+0x0105, i18n("applyColorCorrectionFromPreviousClip"))
         :onPress(function()
             if not fcp:performShortcut("SetCorrectionFromEdit-Back-1") then
@@ -327,6 +313,69 @@ function mod.init(tangentManager, fcpGroup)
             if not fcp:performShortcut("SetCorrectionFromEdit-Back-2") then
                 dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
             end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0108, i18n("enableDisableBalanceColor"))
+        :onPress(function()
+            if not fcp:performShortcut("ToggleColorBalance") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0109, i18n("goToColorInspector"))
+        :onPress(function()
+            fcp:selectMenu({"Window", "Go To", "Color Inspector"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0110, i18n("matchColor"))
+        :onPress(function()
+            fcp:selectMenu({"Modify", "Match Color…"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0111, i18n("saveColorEffectPreset"))
+        :onPress(function()
+            if not fcp:performShortcut("SaveColorEffectPreset") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0112, i18n("toggleColorCorrectionEffects"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ToggleAllCorrection") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0113, i18n("toggleEffects"))
+        :onPress(function()
+            if not fcp:performShortcut("ToggleSelectedEffectsOff") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0114, i18n("viewAlphaColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0115, i18n("viewRedColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Red"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0116, i18n("viewGreenColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Green"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0117, i18n("viewBlueColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Blue"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0118, i18n("viewAllColorChannels"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Alll"})
         end)
 
 end

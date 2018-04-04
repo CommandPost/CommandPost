@@ -1,5 +1,16 @@
 {
     "en": {
+        "viewBlueColorChannel"						: "View Blue Color Channel",
+     	"viewGreenColorChannel"						: "View Green Color Channel",
+     	"viewRedColorChannel"						: "View Red Color Channel",
+    	"viewAlphaColorChannel"						: "View Alpha Color Channel",
+    	"viewAllColorChannels"						: "View All Color Channels",
+    	"toggleEffects"								: "Toggle Effects",
+    	"toggleColorCorrectionEffects"				: "Toggle Color Correction Effects",
+    	"saveColorEffectPreset"						: "Save Color Effect Preset",
+    	"matchColor"								: "Match Color",
+    	"goToColorInspector"						: "Go to Color Inspector",
+    	"enableDisableBalanceColor"					: "Enable/Disable Balance Color",
     	"applyColorCorrectionFromTwoClipsBack"		: "Apply Color Correction from Two Clips Back",
     	"applyColorCorrectionFromThreeClipsBack"	: "Apply Color Correction from Three Clips Back",
     	"applyColorCorrectionFromPreviousClip"      : "Apply Color Correction from Previous Clip",
