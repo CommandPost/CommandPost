@@ -115,9 +115,9 @@ local function makeWheelHandler(wheelFinderFn, vertical)
         local current = wheel:colorOrientation()
         if current then
             if vertical then
-                wheel:show():colorOrientation({right=current.right,up=value})
+                wheel:colorOrientation({right=current.right,up=value})
             else
-                wheel:show():colorOrientation({right=value,up=current.up})
+                wheel:colorOrientation({right=value,up=current.up})
             end
         end
     end
@@ -141,57 +141,87 @@ function mod.init(deps)
         group = "fcpx",
         text = "MIDI: Color Wheel Master (Horizontal)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Master (Vertical)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Shadows (Horizontal)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Shadows (Vertical)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():shadows() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Midtones (Horizontal)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Midtones (Vertical)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():midtones() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Highlights (Horizontal)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, false),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Highlights (Vertical)",
         subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
-        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():highlights() end, true),
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, true),
     })
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Saturation:
+    --------------------------------------------------------------------------------
+    -- The current saturation value, as a number between 0 and 10.
+
+    -- _fcp:inspector():color():colorWheels():master():saturationValue(10)
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Brightness:
+    --------------------------------------------------------------------------------
+    -- The current brightness value, as a number between -12 and 10.
+
+    -- _fcp:inspector():color():colorWheels():master():brightnessValue(10)
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Temperature:
+    --------------------------------------------------------------------------------
+    -- The color temperature for this corrector. A number from 2500 to 10000.
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Tint:
+    --------------------------------------------------------------------------------
+    -- The tint for the corrector. A number from `-50` to `50`.
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Hue:
+    --------------------------------------------------------------------------------
+    -- The hue for the corrector. A number from `0` to `360`.
+
     return mod
 
 end
