@@ -78,7 +78,7 @@ function PopUpButton.new(parent, finderFn)
 
     return prop.bind(o) {
         UI = UI,
-        isShowing, isShowing,
+        isShowing = isShowing,
         value = value,
     }
 end

@@ -129,6 +129,21 @@ function group.mt:_register(control)
     end
 end
 
+function group.mt:_unregister(control)
+    local controls = self:controls()
+    if controls then
+        controls:unregister(control)
+    end
+end
+
+function group.mt:_unregisterAll(controlList)
+    if controlList then
+        for _,c in ipairs(controlList) do
+            self:_unregister(c)
+        end
+    end
+end
+
 --- plugins.core.tangent.manager.group:action(id[, name]) -> action
 --- Method
 --- Adds an `action` to this group.
@@ -225,6 +240,26 @@ function group.mt:binding(name)
     insert(bindings, a)
 
     return a
+end
+
+--- plugins.core.tangent.manager.group:reset() -> self
+--- Method
+--- This will remove all parameters, actions, menus and bindings from
+--- the group. It does not remove sub-groups. Use with care!
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `group` instance.
+function group.mt:reset()
+    self:_unregisterAll(self._actions)
+    self:_unregisterAll(self._parameters)
+    self:_unregisterAll(self._menus)
+
+    self._actions = nil
+    self._parameters = nil
+    self._menus = nil
 end
 
 --- plugins.core.tangent.manager.group:xml() -> cp.web.xml
