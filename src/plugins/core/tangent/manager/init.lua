@@ -185,7 +185,8 @@ end
 function mod.updateControls()
     mod.writeControlsXML()
     if mod.connected() then
-        tangent.sendApplicationDefinition()
+        -- tangent.sendApplicationDefinition()
+        mod.connected(false)
     end
 end
 

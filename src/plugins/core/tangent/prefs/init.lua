@@ -23,15 +23,12 @@ local log                                       = require("hs.logger").new("tang
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local dialog                                    = require("hs.dialog")
-local fs                                        = require("hs.fs")
 local image                                     = require("hs.image")
-local json	                					= require("hs.json")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local html                                      = require("cp.web.html")
-local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -54,16 +51,6 @@ mod.TANGENT_WEBSITE = "http://www.tangentwave.co.uk/"
 --- Constant
 --- URL to download Tangent Hub Application.
 mod.DOWNLOAD_TANGENT_HUB = "http://www.tangentwave.co.uk/download/tangent-hub-installer-mac/"
-
---- plugins.core.tangent.prefs.MAX_ITEMS -> number
---- Constant
---- Maximum number of Favourites available in the Tangent Preferences.
-mod.MAX_ITEMS = 50
-
---- plugins.core.tangent.prefs.favourites -> table
---- Variable
---- Table of favourites.
-mod.favourites = {}
 
 -- renderPanel(context) -> none
 -- Function
@@ -99,119 +86,11 @@ local function generateContent()
     local context = {
         _                       = _,
         webviewLabel            = mod._prefsManager.getLabel(),
-        maxItems                = mod.MAX_ITEMS,
-        favourites              = mod.favourites,
+        maxItems                = mod._favourites.MAX_ITEMS,
+        favourites              = mod._favourites.favourites(),
         none                    = i18n("none"),
     }
     return renderPanel(context)
-end
-
--- loadFromFile() -> table
--- Function
--- Loads the Favourites from JSON file.
---
--- Parameters:
---  * None
---
--- Returns:
---  * A table of favourites.
-local function loadFromFile()
-    --------------------------------------------------------------------------------
-    -- Create folder if it doesn't exist:
-    --------------------------------------------------------------------------------
-    local configPath = mod._tangentManager.configPath
-    if not tools.doesDirectoryExist(configPath) then
-        fs.mkdir(configPath)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Load from file:
-    --------------------------------------------------------------------------------
-    local filePath = configPath .. "/favourites.json"
-    local file = io.open(filePath, "r")
-    if file then
-        local content = file:read("*all")
-        file:close()
-        if not _.isEmpty(content) then
-            return json.decode(content)
-        else
-            return {}
-        end
-    else
-        log.ef("Unable to load Favourites file: '%s'", filePath)
-        return {}
-    end
-end
-
--- saveToFile() -> none
--- Function
--- Saves favourites to JSON file.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function saveToFile()
-    --------------------------------------------------------------------------------
-    -- Create folder if it doesn't exist:
-    --------------------------------------------------------------------------------
-    local configPath = mod._tangentManager.configPath
-    if not tools.doesDirectoryExist(configPath) then
-        fs.mkdir(configPath)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Save to file:
-    --------------------------------------------------------------------------------
-    local filePath = configPath .. "/favourites.json"
-    local file = io.open(filePath, "w")
-    if file then
-        file:write(json.encode(mod.favourites))
-        file:close()
-    else
-        log.df("Unable to save Favourites file: '%s'", filePath)
-    end
-end
-
--- saveAction(buttonID, actionTitle, handlerID, action) -> none
--- Function
--- Saves an action to Favourites.
---
--- Parameters:
---  * buttonID - The button ID as number.
---  * actionTitle - The action title as string.
---  * handlerID - The handler ID as string.
---  * action - The action table.
---
--- Returns:
---  * None
-local function saveAction(buttonID, actionTitle, handlerID, action)
-    if not mod.favourites[buttonID] then
-        mod.favourites[buttonID] = {}
-    end
-    mod.favourites[buttonID] = {
-        actionTitle = actionTitle,
-        handlerID = handlerID,
-        action = action,
-    }
-    saveToFile()
-end
-
--- clearAction(buttonID) -> none
--- Function
--- Clears an Action from Favourites.
---
--- Parameters:
---  * buttonID - The button ID you want to clear.
---
--- Returns:
---  * None
-local function clearAction(buttonID)
-    if mod.favourites[buttonID] then
-        mod.favourites[buttonID] = nil
-    end
-    saveToFile()
 end
 
 -- tangentPanelCallback() -> none
@@ -246,7 +125,7 @@ local function tangentPanelCallback(id, params)
                     local actionTitle = text
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
-                    saveAction(buttonID, actionTitle, handlerID, action)
+                    mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
                     mod._prefsManager.refresh()
                 end)
 
@@ -256,7 +135,7 @@ local function tangentPanelCallback(id, params)
             mod.activator:show()
         elseif params["type"] == "clearAction" then
             local buttonID = params.buttonID
-            clearAction(buttonID)
+            mod._favourites.clearAction(buttonID)
             mod._prefsManager.refresh()
         else
             --------------------------------------------------------------------------------
@@ -286,12 +165,8 @@ function mod.init(deps, env)
     mod._actionManager  = deps.actionManager
     mod._prefsManager   = deps.prefsManager
     mod._tangentManager = deps.tangentManager
+    mod._favourites     = deps.favourites
     mod._env            = env
-
-    --------------------------------------------------------------------------------
-    -- Load Favourites from JSON File:
-    --------------------------------------------------------------------------------
-    mod.favourites = loadFromFile()
 
     --------------------------------------------------------------------------------
     -- Setup Tangent Preferences Panel:
@@ -417,9 +292,10 @@ local plugin = {
     id              = "core.tangent.prefs",
     group           = "core",
     dependencies    = {
-        ["core.preferences.manager"]    = "prefsManager",
-        ["core.tangent.manager"]        = "tangentManager",
-        ["core.action.manager"]         = "actionManager",
+        ["core.preferences.manager"]            = "prefsManager",
+        ["core.tangent.manager"]                = "tangentManager",
+        ["core.tangent.commandpost.favourites"] = "favourites",
+        ["core.action.manager"]                 = "actionManager",
     }
 }
 
