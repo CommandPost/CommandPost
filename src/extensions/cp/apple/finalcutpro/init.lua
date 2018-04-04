@@ -1323,6 +1323,25 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- cp.apple.finalcutpro:userCommandSetPath() -> string or nil
+--- Method
+--- Gets the path where User Command Set files are stored.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A path as a string or `nil` if the folder doesn't exist.
+function App:userCommandSetPath()
+    local path = "~/Library/Application Support/Final Cut Pro/Command Sets/"
+    local absolutePath = fs.pathToAbsolute(path)
+    if absolutePath then
+        return absolutePath
+    else
+        return nil
+    end
+end
+
 --- cp.apple.finalcutpro:getActiveCommandSetPath() -> string or nil
 --- Method
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences

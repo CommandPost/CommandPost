@@ -40,7 +40,6 @@ function plugin.init(deps)
     local id = 0x00050000
     fcpGroup:action(id, i18n("cpLaunchFinalCutPro" .. "_title"))
         :onPress(function()
-            print("hello")
             fcp:launch()
         end)
 
