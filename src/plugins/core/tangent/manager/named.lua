@@ -34,11 +34,45 @@
 -- local log               = require("hs.logger").new("tg_named")
 -- local inspect           = require("hs.inspect")
 
+local tools             = require("cp.tools")
 local x                 = require("cp.web.xml")
 
 local match             = string.match
 
 local named = {}
+
+-- makeStringTangentFriendly(value) -> none
+-- Function
+-- Removes any illegal characters from the value
+--
+-- Parameters:
+--  * value - The string you want to process
+--
+-- Returns:
+--  * A string that's valid for Tangent's panels
+local function makeStringTangentFriendly(value)
+    --------------------------------------------------------------------------------
+    -- Replace "&"" with "and"
+    --------------------------------------------------------------------------------
+    value = string.gsub(value, "&", "and")
+
+    local result = ""
+
+    for i = 1, #value do
+        local letter = value:sub(i,i)
+        local byte = string.byte(letter)
+        if byte >= 32 and byte <= 126 then
+            result = result .. letter
+        --else
+            --log.df("Illegal Character: %s", letter)
+        end
+    end
+    result = tools.trim(result)
+    if #result == 0 then
+        result = nil
+    end
+    return result
+end
 
 named.mt = {}
 
@@ -101,12 +135,16 @@ function named.xml(self)
         local names = getNames(self)
 
         if names then
-            if names.name then
-                result(x.Name(names.name))
+            local theName = makeStringTangentFriendly(names.name)
+            if theName then
+                result(x.Name(theName))
             end
             for i,v in pairs(names) do
-                if v and type(i) == "number" then
-                    result(x["Name"..i](v))
+                if type(i) == "number" and v then
+                    theName = makeStringTangentFriendly(v)
+                    if theName then
+                        result(x["Name"..i](theName))
+                    end
                 end
             end
         end

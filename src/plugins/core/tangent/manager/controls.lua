@@ -95,6 +95,25 @@ function controls.mt:register(control)
     return self
 end
 
+--- plugins.core.tangent.manager.controls:unregister(control) -> self
+--- Method
+--- Unregisters a control (Action/Parameter/Menu) with it's ID
+---
+--- Parameters:
+--- * control       - The Action/Parameter/Menu to unregister
+---
+--- Returns:
+--- * self
+function controls.mt:unregister(control)
+    if control.id == nil then
+        error("The control must have an ID")
+    end
+    if self.ids[control.id] ~= nil then
+        self.ids[control.id] = nil
+    end
+    return self
+end
+
 --- plugins.core.tangent.manager.controls:findByID(id) -> table
 --- Method
 --- Finds a control (Action/Parameter/Mode) by its unique ID.
