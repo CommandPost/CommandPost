@@ -78,6 +78,8 @@ end
 local MAX_14BIT = 0x3FFF    -- 16383
 local MAX_7BIT  = 0x7F      -- 127
 
+local UNSHIFTED_SCALE = 0.5 -- scale unshifted 7-bit by 50%
+
 
 -- makeWheelHandler(puckFinderFn) -> function
 -- Function
@@ -114,11 +116,9 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             log.df("7bit")
             midiValue = metadata.controllerValue
             if type(midiValue) == "number" then
-                local pct = (midiValue / MAX_7BIT)
-                if shiftPressed() then
-                    value = pct * 2 - 1
-                else
-                    value = pct - 0.5 -- picked a scale of 50%
+                value = (midiValue / MAX_7BIT) * 2 - 1
+                if not shiftPressed() then -- scale it down
+                    value = value * UNSHIFTED_SCALE
                 end
             end
         end
