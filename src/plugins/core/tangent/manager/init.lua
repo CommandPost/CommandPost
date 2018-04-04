@@ -24,7 +24,6 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local require                                   = require
-
 local log                                       = require("hs.logger").new("tangentMan")
 
 --------------------------------------------------------------------------------
@@ -41,17 +40,23 @@ local timer                                     = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local fcp                                       = require("cp.apple.finalcutpro")
+local is                                        = require("cp.is")
+local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 local x                                         = require("cp.web.xml")
-local prop                                      = require("cp.prop")
-local is                                        = require("cp.is")
 
-local mode                                      = require("mode")
-local controls                                  = require("controls")
+--------------------------------------------------------------------------------
+-- Local Requires:
+--------------------------------------------------------------------------------
 local action                                    = require("action")
-local parameter                                 = require("parameter")
+local controls                                  = require("controls")
 local menu                                      = require("menu")
+local mode                                      = require("mode")
+local parameter                                 = require("parameter")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert, sort                              = table.insert, table.sort
 
 --------------------------------------------------------------------------------
@@ -61,36 +66,25 @@ local insert, sort                              = table.insert, table.sort
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- TANGENT_MAPPER_BUNDLE_ID -> string
+-- Constant
+-- Tangent Mapper Bundle ID
 local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 
--- plugins.core.touchbar.manager._modes -> table
+-- plugins.core.tangent.manager._modes -> table
 -- Variable
--- Modesf
+-- Modes
 mod._modes = {}
 
+-- plugins.core.tangent.manager._connectionConfirmed -> boolean
+-- Variable
+-- Connection Confirmed.
 mod._connectionConfirmed = false
 
 --- plugins.core.tangent.manager.controls
 --- Constant
 --- The set of controls currently registered.
 mod.controls = controls.new()
-
-function mod.backupControlsXML()
-    if tools.doesDirectoryExist(mod._configPath) then
-        --------------------------------------------------------------------------------
-        -- Backup old files first just to be safe:
-        --------------------------------------------------------------------------------
-        if not tools.doesDirectoryExist(mod._backupPath) then
-            log.df("Tangent Backup folder did not exist, so creating one.")
-            fs.mkdir(mod._backupPath)
-        end
-        local executeString = string.format([[cd "%s"; zip -r "%s/Tangent Settings Backup %s.zip" *]], mod._configPath, mod._backupPath, os.date("%Y%m%d %H%M"))
-        local _, status = hs.execute(executeString)
-        if not status then
-            log.ef("Failed to backup Tangent Settings.")
-        end
-    end
-end
 
 --- plugins.core.tangent.manager.writeControlsXML() -> boolean, string
 --- Function
@@ -107,19 +101,15 @@ function mod.writeControlsXML()
     --------------------------------------------------------------------------------
     -- Create folder if it doesn't exist:
     --------------------------------------------------------------------------------
-    if not tools.doesDirectoryExist(mod._configPath) then
+    if not tools.doesDirectoryExist(mod.configPath) then
         --log.df("Tangent Settings folder did not exist, so creating one.")
-        fs.mkdir(mod._configPath)
-
-    -- NOTE: Shouldn't be necessary any more.
-    -- else
-    --     mod.backupControlsXML()
+        fs.mkdir(mod.configPath)
     end
 
     --------------------------------------------------------------------------------
     -- Copy existing XML files from Application Bundle to local Application Support:
     --------------------------------------------------------------------------------
-    local _, status = hs.execute([[cp -a "]] .. mod._pluginPath .. [["/. "]] .. mod._configPath .. [[/"]])
+    local _, status = hs.execute([[cp -a "]] .. mod._pluginPath .. [["/. "]] .. mod.configPath .. [[/"]])
     if not status then
         log.ef("Failed to copy XML files.")
         return false, "Failed to copy XML files."
@@ -128,7 +118,7 @@ function mod.writeControlsXML()
     --------------------------------------------------------------------------------
     -- Create "controls.xml" file:
     --------------------------------------------------------------------------------
-    local controlsFile = io.open(mod._configPath .. "/controls.xml", "w")
+    local controlsFile = io.open(mod.configPath .. "/controls.xml", "w")
     if controlsFile then
 
         local root = x.TangentWave {fileType = "ControlSystem", fileVersion="3.0"} (
@@ -183,6 +173,15 @@ function mod.writeControlsXML()
     end
 end
 
+--- plugins.core.tangent.manager.updateControls() -> none
+--- Function
+--- Update Controls.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.updateControls()
     mod.writeControlsXML()
     if mod.connected() then
@@ -250,7 +249,7 @@ mod.activeMode = prop(
     end
 )
 
---- plugins.core.touchbar.manager.update() -> none
+--- plugins.core.tangent.manager.update() -> none
 --- Function
 --- Updates the Tangent GUIs.
 ---
@@ -268,23 +267,44 @@ function mod.update()
     end
 end
 
+--- plugins.core.tangent.manager.tangentHubInstalled <cp.prop: boolean>
+--- Variable
+--- Is Tangent Hub Installed?
 mod.tangentHubInstalled = prop(function()
     return tangent.isTangentHubInstalled()
 end)
 
+--- plugins.core.tangent.manager.tangentMapperInstalled <cp.prop: boolean>
+--- Variable
+--- Is Tangent Mapper Installed?
 mod.tangentMapperInstalled = prop(function()
     local info = application.infoForBundleID(TANGENT_MAPPER_BUNDLE_ID)
     return info ~= nil
 end)
 
+--- plugins.core.tangent.manager.tangentMapperRunning <cp.prop: boolean>
+--- Variable
+--- Is Tangent Mapper Running?
 mod.tangentMapperRunning = prop(function()
     return application.applicationsForBundleID(TANGENT_MAPPER_BUNDLE_ID) ~= nil
 end)
 
+--- plugins.core.tangent.manager.launchTangentMapper() -> none
+--- Function
+--- Launches the Tangent Mapper.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.launchTangentMapper()
     application.launchOrFocusByBundleID(TANGENT_MAPPER_BUNDLE_ID)
 end
 
+-- fromHub -> table
+-- Constant
+-- Table of HUD Handling Functions
 local fromHub = {
     [tangent.fromHub.initiateComms] = function(metadata)
         --------------------------------------------------------------------------------
@@ -540,7 +560,7 @@ mod.connected = prop(
             --------------------------------------------------------------------------------
             disableFinalCutProInTangentHub()
             tangent.callback(callback)
-            local ok, errorMessage = tangent.connect("CommandPost", mod._configPath)
+            local ok, errorMessage = tangent.connect("CommandPost", mod.configPath)
             if not ok then
                 log.ef("Failed to start Tangent Support: %s", errorMessage)
                 return false
@@ -553,9 +573,12 @@ mod.connected = prop(
     end
 )
 
+--- plugins.core.tangent.manager.connectable <cp.prop: boolean; read-only>
+--- Variable
+--- Is the Tangent Enabled and the Tangent Hub Installed?
 mod.connectable = mod.enabled:AND(mod.tangentHubInstalled)
 
--- tries to reconnect to Tangent Hub when disconnected.
+-- Tries to reconnect to Tangent Hub when disconnected.
 local ensureConnection = timer.new(1.0, function()
     mod.connected(true)
 end)
@@ -590,10 +613,18 @@ end, true)
 --- Returns:
 ---  * `true` if mapping files are installed otherwise `false`
 function mod.areMappingsInstalled()
-    return tools.doesFileExist(mod._configPath .. "/controls.xml")
+    return tools.doesFileExist(mod.configPath .. "/controls.xml")
 end
 
--- secret test function...
+-- plugins.core.tangent.manager._test(...) -> boolean
+-- Function
+-- Secret Test Function.
+--
+-- Parameters:
+--  * ... - Any variables you want to pass along to all_tests.
+--
+-- Returns:
+--  * The result from the test.
 function mod._test(...)
     return require("all_tests")(...)
 end
@@ -618,8 +649,7 @@ function plugin.init(_, env)
     -- Get XML Path:
     --------------------------------------------------------------------------------
     mod._pluginPath = env:pathToAbsolute("/defaultmap")
-    mod._configPath = config.userConfigRootPath .. "/Tangent Settings"
-    mod._backupPath = config.userConfigRootPath .. "/Tangent Settings Backups"
+    mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
 
     --------------------------------------------------------------------------------
     -- Return Module:
