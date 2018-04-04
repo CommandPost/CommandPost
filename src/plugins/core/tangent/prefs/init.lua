@@ -23,13 +23,13 @@ local log                                       = require("hs.logger").new("tang
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local dialog                                    = require("hs.dialog")
+local fs                                        = require("hs.fs")
 local image                                     = require("hs.image")
 local json	                					= require("hs.json")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local commands                                  = require("cp.commands")
 local html                                      = require("cp.web.html")
 local tools                                     = require("cp.tools")
 
@@ -235,7 +235,6 @@ local function tangentPanelCallback(id, params)
                 --------------------------------------------------------------------------------
                 -- Create new Activator:
                 --------------------------------------------------------------------------------
-                local handlerIds = mod._actionManager.handlerIds()
                 mod.activator = mod._actionManager.getActivator("tangentPreferences")
                 mod.activator:preloadChoices()
             end

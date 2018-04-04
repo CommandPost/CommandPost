@@ -68,7 +68,7 @@ function plugin.init(deps)
                         local handler = actionManager.getHandler(handlerID)
                         handler:execute(action)
                     else
-                        log.ef("Invalid handlerID or Action: %s, %s", handlerID, hs.inspect(action))
+                        log.ef("Invalid handlerID or Action: %s, %s", handlerID, inspect(action))
                     end
                 else
                     dialog.displayMessage(i18n("missingTangentAction"))
