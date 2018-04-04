@@ -206,15 +206,11 @@ function Inspector.new(parent)
         function(self)
             return Inspector.matches(self:parent():rightGroupUI())
         end,
-        function(value, self)
+        function(newValue, self, thisProp)
             self:show()
-            local fullHeight = Inspector.matches(self:parent():rightGroupUI())
-            if value ~= fullHeight then
-                local label = self:labelUI()
-                if label then
-                    local target = geometry(label:frame()).center
-                    tools.ninjaDoubleClick(target)
-                end
+            local currentValue = thisProp:get()
+            if newValue ~= currentValue then
+                self:app():menuBar():selectMenu({"View", "Toggle Inspector Height"})
             end
         end
     ):bind(o)
@@ -419,7 +415,7 @@ end
 ---  * ColorInspector
 function Inspector:video()
     if not self._videoInspector then
-        self._videoInspector = VideoInspector:new(self)
+        self._videoInspector = VideoInspector.new(self)
     end
     return self._videoInspector
 end

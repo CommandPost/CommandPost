@@ -125,6 +125,11 @@ function Button:press()
     return self
 end
 
+-- Allows the button to be called like a function which will trigger a `press`.
+function Button:__call()
+    return self:press()
+end
+
 --- cp.ui.Button:snapshot([path]) -> hs.image | nil
 --- Method
 --- Takes a snapshot of the button in its current state as a PNG and returns it.

@@ -356,7 +356,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:mixRow()
     if not self._mixRow then
-        self._mixRow = PropertyRow:new(self, "FFChannelMixName", "contentUI")
+        self._mixRow = PropertyRow.new(self, "FFChannelMixName", "contentUI")
     end
     return self._mixRow
 end
@@ -407,7 +407,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:temperatureRow()
     if not self._temperatureRow then
-        self._temperatureRow = PropertyRow:new(self, "PAECorrectorEffectTemperature", "contentUI")
+        self._temperatureRow = PropertyRow.new(self, "PAECorrectorEffectTemperature", "contentUI")
     end
     return self._temperatureRow
 end
@@ -458,7 +458,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:tintRow()
     if not self._tintRow then
-        self._tintRow = PropertyRow:new(self, "PAECorrectorEffectTint", "contentUI")
+        self._tintRow = PropertyRow.new(self, "PAECorrectorEffectTint", "contentUI")
     end
     return self._tintRow
 end
@@ -509,7 +509,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:hueRow()
     if not self._hueRow then
-        self._hueRow = PropertyRow:new(self, "PAECorrectorEffectHue", "contentUI")
+        self._hueRow = PropertyRow.new(self, "PAECorrectorEffectHue", "contentUI")
     end
     return self._hueRow
 end

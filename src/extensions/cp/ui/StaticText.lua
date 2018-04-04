@@ -209,8 +209,8 @@ function StaticText:loadLayout(layout)
     end
 end
 
--- TODO: Add documentation
-function StaticText.__call(self, parent, value)
+-- Allows the StaticText instance to be called as a function/method which will get/set the value.
+function StaticText:__call(parent, value)
     if parent and parent ~= self:parent() then
         value = parent
     end

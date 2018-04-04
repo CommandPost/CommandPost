@@ -127,7 +127,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.row <cp.prop: PropertyRow>
     --- Field
     --- Finds the 'row' for the property type.
-    o.row = PropertyRow:new(o, o._labelKeys, "contentUI")
+    o.row = PropertyRow.new(o, o._labelKeys, "contentUI")
 
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
     --- Field

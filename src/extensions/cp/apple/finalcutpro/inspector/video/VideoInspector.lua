@@ -23,6 +23,7 @@ local log								= require("hs.logger").new("videoInspect")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
+local PropertyRow                       = require("cp.ui.PropertyRow")
 local id								= require("cp.apple.finalcutpro.ids") "Inspector"
 local prop								= require("cp.prop")
 
@@ -33,22 +34,84 @@ local prop								= require("cp.prop")
 --------------------------------------------------------------------------------
 local VideoInspector = {}
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector:new(parent) -> VideoInspector object
---- Method
---- Creates a new VideoInspector object
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.matches(element)
+--- Function
+--- Checks if the provided element could be a VideoInspector.
+---
+--- Parameters:
+--- * element   - The element to check
+---
+--- Returns:
+--- * `true` if it matches, `false` if not.
+function VideoInspector.matches(element)
+    if element then
+        if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
+            local group = element[1]
+            return group and group:attributeValue("AXRole") == "AXGroup" and #group == 1
+        end
+    end
+    return false
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector.new(parent) -> cp.apple.finalcutpro.video.VideoInspector
+--- Constructor
+--- Creates a new `VideoInspector` object
 ---
 --- Parameters:
 ---  * `parent`		- The parent
 ---
 --- Returns:
----  * A VideoInspector object
+---  * A `VideoInspector` object
 -- TODO: Use a function instead of a method.
-function VideoInspector:new(parent) -- luacheck: ignore
-    local o = {
+function VideoInspector.new(parent) -- luacheck: ignore
+    local o
+    o = prop.extend({
         _parent = parent,
-        _child = {}
+        _child = {},
+        _rows = {},
+
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `hs._asm.axuielement` object for the Video Inspector.
+        UI = parent.panelUI:mutate(function(original)
+            return axutils.cache(o, "_ui",
+                function()
+                    local ui = original()
+                    return VideoInspector.matches(ui) and ui or nil
+                end,
+                VideoInspector.matches
+            )
+        end),
+
+    }, VideoInspector)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.isShowing <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the VideoInspector is currently showing.
+        isShowing = o.UI:mutate(function(original)
+            return original() ~= nil
+        end),
+
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` containing the properties rows, if available.
+        contentUI = o.UI:mutate(function(original)
+            return axutils.cache(o, "_contentUI", function()
+                local ui = original()
+                if ui then
+                    local group = ui[1]
+                    if group then
+                        local scrollArea = group[1]
+                        return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
+                    end
+                end
+                return nil
+            end)
+        end),
     }
-    return prop.extend(o, VideoInspector)
+
+    return o
 end
 
 --- cp.apple.finalcutpro.inspector.video.VideoInspector:parent() -> table
@@ -83,22 +146,9 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector:isShowing() -> boolean
---- Method
---- Returns `true` if the Video Inspector is showing otherwise `false`
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function VideoInspector:isShowing()
-    return self:parent():selectedTab() == "Video" or false
-end
-
 --- cp.apple.finalcutpro.inspector.video.VideoInspector:show() -> VideoInspector
 --- Method
---- Show's the Video Inspector
+--- Shows the Video Inspector
 ---
 --- Parameters:
 ---  * None
@@ -108,6 +158,26 @@ end
 function VideoInspector:show()
     self:parent():selectTab("Video")
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:row(labelKey) -> PropertyRow
+--- Method
+--- Returns a `PropertyRow` for a row with the specified label key.
+---
+--- Parameters:
+--- * labelKey  - The key for the label (see FCP App `keysWithString` method).
+---
+--- Returns:
+--- * The `PropertyRow`.
+function VideoInspector:row(labelKey)
+    local row = self._rows[labelKey]
+
+    if not row then
+        row = PropertyRow.new(self, labelKey, "contentUI")
+        self._rows[labelKey] = row
+    end
+
+    return row
 end
 
 --- cp.apple.finalcutpro.inspector.video.VideoInspector:stabilization([value]) -> boolean

@@ -107,7 +107,7 @@ end
 --- Returns:
 ---  * A `PropertyRow` object.
 function InfoInspector:propertyRow(title)
-    return PropertyRow:new(self, title, "propertiesUI")
+    return PropertyRow.new(self, title, "propertiesUI")
 end
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector:parent() -> table

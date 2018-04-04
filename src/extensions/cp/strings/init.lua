@@ -10,9 +10,9 @@
 --- This will load the file for the specified language (replacing `${language}` with `"en"` in the path) and return the value.
 --- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
-local log				= require("hs.logger").new("strings")
-local plistSrc			= require("cp.strings.source.plist")
-local _					= require("moses")
+local log               = require("hs.logger").new("strings")
+local plistSrc          = require("cp.strings.source.plist")
+local append            = require("moses").append
 
 local mod = {}
 mod.mt = {}
@@ -79,7 +79,7 @@ end
 function mod.mt:findKeysInSources(language, value)
     local keys = {}
     for _,source in ipairs(self._sources) do
-        keys = _.append(keys, source:findKeys(language, value))
+        keys = append(keys, source:findKeys(language, value))
     end
     return keys
 end
