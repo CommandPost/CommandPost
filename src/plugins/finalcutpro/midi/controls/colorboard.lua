@@ -230,7 +230,7 @@ function mod.init(deps)
                 group = "fcpx",
                 text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, aspect.title, puckText, i, percentageText ),
                 subText = descriptionText,
-                fn = makePercentHandler(function() return aspect.control end),
+                fn = makePercentHandler(function() return puck.fn( aspect.control ) end),
             })
         end
     end
