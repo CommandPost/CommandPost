@@ -17,7 +17,13 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log             = require("hs.logger").new("colorMIDI")
+local log             = require("hs.logger").new("colorMIDI")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local eventtap          = require("hs.eventtap")
+local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -26,11 +32,114 @@ local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local round             = tools.round
+local upper, format     = string.upper, string.format
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- shiftPressed() -> boolean
+-- Function
+-- Is the Shift Key being pressed?
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if the shift key is being pressed, otherwise `false`.
+local function shiftPressed()
+    --------------------------------------------------------------------------------
+    -- Check for keyboard modifiers:
+    --------------------------------------------------------------------------------
+    local mods = eventtap.checkKeyboardModifiers()
+    local result = false
+    if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        result = true
+    end
+    return result
+end
+
+--------------------------------------------------------------------------------
+-- MIDI Controller Value (7bit):   0 to 127
+-- MIDI Controller Value (14bit):  0 to 16383
+--
+-- Percentage Slider:           -100 to 100
+-- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
+--
+-- Wheel Color Orientation          -1 to 1
+--------------------------------------------------------------------------------
+
+local ZERO_14BIT = 16383/2                  -- < THIS IS MAYBE WRONG?
+local UNSHIFTED_14BIT = 16383*200-100       -- < THIS IS WRONG
+
+local ZERO_7BIT = 127/2                     -- < THIS IS MAYBE WRONG?
+local SHIFTED_7BIT = 128*202-100            -- < THIS IS WRONG
+local UNSHIFTED_7BIT = 128*128-(128/2)      -- < THIS IS WRONG
+
+
+-- makeWheelHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for wheel controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the percentage value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makeWheelHandler(wheelFinderFn, vertical)
+    return function(metadata)
+
+        --log.df("Doing stuff: %s", hs.inspect(metadata))
+
+        log.df("-----------------------")
+
+        local midiValue, value
+        local wheel = wheelFinderFn()
+
+        if metadata.fourteenBitCommand or metadata.pitchChange then
+            --------------------------------------------------------------------------------
+            -- 14bit:
+            --------------------------------------------------------------------------------
+            log.df("14bit")
+            midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if type(midiValue) == "number" then
+                value = midiValue == ZERO_14BIT and 0 or round(midiValue / UNSHIFTED_14BIT)
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- 7bit:
+            --------------------------------------------------------------------------------
+            log.df("7bit")
+            midiValue = metadata.controllerValue
+            if type(midiValue) == "number" then
+                value = midiValue == ZERO_7BIT and 0
+                    or midiValue / (shiftPressed() and SHIFTED_7BIT or UNSHIFTED_7BIT)
+            end
+        end
+        if value == nil then
+            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+        end
+
+        log.df("value: %s", value)
+
+        local current = wheel:colorOrientation()
+        if current then
+            if vertical then
+                log.df("vertical: %s", wheel:colorOrientation())
+                wheel:colorOrientation({right=current.right,up=value})
+            else
+                log.df("horizontal")
+                wheel:colorOrientation({right=value,up=current.up})
+            end
+        end
+    end
+end
 
 --- plugins.finalcutpro.midi.controls.colorwheels.init() -> nil
 --- Function
@@ -43,43 +152,12 @@ local mod = {}
 ---  * None
 function mod.init(deps)
 
-    --------------------------------------------------------------------------------
-    -- MIDI Controller Value:          0 to 127
-    -- Percentage Slider:           -255 to 255
-    --------------------------------------------------------------------------------
-
-    local wheel = {
-        [1] = "Master",
-        [2] = "Shadows",
-        [3] = "Midtones",
-        [4] = "Highlights",
-    }
-
-    local colors = {
-        [1] = "Red",
-        [2] = "Green",
-        [3] = "Blue",
-    }
-
-    for i=1, 4 do
-        for v=1, 3 do
-            deps.manager.controls:new("wheels" .. wheel[i] .. colors[v], {
-                group = "fcpx",
-                text = string.upper(i18n("midi")) .. ": " .. wheel[i] .. " " .. colors[v] .. " " .. i18n("color"),
-                subText = i18n("midiColorWheelDescription"),
-                fn = function(metadata)
-                    if metadata.controllerValue then
-                        local colorWheels = fcp:inspector():color():colorWheels()
-                        if colorWheels then
-                            local value = tools.round(metadata.controllerValue / 127*255*2-255)
-                            if metadata.controllerValue == 128/2 then value = 0 end
-                            colorWheels:show():color(wheel[i], colors[v], value)
-                        end
-                    end
-                end,
-            })
-        end
-    end
+    deps.manager.controls:new("masterHorizontal", {
+        group = "fcpx",
+        text = "Color Wheel: Master (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():master() end, false),
+    })
 
     return mod
 end
