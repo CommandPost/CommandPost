@@ -53,7 +53,6 @@ function plugin.init(deps)
 
     group:action(id, i18n("cpMakeSelectedTextCamelcase" .. "_title"))
         :onPress(function() mod.processText("camelcase", true) end)
-    id = id + 1
 
 end
 

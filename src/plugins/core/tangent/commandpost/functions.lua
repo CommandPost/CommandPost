@@ -32,7 +32,6 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-    local mod = deps.mod
     local group = deps.cpGroup:group(i18n("functions"))
     local id = 0x0AF00001
 
@@ -83,7 +82,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
      group:action(id, i18n("cpSetupWatchFolders" .. "_title"))
         :onPress(deps.watchfolders.show)
-    id = id + 1
 
 end
 

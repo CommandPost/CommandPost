@@ -166,7 +166,6 @@ function plugin.init(deps)
 
     group:action(id, i18n("cpStepMoveDown" .. "_title"))
         :onPress(function() win.stepMove("down") end)
-    id = id + 1
 
     return group
 end
