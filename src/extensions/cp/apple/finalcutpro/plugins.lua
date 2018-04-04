@@ -452,7 +452,7 @@ end
 -- Notes:
 --  * getMotionTheme("~/Movies/Motion Templates.localized/Effects.localized/3065D03D-92D7-4FD9-B472-E524B87B5012.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.localized/DAEB0CAD-E702-4BF9-94B5-AE89D7F8FB00.moef")
 local function getMotionTheme(filename)
-    filename = fs.pathToAbsolute(filename)
+    filename = filename and fs.pathToAbsolute(filename)
     if filename then
         local inTemplate = false
         local theme = nil
@@ -507,17 +507,19 @@ mod._getMotionTheme = getMotionTheme
 --  * The plugin theme.
 --  * `true` if the plugin is obsolete
 local function getPluginName(path, pluginExt, language)
-    local localName, realName = getLocalizedName(path, language)
-    if realName then
-        local targetExt = "."..pluginExt
-        for file in fs.dir(path) do
-            if endsWith(file, targetExt) then
-                local name = file:sub(1, (targetExt:len()+1)*-1)
-                local pluginPath = path .. "/" .. name .. targetExt
-                if name == realName then
-                    name = localName
+    if path and tools.doesDirectoryExist(path) then
+        local localName, realName = getLocalizedName(path, language)
+        if realName then
+            local targetExt = "."..pluginExt
+            for file in fs.dir(path) do
+                if endsWith(file, targetExt) then
+                    local name = file:sub(1, (targetExt:len()+1)*-1)
+                    local pluginPath = path .. "/" .. name .. targetExt
+                    if name == realName then
+                        name = localName
+                    end
+                    return name, getMotionTheme(pluginPath)
                 end
-                return name, getMotionTheme(pluginPath)
             end
         end
     end
