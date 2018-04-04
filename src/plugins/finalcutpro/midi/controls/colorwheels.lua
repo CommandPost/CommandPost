@@ -29,13 +29,6 @@ local inspect           = require("hs.inspect")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local round             = tools.round
-local upper, format     = string.upper, string.format
 
 --------------------------------------------------------------------------------
 --

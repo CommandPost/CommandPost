@@ -33,7 +33,6 @@ local tools             = require("cp.tools")
 local fcp               = require("cp.apple.finalcutpro")
 local ColorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
-local round             = tools.round
 local upper, format     = string.upper, string.format
 
 --------------------------------------------------------------------------------
