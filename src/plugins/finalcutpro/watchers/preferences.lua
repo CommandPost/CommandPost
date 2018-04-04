@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("prefWatcher")
+--local log               = require("hs.logger").new("prefWatcher")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -78,10 +78,10 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Refresh Command Set Cache if a Command Set is modified:
     --------------------------------------------------------------------------------
-    local userCommandSetPath = fcp:userCommandSetPath()
+    local userCommandSetPath = fcp.userCommandSetPath()
     if userCommandSetPath then
         --log.df("Setting up User Command Set Watcher: %s", userCommandSetPath)
-        mod.commandSetWatcher = pathwatcher.new(userCommandSetPath .. "/", function(paths, flagTables)
+        mod.commandSetWatcher = pathwatcher.new(userCommandSetPath .. "/", function()
             --log.df("Updating Final Cut Pro Command Editor Cache.")
             fcp:getActiveCommandSet(true)
         end):start()
