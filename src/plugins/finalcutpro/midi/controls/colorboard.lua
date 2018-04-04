@@ -143,7 +143,7 @@ local function makeAngleHandler(puckFinderFn)
             --------------------------------------------------------------------------------
             midiValue = metadata.pitchChange or metadata.fourteenBitValue
             if type(midiValue) == "number" then
-                value = (midiValue / MAX_14BIT) * 360
+                value = (midiValue / MAX_14BIT) * 359
             end
         else
             --------------------------------------------------------------------------------
@@ -151,7 +151,7 @@ local function makeAngleHandler(puckFinderFn)
             --------------------------------------------------------------------------------
             midiValue = metadata.controllerValue
             if type(midiValue) == "number" then
-                value = (midiValue / MAX_7BIT) * 360
+                value = (midiValue / MAX_7BIT) * 359
                 if not not shiftPressed() then
                     value = value * ANGLE_SCALE
                 end
