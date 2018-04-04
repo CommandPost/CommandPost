@@ -51,9 +51,39 @@
                 </ControlBank>
                 <ControlBank id="Button">
                     <Bank>
+                        <Control type="Button" number="10"> <!-- Wave Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100000</Key> <!-- Favourite #1 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="11"> <!-- Wave Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100001</Key> <!-- Favourite #2 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="12"> <!-- Wave Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100002</Key> <!-- Favourite #3 -->
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="15"> <!-- Wave Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="20"> <!-- Wave Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100003</Key> <!-- Favourite #4 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="21"> <!-- Wave Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100004</Key> <!-- Favourite #5 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="22"> <!-- Wave Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100005</Key> <!-- Favourite #6 -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -176,6 +206,55 @@
                         </Control>
                     </Bank>
                 </ControlBank>
+                <ControlBank id="Button">
+                    <Bank>
+                        <Control type="Button" number="10"> <!-- Wave Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100000</Key> <!-- Favourite #1 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="11"> <!-- Wave Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100001</Key> <!-- Favourite #2 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="12"> <!-- Wave Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100002</Key> <!-- Favourite #3 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="15"> <!-- Wave Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100003</Key> <!-- Favourite #4 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="16"> <!-- Wave Button 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100004</Key> <!-- Favourite #5 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="17"> <!-- Wave Button 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100005</Key> <!-- Favourite #6 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="20"> <!-- Wave Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100006</Key> <!-- Favourite #7 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="21"> <!-- Wave Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100007</Key> <!-- Favourite #8 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="22"> <!-- Wave Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100008</Key> <!-- Favourite #9 -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
             </Mode>
             <Mode id="0x00010003"> <!-- FCP: Board -->
                 <ControlBank id="Standard">
@@ -235,6 +314,55 @@
                         <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Button">
+                    <Bank>
+                        <Control type="Button" number="10"> <!-- Wave Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100000</Key> <!-- Favourite #1 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="11"> <!-- Wave Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100001</Key> <!-- Favourite #2 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="12"> <!-- Wave Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100002</Key> <!-- Favourite #3 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="15"> <!-- Wave Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100003</Key> <!-- Favourite #4 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="16"> <!-- Wave Button 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100004</Key> <!-- Favourite #5 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="17"> <!-- Wave Button 6 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100005</Key> <!-- Favourite #6 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="20"> <!-- Wave Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100006</Key> <!-- Favourite #7 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="21"> <!-- Wave Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100007</Key> <!-- Favourite #8 -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="22"> <!-- Wave Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F100008</Key> <!-- Favourite #9 -->
                             </Mapping>
                         </Control>
                     </Bank>

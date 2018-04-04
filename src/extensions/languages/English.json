@@ -1,5 +1,10 @@
 {
     "en": {
+    	"favourite"									: "Favourite",
+    	"favourites"								: "Favourites",
+    	"missingTangentAction"						: "There isn't any action assigned to this favourite.\n\nPlease check your Favourite allocations within the Tangent tab in CommandPost Preferences and try again.",
+    	"core_tangent_commandpost_label"			: "Tangent: CommandPost Group",
+    	"core_tangent_commandpost_favourites_label" : "Tangent: Favourites",
     	"previous"									: "Previous",
     	"next"										: "Next",
     	"midiBank"									: "MIDI Bank",
@@ -454,7 +459,7 @@
         "cpFeatureRequest_title"                           : "Suggest Final Cut Pro Feature to Apple",
         "webappSettings"                                   : "Settings",
         "clearHistory"                                     : "Clear History",
-        "tangentPreferencesInfo"                           : "CommandPost offers native support of the entire range of Tangent's panels, including the <strong>Element</strong>, <strong>Wave</strong>, <strong>Ripple</strong>, the <strong>Element-Vs iPad app</strong>, and any future panels.<br />\n<br />\nAll actions within CommandPost can be assigned to any Tangent panel button/wheel using <strong>Tangent's Mapper</strong> application. This allows you to create your own layouts and modes.<br />\n<br />",
+        "tangentPreferencesInfo"                           : "CommandPost offers native support of the entire range of Tangent's panels, including the <strong>Element</strong>, <strong>Wave</strong>, <strong>Wave2</strong>, <strong>Ripple</strong>, the <strong>Element-Vs iPad app</strong>, and any future panels.",
         "donateToDevelopers"                               : "Paypal Donation to Developers",
         "english"                                          : "English",
         "openTangentMapper"                                : "Open Tangent Mapper",
