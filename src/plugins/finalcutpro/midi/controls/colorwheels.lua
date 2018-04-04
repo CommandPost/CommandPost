@@ -75,12 +75,8 @@ end
 -- Wheel Color Orientation          -1 to 1
 --------------------------------------------------------------------------------
 
-local ZERO_14BIT = 16383/2                  -- < THIS IS MAYBE WRONG?
-local UNSHIFTED_14BIT = 16383*200-100       -- < THIS IS WRONG
-
-local ZERO_7BIT = 127/2                     -- < THIS IS MAYBE WRONG?
-local SHIFTED_7BIT = 128*202-100            -- < THIS IS WRONG
-local UNSHIFTED_7BIT = 128*128-(128/2)      -- < THIS IS WRONG
+local MAX_14BIT = 0x3FFF    -- 16383
+local MAX_7BIT  = 0x7F      -- 127
 
 
 -- makeWheelHandler(puckFinderFn) -> function
@@ -109,7 +105,7 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             log.df("14bit")
             midiValue = metadata.pitchChange or metadata.fourteenBitValue
             if type(midiValue) == "number" then
-                value = midiValue == ZERO_14BIT and 0 or round(midiValue / UNSHIFTED_14BIT)
+                value = (midiValue / MAX_14BIT) * 2 - 1
             end
         else
             --------------------------------------------------------------------------------
@@ -118,8 +114,12 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             log.df("7bit")
             midiValue = metadata.controllerValue
             if type(midiValue) == "number" then
-                value = midiValue == ZERO_7BIT and 0
-                    or midiValue / (shiftPressed() and SHIFTED_7BIT or UNSHIFTED_7BIT)
+                local pct = (midiValue / MAX_7BIT)
+                if shiftPressed() then
+                    value = pct * 2 - 1
+                else
+                    value = pct - 0.5 -- picked a scale of 50%
+                end
             end
         end
         if value == nil then
