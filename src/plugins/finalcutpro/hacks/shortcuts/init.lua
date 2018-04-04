@@ -520,7 +520,7 @@ mod.supported = prop(function()
     return private.hacksModifiedPath("") ~= nil
 end)
 
---- _.installed <cp.prop: boolean; read-only>
+--- plugins.finalcutpro.hacks.shortcuts.installed <cp.prop: boolean; read-only>
 --- Constant
 --- A property that returns `true` if the FCPX Hacks Shortcuts are currently installed in FCPX.
 mod.installed = prop(function()
