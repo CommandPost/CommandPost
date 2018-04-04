@@ -1,5 +1,8 @@
 {
     "en": {
+    	"functions"									: "Functions",
+    	"pasteboard"								: "Pasteboard",
+    	"core_tangent_os_window_label"				: "Tangent: Windows Management",
     	"favourite"									: "Favourite",
     	"favourites"								: "Favourites",
     	"missingTangentAction"						: "There isn't any action assigned to this favourite.\n\nPlease check your Favourite allocations within the Tangent tab in CommandPost Preferences and try again.",
@@ -39,6 +42,7 @@
     	"core_preferences_panels_general_label"     : "Preferences Panel: General",
     	"uninstall"                                 : "Uninstall",
     	"finder_window_label"                       : "Window Management",
+    	"windowManagement"							: "Window Management",
     	"reportBugToApple"                          : "Report Final Cut Pro Bug to Apple",
     	"emailAddress"                              : "Email Address",
     	"finalcutpro_commands_actions_label"        : "Commands Actions",

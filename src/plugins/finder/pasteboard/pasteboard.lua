@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finder.texttools ===
+--- === plugins.finder.pasteboard ===
 ---
 --- Handy text tools.
 
@@ -32,7 +32,7 @@ local pasteboard            = require("hs.pasteboard")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finder.texttools.processText(value, copyAndPaste) -> none
+--- plugins.finder.pasteboard.processText(value, copyAndPaste) -> none
 --- Function
 --- Processes Text
 ---
@@ -71,7 +71,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finder.texttools",
+    id              = "finder.pasteboard",
     group           = "finder",
     dependencies    = {
         ["core.commands.global"]                    = "global",
