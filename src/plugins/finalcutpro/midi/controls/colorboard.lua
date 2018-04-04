@@ -69,14 +69,19 @@ local function shiftPressed()
     return result
 end
 
-local ZERO_14BIT = 16383/2
-local UNSHIFTED_14BIT = 16383*200-100
-local ANGLE_14BIT = 16383*359
-local ANGLE_PITCH = 16383*362
+--------------------------------------------------------------------------------
+-- MIDI Controller Value (7bit):   0 to 127
+-- MIDI Controller Value (14bit):  0 to 16383
+--
+-- Percentage Slider:           -100 to 100
+-- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
+--------------------------------------------------------------------------------
 
-local ZERO_7BIT = 127/2
-local SHIFTED_7BIT = 128*202-100
-local UNSHIFTED_7BIT = 128*128-(128/2)
+local MAX_14BIT = 0x3FFF    -- 16383
+local MAX_7BIT  = 0x7F      -- 127
+
+local PERCENTAGE_SCALE  = 128/200   -- scale unshifted 7-bit
+local ANGLE_SCALE       = 128/360   -- scale angle on 7-bit
 
 -- makePercentHandler(puckFinderFn) -> function
 -- Function
@@ -97,7 +102,7 @@ local function makePercentHandler(puckFinderFn)
             --------------------------------------------------------------------------------
             midiValue = metadata.pitchChange or metadata.fourteenBitValue
             if type(midiValue) == "number" then
-                value = midiValue == ZERO_14BIT and 0 or round(midiValue / UNSHIFTED_14BIT)
+                value = (midiValue / MAX_14BIT) * 200 - 100
             end
         else
             --------------------------------------------------------------------------------
@@ -105,8 +110,10 @@ local function makePercentHandler(puckFinderFn)
             --------------------------------------------------------------------------------
             midiValue = metadata.controllerValue
             if type(midiValue) == "number" then
-                value = midiValue == ZERO_7BIT and 0
-                    or midiValue / (shiftPressed() and SHIFTED_7BIT or UNSHIFTED_7BIT)
+                value = (midiValue / MAX_7BIT) * 200 - 100
+                if not shiftPressed() then
+                    value = value * PERCENTAGE_SCALE
+                end
             end
         end
         if value == nil then
@@ -128,19 +135,32 @@ end
 -- * a function that will receive the MIDI control metadata table and process it.
 local function makeAngleHandler(puckFinderFn)
     return function(metadata)
+        local midiValue, value
         local puck = puckFinderFn()
-        --------------------------------------------------------------------------------
-        -- 7bit & 14bit:
-        --------------------------------------------------------------------------------
-        local midiValue = metadata.pitchChange or metadata.fourteenBitValue
-        if type(midiValue) == "number" then
-            local value = midiValue == ZERO_14BIT and 0
-                or metadata.fourteenBitCommand and midiValue / ANGLE_14BIT
-                or midiValue / ANGLE_PITCH
-            puck:select():angle(value)
+        if metadata.fourteenBitCommand or metadata.pitchChange then
+            --------------------------------------------------------------------------------
+            -- 14bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if type(midiValue) == "number" then
+                value = (midiValue / MAX_14BIT) * 360
+            end
         else
+            --------------------------------------------------------------------------------
+            -- 7bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.controllerValue
+            if type(midiValue) == "number" then
+                value = (midiValue / MAX_7BIT) * 360
+                if not not shiftPressed() then
+                    value = value * ANGLE_SCALE
+                end
+            end
+        end
+        if value == nil then
             log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
         end
+        puck:select():angle(value)
     end
 end
 
