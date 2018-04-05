@@ -20,6 +20,7 @@
 -- local log                                       = require("hs.logger").new("fcp_tangent")
 
 local delayed                                   = require("hs.timer").delayed
+local deferred                                  = require("cp.deferred")
 
 local fcp                                       = require("cp.apple.finalcutpro")
 
@@ -63,6 +64,8 @@ function mod.init(tangentManager, fcpGroup)
     -- Add Final Cut Pro Parameters:
     --------------------------------------------------------------------------------
 
+    local updateUI = deferred.new(0.01)
+
     local ciGroup = fcpGroup:group(i18n("fcpx_colorInspector_action"))
 
     -- The section all Color Inspector controls are in.
@@ -92,6 +95,27 @@ function mod.init(tangentManager, fcpGroup)
         local aName = i18n(aKey)
         for j,pKey in ipairs(ranges) do
             local puck = aspect[pKey](aspect)
+
+            -- set up the UI update action...
+            local percentChange, angleChange = 0, 0
+            updateUI:action(function()
+                if percentChange ~= 0 then
+                    local value = puck:show():percent()
+                    if value then
+                        puck:percent(value + percentChange)
+                        percentChange = 0
+                    end
+                end
+
+                if angleChange ~= 0 then
+                    local value = puck:show():angle()
+                    if value then
+                        puck:angle(value + angleChange)
+                        angleChange = 0
+                    end
+                end
+            end)
+
             local rangeID = aspectID + j*rangeBaseID
 
             local pName, pName2 = i18n(pKey), i18n(pKey.."2")
@@ -103,7 +127,10 @@ function mod.init(tangentManager, fcpGroup)
                 :maxValue(100)
                 :stepSize(1)
                 :onGet(function() return puck:show():percent() end)
-                :onChange(function(value) return puck:show():shiftPercent(value) end)
+                :onChange(function(change)
+                    percentChange = percentChange + change
+                    updateUI()
+                end)
                 :onReset(function() puck:show():reset() end)
 
             if puck:hasAngle() then
@@ -114,7 +141,10 @@ function mod.init(tangentManager, fcpGroup)
                     :maxValue(359)
                     :stepSize(1)
                     :onGet(function() return puck:show():angle() end)
-                    :onChange(function(value) return puck:show():shiftAngle(value) end)
+                    :onChange(function(change)
+                        angleChange = angleChange + change
+                        updateUI()
+                    end)
                     :onReset(function() puck:show():reset() end)
 
                 cbGroup:binding(format("%s %s %s", iColorBoard, pName, aName))
@@ -134,23 +164,26 @@ function mod.init(tangentManager, fcpGroup)
         i18n("colorWheel"), i18n("horizontal"), i18n("horizontal4"), i18n("vertical"), i18n("vertical4")
     local iSaturation, iSaturation4, iBrightness, iBrightness4 = i18n("saturation"), i18n("saturation4"), i18n("brightness"), i18n("brightness4")
 
-    -- set up an accumulator/timer to update changes
-    local changes = {}
-    local changeTimer = delayed.new(0.02, function()
-        for _,v in ipairs(changes) do
-            if v.right ~= 0 or v.up ~= 0 then
-                v.wheel:show():nudgeColor(v.right, v.up)
-                v.right, v.up = 0, 0
-            end
-        end
-    end)
-
     for i,pKey in ipairs(ranges) do
         local wheel = cw[pKey](cw)
         local id = wheelsBaseID + i*wheelID
 
-        local change = {wheel = wheel, right=0, up=0}
-        changes[i] = change
+        -- set up the UI update action...
+        local rightChange, upChange, satChange, brightChange = 0, 0, 0, 0
+        updateUI:action(function()
+            if rightChange ~= 0 or upChange ~= 0 then
+                wheel:show():nudgeColor(rightChange, upChange)
+                rightChange, upChange = 0, 0
+            end
+            if satChange ~= 0 then
+                wheel:show():saturation():shiftValue(satChange)
+                satChange = 0
+            end
+            if brightChange ~= 0 then
+                wheel:show():brightness():shiftValue(brightChange)
+                brightChange = 0
+            end
+        end)
 
         local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
 
@@ -165,10 +198,8 @@ function mod.init(tangentManager, fcpGroup)
                 return orientation and orientation.right
             end)
             :onChange(function(value)
-                change.right = change.right + value
-                if not changeTimer:running() then
-                    changeTimer:start()
-                end
+                rightChange = rightChange + value
+                updateUI()
             end)
             :onReset(function() wheel:colorWell():reset() end)
 
@@ -183,10 +214,8 @@ function mod.init(tangentManager, fcpGroup)
                 return orientation and orientation.up
             end)
             :onChange(function(value)
-                change.up = change.up + value
-                if not changeTimer:running() then
-                    changeTimer:start()
-                end
+                upChange = upChange + value
+                updateUI()
             end)
             :onReset(function() wheel:colorWell():reset() end)
 
@@ -197,7 +226,10 @@ function mod.init(tangentManager, fcpGroup)
             :maxValue(2)
             :stepSize(0.01)
             :onGet(function() wheel:saturation():value() end)
-            :onChange(function(value) wheel:show():saturation():shiftValue(value) end)
+            :onChange(function(value)
+                satChange = satChange + value
+                updateUI()
+            end)
             :onReset(function() wheel:show():saturation():value(1) end)
 
         cwGroup:parameter(id + 4)
@@ -207,7 +239,10 @@ function mod.init(tangentManager, fcpGroup)
             :maxValue(1)
             :stepSize(0.01)
             :onGet(function() wheel:brightness():value() end)
-            :onChange(function(value) wheel:show():brightness():shiftValue(value) end)
+            :onChange(function(value)
+                brightChange = brightChange + value
+                updateUI()
+            end)
             :onReset(function() wheel:show():brightness():value(0) end)
 
         cwGroup:binding(format("%s %s", iColorBoard, iWheel))
@@ -215,6 +250,30 @@ function mod.init(tangentManager, fcpGroup)
     end
 
     local iColorWheel4 = i18n("colorWheel4")
+
+    -- set up UI Updates...
+    local tempChange, tintChange, hueChange, mixChange = 0, 0, 0, 0
+    updateUI:action(function()
+        if tempChange ~= 0 then
+            cw:show():temperatureSlider():shiftValue(tempChange)
+            tempChange = 0
+        end
+        if tintChange ~= 0 then
+            cw:show():tintSlider():shiftValue(tintChange)
+            tintChange = 0
+        end
+        if hueChange ~= 0 then
+            local currentValue = cw:show():hue()
+            if currentValue then
+                cw:hue(currentValue+hueChange)
+            end
+            hueChange = 0
+        end
+        if mixChange ~= 0 then
+            cw:show():mixSlider():shiftValue(mixChange)
+            mixChange = 0
+        end
+    end)
 
     -- Color Wheel Temperature
     cwGroup:parameter(wheelsBaseID+0x0101)
@@ -224,7 +283,10 @@ function mod.init(tangentManager, fcpGroup)
         :maxValue(10000)
         :stepSize(0.1)
         :onGet(function() return cw:temperature() end)
-        :onChange(function(value) cw:show():temperatureSlider():shiftValue(value) end)
+        :onChange(function(value)
+            tempChange = tempChange + value
+            updateUI()
+        end)
         :onReset(function() cw:show():temperature(5000) end)
 
     cwGroup:parameter(wheelsBaseID+0x0102)
@@ -234,7 +296,10 @@ function mod.init(tangentManager, fcpGroup)
         :maxValue(50)
         :stepSize(0.1)
         :onGet(function() return cw:tint() end)
-        :onChange(function(value) cw:show():tintSlider():shiftValue(value) end)
+        :onChange(function(value)
+            tintChange = tintChange + value
+            updateUI()
+        end)
         :onReset(function() cw:show():tintSlider():setValue(0) end)
 
     cwGroup:parameter(wheelsBaseID+0x0103)
@@ -245,10 +310,8 @@ function mod.init(tangentManager, fcpGroup)
         :stepSize(0.1)
         :onGet(function() return cw:hue() end)
         :onChange(function(value)
-            local currentValue = cw:show():hue()
-            if currentValue then
-                cw:hue(currentValue+value)
-            end
+            hueChange = hueChange + value
+            updateUI()
         end)
         :onReset(function() cw:show():hue(0) end)
 
@@ -259,7 +322,10 @@ function mod.init(tangentManager, fcpGroup)
         :maxValue(1)
         :stepSize(0.01)
         :onGet(function() return cw:mix() end)
-        :onChange(function(value) cw:show():mixSlider():shiftValue(value) end)
+        :onChange(function(value)
+            mixChange = mixChange + value
+            updateUI()
+        end)
         :onReset(function() cw:show():mix(1) end)
 end
 
