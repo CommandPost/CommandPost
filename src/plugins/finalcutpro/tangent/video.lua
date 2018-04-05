@@ -55,7 +55,12 @@ local function sliderParameter(group, param, id)
     :name(label)
     :stepSize(1.0)
     :onGet(function() return param:value() end)
-    :onChange(function(amount) param.value:shiftValue(amount) end)
+    :onChange(function(amount)
+        local value = param:value()
+        if value ~= nil then
+            param.value(value + amount)
+        end
+    end)
     :onReset(function() param:value(0) end)
 
     return id + 1, value

@@ -228,7 +228,7 @@ end
 --- * The current value, or `nil` if it can't be accessed.
 function parameter.mt:change(amount)
     if self._change and self:active() then
-        local ok, result = xpcall(function() return self._change(amount) end, debug.traceback)
+        local ok, result = xpcall(function() self._change(amount) end, debug.traceback)
         if not ok then
             log.ef("Error while changing parameter (%#010x): %s", self.id, result)
         end

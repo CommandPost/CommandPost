@@ -163,7 +163,7 @@ end
 
 local function sliderProperty(labelKey, index)
     return propertyRow(labelKey, function(row)
-        row.value = Slider.new(row, function() return axutils.childFromLeft(axutils.childMatching(row:children(), Slider.matches), 1) end)
+        row.value = TextField.new(row, function() return axutils.childFromLeft(row:children(), 3) end, tonumber)
     end, index)
 end
 
