@@ -5,6 +5,41 @@
 		<link>https://raw.githubusercontent.com/CommandPost/CommandPost/develop/appcast/appcast.xml</link>
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
+
+		<item>
+			<title>Version 1.0.0-beta.22</title>
+			<description><![CDATA[
+				<p>Thank you so much for testing out CommandPost! We are <strong>HUGELY</strong> appreciative of everyone's help, support, ideas, comments and advice! This update is a fairly major one, so we'd recommend trashing your CommandPost Preferences (by holding down <strong>OPTION+COMMAND</strong> on launch) to give Beta 22 a clean slate. Enjoy!</p>
+
+				<p><em>Chris Hocking &amp; David Peterson</em></p>
+
+				<hr />
+
+				<h2>What's New?</h2><
+				<ul>
+				<li>General Stability &amp; Performance Improvements across the board, with lots of bug fixes.</li>
+				<li>The Tangent functionality has been completely revamped and rewritten. It now supports the Color Wheels and Video Inspector. We've added a "Favourites" feature which allows you to easily add ANY action within CommandPost as an option within Tangent Mapper. MASSIVE thank you to Andy Knox and the team at Tangent for all their help and support!</li>
+				<li>The MIDI Plugin has been vastly improved and expanded upon. It now supports the Color Wheels and Video Inspector. We've also added MIDI Banks and some default values to speed up the setup time. Initial support of MIDI Machine Control &amp; MIDI Time Code has been added, however expect improvements to these features in a future beta release. MASSIVE thank you to Andrew Madsen for all his help with the MIKMIDI Framework.</li>
+				<li>We've added 15 new languages to CommandPost. The translations have been done automatically by Google &amp; Microsoft, so we expect mistakes, and would HUGELY appreciate it if you can report any translation mistakes so we can fix promptly.</li>
+				<li>You can now customise the modifier key when using Timeline Zoom with your mouse scroll wheel and/or Magic Mouse.</li>
+				<li>The option to "Control CommandPost Shortcuts within Final Cut Pro" on the initial installation has been removed, however you can still enable it via the Final Cut Pro Preferences panel in CommandPost. We will improve this feature in a future beta.</li>
+				<li>Improvements and Enhancements to the Batch Export tool.</li>
+				<li>The Text-to-speech tool has been completely revamped with a lot more power and flexibility.</li>
+				<li>The Keyword Features have been improved.</li>
+				<li>New built-in Stream Deck Icons by Daniele Di Tuccio.</li>
+				<li>The WebApp plugin is now disabled by default until we fix it properly.</li>
+				</ul>
+			]]>
+			</description>
+			<pubDate>Fri,  6 Apr 2018 03:53:09 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.22/CommandPost_1.0.0-beta.22.dmg"
+				sparkle:version="1.0.0-beta.22"
+				sparkle:dsaSignature="MC0CFQCrDBzJefW6cPSDp0wwGYOhlKb12wIUHOTvcStzSZPGLO8uAzo7jUv/+Ws="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+
 		<item>
 			<title>Version 1.0.0-beta.21</title>
 			<description><![CDATA[
