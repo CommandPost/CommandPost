@@ -74,7 +74,7 @@ end
 
 -- plugins.core.preferences.panels.midi.resetMIDIGroup() -> none
 -- Function
--- Prompts to reset shortcuts to default for the selected group.
+-- Prompts to reset shortcuts to default for the selected group (including all sub-groups).
 --
 -- Parameters:
 --  * None
@@ -85,7 +85,12 @@ function mod._resetMIDIGroup()
     dialog.webviewAlert(mod._manager.getWebview(), function(result)
         if result == i18n("yes") then
             local items = mod._midi._items()
-            items[mod.lastGroup()] = nil
+            local currentGroup = string.sub(mod.lastGroup(), 1, -2)
+            for groupAndSubgroupID in pairs(items) do
+                if string.sub(groupAndSubgroupID, 1, -2) == currentGroup then
+                    items[groupAndSubgroupID] = mod._midi.DEFAULT_MIDI_CONTROLS[groupAndSubgroupID]
+                end
+            end
             mod._midi._items(items)
             mod._manager.refresh()
         end
@@ -280,7 +285,7 @@ end
 --
 -- Returns:
 --  * None
-function mod._stopLearning(_, params, cancel)
+function mod._stopLearning(_, params, cancel, skipUpdateUI)
 
     --------------------------------------------------------------------------------
     -- We've stopped learning:
@@ -317,7 +322,9 @@ function mod._stopLearning(_, params, cancel)
         if groupID then
             js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "visible";]] .. "\n"
             js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").innerHTML = "]] .. i18n("learn") .. [[";]] .. "\n"
-            js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
+            if not skipUpdateUI then
+                js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
+            end
         end
     end
     mod._manager.injectScript(js)
@@ -360,6 +367,7 @@ function mod._startLearning(id, params)
     for i=1,maxItems,1 do
         js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
         js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+        js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
     end
     js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").style.visibility = "visible";]] .. "\n"
     js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. buttonID .. [[_learnButton").innerHTML = "Stop";]] .. "\n"
@@ -462,7 +470,9 @@ function mod._startLearning(id, params)
                                 -- Duplicate Found:
                                 --------------------------------------------------------------------------------
                                 if deviceMatch and match then
-                                    log.df("Duplicate MIDI Command Found!")
+
+                                    log.wf("Duplicate MIDI Command Found")
+
                                     --------------------------------------------------------------------------------
                                     -- Reset the current line item:
                                     --------------------------------------------------------------------------------
@@ -481,19 +491,23 @@ function mod._startLearning(id, params)
                                     setValue(params["groupID"], params["buttonID"], "value", i18n("none"))
                                     mod._midi.setItem("value", params["buttonID"], params["groupID"], nil)
 
-
-                                    mod._manager.injectScript([[
-                                        document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
+                                    local code = [[
                                         document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "#cc5e53";
-                                    ]])
-                                    timer.doAfter(3, function()
-                                        mod._manager.injectScript([[
-                                            document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";
-                                        ]])
-                                    end)
+                                        document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.setProperty("-webkit-transition", "background-color 1s");
+                                    ]]
+
+                                    mod._manager.injectScript(code)
+
+                                    for i=1,maxItems,1 do
+                                        js = [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+                                        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+                                        js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
+                                    end
+
                                     --------------------------------------------------------------------------------
                                     -- Exit the callback:
                                     --------------------------------------------------------------------------------
+                                    mod._stopLearning(id, params, code, true)
                                     return
                                 end
                             end

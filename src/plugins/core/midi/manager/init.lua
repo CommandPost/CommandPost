@@ -157,10 +157,10 @@ end
 --
 --------------------------------------------------------------------------------
 
---- DEFAULT_MIDI_CONTROLS -> table
+--- plugins.core.midi.manager.DEFAULT_MIDI_CONTROLS -> table
 --- Constant
 --- The default MIDI controls, so that the user has a starting point.
-local DEFAULT_MIDI_CONTROLS = {
+mod.DEFAULT_MIDI_CONTROLS = {
   fcpx1 = {
     ["1"] = {
       action = {
@@ -580,7 +580,7 @@ mod.maxItems = 150
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved MIDI items
-mod._items = config.prop("midiControls", DEFAULT_MIDI_CONTROLS)
+mod._items = config.prop("midiControls", mod.DEFAULT_MIDI_CONTROLS)
 
 --- plugins.core.midi.manager.defaultGroup -> string
 --- Variable
@@ -597,7 +597,7 @@ mod.defaultGroup = "global"
 --- Returns:
 ---  * None
 function mod.clear()
-    mod._items({})
+    mod._items(mod.DEFAULT_MIDI_CONTROLS)
     mod.update()
 end
 
@@ -1398,7 +1398,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
             timer.doAfter(0.0000000000000000000001, function()
                 local mmcType, timecode, framerate, subframe = mod.processMMC(metadata.sysexData)
                 if mmcType then
-                    v(mmcType, timecode, framerate, subframe)
+                    local ok, result = xpcall(function() v(mmcType, timecode, framerate, subframe) end, debug.traceback)
+                    if not ok then
+                        log.ef("Error while processing MMC Callback: %s", result)
+                    end
                 end
             end)
         end
@@ -1413,7 +1416,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
             timer.doAfter(0.0000000000000000000001, function()
                 local mtcType, timecode, framerate = mod.processMTC(metadata.data)
                 if mtcType then
-                    v(mtcType, timecode, framerate)
+                    local ok, result = xpcall(function() v(mtcType, timecode, framerate) end, debug.traceback)
+                    if not ok then
+                        log.ef("Error while processing MTC Callback: %s", result)
+                    end
                 end
             end)
         end
@@ -1424,7 +1430,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     --------------------------------------------------------------------------------
     for _, v in pairs(mod._generalCallbacks) do
         timer.doAfter(0.0000000000000000000001, function()
-            v(object, deviceName, commandType, description, metadata)
+            local ok, result = xpcall(function() v(object, deviceName, commandType, description, metadata) end, debug.traceback)
+            if not ok then
+                log.ef("Error while processing MIDI General Callback: %s", result)
+            end
         end)
     end
 
@@ -1436,6 +1445,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
         controllerValue = metadata.fourteenBitValue
     end
 
+    --------------------------------------------------------------------------------
+    -- The loop of doom. Sorry David. I know you'll eventually want to completely
+    -- re-write this. Apologies!!
+    --------------------------------------------------------------------------------
     if items[activeGroup] then
         for _, item in pairs(items[activeGroup]) do
             if deviceName == item.device and item.channel == metadata.channel and item.commandType == commandType then
@@ -1469,7 +1482,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                                     else
                                         timer.doAfter(0.0001, function()
                                             if metadata.timestamp == mod._lastTimestamp then
-                                                params.fn(metadata, deviceName)
+                                                local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
+                                                if not ok then
+                                                    log.ef("Error while processing MIDI Callback: %s", result)
+                                                end
                                                 mod._alreadyProcessingCallback = false
                                             end
                                         end)
@@ -1479,7 +1495,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                             else
                                 mod._alreadyProcessingCallback = true
                                 timer.doAfter(0.000000000000000000001, function()
-                                    params.fn(metadata, deviceName)
+                                    local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
+                                    if not ok then
+                                        log.ef("Error while processing MIDI Callback: %s", result)
+                                    end
                                     mod._alreadyProcessingCallback = false
                                 end)
                                 mod._lastControllerNumber = metadata and metadata.controllerNumber
@@ -1512,7 +1531,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                                 else
                                     timer.doAfter(0.0001, function()
                                         if metadata.timestamp == mod._lastTimestamp then
-                                            params.fn(metadata, deviceName)
+                                            local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
+                                            if not ok then
+                                                log.ef("Error while processing MIDI Callback: %s", result)
+                                            end
                                             mod._alreadyProcessingCallback = false
                                         end
                                     end)
@@ -1522,7 +1544,10 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                         else
                             mod._alreadyProcessingCallback = true
                             timer.doAfter(0.000000000000000000001, function()
-                                params.fn(metadata, deviceName)
+                                local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
+                                if not ok then
+                                    log.ef("Error while processing MIDI Callback: %s", result)
+                                end
                                 mod._alreadyProcessingCallback = false
                             end)
                             mod._lastPitchChange = metadata and metadata.pitchChange

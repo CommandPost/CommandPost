@@ -114,7 +114,7 @@ local function makePercentHandler(puckFinderFn)
                 log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
                 return
             end
-            puck:select():percent(value)
+            puck:percent(value)
         end
     end
 end
@@ -157,7 +157,7 @@ local function makeAngleHandler(puckFinderFn)
                 log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
                 return
             end
-            puck:select():angle(value)
+            puck:angle(value)
         end
     end
 end
@@ -182,7 +182,6 @@ function mod.init(deps)
 
     mod._colorBoard         = fcp:colorBoard():show()
 
-    -- TODO: I think THIS is the reason I think it's doing the weird ninja mouse click thing when you move the color board controls:
     mod._colorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
     local colorBoardAspects = {

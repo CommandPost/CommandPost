@@ -15,6 +15,11 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                           = require("hs.logger").new("banks")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local dialog                        = require("cp.dialog")
@@ -36,7 +41,6 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
-
     mod._handler = mod._actionmanager.addHandler("global_midibanks")
         :onChoices(function(choices)
             for i=1, mod._manager.numberOfSubGroups do
@@ -75,9 +79,7 @@ function mod.init()
                 end
             end
         end)
-
     return mod
-
 end
 
 --------------------------------------------------------------------------------
