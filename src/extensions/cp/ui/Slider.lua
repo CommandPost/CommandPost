@@ -60,7 +60,7 @@ function Slider.new(parent, finderFn)
                 return ui and ui:attributeValue("AXValue")
             end,
             function(value, self)
-                local ui = self:UI()
+                local ui = self and self:UI()
                 if ui then
                     ui:setAttributeValue("AXValue", value)
                 end

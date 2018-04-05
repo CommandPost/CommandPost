@@ -31,7 +31,6 @@ local inspect           = require("hs.inspect")
 local tools             = require("cp.tools")
 
 local fcp               = require("cp.apple.finalcutpro")
-local ColorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
 local upper, format     = string.upper, string.format
 
@@ -41,11 +40,6 @@ local upper, format     = string.upper, string.format
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
--- plugins.finalcutpro.midi.controls.colorboard._colorBoard -> colorBoard
--- Variable
--- Color Board object.
-mod._colorBoard = fcp:colorBoard()
 
 -- shiftPressed() -> boolean
 -- Function
@@ -76,11 +70,11 @@ end
 -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
 --------------------------------------------------------------------------------
 
-local MAX_14BIT = 0x3FFF    -- 16383
-local MAX_7BIT  = 0x7F      -- 127
+local MAX_14BIT = 0x3FFF            -- 16383
+local MAX_7BIT  = 0x7F              -- 127
 
-local PERCENTAGE_SCALE  = 128/200   -- scale unshifted 7-bit
-local ANGLE_SCALE       = 128/360   -- scale angle on 7-bit
+local PERCENTAGE_SCALE  = 128/200   -- Scale Unshifted 7-bit
+local ANGLE_SCALE       = 128/360   -- Scale Angle on 7-bit
 
 -- makePercentHandler(puckFinderFn) -> function
 -- Function
@@ -95,31 +89,33 @@ local function makePercentHandler(puckFinderFn)
     return function(metadata)
         local midiValue, value
         local puck = puckFinderFn()
-        if metadata.fourteenBitCommand or metadata.pitchChange then
-            --------------------------------------------------------------------------------
-            -- 14bit:
-            --------------------------------------------------------------------------------
-            midiValue = metadata.pitchChange or metadata.fourteenBitValue
-            if type(midiValue) == "number" then
-                value = (midiValue / MAX_14BIT) * 200 - 100
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- 7bit:
-            --------------------------------------------------------------------------------
-            midiValue = metadata.controllerValue
-            if type(midiValue) == "number" then
-                value = (midiValue / MAX_7BIT) * 200 - 100
-                if not shiftPressed() then
-                    value = value * PERCENTAGE_SCALE
+        if metadata and puck then
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
+                if type(midiValue) == "number" then
+                    value = (midiValue / MAX_14BIT) * 200 - 100
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    value = (midiValue / MAX_7BIT) * 200 - 100
+                    if not shiftPressed() then
+                        value = value * PERCENTAGE_SCALE
+                    end
                 end
             end
+            if value == nil then
+                log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+                return
+            end
+            puck:select():percent(value)
         end
-        if value == nil then
-            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
-        end
-        -- set the value
-        puck:select():percent(value)
     end
 end
 
@@ -136,30 +132,33 @@ local function makeAngleHandler(puckFinderFn)
     return function(metadata)
         local midiValue, value
         local puck = puckFinderFn()
-        if metadata.fourteenBitCommand or metadata.pitchChange then
-            --------------------------------------------------------------------------------
-            -- 14bit:
-            --------------------------------------------------------------------------------
-            midiValue = metadata.pitchChange or metadata.fourteenBitValue
-            if type(midiValue) == "number" then
-                value = (midiValue / MAX_14BIT) * 359
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- 7bit:
-            --------------------------------------------------------------------------------
-            midiValue = metadata.controllerValue
-            if type(midiValue) == "number" then
-                value = (midiValue / MAX_7BIT) * 359
-                if not not shiftPressed() then
-                    value = value * ANGLE_SCALE
+        if metadata and puck then
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.pitchChange or metadata.fourteenBitValue
+                if type(midiValue) == "number" then
+                    value = (midiValue / MAX_14BIT) * 359
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    value = (midiValue / MAX_7BIT) * 359
+                    if not not shiftPressed() then
+                        value = value * ANGLE_SCALE
+                    end
                 end
             end
+            if value == nil then
+                log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+                return
+            end
+            puck:select():angle(value)
         end
-        if value == nil then
-            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
-        end
-        puck:select():angle(value)
     end
 end
 
@@ -181,19 +180,20 @@ function mod.init(deps)
     -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
     --------------------------------------------------------------------------------
 
-    local colorBoard = fcp:colorBoard()
+    mod._colorBoard         = fcp:colorBoard()
+    mod._colorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
     local colorBoardAspects = {
-        { title = i18n("color"), control = colorBoard:color(), hasAngle = true },
-        { title = i18n("saturation"), control = colorBoard:saturation() },
-        { title = i18n("exposure"), control = colorBoard:exposure() },
+        { title = i18n("color"),        control = mod._colorBoard:color(),          hasAngle = true },
+        { title = i18n("saturation"),   control = mod._colorBoard:saturation()      },
+        { title = i18n("exposure"),     control = mod._colorBoard:exposure()        },
     }
 
     local pucks = {
-        { title = "Master", fn = ColorBoardAspect.master, shortcut = "m" },
-        { title = "Shadows", fn = ColorBoardAspect.shadows, shortcut = "," },
-        { title = "Midtones", fn = ColorBoardAspect.midtones, shortcut = "." },
-        { title = "Highlights", fn = ColorBoardAspect.highlights, shortcut = "/" },
+        { title = "Master",             fn = mod._colorBoardAspect.master        },
+        { title = "Shadows",            fn = mod._colorBoardAspect.shadows       },
+        { title = "Midtones",           fn = mod._colorBoardAspect.midtones      },
+        { title = "Highlights",         fn = mod._colorBoardAspect.highlights    },
     }
 
     local midiText, colorBoardText, puckText, descriptionText = upper(i18n("midi")), i18n("colorBoard"), i18n("puck"), i18n("midiColorBoardDescription")
@@ -208,7 +208,7 @@ function mod.init(deps)
             group = "fcpx",
             text = format("%s: %s %s %s", midiText, colorBoardText, puckText, i),
             subText = descriptionText,
-            fn = makePercentHandler(function() return puck.fn( colorBoard:current() ) end),
+            fn = makePercentHandler(function() return puck.fn( mod._colorBoard:current() ) end),
         })
 
         --------------------------------------------------------------------------------
@@ -218,7 +218,7 @@ function mod.init(deps)
             group = "fcpx",
             text = format("%s: %s %s %s %s (%s)", midiText, colorBoardText, colorText, puckText, i, angleText),
             subText = descriptionText,
-            fn = makeAngleHandler(function() return puck.fn( colorBoard:color() ) end),
+            fn = makeAngleHandler(function() return puck.fn( mod._colorBoard:color() ) end),
         })
 
         --------------------------------------------------------------------------------
