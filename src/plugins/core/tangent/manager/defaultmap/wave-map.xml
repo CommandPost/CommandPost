@@ -534,31 +534,37 @@
                         <Control type="Encoder" number="0"> <!-- Wave Knob 1 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730001</Key> <!-- Position X -->
+                                <CustomName>POS X</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730001</Key> <!-- Position X -->
+                                <CustomName>POS X</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Wave Knob 2 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730002</Key> <!-- Position Y -->
+                                <CustomName>POS Y</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730002</Key> <!-- Position Y -->
+                                <CustomName>POS Y</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Wave Knob 3 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730003</Key> <!-- Rotation -->
+                                <CustomName>ROTATION</CustomName>
                                 <Display>Number</Display>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730003</Key> <!-- Rotation -->
+                                <CustomName>ROTATION</CustomName>
                                 <Display>Number</Display>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
@@ -566,50 +572,60 @@
                         <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730005</Key> <!-- Scale X -->
+                                <CustomName>SCALE X</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730005</Key> <!-- Scale X -->
+                                <CustomName>SCALE X</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Wave Knob 5 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730006</Key> <!-- Scale Y -->
+                                <CustomName>SCALE Y</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730006</Key> <!-- Scale Y -->
+                                <CustomName>SCALE Y</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Wave Knob 6 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730004</Key> <!-- Scale (All) -->
+                                <CustomName>SCALE ALL</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730004</Key> <!-- Scale (All) -->
+                                <CustomName>SCALE ALL</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Wave Knob 7 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730007</Key> <!-- Anchor X -->
+                                <CustomName>ANCHOR X</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730007</Key> <!-- Anchor X -->
+                                <CustomName>ANCHOR X</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Wave Knob 8 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730008</Key> <!-- Anchor Y -->
+                                <CustomName>ANCHOR Y</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730008</Key> <!-- Anchor Y -->
+                                <CustomName>ANCHOR Y</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
