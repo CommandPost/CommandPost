@@ -10,6 +10,17 @@
 
 --------------------------------------------------------------------------------
 --
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog                        = require("cp.dialog")
+
+--------------------------------------------------------------------------------
+--
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -57,6 +68,10 @@ function mod.init()
                     elseif result.id == "previous" then
                         mod._manager.previousSubGroup()
                     end
+                end
+                local activeSubGroup = mod._manager.activeSubGroup()
+                if activeSubGroup then
+                    dialog.displayNotification(i18n("midiBank") .. " " .. activeSubGroup)
                 end
             end
         end)

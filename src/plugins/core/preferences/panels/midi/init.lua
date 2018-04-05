@@ -629,6 +629,9 @@ local function midiPanelCallback(id, params)
             setValue(params["groupID"], params["buttonID"], "channel", "")
             mod._midi.setItem("channel", params["buttonID"], params["groupID"], nil)
 
+            setValue(params["groupID"], params["buttonID"], "commandType", "")
+            mod._midi.setItem("commandType", params["buttonID"], params["groupID"], nil)
+
             setValue(params["groupID"], params["buttonID"], "number", i18n("none"))
             mod._midi.setItem("number", params["buttonID"], params["groupID"], nil)
 

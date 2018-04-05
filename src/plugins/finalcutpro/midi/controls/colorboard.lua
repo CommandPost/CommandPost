@@ -180,7 +180,9 @@ function mod.init(deps)
     -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
     --------------------------------------------------------------------------------
 
-    mod._colorBoard         = fcp:colorBoard()
+    mod._colorBoard         = fcp:colorBoard():show()
+
+    -- TODO: I think THIS is the reason I think it's doing the weird ninja mouse click thing when you move the color board controls:
     mod._colorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 
     local colorBoardAspects = {
