@@ -297,13 +297,13 @@ function parameter.mt:xml()
         function()
             local result = named.xml(self)
             if self._minValue ~= nil then
-                result(x.MinValue(self._minValue))
+                result(x.MinValue(format("%#0.10f", self._minValue)))
             end
             if self._maxValue ~= nil then
-                result(x.MaxValue(self._maxValue))
+                result(x.MaxValue(format("%#0.10f", self._maxValue)))
             end
             if self._stepSize ~= nil then
-                result(x.StepSize(self._stepSize))
+                result(x.StepSize(format("%#0.10f", self._stepSize)))
             end
             return result
         end

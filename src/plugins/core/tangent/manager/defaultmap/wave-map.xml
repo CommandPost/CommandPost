@@ -303,6 +303,11 @@
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
                         </Control>
+                        <Control type="Button" number="9"> <!-- Wave Alt -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
                         <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
                             <Mapping mode="Std">
                                 <Key>0x0F730001</Key> <!-- Position X -->
@@ -313,6 +318,9 @@
                         </Control>
                         <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
                             <Mapping mode="Std">
+                                <Key>0x0F730005</Key> <!-- Scale X -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x0F730005</Key> <!-- Scale X -->
                             </Mapping>
                         </Control>
@@ -336,6 +344,9 @@
                             <Mapping mode="Std">
                                 <Key>0x0F730006</Key> <!-- Scale Y -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x0F730006</Key> <!-- Scale Y -->
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
                             <Mapping mode="Std">
@@ -355,6 +366,9 @@
                         </Control>
                         <Control type="Encoder" number="10"> <!-- Wave Dial 2 -->
                             <Mapping mode="Std">
+                                <Key>0x0F730004</Key> <!-- Scale (All) -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x0F730004</Key> <!-- Scale (All) -->
                             </Mapping>
                         </Control>
