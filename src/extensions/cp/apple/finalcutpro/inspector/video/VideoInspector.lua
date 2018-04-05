@@ -68,7 +68,6 @@ local Button                            = require("cp.ui.Button")
 local CheckBox                          = require("cp.ui.CheckBox")
 local PropertyRow                       = require("cp.ui.PropertyRow")
 local TextField                         = require("cp.ui.TextField")
-local Slider                            = require("cp.ui.Slider")
 local PopUpButton                       = require("cp.ui.PopUpButton")
 
 --------------------------------------------------------------------------------
