@@ -359,9 +359,11 @@
                         <Control type="Encoder" number="9"> <!-- Wave Dial 1 -->
                             <Mapping mode="Std">
                                 <Key>0x0F730003</Key> <!-- Rotation -->
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730003</Key> <!-- Rotation -->
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="10"> <!-- Wave Dial 2 -->
@@ -400,10 +402,12 @@
                             <Mapping mode="Std">
                                 <Key>0x0F730003</Key> <!-- Rotation -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x0F730003</Key> <!-- Rotation -->
                                 <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
