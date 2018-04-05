@@ -341,7 +341,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:mixRow()
     if not self._mixRow then
-        self._mixRow = PropertyRow:new(self, "FFChannelMixName", "contentUI")
+        self._mixRow = PropertyRow.new(self, "FFChannelMixName", "contentUI")
     end
     return self._mixRow
 end
@@ -369,7 +369,7 @@ end
 
 function ColorWheels:mixTextField()
     if not self._mixTextField then
-        self._mixTextField = TextField:new(self,
+        self._mixTextField = TextField.new(self,
             function()
                 local ui = self:mixRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)
@@ -392,7 +392,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:temperatureRow()
     if not self._temperatureRow then
-        self._temperatureRow = PropertyRow:new(self, "PAECorrectorEffectTemperature", "contentUI")
+        self._temperatureRow = PropertyRow.new(self, "PAECorrectorEffectTemperature", "contentUI")
     end
     return self._temperatureRow
 end
@@ -420,7 +420,7 @@ end
 
 function ColorWheels:temperatureTextField()
     if not self._temperatureTextField then
-        self._temperatureTextField = TextField:new(self,
+        self._temperatureTextField = TextField.new(self,
             function()
                 local ui = self:temperatureRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)
@@ -443,7 +443,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:tintRow()
     if not self._tintRow then
-        self._tintRow = PropertyRow:new(self, "PAECorrectorEffectTint", "contentUI")
+        self._tintRow = PropertyRow.new(self, "PAECorrectorEffectTint", "contentUI")
     end
     return self._tintRow
 end
@@ -471,7 +471,7 @@ end
 
 function ColorWheels:tintTextField()
     if not self._tintTextField then
-        self._tintTextField = TextField:new(self,
+        self._tintTextField = TextField.new(self,
             function()
                 local ui = self:tintRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)
@@ -494,7 +494,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:hueRow()
     if not self._hueRow then
-        self._hueRow = PropertyRow:new(self, "PAECorrectorEffectHue", "contentUI")
+        self._hueRow = PropertyRow.new(self, "PAECorrectorEffectHue", "contentUI")
     end
     return self._hueRow
 end
@@ -510,7 +510,7 @@ end
 ---  * The Hue `Slider`.
 function ColorWheels:hueTextField()
     if not self._hueTextField then
-        self._hueTextField = TextField:new(self,
+        self._hueTextField = TextField.new(self,
             function()
                 local ui = self:hueRow():children()
                 return ui and axutils.childMatching(ui, TextField.matches)

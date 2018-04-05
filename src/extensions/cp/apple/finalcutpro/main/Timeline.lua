@@ -270,16 +270,16 @@ Timeline.isLockedPlayhead = prop.new(function(self)
     return self._locked
 end):bind(Timeline)
 
---- cp.apple.finalcut.main.Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre) -> self
+--- cp.apple.finalcutpro.main.Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre) -> self
 --- Method
 --- Locks the playhead on-screen.
 ---
 --- Parameters:
---- * deactivateWhenStopped	- If set to `true`, this will automatically deactivate itself when the playhead stops moving.
---- * lockInCentre			- If set to `true`, the playhead will lock in the centre of the timeline. Otherwise, it will lock in it's current position.
+---  * deactivateWhenStopped - If set to `true`, this will automatically deactivate itself when the playhead stops moving.
+---  * lockInCentre - If set to `true`, the playhead will lock in the centre of the timeline. Otherwise, it will lock in it's current position.
 ---
 --- Returns:
---- * The `Timeline` instance.
+---  * The `Timeline` instance.
 function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     if self._locked then
         -- already locked.

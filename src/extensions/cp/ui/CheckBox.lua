@@ -51,7 +51,7 @@ local CheckBox = {}
 --- Returns:
 --- * `true` if it's a match, or `false` if not.
 function CheckBox.matches(element)
-    return element:attributeValue("AXRole") == "AXCheckBox"
+    return element ~= nil and element:attributeValue("AXRole") == "AXCheckBox"
 end
 
 --- cp.ui.CheckBox.new(axuielement, function) -> cp.ui.CheckBox
@@ -204,7 +204,7 @@ function CheckBox:loadLayout(layout)
 end
 
 -- Allows the CheckBox to be called as a function and will return the `checked` value.
-function CheckBox.__call(self, parent, value)
+function CheckBox:__call(parent, value)
     if parent and parent ~= self:parent() then
         value = parent
     end

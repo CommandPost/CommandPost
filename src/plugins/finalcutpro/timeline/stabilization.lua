@@ -40,15 +40,16 @@ function mod.enable(value)
     --------------------------------------------------------------------------------
     -- Set Stabilization:
     --------------------------------------------------------------------------------
-    local inspector = fcp:inspector():video()
-    if type(value) == "boolean" then
-        inspector:stabilization(value)
-    else
-        --------------------------------------------------------------------------------
-        -- Toggle:
-        --------------------------------------------------------------------------------
-        local result = inspector:stabilization()
-        inspector:stabilization(not result)
+    local inspector = fcp:inspector()
+    local inspectorShowing = inspector:isShowing()
+
+    local stabilization = inspector:video():stabilization():show()
+
+    value = value == nil and not stabilization:enabled() or value
+    stabilization:enabled(value)
+
+    if not inspectorShowing then
+        inspector:hide()
     end
 
 end

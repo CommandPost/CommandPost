@@ -174,13 +174,12 @@ local function saveToFile(favourites)
         file:close()
         return true
     else
-        log.df("Unable to save Favourites file: '%s'", filePath)
+        log.ef("Unable to save Favourites file: '%s'", filePath)
         return false
     end
 end
 
-
---- plugin.core.tangent.commandpost.favourites.saveAction(buttonID, actionTitle, handlerID, action) -> none
+--- plugins.core.tangent.commandpost.favourites.saveAction(buttonID, actionTitle, handlerID, action) -> none
 --- Function
 --- Saves an action to Favourites.
 ---
@@ -205,7 +204,7 @@ function mod.saveAction(buttonID, actionTitle, handlerID, action)
     mod.updateControls()
 end
 
---- clearAction(buttonID) -> none
+--- plugins.core.tangent.commandpost.favourites.clearAction(buttonID) -> none
 --- Function
 --- Clears an Action from Favourites.
 ---
@@ -222,6 +221,15 @@ function mod.clearAction(buttonID)
     mod.updateControls()
 end
 
+--- plugins.core.tangent.commandpost.favourites.favourites() -> table
+--- Function
+--- Gets a table of favourites from file.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of favourites.
 function mod.favourites()
     if mod._favourites == nil then
         mod._favourites = loadFromFile()
