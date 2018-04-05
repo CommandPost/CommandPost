@@ -25,7 +25,7 @@ local Slider = {}
 
 -- TODO: Add documentation
 function Slider.matches(element)
-    return element:attributeValue("AXRole") == "AXSlider"
+    return element ~= nil and element:attributeValue("AXRole") == "AXSlider"
 end
 
 --- cp.ui.Slider.new(parent, finderFn) -> cp.ui.Slider
@@ -59,8 +59,8 @@ function Slider.new(parent, finderFn)
                 local ui = original()
                 return ui and ui:attributeValue("AXValue")
             end,
-            function(value, self)
-                local ui = self and self:UI()
+            function(value, original)
+                local ui = original()
                 if ui then
                     ui:setAttributeValue("AXValue", value)
                 end
@@ -142,6 +142,13 @@ end
 function Slider:isEnabled()
     local ui = self:UI()
     return ui and ui:enabled()
+end
+
+function Slider:__call(parent, value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:value(value)
 end
 
 -- TODO: Add documentation

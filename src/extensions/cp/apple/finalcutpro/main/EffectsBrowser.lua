@@ -368,7 +368,7 @@ end
 
 function Browser:search()
     if not self._search then
-        self._search = TextField:new(self, function()
+        self._search = TextField.new(self, function()
             return axutils.childWithRole(self:UI(), "AXTextField")
         end)
     end

@@ -674,16 +674,13 @@ function mod.init(deps, env)
     mod.lastCommandSetPath = fcp:getActiveCommandSetPath()
 
     --------------------------------------------------------------------------------
-    -- Refresh Shortcuts if Preferences is Updated:
+    -- Refresh Shortcuts if the Command Set Path in Preferences file is modified:
     --------------------------------------------------------------------------------
     fcp:watch({
         preferences = function()
             local activeCommandSetPath = fcp:getActiveCommandSetPath()
             if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
-                --------------------------------------------------------------------------------
-                -- Refreshing Hacks Shortcuts:
-                --------------------------------------------------------------------------------
-                --log.df("Updating Hacks Shortcuts due to Preferences Change.")
+                --log.df("Updating Final Cut Pro Command Editor Cache.")
                 mod.refresh()
                 mod.lastCommandSetPath = activeCommandSetPath
             end
@@ -694,10 +691,10 @@ function mod.init(deps, env)
     -- Refresh Shortcuts if Command Editor is Closed:
     --------------------------------------------------------------------------------
     fcp:commandEditor():watch({
-        close   =   function()
-                        --log.df("Updating Hacks Shortcuts due to Command Editor closing.")
-                        mod.refresh()
-                    end
+        close = function()
+                    --log.df("Updating Hacks Shortcuts due to Command Editor closing.")
+                    mod.refresh()
+                end
     })
 
     --------------------------------------------------------------------------------

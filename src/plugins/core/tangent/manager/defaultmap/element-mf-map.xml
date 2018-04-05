@@ -25,27 +25,34 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
+                                <CustomName>VIDEO</CustomName>
+                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
+                                <CustomName>BOARD</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
+                                <CustomName>WHEELS</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>GLOBAL</CustomName>
+                                <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -78,27 +85,34 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
+                                <CustomName>VIDEO</CustomName>
+                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
+                                <CustomName>BOARD</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
+                                <CustomName>WHEELS</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>GLOBAL</CustomName>
+                                <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -127,27 +141,34 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <Argument>0x0000000A</Argument> <!-- Global -->
+                                <CustomName>VIDEO</CustomName>
+                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Board</CustomName>
+                                <CustomName>BOARD</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>Wheels</CustomName>
+                                <CustomName>WHEELS</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>GLOBAL</CustomName>
+                                <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -170,6 +191,62 @@
                             <Mapping mode="Std">
                                 <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
                                 <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010010"> <!-- FCP: Video -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Mf Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="18"> <!-- Element-Mf Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Button">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>VIDEO</CustomName>
+                                <Argument>0x00010010</Argument> <!-- FCP: Video -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>BOARD</CustomName>
+                                <Argument>0x00010003</Argument> <!-- FCP: Board -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>WHEELS</CustomName>
+                                <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x8000000B</Key> <!-- Goto Mode -->
+                                <CustomName>GLOBAL</CustomName>
+                                <Argument>0x0000000A</Argument> <!-- Global -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00002</Key> <!-- Mute -->
                             </Mapping>
                         </Control>
                     </Bank>

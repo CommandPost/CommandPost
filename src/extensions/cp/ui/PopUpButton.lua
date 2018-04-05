@@ -61,12 +61,12 @@ function PopUpButton.new(parent, finderFn)
             local ui = original()
             return ui and ui:value()
         end,
-        function(value, original)
+        function(newValue, original)
             local ui = original()
-            if ui and not ui:value() == value then
+            if ui and ui:value() ~= newValue then
                 local items = ui:doPress()[1]
-                for _,item in items do
-                    if item:title() == value then
+                for _,item in ipairs(items) do
+                    if item:title() == newValue then
                         item:doPress()
                         return
                     end
@@ -131,6 +131,13 @@ function PopUpButton:press()
         ui:doPress()
     end
     return self
+end
+
+function PopUpButton:__call(parent, value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:value(value)
 end
 
 -- TODO: Add documentation

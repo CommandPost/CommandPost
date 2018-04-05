@@ -1,5 +1,21 @@
 {
     "en": {
+        "viewBlueColorChannel"						: "View Blue Color Channel",
+     	"viewGreenColorChannel"						: "View Green Color Channel",
+     	"viewRedColorChannel"						: "View Red Color Channel",
+    	"viewAlphaColorChannel"						: "View Alpha Color Channel",
+    	"viewAllColorChannels"						: "View All Color Channels",
+    	"toggleEffects"								: "Toggle Effects",
+    	"toggleColorCorrectionEffects"				: "Toggle Color Correction Effects",
+    	"saveColorEffectPreset"						: "Save Color Effect Preset",
+    	"matchColor"								: "Match Color",
+    	"goToColorInspector"						: "Go to Color Inspector",
+    	"enableDisableBalanceColor"					: "Enable/Disable Balance Color",
+    	"applyColorCorrectionFromTwoClipsBack"		: "Apply Color Correction from Two Clips Back",
+    	"applyColorCorrectionFromThreeClipsBack"	: "Apply Color Correction from Three Clips Back",
+    	"applyColorCorrectionFromPreviousClip"      : "Apply Color Correction from Previous Clip",
+    	"tangentFinalCutProShortcutFailed"			: "There is no shortcut key applied to this command, so the command cannot be triggered.\n\nPlease open up the Final Cut Pro Command Editor and assign a shortcut key to the command, then try again.",
+    	"inspector"									: "Inspector",
     	"functions"									: "Functions",
     	"pasteboard"								: "Pasteboard",
     	"core_tangent_os_window_label"				: "Tangent: Windows Management",
@@ -427,6 +443,7 @@
         "thisIsATest"                                      : "This is a test",
         "cpTitle8_title"                                   : "Apply Title 8",
         "fcpx_colorInspector_action"                       : "Color Inspector",
+        "colorShortcuts"								   : "Color Shortcuts",
         "sharedXMLFiles"                                   : "Shared XML Files",
         "languageHeading"                                  : "Language",
         "options"                                          : "Options",
@@ -1008,6 +1025,7 @@
         "core_tangent_prefs_label"                             : "Tangent: Preferences",
         "finalcutpro_tangent_color_label"                      : "Tangent: FCPX Color Inspector Controls",
         "finalcutpro_tangent_group_label"                      : "Tangent: FCPX Support",
-        "finalcutpro_tangent_timeline_label"                   : "Tangent: FCPX Timeline Controls"
+        "finalcutpro_tangent_timeline_label"                   : "Tangent: FCPX Timeline Controls",
+        "video"                                                : "Video"
     }
 }
