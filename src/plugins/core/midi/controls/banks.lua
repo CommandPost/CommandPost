@@ -10,6 +10,22 @@
 
 --------------------------------------------------------------------------------
 --
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                           = require("hs.logger").new("banks")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog                        = require("cp.dialog")
+
+--------------------------------------------------------------------------------
+--
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -25,7 +41,6 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
-
     mod._handler = mod._actionmanager.addHandler("global_midibanks")
         :onChoices(function(choices)
             for i=1, mod._manager.numberOfSubGroups do
@@ -58,11 +73,13 @@ function mod.init()
                         mod._manager.previousSubGroup()
                     end
                 end
+                local activeSubGroup = mod._manager.activeSubGroup()
+                if activeSubGroup then
+                    dialog.displayNotification(i18n("midiBank") .. " " .. activeSubGroup)
+                end
             end
         end)
-
     return mod
-
 end
 
 --------------------------------------------------------------------------------

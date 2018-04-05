@@ -17,13 +17,18 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log             = require("hs.logger").new("colorMIDI")
+local log             = require("hs.logger").new("colorMIDI")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local eventtap          = require("hs.eventtap")
+local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -31,6 +36,92 @@ local tools             = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- shiftPressed() -> boolean
+-- Function
+-- Is the Shift Key being pressed?
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if the shift key is being pressed, otherwise `false`.
+local function shiftPressed()
+    --------------------------------------------------------------------------------
+    -- Check for keyboard modifiers:
+    --------------------------------------------------------------------------------
+    local mods = eventtap.checkKeyboardModifiers()
+    local result = false
+    if mods['shift'] and not mods['cmd'] and not mods['alt'] and not mods['ctrl'] and not mods['capslock'] and not mods['fn'] then
+        result = true
+    end
+    return result
+end
+
+--------------------------------------------------------------------------------
+-- MIDI Controller Value (7bit):   0 to 127
+-- MIDI Controller Value (14bit):  0 to 16383
+--
+-- Percentage Slider:           -100 to 100
+-- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
+--
+-- Wheel Color Orientation          -1 to 1
+--------------------------------------------------------------------------------
+
+local MAX_14BIT = 0x3FFF    -- 16383
+local MAX_7BIT  = 0x7F      -- 127
+
+local UNSHIFTED_SCALE = 20/100 -- Scale unshifted 7-bit by 20%
+
+-- makeWheelHandler(puckFinderFn) -> function
+-- Function
+-- Creates a 'handler' for wheel controls, applying them to the puck returned by the `puckFinderFn`
+--
+-- Parameters:
+-- * puckFinderFn   - a function that will return the `ColorPuck` to apply the percentage value to.
+--
+-- Returns:
+-- * a function that will receive the MIDI control metadata table and process it.
+local function makeWheelHandler(wheelFinderFn, vertical)
+    return function(metadata)
+
+        local midiValue, value
+        local wheel = wheelFinderFn()
+
+        if metadata.fourteenBitCommand or metadata.pitchChange then
+            --------------------------------------------------------------------------------
+            -- 14bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.pitchChange or metadata.fourteenBitValue
+            if type(midiValue) == "number" then
+                value = (midiValue / MAX_14BIT) * 2 - 1
+            end
+        else
+            --------------------------------------------------------------------------------
+            -- 7bit:
+            --------------------------------------------------------------------------------
+            midiValue = metadata.controllerValue
+            if type(midiValue) == "number" then
+                value = (midiValue / MAX_7BIT) * 2 - 1
+                if not shiftPressed() then -- scale it down
+                    value = value * UNSHIFTED_SCALE
+                end
+            end
+        end
+        if value == nil then
+            log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
+        end
+
+        local current = wheel:colorOrientation()
+        if current then
+            if vertical then
+                wheel:colorOrientation({right=current.right,up=value})
+            else
+                wheel:colorOrientation({right=value,up=current.up})
+            end
+        end
+    end
+end
 
 --- plugins.finalcutpro.midi.controls.colorwheels.init() -> nil
 --- Function
@@ -44,44 +135,95 @@ local mod = {}
 function mod.init(deps)
 
     --------------------------------------------------------------------------------
-    -- MIDI Controller Value:          0 to 127
-    -- Percentage Slider:           -255 to 255
+    -- Color Wheels:
     --------------------------------------------------------------------------------
+    deps.manager.controls:new("masterHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Master (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, false),
+    })
 
-    local wheel = {
-        [1] = "Master",
-        [2] = "Shadows",
-        [3] = "Midtones",
-        [4] = "Highlights",
-    }
+    deps.manager.controls:new("masterVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Master (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, true),
+    })
 
-    local colors = {
-        [1] = "Red",
-        [2] = "Green",
-        [3] = "Blue",
-    }
+    deps.manager.controls:new("shadowsHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Shadows (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, false),
+    })
 
-    for i=1, 4 do
-        for v=1, 3 do
-            deps.manager.controls:new("wheels" .. wheel[i] .. colors[v], {
-                group = "fcpx",
-                text = string.upper(i18n("midi")) .. ": " .. wheel[i] .. " " .. colors[v] .. " " .. i18n("color"),
-                subText = i18n("midiColorWheelDescription"),
-                fn = function(metadata)
-                    if metadata.controllerValue then
-                        local colorWheels = fcp:inspector():color():colorWheels()
-                        if colorWheels then
-                            local value = tools.round(metadata.controllerValue / 127*255*2-255)
-                            if metadata.controllerValue == 128/2 then value = 0 end
-                            colorWheels:show():color(wheel[i], colors[v], value)
-                        end
-                    end
-                end,
-            })
-        end
-    end
+    deps.manager.controls:new("shadowsVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Shadows (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, true),
+    })
+
+    deps.manager.controls:new("midtonesHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Midtones (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, false),
+    })
+
+    deps.manager.controls:new("midtonesVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Midtones (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, true),
+    })
+
+    deps.manager.controls:new("highlightsHorizontal", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Highlights (Horizontal)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, false),
+    })
+
+    deps.manager.controls:new("highlightsVertical", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Highlights (Vertical)",
+        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, true),
+    })
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Saturation:
+    --------------------------------------------------------------------------------
+    -- The current saturation value, as a number between 0 and 10.
+
+    -- _fcp:inspector():color():colorWheels():master():saturationValue(10)
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Brightness:
+    --------------------------------------------------------------------------------
+    -- The current brightness value, as a number between -12 and 10.
+
+    -- _fcp:inspector():color():colorWheels():master():brightnessValue(10)
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Temperature:
+    --------------------------------------------------------------------------------
+    -- The color temperature for this corrector. A number from 2500 to 10000.
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Tint:
+    --------------------------------------------------------------------------------
+    -- The tint for the corrector. A number from `-50` to `50`.
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Hue:
+    --------------------------------------------------------------------------------
+    -- The hue for the corrector. A number from `0` to `360`.
 
     return mod
+
 end
 
 --------------------------------------------------------------------------------
