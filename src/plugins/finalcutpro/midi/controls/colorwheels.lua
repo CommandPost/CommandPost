@@ -29,6 +29,7 @@ local inspect           = require("hs.inspect")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
+local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -135,92 +136,530 @@ end
 function mod.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Color Wheels:
+    -- MIDI Controller Value (7bit):   0 to 127
+    -- MIDI Controller Value (14bit):  0 to 16383
+    --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- Color Wheels (-1 to 1):
     --------------------------------------------------------------------------------
     deps.manager.controls:new("masterHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Master (Horizontal)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, false),
     })
 
     deps.manager.controls:new("masterVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Master (Vertical)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():master() end, true),
     })
 
     deps.manager.controls:new("shadowsHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Shadows (Horizontal)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, false),
     })
 
     deps.manager.controls:new("shadowsVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Shadows (Vertical)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():shadows() end, true),
     })
 
     deps.manager.controls:new("midtonesHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Midtones (Horizontal)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, false),
     })
 
     deps.manager.controls:new("midtonesVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Midtones (Vertical)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():midtones() end, true),
     })
 
     deps.manager.controls:new("highlightsHorizontal", {
         group = "fcpx",
         text = "MIDI: Color Wheel Highlights (Horizontal)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, false),
     })
 
     deps.manager.controls:new("highlightsVertical", {
         group = "fcpx",
         text = "MIDI: Color Wheel Highlights (Vertical)",
-        subText = "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
+        subText = i18n("midiControlColorWheel"),
         fn = makeWheelHandler(function() return fcp:inspector():color():colorWheels():show():highlights() end, true),
     })
 
     --------------------------------------------------------------------------------
     -- Color Wheel Saturation:
     --------------------------------------------------------------------------------
-    -- The current saturation value, as a number between 0 and 10.
+    deps.manager.controls:new("colorWheelMasterSaturation", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Master Saturation",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383*2)
+                    fcp:inspector():color():colorWheels():master():show():saturationValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 128 * 2
+                    else
+                        value = midiValue / 128 * 2
+                    end
+                    fcp:inspector():color():colorWheels():master():show():saturationValue(value)
+                end
+            end
+        end,
+    })
 
-    -- _fcp:inspector():color():colorWheels():master():saturationValue(10)
+    deps.manager.controls:new("colorWheelShadowsSaturation", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Shadows Saturation",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383*2)
+                    fcp:inspector():color():colorWheels():shadows():show():saturationValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 128 * 2
+                    else
+                        value = midiValue / 128 * 2
+                    end
+                    fcp:inspector():color():colorWheels():shadows():show():saturationValue(value)
+                end
+            end
+        end,
+    })
+
+    deps.manager.controls:new("colorWheelMidtonesSaturation", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Midtones Saturation",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383*2)
+                    fcp:inspector():color():colorWheels():midtones():show():saturationValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 128 * 2
+                    else
+                        value = midiValue / 128 * 2
+                    end
+                    fcp:inspector():color():colorWheels():midtones():show():saturationValue(value)
+                end
+            end
+        end,
+    })
+
+    deps.manager.controls:new("colorWheelHighlightsSaturation", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Highlights Saturation",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383*2)
+                    fcp:inspector():color():colorWheels():highlights():show():saturationValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 128 * 2
+                    else
+                        value = midiValue / 128 * 2
+                    end
+                    fcp:inspector():color():colorWheels():highlights():show():saturationValue(value)
+                end
+            end
+        end,
+    })
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Brightness:
+    -- Color Wheel Brightness (-0.4 to 0.4):
     --------------------------------------------------------------------------------
-    -- The current brightness value, as a number between -12 and 10.
+    deps.manager.controls:new("colorWheelMasterBrightness", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Master Brightness",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 0.8 - 0.4
+                    else
+                        value = midiValue / 127 * 0.8 - 0.4
+                    end
+                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                end
+            end
+        end,
+    })
 
-    -- _fcp:inspector():color():colorWheels():master():brightnessValue(10)
+    deps.manager.controls:new("colorWheelShadowsBrightness", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Shadows Brightness",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    fcp:inspector():color():colorWheels():shadows():show():brightnessValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 0.8 - 0.4
+                    else
+                        value = midiValue / 127 * 0.8 - 0.4
+                    end
+                    fcp:inspector():color():colorWheels():shadows():show():brightnessValue(value)
+                end
+            end
+        end,
+    })
+
+    deps.manager.controls:new("colorWheelHighlightsBrightness", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Highlights Brightness",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 0.8 - 0.4
+                    else
+                        value = midiValue / 127 * 0.8 - 0.4
+                    end
+                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                end
+            end
+        end,
+    })
+
+    deps.manager.controls:new("colorWheelMidtonesBrightness", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Midtones Brightness",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    fcp:inspector():color():colorWheels():midtones():show():brightnessValue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 0.8 - 0.4
+                    else
+                        value = midiValue / 127 * 0.8 - 0.4
+                    end
+                    fcp:inspector():color():colorWheels():midtones():show():brightnessValue(value)
+                end
+            end
+        end,
+    })
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Temperature:
+    -- Color Wheel Temperature (2500 to 10000):
     --------------------------------------------------------------------------------
-    -- The color temperature for this corrector. A number from 2500 to 10000.
+    deps.manager.controls:new("colorWheelTemperature", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Temperature",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * (10000-2500) + 2500)
+                    fcp:inspector():color():colorWheels():show():temperature(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * (10000-2500) + 2500
+                    else
+                        value = midiValue / 127 * (10000-2500) + 2500
+                    end
+                    fcp:inspector():color():colorWheels():show():temperature(value)
+                end
+            end
+        end,
+    })
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Tint:
+    -- Color Wheel Tint (-50 to 50):
     --------------------------------------------------------------------------------
-    -- The tint for the corrector. A number from `-50` to `50`.
+    deps.manager.controls:new("colorWheelTint", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Tint",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * (50*2) - 50)
+                    fcp:inspector():color():colorWheels():show():tint(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * (50*2) - 50
+                    else
+                        value = midiValue /127 * (50*2) - 50
+                    end
+                    fcp:inspector():color():colorWheels():show():tint(value)
+                end
+            end
+        end,
+    })
 
     --------------------------------------------------------------------------------
-    -- Color Wheel Hue:
+    -- Color Wheel Hue (0 to 360):
     --------------------------------------------------------------------------------
-    -- The hue for the corrector. A number from `0` to `360`.
+    deps.manager.controls:new("colorWheelHue", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Hue",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * 360)
+                    fcp:inspector():color():colorWheels():show():hue(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 360
+                    else
+                        value = midiValue / 127 * 360
+                    end
+                    fcp:inspector():color():colorWheels():show():hue(value)
+                end
+            end
+        end,
+    })
+
+    --------------------------------------------------------------------------------
+    -- Color Wheel Mix (0 to 1):
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("colorWheelMix", {
+        group = "fcpx",
+        text = "MIDI: Color Wheel Mix",
+        subText = i18n("midiControlColorWheel"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383)
+                    fcp:inspector():color():colorWheels():show():mix(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127
+                    else
+                        value = midiValue / 127
+                    end
+                    fcp:inspector():color():colorWheels():show():mix(value)
+                end
+            end
+        end,
+    })
 
     return mod
 

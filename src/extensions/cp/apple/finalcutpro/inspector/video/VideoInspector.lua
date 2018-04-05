@@ -340,7 +340,9 @@ end
 --- Returns:
 ---  * VideoInspector
 function VideoInspector:show()
-    self:parent():selectTab("Video")
+    if not self:isShowing() then
+        self:parent():selectTab("Video")
+    end
     return self
 end
 
