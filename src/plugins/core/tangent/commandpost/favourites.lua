@@ -174,7 +174,7 @@ local function saveToFile(favourites)
         file:close()
         return true
     else
-        log.df("Unable to save Favourites file: '%s'", filePath)
+        log.ef("Unable to save Favourites file: '%s'", filePath)
         return false
     end
 end

@@ -85,12 +85,12 @@ function InfoInspector:new(parent) -- luacheck: ignore
     }, InfoInspector)
 
     o.sceneRow = o:propertyRow("Scene")
-    o.scene = TextField:new(o, function()
+    o.scene = TextField.new(o, function()
         return axutils.childWithRole(o.sceneRow:children(), "AXTextField")
     end)
 
     o.takeRow = o:propertyRow("Take")
-    o.take = TextField:new(o, function()
+    o.take = TextField.new(o, function()
         return axutils.childWithRole(o.takeRow:children(), "AXTextField")
     end)
 
@@ -107,7 +107,7 @@ end
 --- Returns:
 ---  * A `PropertyRow` object.
 function InfoInspector:propertyRow(title)
-    return PropertyRow:new(self, title, "propertiesUI")
+    return PropertyRow.new(self, title, "propertiesUI")
 end
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector:parent() -> table

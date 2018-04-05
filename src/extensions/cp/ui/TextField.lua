@@ -34,10 +34,10 @@ local TextField = {}
 
 -- TODO: Add documentation
 function TextField.matches(element)
-    return element:attributeValue("AXRole") == "AXTextField"
+    return element ~= nil and element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.ui.TextField:new(parent, finderFn[, convertFn]) -> TextField
+--- cp.ui.TextField.new(parent, finderFn[, convertFn]) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -50,7 +50,7 @@ end
 --- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
 ---
 --- ```lua
---- local numberField = TextField:new(parent, function() return ... end, tonumber)
+--- local numberField = TextField.new(parent, function() return ... end, tonumber)
 --- ```
 ---
 --- Parameters:
@@ -61,7 +61,7 @@ end
 --- Returns:
 --- * The new `TextField`.
 -- TODO: Use a function instead of a method.
-function TextField:new(parent, finderFn, convertFn) -- luacheck: ignore
+function TextField.new(parent, finderFn, convertFn) -- luacheck: ignore
     return prop.extend({
         _parent = parent,
         _finder = finderFn,
@@ -77,7 +77,8 @@ end
 -- TODO: Add documentation
 function TextField:UI()
     return axutils.cache(self, "_ui", function()
-        return self._finder()
+        local ui = self._finder()
+        return TextField.matches(ui) and ui or nil
     end,
     TextField.matches)
 end

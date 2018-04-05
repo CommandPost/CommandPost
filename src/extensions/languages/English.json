@@ -1,5 +1,6 @@
 {
     "en": {
+    	"inspector"									: "Inspector",
     	"functions"									: "Functions",
     	"pasteboard"								: "Pasteboard",
     	"core_tangent_os_window_label"				: "Tangent: Windows Management",
@@ -1008,6 +1009,7 @@
         "core_tangent_prefs_label"                             : "Tangent: Preferences",
         "finalcutpro_tangent_color_label"                      : "Tangent: FCPX Color Inspector Controls",
         "finalcutpro_tangent_group_label"                      : "Tangent: FCPX Support",
-        "finalcutpro_tangent_timeline_label"                   : "Tangent: FCPX Timeline Controls"
+        "finalcutpro_tangent_timeline_label"                   : "Tangent: FCPX Timeline Controls",
+        "video"                                                : "Video"
     }
 }

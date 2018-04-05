@@ -144,7 +144,7 @@ end
 -- TODO: Add documentation
 function GeneratorsBrowser:search()
     if not self._search then
-        self._search = TextField:new(self, function()
+        self._search = TextField.new(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXTextField")
         end)
     end

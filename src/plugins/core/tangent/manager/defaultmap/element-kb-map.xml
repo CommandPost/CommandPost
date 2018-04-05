@@ -87,6 +87,7 @@
                         <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00310024</Key> <!-- Color Wheel - Shadows - Brightness -->
+                                <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
@@ -113,6 +114,7 @@
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00310034</Key> <!-- Color Wheel - Midtones - Brightness -->
+                                <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
@@ -139,6 +141,7 @@
                         <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
+                                <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
