@@ -498,10 +498,10 @@ function mod._startLearning(id, params)
 
                                     mod._manager.injectScript(code)
 
-                                    for i=1,maxItems,1 do
-                                        js = [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
-                                        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. i .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
-                                        js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. i .. [[].style.backgroundColor = "";]]
+                                    for x=1,maxItems,1 do
+                                        js = [[document.getElementById("midi]] .. groupID .. [[_button]] .. x .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+                                        js = js .. [[document.getElementById("midi]] .. groupID .. [[_button]] .. x .. [[_learnButton").style.visibility = "hidden";]] .. "\n"
+                                        js = js .. [[document.getElementById("midiGroup_]] .. groupID .. [[").getElementsByTagName("tr")[]] .. x .. [[].style.backgroundColor = "";]]
                                     end
 
                                     --------------------------------------------------------------------------------
