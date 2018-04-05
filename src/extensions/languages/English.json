@@ -1,5 +1,7 @@
 {
     "en": {
+    	"midiVideoInspector"						: "Controls the Final Cut Pro Video Inspector via a MIDI Knob or Slider",
+    	"midiControlColorWheel"						: "Controls the Final Cut Pro Color Wheel via a MIDI Knob or Slider",
         "viewBlueColorChannel"						: "View Blue Color Channel",
      	"viewGreenColorChannel"						: "View Green Color Channel",
      	"viewRedColorChannel"						: "View Red Color Channel",
