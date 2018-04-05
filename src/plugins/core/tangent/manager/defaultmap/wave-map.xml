@@ -263,16 +263,22 @@
                                 <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="15"> <!-- Wave Trackerball 2 X -->
                             <Mapping mode="Std">
                                 <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="17"> <!-- Wave Trackerball 3 X -->
                             <Mapping mode="Std">
+                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
                             </Mapping>
                         </Control>
@@ -281,17 +287,135 @@
                                 <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="16"> <!-- Wave Trackerball 2 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="18"> <!-- Wave Trackerball 3 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="9"> <!-- Wave Dial 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302202</Key> <!-- Color Board - Saturation - Shadows - Percentage -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="10"> <!-- Wave Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302302</Key> <!-- Color Board - Saturation - Midtones - Percentage -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="11"> <!-- Wave Dial 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302402</Key> <!-- Color Board - Saturation - Highlights - Percentage -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Encoder">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Wave Knob 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302202</Key> <!-- Color Board - Saturation - Shadows - Percentage -->
+                                <CustomName>SD SAT PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00302202</Key> <!-- Color Board - Saturation - Shadows - Percentage -->
+                                <CustomName>SD SAT PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Wave Knob 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
+                                <CustomName>SD EXP PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
+                                <CustomName>SD EXP PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Wave Knob 4 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302302</Key> <!-- Color Board - Saturation - Midtones - Percentage -->
+                                <CustomName>MT SAT PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00302302</Key> <!-- Color Board - Saturation - Midtones - Percentage -->
+                                <CustomName>MT SAT PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Wave Knob 5 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <CustomName>MT EXP PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <CustomName>MT EXP PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Wave Knob 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00302402</Key> <!-- Color Board - Saturation - Highlights - Percentage -->
+                                <CustomName>HL SAT PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00302402</Key> <!-- Color Board - Saturation - Highlights - Percentage -->
+                                <CustomName>HL SAT PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Wave Knob 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <CustomName>HL EXP PCT</CustomName>
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <CustomName>HL EXP PCT</CustomName>
+                                <Display>Number</Display>
                             </Mapping>
                         </Control>
                     </Bank>

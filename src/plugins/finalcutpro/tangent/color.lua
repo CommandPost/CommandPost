@@ -119,13 +119,20 @@ function mod.init(tangentManager, fcpGroup)
 
             local pName, pName2 = i18n(pKey), i18n(pKey.."2")
 
+            local lastPercent, lastAngle
+
             local percent = cbGroup:parameter(rangeID + 2)
                 :name(format("%s - %s - %s - %s", iColorBoard, aName, pName, iPercentage))
                 :name9(format("%s %s %s", iColorBoard2, pName2, iPercentage3))
                 :minValue(-100)
                 :maxValue(100)
                 :stepSize(1)
-                :onGet(function() return puck:show():percent() end)
+                :onGet(function()
+                    if puck:isShowing() then
+                        lastPercent = puck:percent()
+                    end
+                    return lastPercent
+                end)
                 :onChange(function(change)
                     percentChange = percentChange + change
                     updateUI()
@@ -139,7 +146,12 @@ function mod.init(tangentManager, fcpGroup)
                     :minValue(0)
                     :maxValue(359)
                     :stepSize(1)
-                    :onGet(function() return puck:show():angle() end)
+                    :onGet(function()
+                        if puck:isShowing() then
+                            lastAngle = puck:angle()
+                        end
+                        return lastAngle
+                    end)
                     :onChange(function(change)
                         angleChange = angleChange + change
                         updateUI()
