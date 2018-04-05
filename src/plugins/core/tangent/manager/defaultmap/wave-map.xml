@@ -29,6 +29,11 @@
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
+                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
+                            <Mapping mode="Std">
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
+                            </Mapping>
+                        </Control>
                     </Bank>
                 </ControlBank>
                 <ControlBank id="Encoder">
@@ -88,9 +93,6 @@
                         </Control>
                         <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
                             <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                            <Mapping mode="Alt">
                                 <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
@@ -256,6 +258,11 @@
                         <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
+                            <Mapping mode="Std">
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->
@@ -447,6 +454,11 @@
                         <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="12"> <!-- Wave Transport Dial -->
+                            <Mapping mode="Std">
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="13"> <!-- Wave Trackerball 1 X -->

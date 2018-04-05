@@ -116,7 +116,7 @@ function plugin.init(deps)
     deps.tangentManager.addMode(0x00010010, "FCP: Video")
         :onActivate(function() video:show() end)
 
-    local videoGroup = deps.fcpGroup:group(fcp:string("FFInspectorTabVideo"))
+    local videoGroup = deps.fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
 
     local transform = video:transform()
     local transformGroup = videoGroup:group(transform:label())
