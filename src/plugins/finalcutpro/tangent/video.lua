@@ -1,4 +1,4 @@
-local log                   = require("hs.logger").new("tng_video")
+-- local log                   = require("hs.logger").new("tng_video")
 
 local fcp                   = require("cp.apple.finalcutpro")
 local deferred              = require("cp.deferred")
