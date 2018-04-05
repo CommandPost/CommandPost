@@ -17,13 +17,13 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log             = require("hs.logger").new("videoMIDI")
+--local log             = require("hs.logger").new("videoMIDI")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap          = require("hs.eventtap")
-local inspect           = require("hs.inspect")
+--local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
