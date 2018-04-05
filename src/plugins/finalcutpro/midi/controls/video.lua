@@ -190,6 +190,206 @@ function mod.init(deps)
         end,
     })
 
+    --------------------------------------------------------------------------------
+    -- Position X:
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("transformPositionX", {
+        group = "fcpx",
+        text = "MIDI: Transform - Position X",
+        subText = i18n("midiVideoInspector"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * 400)
+                    fcp:inspector():video():show():transform():position().x:value(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 400
+                    else
+                        value = midiValue
+                    end
+                    fcp:inspector():video():show():transform():position().x:value(value)
+                end
+            end
+        end,
+    })
+
+    --------------------------------------------------------------------------------
+    -- Position Y:
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("transformPositionY", {
+        group = "fcpx",
+        text = "MIDI: Transform - Position Y",
+        subText = i18n("midiVideoInspector"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * 400)
+                    fcp:inspector():video():show():transform():position().y:value(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 400
+                    else
+                        value = midiValue
+                    end
+                    fcp:inspector():video():show():transform():position().y:value(value)
+                end
+            end
+        end,
+    })
+
+    --------------------------------------------------------------------------------
+    -- Rotation:
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("transformRotation", {
+        group = "fcpx",
+        text = "MIDI: Transform - Rotation",
+        subText = i18n("midiVideoInspector"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * 400)
+                    fcp:inspector():video():show():transform():rotation():value(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 400
+                    else
+                        value = midiValue
+                    end
+                    fcp:inspector():video():show():transform():rotation():value(value)
+                end
+            end
+        end,
+    })
+
+    --------------------------------------------------------------------------------
+    -- Anchor Y:
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("transformAnchorX", {
+        group = "fcpx",
+        text = "MIDI: Transform - Anchor X",
+        subText = i18n("midiVideoInspector"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * 400)
+                    fcp:inspector():video():show():transform():anchor().x:value(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 400
+                    else
+                        value = midiValue
+                    end
+                    fcp:inspector():video():show():transform():anchor().x:value(value)
+                end
+            end
+        end,
+    })
+
+    --------------------------------------------------------------------------------
+    -- Anchor X:
+    --------------------------------------------------------------------------------
+    deps.manager.controls:new("transformAnchorY", {
+        group = "fcpx",
+        text = "MIDI: Transform - Anchor Y",
+        subText = i18n("midiVideoInspector"),
+        fn = function(metadata)
+            local midiValue
+            if metadata.fourteenBitCommand or metadata.pitchChange then
+                --------------------------------------------------------------------------------
+                -- 14bit:
+                --------------------------------------------------------------------------------
+                if metadata.pitchChange then
+                    midiValue = metadata.pitchChange
+                else
+                    midiValue = metadata.fourteenBitValue
+                end
+                if type(midiValue) == "number" then
+                    local value = tools.round(midiValue / 16383 * 400)
+                    fcp:inspector():video():show():transform():anchor().y:value(value)
+                end
+            else
+                --------------------------------------------------------------------------------
+                -- 7bit:
+                --------------------------------------------------------------------------------
+                midiValue = metadata.controllerValue
+                if type(midiValue) == "number" then
+                    local value
+                    if shiftPressed() then
+                        value = midiValue / 127 * 400
+                    else
+                        value = midiValue
+                    end
+                    fcp:inspector():video():show():transform():anchor().y:value(value)
+                end
+            end
+        end,
+    })
+
     return mod
 
 end
