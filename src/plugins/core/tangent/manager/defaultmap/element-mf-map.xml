@@ -53,7 +53,6 @@
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -114,7 +113,6 @@
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -171,7 +169,6 @@
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -200,6 +197,23 @@
                 </ControlBank>
             </Mode>
             <Mode id="0x00010010"> <!-- FCP: Video -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Mf Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="18"> <!-- Element-Mf Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
                 <ControlBank id="Button">
                     <Bank>
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
@@ -233,7 +247,6 @@
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
-                                <CustomName>Mute</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>

@@ -15,16 +15,25 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- CommandPost Extensions:
+-- Logger:
 --------------------------------------------------------------------------------
--- local log                                       = require("hs.logger").new("fcp_tangent")
+--local log                                       = require("hs.logger").new("fcp_tangent")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local deferred                                  = require("cp.deferred")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
+local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 
-local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
-
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format                                    = string.format
 
 --------------------------------------------------------------------------------
@@ -47,8 +56,6 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Modes:
     --------------------------------------------------------------------------------
-    mod._manager = tangentManager
-
     tangentManager.addMode(0x00010003, "FCP: Board")
         :onActivate(function()
             fcp:colorBoard():show()
@@ -62,7 +69,6 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:
     --------------------------------------------------------------------------------
-
     local updateUI = deferred.new(0.01)
 
     local ciGroup = fcpGroup:group(i18n("fcpx_colorInspector_action"))
@@ -74,16 +80,22 @@ function mod.init(tangentManager, fcpGroup)
 
     local ranges = { "master", "shadows", "midtones", "highlights" }
 
-    -- Handle the Color Board
+    --------------------------------------------------------------------------------
+    -- Handle the Color Board:
+    --------------------------------------------------------------------------------
     local cbGroup = ciGroup:group(i18n("colorBoard"))
     local cb = fcp:colorBoard()
 
-    -- The multiplier for aspects (color/saturation/exposure).
+    --------------------------------------------------------------------------------
+    -- The multiplier for aspects (color/saturation/exposure):
+    --------------------------------------------------------------------------------
     local aspectBaseID = 0x01000
     -- The multiplier for ranges.
     local rangeBaseID = 0x00100
 
-    -- look up some terms
+    --------------------------------------------------------------------------------
+    -- Look up some terms:
+    --------------------------------------------------------------------------------
     local iColorBoard, iColorBoard2, iAngle, iAngle3, iPercentage, iPercentage3 =
         i18n("colorBoard"), i18n("colorBoard2"), i18n("angle"), i18n("angle3"), i18n("percentage"), i18n("percentage3")
 
@@ -165,7 +177,9 @@ function mod.init(tangentManager, fcpGroup)
         end
     end
 
-    -- handle the color wheels
+    --------------------------------------------------------------------------------
+    -- Handle the Color Wheels:
+    --------------------------------------------------------------------------------
     local cwGroup = ciGroup:group(i18n("colorWheels"))
     local cw = fcp:inspector():color():colorWheels()
 
@@ -262,6 +276,9 @@ function mod.init(tangentManager, fcpGroup)
 
     local iColorWheel4 = i18n("colorWheel4")
 
+    --------------------------------------------------------------------------------
+    -- Color Wheel Temperature:
+    --------------------------------------------------------------------------------
     -- set up UI Updates...
     local tempChange, tintChange, hueChange, mixChange = 0, 0, 0, 0
     updateUI:action(function()
@@ -300,6 +317,9 @@ function mod.init(tangentManager, fcpGroup)
         end)
         :onReset(function() cw:show():temperature(5000) end)
 
+    --------------------------------------------------------------------------------
+    -- Color Wheel Tint:
+    --------------------------------------------------------------------------------
     cwGroup:parameter(wheelsBaseID+0x0102)
         :name(format("%s - %s", iColorWheel, i18n("tint")))
         :name9(format("%s %s", iColorWheel4, i18n("tint4")))
@@ -313,6 +333,9 @@ function mod.init(tangentManager, fcpGroup)
         end)
         :onReset(function() cw:show():tintSlider():setValue(0) end)
 
+    --------------------------------------------------------------------------------
+    -- Color Wheel Hue:
+    --------------------------------------------------------------------------------
     cwGroup:parameter(wheelsBaseID+0x0103)
         :name(format("%s - %s", iColorWheel, i18n("hue")))
         :name9(format("%s %s", iColorWheel4, i18n("hue4")))
@@ -326,6 +349,9 @@ function mod.init(tangentManager, fcpGroup)
         end)
         :onReset(function() cw:show():hue(0) end)
 
+    --------------------------------------------------------------------------------
+    -- Color Wheel Mix:
+    --------------------------------------------------------------------------------
     cwGroup:parameter(wheelsBaseID+0x0104)
         :name(format("%s - %s", iColorWheel, i18n("mix")))
     :name9(format("%s %s", iColorWheel4, i18n("mix4")))
@@ -338,6 +364,96 @@ function mod.init(tangentManager, fcpGroup)
             updateUI()
         end)
         :onReset(function() cw:show():mix(1) end)
+
+    --------------------------------------------------------------------------------
+    -- Color Shortcuts:
+    --------------------------------------------------------------------------------
+    local colorShortcutGroup = fcpGroup:group(i18n("colorShortcuts"))
+
+    colorShortcutGroup:action(wheelsBaseID+0x0105, i18n("applyColorCorrectionFromPreviousClip"))
+        :onPress(function()
+            if not fcp:performShortcut("SetCorrectionFromEdit-Back-1") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0106, i18n("applyColorCorrectionFromThreeClipsBack"))
+        :onPress(function()
+            if not fcp:performShortcut("SetCorrectionFromEdit-Back-3") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0107, i18n("applyColorCorrectionFromTwoClipsBack"))
+        :onPress(function()
+            if not fcp:performShortcut("SetCorrectionFromEdit-Back-2") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0108, i18n("enableDisableBalanceColor"))
+        :onPress(function()
+            if not fcp:performShortcut("ToggleColorBalance") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0109, i18n("goToColorInspector"))
+        :onPress(function()
+            fcp:selectMenu({"Window", "Go To", "Color Inspector"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0110, i18n("matchColor"))
+        :onPress(function()
+            fcp:selectMenu({"Modify", "Match Color…"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0111, i18n("saveColorEffectPreset"))
+        :onPress(function()
+            if not fcp:performShortcut("SaveColorEffectPreset") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0112, i18n("toggleColorCorrectionEffects"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ToggleAllCorrection") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0113, i18n("toggleEffects"))
+        :onPress(function()
+            if not fcp:performShortcut("ToggleSelectedEffectsOff") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0114, i18n("viewAlphaColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0115, i18n("viewRedColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Red"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0116, i18n("viewGreenColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Green"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0117, i18n("viewBlueColorChannel"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Blue"})
+        end)
+
+    colorShortcutGroup:action(wheelsBaseID+0x0118, i18n("viewAllColorChannels"))
+        :onPress(function()
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Alll"})
+        end)
+
 end
 
 --------------------------------------------------------------------------------
