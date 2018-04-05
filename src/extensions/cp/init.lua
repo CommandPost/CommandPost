@@ -356,6 +356,7 @@ function mod.init()
     -- Display Useful Debugging Information in Console:
     --------------------------------------------------------------------------------
     console.printStyledtext("")
+                                                writeToConsoleDebug("Date Built:                     " .. hs.processInfo.buildTime)
     if osVersion ~= nil then                    writeToConsoleDebug("macOS Version:                  " .. tostring(osVersion),                   true) end
                                                 writeToConsoleDebug(config.appName .. " Locale:             " .. tostring(i18n.getLocale()),     true)
     if keycodes.currentLayout() ~= nil then     writeToConsoleDebug("Current Keyboard Layout:        " .. tostring(keycodes.currentLayout()),    true) end
