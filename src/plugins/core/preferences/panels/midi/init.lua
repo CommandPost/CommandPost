@@ -293,6 +293,11 @@ function mod._stopLearning(_, params, cancel, skipUpdateUI)
     mod._currentlyLearning = false
 
     --------------------------------------------------------------------------------
+    -- Re-enable the main MIDI Callback:
+    --------------------------------------------------------------------------------
+    mod._midi.learningMode = false
+
+    --------------------------------------------------------------------------------
     -- Reset the current line item:
     --------------------------------------------------------------------------------
     if cancel then
@@ -359,6 +364,11 @@ function mod._startLearning(id, params)
     -- We're currently learning:
     --------------------------------------------------------------------------------
     mod._currentlyLearning = true
+
+    --------------------------------------------------------------------------------
+    -- Stop the main MIDI Callback Function:
+    --------------------------------------------------------------------------------
+    mod._midi.learningMode = true
 
     local maxItems = mod._midi.maxItems
     local groupID = params["groupID"]
@@ -687,6 +697,12 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             -- Update Group:
             --------------------------------------------------------------------------------
+
+            --------------------------------------------------------------------------------
+            -- Change the MIDI Bank as you change the group drop down:
+            --------------------------------------------------------------------------------
+            mod._midi.forceGroupChange(params["groupID"], mod._midi.enabled())
+
             mod._stopLearning(id, params)
             mod.lastGroup(params["groupID"])
         elseif params["type"] == "learnButton" then

@@ -31,6 +31,7 @@ local timer                                     = require("hs.timer")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
+local dialog                                    = require("cp.dialog")
 local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -526,6 +527,11 @@ mod.DEFAULT_MIDI_CONTROLS = {
   },
 }
 
+--- plugins.core.midi.manager.learningMode -> boolean
+--- Variable
+--- Whether or not the MIDI Manager is in learning mode.
+mod.learningMode = false
+
 --
 -- MIDI Device Names:
 --
@@ -734,6 +740,30 @@ function mod.activeSubGroup()
         result = currentSubGroup[activeGroup]
     end
     return tostring(result)
+end
+
+--- plugins.core.midi.manager.forceGroupChange(combinedGroupAndSubGroupID) -> none
+--- Function
+--- Loads a specific sub-group.
+---
+--- Parameters:
+---  * combinedGroupAndSubGroupID - The group and subgroup as a single string.
+---
+--- Returns:
+---  * None
+function mod.forceGroupChange(combinedGroupAndSubGroupID, notify)
+    if combinedGroupAndSubGroupID then
+        local group = string.sub(combinedGroupAndSubGroupID, 1, -2)
+        local subGroup = string.sub(combinedGroupAndSubGroupID, -1)
+        if group and subGroup then
+            local currentSubGroup = mod._currentSubGroup()
+            currentSubGroup[group] = tonumber(subGroup)
+            mod._currentSubGroup(currentSubGroup)
+        end
+        if notify then
+            dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midiBank") .. ": " .. i18n("shortcut_group_" .. group) .. " " .. subGroup)
+        end
+    end
 end
 
 --- plugins.core.midi.manager.gotoSubGroup() -> none
@@ -1371,6 +1401,13 @@ end
 --- Returns:
 ---  * None
 function mod.midiCallback(object, deviceName, commandType, description, metadata)
+
+    --------------------------------------------------------------------------------
+    -- Ignore callbacks when in learning mode:
+    --------------------------------------------------------------------------------
+    if mod.learningMode then
+        return false
+    end
 
     --------------------------------------------------------------------------------
     -- Get Active Group:

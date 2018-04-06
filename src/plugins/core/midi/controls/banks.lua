@@ -73,9 +73,10 @@ function mod.init()
                         mod._manager.previousSubGroup()
                     end
                 end
+                local activeGroup = mod._manager.activeGroup()
                 local activeSubGroup = mod._manager.activeSubGroup()
-                if activeSubGroup then
-                    dialog.displayNotification(i18n("midiBank") .. " " .. activeSubGroup)
+                if activeGroup and activeSubGroup then
+                    dialog.displayNotification(i18n("switchingTo") .. " " .. i18n("midiBank") .. ": " .. i18n("shortcut_group_" .. activeGroup) .. " " .. activeSubGroup)
                 end
             end
         end)

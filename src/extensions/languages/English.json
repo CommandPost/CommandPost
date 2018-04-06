@@ -328,6 +328,7 @@
         "clearClipboardHistory"                            : "Clear Clipboard History",
         "finalcutpro_timeline_preferences_label"           : "Timeline: Preferences",
         "shortcut_group_fcpx"                              : "Final Cut Pro",
+        "switchingTo"									   : "Switching to",
         "pleaseTryAgain"                                   : "Please try again.",
         "iMessageMissingDestination"                       : "Phone Number or Apple ID Required",
         "introText"                                        : "Thank you for installing CommandPost. This guide will help you set things up.",
