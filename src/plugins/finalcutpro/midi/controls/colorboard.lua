@@ -114,7 +114,7 @@ local function makePercentHandler(puckFinderFn)
                 log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
                 return
             end
-            puck:percent(value)
+            puck:show():percent(value)
         end
     end
 end
@@ -157,7 +157,7 @@ local function makeAngleHandler(puckFinderFn)
                 log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
                 return
             end
-            puck:angle(value)
+            puck:show():angle(value)
         end
     end
 end
