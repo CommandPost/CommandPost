@@ -742,23 +742,6 @@ function mod._displayBooleanToString(value)
     end
 end
 
--- plugins.core.preferences.panels.midi._calculateHeight() -> none
--- Function
--- Returns the correct WebView height based on whether MIDI is enabled or not.
---
--- Parameters:
---  * None
---
--- Returns:
---  * A number
-function mod._calculateHeight()
-    if mod._midi.enabled() then
-        return 780
-    else
-        return 400
-    end
-end
-
 -- plugins.core.preferences.panels.midi._applyTopDeviceToAll() -> none
 -- Function
 -- Applies the Top Group to all the subsequent groups.
@@ -842,7 +825,7 @@ function mod.init(deps, env)
         label           = i18n("midi"),
         image           = image.imageFromPath(tools.iconFallback("/Applications/Utilities/Audio MIDI Setup.app/Contents/Resources/AudioMIDISetup.icns")),
         tooltip         = i18n("midi"),
-        height          = mod._calculateHeight,
+        height          = 780,
         closeFn         = mod._destroyMIDIWatchers,
     })
         --------------------------------------------------------------------------------
@@ -1007,24 +990,9 @@ function mod.init(deps, env)
                     -- Toggle Preference:
                     --------------------------------------------------------------------------------
                     mod._midi.enabled(params.checked)
-
-                    --------------------------------------------------------------------------------
-                    -- Resize Window:
-                    --------------------------------------------------------------------------------
-                    local currentSize = mod._manager._webview:size()
-                    currentSize["h"] = mod._calculateHeight()
-                    mod._manager._webview:size(currentSize)
-
-                    --------------------------------------------------------------------------------
-                    -- Update UI:
-                    --------------------------------------------------------------------------------
-                    mod._manager.injectScript([[
-                        document.getElementById("midiEditor").style.display = "]] .. mod._displayBooleanToString(params.checked) .. [["
-                    ]])
                 end,
             }
         )
-        :addContent(8, [[<div id="midiEditor" style="display:]] .. mod._displayBooleanToString(mod._midi.enabled()) .. [[;">]], false)
         :addContent(10, generateContent, false)
         :addButton(12,
             {
@@ -1047,8 +1015,6 @@ function mod.init(deps, env)
                 class       = "midiResetGroup",
             }
         )
-
-        :addContent(23, [[</div>]], false)
 
     --------------------------------------------------------------------------------
     -- Setup Callback Manager:
