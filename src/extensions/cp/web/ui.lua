@@ -262,6 +262,7 @@ end
 ---  ** `options`	- an array (or function returning an array) of option tables, with the following keys:
 ---  *** `value`	- the value of the option.
 ---  *** `label`	- (optional) the label for the option. If not set, the `value` is used.
+---  *** `disabled` - (optional) if the option is disabled.
 ---  ** `required`	- (optional) if `true`, there will not be a 'blank' option at the top of the list.
 ---  ** `blankLabel`	- (optional) if specified, the value will be used for the 'blank' option label.
 function ui.select(params)
@@ -280,7 +281,8 @@ function ui.select(params)
                 local optValue = evaluate(opt.value)
                 local label = evaluate(opt.label) or optValue
                 local selected = optValue == value and "selected" or nil
-                options = options .. html.option { value = optValue, selected } (label)
+                local disabled = evaluate(opt.disabled)
+                options = options .. html.option { value = optValue, selected, disabled = disabled } (label)
             end
         end
         return options
