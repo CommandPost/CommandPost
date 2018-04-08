@@ -83,6 +83,21 @@
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
                             </Mapping>
                         </Control>
+                        <Control type="Button" number="36"> <!-- Wave Inch Reverse -->
+                            <Mapping mode="Std">
+                                <Key>0x0006000D</Key> <!-- Go to Previous Frame -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="37"> <!-- Wave Inch Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x0006000C</Key> <!-- Go to Next Frame -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="40"> <!-- Wave Play Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x00060001</Key> <!-- Play -->
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
@@ -253,6 +268,21 @@
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="36"> <!-- Wave Inch Reverse -->
+                            <Mapping mode="Std">
+                                <Key>0x0006000D</Key> <!-- Go to Previous Frame -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="37"> <!-- Wave Inch Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x0006000C</Key> <!-- Go to Next Frame -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="40"> <!-- Wave Play Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x00060001</Key> <!-- Play -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
@@ -449,6 +479,21 @@
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x80000004</Key> <!-- Next Button Bank -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="36"> <!-- Wave Inch Reverse -->
+                            <Mapping mode="Std">
+                                <Key>0x0006000D</Key> <!-- Go to Previous Frame -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="37"> <!-- Wave Inch Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x0006000C</Key> <!-- Go to Next Frame -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="40"> <!-- Wave Play Forward -->
+                            <Mapping mode="Std">
+                                <Key>0x00060001</Key> <!-- Play -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Wave Alt -->
