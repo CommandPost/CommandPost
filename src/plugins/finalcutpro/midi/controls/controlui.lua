@@ -31,8 +31,6 @@ local mouse			    = require("hs.mouse")
 --------------------------------------------------------------------------------
 local deferred          = require("cp.deferred")
 local dialog            = require("cp.dialog")
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -228,7 +226,6 @@ function mod.init()
             --------------------------------------------------------------------------------
             -- Get current value and update:
             --------------------------------------------------------------------------------
-            local factor = 1
             local currentValue = mod._uielement:attributeValue("AXValue")
             if currentValue and tonumber(currentValue) then
                 local newValue = (tonumber(currentValue) + mod._changedValue)
