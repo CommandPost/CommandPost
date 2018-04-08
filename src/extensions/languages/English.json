@@ -7,6 +7,7 @@
     	"finder_pasteboard"							: "Finder: Pasteboard Tools",
     	"addedFCPUIElementToMIDI"					: "Registered Final Cut Pro User Interface Element to MIDI Control",
 	    "noFCPUIElementDetected"					: "No existing Final Cut Pro User Interface Element Registered",
+	    "invalidFCPUIElement"						: "Invalid User Interface Element",
 	    "controlFCPUIElementRelative"				: "Control Final Cut Pro User Interface Element (Relative)",
 	    "controlFCPUIElementRelativeNote"			: "Hover mouse over a UI Element, hold CONTROL, then adjust MIDI Knob/Fader to register.",
     	"midiVideoInspector"						: "Controls the Final Cut Pro Video Inspector via a MIDI Knob or Slider",

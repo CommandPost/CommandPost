@@ -168,7 +168,7 @@ function mod.control(metadata)
             --------------------------------------------------------------------------------
             -- Failure:
             --------------------------------------------------------------------------------
-            dialog.displayNotification(i18n("noFCPUIElementDetected"))
+            dialog.displayNotification(i18n("invalidFCPUIElement"))
             mod._uielement = nil
             return
         end
