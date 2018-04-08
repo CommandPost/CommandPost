@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.midi.controls.controlui ===
+--- === plugins.finalcutpro.midi.controls.controlui.relative ===
 ---
 --- Adds the ability to control any Final Cut Pro User Interface Element via a MIDI Knob/Slider.
 
@@ -81,7 +81,7 @@ local function shiftPressed()
     return false
 end
 
---- plugins.finalcutpro.midi.controls.controlui.control() -> nil
+--- plugins.finalcutpro.midi.controls.controlui.relative.control() -> nil
 --- Function
 --- Control Function
 ---
@@ -148,7 +148,11 @@ function mod.control(metadata)
                 end
             end
 
-        elseif element and element:attributeValue("AXRole") and element:attributeValue("AXRole") == "AXTextField" then
+        elseif element
+        and element:attributeValue("AXRole")
+        and element:attributeValue("AXRole") == "AXTextField"
+        and element:attributeValue("AXValue")
+        and tonumber(element:attributeValue("AXValue")) then
             mod._textField = true
             uielement = element
         end
@@ -206,7 +210,7 @@ function mod.control(metadata)
     end
 end
 
---- plugins.finalcutpro.midi.controls.controlui.init() -> module
+--- plugins.finalcutpro.midi.controls.controlui.relative.init() -> module
 --- Function
 --- Initialise the module.
 ---
@@ -272,7 +276,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.midi.controls.controlui",
+    id              = "finalcutpro.midi.controls.controlui.relative",
     group           = "finalcutpro",
     dependencies    = {
         ["core.midi.manager"] = "manager",
