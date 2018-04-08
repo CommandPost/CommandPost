@@ -117,6 +117,15 @@
                         </Control>
                     </Bank>
                 </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
+                            <Mapping mode="Std">
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
             </Mode>
             <Mode id="0x00010004"> <!-- FCP: Wheels -->
                 <ControlBank id="Standard">
@@ -247,6 +256,15 @@
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00002</Key> <!-- Mute -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
+                            <Mapping mode="Std">
+                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
                             </Mapping>
                         </Control>
                     </Bank>
