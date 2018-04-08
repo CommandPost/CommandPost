@@ -4,7 +4,7 @@
     	"finalcutpro_midi_controls_video_label"		: "MIDI Controls: Video Inspector",
     	"finalcutpro_tangent_open_label"			: "Tangent: Open Final Cut Pro",
     	"finalcutpro_tangent_video_label"			: "Tangent: Video Inspector",
-    	"finder_pasteboard"							: "Finder: Pasteboard Tools",
+    	"finder_pasteboard_label"					: "Finder: Pasteboard Tools",
     	"addedFCPUIElementToMIDI"					: "Registered Final Cut Pro User Interface Element to MIDI Control",
 	    "noFCPUIElementDetected"					: "No existing Final Cut Pro User Interface Element Registered",
 	    "invalidFCPUIElement"						: "Invalid User Interface Element",

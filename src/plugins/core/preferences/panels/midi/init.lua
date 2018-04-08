@@ -779,12 +779,45 @@ local function getMIDIDeviceList()
         label = i18n("none"),
     })
 
+    table.insert(result, {
+        value = "-",
+        label = "--------------------------",
+        disabled = true,
+    })
+    table.insert(result, {
+        value = "-",
+        label = string.upper(i18n("physical")) .. ":",
+        disabled = true,
+    })
+    table.insert(result, {
+        value = "-",
+        label = "--------------------------",
+        disabled = true,
+    })
+
     for _, device in pairs(midiDevices) do
         table.insert(result, {
             value = device,
             label = device,
         })
     end
+
+
+    table.insert(result, {
+        value = "-",
+        label = "--------------------------",
+        disabled = true,
+    })
+    table.insert(result, {
+        value = "-",
+        label = string.upper(i18n("virtual")) .. ":",
+        disabled = true,
+    })
+    table.insert(result, {
+        value = "-",
+        label = "--------------------------",
+        disabled = true,
+    })
 
     for _, device in pairs(virtualMidiDevices) do
         table.insert(result, {
