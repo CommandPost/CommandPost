@@ -15,6 +15,11 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                                       = require("hs.logger").new("stabilization")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp                           = require("cp.apple.finalcutpro")
@@ -43,9 +48,14 @@ function mod.enable(value)
     local inspector = fcp:inspector()
     local inspectorShowing = inspector:isShowing()
 
-    local stabilization = inspector:video():stabilization():show()
+    local stabilization = inspector:video():stabilization()
 
-    value = value == nil and not stabilization:enabled() or value
+    stabilization:show()
+
+    if value == nil then
+        value = not stabilization:enabled()
+    end
+
     stabilization:enabled(value)
 
     if not inspectorShowing then
