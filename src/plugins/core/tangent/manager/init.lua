@@ -690,6 +690,25 @@ function plugin.init(_, env)
     mod._pluginPath = env:pathToAbsolute("/defaultmap")
     mod.configPath = config.userConfigRootPath .. "/Tangent Settings"
 
+    -- always switch focus to CommandPost on reconnect to reclaim Tangent Hub focus
+    local cpApps = application.applicationsForBundleID("org.latenitefilms.CommandPost")
+    local cpApp = cpApps and #cpApps > 0 and cpApps[1]
+
+    mod.connected:watch(function(value)
+        if value then
+            if cpApp then
+                local frontmostApp = application.frontmostApplication()
+                cpApp:activate()
+                if frontmostApp then
+                    timer.doAfter(0.5, function()
+                        frontmostApp:activate()
+                    end)
+                end
+            end
+        end
+    end)
+
+
     --------------------------------------------------------------------------------
     -- Return Module:
     --------------------------------------------------------------------------------

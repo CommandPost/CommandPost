@@ -2,6 +2,7 @@
 local log                   = require("hs.logger").new("cf_tangent")
 
 local application           = require("hs.application")
+local timer                  = require("hs.timer")
 
 local fcp                   = require("cp.apple.finalcutpro")
 local windowfilter          = require("cp.apple.finalcutpro.windowfilter")
