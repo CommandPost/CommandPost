@@ -516,6 +516,44 @@ end
 --- Enable or disables the Tangent Manager.
 mod.enabled = config.prop("enableTangent", false)
 
+--- plugins.core.tangent.manager.interrupted <cp.prop: boolean; read-only>
+--- Variable
+--- If this property is `true` it will temporarily interrupt the Tangent connection, if it is enabled.
+--- Other plugins can add interruptions via the `interruptWhen` function.
+mod.interrupted = prop(function()
+    local interrupted = mod._interrupted
+    if interrupted then
+        for _,p in ipairs(interrupted) do
+            if p() then
+                return true
+            end
+        end
+    end
+    return false
+end)
+
+--- plugins.core.tangent.manager.interruptWhen(aProp) -> nil
+--- Function
+--- Adds a `cp.prop` that will cause an interruption to the Tangent connection when it is `true`.
+---
+--- Parameters:
+--- * aProp     - The `cp.prop` that may interrupt the connection.
+---
+--- Returns:
+--- * Nothing.
+function mod.interruptWhen(aProp)
+    if not prop.is(aProp) then
+        error(string.format("`aProp` must be a cp.prop, but was a '%s'", type(aProp)))
+    end
+
+    if not mod._interrupted then
+        mod._interrupted = {}
+    end
+
+    insert(mod._interrupted, aProp)
+    aProp:watch(function() mod.interrupted:update() end)
+end
+
 -- plugins.core.tangent.manager.callback(id, metadata) -> none
 -- Function
 -- Tangent Manager Callback Function
@@ -576,8 +614,8 @@ mod.connected = prop(
 
 --- plugins.core.tangent.manager.connectable <cp.prop: boolean; read-only>
 --- Variable
---- Is the Tangent Enabled and the Tangent Hub Installed?
-mod.connectable = mod.enabled:AND(mod.tangentHubInstalled)
+--- Is the Tangent Enabled, Not Interrupted, and the Tangent Hub Installed?
+mod.connectable = mod.enabled:AND(mod.tangentHubInstalled):AND(prop.NOT(mod.interrupted))
 
 -- Tries to reconnect to Tangent Hub when disconnected.
 local ensureConnection = timer.new(1.0, function()
