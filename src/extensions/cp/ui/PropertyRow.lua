@@ -210,7 +210,7 @@ function PropertyRow:children()
         if labelFrame then
             children = axutils.childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)
-                local childFrame = child:frame()
+                local childFrame = child and child:frame()
                 return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
             end)
             if children then
