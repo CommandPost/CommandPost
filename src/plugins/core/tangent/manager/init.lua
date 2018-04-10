@@ -73,7 +73,7 @@ mod.TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
 
 --- plugins.core.tangent.manager.HIDE_FILE_PATH -> string
 --- Constant
--- Tangent Mapper Hide File Path.
+--- Tangent Mapper Hide File Path.
 mod.HIDE_FILE_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
 
 --- plugins.core.tangent.manager.FCP_KEYPRESS_APPS_PATH -> string
