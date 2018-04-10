@@ -1,18 +1,64 @@
--- This plugin basically just disables CP's Tangent Manager when ColorFinale is running.
-local log                   = require("hs.logger").new("cf_tangent")
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
+--- === plugins.colorfinale.tangent ===
+---
+--- This plugin basically just disables CP's Tangent Manager when ColorFinale is running.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                   = require("hs.logger").new("cf_tangent")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application           = require("hs.application")
-local timer                  = require("hs.timer")
+local timer                 = require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp                   = require("cp.apple.finalcutpro")
 local windowfilter          = require("cp.apple.finalcutpro.windowfilter")
 local prop                  = require("cp.prop")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod ={}
 
+-- APP_BUNDLE_ID -> string
+-- Constant
+-- ColorFinale Bundle ID
 local APP_BUNDLE_ID = "com.colorfinale.LUTManager"
+
+-- WINDOW_TITLE -> string
+-- Constant
+-- ColorFinale Window Title
 local WINDOW_TITLE = "Color Finale"
 
+-- startsWith(value, startValue) -> boolean
+-- Function
+-- Checks to see if a string starts with a value.
+--
+-- Parameters:
+--  * value - The value to check
+--  * startValue - The value to look for
+--
+-- Returns:
+--  * `true` if value starts with the startValue, otherwise `false`
 local function startsWith(value, startValue)
     if value and startValue then
         local len = startValue:len()
@@ -24,10 +70,21 @@ local function startsWith(value, startValue)
     return false
 end
 
+--- plugins.colorfinale.tangent.init(tangentManager) -> module
+--- Function
+--- Initialise the module.
+---
+--- Parameters:
+---  * tangentManager - The Tangent Manager
+---
+--- Returns:
+---  * The ColorFinale Tangent Module.
 function mod.init(tangentManager)
     mod._tangentManager = tangentManager
 
-    -- watch for FCP opening or closing
+    --------------------------------------------------------------------------------
+    -- Watch for FCP opening or closing:
+    --------------------------------------------------------------------------------
     fcp.isFrontmost:watch(function()
         if mod.colorFinaleInstalled() then
             mod.colorFinaleWindow:update()
@@ -46,12 +103,17 @@ function mod.init(tangentManager)
         updateWindow, true
     )
 
-    -- add an interruption to Tangent Manager
+    --------------------------------------------------------------------------------
+    -- Add an interruption to Tangent Manager:
+    --------------------------------------------------------------------------------
     mod._tangentManager.interruptWhen(mod.colorFinaleActive)
 
     return mod
 end
 
+--- plugins.colorfinale.tangent.colorFinaleWindow <cp.prop: boolean>
+--- Variable
+--- Checks to see if an object is a Color Finale window.
 mod.colorFinaleWindow = prop(function()
     local windows = fcp:windowsUI()
     if windows then
@@ -64,13 +126,24 @@ mod.colorFinaleWindow = prop(function()
     return false
 end)
 
+--- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean>
+--- Variable
+--- Checks to see if ColorFinale is installed.
 mod.colorFinaleInstalled = prop(function()
     local info = application.infoForBundleID(APP_BUNDLE_ID)
     return info ~= nil
 end)
 
+--- plugins.colorfinale.tangent.colorFinaleActive <cp.prop: boolean>
+--- Variable
+--- Checks to see if ColorFinale is active.
 mod.colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleWindow)
 
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
     id = "colorfinale.tangent",
     group = "colorfinale",
@@ -79,6 +152,9 @@ local plugin = {
     }
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init(deps)
     return mod.init(deps.tangentManager)
 end
