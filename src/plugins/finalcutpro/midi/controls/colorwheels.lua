@@ -96,6 +96,7 @@ local function makeWheelHandler(wheelFinderFn, vertical)
             midiValue = metadata.pitchChange or metadata.fourteenBitValue
             if type(midiValue) == "number" then
                 value = (midiValue / MAX_14BIT) * 2 - 1
+                if midiValue == 16383/2 then value = 0 end
             end
         else
             --------------------------------------------------------------------------------
@@ -106,6 +107,7 @@ local function makeWheelHandler(wheelFinderFn, vertical)
                 value = (midiValue / MAX_7BIT) * 2 - 1
                 if not shiftPressed() then -- scale it down
                     value = value * UNSHIFTED_SCALE
+                    if midiValue == 128/2 then value = 0 end
                 end
             end
         end
@@ -219,6 +221,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
+                    if midiValue == 16383/2 then value = 1 end
                     fcp:inspector():color():colorWheels():master():show():saturationValue(value)
                 end
             else
@@ -233,6 +236,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
+                    if midiValue == 128/2 then value = 1 end
                     fcp:inspector():color():colorWheels():master():show():saturationValue(value)
                 end
             end
@@ -256,6 +260,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
+                    if midiValue == 16383/2 then value = 1 end
                     fcp:inspector():color():colorWheels():shadows():show():saturationValue(value)
                 end
             else
@@ -270,6 +275,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
+                    if midiValue == 128/2 then value = 1 end
                     fcp:inspector():color():colorWheels():shadows():show():saturationValue(value)
                 end
             end
@@ -293,6 +299,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
+                    if midiValue == 16383/2 then value = 1 end
                     fcp:inspector():color():colorWheels():midtones():show():saturationValue(value)
                 end
             else
@@ -307,6 +314,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
+                    if midiValue == 128/2 then value = 1 end
                     fcp:inspector():color():colorWheels():midtones():show():saturationValue(value)
                 end
             end
@@ -330,6 +338,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383*2)
+                    if midiValue == 16383/2 then value = 1 end
                     fcp:inspector():color():colorWheels():highlights():show():saturationValue(value)
                 end
             else
@@ -344,6 +353,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 128 * 2
                     end
+                    if midiValue == 128/2 then value = 1 end
                     fcp:inspector():color():colorWheels():highlights():show():saturationValue(value)
                 end
             end
@@ -370,6 +380,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    if midiValue == 16383/2 then value = 0 end
                     fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
                 end
             else
@@ -380,10 +391,11 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value
                     if shiftPressed() then
-                        value = midiValue / 127 * 0.8 - 0.4
+                        value = midiValue / 128 * 0.8 - 0.4
                     else
-                        value = midiValue / 127 * 0.8 - 0.4
+                        value = midiValue / 128 * 0.8 - 0.4
                     end
+                    if midiValue == 128/2 then value = 0 end
                     fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
                 end
             end
@@ -407,6 +419,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    if midiValue == 16383/2 then value = 0 end
                     fcp:inspector():color():colorWheels():shadows():show():brightnessValue(value)
                 end
             else
@@ -417,10 +430,11 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value
                     if shiftPressed() then
-                        value = midiValue / 127 * 0.8 - 0.4
+                        value = midiValue / 128 * 0.8 - 0.4
                     else
-                        value = midiValue / 127 * 0.8 - 0.4
+                        value = midiValue / 128 * 0.8 - 0.4
                     end
+                    if midiValue == 128/2 then value = 0 end
                     fcp:inspector():color():colorWheels():shadows():show():brightnessValue(value)
                 end
             end
@@ -444,6 +458,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    if midiValue == 16383/2 then value = 0 end
                     fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
                 end
             else
@@ -458,6 +473,7 @@ function mod.init(deps)
                     else
                         value = midiValue / 127 * 0.8 - 0.4
                     end
+                    if midiValue == 128/2 then value = 0 end
                     fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
                 end
             end
@@ -481,6 +497,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
+                    if midiValue == 16383/2 then value = 0 end
                     fcp:inspector():color():colorWheels():midtones():show():brightnessValue(value)
                 end
             else
@@ -491,10 +508,11 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value
                     if shiftPressed() then
-                        value = midiValue / 127 * 0.8 - 0.4
+                        value = midiValue / 128 * 0.8 - 0.4
                     else
-                        value = midiValue / 127 * 0.8 - 0.4
+                        value = midiValue / 128 * 0.8 - 0.4
                     end
+                    if midiValue == 128/2 then value = 0 end
                     fcp:inspector():color():colorWheels():midtones():show():brightnessValue(value)
                 end
             end
@@ -529,12 +547,7 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value
-                    if shiftPressed() then
-                        value = midiValue / 127 * (10000-2500) + 2500
-                    else
-                        value = midiValue / 127 * (10000-2500) + 2500
-                    end
+                    local value = tools.round(midiValue / 127 * (10000-2500) + 2500)
                     fcp:inspector():color():colorWheels():show():temperature(value)
                 end
             end
@@ -561,6 +574,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * (50*2) - 50)
+                    if midiValue == 16383/2 then value = 0 end
                     fcp:inspector():color():colorWheels():show():tint(value)
                 end
             else
@@ -569,12 +583,7 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value
-                    if shiftPressed() then
-                        value = midiValue / 127 * (50*2) - 50
-                    else
-                        value = midiValue /127 * (50*2) - 50
-                    end
+                    local value = tools.round(midiValue / 127 * (50*2) - 50)
                     fcp:inspector():color():colorWheels():show():tint(value)
                 end
             end
@@ -601,6 +610,7 @@ function mod.init(deps)
                 end
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383 * 360)
+                    if midiValue == 16383/2 then value = 0 end
                     fcp:inspector():color():colorWheels():show():hue(value)
                 end
             else
@@ -609,12 +619,7 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value
-                    if shiftPressed() then
-                        value = midiValue / 127 * 360
-                    else
-                        value = midiValue / 127 * 360
-                    end
+                    local value = tools.round(midiValue / 127 * 360)
                     fcp:inspector():color():colorWheels():show():hue(value)
                 end
             end
@@ -649,12 +654,7 @@ function mod.init(deps)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    local value
-                    if shiftPressed() then
-                        value = midiValue / 127
-                    else
-                        value = midiValue / 127
-                    end
+                    local value = midiValue / 127
                     fcp:inspector():color():colorWheels():show():mix(value)
                 end
             end
