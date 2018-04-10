@@ -1065,6 +1065,8 @@
         "addHueSatCurvesEffect"                                : "Add Hue/Sat Curves Effect",
         "colorBoardShowColor"                                  : "Color Board: Show Color",
         "colorBoardShowSaturation"                             : "Color Board: Show Saturation",
-        "colorBoardShowExposure"                               : "Color Board: Show Exposure"
+        "colorBoardShowExposure"                               : "Color Board: Show Exposure",
+        "colorBoardNextPane"                                   : "Color Board: Next Pane",
+        "colorBoardPreviousPane"                               : "Color Board: Previous Pane"
     }
 }

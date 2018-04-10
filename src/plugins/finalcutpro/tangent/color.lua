@@ -492,6 +492,16 @@ function mod.init(tangentManager, fcpGroup)
             cb:exposure():show()
         end)
 
+    cbGroup:action(wheelsBaseID+0x0127, i18n("colorBoardNextPane"))
+        :onPress(function()
+            cb:aspectGroup():nextOption()
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0128, i18n("colorBoardPreviousPane"))
+        :onPress(function()
+            cb:aspectGroup():previousOption()
+        end)
+
 end
 
 --------------------------------------------------------------------------------
