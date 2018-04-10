@@ -1120,9 +1120,9 @@ function tools.incrementFilename(value)
     return name .. " " .. tostring(tonumber(counter) + 1)
 end
 
---- cp.tools.incrementFilename(value) -> string
+--- cp.tools.dirFiles(path) -> table
 --- Function
---- Returns a table of file names for the given path.
+--- Gets all the files in a directory
 ---
 --- Parameters:
 ---  * path - A path as string
