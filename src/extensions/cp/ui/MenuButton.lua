@@ -202,6 +202,14 @@ function MenuButton:loadLayout(layout)
     end
 end
 
+-- TODO: Add documentation
+function MenuButton:__call(parent, value)
+    if parent and parent ~= self:parent() then
+        value = parent
+    end
+    return self:value(value)
+end
+
 --- cp.ui.MenuButton:snapshot([path]) -> hs.image | nil
 --- Method
 --- Takes a snapshot of the UI in its current state as a PNG and returns it.

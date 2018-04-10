@@ -181,7 +181,8 @@ function mod.init(tangentManager, fcpGroup)
     -- Handle the Color Wheels:
     --------------------------------------------------------------------------------
     local cwGroup = ciGroup:group(i18n("colorWheels"))
-    local cw = fcp:inspector():color():colorWheels()
+    local ci = fcp:inspector():color()
+    local cw = ci:colorWheels()
 
     local wheelsBaseID = baseID + 0x010000
     local wheelID = 0x010
@@ -451,7 +452,44 @@ function mod.init(tangentManager, fcpGroup)
 
     colorShortcutGroup:action(wheelsBaseID+0x0118, i18n("viewAllColorChannels"))
         :onPress(function()
-            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Alll"})
+            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "All"})
+        end)
+
+    --- Color Board Actions
+
+    ciGroup:action(wheelsBaseID+0x0120, i18n("addColorBoardEffect"))
+        :onPress(function()
+            ci:addCorrection("Color Board")
+        end)
+
+    ciGroup:action(wheelsBaseID+0x0121, i18n("addColorWheelsEffect"))
+        :onPress(function()
+            ci:addCorrection("Color Wheels")
+        end)
+
+    ciGroup:action(wheelsBaseID+0x0122, i18n("addColorCurvesEffect"))
+        :onPress(function()
+            ci:addCorrection("Color Curves")
+        end)
+
+    ciGroup:action(wheelsBaseID+0x0123, i18n("addHueSatCurvesEffect"))
+        :onPress(function()
+            cw:addCorrection("Hue/Saturation Curves")
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0124, i18n("selectColorBoardColor"))
+        :onPress(function()
+            cb:color():show()
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0125, i18n("selectColorBoardSaturation"))
+        :onPress(function()
+            cb:saturation():show()
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0126, i18n("selectColorBoardExposure"))
+        :onPress(function()
+            cb:exposure():show()
         end)
 
 end

@@ -26,6 +26,7 @@ local log                               = require("hs.logger").new("colorInspect
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local MenuButton                        = require("cp.ui.MenuButton")
+local CheckBox                          = require("cp.ui.CheckBox")
 local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -63,13 +64,13 @@ function CorrectionsBar.matches(element)
         sort(children, axutils.compareLeftToRight)
         -- log.df("matches: children left to right: \n%s", _inspect(children))
         return #children >= 2
-           and children[1]:attributeValue("AXRole") == "AXCheckBox"
-           and children[2]:attributeValue("AXRole") == "AXMenuButton"
+           and CheckBox.matches(children[1])
+           and MenuButton.matches(children[2])
     end
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.CorrectionsBar:new(parent) -> CorrectionsBar
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar.new(parent) -> CorrectionsBar
 --- Function
 --- Creates a new Media Import object.
 ---
@@ -78,12 +79,10 @@ end
 ---
 --- Returns:
 ---  * A new CorrectionsBar object.
--- TODO: Use a function instead of a method.
-function CorrectionsBar:new(parent) -- luacheck: ignore
-    local o = {
+function CorrectionsBar.new(parent)
+    local o = prop.extend({
         _parent = parent,
-    }
-    prop.extend(o, CorrectionsBar)
+    }, CorrectionsBar)
     return o
 end
 
@@ -230,6 +229,33 @@ function CorrectionsBar:activate(correctionType, number)
                 log.ef("Invalid Correction Type: %s", correctionType)
             end
         end
+    end
+
+    return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
+--- Method
+--- Adds the specific correction type.
+---
+--- Parameters:
+---  * `correctionType` - The correction type as string.
+---
+--- Returns:
+---  *  `cp.apple.finalcutpro.inspector.color.CorrectionsBar` object.
+function CorrectionsBar:add(correctionType)
+    self:show()
+
+    local correctionText = self:findCorrectionLabel(correctionType)
+    if not correctionText then
+        log.ef("Invalid Correction Type: %s", correctionType)
+    end
+
+    local menuButton = self:menuButton()
+
+    local pattern = "%+"..correctionText
+    if not menuButton:selectItemMatching(pattern) then
+        log.ef("Invalid Correction Type: %s", correctionType)
     end
 
     return self
