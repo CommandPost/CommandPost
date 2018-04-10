@@ -23,7 +23,6 @@
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local application           = require("hs.application")
-local timer                 = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
