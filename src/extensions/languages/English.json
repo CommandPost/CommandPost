@@ -1064,7 +1064,7 @@
         "unmountingExternalDrivesMsg"                          : "Unmounting external drives...",
         "mountingExternalDrivesMsg"                            : "Mounting external drives...",
         "driveManagement"                                      : "Drive Management",
-        "autoUnmountOnBattery"                                 : "Unmount external drives when on battery power",
-        "autoMountOnAC"                                        : "Mount external drives when on AC power"
+        "autoUnmountOnBattery"                                 : "Unmount external drives when switching to battery power",
+        "autoMountOnAC"                                        : "Mount external drives when switching to AC power"
     }
 }
