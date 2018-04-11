@@ -121,13 +121,14 @@ local function plistParse(s)
     local ni, label, empty, _
 
     while label ~= "plist" do
+        local lastIndex = i
         ni, i, label, _ = string.find(s, "<([%w:]+)(.-)>", i+1)
 
 
         -- BUG: Something is going funky here with complex plist's:
 
         if ni == nil then
-            print("Fatal Error: Something has gone wrong in plistParse. Giving up.")
+            print(string.format("Fatal Error: Something has gone wrong in plistParse at #%s: %s", lastIndex+1, s))
             return nil
         else
             assert(ni)
