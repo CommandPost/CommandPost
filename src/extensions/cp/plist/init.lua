@@ -29,7 +29,7 @@ local plist = {}
 
 plist.log = log
 
---- cp.plist.base64ToTable(base64Data) -> table | nil, errorMessage
+--- cp.plist.base64ToTable(base64Data) -> table | nil, string
 --- Function
 --- Converts base64 encoded Property List string into a Table.
 ---
@@ -84,7 +84,7 @@ function plist.base64ToTable(base64Data)
 
 end
 
---- cp.plist.binaryToTable(binaryData) -> table | nil
+--- cp.plist.binaryToTable(binaryData) -> table | nil, string
 --- Function
 --- Converts Binary Data into a LUA Table.
 ---
@@ -117,7 +117,7 @@ function plist.binaryToTable(binaryData)
     return plistTable, err
 end
 
---- cp.plist.binaryFileToTable(plistFileName) -> table | nil
+--- cp.plist.binaryFileToTable(plistFileName) -> table | nil, string
 --- Function
 --- Converts the data from a Binary File into a LUA Table.
 ---
@@ -146,11 +146,11 @@ function plist.binaryFileToTable(plistFileName)
         return nil, string.format("Failed to convert binary plist to XML: %s", executeOutput)
     else
         -- Convert the XML to a LUA table:
-        return plistParse(executeOutput)
+        return plist.xmlToTable(executeOutput)
     end
 end
 
---- cp.plist.binaryFileToXML(plistFileName) -> string | nil
+--- cp.plist.binaryFileToXML(plistFileName) -> string | nil, string
 --- Function
 --- Converts the data from a Binary plist File into XML as a string.
 ---
@@ -175,7 +175,22 @@ function plist.binaryFileToXML(plistFileName)
 
 end
 
---- cp.plist.xmlFileToTable(plistFileName) -> table | nil
+--- cp.plist.xmlToTable(plistXml) -> table | nil, string
+--- Function
+--- Converts an XML plist string into a LUA Table.
+---
+--- Parameters:
+---  * plistXml	        - The XML string
+---
+--- Returns:
+---  * data				- A table of plist data, or `nil` if there was a problem.
+---  * err				- The error message, or `nil` if there were no problems.
+function plist.xmlToTable(plistXml)
+    local result = plistParse(plistXml)
+    return result, nil
+end
+
+--- cp.plist.xmlFileToTable(plistFileName) -> table | nil, string
 --- Function
 --- Converts XML data from a file into a LUA Table.
 ---
@@ -202,14 +217,10 @@ function plist.xmlFileToTable(plistFileName)
     file:close()
 
     -- Convert the XML to a LUA table:
-    local plistTable = plistParse(content)
-
-    -- Return the result:
-    return plistTable, nil
-
+    return plist.xmlToTable(content)
 end
 
---- cp.plist.fileToTable(plistFileName) -> table | nil
+--- cp.plist.fileToTable(plistFileName) -> table | nil, string
 --- Function
 --- Converts plist data from a binary or XML file into a LUA Table.
 --- It will check the file prior to loading to determine which type it is.
