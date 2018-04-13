@@ -1059,12 +1059,21 @@
         "finalcutpro_tangent_group_label"                      : "Tangent: FCPX Support",
         "finalcutpro_tangent_timeline_label"                   : "Tangent: FCPX Timeline Controls",
         "video"                                                : "Video",
+        "addColorBoardEffect"                                  : "Add Color Board Effect",
+        "addColorWheelsEffect"                                 : "Add Color Wheels Effect",
+        "addColorCurvesEffect"                                 : "Add Color Curves Effect",
+        "addHueSatCurvesEffect"                                : "Add Hue/Sat Curves Effect",
+        "colorBoardShowColor"                                  : "Color Board: Show Color",
+        "colorBoardShowSaturation"                             : "Color Board: Show Saturation",
+        "colorBoardShowExposure"                               : "Color Board: Show Exposure",
+        "colorBoardNextPane"                                   : "Color Board: Next Pane",
+        "colorBoardPreviousPane"                               : "Color Board: Previous Pane",
         "unmountExternalDrives_title"                          : "Unmount External Drives",
         "mountExternalDrives_title"                            : "Mount External Drives",
         "unmountingExternalDrivesMsg"                          : "Unmounting external drives...",
         "mountingExternalDrivesMsg"                            : "Mounting external drives...",
         "driveManagement"                                      : "Drive Management",
         "autoUnmountOnBattery"                                 : "Unmount external drives when switching to battery power",
-        "autoMountOnAC"                                        : "Mount external drives when switching to AC power"
+        "autoMountOnAC"                                        : "Mount external drives when switching to AC power",
     }
 }

@@ -195,7 +195,7 @@ end
 --- * The `CorrectionsBar` instance.
 function ColorInspector:corrections()
     if not self._corrections then
-        self._corrections = CorrectionsBar:new(self)
+        self._corrections = CorrectionsBar.new(self)
     end
     return self._corrections
 end
@@ -262,6 +262,20 @@ end
 ---  * ColorInspector object
 function ColorInspector:activateCorrection(correctionType, number)
     self:corrections():activate(correctionType, number)
+    return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:addCorrection(correctionType) -> self
+--- Method
+--- Adds the named correction type.
+---
+--- Parameters:
+---  * correctionType   - The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.
+---
+--- Returns:
+---  * ColorInspector object
+function ColorInspector:addCorrection(correctionType)
+    self:corrections():add(correctionType)
     return self
 end
 
