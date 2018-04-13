@@ -1068,5 +1068,12 @@
         "colorBoardShowExposure"                               : "Color Board: Show Exposure",
         "colorBoardNextPane"                                   : "Color Board: Next Pane",
         "colorBoardPreviousPane"                               : "Color Board: Previous Pane"
+        "unmountExternalDrives_title"                          : "Unmount External Drives",
+        "mountExternalDrives_title"                            : "Mount External Drives",
+        "unmountingExternalDrivesMsg"                          : "Unmounting external drives...",
+        "mountingExternalDrivesMsg"                            : "Mounting external drives...",
+        "driveManagement"                                      : "Drive Management",
+        "autoUnmountOnBattery"                                 : "Unmount external drives when switching to battery power",
+        "autoMountOnAC"                                        : "Mount external drives when switching to AC power"
     }
 }

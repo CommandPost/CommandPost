@@ -70,12 +70,6 @@ end
 -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
 --------------------------------------------------------------------------------
 
-local MAX_14BIT = 0x3FFF            -- 16383
-local MAX_7BIT  = 0x7F              -- 127
-
-local PERCENTAGE_SCALE  = 128/200   -- Scale Unshifted 7-bit
-local ANGLE_SCALE       = 128/360   -- Scale Angle on 7-bit
-
 -- makePercentHandler(puckFinderFn) -> function
 -- Function
 -- Creates a 'handler' for percent controls, applying them to the puck returned by the `puckFinderFn`
@@ -96,7 +90,8 @@ local function makePercentHandler(puckFinderFn)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.pitchChange or metadata.fourteenBitValue
                 if type(midiValue) == "number" then
-                    value = (midiValue / MAX_14BIT) * 200 - 100
+                    value = tools.round(midiValue / 16383*200-100)
+                    if midiValue == 16383/2 then value = 0 end
                 end
             else
                 --------------------------------------------------------------------------------
@@ -104,10 +99,12 @@ local function makePercentHandler(puckFinderFn)
                 --------------------------------------------------------------------------------
                 midiValue = metadata.controllerValue
                 if type(midiValue) == "number" then
-                    value = (midiValue / MAX_7BIT) * 200 - 100
-                    if not shiftPressed() then
-                        value = value * PERCENTAGE_SCALE
+                    if shiftPressed() then
+                        value = midiValue / 128*202-100
+                    else
+                        value = midiValue / 128*128-(128/2)
                     end
+                    if midiValue == 127/2 then value = 0 end
                 end
             end
             if value == nil then
@@ -133,25 +130,21 @@ local function makeAngleHandler(puckFinderFn)
         local midiValue, value
         local puck = puckFinderFn()
         if metadata and puck then
-            if metadata.fourteenBitCommand or metadata.pitchChange then
-                --------------------------------------------------------------------------------
-                -- 14bit:
-                --------------------------------------------------------------------------------
-                midiValue = metadata.pitchChange or metadata.fourteenBitValue
-                if type(midiValue) == "number" then
-                    value = (midiValue / MAX_14BIT) * 359
-                end
+            --------------------------------------------------------------------------------
+            -- 7bit & 14bit:
+            --------------------------------------------------------------------------------
+            if metadata.pitchChange then
+                midiValue = metadata.pitchChange
             else
-                --------------------------------------------------------------------------------
-                -- 7bit:
-                --------------------------------------------------------------------------------
-                midiValue = metadata.controllerValue
-                if type(midiValue) == "number" then
-                    value = (midiValue / MAX_7BIT) * 359
-                    if not not shiftPressed() then
-                        value = value * ANGLE_SCALE
-                    end
+                midiValue = metadata.fourteenBitValue
+            end
+            if type(midiValue) == "number" then
+                if metadata.fourteenBitCommand then
+                    value = midiValue / 16383*359
+                else
+                    value = midiValue / 16383*362
                 end
+                if midiValue == 16383/2 then value = 0 end
             end
             if value == nil then
                 log.ef("Unexpected MIDI value of type '%s': %s", type(midiValue), inspect(midiValue))
@@ -172,13 +165,6 @@ end
 --- Returns:
 ---  * None
 function mod.init(deps)
-
-    --------------------------------------------------------------------------------
-    -- MIDI Controller Value (7bit):   0 to 127
-    -- MIDI Controller Value (14bit):  0 to 16383
-    -- Percentage Slider:           -100 to 100
-    -- Angle Slider:                   0 to 360 (359 in Final Cut Pro 10.4)
-    --------------------------------------------------------------------------------
 
     mod._colorBoard         = fcp:colorBoard():show()
 

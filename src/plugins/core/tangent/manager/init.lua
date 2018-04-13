@@ -66,10 +66,20 @@ local insert, sort                              = table.insert, table.sort
 --------------------------------------------------------------------------------
 local mod = {}
 
--- TANGENT_MAPPER_BUNDLE_ID -> string
--- Constant
--- Tangent Mapper Bundle ID
-local TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
+--- plugins.core.tangent.manager.TANGENT_MAPPER_BUNDLE_ID -> string
+--- Constant
+--- Tangent Mapper Bundle ID.
+mod.TANGENT_MAPPER_BUNDLE_ID = "uk.co.tangentwave.tangentmapper"
+
+--- plugins.core.tangent.manager.HIDE_FILE_PATH -> string
+--- Constant
+--- Tangent Mapper Hide File Path.
+mod.HIDE_FILE_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
+
+--- plugins.core.tangent.manager.FCP_KEYPRESS_APPS_PATH -> string
+--- Constant
+--- Final Cut Pro Keypress Apps Path for Tangent Mapper.
+mod.FCP_KEYPRESS_APPS_PATH = "/Library/Application Support/Tangent/Hub/KeypressApps/Final Cut Pro"
 
 -- plugins.core.tangent.manager._modes -> table
 -- Variable
@@ -279,7 +289,7 @@ end)
 --- Variable
 --- Is Tangent Mapper Installed?
 mod.tangentMapperInstalled = prop(function()
-    local info = application.infoForBundleID(TANGENT_MAPPER_BUNDLE_ID)
+    local info = application.infoForBundleID(mod.TANGENT_MAPPER_BUNDLE_ID)
     return info ~= nil
 end)
 
@@ -287,7 +297,7 @@ end)
 --- Variable
 --- Is Tangent Mapper Running?
 mod.tangentMapperRunning = prop(function()
-    return application.applicationsForBundleID(TANGENT_MAPPER_BUNDLE_ID) ~= nil
+    return application.applicationsForBundleID(mod.TANGENT_MAPPER_BUNDLE_ID) ~= nil
 end)
 
 --- plugins.core.tangent.manager.launchTangentMapper() -> none
@@ -300,7 +310,7 @@ end)
 --- Returns:
 ---  * None
 function mod.launchTangentMapper()
-    application.launchOrFocusByBundleID(TANGENT_MAPPER_BUNDLE_ID)
+    application.launchOrFocusByBundleID(mod.TANGENT_MAPPER_BUNDLE_ID)
 end
 
 -- fromHub -> table
@@ -452,23 +462,22 @@ local fromHub = {
     end,
 }
 
--- disableFinalCutProInTangentHub() -> none
--- Function
--- Disables the Final Cut Pro preset in the Tangent Hub Application.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function disableFinalCutProInTangentHub()
-    if tools.doesDirectoryExist("/Library/Application Support/Tangent/Hub/KeypressApps/Final Cut Pro") then
-        local hideFilePath = "/Library/Application Support/Tangent/Hub/KeypressApps/hide.txt"
-        if tools.doesFileExist(hideFilePath) then
+--- plugins.core.tangent.manager.disableFinalCutProInTangentHub() -> none
+--- Function
+--- Disables the Final Cut Pro preset in the Tangent Hub Application.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.disableFinalCutProInTangentHub()
+    if tools.doesDirectoryExist(mod.FCP_KEYPRESS_APPS_PATH) then
+        if tools.doesFileExist(mod.HIDE_FILE_PATH) then
             --------------------------------------------------------------------------------
             -- Read existing Hide file:
             --------------------------------------------------------------------------------
-            local file = io.open(hideFilePath, "r")
+            local file, errorMessage, errorNumber = io.open(mod.HIDE_FILE_PATH, "r")
             if file then
                 local fileContents = file:read("*a")
                 file:close()
@@ -482,31 +491,31 @@ local function disableFinalCutProInTangentHub()
                     --------------------------------------------------------------------------------
                     -- Append Existing Hide File:
                     --------------------------------------------------------------------------------
-                    local appendFile = io.open(hideFilePath, "a")
+                    local appendFile, errorMessageA, errorNumberA = io.open(mod.HIDE_FILE_PATH, "a")
                     if appendFile then
                         appendFile:write("\nFinal Cut Pro")
                         appendFile:close()
                     else
-                        log.ef("Failed to append existing Hide File for Tangent Mapper.")
+                        log.ef("Failed to append existing Hide File for Tangent Mapper: %s (%s)", errorMessageA, errorNumberA)
                     end
                 end
             else
-                log.ef("Failed to read existing Hide File for Tangent Mapper.")
+                log.ef("Failed to read existing Hide File for Tangent Mapper: %s (%s)", errorMessage, errorNumber)
             end
         else
             --------------------------------------------------------------------------------
             -- Create new Hide File:
             --------------------------------------------------------------------------------
-            local newFile = io.open(hideFilePath, "w")
+            local newFile, errorMessage, errorNumber = io.open(mod.HIDE_FILE_PATH, "w")
             if newFile then
                 newFile:write("Final Cut Pro")
                 newFile:close()
             else
-                log.ef("Failed to create new Hide File for Tangent Mapper.")
+                log.ef("Failed to create new Hide File for Tangent Mapper: %s (%s)", errorMessage, errorNumber)
             end
         end
     else
-        --log.df("Final Cut Pro preset doesn't exist in Tangent Hub.")
+        log.ef("Final Cut Pro preset doesn't exist in Tangent Hub.")
         return
     end
 end
@@ -597,7 +606,7 @@ mod.connected = prop(
             --------------------------------------------------------------------------------
             -- Disable "Final Cut Pro" in Tangent Hub if the preset exists:
             --------------------------------------------------------------------------------
-            disableFinalCutProInTangentHub()
+            mod.disableFinalCutProInTangentHub()
             tangent.callback(callback)
             local ok, errorMessage = tangent.connect("CommandPost", mod.configPath)
             if not ok then

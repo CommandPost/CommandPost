@@ -58,12 +58,16 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     tangentManager.addMode(0x00010003, "FCP: Board")
         :onActivate(function()
-            fcp:colorBoard():show()
+            if fcp.isFrontmost() then
+                fcp:colorBoard():show()
+            end
         end)
 
     tangentManager.addMode(0x00010004, "FCP: Wheels")
         :onActivate(function()
-            fcp:inspector():color():colorWheels():show()
+            if fcp.isFrontmost() then
+                fcp:inspector():color():colorWheels():show()
+            end
         end)
 
     --------------------------------------------------------------------------------
@@ -250,7 +254,7 @@ function mod.init(tangentManager, fcpGroup)
             :name9(format("%s %s", iWheel4, iSaturation4))
             :minValue(0)
             :maxValue(2)
-            :stepSize(0.01)
+            :stepSize(0.001)
             :onGet(function() wheel:saturation():value() end)
             :onChange(function(value)
                 satChange = satChange + value
@@ -263,7 +267,7 @@ function mod.init(tangentManager, fcpGroup)
             :name9(format("%s %s", iWheel4, iBrightness4))
             :minValue(-1)
             :maxValue(1)
-            :stepSize(0.01)
+            :stepSize(0.001)
             :onGet(function() wheel:brightness():value() end)
             :onChange(function(value)
                 brightChange = brightChange + value

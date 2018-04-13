@@ -1,5 +1,26 @@
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.tangent.video ===
+---
+--- Final Cut Pro Video Inspector for Tangent
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log                   = require("hs.logger").new("tng_video")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp                   = require("cp.apple.finalcutpro")
 local deferred              = require("cp.deferred")
 
@@ -17,9 +38,14 @@ local plugin = {
     }
 }
 
+
+-- DEFER -> number
+-- Constant
 -- The amount of time to defer UI updates
 local DEFER = 0.01
 
+-- updateUI -> cp.deferred
+-- Variable
 -- Used to defer updates to a minimum period. This helps reduce overload by data from the Tangent panel.
 local updateUI = deferred.new(DEFER)
 
@@ -114,7 +140,11 @@ function plugin.init(deps)
     local video = fcp:inspector():video()
 
     deps.tangentManager.addMode(0x00010010, "FCP: Video")
-        :onActivate(function() video:show() end)
+        :onActivate(function()
+            if fcp.isFrontmost() then
+                video:show()
+            end
+        end)
 
     local videoGroup = deps.fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
 

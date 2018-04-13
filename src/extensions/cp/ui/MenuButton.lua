@@ -150,8 +150,13 @@ function MenuButton:selectItemMatching(pattern)
                     end
                 end
             end
+
+            --------------------------------------------------------------------------------
+            -- NOTE: The below was generating an error: "attempt to call a nil value
+            --       (method 'doCancel')", so Chris has commented out.
+            --------------------------------------------------------------------------------
             -- if we got this far, we couldn't find it.
-            items:doCancel()
+            --items:doCancel()
         end
     end
     return false
