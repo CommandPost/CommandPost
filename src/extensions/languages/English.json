@@ -1075,5 +1075,7 @@
         "driveManagement"                                      : "Drive Management",
         "autoUnmountOnBattery"                                 : "Unmount external drives when switching to battery power",
         "autoMountOnAC"                                        : "Mount external drives when switching to AC power",
+        "colorfinale_tangent_label"							   : "Tangent: ColorFinale",
+        "plugin_group_colorfinale"							   : "ColorFinale",
     }
 }
