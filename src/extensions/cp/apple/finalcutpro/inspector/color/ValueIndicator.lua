@@ -13,6 +13,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                           = require("hs.logger").new("valueIndicator")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local prop                          = require("cp.prop")
 
@@ -142,7 +151,11 @@ ValueIndicator.value = prop.new(
 ---  * The `cp.apple.finalcutpro.inspector.color.ValueIndicator` object.
 function ValueIndicator:shiftValue(value)
     local currentValue = self:value()
-    self.value:set(currentValue - value)
+    if currentValue and value then
+        self.value:set(currentValue - value)
+    else
+        log.ef("Failed to shift value: %s", value)
+    end
     return self
 end
 

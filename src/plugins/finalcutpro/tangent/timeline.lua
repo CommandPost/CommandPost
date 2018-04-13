@@ -88,7 +88,9 @@ function mod.init(fcpGroup)
         :onGet(function()
             local appearance = fcp:timeline():toolbar():appearance()
             if appearance then
-                return appearance:show():zoomAmount():getValue()
+                if appearance:isShowing() then
+                    return appearance:show():zoomAmount():getValue()
+                end
             end
         end)
         :onChange(function(change)
