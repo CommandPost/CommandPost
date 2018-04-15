@@ -54,7 +54,7 @@ local mod = {}
 --- Whether or not Waveforms are enabled.
 mod.enabled = prop.new(
     function()
-        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE) == true or false
     end,
 
     function(value)
@@ -62,7 +62,7 @@ mod.enabled = prop.new(
         -- If Final Cut Pro is running...
         --------------------------------------------------------------------------------
         local running = fcp:isRunning()
-        if running and not dialog.displayYesNoQuestion(i18n("togglingWaveformsRestart") .. "\n\n" .. i18n("doYouWantToContinue")) then
+        if running and not dialog.displayYesNoQuestion(i18n("togglingWaveformsRestart"), i18n("doYouWantToContinue")) then
             return
         end
 

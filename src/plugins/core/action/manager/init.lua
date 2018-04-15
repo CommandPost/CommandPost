@@ -69,7 +69,7 @@ local format	    = string.format
 --  * A string
 local function freezeParams(params)
     local result = ""
-    if params then
+    if params and type(params) == "table" then
         for key,value in pairs(params) do
             if result ~= "" then
                 result = result .. "&"
@@ -79,6 +79,8 @@ local function freezeParams(params)
             end
             result = result .. key .. "=" .. value
         end
+    else
+        log.ef("Error in core.action.manager.freezeParams(). params: %s", params)
     end
     return result
 end
