@@ -48,26 +48,6 @@ local GROUP = "fcpx"
 --------------------------------------------------------------------------------
 local mod = {}
 
--- plugins.finalcutpro.timeline.pluginactions._generateActionId(pluginType, action) -> string
--- Function
--- Generates a Action ID.
---
--- Parameters:
---  * pluginType - Plugin Type as string
---  * action - Action Table
---
--- Returns:
---  * Action ID as string
-function mod._generateActionId(_, action)
-    local result = ""
-    if action then
-        if action.name then result = result .. action.name end
-        if action.theme then result = result .. action.theme end
-        if action.category then result = result .. action.category end
-    end
-    return result
-end
-
 --- plugins.finalcutpro.timeline.pluginactions.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects) -> module
 --- Function
 --- Initialise the module.
@@ -105,16 +85,20 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
             if list then
                 for _,plugin in ipairs(list) do
                     local subText = i18n(pluginType .. "_group")
+                    local category = "none"
                     if plugin.category then
                         subText = subText..": "..plugin.category
+                        category = plugin.category
                     end
+                    local theme = "none"
                     if plugin.theme then
+                        theme = plugin.theme
                         subText = subText.." ("..plugin.theme..")"
                     end
                     choices:add(plugin.name)
                         :subText(subText)
                         :params(plugin)
-                        :id(mod._generateActionId(pluginType, action))
+                        :id(GROUP .. "_" .. pluginType .. "_" .. plugin.name .. "_" .. category .. "_" .. theme)
                 end
             end
         end)
