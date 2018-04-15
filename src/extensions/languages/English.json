@@ -202,6 +202,7 @@
         "resetIncrementalNumber"                           : "Reset Incremental Number",
         "sendCrashData"                                    : "Send Crash Data (requires restart)",
         "browser_group"                                    : "Browser",
+        "browser"										   : "Browser",
         "core_quit_label"                                  : "Quit Command",
         "cpMoveAndResizeCornerNorthEast_title"             : "Move & Resize Focussed Window: Top Right Corner",
         "plugin_action_disable"                            : "Disable",

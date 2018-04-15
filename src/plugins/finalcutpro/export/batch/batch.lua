@@ -23,6 +23,7 @@ local log           = require("hs.logger").new("batch")
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local fnutils       = require("hs.fnutils")
+local image         = require("hs.image")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -34,6 +35,8 @@ local dialog        = require("cp.dialog")
 local fcp           = require("cp.apple.finalcutpro")
 local just          = require("cp.just")
 local tools         = require("cp.tools")
+local html          = require("cp.web.html")
+local ui            = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -99,7 +102,7 @@ local function selectShare(destinationPreset)
     end})
 end
 
--- sendClipsToCompressor(libraries, clips, exportPath, destinationPreset, replaceExisting) -> boolean
+-- plugins.finalcutpro.export.batch.sendClipsToCompressor(libraries, clips, exportPath, destinationPreset) -> boolean
 -- Function
 -- Send Clips to Compressor
 --
@@ -108,11 +111,10 @@ end
 --  * clips - table of selected Clips
 --  * exportPath - Export Path as `string`
 --  * destinationPreset - Destination Preset as `string`
---  * replaceExisting - `true` if you want to replace existing files otherwise `false`
 --
 -- Returns:
 --  * `true` if successful otherwise `false`
-local function sendClipsToCompressor(libraries, clips, exportPath, destinationPreset, replaceExisting)
+function mod.sendClipsToCompressor(libraries, clips, exportPath, destinationPreset)
 
     --------------------------------------------------------------------------------
     -- Launch Compressor:
@@ -168,7 +170,7 @@ local function sendClipsToCompressor(libraries, clips, exportPath, destinationPr
 
 end
 
--- batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting) -> boolean
+-- batchExportClips(libraries, clips, exportPath, destinationPreset) -> boolean
 -- Function
 -- Batch Export Clips
 --
@@ -177,12 +179,10 @@ end
 --  * clips - table of selected Clips
 --  * exportPath - Export Path as `string`
 --  * destinationPreset - Destination Preset as `string`
---  * replaceExisting - `true` if you want to replace existing files otherwise `false`
 --
 -- Returns:
 --  * `true` if successful otherwise `false`
-local function batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
-
+function mod.batchExportClips(libraries, clips, exportPath, destinationPreset)
     local errorFunction = " Error occurred in batchExportClips()."
     local firstTime = true
     for _,clip in ipairs(clips) do
@@ -351,7 +351,7 @@ local function batchExportClips(libraries, clips, exportPath, destinationPreset,
         --------------------------------------------------------------------------------
         while saveSheet:isShowing() do
             local replaceAlert = saveSheet:replaceAlert()
-            if replaceExisting and replaceAlert:isShowing() then
+            if mod.replaceExistingFiles() and replaceAlert:isShowing() then
                 replaceAlert:pressReplace()
             else
                 replaceAlert:pressCancel()
@@ -462,15 +462,9 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.batchExport()
 
-    --------------------------------------------------------------------------------
-    -- Reset Existing Clip Names:
-    --------------------------------------------------------------------------------
-    mod._existingClipNames = nil
-    mod._existingClipNames = {}
+end
 
-    --------------------------------------------------------------------------------
-    -- Set Custom Export Path (or Default to Desktop):
-    --------------------------------------------------------------------------------
+function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
     local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
     local exportPath = "~/Desktop"
@@ -483,10 +477,11 @@ function mod.batchExport()
             exportPath = NSNavLastRootDirectory
         end
     end
+    return exportPath
+end
 
-    --------------------------------------------------------------------------------
-    -- Destination Preset:
-    --------------------------------------------------------------------------------
+function mod.getDestinationPreset()
+
     local destinationPreset = config.get("batchExportDestinationPreset")
 
     if destinationPreset == i18n("sendToCompressor") then
@@ -504,13 +499,49 @@ function mod.batchExport()
         end})
 
         if defaultItem == nil then
-            dialog.displayErrorMessage(i18n("batchExportNoDestination"))
-            return false
+            --------------------------------------------------------------------------------
+            -- If that fails, get the first item on the list...
+            --------------------------------------------------------------------------------
+            local firstItem = fcp:menuBar():findMenuUI({"File", "Share", function(menuItem)
+                return true
+            end})
+            if firstItem and firstItem:attributeValue("AXTitle") then
+                destinationPreset = string.sub(firstItem:attributeValue("AXTitle"), 1, -4)
+            else
+                return false
+            end
         else
+            --------------------------------------------------------------------------------
             -- Trim the trailing '(default)…'
+            --------------------------------------------------------------------------------
             destinationPreset = defaultItem:attributeValue("AXTitle"):match("(.*) %([^()]+%)…$")
         end
 
+    end
+    return destinationPreset
+
+end
+
+function mod.batchExport()
+
+    --------------------------------------------------------------------------------
+    -- Reset Existing Clip Names:
+    --------------------------------------------------------------------------------
+    mod._existingClipNames = nil
+    mod._existingClipNames = {}
+
+    --------------------------------------------------------------------------------
+    -- Set Custom Export Path (or Default to Desktop):
+    --------------------------------------------------------------------------------
+    local exportPath = mod.getDestinationFolder()
+
+    --------------------------------------------------------------------------------
+    -- Destination Preset:
+    --------------------------------------------------------------------------------
+    local destinationPreset = mod.getDestinationPreset()
+    if not destinationPreset then
+        dialog.displayErrorMessage(i18n("batchExportNoDestination"))
+        return
     end
 
     --------------------------------------------------------------------------------
@@ -537,7 +568,7 @@ function mod.batchExport()
         clips = libraries:clips()
     end
 
-    local batchExportSucceeded
+
     if clips and #clips > 0 then
 
         --------------------------------------------------------------------------------
@@ -546,43 +577,52 @@ function mod.batchExport()
         local countText = " "
         if #clips > 1 then countText = " " .. tostring(#clips) .. " " end
         local replaceFilesMessage
-        if replaceExisting then
+        if mod.replaceExistingFiles() then
             replaceFilesMessage = i18n("batchExportReplaceYes")
         else
             replaceFilesMessage = i18n("batchExportReplaceNo")
         end
-        local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("continue") .. " " .. i18n("batchExport"), i18n("cancel")})
-        if result == nil then return end
 
-        --------------------------------------------------------------------------------
-        -- Export the clips:
-        --------------------------------------------------------------------------------
-        if destinationPreset == i18n("sendToCompressor") then
-            batchExportSucceeded = sendClipsToCompressor(libraries, clips, exportPath, destinationPreset, replaceExisting)
-        else
-            batchExportSucceeded = batchExportClips(libraries, clips, exportPath, destinationPreset, replaceExisting)
-        end
+        mod._libraries = libraries
+        mod._clips =  clips
+        mod._exportPath = exportPath
+        mod._destinationPreset = destinationPreset
+
+
+
+        mod._bmMan.show()
+
+        --local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("continue") .. " " .. i18n("batchExport"), i18n("cancel")})
+        --if result == nil then return end
+
 
     else
         --------------------------------------------------------------------------------
         -- No Clips are Available:
         --------------------------------------------------------------------------------
         dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
-        return false
+    end
+
+end
+
+function mod.performBatchExport()
+
+    --------------------------------------------------------------------------------
+    -- Export the clips:
+    --------------------------------------------------------------------------------
+    local result
+    if destinationPreset == i18n("sendToCompressor") then
+        result = mod.sendClipsToCompressor(libraries, clips, exportPath, destinationPreset)
+    else
+        result = mod.batchExportClips(libraries, clips, exportPath, destinationPreset)
     end
 
     --------------------------------------------------------------------------------
     -- Batch Export Complete:
     --------------------------------------------------------------------------------
-    if batchExportSucceeded then
+    if result then
         dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
-        return true
     end
-
-    --------------------------------------------------------------------------------
-    -- Shouldn't ever get to this point:
-    --------------------------------------------------------------------------------
-    return false
 
 end
 
@@ -595,9 +635,10 @@ local plugin = {
     id              = "finalcutpro.export.batch",
     group           = "finalcutpro",
     dependencies    = {
-        ["core.menu.manager"]               = "manager",
-        ["finalcutpro.menu.tools"]          = "prefs",
-        ["finalcutpro.commands"]            = "fcpxCmds",
+        ["core.menu.manager"]                   = "manager",
+        ["finalcutpro.menu.tools"]              = "prefs",
+        ["finalcutpro.commands"]                = "fcpxCmds",
+        ["finalcutpro.export.batch.manager"]    = "batchExportManager",
     }
 }
 
@@ -605,6 +646,57 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+    --------------------------------------------------------------------------------
+    -- Create the Batch Export window:
+    --------------------------------------------------------------------------------
+    mod._bmMan = deps.batchExportManager
+    local fcpPath = fcp:getPath() or ""
+
+    --------------------------------------------------------------------------------
+    -- Browser Panel:
+    --------------------------------------------------------------------------------
+    mod._browserPanel = mod._bmMan.addPanel({
+        priority    = 1,
+        id          = "browser",
+        label       = i18n("browser"),
+        image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerClipIcon.png")),
+        tooltip     = i18n("browser"),
+        height      = 480,
+    })
+
+        :addContent(1, ui.style([[
+
+        ]]))
+
+        :addHeading(1, "Batch Export from Browser")
+        :addParagraph(2, "Final Cut Pro will export all selected items in the browser to the following location:")
+        :addParagraph(3, html.br())
+        :addContent(4, function() return [[<p class="uiItem" style="font-weight:bold;">]] .. mod.getDestinationFolder() .."</p>"  end, false)
+        :addParagraph(5, html.br())
+        :addParagraph(6, "Using the following Destination Preset:")
+        :addParagraph(7, html.br())
+        :addContent(8, function() return [[<p class="uiItem" style="font-weight:bold;">]] .. mod.getDestinationPreset() .."</p>" end, false)
+
+
+
+    --------------------------------------------------------------------------------
+    -- Timeline Panel:
+    --------------------------------------------------------------------------------
+    mod._timelinePanel = mod._bmMan.addPanel({
+        priority    = 2,
+        id          = "timeline",
+        label       = i18n("timeline"),
+        image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
+        tooltip     = i18n("timeline"),
+        height      = 480,
+    })
+        :addHeading(1, "Batch Export from Timeline")
+
+
+
+
+
 
     --------------------------------------------------------------------------------
     -- Add items to Menubar:
