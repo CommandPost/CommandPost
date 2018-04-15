@@ -13,16 +13,19 @@
 ---
 --- ```
 --- 05:00:00: Test Keyword 1
---- 05:01:00:01: Test Keyword 2
+--- #05:01:00:01: Test Keyword 2
 --- *05:02:00: Test Keyword 3
 --- 05:02:15: Test Keyword 4
 --- *05:03:00: Test Keyword 5
 --- 05:03:15: Test Keyword 6
---- 05:04:00: Test Keyword 7
+--- #05:03:30: Test Keyword 7
+--- *05:04:00: Test Keyword 8
 --- ```
 ---
 --- If a * is place before the timecode, it will make the clip as a favourite
 --- between the current timecode value and the next timecode value.
+---
+--- If a # is place before the timecode, it will create a "To Do" marker.
 
 --------------------------------------------------------------------------------
 --
@@ -110,15 +113,10 @@ function mod.process()
 
     --------------------------------------------------------------------------------
     -- Process lines:
-    --
-    -- Example Format:
-    -- 05:00:00: Example Marker Description 1
-    -- 05:00:00:00: Example Marker Description 2
-    -- *05:00:00: Example Marker Description 3
-    -- *05:00:00:00: Example Marker Description 4
     --------------------------------------------------------------------------------
     for i, v in pairs(lines) do
 
+        local toDoMarker = false
         local timecode, description, favouriteStart, favouriteEnd
         if string.sub(v, 1, 1) == "*" and string.find(v, "*%d%d:%d%d:%d%d:%d%d:") then
             --------------------------------------------------------------------------------
@@ -134,6 +132,20 @@ function mod.process()
             timecode = string.sub(v, 2, 9) .. ":00"
             description = string.sub(v, 12)
             favouriteStart = timecode
+        elseif string.sub(v, 1, 1) == "#" and string.find(v, "#%d%d:%d%d:%d%d:%d%d:") then
+            --------------------------------------------------------------------------------
+            -- #05:00:00:00: Example Marker Description
+            --------------------------------------------------------------------------------
+            timecode = string.sub(v, 2, 12)
+            description = string.sub(v, 15)
+            toDoMarker = true
+        elseif string.sub(v, 1, 1) == "#" and string.find(v, "#%d%d:%d%d:%d%d:") then
+            --------------------------------------------------------------------------------
+            -- #05:00:00: Example Marker Description
+            --------------------------------------------------------------------------------
+            timecode = string.sub(v, 2, 9) .. ":00"
+            description = string.sub(v, 12)
+            toDoMarker = true
         elseif string.find(v, "%d%d:%d%d:%d%d:%d%d:") then
             --------------------------------------------------------------------------------
             -- 05:00:00:00: Example Marker Description
@@ -157,6 +169,10 @@ function mod.process()
             end
             return
         end
+
+        --------------------------------------------------------------------------------
+        -- If it's a favourite...
+        --------------------------------------------------------------------------------
         if favouriteStart then
             local nextLine = lines[i + 1]
             if nextLine then
@@ -192,6 +208,22 @@ function mod.process()
             dialog.displayErrorMessage(string.format("Could not add marker for line %s.", i))
             return
         end
+
+        --------------------------------------------------------------------------------
+        -- If it's a "To Do" Marker then change tabs:
+        --------------------------------------------------------------------------------
+        if toDoMarker then
+            markerPopover:toDo():press()
+            result = just.doUntil(function() return markerPopover:toDo():checked() end)
+            if not result then
+                dialog.displayErrorMessage(string.format("Could not check 'To Do' for line %s.", i))
+                return
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Set Name & Press "Done":
+        --------------------------------------------------------------------------------
         markerPopover:name():value(description)
         markerPopover:hide()
 

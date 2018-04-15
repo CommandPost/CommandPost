@@ -52,7 +52,7 @@ local BrowserMarkerPopover = {}
 --- Returns:
 ---  * `true` if the `element` is the Browser Marker Popover otherwise `false`
 function BrowserMarkerPopover.matches(element)
-    return element and element:attributeValue("AXRole") == "AXPopover" and element:attributeValueCount("AXChildren") == 5
+    return element and element:attributeValue("AXRole") == "AXPopover" and element:attributeValueCount("AXChildren") >= 5
 end
 
 --- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.new(parent) -> BrowserMarkerPopover
@@ -177,8 +177,8 @@ end
 function BrowserMarkerPopover:standard()
     if not self._standard then
         self._standard = RadioButton.new(self, function()
-            local radioButtons = axutils.childrenWithRole(self:UI(), "AXRadioButton")
-            return radioButtons and radioButtons[1]
+            local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
+            return radioGroup and axutils.childFromLeft(radioGroup, 1)
         end)
     end
     return self._standard
@@ -196,8 +196,8 @@ end
 function BrowserMarkerPopover:toDo()
     if not self._toDo then
         self._toDo = RadioButton.new(self, function()
-            local radioButtons = axutils.childrenWithRole(self:UI(), "AXRadioButton")
-            return radioButtons and radioButtons[2]
+            local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
+            return radioGroup and axutils.childFromLeft(radioGroup, 2)
         end)
     end
     return self._toDo
@@ -215,8 +215,8 @@ end
 function BrowserMarkerPopover:chapter()
     if not self._chapter then
         self._chapter = RadioButton.new(self, function()
-            local radioButtons = axutils.childrenWithRole(self:UI(), "AXRadioButton")
-            return radioButtons and radioButtons[3]
+            local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
+            return radioGroup and axutils.childFromLeft(radioGroup, 3)
         end)
     end
     return self._chapter
@@ -291,8 +291,7 @@ end
 function BrowserMarkerPopover:name()
     if not self._name then
         self._name = TextField.new(self, function()
-            local checkbox = axutils.childrenWithRole(self:UI(), "AXTextField")
-            return checkbox and checkbox[1]
+            return axutils.childWithRole(self:UI(), "AXTextField")
         end)
     end
     return self._name
