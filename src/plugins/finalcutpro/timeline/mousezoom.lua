@@ -218,7 +218,7 @@ function mod.findMagicMouses()
                     selectedDevice:details().sensorSurfaceDimensions.h == 9056 and
                     selectedDevice:details().sensorSurfaceDimensions.w == 5152 and
                     selectedDevice:details().supportsForce == false then
-                        log.df("Found a first generation Magic Mouse with ID: %s", id)
+                        --log.df("Found a first generation Magic Mouse with ID: %s", id)
                         mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
                         mod.foundMagicMouse = true
                     else
@@ -227,7 +227,7 @@ function mod.findMagicMouses()
                         --------------------------------------------------------------------------------
                         local selectedProductName = selectedDevice:details().productName
                         if selectedProductName == "Magic Mouse 2" then
-                            log.df("Found a second generation Magic Mouse with ID: %s", id)
+                            --log.df("Found a second generation Magic Mouse with ID: %s", id)
                             mod.magicMouseIDs[#mod.magicMouseIDs + 1] = id
                             mod.foundMagicMouse = true
                         end
@@ -425,7 +425,7 @@ function mod.start()
     --------------------------------------------------------------------------------
     mod.distributedObserver = distributednotifications.new(function(name)
         if name == "com.apple.MultitouchSupport.HID.DeviceAdded" then
-            log.df("New Multi-touch Device Detected. Re-scanning...")
+            --log.df("New Multi-touch Device Detected. Re-scanning...")
             mod.stop()
             mod.update()
         end
