@@ -97,16 +97,16 @@ function mod.stop()
     end
 end
 
---- plugins.core.webapp.copyLinkToClipboard() -> None
+--- plugins.core.webapp.copyLinkToPasteboard() -> None
 --- Function
---- Copies the Hostname to the Clipboard.
+--- Copies the Hostname to the Pasteboard.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * None
-function mod.copyLinkToClipboard()
+function mod.copyLinkToPasteboard()
     pasteboard.setContents(mod.hostname)
 end
 
@@ -196,8 +196,8 @@ function plugin.init(deps, env)
         :addParagraph(45, mod.hostname)
         :addButton(50,
             {
-                label = "Copy Link to Clipboard",
-                onclick = mod.copyLinkToClipboard
+                label = "Copy Link to Pasteboard",
+                onclick = mod.copyLinkToPasteboard
             }
         )
 

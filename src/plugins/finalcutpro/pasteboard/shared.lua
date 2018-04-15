@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---             S H A R E D    C L I P B O A R D    P L U G I N                --
+--              S H A R E D    P A S T E B O A R D    P L U G I N             --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.clipboard.shared ===
+--- === plugins.finalcutpro.pasteboard.shared ===
 ---
---- Shared Clipboard Plugin.
+--- Shared Pasteboard Plugin.
 
 --------------------------------------------------------------------------------
 --
@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                                       = require("hs.logger").new("sharedClipboard")
+local log                                       = require("hs.logger").new("sharedPasteboard")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -41,7 +41,7 @@ local tools                                     = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local TOOLS_PRIORITY        = 2000
-local HISTORY_EXTENSION     = ".sharedClipboard"
+local HISTORY_EXTENSION     = ".sharedPasteboard"
 
 --------------------------------------------------------------------------------
 --
@@ -50,37 +50,37 @@ local HISTORY_EXTENSION     = ".sharedClipboard"
 --------------------------------------------------------------------------------
 local mod = {}
 
--- plugins.finalcutpro.clipboard.shared._hostname -> string
+-- plugins.finalcutpro.pasteboard.shared._hostname -> string
 -- Variable
 -- The hostname.
 mod._hostname = host.localizedName()
 
--- plugins.finalcutpro.clipboard.shared.maxHistory -> number
+-- plugins.finalcutpro.pasteboard.shared.maxHistory -> number
 -- Variable
--- The maximum number of items in the shared Clipboard History.
+-- The maximum number of items in the shared Pasteboard History.
 mod.maxHistory = 5
 
---- plugins.finalcutpro.clipboard.shared.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.pasteboard.shared.enabled <cp.prop: boolean>
 --- Field
---- Gets whether or not the shared clipboard is enabled as a boolean.
-mod.enabled = config.prop("enabledShardClipboard", false)
+--- Gets whether or not the shared pasteboard is enabled as a boolean.
+mod.enabled = config.prop("enabledShardPasteboard", false)
 
---- plugins.finalcutpro.clipboard.shared.getRootPath() -> string
+--- plugins.finalcutpro.pasteboard.shared.getRootPath() -> string
 --- Function
---- Get shared clipboard root path.
+--- Get shared pasteboard root path.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * Shared Clipboard Path as string.
+---  * Shared Pasteboard Path as string.
 function mod.getRootPath()
-    return config.get("sharedClipboardPath", nil)
+    return config.get("sharedPasteboardPath", nil)
 end
 
---- plugins.finalcutpro.clipboard.shared.setRootPath(path) -> none
+--- plugins.finalcutpro.pasteboard.shared.setRootPath(path) -> none
 --- Function
---- Sets the shared clipboard root path.
+--- Sets the shared pasteboard root path.
 ---
 --- Parameters:
 ---  * path - The path you want to set as a string.
@@ -88,10 +88,10 @@ end
 --- Returns:
 ---  * None
 function mod.setRootPath(path)
-    config.set("sharedClipboardPath", path)
+    config.set("sharedPasteboardPath", path)
 end
 
---- plugins.finalcutpro.clipboard.shared.validRootPath() -> boolean
+--- plugins.finalcutpro.pasteboard.shared.validRootPath() -> boolean
 --- Function
 --- Gets whether or not the current root path exists.
 ---
@@ -116,10 +116,10 @@ end
 --  * None
 local function watchUpdate(data, name)
     if name then
-        log.df("Clipboard updated. Adding '%s' to shared history.", name)
+        log.df("Pasteboard updated. Adding '%s' to shared history.", name)
 
-        local sharedClipboardPath = mod.getRootPath()
-        if sharedClipboardPath ~= nil then
+        local sharedPasteboardPath = mod.getRootPath()
+        if sharedPasteboardPath ~= nil then
 
             local folderName
             if mod._overrideFolder ~= nil then
@@ -158,9 +158,9 @@ local function watchUpdate(data, name)
     end
 end
 
---- plugins.finalcutpro.clipboard.shared.update() -> none
+--- plugins.finalcutpro.pasteboard.shared.update() -> none
 --- Function
---- Starts or stops the Shared Clipboard watcher.
+--- Starts or stops the Shared Pasteboard watcher.
 ---
 --- Parameters:
 ---  * None
@@ -171,7 +171,7 @@ function mod.update()
     if mod.enabled() then
         if not mod.validRootPath() then
             -- Assign a new root path:
-            local result = dialog.displayChooseFolder(i18n("sharedClipboardRootFolder"))
+            local result = dialog.displayChooseFolder(i18n("sharedPasteboardRootFolder"))
             if result then
                 mod.setRootPath(result)
             else
@@ -193,7 +193,7 @@ function mod.update()
     end
 end
 
---- plugins.finalcutpro.clipboard.shared.update() -> table
+--- plugins.finalcutpro.pasteboard.shared.update() -> table
 --- Function
 --- Returns the list of folder names as an array of strings.
 ---
@@ -222,7 +222,7 @@ function mod.getFolderNames()
     return folders
 end
 
---- plugins.finalcutpro.clipboard.shared.getLocalFolderName() -> string
+--- plugins.finalcutpro.pasteboard.shared.getLocalFolderName() -> string
 --- Function
 --- Gets the local folder name.
 ---
@@ -235,7 +235,7 @@ function mod.getLocalFolderName()
     return mod._hostname
 end
 
---- plugins.finalcutpro.clipboard.shared.overrideNextFolderName(overrideFolder) -> none
+--- plugins.finalcutpro.pasteboard.shared.overrideNextFolderName(overrideFolder) -> none
 --- Function
 --- Overrides the folder name for the next clip which is copied from Final Cut Pro to the
 --- specified value. Once the override has been used, the standard folder name via
@@ -250,7 +250,7 @@ function mod.overrideNextFolderName(overrideFolder)
     mod._overrideFolder = overrideFolder
 end
 
---- plugins.finalcutpro.clipboard.shared.copyWithCustomClipName() -> None
+--- plugins.finalcutpro.pasteboard.shared.copyWithCustomClipName() -> None
 --- Function
 --- Triggers a copy with custom clip name action.
 ---
@@ -269,7 +269,7 @@ function mod.copyWithCustomClipName()
     end
 end
 
---- plugins.finalcutpro.clipboard.shared.getHistoryPath(folderName, fileExtension) -> string
+--- plugins.finalcutpro.pasteboard.shared.getHistoryPath(folderName, fileExtension) -> string
 --- Function
 --- Gets the History Path.
 ---
@@ -284,7 +284,7 @@ function mod.getHistoryPath(folderName, fileExtension)
     return mod.getRootPath() .. folderName .. fileExtension
 end
 
---- plugins.finalcutpro.clipboard.shared.getHistory(folderName) -> table
+--- plugins.finalcutpro.pasteboard.shared.getHistory(folderName) -> table
 --- Function
 --- Gets the history for a supplied folder name.
 ---
@@ -306,7 +306,7 @@ function mod.getHistory(folderName)
     return history
 end
 
---- plugins.finalcutpro.clipboard.shared.setHistory(folderName, history) -> boolean
+--- plugins.finalcutpro.pasteboard.shared.setHistory(folderName, history) -> boolean
 --- Function
 --- Sets the history.
 ---
@@ -334,7 +334,7 @@ function mod.setHistory(folderName, history)
     return false
 end
 
---- plugins.finalcutpro.clipboard.shared.setHistory(folderName, history) -> none
+--- plugins.finalcutpro.pasteboard.shared.setHistory(folderName, history) -> none
 --- Function
 --- Clears the history.
 ---
@@ -347,7 +347,7 @@ function mod.clearHistory(folderName)
     mod.setHistory(folderName, nil)
 end
 
---- plugins.finalcutpro.clipboard.shared.copyWithCustomClipNameAndFolder() -> none
+--- plugins.finalcutpro.pasteboard.shared.copyWithCustomClipNameAndFolder() -> none
 --- Function
 --- Copy with Custom Label & Folder.
 ---
@@ -371,7 +371,7 @@ function mod.copyWithCustomClipNameAndFolder()
     end
 end
 
---- plugins.finalcutpro.clipboard.shared.pasteHistoryItem(folderName, index) -> none
+--- plugins.finalcutpro.pasteboard.shared.pasteHistoryItem(folderName, index) -> none
 --- Function
 --- Paste History Item.
 ---
@@ -392,7 +392,7 @@ function mod.pasteHistoryItem(folderName, index)
             log.w("Unable to decode the item data for '%s' at %d.", folderName, index)
         end
         --------------------------------------------------------------------------------
-        -- Put item back in the clipboard quietly:
+        -- Put item back in the pasteboard quietly:
         --------------------------------------------------------------------------------
         mod._manager.writeFCPXData(data, true)
 
@@ -403,28 +403,28 @@ function mod.pasteHistoryItem(folderName, index)
         if fcp:performShortcut("Paste") then
             return true
         else
-            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in clipboard.history.pasteHistoryItem().")
+            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.pasteHistoryItem().")
         end
     end
     return false
 end
 
---- plugins.finalcutpro.clipboard.shared.init() -> sharedClipboard
+--- plugins.finalcutpro.pasteboard.shared.init() -> sharedPasteboard
 --- Function
 --- Initialises the module.
 ---
 --- Parameters:
----  * manager - The clipboard manager
+---  * manager - The pasteboard manager
 ---
 --- Returns:
----  * The sharedClipboard object
+---  * The sharedPasteboard object
 function mod.init(manager)
     mod._manager = manager
 
     local setEnabledValue = false
     if mod.enabled() then
         if not mod.validRootPath() then
-            local result = dialog.displayMessage(i18n("sharedClipboardPathMissing"), {"Yes", "No"})
+            local result = dialog.displayMessage(i18n("sharedPasteboardPathMissing"), {"Yes", "No"})
             if result == "Yes" then
                 setEnabledValue = true
             end
@@ -439,26 +439,26 @@ function mod.init(manager)
     return mod
 end
 
---- plugins.finalcutpro.clipboard.shared.generateSharedClipboardMenu() -> table
+--- plugins.finalcutpro.pasteboard.shared.generateSharedPasteboardMenu() -> table
 --- Function
---- Generates the shared clipboard menu.
+--- Generates the shared pasteboard menu.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The shared clipboard menu as a table.
-function mod.generateSharedClipboardMenu()
+---  * The shared pasteboard menu as a table.
+function mod.generateSharedPasteboardMenu()
     local folderItems = {}
     if mod.enabled() and mod.validRootPath() then
         local fcpxRunning = fcp:isRunning()
 
-        local sharedClipboardFolderModified = fs.attributes(mod.getRootPath(), "modification")
+        local sharedPasteboardFolderModified = fs.attributes(mod.getRootPath(), "modification")
         local folderNames
-        if sharedClipboardFolderModified ~= mod._sharedClipboardFolderModified or mod._folderNames == nil then
+        if sharedPasteboardFolderModified ~= mod._sharedPasteboardFolderModified or mod._folderNames == nil then
             folderNames = mod.getFolderNames()
             mod._folderNames = folderNames
-            mod._sharedClipboardFolderModified = sharedClipboardFolderModified
+            mod._sharedPasteboardFolderModified = sharedPasteboardFolderModified
             --log.df("Creating Folder Names Cache")
         else
             folderNames = mod._folderNames
@@ -490,14 +490,14 @@ function mod.generateSharedClipboardMenu()
                         table.insert(historyItems, {title = item.name, fn = function() mod.pasteHistoryItem(folder, i) end, disabled = not fcpxRunning})
                     end
                     table.insert(historyItems, { title = "-" })
-                    table.insert(historyItems, { title = i18n("clearSharedClipboard"), fn = function() mod.clearHistory(folder) end })
+                    table.insert(historyItems, { title = i18n("clearSharedPasteboard"), fn = function() mod.clearHistory(folder) end })
                 else
-                    table.insert(historyItems, { title = i18n("emptySharedClipboard"), disabled = true })
+                    table.insert(historyItems, { title = i18n("emptySharedPasteboard"), disabled = true })
                 end
                 table.insert(folderItems, { title = folder, menu = historyItems })
             end
         else
-            table.insert(folderItems, { title = i18n("emptySharedClipboard"), disabled = true })
+            table.insert(folderItems, { title = i18n("emptySharedPasteboard"), disabled = true })
         end
     end
     return folderItems
@@ -509,12 +509,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.clipboard.shared",
+    id              = "finalcutpro.pasteboard.shared",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.clipboard.manager"]   = "manager",
+        ["finalcutpro.pasteboard.manager"]   = "manager",
         ["finalcutpro.commands"]            = "fcpxCmds",
-        ["finalcutpro.menu.clipboard"]      = "menu",
+        ["finalcutpro.menu.pasteboard"]      = "menu",
     }
 }
 
@@ -531,18 +531,18 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Generate Menu Cache:
     --------------------------------------------------------------------------------
-    mod.generateSharedClipboardMenu()
+    mod.generateSharedPasteboardMenu()
 
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
     deps.menu
-      :addMenu(TOOLS_PRIORITY, function() return i18n("sharedClipboardHistory") end)
+      :addMenu(TOOLS_PRIORITY, function() return i18n("sharedPasteboardHistory") end)
       :addItem(1000, function()
-          return { title = i18n("enableSharedClipboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
+          return { title = i18n("enableSharedPasteboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }
       end)
       :addSeparator(2000)
-      :addItems(3000, mod.generateSharedClipboardMenu)
+      :addItems(3000, mod.generateSharedPasteboardMenu)
 
     --------------------------------------------------------------------------------
     -- Commands:

@@ -102,7 +102,7 @@ function plist.binaryToTable(binaryData)
     -- Define Temporary File:
     local plistFileName	= os.tmpname()
 
-    -- Write Clipboard Data to Temporary File:
+    -- Write Pasteboard Data to Temporary File:
     local plistFile = io.open(plistFileName, "wb")
     plistFile:write(binaryData)
     plistFile:close()

@@ -158,12 +158,12 @@ function mod.listFilesMenu()
 
         if emptySharedXMLFiles then
             --------------------------------------------------------------------------------
-            -- Nothing in the Shared Clipboard:
+            -- Nothing in the Shared Pasteboard:
             --------------------------------------------------------------------------------
             table.insert(menu, { title = "Empty", disabled = true })
         else
             --------------------------------------------------------------------------------
-            -- Something in the Shared Clipboard:
+            -- Something in the Shared Pasteboard:
             --------------------------------------------------------------------------------
             table.insert(menu, { title = "-" })
             table.insert(menu, { title = "Clear Shared XML Files", fn = mod.clearSharedFiles })

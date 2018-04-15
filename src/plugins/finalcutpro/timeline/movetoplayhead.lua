@@ -47,19 +47,19 @@ local mod = {}
 ---  * `true` if successful otherwise `false`
 function mod.moveToPlayhead()
 
-    local clipboardManager = mod.clipboardManager
+    local pasteboardManager = mod.pasteboardManager
 
-    clipboardManager.stopWatching()
+    pasteboardManager.stopWatching()
 
     if not fcp:performShortcut("Cut") then
         log.ef("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
-        timer.doAfter(2, function() clipboardManager.startWatching() end)
+        timer.doAfter(2, function() pasteboardManager.startWatching() end)
         return false
     end
 
     if not fcp:performShortcut("Paste") then
         log.ef("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
-        timer.doAfter(2, function() clipboardManager.startWatching() end)
+        timer.doAfter(2, function() pasteboardManager.startWatching() end)
         return false
     end
 
@@ -77,7 +77,7 @@ local plugin = {
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.commands"]			= "fcpxCmds",
-        ["finalcutpro.clipboard.manager"]	= "clipboardManager",
+        ["finalcutpro.pasteboard.manager"]	= "pasteboardManager",
     }
 }
 
@@ -89,7 +89,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Link to dependancies:
     --------------------------------------------------------------------------------
-    mod.clipboardManager = deps.clipboardManager
+    mod.pasteboardManager = deps.pasteboardManager
 
     --------------------------------------------------------------------------------
     -- Setup Command:

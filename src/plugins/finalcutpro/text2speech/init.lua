@@ -362,16 +362,16 @@ function mod._completeProcess()
     end
 
     --------------------------------------------------------------------------------
-    -- Temporarily stop the Clipboard Watcher:
+    -- Temporarily stop the Pasteboard Watcher:
     --------------------------------------------------------------------------------
-    if mod.clipboardManager then
-        mod.clipboardManager.stopWatching()
+    if mod.pasteboardManager then
+        mod.pasteboardManager.stopWatching()
     end
 
     --------------------------------------------------------------------------------
-    -- Save current Clipboard Content:
+    -- Save current Pasteboard Content:
     --------------------------------------------------------------------------------
-    local originalClipboard = pasteboard.readAllData()
+    local originalPasteboard = pasteboard.readAllData()
 
     --------------------------------------------------------------------------------
     -- Write URL to Pasteboard:
@@ -384,7 +384,7 @@ function mod._completeProcess()
     end
 
     --------------------------------------------------------------------------------
-    -- Delay things until the data is actually successfully on the Clipboard:
+    -- Delay things until the data is actually successfully on the Pasteboard:
     --------------------------------------------------------------------------------
     local pasteboardCheckResult = just.doUntil(function()
         local pasteboardCheck = pasteboard.readAllData()
@@ -395,7 +395,7 @@ function mod._completeProcess()
         end
     end, 0.5)
     if not pasteboardCheckResult then
-        dialog.displayErrorMessage("The URL on the clipboard was not the same as what we wrote to the Pasteboard.")
+        dialog.displayErrorMessage("The URL on the pasteboard was not the same as what we wrote to the Pasteboard.")
         return nil
     end
 
@@ -638,12 +638,12 @@ function mod._completeProcess()
     end
 
     --------------------------------------------------------------------------------
-    -- Restore original Clipboard Content:
+    -- Restore original Pasteboard Content:
     --------------------------------------------------------------------------------
     timer.doAfter(2, function()
-        pasteboard.writeAllData(originalClipboard)
-        if mod.clipboardManager then
-            mod.clipboardManager.startWatching()
+        pasteboard.writeAllData(originalPasteboard)
+        if mod.pasteboardManager then
+            mod.pasteboardManager.startWatching()
         end
     end)
 
@@ -922,23 +922,23 @@ function mod.show()
 
 end
 
---- plugins.finalcutpro.text2speech.insertFromClipboard() -> none
+--- plugins.finalcutpro.text2speech.insertFromPasteboard() -> none
 --- Function
---- Inserts Text to Speech by reading the Clipboard.
+--- Inserts Text to Speech by reading the Pasteboard.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * None
-function mod.insertFromClipboard()
-    local clipboard = pasteboard.readString()
-    if clipboard then
+function mod.insertFromPasteboard()
+    local pasteboardString = pasteboard.readString()
+    if pasteboardString then
         --------------------------------------------------------------------------------
         -- Build table:
         --------------------------------------------------------------------------------
         local result = {}
-        result.text = clipboard
+        result.text = pasteboardString
 
         --------------------------------------------------------------------------------
         -- Add to history:
@@ -964,7 +964,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]            = "fcpxCmds",
-        ["finalcutpro.clipboard.manager"]   = "clipboardManager",
+        ["finalcutpro.pasteboard.manager"]   = "pasteboardManager",
     }
 }
 
@@ -976,7 +976,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Define Plugins:
     --------------------------------------------------------------------------------
-    mod.clipboardManager = deps.clipboardManager
+    mod.pasteboardManager = deps.pasteboardManager
 
     --------------------------------------------------------------------------------
     -- Commands:
@@ -985,8 +985,8 @@ function plugin.init(deps)
         :whenActivated(mod.show)
         :activatedBy():cmd():option():ctrl("u")
 
-    deps.fcpxCmds:add("cpText2SpeechFromClipboard")
-        :whenActivated(mod.insertFromClipboard)
+    deps.fcpxCmds:add("cpText2SpeechFromPasteboard")
+        :whenActivated(mod.insertFromPasteboard)
         :activatedBy():cmd():option():ctrl():shift("u")
 
 

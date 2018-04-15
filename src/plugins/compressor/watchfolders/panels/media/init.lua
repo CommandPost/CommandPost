@@ -761,7 +761,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Define Plugins:
     --------------------------------------------------------------------------------
-    mod.clipboardManager = deps.clipboardManager
+    mod.pasteboardManager = deps.pasteboardManager
     mod.manager = deps.manager
 
     --------------------------------------------------------------------------------
@@ -829,7 +829,7 @@ local plugin = {
     group = "compressor",
     dependencies = {
         ["core.watchfolders.manager"]       = "manager",
-        ["finalcutpro.clipboard.manager"]   = "clipboardManager",
+        ["finalcutpro.pasteboard.manager"]   = "pasteboardManager",
     }
 }
 

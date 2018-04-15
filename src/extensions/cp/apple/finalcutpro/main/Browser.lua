@@ -35,6 +35,7 @@ local MediaBrowser                      = require("cp.apple.finalcutpro.main.Med
 local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
 local prop                              = require("cp.prop")
 local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
+local BrowserMarkerPopover              = require("cp.apple.finalcutpro.main.BrowserMarkerPopover")
 
 --------------------------------------------------------------------------------
 --
@@ -258,6 +259,14 @@ function Browser:generators()
         self._generators = GeneratorsBrowser.new(self)
     end
     return self._generators
+end
+
+
+function Browser:markerPopover()
+    if not self._browserMarkerPopover then
+        self._browserMarkerPopover = BrowserMarkerPopover.new(self)
+    end
+    return self._browserMarkerPopover
 end
 
 -- TODO: Add documentation

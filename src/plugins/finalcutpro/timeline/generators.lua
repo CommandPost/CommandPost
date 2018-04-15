@@ -94,24 +94,24 @@ function mod.apply(action)
     if mod._cache()[cacheID] then
 
         --------------------------------------------------------------------------------
-        -- Stop Watching Clipboard:
+        -- Stop Watching Pasteboard:
         --------------------------------------------------------------------------------
-        local clipboard = mod.clipboardManager
-        clipboard.stopWatching()
+        local pasteboard = mod.pasteboardManager
+        pasteboard.stopWatching()
 
         --------------------------------------------------------------------------------
-        -- Save Current Clipboard Contents for later:
+        -- Save Current Pasteboard Contents for later:
         --------------------------------------------------------------------------------
-        local originalClipboard = clipboard.readFCPXData()
+        local originalPasteboard = pasteboard.readFCPXData()
 
         --------------------------------------------------------------------------------
-        -- Add Cached Item to Clipboard:
+        -- Add Cached Item to Pasteboard:
         --------------------------------------------------------------------------------
         local cachedItem = mod._cache()[cacheID]
-        local result = clipboard.writeFCPXData(cachedItem)
+        local result = pasteboard.writeFCPXData(cachedItem)
         if not result then
             dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
-            clipboard.startWatching()
+            pasteboard.startWatching()
             return false
         end
 
@@ -122,7 +122,7 @@ function mod.apply(action)
         timeline:show()
         if not timeline:isShowing() then
             dialog.displayErrorMessage("Unable to display the Timeline.")
-            clipboard.startWatching()
+            pasteboard.startWatching()
             return false
         end
 
@@ -134,31 +134,31 @@ function mod.apply(action)
             menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
         else
             dialog.displayErrorMessage("Unable to paste Generator.")
-            clipboard.startWatching()
+            pasteboard.startWatching()
             return false
         end
 
         --------------------------------------------------------------------------------
-        -- Restore Clipboard:
+        -- Restore Pasteboard:
         --------------------------------------------------------------------------------
         timer.doAfter(1, function()
 
             --------------------------------------------------------------------------------
-            -- Restore Original Clipboard Contents:
+            -- Restore Original Pasteboard Contents:
             --------------------------------------------------------------------------------
-            if originalClipboard ~= nil then
-                local cbResult = clipboard.writeFCPXData(originalClipboard)
+            if originalPasteboard ~= nil then
+                local cbResult = pasteboard.writeFCPXData(originalPasteboard)
                 if not cbResult then
-                    dialog.displayErrorMessage("Failed to restore original Clipboard item.")
-                    clipboard.startWatching()
+                    dialog.displayErrorMessage("Failed to restore original Pasteboard item.")
+                    pasteboard.startWatching()
                     return false
                 end
             end
 
             --------------------------------------------------------------------------------
-            -- Start watching the Clipboard again:
+            -- Start watching the Pasteboard again:
             --------------------------------------------------------------------------------
-            clipboard.startWatching()
+            pasteboard.startWatching()
 
         end)
 
@@ -244,36 +244,36 @@ function mod.apply(action)
     whichItem:setAttributeValue("AXFocused", true)
 
     --------------------------------------------------------------------------------
-    -- Stop Watching Clipboard:
+    -- Stop Watching Pasteboard:
     --------------------------------------------------------------------------------
-    local clipboard = mod.clipboardManager
-    clipboard.stopWatching()
+    local pasteboard = mod.pasteboardManager
+    pasteboard.stopWatching()
 
     --------------------------------------------------------------------------------
-    -- Save Current Clipboard Contents for later:
+    -- Save Current Pasteboard Contents for later:
     --------------------------------------------------------------------------------
-    local originalClipboard = clipboard.readFCPXData()
+    local originalPasteboard = pasteboard.readFCPXData()
 
     --------------------------------------------------------------------------------
     -- Trigger 'Copy' from Menubar:
     --------------------------------------------------------------------------------
     local menuBar = fcp:menuBar()
     menuBar:selectMenu({"Edit", "Copy"})
-    local newClipboard = nil
+    local newPasteboard = nil
     just.doUntil(function()
 
-        newClipboard = clipboard.readFCPXData()
+        newPasteboard = pasteboard.readFCPXData()
 
-        if newClipboard == nil then
+        if newPasteboard == nil then
             menuBar:selectMenu({"Edit", "Copy"})
             return false
         end
 
-        if originalClipboard == nil and newClipboard ~= nil then
+        if originalPasteboard == nil and newPasteboard ~= nil then
             return true
         end
 
-        if newClipboard ~= originalClipboard then
+        if newPasteboard ~= originalPasteboard then
             return true
         end
 
@@ -285,9 +285,9 @@ function mod.apply(action)
 
     end)
 
-    if newClipboard == nil then
+    if newPasteboard == nil then
         dialog.displayErrorMessage("Failed to copy Generator.")
-        clipboard.startWatching()
+        pasteboard.startWatching()
         return false
     end
 
@@ -295,7 +295,7 @@ function mod.apply(action)
     -- Cache the item for faster recall next time:
     --------------------------------------------------------------------------------
     local cache = mod._cache()
-    cache[cacheID] = newClipboard
+    cache[cacheID] = newPasteboard
     mod._cache(cache)
 
     --------------------------------------------------------------------------------
@@ -315,7 +315,7 @@ function mod.apply(action)
         menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
     else
         dialog.displayErrorMessage("Unable to paste Generator.")
-        clipboard.startWatching()
+        pasteboard.startWatching()
         return false
     end
 
@@ -328,26 +328,26 @@ function mod.apply(action)
     end)
 
     --------------------------------------------------------------------------------
-    -- Restore Clipboard:
+    -- Restore Pasteboard:
     --------------------------------------------------------------------------------
     timer.doAfter(1, function()
 
         --------------------------------------------------------------------------------
-        -- Restore Original Clipboard Contents:
+        -- Restore Original Pasteboard Contents:
         --------------------------------------------------------------------------------
-        if originalClipboard ~= nil then
-            local result = clipboard.writeFCPXData(originalClipboard)
+        if originalPasteboard ~= nil then
+            local result = pasteboard.writeFCPXData(originalPasteboard)
             if not result then
-                dialog.displayErrorMessage("Failed to restore original Clipboard item.")
-                clipboard.startWatching()
+                dialog.displayErrorMessage("Failed to restore original Pasteboard item.")
+                pasteboard.startWatching()
                 return false
             end
         end
 
         --------------------------------------------------------------------------------
-        -- Start watching Clipboard again:
+        -- Start watching Pasteboard again:
         --------------------------------------------------------------------------------
-        clipboard.startWatching()
+        pasteboard.startWatching()
     end)
 
     --------------------------------------------------------------------------------
@@ -365,7 +365,7 @@ local plugin = {
     id = "finalcutpro.timeline.generators",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.clipboard.manager"]               = "clipboardManager",
+        ["finalcutpro.pasteboard.manager"]               = "pasteboardManager",
     }
 }
 
@@ -373,7 +373,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    mod.clipboardManager = deps.clipboardManager
+    mod.pasteboardManager = deps.pasteboardManager
     return mod
 end
 

@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                    C L I P B O A R D     H I S T O R Y                     --
+--                     P A S T E B O A R D     H I S T O R Y                  --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.clipboard.history ===
+--- === plugins.finalcutpro.pasteboard.history ===
 ---
---- Clipboard History
+--- Pasteboard History
 
 --------------------------------------------------------------------------------
 --
@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                                   = require("hs.logger").new("clipboardHistory")
+local log                                   = require("hs.logger").new("pasteboardHistory")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -41,35 +41,35 @@ local OPTIONS_PRIORITY                      = 1000
 --------------------------------------------------------------------------------
 local mod = {}
 
--- plugins.finalcutpro.clipboard.history._historyMaximumSize -> number
+-- plugins.finalcutpro.pasteboard.history._historyMaximumSize -> number
 -- Variable
--- Maximum Size of Clipboard History
+-- Maximum Size of Pasteboard History
 mod._historyMaximumSize = 5
 
---- plugins.finalcutpro.clipboard.history.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.pasteboard.history.enabled <cp.prop: boolean>
 --- Field
---- Enable or disable the Clipboard History.
-mod.enabled = config.prop("enableClipboardHistory", DEFAULT_VALUE)
+--- Enable or disable the Pasteboard History.
+mod.enabled = config.prop("enablePasteboardHistory", DEFAULT_VALUE)
 
---- plugins.finalcutpro.clipboard.history.getHistory() -> table
+--- plugins.finalcutpro.pasteboard.history.getHistory() -> table
 --- Function
---- Gets the Clipboard History.
+--- Gets the Pasteboard History.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A table of the clipboard history.
+---  * A table of the Pasteboard history.
 function mod.getHistory()
     if not mod._history then
-        mod._history = config.get("clipboardHistory", {})
+        mod._history = config.get("pasteboardHistory", {})
     end
     return mod._history
 end
 
---- plugins.finalcutpro.clipboard.history.setHistory(history) -> none
+--- plugins.finalcutpro.pasteboard.history.setHistory(history) -> none
 --- Function
---- Sets the Clipboard History.
+--- Sets the Pasteboard History.
 ---
 --- Parameters:
 ---  * history - The history in a table.
@@ -78,12 +78,12 @@ end
 ---  * None
 function mod.setHistory(history)
     mod._history = history
-    config.set("clipboardHistory", history)
+    config.set("pasteboardHistory", history)
 end
 
---- plugins.finalcutpro.clipboard.history.clearHistory() -> none
+--- plugins.finalcutpro.pasteboard.history.clearHistory() -> none
 --- Function
---- Clears the Clipboard History.
+--- Clears the Pasteboard History.
 ---
 --- Parameters:
 ---  * None
@@ -94,9 +94,9 @@ function mod.clearHistory()
     mod.setHistory({})
 end
 
---- plugins.finalcutpro.clipboard.history.addHistoryItem(data, label) -> none
+--- plugins.finalcutpro.pasteboard.history.addHistoryItem(data, label) -> none
 --- Function
---- Adds an item to the clipboard history.
+--- Adds an item to the Pasteboard history.
 ---
 --- Parameters:
 ---  * None
@@ -116,12 +116,12 @@ function mod.addHistoryItem(data, label)
     mod.setHistory(history)
 end
 
---- plugins.finalcutpro.clipboard.history.pasteHistoryItem(index) -> none
+--- plugins.finalcutpro.pasteboard.history.pasteHistoryItem(index) -> none
 --- Function
---- Pastes a Clipboard History Item.
+--- Pastes a Pasteboard History Item.
 ---
 --- Parameters:
----  * index - The index of the clipboard history item.
+---  * index - The index of the Pasteboard history item.
 ---
 --- Returns:
 ---  * None
@@ -129,7 +129,7 @@ function mod.pasteHistoryItem(index)
     local item = mod.getHistory()[index]
     if item then
         --------------------------------------------------------------------------------
-        -- Put item back in the clipboard quietly.
+        -- Put item back in the Pasteboard quietly.
         --------------------------------------------------------------------------------
         mod._manager.writeFCPXData(item[1], true)
 
@@ -140,7 +140,7 @@ function mod.pasteHistoryItem(index)
         if fcp:performShortcut("Paste") then
             return true
         else
-            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in clipboard.history.pasteHistoryItem().")
+            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.pasteHistoryItem().")
         end
     end
     return false
@@ -148,24 +148,24 @@ end
 
 -- watchUpdate(data, name) -> none
 -- Function
--- Callback for when something is added to the clipboard.
+-- Callback for when something is added to the Pasteboard.
 --
 -- Parameters:
---  * data - The raw clipboard data
---  * name - The name of the clipboard data
+--  * data - The raw Pasteboard data
+--  * name - The name of the Pasteboard data
 --
 -- Returns:
 --  * None
 local function watchUpdate(data, name)
     if name then
-        --log.df("Clipboard updated. Adding '%s' to history.", name)
+        --log.df("Pasteboard updated. Adding '%s' to history.", name)
         mod.addHistoryItem(data, name)
     end
 end
 
---- plugins.finalcutpro.clipboard.history.update() -> none
+--- plugins.finalcutpro.pasteboard.history.update() -> none
 --- Function
---- Enable or disable the Clipboard History.
+--- Enable or disable the Pasteboard History.
 ---
 --- Parameters:
 ---  * None
@@ -187,15 +187,15 @@ function mod.update()
     end
 end
 
---- plugins.finalcutpro.clipboard.history.init(manager) -> Clipboard History Object
+--- plugins.finalcutpro.pasteboard.history.init(manager) -> Pasteboard History Object
 --- Function
 --- Initialises the module.
 ---
 --- Parameters:
----  * manager - The clipboard manager object.
+---  * manager - The Pasteboard manager object.
 ---
 --- Returns:
----  * Clipboard History Object
+---  * Pasteboard History Object
 function mod.init(manager)
     mod._manager = manager
     mod.update()
@@ -208,11 +208,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.clipboard.history",
+    id              = "finalcutpro.pasteboard.history",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.clipboard.manager"]   = "manager",
-        ["finalcutpro.menu.clipboard"]      = "menu",
+        ["finalcutpro.pasteboard.manager"]  = "manager",
+        ["finalcutpro.menu.pasteboard"]     = "menu",
 
     }
 }
@@ -230,9 +230,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("localClipboardHistory") end)
+    deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("localPasteboardHistory") end)
         :addItem(OPTIONS_PRIORITY, function()
-            return { title = i18n("enableClipboardHistory"),    fn = function()
+            return { title = i18n("enablePasteboardHistory"),    fn = function()
                 mod.enabled:toggle()
                 mod.update()
             end, checked = mod.enabled()}
@@ -249,9 +249,9 @@ function plugin.init(deps)
                         table.insert(historyItems, {title = item[2], fn = function() mod.pasteHistoryItem(i) end, disabled = not fcpxRunning})
                     end
                     table.insert(historyItems, { title = "-" })
-                    table.insert(historyItems, { title = i18n("clearClipboardHistory"), fn = mod.clearHistory })
+                    table.insert(historyItems, { title = i18n("clearPasteboardHistory"), fn = mod.clearHistory })
                 else
-                    table.insert(historyItems, { title = i18n("emptyClipboardHistory"), disabled = true })
+                    table.insert(historyItems, { title = i18n("emptyPasteboardHistory"), disabled = true })
                 end
             end
             return historyItems
