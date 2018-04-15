@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---              C L I P B O A R D   M A N A G E R    P L U G I N              --
+--               P A S T E B O A R D    M A N A G E R    P L U G I N          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.clipboard.manager ===
+--- === plugins.finalcutpro.pasteboard.manager ===
 ---
---- Clipboard Manager.
+--- Pasteboard Manager.
 
 --------------------------------------------------------------------------------
 --
@@ -41,7 +41,7 @@ local prop                                      = require("cp.prop")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local CLIPBOARD = protect({
+local PASTEBOARD = protect({
     --------------------------------------------------------------------------------
     -- FCPX Types:
     --------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ local CLIPBOARD = protect({
     TIMELINE_DISPLAY_NAME                       = "__timelineContainerClip",
 
     --------------------------------------------------------------------------------
-    -- The pasteboard/clipboard property containing the copied clips:
+    -- The pasteboard property containing the copied clips:
     --------------------------------------------------------------------------------
     PASTEBOARD_OBJECT                           = "ffpasteboardobject",
     UTI                                         = "com.apple.flexo.proFFPasteboardUTI"
@@ -68,40 +68,40 @@ local CLIPBOARD = protect({
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.clipboard.manager.excludedClassnames -> table
+--- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
 --- Variable
 --- Table of data we don't want to count when copying.
-mod.excludedClassnames = {CLIPBOARD.MARKER}
+mod.excludedClassnames = {PASTEBOARD.MARKER}
 
---- plugins.finalcutpro.clipboard.manager.watcherFrequency -> number
+--- plugins.finalcutpro.pasteboard.manager.watcherFrequency -> number
 --- Variable
---- The Clipboard Watcher Update frequency.
+--- The Pasteboard Watcher Update frequency.
 mod.watcherFrequency = 0.5
 
---- plugins.finalcutpro.clipboard.manager.excludedClassnames -> table
+--- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
 --- Variable
 --- Table of data we don't want to count when copying.
 mod._watchersCount                      = 0
 
---- plugins.finalcutpro.clipboard.manager.isTimelineClip(data) -> boolean
+--- plugins.finalcutpro.pasteboard.manager.isTimelineClip(data) -> boolean
 --- Function
 --- Is the data a timeline clip.
 ---
 --- Parameters:
----  * data - The clipboard data you want to check.
+---  * data - The pasteboard data you want to check.
 ---
 --- Returns:
 ---  * `true` if a timeline clip otherwise `false`.
 function mod.isTimelineClip(data)
-    return data.displayName == CLIPBOARD.TIMELINE_DISPLAY_NAME
+    return data.displayName == PASTEBOARD.TIMELINE_DISPLAY_NAME
 end
 
---- plugins.finalcutpro.clipboard.manager.processObject(data) -> string, number
+--- plugins.finalcutpro.pasteboard.manager.processObject(data) -> string, number
 --- Function
 --- Processes the provided data object, which should have a '$class' property.
 ---
 --- Parameters:
----  * data - The clipboard data you want to check.
+---  * data - The pasteboard data you want to check.
 ---
 --- Returns:
 ---  * The primary clip name as a string.
@@ -121,7 +121,7 @@ function mod.processObject(data)
     return nil, 0
 end
 
---- plugins.finalcutpro.clipboard.manager.isClassnameSupported(classname) -> boolean
+--- plugins.finalcutpro.pasteboard.manager.isClassnameSupported(classname) -> boolean
 --- Function
 --- Is the class name supported?
 ---
@@ -139,7 +139,7 @@ function mod.isClassnameSupported(classname)
     return true
 end
 
---- plugins.finalcutpro.clipboard.manager.processArray(data) -> string, number
+--- plugins.finalcutpro.pasteboard.manager.processArray(data) -> string, number
 --- Function
 --- Processes an 'array' table.
 ---
@@ -162,7 +162,7 @@ function mod.processArray(data)
     return name, count
 end
 
---- plugins.finalcutpro.clipboard.manager.supportsContainedItems(data) -> boolean
+--- plugins.finalcutpro.pasteboard.manager.supportsContainedItems(data) -> boolean
 --- Function
 --- Gets whether or not the data supports contained items.
 ---
@@ -173,10 +173,10 @@ end
 ---  * `true` if supported otherwise `false`.
 function mod.supportsContainedItems(data)
     local classname = mod.getClassname(data)
-    return data.containedItems and classname ~= CLIPBOARD.ANCHORED_COLLECTION
+    return data.containedItems and classname ~= PASTEBOARD.ANCHORED_COLLECTION
 end
 
---- plugins.finalcutpro.clipboard.manager.getClassname(data) -> string
+--- plugins.finalcutpro.pasteboard.manager.getClassname(data) -> string
 --- Function
 --- Gets a class anem from data
 ---
@@ -189,7 +189,7 @@ function mod.getClassname(data)
     return data["$class"]["$classname"]
 end
 
---- plugins.finalcutpro.clipboard.manager.processContent(data) -> string, number
+--- plugins.finalcutpro.pasteboard.manager.processContent(data) -> string, number
 --- Function
 --- Process objects which have a `displayName`, such as Compound Clips, Images, etc.
 ---
@@ -214,7 +214,7 @@ function mod.processContent(data)
     local displayName = data.displayName
     local count = displayName and 1 or 0
 
-    if mod.getClassname(data) == CLIPBOARD.GAP then
+    if mod.getClassname(data) == PASTEBOARD.GAP then
         displayName = nil
         count = 0
     end
@@ -239,7 +239,7 @@ function mod.processContent(data)
     end
 end
 
---- plugins.finalcutpro.clipboard.manager.processContent(fcpxData, default) -> string, number
+--- plugins.finalcutpro.pasteboard.manager.processContent(fcpxData, default) -> string, number
 --- Function
 --- Searches the Pasteboard binary plist data for the first clip name, and returns it.
 ---
@@ -271,7 +271,7 @@ function mod.findClipName(fcpxData, default)
     return nil
 end
 
---- plugins.finalcutpro.clipboard.manager.overrideNextClipName(overrideName) -> None
+--- plugins.finalcutpro.pasteboard.manager.overrideNextClipName(overrideName) -> None
 --- Function
 --- Overrides the name for the next clip which is copied from FCPX to the specified
 --- value. Once the override has been used, the standard clip name via
@@ -286,7 +286,7 @@ function mod.overrideNextClipName(overrideName)
     mod._overrideName = overrideName
 end
 
---- plugins.finalcutpro.clipboard.manager.copyWithCustomClipName() -> None
+--- plugins.finalcutpro.pasteboard.manager.copyWithCustomClipName() -> None
 --- Function
 --- Copy with custom label.
 ---
@@ -306,7 +306,7 @@ function mod.copyWithCustomClipName()
     end
 end
 
---- plugins.finalcutpro.clipboard.manager.copyWithCustomClipName() -> data | nil
+--- plugins.finalcutpro.pasteboard.manager.copyWithCustomClipName() -> data | nil
 --- Function
 --- Reads FCPX Data from the Pasteboard as a binary Plist, if present.
 ---
@@ -314,20 +314,20 @@ end
 ---  * None
 ---
 --- Returns:
----  * The clipboard data or `nil`.
+---  * The pasteboard data or `nil`.
 function mod.readFCPXData()
-    local clipboardContent = pasteboard.allContentTypes()
-    if clipboardContent ~= nil then
-        if clipboardContent[1] ~= nil then
-            if clipboardContent[1][1] == CLIPBOARD.UTI then
-                return pasteboard.readDataForUTI(CLIPBOARD.UTI)
+    local pasteboardContent = pasteboard.allContentTypes()
+    if pasteboardContent ~= nil then
+        if pasteboardContent[1] ~= nil then
+            if pasteboardContent[1][1] == PASTEBOARD.UTI then
+                return pasteboard.readDataForUTI(PASTEBOARD.UTI)
             end
         end
     end
     return nil
 end
 
---- plugins.finalcutpro.clipboard.manager.unarchiveFCPXData(fcpxData) -> data | nil
+--- plugins.finalcutpro.pasteboard.manager.unarchiveFCPXData(fcpxData) -> data | nil
 --- Function
 --- Unarchive Final Cut Pro data.
 ---
@@ -341,9 +341,9 @@ function mod.unarchiveFCPXData(fcpxData)
         fcpxData = mod.readFCPXData()
     end
 
-    local clipboardTable = plist.binaryToTable(fcpxData)
-    if clipboardTable then
-        local base64Data = clipboardTable[CLIPBOARD.PASTEBOARD_OBJECT]
+    local pasteboardTable = plist.binaryToTable(fcpxData)
+    if pasteboardTable then
+        local base64Data = pasteboardTable[PASTEBOARD.PASTEBOARD_OBJECT]
         if base64Data then
             local fcpxTable, errorMessage = plist.base64ToTable(base64Data)
             if fcpxTable then
@@ -353,11 +353,11 @@ function mod.unarchiveFCPXData(fcpxData)
             end
         end
     end
-    log.e("The clipboard does not contain any FCPX clip data.")
+    log.e("The pasteboard does not contain any FCPX clip data.")
     return nil
 end
 
---- plugins.finalcutpro.clipboard.manager.writeFCPXData(fcpxData, quiet) -> boolean
+--- plugins.finalcutpro.pasteboard.manager.writeFCPXData(fcpxData, quiet) -> boolean
 --- Function
 --- Write Final Cut Pro data to Pasteboard.
 ---
@@ -369,15 +369,15 @@ end
 ---  * `true` if the operation succeeded, otherwise `false` (which most likely means ownership of the pasteboard has changed).
 function mod.writeFCPXData(fcpxData, quiet)
     --------------------------------------------------------------------------------
-    -- Write data back to Clipboard:
+    -- Write data back to Pasteboard:
     --------------------------------------------------------------------------------
     if quiet then mod.stopWatching() end
-    local result = pasteboard.writeDataForUTI(CLIPBOARD.UTI, fcpxData)
+    local result = pasteboard.writeDataForUTI(PASTEBOARD.UTI, fcpxData)
     if quiet then mod.startWatching() end
     return result
 end
 
---- plugins.finalcutpro.clipboard.manager.watch(events) -> table
+--- plugins.finalcutpro.pasteboard.manager.watch(events) -> table
 --- Function
 --- Watch events.
 ---
@@ -404,7 +404,7 @@ function mod.watch(events)
     return {id=id}
 end
 
---- plugins.finalcutpro.clipboard.manager.unwatch(id) -> boolean
+--- plugins.finalcutpro.pasteboard.manager.unwatch(id) -> boolean
 --- Function
 --- Stop a watcher.
 ---
@@ -427,9 +427,9 @@ function mod.unwatch(id)
     return false
 end
 
---- plugins.finalcutpro.clipboard.manager.startWatching() -> None
+--- plugins.finalcutpro.pasteboard.manager.startWatching() -> None
 --- Function
---- Start Watching the Clipboard.
+--- Start Watching the Pasteboard.
 ---
 --- Parameters:
 ---  * None
@@ -441,7 +441,7 @@ function mod.startWatching()
         return
     end
 
-    --log.d("Starting Clipboard Watcher.")
+    --log.d("Starting Pasteboard Watcher.")
 
     if mod._timer then
         mod.stopWatching()
@@ -453,7 +453,7 @@ function mod.startWatching()
     mod._lastChange = pasteboard.changeCount()
 
     --------------------------------------------------------------------------------
-    -- Watch for Clipboard Changes:
+    -- Watch for Pasteboard Changes:
     --------------------------------------------------------------------------------
     mod._timer = timer.new(mod.watcherFrequency, function()
         if not mod._watchers then
@@ -464,7 +464,7 @@ function mod.startWatching()
 
         if (currentChange > mod._lastChange) then
             --------------------------------------------------------------------------------
-            -- Read Clipboard Data:
+            -- Read Pasteboard Data:
             --------------------------------------------------------------------------------
             local data = mod.readFCPXData()
 
@@ -495,12 +495,12 @@ function mod.startWatching()
     mod._timer:start()
 
     mod.watching:update()
-    --log.d("Started Clipboard Watcher")
+    --log.d("Started Pasteboard Watcher")
 end
 
---- plugins.finalcutpro.clipboard.manager.stopWatching() -> None
+--- plugins.finalcutpro.pasteboard.manager.stopWatching() -> None
 --- Function
---- Stop Watching the Clipboard.
+--- Stop Watching the Pasteboard.
 ---
 --- Parameters:
 ---  * None
@@ -512,13 +512,13 @@ function mod.stopWatching()
         mod._timer:stop()
         mod._timer = nil
         mod.watching:update()
-        --log.d("Stopped Clipboard Watcher")
+        --log.d("Stopped Pasteboard Watcher")
     end
 end
 
---- plugins.finalcutpro.clipboard.manager.watching <cp.prop: boolean>
+--- plugins.finalcutpro.pasteboard.manager.watching <cp.prop: boolean>
 --- Field
---- Gets whether or not we're watching the clipboard as a boolean.
+--- Gets whether or not we're watching the pasteboard as a boolean.
 mod.watching = prop.new(function()
     return mod._timer ~= nil
 end)
@@ -529,7 +529,7 @@ end)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.clipboard.manager",
+    id              = "finalcutpro.pasteboard.manager",
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.commands"]    = "fcpxCmds",

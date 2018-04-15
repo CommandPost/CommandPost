@@ -61,7 +61,7 @@ function mod.processText(value, copyAndPaste)
             eventtap.keyStroke({"command"}, "v")
         end
     else
-        log.ef("Clipboard Contents is invalid: %s", contents)
+        log.ef("Pasteboard Contents is invalid: %s", contents)
     end
 end
 
@@ -91,13 +91,13 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add Commands:
     --------------------------------------------------------------------------------
-    global:add("cpMakeClipboardTextUppercase")
+    global:add("cpMakePasteboardTextUppercase")
         :whenActivated(function() mod.processText("uppercase", false) end)
 
-    global:add("cpMakeClipboardTextLowercase")
+    global:add("cpMakePasteboardTextLowercase")
         :whenActivated(function() mod.processText("lowercase", false) end)
 
-    global:add("cpMakeClipboardTextCamelcase")
+    global:add("cpMakePasteboardTextCamelcase")
         :whenActivated(function() mod.processText("camelcase", false) end)
 
     global:add("cpMakeSelectedTextUppercase")

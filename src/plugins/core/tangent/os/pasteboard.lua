@@ -31,15 +31,15 @@ function plugin.init(deps)
     local group = deps.osGroup:group(i18n("pasteboard"))
     local id = 0x0AE00001
 
-    group:action(id, i18n("cpMakeClipboardTextUppercase" .. "_title"))
+    group:action(id, i18n("cpMakePasteboardTextUppercase" .. "_title"))
         :onPress(function() mod.processText("uppercase", false) end)
     id = id + 1
 
-    group:action(id, i18n("cpMakeClipboardTextLowercase" .. "_title"))
+    group:action(id, i18n("cpMakePasteboardTextLowercase" .. "_title"))
         :onPress(function() mod.processText("lowercase", false) end)
     id = id + 1
 
-    group:action(id, i18n("cpMakeClipboardTextCamelcase" .. "_title"))
+    group:action(id, i18n("cpMakePasteboardTextCamelcase" .. "_title"))
         :onPress(function() mod.processText("camelcase", false) end)
     id = id + 1
 

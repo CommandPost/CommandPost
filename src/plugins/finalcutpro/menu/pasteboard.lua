@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                        C L I P B O A R D    M E N U                        --
+--                      P A S T E B O A R D    M E N U                        --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.menu.clipboard ===
+--- === plugins.finalcutpro.menu.pasteboard ===
 ---
---- The CLIPBOARD menu section.
+--- The Pasteboard menu section.
 
 --------------------------------------------------------------------------------
 --
@@ -39,7 +39,7 @@ local PREFERENCES_PRIORITY = 5
 -- SETTING -> number
 -- Constant
 -- Setting Name
-local SETTING = "menubarClipboardEnabled"
+local SETTING = "menubarPasteboardEnabled"
 
 --------------------------------------------------------------------------------
 --
@@ -58,7 +58,7 @@ local sectionEnabled = config.prop(SETTING, true)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.menu.clipboard",
+    id              = "finalcutpro.menu.pasteboard",
     group           = "finalcutpro",
     dependencies    = {
         ["core.menu.manager"]               = "manager",
@@ -72,12 +72,12 @@ local plugin = {
 function plugin.init(dependencies)
 
     --------------------------------------------------------------------------------
-    -- Create the Clipboard section:
+    -- Create the Pasteboard section:
     --------------------------------------------------------------------------------
     local shortcuts = dependencies.manager.addSection(PRIORITY)
 
     --------------------------------------------------------------------------------
-    -- Disable the section if the Clipboard option is disabled:
+    -- Disable the section if the Pasteboard option is disabled:
     --------------------------------------------------------------------------------
     shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
 
@@ -86,7 +86,7 @@ function plugin.init(dependencies)
     --------------------------------------------------------------------------------
     shortcuts:addSeparator(0)
         :addItem(1, function()
-            return { title = string.upper(i18n("clipboard")) .. ":", disabled = true }
+            return { title = string.upper(i18n("pasteboard")) .. ":", disabled = true }
         end)
 
     --------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ function plugin.init(dependencies)
     local prefs = dependencies.prefs
     prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
         {
-            label = i18n("show") .. " " .. i18n("clipboard"),
+            label = i18n("show") .. " " .. i18n("pasteboard"),
             onchange = function(_, params) sectionEnabled(params.checked) end,
             checked = sectionEnabled,
         }

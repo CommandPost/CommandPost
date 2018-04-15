@@ -35,14 +35,14 @@ local mod = {}
 
 -- ninjaPasteboardCopy() -> boolean, data
 -- Function
--- Ninja Pasteboard Copy. Copies something to the clipboard, then restores the original clipboard item.
+-- Ninja Pasteboard Copy. Copies something to the pasteboard, then restores the original pasteboard item.
 --
 -- Parameters:
 --  * None
 --
 -- Returns:
 --  * `true` if successful otherwise `false`
---  * The clipboard data
+--  * The pasteboard data
 local function ninjaPasteboardCopy()
 
     local errorFunction = " Error occurred in ninjaPasteboardCopy()."
@@ -50,17 +50,17 @@ local function ninjaPasteboardCopy()
     --------------------------------------------------------------------------------
     -- Variables:
     --------------------------------------------------------------------------------
-    local clipboard = mod.clipboardManager
+    local pasteboard = mod.pasteboardManager
 
     --------------------------------------------------------------------------------
-    -- Stop Watching Clipboard:
+    -- Stop Watching Pasteboard:
     --------------------------------------------------------------------------------
-    clipboard.stopWatching()
+    pasteboard.stopWatching()
 
     --------------------------------------------------------------------------------
-    -- Save Current Clipboard Contents for later:
+    -- Save Current Pasteboard Contents for later:
     --------------------------------------------------------------------------------
-    local originalClipboard = clipboard.readFCPXData()
+    local originalPasteboard = pasteboard.readFCPXData()
 
     --------------------------------------------------------------------------------
     -- Trigger 'copy' from Menubar:
@@ -70,47 +70,47 @@ local function ninjaPasteboardCopy()
         menuBar:selectMenu({"Edit", "Copy"})
     else
         log.ef("Failed to select Copy from Menubar." .. errorFunction)
-        clipboard.startWatching()
+        pasteboard.startWatching()
         return false
     end
 
     --------------------------------------------------------------------------------
     -- Wait until something new is actually on the Pasteboard:
     --------------------------------------------------------------------------------
-    local newClipboard = nil
+    local newPasteboard = nil
     just.doUntil(function()
-        newClipboard = clipboard.readFCPXData()
-        if newClipboard ~= originalClipboard then
+        newPasteboard = pasteboard.readFCPXData()
+        if newPasteboard ~= originalPasteboard then
             return true
         end
     end, 10, 0.1)
-    if newClipboard == nil then
-        log.ef("Failed to get new clipboard contents." .. errorFunction)
-        clipboard.startWatching()
+    if newPasteboard == nil then
+        log.ef("Failed to get new pasteboard contents." .. errorFunction)
+        pasteboard.startWatching()
         return false
     end
 
     --------------------------------------------------------------------------------
-    -- Restore Original Clipboard Contents:
+    -- Restore Original Pasteboard Contents:
     --------------------------------------------------------------------------------
-    if originalClipboard ~= nil then
-        local result = clipboard.writeFCPXData(originalClipboard)
+    if originalPasteboard ~= nil then
+        local result = pasteboard.writeFCPXData(originalPasteboard)
         if not result then
-            log.ef("Failed to restore original Clipboard item." .. errorFunction)
-            clipboard.startWatching()
+            log.ef("Failed to restore original Pasteboard item." .. errorFunction)
+            pasteboard.startWatching()
             return false
         end
     end
 
     --------------------------------------------------------------------------------
-    -- Start Watching Clipboard:
+    -- Start Watching Pasteboard:
     --------------------------------------------------------------------------------
-    clipboard.startWatching()
+    pasteboard.startWatching()
 
     --------------------------------------------------------------------------------
-    -- Return New Clipboard:
+    -- Return New Pasteboard:
     --------------------------------------------------------------------------------
-    return true, newClipboard
+    return true, newPasteboard
 
 end
 
@@ -241,31 +241,31 @@ function mod.getMulticamAngleFromSelectedClip()
     --------------------------------------------------------------------------------
     -- Ninja Pasteboard Copy:
     --------------------------------------------------------------------------------
-    local result, clipboardData = ninjaPasteboardCopy()
+    local result, pasteboardData = ninjaPasteboardCopy()
     if not result then
         log.ef("Ninja Pasteboard Copy Failed." .. errorFunction)
         return false
     end
 
-    local clipboard = mod.clipboardManager
+    local pasteboard = mod.pasteboardManager
 
     --------------------------------------------------------------------------------
     -- Convert Binary Data to Table:
     --------------------------------------------------------------------------------
-    local fcpxTable = clipboard.unarchiveFCPXData(clipboardData)
+    local fcpxTable = pasteboard.unarchiveFCPXData(pasteboardData)
     if fcpxTable == nil then
         log.ef("Converting Binary Data to Table failed." .. errorFunction)
         return false
     end
 
     local timelineClip = fcpxTable.root.objects[1]
-    if not clipboard.isTimelineClip(timelineClip) then
+    if not pasteboard.isTimelineClip(timelineClip) then
         log.ef("Not copied from the Timeline." .. errorFunction)
         return false
     end
 
     local selectedClips = timelineClip.containedItems
-    if #selectedClips ~= 1 or clipboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
+    if #selectedClips ~= 1 or pasteboard.getClassname(selectedClips[1]) ~= "FFAnchoredAngle" then
         log.ef("Expected a single Multicam clip to be copied." .. errorFunction)
         return false
     end
@@ -405,7 +405,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.commands"]            = "fcpxCmds",
         ["finalcutpro.browser.playhead"]    = "browserPlayhead",
-        ["finalcutpro.clipboard.manager"]   = "clipboardManager",
+        ["finalcutpro.pasteboard.manager"]   = "pasteboardManager",
     }
 }
 
@@ -418,7 +418,7 @@ function plugin.init(deps)
     -- Link to dependencies:
     --------------------------------------------------------------------------------
     mod.browserPlayhead = deps.browserPlayhead
-    mod.clipboardManager = deps.clipboardManager
+    mod.pasteboardManager = deps.pasteboardManager
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

@@ -411,16 +411,16 @@ function mod.insertFilesIntoFinalCutPro(files)
     end)
 
     --------------------------------------------------------------------------------
-    -- Temporarily stop the Clipboard Watcher:
+    -- Temporarily stop the Pasteboard Watcher:
     --------------------------------------------------------------------------------
-    if mod.clipboardManager then
-        mod.clipboardManager.stopWatching()
+    if mod.pasteboardManager then
+        mod.pasteboardManager.stopWatching()
     end
 
     --------------------------------------------------------------------------------
-    -- Save current Clipboard Content:
+    -- Save current Pasteboard Content:
     --------------------------------------------------------------------------------
-    local originalClipboard = pasteboard.readAllData()
+    local originalPasteboard = pasteboard.readAllData()
 
     --------------------------------------------------------------------------------
     -- Write URL to Pasteboard:
@@ -477,12 +477,12 @@ function mod.insertFilesIntoFinalCutPro(files)
     end
 
     --------------------------------------------------------------------------------
-    -- Restore original Clipboard Content:
+    -- Restore original Pasteboard Content:
     --------------------------------------------------------------------------------
     timer.doAfter(2, function()
-        pasteboard.writeAllData(originalClipboard)
-        if mod.clipboardManager then
-            mod.clipboardManager.startWatching()
+        pasteboard.writeAllData(originalPasteboard)
+        if mod.pasteboardManager then
+            mod.pasteboardManager.startWatching()
         end
     end)
 
@@ -834,7 +834,7 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     -- Define Plugins:
     --------------------------------------------------------------------------------
-    mod.clipboardManager = deps.clipboardManager
+    mod.pasteboardManager = deps.pasteboardManager
     mod.manager = deps.manager
 
     --------------------------------------------------------------------------------
@@ -970,7 +970,7 @@ local plugin = {
     group = "finalcutpro",
     dependencies = {
         ["core.watchfolders.manager"]		= "manager",
-        ["finalcutpro.clipboard.manager"]	= "clipboardManager",
+        ["finalcutpro.pasteboard.manager"]	= "pasteboardManager",
     }
 }
 
