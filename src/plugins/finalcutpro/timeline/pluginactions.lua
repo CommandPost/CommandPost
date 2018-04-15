@@ -114,7 +114,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
                     choices:add(plugin.name)
                         :subText(subText)
                         :params(plugin)
-                        --:id(mod._generateActionId(pluginType, action))
+                        :id(mod._generateActionId(pluginType, action))
                 end
             end
         end)
@@ -126,7 +126,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
                 error(string.format("Unsupported plugin type: %s", pluginType))
             end
         end)
-        --:onActionId(actionId)
+        :onActionId(function() return GROUP .. "_" .. pluginType end)
     end
 
     --------------------------------------------------------------------------------
