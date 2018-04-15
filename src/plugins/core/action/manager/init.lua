@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log						= require("hs.logger").new("actnmngr")
+local log						= require("hs.logger").new("actnmngr")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -69,7 +69,7 @@ local format	    = string.format
 --  * A string
 local function freezeParams(params)
     local result = ""
-    if params then
+    if params and type(params) == "table" then
         for key,value in pairs(params) do
             if result ~= "" then
                 result = result .. "&"
@@ -79,6 +79,8 @@ local function freezeParams(params)
             end
             result = result .. key .. "=" .. value
         end
+    else
+        log.ef("Error in core.action.manager.freezeParams(). params: %s", params)
     end
     return result
 end
@@ -94,13 +96,17 @@ end
 --  * The thawed result as a table
 local function thawParams(params)
     local thawed = {}
-    for key,value in pairs(params) do
-        if value:find(ARRAY_DELIM) then
-            value = tools.split(value, ARRAY_DELIM)
-        elseif tools.isNumberString(value) then
-            value = tonumber(value)
+    if params and type(params) == "table" then
+        for key,value in pairs(params) do
+            if value:find(ARRAY_DELIM) then
+                value = tools.split(value, ARRAY_DELIM)
+            elseif tools.isNumberString(value) then
+                value = tonumber(value)
+            end
+            thawed[key] = value
         end
-        thawed[key] = value
+    else
+        log.ef("Error in core.action.manager.thawParams(). params: %s", params)
     end
     return thawed
 end
