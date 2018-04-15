@@ -60,8 +60,7 @@ end
 ---
 --- Returns:
 --- * The new `TextField`.
--- TODO: Use a function instead of a method.
-function TextField.new(parent, finderFn, convertFn) -- luacheck: ignore
+function TextField.new(parent, finderFn, convertFn)
     return prop.extend({
         _parent = parent,
         _finder = finderFn,

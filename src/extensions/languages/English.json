@@ -1078,7 +1078,7 @@
         "colorfinale_tangent_label"							   : "Tangent: ColorFinale",
         "plugin_group_colorfinale"							   : "ColorFinale",
         "pasteboardToMarkers_title"							   : "Copy Pasteboard Markers to Selected Clip in Browser",
-        "pasteboardToMarkersFailed"							   : "The pasteboard doesn't contain any text in the required format to process.\n\nYou should use the following syntax:\n\n05:00:00: Test Keyword 1\n05:01:00:01: Test Keyword 2\n*05:02:00: Test Keyword 3\n05:02:15: Test Keyword 4\n*05:03:00: Test Keyword 5\n05:03:15: Test Keyword 6\n05:04:00: Test Keyword 7\n\nIf a * is place before the timecode, it will make the clip as a favourite between the current timecode value and the next timecode value.",
+        "pasteboardToMarkersFailed"							   : "The pasteboard doesn't contain any text in the required format to process.\n\nYou should use the following syntax:\n\n05:00:00: Test Keyword 1\n#05:01:00:01: Test Keyword 2\n*05:02:00: Test Keyword 3\n05:02:15: Test Keyword 4\n*05:03:00: Test Keyword 5\n05:03:15: Test Keyword 6\n#05:03:30: Test Keyword 7\n*05:04:00: Test Keyword 8\n\nIf a * is place before the timecode, it will make the clip as a favourite between the current timecode value and the next timecode value.\n\nIf a # is place before the timecode, it will create a 'To Do' marker.",
         "atLeastOneBrowserClipMustBeSelected"				   : "At least one clip must be selected in the browser to use this feature.",
         "onlyOneBrowserClipMustBeSelected"					   : "Only one clip can be selected in the browser to use this feature.",
         "pasteboardToMarkersCompleted"						   : "Copying Pasteboard Markers to Selected Clip in Browser has completed successfully.",
