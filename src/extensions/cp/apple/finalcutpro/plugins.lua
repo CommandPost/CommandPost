@@ -1000,7 +1000,7 @@ function mod.mt:scanAppEdelEffects(language)
     local audioEffect = mod.types.audioEffect
     for category, plugins in pairs(mod.appEdelEffects) do
         for _, plugin in ipairs(plugins) do
-            self:registerPlugin(nil, audioEffect, "Logic", category, plugin, language)
+            self:registerPlugin(nil, audioEffect, category, "Logic", plugin, language)
         end
     end
 
