@@ -932,13 +932,13 @@ end
 --- Returns:
 ---  * None
 function mod.insertFromPasteboard()
-    local pasteboard = pasteboard.readString()
-    if pasteboard then
+    local pasteboardString = pasteboard.readString()
+    if pasteboardString then
         --------------------------------------------------------------------------------
         -- Build table:
         --------------------------------------------------------------------------------
         local result = {}
-        result.text = pasteboard
+        result.text = pasteboardString
 
         --------------------------------------------------------------------------------
         -- Add to history:

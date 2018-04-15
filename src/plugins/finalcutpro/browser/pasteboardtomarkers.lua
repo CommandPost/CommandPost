@@ -38,7 +38,6 @@ local log                       = require("hs.logger").new("pasteboardtomarkers"
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local eventtap                  = require("hs.eventtap")
 local pasteboard                = require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
@@ -216,7 +215,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             -- Goto start timecode:
             --------------------------------------------------------------------------------
-            local result = fcp:browser():libraries():playhead():setTimecode(favouriteStart)
+            result = fcp:browser():libraries():playhead():setTimecode(favouriteStart)
             if not result then
                 log.df("favouriteStart: %s", favouriteStart)
                 dialog.displayErrorMessage(string.format("Could not go to favourite start timecode for line %s.", i))
@@ -236,7 +235,7 @@ function mod.process()
             -- Goto end timecode:
             --------------------------------------------------------------------------------
             if favouriteEnd then
-                local result = fcp:browser():libraries():playhead():setTimecode(favouriteEnd)
+                result = fcp:browser():libraries():playhead():setTimecode(favouriteEnd)
                 if not result then
                     log.df("favouriteEnd: %s", favouriteEnd)
                     dialog.displayErrorMessage(string.format("Could not go to favourite end timecode for line %s.", i))

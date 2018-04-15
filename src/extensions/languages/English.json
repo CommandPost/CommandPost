@@ -1082,5 +1082,6 @@
         "atLeastOneBrowserClipMustBeSelected"				   : "At least one clip must be selected in the browser to use this feature.",
         "onlyOneBrowserClipMustBeSelected"					   : "Only one clip can be selected in the browser to use this feature.",
         "pasteboardToMarkersCompleted"						   : "Copying Pasteboard Markers to Selected Clip in Browser has completed successfully.",
+        "finalcutpro_browser_pasteboardtomarkers_label"		   : "Browser: Pasteboard Markers to Clip",
     }
 }

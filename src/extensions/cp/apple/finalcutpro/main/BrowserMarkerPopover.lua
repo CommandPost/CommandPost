@@ -271,7 +271,7 @@ end
 ---  * A `Button` object.
 function BrowserMarkerPopover:completed()
     if not self._completed then
-        self._completed = Button.new(self, function()
+        self._completed = CheckBox.new(self, function()
             local checkbox = axutils.childrenWithRole(self:UI(), "AXCheckBox")
             return checkbox and checkbox[1]
         end)
