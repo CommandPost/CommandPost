@@ -6,6 +6,70 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.27</title>
+			<description><![CDATA[
+				<p>Thank you so much for testing out CommandPost! We are <strong>HUGELY</strong> appreciative of everyone's help, support, ideas, comments and advice!</p>
+
+				<p>The Beta 22 update was a fairly major one, so we'd recommend trashing your CommandPost Preferences (by holding down <strong>OPTION+COMMAND</strong> on launch) if you were previously using Beta 21 or earlier. Enjoy!</p>
+
+				<p><em>Best Regards, Chris Hocking &amp; David Peterson</em></p>
+
+				<hr />
+				<h2>What's New in Beta 27:</h2>
+				<ul><li>Added "Copy Pasteboard Markers to Selected Clip in Browser" feature, which allows you to add multiple standard and to-do markers and favourite ranges to a selected clip in the browser via specifically formatted text stored on the clipboard. Thanks David Tillman for the suggestion!</li>
+				<li>Any references to "Clipboard" are now changed to "Pasteboard" to keep in line with macOS Naming Conventions.</li>
+				<li>Fixed bug in "Enable Waveform Drawing".</li>
+				<li>Fixed bug in Console that prevented Logic Audio effects from being correctly selected. Thanks Michael Lunt for reporting!</li>
+				<li>Fixed bug in "Change Backup Interval". Thanks Sebastian Leitner for reporting!</li></ul>
+
+				<hr />
+				<h2>What's New in Beta 26:</h2>
+				<ul><li>Added a new plugin to automatically mount/unmount external drives when plugging/unplugging into AC power.</li>
+				<li>Brightness & Saturation controls on Tangent Panels are now slightly more sensitive.</li>
+				<li>Additional Color Inspector related functions have been added to Tangent Mapper.</li></ul>
+
+				<hr />
+				<h2>What's New in Beta 25:</h2>
+				<ul><li>CommandPost now gives control of Tangent panels to ColorFinale when the ColorFinale window is activated, and restores control once the ColorFinale window is closed.</li>
+				<li>Fixed bugs in Tangent Video Inspector & Timeline Zoom controls.</li>
+				<li>Fixed bug in Color Inspector MIDI controls that prevented knobs/sliders from going to zero values.</li></ul>
+
+				<hr />
+				<h2>What's New in Beta 24:</h2>
+				<ul><li>Added Final Cut Pro Playback Controls to Tangent Mapper.</li>
+				<li>Fixed a bug where the MIDI Editor in MIDI Preferences would sometimes randomly disappear. Thanks for reporting Iain Anderson!</li>
+				<li>Added the ability to control any Final Cut Pro User Interface Element via a MIDI Knob/Slider with Absolute or Relative Values.</li>
+				<li>The MMC & MTC Device dropdown lists in the MIDI Preferences are now seperate Physical and Virtual MIDI Devices. Thanks for spotting Mark Edwards!</li>
+				<li>Fixed bug when trying to trigger the "Toggle Stabilisation" action. Thanks for spotting Ira Edelman!</li></ul>
+
+				<hr />
+				<h2>What's New in Beta 23:</h2>
+				<ul><li>This release contains some bug fixes for the Color Board MIDI Controls. Thanks to Iain Anderson for reporting. Also, the selected MIDI bank now changes when you change the bank via the drop down menu in the MIDI Preferences Panel.</li></ul>
+
+				<hr />
+				<h2>What's New in Beta 22:</h2>
+				<ul><li>General Stability &amp; Performance Improvements across the board, with lots of bug fixes.</li>
+				<li>The Tangent functionality has been completely revamped and rewritten. It now supports the Color Wheels and Video Inspector. We've added a "Favourites" feature which allows you to easily add ANY action within CommandPost as an option within Tangent Mapper. MASSIVE thank you to Andy Knox and the team at Tangent for all their help and support!</li>
+				<li>The MIDI Plugin has been vastly improved and expanded upon. It now supports the Color Wheels and Video Inspector. We've also added MIDI Banks and some default values to speed up the setup time. Initial support of MIDI Machine Control &amp; MIDI Time Code has been added, however expect improvements to these features in a future beta release. MASSIVE thank you to Andrew Madsen for all his help with the MIKMIDI Framework.</li>
+				<li>We've added 15 new languages to CommandPost. The translations have been done automatically by Google &amp; Microsoft, so we expect mistakes, and would HUGELY appreciate it if you can report any translation mistakes so we can fix promptly.</li>
+				<li>You can now customise the modifier key when using Timeline Zoom with your mouse scroll wheel and/or Magic Mouse.</li>
+				<li>The option to "Control CommandPost Shortcuts within Final Cut Pro" on the initial installation has been removed, however you can still enable it via the Final Cut Pro Preferences panel in CommandPost. We will improve this feature in a future beta.</li>
+				<li>Improvements and Enhancements to the Batch Export tool.</li>
+				<li>The Text-to-speech tool has been completely revamped with a lot more power and flexibility.</li>
+				<li>The Keyword Features have been improved.</li>
+				<li>New built-in Stream Deck Icons by Daniele Di Tuccio.</li>
+				<li>The WebApp plugin is now disabled by default until we fix it properly.</li></ul>
+			]]>
+			</description>
+			<pubDate>Mon, 16 Apr 2018 00:08:42 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.27/CommandPost_1.0.0-beta.27.dmg"
+				sparkle:version="1.0.0-beta.27"
+				sparkle:dsaSignature="MCwCFEv8a4ML5GqVF0JdfWaJGjGOZ4VJAhRr7mL1IRSmkrfdkvBzBOtfJheTGQ=="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.26</title>
 			<description><![CDATA[
 				<p>Thank you so much for testing out CommandPost! We are <strong>HUGELY</strong> appreciative of everyone's help, support, ideas, comments and advice!</p>

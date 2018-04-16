@@ -72,7 +72,7 @@ function mod.set()
     --------------------------------------------------------------------------------
     -- Ask user what to set the backup interval to:
     --------------------------------------------------------------------------------
-    local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage(i18n("setTextbox"), i18n("setError"), FFPeriodicBackupInterval)
+    local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage(i18n("changeBackupIntervalTextbox"), i18n("changeBackupIntervalError"), FFPeriodicBackupInterval)
     if not userSelectedBackupInterval then
         return "Cancel"
     end
@@ -110,7 +110,6 @@ function plugin.init(deps)
     -- Setup Menu Item:
     --------------------------------------------------------------------------------
     deps.menu:addItem(PRIORITY, function()
-
         return { title = i18n("changeBackupInterval") .. " (" .. tostring(mod.get()) .. " " .. i18n("mins") .. ")",   fn = mod.set }
     end)
 
