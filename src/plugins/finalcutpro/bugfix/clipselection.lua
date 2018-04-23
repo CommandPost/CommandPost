@@ -1,23 +1,65 @@
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--- === plugins.finalcutpro.bugfix.clipselection ===
+---
+--- Fixes a bug in Final Cut Pro 10.4.1 that selects unwanted clips when
+--- making a selection of multiple clips using your mouse as a "lasso".
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log                   = require("hs.logger").new("fix_clipselect")
--- local inspect               = require("hs.inspect")
 
-local fcp                   = require("cp.apple.finalcutpro")
-local config                = require("cp.config")
-
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local eventtap              = require("hs.eventtap")
 local geometry              = require("hs.geometry")
 local timer                 = require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp                   = require("cp.apple.finalcutpro")
+local config                = require("cp.config")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert                = table.insert
 
 local eventTypes            = eventtap.event.types
 local eventProperties       = eventtap.event.properties
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {
     inTimeline = false,
     dragging = false,
 }
 
+--- plugins.finalcutpro.bugfix.clipselection.init() -> none
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.init()
     mod.timelineContents = fcp:timeline():contents()
 
@@ -28,6 +70,15 @@ function mod.init()
     return mod
 end
 
+-- isPointInsideTimeline(point) -> boolean
+-- Function
+-- Is the specified point inside the timeline?
+--
+-- Parameters:
+--  * point - The point to check.
+--
+-- Returns:
+--  * `true` if the point is inside the timeline, otherwise `false`.
 local function isPointInsideTimeline(point)
     local viewFrame = mod.timelineContents:viewFrame()
     if viewFrame and point then
@@ -36,6 +87,15 @@ local function isPointInsideTimeline(point)
     return false
 end
 
+-- mouseClickHandler(event) -> none
+-- Function
+-- Mouse Click Handler.
+--
+-- Parameters:
+--  * event - The Event.
+--
+-- Returns:
+--  * None
 local function mouseClickHandler(event)
     local fcpPID = mod.fcpPID
     if fcpPID then
@@ -101,7 +161,15 @@ local function mouseClickHandler(event)
     end
 end
 
-
+--- plugins.finalcutpro.bugfix.clipselection.activate() -> none
+--- Function
+--- Activates the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.activate()
     local watcher = mod._watcher
     if not watcher then
@@ -117,6 +185,15 @@ function mod.activate()
     end
 end
 
+--- plugins.finalcutpro.bugfix.clipselection.deactivate() -> none
+--- Function
+--- Deactivates the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.deactivate()
     local watcher = mod._watcher
     if watcher and watcher:isEnabled() then
@@ -124,16 +201,16 @@ function mod.deactivate()
     end
 end
 
--- enabled <cp.prop: boolean>
--- Variable
--- Allows the fix to be enabled/disabled by setting the `bugfix_clipselection' configuration
--- property to `true`.
+--- plugins.finalcutpro.bugfix.clipselection.enabled <cp.prop: boolean>
+--- Variable
+--- Allows the fix to be enabled/disabled by setting the `bugfix_clipselection'
+--- configuration property to `true` or `false`.
 mod.enabled = config.prop("bugfix_clipselection", true)
 
--- active <cp.prop: boolean>
--- Variable
--- Checks if the plugin is currently active, depending on `enabled` and which
--- version of FCPX is currently installed.
+--- plugins.finalcutpro.bugfix.clipselection.active <cp.prop: boolean>
+--- Variable
+--- Checks if the plugin is currently active, depending on `enabled` and which
+--- version of Final Cut Pro is currently installed.
 mod.active = mod.enabled:AND(fcp.getVersion:IS("10.4.1")):watch(
     function(active)
         if active then
@@ -144,13 +221,19 @@ mod.active = mod.enabled:AND(fcp.getVersion:IS("10.4.1")):watch(
     end, true
 )
 
--- The Plugin
-
+--------------------------------------------------------------------------------
+--
+-- THE PLUGIN:
+--
+--------------------------------------------------------------------------------
 local plugin = {
     id = "finalcutpro.bugfix.clipselection",
     group = "finalcutpro",
 }
 
+--------------------------------------------------------------------------------
+-- INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
 function plugin.init()
     return mod.init()
 end
