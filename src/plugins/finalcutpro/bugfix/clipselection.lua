@@ -211,7 +211,7 @@ mod.enabled = config.prop("bugfix_clipselection", true)
 --- Variable
 --- Checks if the plugin is currently active, depending on `enabled` and which
 --- version of Final Cut Pro is currently installed.
-mod.active = mod.enabled:AND(fcp.getVersion:IS("10.4.1")):watch(
+mod.active = mod.enabled:AND(fcp.isRunning):AND(fcp.getVersion:IS("10.4.1")):watch(
     function(active)
         if active then
             mod.activate()
