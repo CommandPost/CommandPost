@@ -23,6 +23,7 @@ local log           = require("hs.logger").new("batch")
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local fnutils       = require("hs.fnutils")
+local fs            = require("hs.fs")
 local image         = require("hs.image")
 
 --------------------------------------------------------------------------------
@@ -467,7 +468,7 @@ end
 function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
     local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
-    local exportPath = "~/Desktop"
+    local exportPath = os.getenv("HOME") .. "/Desktop"
     if batchExportDestinationFolder ~= nil then
          if tools.doesDirectoryExist(batchExportDestinationFolder) then
             exportPath = batchExportDestinationFolder
@@ -477,7 +478,7 @@ function mod.getDestinationFolder()
             exportPath = NSNavLastRootDirectory
         end
     end
-    return exportPath
+    return exportPath and fs.pathToAbsolute(exportPath)
 end
 
 function mod.getDestinationPreset()
@@ -672,11 +673,11 @@ function plugin.init(deps)
         :addHeading(1, "Batch Export from Browser")
         :addParagraph(2, "Final Cut Pro will export all selected items in the browser to the following location:")
         :addParagraph(3, html.br())
-        :addContent(4, function() return [[<p class="uiItem" style="font-weight:bold;">]] .. mod.getDestinationFolder() .."</p>"  end, false)
+        :addContent(4, function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationFolder() .."</p>"  end, false)
         :addParagraph(5, html.br())
         :addParagraph(6, "Using the following Destination Preset:")
         :addParagraph(7, html.br())
-        :addContent(8, function() return [[<p class="uiItem" style="font-weight:bold;">]] .. mod.getDestinationPreset() .."</p>" end, false)
+        :addContent(8, function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p>" end, false)
 
 
 
