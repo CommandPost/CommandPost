@@ -24,7 +24,9 @@ local log           = require("hs.logger").new("batch")
 --------------------------------------------------------------------------------
 local fnutils       = require("hs.fnutils")
 local fs            = require("hs.fs")
+local geometry      = require("hs.geometry")
 local image         = require("hs.image")
+local mouse         = require("hs.mouse")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -452,18 +454,6 @@ function mod.changeExportDestinationFolder()
     return true
 end
 
---- plugins.finalcutpro.export.batch.batchExport() -> boolean
---- Function
---- Batch Export.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if successful otherwise `false`
-function mod.batchExport()
-
-end
 
 function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
@@ -509,7 +499,17 @@ function mod.getDestinationPreset()
             if firstItem and firstItem:attributeValue("AXTitle") then
                 destinationPreset = string.sub(firstItem:attributeValue("AXTitle"), 1, -4)
             else
-                return false
+                --------------------------------------------------------------------------------
+                -- If all else fails, we'll use "Send To Compressor":
+                --------------------------------------------------------------------------------
+                if compressor:isInstalled() then
+                    destinationPreset = i18n("sendToCompressor")
+                else
+                    --------------------------------------------------------------------------------
+                    -- No options left!
+                    --------------------------------------------------------------------------------
+                    destinationPreset = nil
+                end
             end
         else
             --------------------------------------------------------------------------------
@@ -520,9 +520,19 @@ function mod.getDestinationPreset()
 
     end
     return destinationPreset
-
 end
 
+mod._clips = {}
+
+--- plugins.finalcutpro.export.batch.batchExport() -> boolean
+--- Function
+--- Opens the Batch Export popup.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
 function mod.batchExport()
 
     --------------------------------------------------------------------------------
@@ -532,12 +542,7 @@ function mod.batchExport()
     mod._existingClipNames = {}
 
     --------------------------------------------------------------------------------
-    -- Set Custom Export Path (or Default to Desktop):
-    --------------------------------------------------------------------------------
-    local exportPath = mod.getDestinationFolder()
-
-    --------------------------------------------------------------------------------
-    -- Destination Preset:
+    -- Make sure we actually have a Destination Preset:
     --------------------------------------------------------------------------------
     local destinationPreset = mod.getDestinationPreset()
     if not destinationPreset then
@@ -546,9 +551,42 @@ function mod.batchExport()
     end
 
     --------------------------------------------------------------------------------
-    -- Replace Existing Files Option:
+    -- Check where the mouse is...
     --------------------------------------------------------------------------------
-    local replaceExisting = mod.replaceExistingFiles()
+    local mouseInTimeline = false
+    local mouseInBrowser = false
+
+    local mouseLocation = geometry.point(mouse.getAbsolutePosition())
+
+    local timeline = fcp:timeline()
+    if timeline:isShowing() then
+        local timelineViewFrame = timeline:contents():viewFrame()
+        if timelineViewFrame then
+            if mouseLocation:inside(geometry.rect(timelineViewFrame)) then
+                log.df("Mouse is in timeline")
+                mouseInTimeline = true
+            end
+        end
+    end
+
+
+    local browser = fcp:browser()
+    if browser:isShowing() then
+        local browserFrame = browser:UI() and browser:UI():frame()
+        if browserFrame then
+            if mouseLocation:inside(geometry.rect(browserFrame)) then
+                log.df("Mouse is in browser")
+                mouseInBrowser = true
+            end
+        end
+    end
+
+
+
+
+
+
+
 
     local libraries = fcp:browser():libraries()
 
@@ -606,6 +644,12 @@ function mod.batchExport()
 
 end
 
+local function clipsToCountString(clips)
+    local countText = " "
+    if clips and #clips > 1 then countText = " " .. tostring(#clips) .. " " end
+    return countText
+end
+
 function mod.performBatchExport()
 
     --------------------------------------------------------------------------------
@@ -625,6 +669,12 @@ function mod.performBatchExport()
         dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
     end
 
+end
+
+mod._nextID = 0
+local function nextID()
+    mod._nextID = mod._nextID + 1
+    return mod._nextID
 end
 
 --------------------------------------------------------------------------------
@@ -663,23 +713,61 @@ function plugin.init(deps)
         label       = i18n("browser"),
         image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerClipIcon.png")),
         tooltip     = i18n("browser"),
-        height      = 480,
+        height      = 520,
     })
 
-        :addContent(1, ui.style([[
+        :addContent(nextID(), ui.style([[
 
         ]]))
+        :addHeading(nextID(), "Batch Export from Browser")
+        :addParagraph(nextID(), function() return "Final Cut Pro will export the " .. clipsToCountString(mod._clips) .. "selected " .. i18n("item", {count=#mod._clips}) .. " in the browser to the following location:" end)
+        :addParagraph(nextID(), html.br())
+        :addContent(nextID(), function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationFolder() .."</p>"  end, false)
+        :addParagraph(nextID(), html.br())
+        :addButton(nextID(),
+            {
+                width = 200,
+                label = i18n("changeDestinationFolder"),
+                onclick = mod.changeExportDestinationFolder,
+            })
 
-        :addHeading(1, "Batch Export from Browser")
-        :addParagraph(2, "Final Cut Pro will export all selected items in the browser to the following location:")
-        :addParagraph(3, html.br())
-        :addContent(4, function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationFolder() .."</p>"  end, false)
-        :addParagraph(5, html.br())
-        :addParagraph(6, "Using the following Destination Preset:")
-        :addParagraph(7, html.br())
-        :addContent(8, function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p>" end, false)
-
-
+        :addParagraph(nextID(), html.br())
+        :addParagraph(nextID(), "Using the following Destination Preset:")
+        :addParagraph(nextID(), html.br())
+        :addContent(nextID(), function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p>" end, false)
+        :addParagraph(nextID(), html.br())
+        :addButton(nextID(),
+            {
+                width = 200,
+                label = i18n("changeDestinationPreset"),
+                onclick = mod.changeExportDestinationPreset,
+            })
+        :addHeading(nextID(), "Preferences")
+        :addCheckbox(nextID(),
+            {
+                label = i18n("replaceExistingFiles"),
+                onchange = function(_, params) mod.replaceExistingFiles(params.checked) end,
+                checked = mod.replaceExistingFiles,
+            })
+        :addCheckbox(nextID(),
+            {
+                label = i18n("ignoreMissingEffects"),
+                onchange = function(_, params) mod.ignoreMissingEffects(params.checked) end,
+                checked = mod.ignoreMissingEffects,
+            })
+        :addCheckbox(nextID(),
+            {
+                label = i18n("ignoreProxies"),
+                onchange = function(_, params) mod.ignoreProxies(params.checked) end,
+                checked = mod.ignoreProxies,
+            })
+        :addParagraph(nextID(), html.br())
+        :addButton(nextID(),
+            {
+                width = 200,
+                label = i18n("performBatchExport"),
+                onclick = mod.batchExport,
+            })
 
     --------------------------------------------------------------------------------
     -- Timeline Panel:
@@ -692,22 +780,17 @@ function plugin.init(deps)
         tooltip     = i18n("timeline"),
         height      = 480,
     })
-        :addHeading(1, "Batch Export from Timeline")
-
-
-
-
-
+        :addHeading(nextID(), "Batch Export from Timeline")
 
     --------------------------------------------------------------------------------
     -- Add items to Menubar:
     --------------------------------------------------------------------------------
+    --[[
     local section = deps.prefs:addSection(PRIORITY)
     local menu = section:addMenu(1000, function() return i18n("batchExport") end)
     menu:addItems(1, function()
         return {
             { title = i18n("performBatchExport"),   fn = function()
-
                 --------------------------------------------------------------------------------
                 -- Make sure Final Cut Pro is Active:
                 --------------------------------------------------------------------------------
@@ -747,6 +830,7 @@ function plugin.init(deps)
             end },
         }
     end)
+    --]]
 
     --------------------------------------------------------------------------------
     -- Commands:
