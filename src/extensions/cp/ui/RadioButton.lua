@@ -50,7 +50,7 @@ local RadioButton = {}
 --- Returns:
 --- * `true` if it's a match, or `false` if not.
 function RadioButton.matches(element)
-    return element:attributeValue("AXRole") == "AXRadioButton"
+    return element and element:attributeValue("AXRole") == "AXRadioButton"
 end
 
 --- cp.ui.RadioButton.new(axuielement, function) -> RadioButton

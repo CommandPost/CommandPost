@@ -25,7 +25,7 @@ local PopUpButton = {}
 
 -- TODO: Add documentation
 function PopUpButton.matches(element)
-    return element:attributeValue("AXRole") == "AXPopUpButton"
+    return element and element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
 --- cp.ui.PopUpButton.new(axuielement, function) -> cp.ui.PopUpButton
