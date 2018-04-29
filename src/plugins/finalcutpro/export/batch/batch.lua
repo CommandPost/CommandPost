@@ -460,7 +460,7 @@ function mod.batchExportBrowserClips(clips)
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    result = continueButton:performAction("AXPress")
+                                    continueButton:performAction("AXPress")
                                 else
                                     dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
                                     return false
@@ -789,7 +789,7 @@ function mod.batchExportTimelineClips(clips)
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    result = continueButton:performAction("AXPress")
+                                    continueButton:performAction("AXPress")
                                 else
                                     dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
                                     return false
