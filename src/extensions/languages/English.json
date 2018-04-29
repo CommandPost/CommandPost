@@ -211,7 +211,7 @@
         "failedToChangeLanguage"                           : "Unable to change Final Cut Pro's language.",
         "cpStabilizationDisable_title"                     : "Disable Stabilization",
         "tools"                                            : "Tools",
-        "setCustomFilename"                                : "Set Custom Filename",
+        "changeCustomFilename"                             : "Change Custom Filename",
         "enableHUD"                                        : "Enable HUD",
         "cpScrollingTimeline_title"                        : "Toggle Scrolling Timeline",
         "buttonLabel"                                      : "Button Label",

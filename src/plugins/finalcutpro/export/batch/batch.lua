@@ -55,10 +55,22 @@ local PRIORITY = 2000
 --------------------------------------------------------------------------------
 local mod = {}
 
+mod.DEFAULT_CUSTOM_FILENAME = "Custom Filename"
+
 -- plugins.finalcutpro.export.batch._existingClipNames -> table
 -- Variable
 -- Table of existing clip names.
 mod._existingClipNames = {}
+
+-- plugins.finalcutpro.export.batch._clips -> table
+-- Variable
+-- Table of clips to batch export.
+mod._clips = {}
+
+-- plugins.finalcutpro.export.batch._nextID -> number
+-- Variable
+-- Next available ID for building the UI.
+mod._nextID = 0
 
 --- plugins.finalcutpro.export.batch.replaceExistingFiles <cp.prop: boolean>
 --- Field
@@ -73,7 +85,7 @@ mod.useCustomFilename = config.prop("batchExportOverrideClipnameWithCustomFilena
 --- plugins.finalcutpro.export.batch.customFilename <cp.prop: string>
 --- Field
 --- Custom Filename for Batch Export.
-mod.customFilename = config.prop("batchExportCustomFilename", i18n("batchExport"))
+mod.customFilename = config.prop("batchExportCustomFilename", mod.DEFAULT_CUSTOM_FILENAME)
 
 --- plugins.finalcutpro.export.batch.ignoreMissingEffects <cp.prop: boolean>
 --- Field
@@ -149,6 +161,11 @@ function mod.sendClipsToCompressor(clips)
         end
 
         --------------------------------------------------------------------------------
+        -- Make sure Libraries panel is focussed:
+        --------------------------------------------------------------------------------
+        fcp:selectMenu({"Window", "Go To", "Libraries"})
+
+        --------------------------------------------------------------------------------
         -- Select Item:
         --------------------------------------------------------------------------------
         libraries:selectClip(clip)
@@ -192,6 +209,23 @@ function mod.batchExportClips(clips)
     local errorFunction = " Error occurred in batchExportClips()."
     local firstTime = true
     for _,clip in ipairs(clips) do
+
+        --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro is Active:
+        --------------------------------------------------------------------------------
+        local result = just.doUntil(function()
+            fcp:launch()
+            return fcp:isFrontmost()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.\n\nThis shouldn't happen.")
+            return false
+        end
+
+        --------------------------------------------------------------------------------
+        -- Make sure Libraries panel is focussed:
+        --------------------------------------------------------------------------------
+        fcp:selectMenu({"Window", "Go To", "Libraries"})
 
         --------------------------------------------------------------------------------
         -- Select Item:
@@ -468,6 +502,44 @@ function mod.changeExportDestinationFolder()
     return true
 end
 
+--- plugins.finalcutpro.export.batch.changeCustomFilename() -> boolean
+--- Function
+--- Change Custom Filename String.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful otherwise `false`
+function mod.changeCustomFilename()
+    local result = mod.customFilename(dialog.displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
+        if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
+            return true
+        else
+            return false
+        end
+    end))
+    if type(result) == "string" then
+        mod.customFilename(result)
+    end
+
+    --------------------------------------------------------------------------------
+    -- Refresh the Preferences:
+    --------------------------------------------------------------------------------
+    mod._bmMan.refresh()
+
+    return true
+end
+
+--- plugins.finalcutpro.export.batch.getDestinationFolder() -> string
+--- Function
+--- Gets the destination folder path.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The destination folder path as a string.
 function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
     local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
@@ -484,6 +556,15 @@ function mod.getDestinationFolder()
     return exportPath and fs.pathToAbsolute(exportPath)
 end
 
+--- plugins.finalcutpro.export.batch.getDestinationFolder() -> string | nil
+--- Function
+--- Gets the destination preset.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The destination preset as a string, or `nil` if no preset is set.
 function mod.getDestinationPreset()
 
     local destinationPreset = config.get("batchExportDestinationPreset")
@@ -534,8 +615,6 @@ function mod.getDestinationPreset()
     end
     return destinationPreset
 end
-
-mod._clips = {}
 
 --- plugins.finalcutpro.export.batch.batchExport() -> boolean
 --- Function
@@ -589,7 +668,10 @@ function mod.batchExport()
     --------------------------------------------------------------------------------
     -- Ignore if mouse is not over browser or timeline:
     --------------------------------------------------------------------------------
-    if mode == nil then return end
+    if mode == nil then
+        dialog.displayMessage("Your mouse must be hovering over either the Timeline or the Browser to use the Batch Export functionality.")
+        return
+    end
 
     --------------------------------------------------------------------------------
     -- If the mouse is over the browser:
@@ -616,6 +698,7 @@ function mod.batchExport()
             --------------------------------------------------------------------------------
             -- No clips selected so ignore:
             --------------------------------------------------------------------------------
+            dialog.displayMessage("No clips selected in the browser.")
             return
         end
     end
@@ -629,12 +712,30 @@ function mod.batchExport()
 
 end
 
+-- clipsToCountString(clips) -> string
+-- Function
+-- Calculates the numbers of clips supplied and returns the number as a formatted string.
+--
+-- Parameters:
+--  * clips - A table of clips
+--
+-- Returns:
+--  * A string.
 local function clipsToCountString(clips)
     local countText = " "
     if clips and #clips > 1 then countText = " " .. tostring(#clips) .. " " end
     return countText
 end
 
+--- plugins.finalcutpro.export.batch.performBrowserBatchExport() -> none
+--- Function
+--- Performs the Batch Export function.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.performBrowserBatchExport()
 
     --------------------------------------------------------------------------------
@@ -662,7 +763,15 @@ function mod.performBrowserBatchExport()
 
 end
 
-mod._nextID = 0
+-- nextID() -> number
+-- Function
+-- Returns the next free ID.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The next ID as a number.
 local function nextID()
     mod._nextID = mod._nextID + 1
     return mod._nextID
@@ -704,7 +813,7 @@ function plugin.init(deps)
         label       = i18n("browser"),
         image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerClipIcon.png")),
         tooltip     = i18n("browser"),
-        height      = 520,
+        height      = 650,
     })
 
         :addContent(nextID(), ui.style([[
@@ -751,6 +860,25 @@ function plugin.init(deps)
                 label = i18n("changeDestinationPreset"),
                 onclick = mod.changeExportDestinationPreset,
             })
+        :addParagraph(nextID(), html.br())
+        :addParagraph(nextID(), "Using the following naming convention:")
+        :addParagraph(nextID(), html.br())
+        :addContent(nextID(), function()
+                local useCustomFilename = mod.useCustomFilename()
+                if useCustomFilename then
+                    local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
+                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
+                else
+                    return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">Original Clip/Project Name</p>]]
+                end
+            end, false)
+        :addParagraph(nextID(), html.br())
+        :addButton(nextID(),
+            {
+                width = 200,
+                label = i18n("changeCustomFilename"),
+                onclick = mod.changeCustomFilename,
+            })
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),
             {
@@ -769,6 +897,19 @@ function plugin.init(deps)
                 label = i18n("ignoreProxies"),
                 onchange = function(_, params) mod.ignoreProxies(params.checked) end,
                 checked = mod.ignoreProxies,
+            })
+        :addCheckbox(nextID(),
+            {
+                label = i18n("useCustomFilename"),
+                onchange = function(_, params)
+                    mod.useCustomFilename(params.checked)
+
+                    --------------------------------------------------------------------------------
+                    -- Refresh the Preferences:
+                    --------------------------------------------------------------------------------
+                    mod._bmMan.refresh()
+                end,
+                checked = mod.useCustomFilename,
             })
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
@@ -795,10 +936,9 @@ function plugin.init(deps)
     -- Add items to Menubar:
     --------------------------------------------------------------------------------
     local section = deps.prefs:addSection(PRIORITY)
-    local menu = section:addMenu(1000, function() return i18n("batchExport") end)
-    menu:addItems(1, function()
+    section:addItems(1000, function()
         return {
-            { title = i18n("performBatchExport"),   fn = function()
+            { title = i18n("batchExport"),   fn = function()
                 --------------------------------------------------------------------------------
                 -- Make sure Final Cut Pro is Active:
                 --------------------------------------------------------------------------------
@@ -810,34 +950,8 @@ function plugin.init(deps)
                     dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.\n\nThis shouldn't happen.")
                     return false
                 end
-
                 mod.batchExport()
-            end, disabled=not fcp:isRunning() },
-            --[[
-            { title = "-" },
-            { title = i18n("setDestinationPreset"), fn = mod.changeExportDestinationPreset },
-            { title = i18n("setDestinationFolder"), fn = mod.changeExportDestinationFolder },
-            { title = "-" },
-            { title = i18n("replaceExistingFiles"), fn = function() mod.replaceExistingFiles:toggle() end, checked = mod.replaceExistingFiles() },
-            { title = i18n("ignoreMissingEffects"), fn = function() mod.ignoreMissingEffects:toggle() end, checked = mod.ignoreMissingEffects() },
-            { title = i18n("ignoreProxies"), fn = function() mod.ignoreProxies:toggle() end, checked = mod.ignoreProxies() },
-            { title = "-" },
-            { title = string.upper(i18n("customFilename")) .. ": " .. mod.customFilename(), disabled = true },
-            { title = "-" },
-            { title = i18n("useCustomFilename"), fn = function() mod.useCustomFilename:toggle() end, checked = mod.useCustomFilename() },
-            { title = i18n("setCustomFilename"), fn = function()
-                local result = mod.customFilename(dialog.displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
-                    if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
-                        return true
-                    else
-                        return false
-                    end
-                end))
-                if type(result) == "string" then
-                    mod.customFilename(result)
-                end
-            end },
-            --]]
+            end, disabled=not fcp:isRunning() }
         }
     end)
 
