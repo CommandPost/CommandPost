@@ -22,6 +22,7 @@ local log                                       = require("hs.logger").new("batc
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local fnutils                                   = require("hs.fnutils")
 local inspect                                   = require("hs.inspect")
 local screen                                    = require("hs.screen")
 local toolbar                                   = require("hs.webview.toolbar")
@@ -352,21 +353,26 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Setup Tool Bar:
     --------------------------------------------------------------------------------
-    if not mod._toolbar then
-        mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
-            :canCustomize(true)
-            :autosaves(true)
-            :setCallback(function(_, _, id)
-                mod.selectPanel(id)
-            end)
+    if mod._toolbar then
+        mod._toolbar:delete()
+        mod._toolbar = nil
+    end
+    mod._toolbar = toolbar.new(mod.WEBVIEW_LABEL)
+        :canCustomize(true)
+        :autosaves(true)
+        :setCallback(function(_, _, id)
+            mod.selectPanel(id)
+        end)
 
-        local theToolbar = mod._toolbar
-        for _,thePanel in ipairs(mod._panels) do
-            local item = thePanel:getToolbarItem()
-            theToolbar:addItems(item)
-            if not theToolbar:selectedItem() then
-                theToolbar:selectedItem(item.id)
-            end
+    local theToolbar = mod._toolbar
+    for _,thePanel in ipairs(mod._panels) do
+        local item = thePanel:getToolbarItem()
+        if fnutils.contains(mod._disabledPanels, item.id) then
+            item.enable = false
+        end
+        theToolbar:addItems(item)
+        if not theToolbar:selectedItem() then
+            theToolbar:selectedItem(item.id)
         end
     end
 
@@ -483,6 +489,24 @@ function mod.injectScript(script)
     if mod._webview then
         mod._webview:evaluateJavaScript(script)
     end
+end
+
+-- plugins.finalcutpro.export.batch.manager._disabledPanels -> table
+-- Variable
+-- Table of disabled panel IDs
+mod._disabledPanels = {}
+
+--- plugins.finalcutpro.export.batch.manager.disabledPanels(ids) -> none
+--- Function
+--- Sets which panels are disabled.
+---
+--- Parameters:
+---  * ids - A table of panel ID's to disable
+---
+--- Returns:
+---  * None
+function mod.disabledPanels(ids)
+    mod._disabledPanels = ids
 end
 
 --- plugins.finalcutpro.export.batch.manager.selectPanel(id) -> none

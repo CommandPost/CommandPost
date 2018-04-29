@@ -105,19 +105,20 @@ local function selectShare(destinationPreset)
     end})
 end
 
--- plugins.finalcutpro.export.batch.sendClipsToCompressor(libraries, clips, exportPath, destinationPreset) -> boolean
+-- plugins.finalcutpro.export.batch.sendClipsToCompressor(clips) -> boolean
 -- Function
 -- Send Clips to Compressor
 --
 -- Parameters:
---  * libraries - selected Library
 --  * clips - table of selected Clips
---  * exportPath - Export Path as `string`
---  * destinationPreset - Destination Preset as `string`
 --
 -- Returns:
 --  * `true` if successful otherwise `false`
-function mod.sendClipsToCompressor(libraries, clips, exportPath, destinationPreset)
+function mod.sendClipsToCompressor(clips)
+
+    local libraries = fcp:browser():libraries()
+    local exportPath = mod.getDestinationFolder()
+    local destinationPreset = mod.getDestinationPreset()
 
     --------------------------------------------------------------------------------
     -- Launch Compressor:
@@ -173,19 +174,21 @@ function mod.sendClipsToCompressor(libraries, clips, exportPath, destinationPres
 
 end
 
--- batchExportClips(libraries, clips, exportPath, destinationPreset) -> boolean
+-- batchExportClips(clips) -> boolean
 -- Function
 -- Batch Export Clips
 --
 -- Parameters:
---  * libraries - selected Library
 --  * clips - table of selected Clips
---  * exportPath - Export Path as `string`
---  * destinationPreset - Destination Preset as `string`
 --
 -- Returns:
 --  * `true` if successful otherwise `false`
-function mod.batchExportClips(libraries, clips, exportPath, destinationPreset)
+function mod.batchExportClips(clips)
+
+    local libraries = fcp:browser():libraries()
+    local exportPath = mod.getDestinationFolder()
+    local destinationPreset = mod.getDestinationPreset()
+
     local errorFunction = " Error occurred in batchExportClips()."
     local firstTime = true
     for _,clip in ipairs(clips) do
@@ -435,6 +438,11 @@ function mod.changeExportDestinationPreset()
         config.set("batchExportDestinationPreset", result[1])
     end
 
+    --------------------------------------------------------------------------------
+    -- Refresh the Preferences:
+    --------------------------------------------------------------------------------
+    mod._bmMan.refresh()
+
     return true
 end
 
@@ -451,9 +459,14 @@ function mod.changeExportDestinationFolder()
     local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
     if result == false then return false end
     config.set("batchExportDestinationFolder", result)
+
+    --------------------------------------------------------------------------------
+    -- Refresh the Preferences:
+    --------------------------------------------------------------------------------
+    mod._bmMan.refresh()
+
     return true
 end
-
 
 function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
@@ -536,110 +549,82 @@ mod._clips = {}
 function mod.batchExport()
 
     --------------------------------------------------------------------------------
-    -- Reset Existing Clip Names:
+    -- Reset Everything:
     --------------------------------------------------------------------------------
+    mod._clips = nil
     mod._existingClipNames = nil
     mod._existingClipNames = {}
 
     --------------------------------------------------------------------------------
-    -- Make sure we actually have a Destination Preset:
+    -- Check where the mouse is, and set panel accordingly:
     --------------------------------------------------------------------------------
-    local destinationPreset = mod.getDestinationPreset()
-    if not destinationPreset then
-        dialog.displayErrorMessage(i18n("batchExportNoDestination"))
-        return
-    end
-
-    --------------------------------------------------------------------------------
-    -- Check where the mouse is...
-    --------------------------------------------------------------------------------
-    local mouseInTimeline = false
-    local mouseInBrowser = false
-
     local mouseLocation = geometry.point(mouse.getAbsolutePosition())
+
+    local mode
 
     local timeline = fcp:timeline()
     if timeline:isShowing() then
         local timelineViewFrame = timeline:contents():viewFrame()
         if timelineViewFrame then
             if mouseLocation:inside(geometry.rect(timelineViewFrame)) then
-                log.df("Mouse is in timeline")
-                mouseInTimeline = true
+                mod._bmMan.disabledPanels({"browser"})
+                mod._bmMan.lastTab("timeline")
+                mode = "timeline"
             end
         end
     end
 
-
     local browser = fcp:browser()
-    if browser:isShowing() then
+    if browser:isShowing() and browser:libraries():isShowing() then
         local browserFrame = browser:UI() and browser:UI():frame()
         if browserFrame then
             if mouseLocation:inside(geometry.rect(browserFrame)) then
-                log.df("Mouse is in browser")
-                mouseInBrowser = true
+                mod._bmMan.disabledPanels({"timeline"})
+                mod._bmMan.lastTab("browser")
+                mode = "browser"
             end
         end
     end
 
-
-
-
-
-
-
-
-    local libraries = fcp:browser():libraries()
-
-    if not libraries:isShowing() then
-        dialog.displayErrorMessage(i18n("batchExportEnableBrowser"))
-        return false
-    end
+    --------------------------------------------------------------------------------
+    -- Ignore if mouse is not over browser or timeline:
+    --------------------------------------------------------------------------------
+    if mode == nil then return end
 
     --------------------------------------------------------------------------------
-    -- Check if we have any currently-selected clips:
+    -- If the mouse is over the browser:
     --------------------------------------------------------------------------------
-    local clips = libraries:selectedClips()
-
-    if libraries:sidebar():isFocused() then
-        --------------------------------------------------------------------------------
-        -- Use All Clips:
-        --------------------------------------------------------------------------------
-        clips = libraries:clips()
-    end
-
-
-    if clips and #clips > 0 then
+    if mode == "browser" then
 
         --------------------------------------------------------------------------------
-        -- Display Dialog:
+        -- Check if we have any currently-selected clips:
         --------------------------------------------------------------------------------
-        local countText = " "
-        if #clips > 1 then countText = " " .. tostring(#clips) .. " " end
-        local replaceFilesMessage
-        if mod.replaceExistingFiles() then
-            replaceFilesMessage = i18n("batchExportReplaceYes")
-        else
-            replaceFilesMessage = i18n("batchExportReplaceNo")
+        local libraries = browser:libraries()
+        local clips = libraries:selectedClips()
+
+        if libraries:sidebar():isFocused() then
+            --------------------------------------------------------------------------------
+            -- Use All Clips:
+            --------------------------------------------------------------------------------
+            clips = libraries:clips()
         end
 
-        mod._libraries = libraries
-        mod._clips =  clips
-        mod._exportPath = exportPath
-        mod._destinationPreset = destinationPreset
+        if clips and #clips > 0 then
+            mod._clips =  clips
+            mod._bmMan.show()
+        else
+            --------------------------------------------------------------------------------
+            -- No clips selected so ignore:
+            --------------------------------------------------------------------------------
+            return
+        end
+    end
 
-
-
+    --------------------------------------------------------------------------------
+    -- If the mouse is over the timeline:
+    --------------------------------------------------------------------------------
+    if mode == "timeline" then
         mod._bmMan.show()
-
-        --local result = dialog.displayMessage(i18n("batchExportCheckPath", {count=countText, replace=replaceFilesMessage, path=exportPath, preset=destinationPreset, item=i18n("item", {count=#clips})}), {i18n("continue") .. " " .. i18n("batchExport"), i18n("cancel")})
-        --if result == nil then return end
-
-
-    else
-        --------------------------------------------------------------------------------
-        -- No Clips are Available:
-        --------------------------------------------------------------------------------
-        dialog.displayErrorMessage(i18n("batchExportNoClipsSelected"))
     end
 
 end
@@ -650,16 +635,22 @@ local function clipsToCountString(clips)
     return countText
 end
 
-function mod.performBatchExport()
+function mod.performBrowserBatchExport()
+
+    --------------------------------------------------------------------------------
+    -- Hide the Window:
+    --------------------------------------------------------------------------------
+    mod._bmMan.hide()
 
     --------------------------------------------------------------------------------
     -- Export the clips:
     --------------------------------------------------------------------------------
     local result
+    local destinationPreset = mod.getDestinationPreset()
     if destinationPreset == i18n("sendToCompressor") then
-        result = mod.sendClipsToCompressor(libraries, clips, exportPath, destinationPreset)
+        result = mod.sendClipsToCompressor(mod._clips)
     else
-        result = mod.batchExportClips(libraries, clips, exportPath, destinationPreset)
+        result = mod.batchExportClips(mod._clips)
     end
 
     --------------------------------------------------------------------------------
@@ -720,9 +711,21 @@ function plugin.init(deps)
 
         ]]))
         :addHeading(nextID(), "Batch Export from Browser")
-        :addParagraph(nextID(), function() return "Final Cut Pro will export the " .. clipsToCountString(mod._clips) .. "selected " .. i18n("item", {count=#mod._clips}) .. " in the browser to the following location:" end)
+        :addParagraph(nextID(), function()
+                local clipCount = mod._clips and #mod._clips or 0
+                local clipCountString = clipsToCountString(mod._clips)
+                local itemString = i18n("item", {count=clipCount})
+                return "Final Cut Pro will export the " ..  clipCountString .. "selected " ..  itemString .. " in the browser to the following location:"
+            end)
         :addParagraph(nextID(), html.br())
-        :addContent(nextID(), function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationFolder() .."</p>"  end, false)
+        :addContent(nextID(), function()
+                local destinationFolder = mod.getDestinationFolder()
+                if destinationFolder then
+                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationFolder .."</p></div>"
+                else
+                    return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Folder Selected</p>]]
+                end
+            end, false)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
@@ -730,11 +733,17 @@ function plugin.init(deps)
                 label = i18n("changeDestinationFolder"),
                 onclick = mod.changeExportDestinationFolder,
             })
-
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following Destination Preset:")
         :addParagraph(nextID(), html.br())
-        :addContent(nextID(), function() return [[<p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p>" end, false)
+        :addContent(nextID(), function()
+                local destinationPreset = mod.getDestinationPreset()
+                if destinationPreset then
+                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p></div>"
+                else
+                    return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Preset Selected</p>]]
+                end
+            end, false)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
@@ -766,7 +775,7 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("performBatchExport"),
-                onclick = mod.batchExport,
+                onclick = mod.performBrowserBatchExport,
             })
 
     --------------------------------------------------------------------------------
@@ -785,7 +794,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add items to Menubar:
     --------------------------------------------------------------------------------
-    --[[
     local section = deps.prefs:addSection(PRIORITY)
     local menu = section:addMenu(1000, function() return i18n("batchExport") end)
     menu:addItems(1, function()
@@ -805,6 +813,7 @@ function plugin.init(deps)
 
                 mod.batchExport()
             end, disabled=not fcp:isRunning() },
+            --[[
             { title = "-" },
             { title = i18n("setDestinationPreset"), fn = mod.changeExportDestinationPreset },
             { title = i18n("setDestinationFolder"), fn = mod.changeExportDestinationFolder },
@@ -828,9 +837,9 @@ function plugin.init(deps)
                     mod.customFilename(result)
                 end
             end },
+            --]]
         }
     end)
-    --]]
 
     --------------------------------------------------------------------------------
     -- Commands:
