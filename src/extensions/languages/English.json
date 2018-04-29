@@ -596,6 +596,8 @@
         "finalcutpro_menu_support_label"                     : "Menubar: Support",
         "seven"                                              : "7",
         "cpBatchExportFromBrowser_title"                     : "Batch Export from Browser",
+        "cpBatchExportFromTimeline_title"                    : "Batch Export from Timeline",
+        "cpBatchExport_title"                                : "Batch Export",
         "openCommandEditor"                                  : "Open Command Editor",
         "plugin_status_initialized"                          : "Initialised",
         "finalcutpro_commands_label"                         : "Final Cut Pro Keyboard Commands",
