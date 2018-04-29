@@ -55,7 +55,10 @@ local PRIORITY = 2000
 --------------------------------------------------------------------------------
 local mod = {}
 
-mod.DEFAULT_CUSTOM_FILENAME = "Custom Filename"
+--- plugins.finalcutpro.export.batch.DEFAULT_CUSTOM_FILENAME -> string
+--- Constant
+--- Default Custom Filename
+mod.DEFAULT_CUSTOM_FILENAME = i18n("batchExport")
 
 -- plugins.finalcutpro.export.batch._existingClipNames -> table
 -- Variable
@@ -131,8 +134,9 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Launch Compressor:
     --------------------------------------------------------------------------------
+    local result
     if not compressor:isRunning() then
-        local result = just.doUntil(function()
+        result = just.doUntil(function()
             compressor:launch()
             return compressor:isFrontmost()
         end, 10, 0.1)
@@ -145,7 +149,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    local result = just.doUntil(function()
+    result = just.doUntil(function()
         fcp:launch()
         return fcp:isFrontmost()
     end, 10, 0.1)
@@ -172,7 +176,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        local result = just.doUntil(function()
+        result = just.doUntil(function()
             fcp:launch()
             return fcp:isFrontmost()
         end, 10, 0.1)
@@ -299,10 +303,6 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.sendBrowserClipsToCompressor(clips)
 
-    local libraries = fcp:browser():libraries()
-    local exportPath = mod.getDestinationFolder()
-    local destinationPreset = mod.getDestinationPreset()
-
     --------------------------------------------------------------------------------
     -- Launch Compressor:
     --------------------------------------------------------------------------------
@@ -317,6 +317,10 @@ function mod.sendBrowserClipsToCompressor(clips)
         end
     end
 
+    --------------------------------------------------------------------------------
+    -- Export individual clips:
+    --------------------------------------------------------------------------------
+    local libraries = fcp:browser():libraries()
     for _,clip in ipairs(clips) do
 
         --------------------------------------------------------------------------------
@@ -373,6 +377,7 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.batchExportBrowserClips(clips)
 
+    local result
     local libraries = fcp:browser():libraries()
     local exportPath = mod.getDestinationFolder()
     local destinationPreset = mod.getDestinationPreset()
@@ -384,7 +389,7 @@ function mod.batchExportBrowserClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        local result = just.doUntil(function()
+        result = just.doUntil(function()
             fcp:launch()
             return fcp:isFrontmost()
         end, 10, 0.1)
@@ -432,7 +437,7 @@ function mod.batchExportBrowserClips(clips)
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
                             if axutils.childrenMatching(sheet, function(child)
-                                if child:attributeValue("AXStaticText") and child:attributeValue("AXStaticText") == fcp:strings("FFShareProxyPlaybackEnabledMessageText") then
+                                if child:attributeValue("AXStaticText") and child:attributeValue("AXStaticText") == fcp:string("FFShareProxyPlaybackEnabledMessageText") then
                                     return child
                                 end
                             end) and continueButton then
@@ -440,12 +445,12 @@ function mod.batchExportBrowserClips(clips)
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    local result = continueButton:performAction("AXPress")
+                                    result = continueButton:performAction("AXPress")
                                     if result ~= nil then
                                         triggerError = false
                                     end
                                 else
-                                    dialog.displayMessage("Proxy files were detected, which has aborted the Batch Export.\n\nProxy files can be ignored via the Batch Export Preferences if required.")
+                                    dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
                                     return false
                                 end
                             end
@@ -475,7 +480,7 @@ function mod.batchExportBrowserClips(clips)
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
                             if axutils.childrenMatching(sheet, function(child)
-                                if child:attributeValue("AXStaticText") and string.gsub(child:attributeValue("AXStaticText"), [[“%@” ]], "") == fcp:strings("FFMissingMediaMessageText") then
+                                if child:attributeValue("AXStaticText") and string.gsub(child:attributeValue("AXStaticText"), [[“%@” ]], "") == fcp:string("FFMissingMediaMessageText") then
                                     return child
                                 end
                             end) and continueButton then
@@ -483,12 +488,12 @@ function mod.batchExportBrowserClips(clips)
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    local result = continueButton:performAction("AXPress")
+                                    result = continueButton:performAction("AXPress")
                                     if result ~= nil then
                                         triggerError = false
                                     end
                                 else
-                                    dialog.displayMessage("Missing or offline titles, effects or generators were detected, which has aborted the Batch Export.\n\nMissing & Offline Effects can be ignored via the Batch Export Preferences if required.")
+                                    dialog.displayMessage(i18n("batchExportMissingFilesDetected"))
                                     return false
                                 end
                             end
@@ -598,6 +603,7 @@ function mod.batchExportTimelineClips(clips)
     local exportPath = mod.getDestinationFolder()
     local destinationPreset = mod.getDestinationPreset()
 
+    local result
     local errorFunction = "\n\nError occurred in batchExportTimelineClips()."
     local firstTime = true
 
@@ -611,7 +617,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        local result = just.doUntil(function()
+        result = just.doUntil(function()
             fcp:launch()
             return fcp:isFrontmost()
         end, 10, 0.1)
@@ -759,21 +765,22 @@ function mod.batchExportTimelineClips(clips)
                     if sheets then
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            if axutils.childrenMatching(sheet, function(child)
-                                if child:attributeValue("AXStaticText") and child:attributeValue("AXStaticText") == fcp:strings("FFShareProxyPlaybackEnabledMessageText") then
+                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
+                                if child and child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == fcp:string("FFShareProxyPlaybackEnabledMessageText") then
                                     return child
                                 end
-                            end) and continueButton then
+                            end)
+                            if #matchingSheet == 1 and continueButton then
                                 if mod.ignoreProxies() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    local result = continueButton:performAction("AXPress")
+                                    result = continueButton:performAction("AXPress")
                                     if result ~= nil then
                                         triggerError = false
                                     end
                                 else
-                                    dialog.displayMessage("Proxy files were detected, which has aborted the Batch Export.\n\nProxy files can be ignored via the Batch Export Preferences if required.")
+                                    dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
                                     return false
                                 end
                             end
@@ -802,21 +809,22 @@ function mod.batchExportTimelineClips(clips)
                     if sheets then
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            if axutils.childrenMatching(sheet, function(child)
-                                if child:attributeValue("AXStaticText") and string.gsub(child:attributeValue("AXStaticText"), [[“%@” ]], "") == fcp:strings("FFMissingMediaMessageText") then
+                            matchingSheet = axutils.childrenMatching(sheet, function(child)
+                                if child and child:attributeValue("AXRole") == "AXStaticText" and string.find(child:attributeValue("AXValue"), string.gsub(fcp:string("FFMissingMediaMessageText"), [[“%%@” ]], "")) then
                                     return child
                                 end
-                            end) and continueButton then
+                            end)
+                            if #matchingSheet == 1 and continueButton then
                                 if mod.ignoreMissingEffects() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
-                                    local result = continueButton:performAction("AXPress")
+                                    result = continueButton:performAction("AXPress")
                                     if result ~= nil then
                                         triggerError = false
                                     end
                                 else
-                                    dialog.displayMessage("Missing or offline titles, effects or generators were detected, which has aborted the Batch Export.\n\nMissing & Offline Effects can be ignored via the Batch Export Preferences if required.")
+                                    dialog.displayMessage(i18n("batchExportMissingFilesDetected"))
                                     return false
                                 end
                             end
@@ -829,6 +837,10 @@ function mod.batchExportTimelineClips(clips)
                 return false
             end
         end
+
+        --------------------------------------------------------------------------------
+        -- Press 'Next':
+        --------------------------------------------------------------------------------
         exportDialog:pressNext()
 
         --------------------------------------------------------------------------------
@@ -1086,7 +1098,7 @@ function mod.getDestinationPreset()
             --------------------------------------------------------------------------------
             -- If that fails, get the first item on the list...
             --------------------------------------------------------------------------------
-            local firstItem = fcp:menuBar():findMenuUI({"File", "Share", function(menuItem)
+            local firstItem = fcp:menuBar():findMenuUI({"File", "Share", function()
                 return true
             end})
             if firstItem and firstItem:attributeValue("AXTitle") then
@@ -1156,8 +1168,6 @@ function mod.batchExport(mode)
             local timelineViewFrame = timeline:contents():viewFrame()
             if timelineViewFrame then
                 if mouseLocation:inside(geometry.rect(timelineViewFrame)) then
-                    mod._bmMan.disabledPanels({"browser"})
-                    mod._bmMan.lastTab("timeline")
                     mode = "timeline"
                 end
             end
@@ -1166,8 +1176,6 @@ function mod.batchExport(mode)
             local browserFrame = browser:UI() and browser:UI():frame()
             if browserFrame then
                 if mouseLocation:inside(geometry.rect(browserFrame)) then
-                    mod._bmMan.disabledPanels({"timeline"})
-                    mod._bmMan.lastTab("browser")
                     mode = "browser"
                 end
             end
@@ -1178,7 +1186,7 @@ function mod.batchExport(mode)
     -- Ignore if mouse is not over browser or timeline:
     --------------------------------------------------------------------------------
     if mode == nil then
-        dialog.displayMessage("Your mouse must be hovering over either the Timeline or the Browser to use the Batch Export functionality.")
+        dialog.displayMessage(i18n("batchExportModeError"))
         return
     end
 
@@ -1186,6 +1194,12 @@ function mod.batchExport(mode)
     -- If the mouse is over the browser:
     --------------------------------------------------------------------------------
     if mode == "browser" then
+
+        --------------------------------------------------------------------------------
+        -- Setup Window:
+        --------------------------------------------------------------------------------
+        mod._bmMan.disabledPanels({"timeline"})
+        mod._bmMan.lastTab("browser")
 
         --------------------------------------------------------------------------------
         -- Check if we have any currently-selected clips:
@@ -1207,7 +1221,7 @@ function mod.batchExport(mode)
             --------------------------------------------------------------------------------
             -- No clips selected so ignore:
             --------------------------------------------------------------------------------
-            dialog.displayMessage("No clips selected in the browser.\n\nPlease select at least one clip, Keyword Collection or Smart Collection and try again.")
+            dialog.displayMessage(i18n("batchExportNoClipsInBrowser"))
             return
         end
     end
@@ -1217,16 +1231,24 @@ function mod.batchExport(mode)
     --------------------------------------------------------------------------------
     if mode == "timeline" then
 
+        --------------------------------------------------------------------------------
+        -- Setup Window:
+        --------------------------------------------------------------------------------
+        mod._bmMan.disabledPanels({"browser"})
+        mod._bmMan.lastTab("timeline")
+
+        --------------------------------------------------------------------------------
+        -- Check if we have any currently-selected clips:
+        --------------------------------------------------------------------------------
         local timelineContents = fcp:timeline():contents()
         local selectedClips = timelineContents:selectedClipsUI()
 
         if not selectedClips or #selectedClips == 0 then
-            dialog.displayMessage("No clips selected in the timeline.\n\nPlease select at least one clip and try again.")
+            dialog.displayMessage(i18n("batchExportNoClipsInTimeline"))
             return
         end
 
         mod._clips = selectedClips
-
         mod._bmMan.show()
     end
 
