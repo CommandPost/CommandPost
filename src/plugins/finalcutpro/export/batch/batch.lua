@@ -167,7 +167,7 @@ function mod.sendTimelineClipsToCompressor(clips)
     --------------------------------------------------------------------------------
     local playhead = fcp:timeline():playhead()
     local timelineContents = fcp:timeline():contents()
-    for _,clip in ipairs(clips) do
+    for _,clip in tools.spairs(clips, function(t,a,b) return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription") end) do
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
@@ -606,7 +606,7 @@ function mod.batchExportTimelineClips(clips)
     --------------------------------------------------------------------------------
     local playhead = fcp:timeline():playhead()
     local timelineContents = fcp:timeline():contents()
-    for _,clip in ipairs(clips) do
+    for _,clip in tools.spairs(clips, function(t,a,b) return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription") end) do
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
@@ -629,7 +629,7 @@ function mod.batchExportTimelineClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Get Start Timecode:
+        -- Select clip:
         --------------------------------------------------------------------------------
         result = just.doUntil(function()
             timelineContents:selectClip(clip)
@@ -640,6 +640,23 @@ function mod.batchExportTimelineClips(clips)
             dialog.displayErrorMessage("Failed to select clip during start timecode phase." .. errorFunction)
             return false
         end
+
+        --------------------------------------------------------------------------------
+        -- Get Clip Name whilst we're at it:
+        --------------------------------------------------------------------------------
+        local clipName = clip:attributeValue("AXDescription")
+        if not clipName then
+            dialog.displayErrorMessage("Could not get clip name." .. errorFunction)
+            return false
+        end
+        local columnPostion = string.find(clipName, ":")
+        if columnPostion then
+            clipName = string.sub(clipName, columnPostion + 1)
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get Start Timecode:
+        --------------------------------------------------------------------------------
         if not fcp:selectMenu({"Mark", "Go to", "Range Start"}) then
             dialog.displayErrorMessage("Could not trigger 'Range Start'." .. errorFunction)
             return false
@@ -841,7 +858,7 @@ function mod.batchExportTimelineClips(clips)
             --------------------------------------------------------------------------------
             local filename = saveSheet:filename():getValue()
             if filename then
-                local newFilename = filename
+                local newFilename = clipName
 
                 --------------------------------------------------------------------------------
                 -- Inject Custom Filenames:
