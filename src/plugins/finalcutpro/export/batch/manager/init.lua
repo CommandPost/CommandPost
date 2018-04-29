@@ -39,7 +39,7 @@ local tools                                     = require("cp.tools")
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
-local _                                         = require("moses")
+local moses                                     = require("moses")
 
 --------------------------------------------------------------------------------
 -- Module Extensions:
@@ -236,7 +236,7 @@ end
 --
 -- Returns:
 -- * None
-local function windowCallback(action, webview, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod._webview = nil
@@ -592,7 +592,7 @@ function mod.addPanel(params)
 
     local newPanel = panel.new(params, mod)
 
-    local index = _.sortedIndex(mod._panels, newPanel, comparePriorities)
+    local index = moses.sortedIndex(mod._panels, newPanel, comparePriorities)
     table.insert(mod._panels, index, newPanel)
 
     return newPanel
@@ -607,15 +607,12 @@ local plugin = {
     id              = "finalcutpro.export.batch.manager",
     group           = "finalcutpro",
     required        = true,
-    dependencies    = {
-        ["core.commands.global"] = "global",
-    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(_, env)
     return mod.init(env)
 end
 

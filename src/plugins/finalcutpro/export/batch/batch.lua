@@ -377,13 +377,19 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.batchExportBrowserClips(clips)
 
+    --------------------------------------------------------------------------------
+    -- Setup:
+    --------------------------------------------------------------------------------
     local result
-    local libraries = fcp:browser():libraries()
-    local exportPath = mod.getDestinationFolder()
-    local destinationPreset = mod.getDestinationPreset()
+    local firstTime             = true
+    local libraries             = fcp:browser():libraries()
+    local exportPath            = mod.getDestinationFolder()
+    local destinationPreset     = mod.getDestinationPreset()
+    local errorFunction         = "\n\nError occurred in batchExportBrowserClips()."
 
-    local errorFunction = "\n\nError occurred in batchExportBrowserClips()."
-    local firstTime = true
+    --------------------------------------------------------------------------------
+    -- Process individual clips:
+    --------------------------------------------------------------------------------
     for _,clip in ipairs(clips) do
 
         --------------------------------------------------------------------------------
@@ -409,6 +415,15 @@ function mod.batchExportBrowserClips(clips)
         libraries:selectClip(clip)
 
         --------------------------------------------------------------------------------
+        -- Get Clip Name:
+        --------------------------------------------------------------------------------
+        local clipName = clip:getTitle()
+        if not clipName then
+            dialog.displayErrorMessage("Could not get clip name." .. errorFunction)
+            return false
+        end
+
+        --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
         if not selectShare(destinationPreset) then
@@ -428,7 +443,6 @@ function mod.batchExportBrowserClips(clips)
         -- FFShareProxyPlaybackEnabledMessageText
         --------------------------------------------------------------------------------
         if not just.doUntil(function() return exportDialog:isShowing() end) then
-            local triggerError = true
             local windowUIs = fcp:windowsUI()
             if windowUIs then
                 for _, windowUI in pairs(windowUIs) do
@@ -436,19 +450,17 @@ function mod.batchExportBrowserClips(clips)
                     if sheets then
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            if axutils.childrenMatching(sheet, function(child)
-                                if child:attributeValue("AXStaticText") and child:attributeValue("AXStaticText") == fcp:string("FFShareProxyPlaybackEnabledMessageText") then
+                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
+                                if child and child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == fcp:string("FFShareProxyPlaybackEnabledMessageText") then
                                     return child
                                 end
-                            end) and continueButton then
+                            end)
+                            if matchingSheet and #matchingSheet == 1 and continueButton then
                                 if mod.ignoreProxies() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
                                     result = continueButton:performAction("AXPress")
-                                    if result ~= nil then
-                                        triggerError = false
-                                    end
                                 else
                                     dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
                                     return false
@@ -457,10 +469,6 @@ function mod.batchExportBrowserClips(clips)
                         end
                     end
                 end
-            end
-            if triggerError then
-                dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-                return false
             end
         end
 
@@ -479,11 +487,12 @@ function mod.batchExportBrowserClips(clips)
                     if sheets then
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            if axutils.childrenMatching(sheet, function(child)
-                                if child:attributeValue("AXStaticText") and string.gsub(child:attributeValue("AXStaticText"), [[“%@” ]], "") == fcp:string("FFMissingMediaMessageText") then
+                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
+                                if child and child:attributeValue("AXRole") == "AXStaticText" and string.find(child:attributeValue("AXValue"), string.gsub(fcp:string("FFMissingMediaMessageText"), [[“%%@” ]], "")) then
                                     return child
                                 end
-                            end) and continueButton then
+                            end)
+                            if matchingSheet and #matchingSheet == 1 and continueButton then
                                 if mod.ignoreMissingEffects() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
@@ -506,6 +515,10 @@ function mod.batchExportBrowserClips(clips)
                 return false
             end
         end
+
+        --------------------------------------------------------------------------------
+        -- Press 'Next':
+        --------------------------------------------------------------------------------
         exportDialog:pressNext()
 
         --------------------------------------------------------------------------------
@@ -535,7 +548,7 @@ function mod.batchExportBrowserClips(clips)
             --------------------------------------------------------------------------------
             local filename = saveSheet:filename():getValue()
             if filename then
-                local newFilename = filename
+                local newFilename = clipName
 
                 --------------------------------------------------------------------------------
                 -- Inject Custom Filenames:
@@ -600,12 +613,14 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.batchExportTimelineClips(clips)
 
-    local exportPath = mod.getDestinationFolder()
-    local destinationPreset = mod.getDestinationPreset()
-
+    --------------------------------------------------------------------------------
+    -- Setup:
+    --------------------------------------------------------------------------------
     local result
-    local errorFunction = "\n\nError occurred in batchExportTimelineClips()."
-    local firstTime = true
+    local firstTime             = true
+    local exportPath            = mod.getDestinationFolder()
+    local destinationPreset     = mod.getDestinationPreset()
+    local errorFunction         = "\n\nError occurred in batchExportTimelineClips()."
 
     --------------------------------------------------------------------------------
     -- Process each clip individually:
@@ -757,7 +772,6 @@ function mod.batchExportTimelineClips(clips)
         -- FFShareProxyPlaybackEnabledMessageText
         --------------------------------------------------------------------------------
         if not just.doUntil(function() return exportDialog:isShowing() end) then
-            local triggerError = true
             local windowUIs = fcp:windowsUI()
             if windowUIs then
                 for _, windowUI in pairs(windowUIs) do
@@ -770,15 +784,12 @@ function mod.batchExportTimelineClips(clips)
                                     return child
                                 end
                             end)
-                            if #matchingSheet == 1 and continueButton then
+                            if matchingSheet and #matchingSheet == 1 and continueButton then
                                 if mod.ignoreProxies() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
                                     --------------------------------------------------------------------------------
                                     result = continueButton:performAction("AXPress")
-                                    if result ~= nil then
-                                        triggerError = false
-                                    end
                                 else
                                     dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
                                     return false
@@ -787,10 +798,6 @@ function mod.batchExportTimelineClips(clips)
                         end
                     end
                 end
-            end
-            if triggerError then
-                dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-                return false
             end
         end
 
@@ -809,12 +816,12 @@ function mod.batchExportTimelineClips(clips)
                     if sheets then
                         for _, sheet in pairs(sheets) do
                             local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            matchingSheet = axutils.childrenMatching(sheet, function(child)
+                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
                                 if child and child:attributeValue("AXRole") == "AXStaticText" and string.find(child:attributeValue("AXValue"), string.gsub(fcp:string("FFMissingMediaMessageText"), [[“%%@” ]], "")) then
                                     return child
                                 end
                             end)
-                            if #matchingSheet == 1 and continueButton then
+                            if matchingSheet and #matchingSheet == 1 and continueButton then
                                 if mod.ignoreMissingEffects() then
                                     --------------------------------------------------------------------------------
                                     -- Press the 'Continue' button:
