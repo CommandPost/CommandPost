@@ -1109,5 +1109,8 @@
 		"cpResetHighlightsColorWheelColor_title"               : "Reset Highlights Color Wheel Color",
 		"cpResetHighlightsColorWheelSaturation_title"          : "Reset Highlights Color Wheel Saturation",
 		"cpResetHighlightsColorWheelBrightness_title"          : "Reset Highlights Color Wheel Brightness",
+		"finalcutpro_timeline_colorwheels_label"			   : "Timeline: Color Wheel Actions",
+		"finalcutpro_export_batch_manager_label"	           : "Manager: Batch Export",
+		"core_disk_automount_label"							   : "Disk Automount",
     }
 }
