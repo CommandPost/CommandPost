@@ -111,12 +111,8 @@ mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
 --  * `true` if successful otherwise `false`
 local function selectShare(destinationPreset)
     return fcp:selectMenu({"File", "Share", function(menuItem)
-        if destinationPreset == nil then
-            return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
-        else
-            local title = menuItem:attributeValue("AXTitle")
-            return title and string.find(title, destinationPreset, 1, true) ~= nil
-        end
+        local title = menuItem:attributeValue("AXTitle")
+        return title and destinationPreset and string.sub(title, 1, string.len(destinationPreset)) == destinationPreset
     end})
 end
 
@@ -1085,52 +1081,61 @@ end
 ---  * The destination preset as a string, or `nil` if no preset is set.
 function mod.getDestinationPreset()
 
+    --------------------------------------------------------------------------------
+    -- Get Destination Preset from Preferences:
+    --------------------------------------------------------------------------------
     local destinationPreset = config.get("batchExportDestinationPreset")
 
+    --------------------------------------------------------------------------------
+    -- If it's "Send to Compressor" - make sure Compressor is installed:
+    --------------------------------------------------------------------------------
     if destinationPreset == i18n("sendToCompressor") then
         if not compressor:isInstalled() then
-            log.df("Apple Compressor could not be detected.")
+            --log.df("Apple Compressor could not be detected.")
             destinationPreset = nil
             config.set("batchExportDestinationPreset", nil)
         end
     end
 
+    --------------------------------------------------------------------------------
+    -- If there's no existing destination, then try use the Default Destination:
+    --------------------------------------------------------------------------------
     if destinationPreset == nil then
-
         local defaultItem = fcp:menuBar():findMenuUI({"File", "Share", function(menuItem)
             return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
         end})
-
-        if defaultItem == nil then
-            --------------------------------------------------------------------------------
-            -- If that fails, get the first item on the list...
-            --------------------------------------------------------------------------------
-            local firstItem = fcp:menuBar():findMenuUI({"File", "Share", function()
-                return true
-            end})
-            if firstItem and firstItem:attributeValue("AXTitle") then
-                destinationPreset = string.sub(firstItem:attributeValue("AXTitle"), 1, -4)
-            else
-                --------------------------------------------------------------------------------
-                -- If all else fails, we'll use "Send To Compressor":
-                --------------------------------------------------------------------------------
-                if compressor:isInstalled() then
-                    destinationPreset = i18n("sendToCompressor")
-                else
-                    --------------------------------------------------------------------------------
-                    -- No options left!
-                    --------------------------------------------------------------------------------
-                    destinationPreset = nil
-                end
+        if defaultItem ~= nil then
+            local title = defaultItem:attributeValue("AXTitle")
+            if title then
+                --log.df("Using Default Destination: '%s'", title)
+                destinationPreset = title
             end
-        else
-            --------------------------------------------------------------------------------
-            -- Trim the trailing '(default)…'
-            --------------------------------------------------------------------------------
-            destinationPreset = defaultItem:attributeValue("AXTitle"):match("(.*) %([^()]+%)…$")
         end
-
     end
+
+    --------------------------------------------------------------------------------
+    -- If that fails, try the first item on the list:
+    --------------------------------------------------------------------------------
+    if destinationPreset == nil then
+        local firstItem = fcp:menuBar():findMenuUI({"File", "Share", 1})
+        if firstItem ~= nil then
+            local title = firstItem:attributeValue("AXTitle")
+            if title then
+                --log.df("Using first item: '%s'", title)
+                destinationPreset = title
+            end
+        end
+    end
+
+    --------------------------------------------------------------------------------
+    -- If that fails, try using Compressor if installed:
+    --------------------------------------------------------------------------------
+    if destinationPreset == nil then
+        if compressor:isInstalled() then
+            destinationPreset = i18n("sendToCompressor")
+        end
+    end
+
     return destinationPreset
 end
 
@@ -1405,7 +1410,14 @@ function plugin.init(deps)
         :addContent(nextID(), function()
                 local destinationPreset = mod.getDestinationPreset()
                 if destinationPreset then
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p></div>"
+                    --------------------------------------------------------------------------------
+                    -- Trim the "(default)…":
+                    --------------------------------------------------------------------------------
+                    local trimmedDestinationPreset = destinationPreset:match("(.*) %([^()]+%)…$")
+                    if trimmedDestinationPreset then
+                        destinationPreset = trimmedDestinationPreset
+                    end
+                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationPreset .."</p></div>"
                 else
                     return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Preset Selected</p>]]
                 end
@@ -1516,7 +1528,14 @@ function plugin.init(deps)
         :addContent(nextID(), function()
                 local destinationPreset = mod.getDestinationPreset()
                 if destinationPreset then
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. mod.getDestinationPreset() .."</p></div>"
+                    --------------------------------------------------------------------------------
+                    -- Trim the "(default)…":
+                    --------------------------------------------------------------------------------
+                    local trimmedDestinationPreset = destinationPreset:match("(.*) %([^()]+%)…$")
+                    if trimmedDestinationPreset then
+                        destinationPreset = trimmedDestinationPreset
+                    end
+                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationPreset .."</p></div>"
                 else
                     return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Preset Selected</p>]]
                 end
