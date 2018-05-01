@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log						= require("hs.logger").new("propertyRow")
+local log						= require("hs.logger").new("PropertyRow")
 local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
@@ -34,6 +34,7 @@ local Button					= require("cp.ui.Button")
 local prop						= require("cp.prop")
 
 local format                    = string.format
+local childMatching, childrenMatching           = axutils.childMatching, axutils.childrenMatching
 
 --------------------------------------------------------------------------------
 --
@@ -41,6 +42,61 @@ local format                    = string.format
 --
 --------------------------------------------------------------------------------
 local PropertyRow = {}
+
+local UI_FINDER = {}
+local UI_FINDER_LABEL = "PropertyRow UI Finder"
+
+function PropertyRow.findProperties(parent)
+    local finder = parent[UI_FINDER]
+    if finder then
+        return finder(parent)
+    else
+        error(format("Unable to find properties with this parent: %s", inspect(parent)))
+    end
+end
+
+--- cp.ui.PropertyRow.prepParent(parent, uiFinder) -> boolean
+--- Function
+--- Call this to make `parent` table ready to be a parent of `PropertyRow`s.
+--- Essentially, this lets `PropertyRow` instances ask the parent for the
+--- `hs._asm.axuielement` that contains the property row details.
+---
+--- Parameters:
+--- * parent    - The parent table.
+--- * uiFinder  - The function or cp.prop which will be called to find the parent UI element. Functions will be passed the `parent` when being executed.
+---
+--- Returns:
+---
+function PropertyRow.prepParent(parent, uiFinder)
+    if is.nt.callable(uiFinder) then
+        error(format("The `finder` must be callable: %s", type(uiFinder)))
+    if parent[UI_FINDER] ~= nil then
+        error("The UI Finder has already been set on this parent.")
+    end
+
+    if prop.is(uiFinder) then
+        uiFinder = uiFinder:wrap(parent)
+    else
+        uiFinder = prop(uiFinder):bind(parent)
+    end
+
+    uiFinder:label(UI_FINDER_LABEL)
+
+    parent[UI_FINDER] = uiFinder
+end
+
+--- cp.ui.PropertyRow.isParent(parent) -> boolean
+--- Function
+--- Checks if the `parent` has been prepared via [prepParent](#prepParent).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * `true` if the parent is prepared.
+function PropertyRow.isParent(parent)
+    return parent[UI_FINDER] ~= nil
+end
 
 --- cp.ui.PropertyRow.matches(element) -> boolean
 --- Function
@@ -66,47 +122,45 @@ end
 --- Parameters:
 --- * parent        - The parent object.
 --- * labelKey      - The key of the label that the row will map to.
---- * propertiesUI  - The name of the key in the parent to find the properties in. Defaults to `UI`.
 --- * index         - The row number with the same label to get. Defaults to `1`.
 ---
 --- Returns:
 --- * The new `PropertyRow` instance.
-function PropertyRow.new(parent, labelKey, propertiesUI, index)
+function PropertyRow.new(parent, labelKey, index)
     local o
-    propertiesUI = propertiesUI or "UI"
-    local propertiesFn = parent[propertiesUI]
-    if is.nt.callable(propertiesFn) then
-        error(format("Unable to find a `%s` property in the parent: %s", propertiesUI, type(propertiesFn)))
+    local propUI = propertiesUI or "UI"
+    -- first, check if we're referring to a local property...
+    if is.string(propUI) then
+        propUI = parent[propertiesFn]
+        if is.nt.callable(propUI) then
+            error(format("Expected `parent.%s` to be callable but was %s", type(propUI)))
+        end
+    end
+    -- if it's a function, wrap it into a cp.prop...
+    if is.fn(propertiesFn) then
+        local fn = propUI
+        propUI = prop(function() return fn(parent) end)
+    end
+
+    if not prop.is(propUI) then
+        error(format("The `propertiesUI` is not appropriate: %s", type(propertiesUI)))
     end
 
     index = index or 1
 
     o = prop.extend({
         _parent = parent,
-        _labelKeys = type(labelKey) == "string" and {labelKey} or labelKey,
+        _labelKeys = is.string(labelKey) and {labelKey} or labelKey,
         _index = index,
-        _propertiesUI = propertiesUI,
         _children = nil,
-    }, PropertyRow)
 
-    -- the prop UI could be either a function or a cp.prop.
-    -- If it's a prop, mutate so that notifications flow through.
-    local propUI
-    if prop.is(propertiesFn) then
-        propUI = propertiesFn
-    else
-        propUI = prop(function()
-            return propertiesFn(parent)
-        end)
-    end
-
-    prop.bind(o) {
 --- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` from the parent that contains the properties.
         propertiesUI = propUI,
+    }, PropertyRow)
 
-
+    prop.bind(o) {
 --- cp.ui.PropertyRow.labelUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the row label.
@@ -115,7 +169,7 @@ function PropertyRow.new(parent, labelKey, propertiesUI, index)
                 local ui = original()
                 if ui then
                     local label = o:label()
-                    return axutils.childMatching(ui, function(child)
+                    return childMatching(ui, function(child)
                         return child:attributeValue("AXRole") == "AXStaticText"
                             and child:attributeValue("AXValue") == label
                     end, index)
@@ -167,9 +221,10 @@ function PropertyRow.new(parent, labelKey, propertiesUI, index)
         return nil
     end)
 
-return o
-
+    return o
 end
+
+-- PropertyRow methods --
 
 -- TODO: Add documentation
 function PropertyRow:parent()
@@ -184,6 +239,15 @@ end
 -- TODO: Add documentation
 function PropertyRow:show()
     self:parent():show()
+    return self
+end
+
+function PropertyRow:hide()
+    local parent = self:parent()
+    if parent.hide then
+        parent:hide()
+    end
+    return self
 end
 
 -- TODO: Add documentation
@@ -208,7 +272,7 @@ function PropertyRow:children()
         local labelFrame = label:frame()
         labelFrame = labelFrame and geometry.new(label:frame()) or nil
         if labelFrame then
-            children = axutils.childrenMatching(self:propertiesUI(), function(child)
+            children = childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)
                 local childFrame = child and child:frame()
                 return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
