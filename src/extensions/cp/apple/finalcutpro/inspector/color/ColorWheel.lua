@@ -40,10 +40,10 @@ local ColorWheel = {}
 --- Constant
 --- The possible types of ColorWheels: MASTER, SHADOWS, MIDTONES, HIGHLIGHTS.
 ColorWheel.TYPE = {
-    MASTER = { single = 1, all = 1 },
-    SHADOWS = { single = 2, all = 3 },
-    MIDTONES = { single = 3, all = 4 },
-    HIGHLIGHTS = { single = 4, all = 2 },
+    MASTER      = { single = 1, all = 1 },
+    SHADOWS     = { single = 2, all = 3 },
+    MIDTONES    = { single = 3, all = 4 },
+    HIGHLIGHTS  = { single = 4, all = 2 },
 }
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.matches(element)
@@ -85,9 +85,22 @@ function ColorWheel.new(parent, type)
         return axutils.cache(self, "_ui", function()
             local ui = original()
             if ui then
+                local groups = axutils.childrenWithRole(ui, "AXGroup")
                 if parent:viewingAllWheels() then
+                    --------------------------------------------------------------------------------
+                    -- All Wheels:
+                    --------------------------------------------------------------------------------
                     return axutils.childFromTop(ui, 2 + self._type.all)
+                elseif not parent:viewingAllWheels() and groups and #groups == 4 then
+                    --------------------------------------------------------------------------------
+                    -- Single Wheels - with all wheels visible (i.e. Inspector is very wide):
+                    --------------------------------------------------------------------------------
+                    local children = axutils.childrenWithRole(ui, "AXGroup")
+                    return children and children[self._type.single]
                 elseif parent:wheelType():selectedOption() == self._type.single then
+                    --------------------------------------------------------------------------------
+                    -- Single Wheels - with only a single wheel visible:
+                    --------------------------------------------------------------------------------
                     return axutils.childFromTop(ui, 4)
                 end
             end
