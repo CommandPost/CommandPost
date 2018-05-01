@@ -166,7 +166,7 @@ end
 ---  * None
 function mod.init(deps)
 
-    mod._colorBoard         = fcp:colorBoard():show()
+    mod._colorBoard         = fcp:colorBoard()
 
     mod._colorBoardAspect	= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 

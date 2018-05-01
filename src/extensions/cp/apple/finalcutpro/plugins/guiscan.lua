@@ -463,7 +463,10 @@ function mod.check(language)
                         }
                         newPluginNames[name] = pluginNames
                     end
-                    insert(plugins.unmatched, plugin)
+                    --------------------------------------------------------------------------------
+                    -- TODO: David - I'm not exactly sure what this line of code was designed to do?
+                    --------------------------------------------------------------------------------
+                    --insert(plugins.unmatched, plugin)
                 end
             end
 
