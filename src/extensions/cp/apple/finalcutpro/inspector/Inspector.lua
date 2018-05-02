@@ -569,7 +569,7 @@ end
 ---  * AudioInspector
 function Inspector:audio()
     if not self._audioInspector then
-        self._audioInspector = AudioInspector:new(self)
+        self._audioInspector = AudioInspector.new(self)
     end
     return self._audioInspector
 end

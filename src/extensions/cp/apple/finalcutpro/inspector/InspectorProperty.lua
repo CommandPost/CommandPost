@@ -10,7 +10,7 @@
 --- types that occur in various `Inspectors` in FCP.
 ---
 --- In addition to specific property row types like `textField`, `slider`, etc.,
---- there is also a `header`, which is for rows which expand/collapse to reveal
+--- there is also a `section`, which is for rows which expand/collapse to reveal
 --- other properties.
 
 local is                    = require("cp.is")
@@ -65,54 +65,54 @@ end
 local function propShow(self)
     local parent = self:parent()
     parent:show()
-    self.header:expanded(true)
+    self.section:expanded(true)
     return self
 end
 
 local function propHide(self)
-    self.header:expanded(false)
+    self.section:expanded(false)
     return self
 end
 
---- cp.apple.finalcutpro.inspector.InspectorProperty.header(labelKey[, index]) -> function
+--- cp.apple.finalcutpro.inspector.InspectorProperty.section(labelKey[, index]) -> function
 --- Function
---- Returns a 'header row' factory function that can be called to create a header row that contains other `PropertyRow' `cp.prop`s.
+--- Returns a 'section row' factory function that can be called to create a section row that contains other `PropertyRow' `cp.prop`s.
 ---
 --- This does *not* return an actual `cp.prop`. Rather, it returns a 'factory' function that will help configure the sub-properties of
---- of the header. This can be used as follows:
+--- of the section. This can be used as follows:
 ---
 --- ```lua
 --- local o = {}
 --- prop.bind(o) {
----   headerOne         = InspectorProperty.header "FFHeaderOneKey" {     -- has sub-properties inside the `{}`
+---   sectionOne         = InspectorProperty.section "FFHeaderOneKey" {     -- has sub-properties inside the `{}`
 ---     subRowOne       = InspectorProperty.textField "FFSubRowOneKey",
 ---     subRowTwo       = InspectorProperty.slider "FFSubRowTwoKey",
 ---   },
----   headerTwo         = InspectorProperty.header "FFHeaderTwoKey" {}    -- no sub-properties, still needs `{}`
+---   sectionTwo         = InspectorProperty.section "FFHeaderTwoKey" {}    -- no sub-properties, still needs `{}`
 --- }
 ---
 --- -- access subRowOne
---- local value = o:headerOne():subRowOne()
+--- local value = o:sectionOne():subRowOne()
 --- ```
 ---
---- The `o.headerOne` property will be a `cp.prop` with the following built-in additional properties:
+--- The `o.sectionOne` property will be a `cp.prop` with the following built-in additional properties:
 ---
---- * `enabled`     - a `cp.ui.CheckBox` which reports if the header row is enabled.
+--- * `enabled`     - a `cp.ui.CheckBox` which reports if the section row is enabled.
 --- * `toggle`      - a `cp.ui.Button` which will toggle the show/hide button (if present)
 --- * `reset`       - a `cp.ui.Button` which will reset the sub-property values, if present in the UI.
---- * `expanded`    - a `cp.prop` which reports if the header/section is currently expanded.
+--- * `expanded`    - a `cp.prop` which reports if the section is currently expanded.
 ---
 --- Parameters:
 --- * labelKey      - The I18N lookup key to find the row with.
 --- * index         - (optional) The occurrence of the key value in the parent. Sometimes multiple rows have the same title. Defaults to `1`.
 ---
 --- Returns:
---- * A function which will create the header row when called.
-function mod.header(labelKey, index)
+--- * A function which will create the section row when called.
+function mod.section(labelKey, index)
     return function(subProps)
-        local header = prop(function(self)
+        local section = prop(function(self)
             local row = PropertyRow.new(self, labelKey, index)
-            -- headers are also parents of other PropertyRows.
+            -- sections are also parents of other PropertyRows.
             PropertyRow.prepareParent(row, row.propertiesUI)
 
             row.enabled     = CheckBox.new(row, function() return childFromLeft(row:children(), 1) end)
@@ -136,7 +136,7 @@ function mod.header(labelKey, index)
                 -- hijack the 'show' function
                 for _,p in pairs(subProps) do
                     local subRow = p()
-                    subRow.header = row
+                    subRow.section = row
                     subRow.show = propShow
                     subRow.hide = propHide
                 end
@@ -145,7 +145,7 @@ function mod.header(labelKey, index)
             return row
         end):cached()
 
-        return header
+        return section
     end
 end
 
@@ -199,6 +199,25 @@ mod.simple = simple
 function mod.textField(labelKey, index)
     return simple(labelKey, function(row)
         row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end)
+    end, index)
+end
+
+--- cp.apple.finalcutpro.inspector.InspectorProperty.numberField(labelKey[, index]) -> cp.prop <cp.ui.PropertyRow; read-only>
+--- Function
+--- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
+---
+--- It has one additional property:
+--- * `value`   - A `cp.ui.TextField` which contains the number value.
+---
+--- Parameters:
+--- * labelKey      - The I18N key that the row lable matches.
+--- * index         - The instance number of that label (defaults to `1`).
+---
+--- Returns:
+--- * The `cp.prop` that returns the `PropertyRow`.
+function mod.numberField(labelKey, index)
+    return simple(labelKey, function(row)
+        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
     end, index)
 end
 
@@ -258,7 +277,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.slider(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromLeft(row:children(), 3) end, tonumber)
+        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
     end, index)
 end
 

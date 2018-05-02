@@ -68,7 +68,7 @@ local axutils							= require("cp.ui.axutils")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local hasProperties                     = IP.hasProperties
-local header, slider, xy, popUpButton, checkBox = IP.header, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
+local section, slider, xy, popUpButton, checkBox = IP.section, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
 
 --------------------------------------------------------------------------------
 --
@@ -156,14 +156,14 @@ function VideoInspector.new(parent) -- luacheck: ignore
 
     -- specify that the `contentUI` contains the PropertyRows.
     hasProperties(o, o.contentUI) {
-        effects             = header "FFInspectorBrickEffects" {},
+        effects             = section "FFInspectorBrickEffects" {},
 
-        compositing         = header "FFHeliumBlendCompositingEffect" {
+        compositing         = section "FFHeliumBlendCompositingEffect" {
             blendMode       = popUpButton "FFHeliumBlendMode",
             opacity         = slider "FFHeliumBlendOpacity",
         },
 
-        transform           = header "FFHeliumXFormEffect" {
+        transform           = section "FFHeliumXFormEffect" {
             position        = xy "FFHeliumXFormPosition",
             rotation        = slider "FFHeliumXFormRotation",
             scaleAll        = slider "FFHeliumXFormScaleInspector",
@@ -172,28 +172,28 @@ function VideoInspector.new(parent) -- luacheck: ignore
             anchor          = xy "FFHeliumXFormAnchor",
         },
 
-        crop                = header "FFHeliumCropEffect" {
+        crop                = section "FFHeliumCropEffect" {
             type            = popUpButton "FFType",
             left            = slider "FFCropLeft",
             right           = slider "FFCropRight",
             top             = slider "FFCropTop",
             bottom          = slider "FFCropBottom",
         },
-        distort             = header "FFHeliumDistortEffect" {
+        distort             = section "FFHeliumDistortEffect" {
             bottomLeft      = xy "PerspectiveTile::Bottom Left",
             bottomRight     = xy "PerspectiveTile::Bottom Right",
             topRight        = xy "PerspectiveTile::Top Right",
             topLeft         = xy "PerspectiveTile::Top Left",
         },
-        stabilization       = header "FFStabilizationEffect" {
+        stabilization       = section "FFStabilizationEffect" {
             method          = popUpButton "FFStabilizationAlgorithmRequested",
             smoothing       = slider "FFStabilizationInertiaCamSmooth",
             tripodMode      = checkBox "FFStabilizationUseTripodMode",
         },
-        rollingShutter      = header "FFRollingShutterEffect" {
+        rollingShutter      = section "FFRollingShutterEffect" {
             amount          = popUpButton "FFRollingShutterAmount",
         },
-        spatialConform      = header "FFHeliumConformEffect" {
+        spatialConform      = section "FFHeliumConformEffect" {
             type            = popUpButton("FFType", 2),
         },
     }
