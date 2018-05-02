@@ -30,6 +30,9 @@ local fcp               = require("cp.apple.finalcutpro")
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local canvas            = require("hs.canvas")
+local eventtap          = require("hs.eventtap")
+local geometry          = require("hs.geometry")
+local menubar           = require("hs.menubar")
 
 --------------------------------------------------------------------------------
 --
@@ -104,6 +107,7 @@ function mod.show()
             --------------------------------------------------------------------------------
             -- Show the Canvas:
             --------------------------------------------------------------------------------
+            mod._canvas:level("status")
             mod._canvas:show()
         end
     end
@@ -168,6 +172,27 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+    --------------------------------------------------------------------------------
+    -- Setup contextual menu:
+    --------------------------------------------------------------------------------
+    mod._menu = menubar.new(false)
+    mod._eventtap = eventtap.new({eventtap.event.types.rightMouseUp}, function(event)
+        local ui = fcp:viewer():UI()
+        if ui and ui[2] then
+            local barFrame = ui[2]:attributeValue("AXFrame")
+            local location = event:location() and geometry.point(event:location())
+            if barFrame and location and location:inside(geometry.rect(barFrame)) then
+                if mod._menu then
+                    mod._menu:setMenu({
+                       { title = "MODE:", disabled = true },
+                       { title = "Basic Grid", checked = mod.enabled(), fn = function() mod.enabled:toggle() end },
+                    })
+                    mod._menu:popupMenu(location)
+                end
+            end
+        end
+    end):start()
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro is shown/hidden:
