@@ -1112,5 +1112,6 @@
 		"finalcutpro_timeline_colorwheels_label"			   : "Timeline: Color Wheel Actions",
 		"finalcutpro_export_batch_manager_label"	           : "Manager: Batch Export",
 		"core_disk_automount_label"							   : "Disk Automount",
+		"cpViewerGrid_title"								   : "Toggle Viewer Grid",
     }
 }
