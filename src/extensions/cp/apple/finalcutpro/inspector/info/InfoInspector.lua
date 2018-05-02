@@ -29,7 +29,7 @@ local prop                              = require("cp.prop")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local hasProperties                     = IP.hasProperties
-local textField, menuButton, simple     = IP.textField, IP.menuButton, IP.simple
+local textField, menuButton             = IP.textField, IP.menuButton
 
 --------------------------------------------------------------------------------
 --

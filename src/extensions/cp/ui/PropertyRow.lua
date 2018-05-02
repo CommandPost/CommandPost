@@ -137,7 +137,7 @@ function PropertyRow.new(parent, labelKey, index)
 
     local uiFinder = PropertyRow.parentUIFinder(parent)
     if not uiFinder then
-        error(format("The `parent` has not been prepared with `PropertyRow.prepareParent(...)`:", inspect(propUI)))
+        error(format("The `parent` has not been prepared with `PropertyRow.prepareParent(...)`:", inspect(uiFinder)))
     end
 
     index = index or 1
