@@ -188,9 +188,6 @@ function PropertyRow.new(parent, labelKey, index)
         end):cached():monitor(parent:app().currentLanguage),
     }
 
-    -- TODO: Remove this test
-    assert(o.propertiesUI ~= nil, "PropertyRow.propertiesUI is nil.")
-
 --- cp.ui.PropertyRow.UI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` for the row.

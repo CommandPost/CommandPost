@@ -29,7 +29,7 @@ local prop                              = require("cp.prop")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local hasProperties                     = IP.hasProperties
-local textField, menuButton             = IP.textField, IP.menuButton
+local textField, staticText, menuButton = IP.textField, IP.staticText, IP.menuButton
 
 --------------------------------------------------------------------------------
 --
@@ -161,14 +161,37 @@ function InfoInspector.new(parent)
 
     hasProperties(o, o.propertiesUI) {
         name                    = textField "Name",
-        lastModified            = textField "FFInspectorModuleProjectPropertiesLastModified",
+        lastModified            = staticText "Last Modified",
         notes                   = textField "Notes",
 
         videoRoles              = menuButton "Video Roles",
         audioRoles              = menuButton "Audio Roles",
 
+        clipStart               = staticText "Start",
+        clipEnd                 = staticText "End",
+        clipDuration            = staticText "Duration",
+
+        reel                    = textField "Reel",
         scene                   = textField "Scene",
         take                    = textField "Take",
+        cameraAngle             = textField "Camera Angle",
+        cameraName              = textField "Camera Name",
+
+        cameraLUT               = menuButton "Log Processing",
+        colorProfile            = staticText "color profile",
+
+        projectionMode          = menuButton "FFMD360ProjectionType",
+        stereoscopicMode        = menuButton "FFMD3DStereoMode",
+
+        mediaStart              = staticText "Media Start",
+        mediaEnd                = staticText "Media End",
+        mediaDuration           = staticText "Media Duration",
+
+        frameSize               = staticText "Frame Size",
+        videoFrameRate          = staticText "Video Frame Rate",
+
+        audioOutputChannels     = staticText "Audio Channel Count",
+        audioSampleRate         = staticText "Audio Sample Rate",
     }
 
     return o

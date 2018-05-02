@@ -22,6 +22,7 @@ local CheckBox              = require("cp.ui.CheckBox")
 local MenuButton            = require("cp.ui.MenuButton")
 local PopUpButton           = require("cp.ui.PopUpButton")
 local PropertyRow           = require("cp.ui.PropertyRow")
+local StaticText            = require("cp.ui.StaticText")
 local TextField             = require("cp.ui.TextField")
 
 local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
@@ -182,7 +183,7 @@ end
 
 mod.simple = simple
 
---- cp.apple.finalcutpro.inspector.InspectorProperty.text(labelKey[, index]) -> cp.prop <cp.ui.PropertyRow; read-only>
+--- cp.apple.finalcutpro.inspector.InspectorProperty.textField(labelKey[, index]) -> cp.prop <cp.ui.PropertyRow; read-only>
 --- Function
 --- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
 ---
@@ -197,7 +198,26 @@ mod.simple = simple
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.textField(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
+        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end)
+    end, index)
+end
+
+--- cp.apple.finalcutpro.inspector.InspectorProperty.staticText(labelKey[, index]) -> cp.prop <cp.ui.PropertyRow; read-only>
+--- Function
+--- Creates a new `cp.prop` that contains a `PropertyRow`  matching the `labelKey`.
+---
+--- It has one additional property:
+--- * `value`   - A `cp.ui.StaticText` which contains the text value.
+---
+--- Parameters:
+--- * labelKey      - The I18N key that the row lable matches.
+--- * index         - The instance number of that label (defaults to `1`).
+---
+--- Returns:
+--- * The `cp.prop` that returns the `PropertyRow`.
+function mod.staticText(labelKey, index)
+    return simple(labelKey, function(row)
+        row.value = StaticText.new(row, function() return childFromRight(childrenMatching(row:children(), StaticText.matches), 1) end)
     end, index)
 end
 
