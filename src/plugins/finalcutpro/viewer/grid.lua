@@ -185,8 +185,31 @@ function plugin.init(deps)
             if barFrame and location and location:inside(geometry.rect(barFrame)) then
                 if mod._menu then
                     mod._menu:setMenu({
-                       { title = "MODE:", disabled = true },
+                       { title = "GRID OVERLAY:", disabled = true },
                        { title = "Basic Grid", checked = mod.enabled(), fn = function() mod.enabled:toggle() end },
+                       { title = "Draggable Guides", checked = false },
+                       { title = "Rule of Thirds", checked = false },
+                       { title = "-", disabled = true },
+                       { title = "GRID STYLE:", disabled = true },
+                       { title = "Color", menu = {} },
+                       { title = "Opacity", menu = {} },
+                       { title = "Spacing", menu = {} },
+                       { title = "-", disabled = true },
+                       { title = "FRAME BUFFER:", disabled = true },
+                       { title = "Restore", menu = {
+                            { title = "Memory 1" },
+                            { title = "Memory 2" },
+                            { title = "Memory 3" },
+                            { title = "Memory 4" },
+                            { title = "Memory 5" },
+                       } },
+                       { title = "Save", menu = {
+                            { title = "Memory 1" },
+                            { title = "Memory 2" },
+                            { title = "Memory 3" },
+                            { title = "Memory 4" },
+                            { title = "Memory 5" },
+                       } },
                     })
                     mod._menu:popupMenu(location)
                 end
