@@ -68,30 +68,25 @@ function mod.show()
                 --------------------------------------------------------------------------------
                 -- Add Vertical Lines:
                 --------------------------------------------------------------------------------
-                local distance = 0
-                local increment = 30
-                for _=1, frame.w/2 do
+                for i=1, frame.w, frame.w/20 do
                     mod._canvas:appendElements({
                         type = "rectangle",
-                        frame = { x = distance, y = 0, h = frame.h, w = 1},
+                        frame = { x = i, y = 0, h = frame.h, w = 1},
                         fillColor = { white = 1, alpha = 1/2 },
                         action = "fill",
                     })
-                    distance = distance + increment
                 end
 
                 --------------------------------------------------------------------------------
                 -- Add Horizontal Lines:
                 --------------------------------------------------------------------------------
-                distance = 0
-                for _=1, frame.h/2 do
+                for i=1, frame.h, frame.w/20 do
                     mod._canvas:appendElements({
                         type = "rectangle",
-                        frame = { x = 0, y = distance, h = 1, w = frame.w},
+                        frame = { x = 0, y = i, h = 1, w = frame.w},
                         fillColor = { white = 1, alpha = 1/2 },
                         action = "fill",
                     })
-                    distance = distance + increment
                 end
 
                 --------------------------------------------------------------------------------
