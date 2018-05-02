@@ -46,16 +46,21 @@ local PropertyRow = {}
 local UI_FINDER = {}
 local UI_FINDER_LABEL = "PropertyRow UI Finder"
 
-function PropertyRow.findProperties(parent)
-    local finder = parent[UI_FINDER]
-    if finder then
-        return finder(parent)
-    else
-        error(format("Unable to find properties with this parent: %s", inspect(parent)))
-    end
+--- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
+--- Function
+--- Returns the `cp.prop` which finds the `hs._asm.axuielement` that contains property rows from the parent.
+--- This needs to be configured first by calling the `prepareParent` function with the `parent` and finder function.
+---
+--- Parameters:
+--- * parent        - The parent which has a finder assigned.
+---
+--- Returns:
+--- * The `cp.prop` which provides access to the finder, or `nil`.
+function PropertyRow.parentUIFinder(parent)
+    return parent[UI_FINDER]
 end
 
---- cp.ui.PropertyRow.prepParent(parent, uiFinder) -> boolean
+--- cp.ui.PropertyRow.prepareParent(parent, uiFinder) -> boolean
 --- Function
 --- Call this to make `parent` table ready to be a parent of `PropertyRow`s.
 --- Essentially, this lets `PropertyRow` instances ask the parent for the
@@ -67,9 +72,10 @@ end
 ---
 --- Returns:
 ---
-function PropertyRow.prepParent(parent, uiFinder)
+function PropertyRow.prepareParent(parent, uiFinder)
     if is.nt.callable(uiFinder) then
         error(format("The `finder` must be callable: %s", type(uiFinder)))
+    end
     if parent[UI_FINDER] ~= nil then
         error("The UI Finder has already been set on this parent.")
     end
@@ -87,7 +93,7 @@ end
 
 --- cp.ui.PropertyRow.isParent(parent) -> boolean
 --- Function
---- Checks if the `parent` has been prepared via [prepParent](#prepParent).
+--- Checks if the `parent` has been prepared via [prepareParent](#prepareParent).
 ---
 --- Parameters:
 --- * None
@@ -112,7 +118,7 @@ function PropertyRow.matches(element)
     return element ~= nil
 end
 
---- cp.ui.PropertyRow.new(parent, labelKey[, propertiesUI[, index]]) -> cp.ui.PropertyRow
+--- cp.ui.PropertyRow.new(parent, labelKey[, index]) -> cp.ui.PropertyRow
 --- Constructor
 --- Creates a new `PropertyRow` with the specified parent and label key.
 ---
@@ -128,22 +134,10 @@ end
 --- * The new `PropertyRow` instance.
 function PropertyRow.new(parent, labelKey, index)
     local o
-    local propUI = propertiesUI or "UI"
-    -- first, check if we're referring to a local property...
-    if is.string(propUI) then
-        propUI = parent[propertiesFn]
-        if is.nt.callable(propUI) then
-            error(format("Expected `parent.%s` to be callable but was %s", type(propUI)))
-        end
-    end
-    -- if it's a function, wrap it into a cp.prop...
-    if is.fn(propertiesFn) then
-        local fn = propUI
-        propUI = prop(function() return fn(parent) end)
-    end
 
-    if not prop.is(propUI) then
-        error(format("The `propertiesUI` is not appropriate: %s", type(propertiesUI)))
+    local uiFinder = PropertyRow.parentUIFinder(parent)
+    if not uiFinder then
+        error(format("The `parent` has not been prepared with `PropertyRow.prepareParent(...)`:", inspect(propUI)))
     end
 
     index = index or 1
@@ -153,18 +147,18 @@ function PropertyRow.new(parent, labelKey, index)
         _labelKeys = is.string(labelKey) and {labelKey} or labelKey,
         _index = index,
         _children = nil,
-
---- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- The `axuielement` from the parent that contains the properties.
-        propertiesUI = propUI,
     }, PropertyRow)
 
     prop.bind(o) {
+--- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` from the parent that contains the properties.
+        propertiesUI = uiFinder,
+
 --- cp.ui.PropertyRow.labelUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- The `axuielement` containing the row label.
-        labelUI = propUI:mutate(function(original)
+        labelUI = uiFinder:mutate(function(original)
             return axutils.cache(o, "_labelUI", function()
                 local ui = original()
                 if ui then
@@ -193,6 +187,9 @@ function PropertyRow.new(parent, labelKey, index)
             return nil
         end):cached():monitor(parent:app().currentLanguage),
     }
+
+    -- TODO: Remove this test
+    assert(o.propertiesUI ~= nil, "PropertyRow.propertiesUI is nil.")
 
 --- cp.ui.PropertyRow.UI <cp.prop: hs._asm.axuielement; read-only>
 --- Field

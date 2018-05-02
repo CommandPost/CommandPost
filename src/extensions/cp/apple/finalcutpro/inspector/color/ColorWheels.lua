@@ -106,6 +106,8 @@ function ColorWheels.new(parent)
         end)
     end):bind(o)
 
+    PropertyRow.prepareParent(o, o.contentUI)
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Is the Color Wheels Corrector currently showing?
@@ -341,7 +343,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:mixRow()
     if not self._mixRow then
-        self._mixRow = PropertyRow.new(self, "FFChannelMixName", "contentUI")
+        self._mixRow = PropertyRow.new(self, "FFChannelMixName")
     end
     return self._mixRow
 end
@@ -392,7 +394,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:temperatureRow()
     if not self._temperatureRow then
-        self._temperatureRow = PropertyRow.new(self, "PAECorrectorEffectTemperature", "contentUI")
+        self._temperatureRow = PropertyRow.new(self, "PAECorrectorEffectTemperature")
     end
     return self._temperatureRow
 end
@@ -443,7 +445,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:tintRow()
     if not self._tintRow then
-        self._tintRow = PropertyRow.new(self, "PAECorrectorEffectTint", "contentUI")
+        self._tintRow = PropertyRow.new(self, "PAECorrectorEffectTint")
     end
     return self._tintRow
 end
@@ -494,14 +496,14 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:hueRow()
     if not self._hueRow then
-        self._hueRow = PropertyRow.new(self, "PAECorrectorEffectHue", "contentUI")
+        self._hueRow = PropertyRow.new(self, "PAECorrectorEffectHue")
     end
     return self._hueRow
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:hueTextField() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:hueTextField() -> cp.ui.TextField
 --- Method
---- Returns a `Slider` that provides access to the 'Hue' slider.
+--- Returns a `TextField` that provides access to the 'Hue' slider.
 ---
 --- Parameters:
 ---  * None

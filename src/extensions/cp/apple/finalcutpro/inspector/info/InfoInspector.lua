@@ -25,8 +25,11 @@
 local axutils                           = require("cp.ui.axutils")
 local MenuButton                        = require("cp.ui.MenuButton")
 local prop                              = require("cp.prop")
-local PropertyRow                       = require("cp.ui.PropertyRow")
-local TextField                         = require("cp.ui.TextField")
+
+local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+
+local hasProperties                     = IP.hasProperties
+local textField, menuButton, simple     = IP.textField, IP.menuButton, IP.simple
 
 --------------------------------------------------------------------------------
 --
@@ -67,8 +70,8 @@ function InfoInspector.matches(element)
         and axutils.childWithRole(element, "AXScrollArea") ~= nil
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoInspector:new(parent) -> InfoInspector object
---- Method
+--- cp.apple.finalcutpro.inspector.info.InfoInspector.new(parent) -> InfoInspector object
+--- Constructor
 --- Creates a new InfoInspector object
 ---
 --- Parameters:
@@ -76,38 +79,99 @@ end
 ---
 --- Returns:
 ---  * A InfoInspector object
--- TODO: Use a function instead of a method.
-function InfoInspector:new(parent) -- luacheck: ignore
+function InfoInspector.new(parent)
 
     local o = prop.extend({
         _parent = parent,
-        _child = {}
-    }, InfoInspector)
+        _child = {},
 
-    o.sceneRow = o:propertyRow("Scene")
-    o.scene = TextField.new(o, function()
-        return axutils.childWithRole(o.sceneRow:children(), "AXTextField")
-    end)
-
-    o.takeRow = o:propertyRow("Take")
-    o.take = TextField.new(o, function()
-        return axutils.childWithRole(o.takeRow:children(), "AXTextField")
-    end)
-
-    return o
-end
-
---- cp.apple.finalcutpro.inspector.info.InfoInspector:propertyRow(title) -> PropertyRow
+--- cp.apple.finalcutpro.inspector.info.InfoInspector:UI() -> hs._asm.axuielement object
 --- Method
---- Gets the Property Row object.
+--- Returns the `hs._asm.axuielement` object for the Info Inspector
 ---
 --- Parameters:
----  * title - The title of the Property Row.
+---  * None
 ---
 --- Returns:
----  * A `PropertyRow` object.
-function InfoInspector:propertyRow(title)
-    return PropertyRow.new(self, title, "propertiesUI")
+---  * A `hs._asm.axuielement` object.
+        UI = parent.panelUI:mutate(function(original, self)
+            return axutils.cache(self, "_ui",
+                function()
+                    local ui = original()
+                    return InfoInspector.matches(ui) and ui or nil
+                end,
+                InfoInspector.matches
+            )
+        end),
+    }, InfoInspector)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.inspector.info.InfoInspector:propertiesUI() -> hs._asm.axuielement object
+--- Method
+--- Returns the `hs._asm.axuielement` object for the Properties UI.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object.
+        propertiesUI = o.UI:mutate(function(original, self)
+            return axutils.cache(self, "_properties", function()
+                return axutils.childWithRole(original(), "AXScrollArea")
+            end)
+        end),
+
+--- cp.apple.finalcutpro.inspector.info.InfoInspector:isShowing() -> boolean
+--- Method
+--- Is the Info Inspector currently showing?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if showing, otherwise `false`
+        isShowing = o.UI:mutate(function(original)
+            return original() ~= nil
+        end),
+
+--- cp.apple.finalcutpro.inspector.info.InfoInspector.metadataView <cp.prop: string>
+--- Field
+--- Gets the name of the current metadata view.
+        metadataView = prop(
+            function(self)
+                local text = self:metadataViewButton():getTitle()
+                if text then
+                    local app = self:app()
+                    for k,v in pairs(InfoInspector.metadataViews) do
+                        if app:string(v) == text then
+                            return k
+                        end
+                    end
+                end
+                return nil
+            end,
+            function(value, self)
+                self:show()
+                local key = InfoInspector.metadataViews[value]
+                local text = self:app():string(key)
+                self:metadataViewButton():selectItemMatching(text)
+            end
+        ),
+    }
+
+    hasProperties(o, o.propertiesUI) {
+        name                    = textField "Name",
+        lastModified            = textField "FFInspectorModuleProjectPropertiesLastModified",
+        notes                   = textField "Notes",
+
+        videoRoles              = menuButton "Video Roles",
+        audioRoles              = menuButton "Audio Roles",
+
+        scene                   = textField "Scene",
+        take                    = textField "Take",
+    }
+
+    return o
 end
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector:parent() -> table
@@ -136,53 +200,6 @@ function InfoInspector:app()
     return self:parent():app()
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoInspector:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Info Inspector
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object.
-function InfoInspector:UI()
-    return axutils.cache(self, "_ui",
-        function()
-            local ui = self:parent():panelUI()
-            return InfoInspector.matches(ui) and ui or nil
-        end,
-        InfoInspector.matches
-    )
-end
-
---- cp.apple.finalcutpro.inspector.info.InfoInspector:propertiesUI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Properties UI.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object.
-function InfoInspector:propertiesUI()
-    return axutils.cache(self, "_properties", function()
-        return axutils.childWithRole(self:UI(), "AXScrollArea")
-    end)
-end
-
---- cp.apple.finalcutpro.inspector.info.InfoInspector:isShowing() -> boolean
---- Method
---- Is the Info Inspector currently showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function InfoInspector:isShowing()
-    return self:UI() ~= nil
-end
-
 --- cp.apple.finalcutpro.inspector.info.InfoInspector:show() -> none
 --- Method
 --- Shows the Info Inspector.
@@ -194,8 +211,9 @@ end
 ---  * None
 function InfoInspector:show()
     if not self:isShowing() then
-        self:app():menuBar():selectMenu({"Window", "Go To", "Inspector"})
+        self:parent():selectTab("Info")
     end
+    return self
 end
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector:show() -> MenuButton
@@ -220,30 +238,6 @@ function InfoInspector:metadataViewButton()
     end
     return self._metadataViewButton
 end
-
---- cp.apple.finalcutpro.inspector.info.InfoInspector.metadataView <cp.prop: string>
---- Field
---- Gets the name of the current metadata view.
-InfoInspector.metadataView = prop(
-    function(self)
-        local text = self:metadataViewButton():getTitle()
-        if text then
-            local app = self:app()
-            for k,v in pairs(InfoInspector.metadataViews) do
-                if app:string(v) == text then
-                    return k
-                end
-            end
-        end
-        return nil
-    end,
-    function(value, self)
-        self:show()
-        local key = InfoInspector.metadataViews[value]
-        local text = self:app():string(key)
-        self:metadataViewButton():selectItemMatching(text)
-    end
-):bind(InfoInspector)
 
 --------------------------------------------------------------------------------
 --

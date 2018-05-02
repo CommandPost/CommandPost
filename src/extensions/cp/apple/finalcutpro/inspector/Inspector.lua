@@ -459,7 +459,7 @@ end
 ---  * InfoInspector
 function Inspector:info()
     if not self._infoInspector then
-        self._infoInspector = InfoInspector:new(self)
+        self._infoInspector = InfoInspector.new(self)
     end
     return self._infoInspector
 end

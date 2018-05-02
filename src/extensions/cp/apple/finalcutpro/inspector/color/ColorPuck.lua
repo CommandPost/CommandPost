@@ -124,10 +124,57 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
         yShift = 0
     }, Puck)
 
+    local UI = prop(function(self)
+        return axutils.cache(self, "_ui", function()
+            local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
+            return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
+        end, Puck.matches)
+    end)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
+--- Method
+--- Returns the Color Puck Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` or `nil`
+        UI = UI,
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:contentUI() -> axuielementObject
+--- Method
+--- Returns the Content Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` or `nil`
+        contentUI = UI,
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:isShowing() -> boolean
+--- Method
+--- Gets whether or not the Color Puck is showing.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if showing or `false` if not.
+        isShowing = UI:mutate(function(original)
+            return original() ~= nil
+        end)
+    }
+
+    -- prepare the parent to provide the content UI.
+    PropertyRow.prepareParent(o, UI)
+
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.row <cp.prop: PropertyRow>
     --- Field
     --- Finds the 'row' for the property type.
-    o.row = PropertyRow.new(o, o._labelKeys, "contentUI")
+    o.row = PropertyRow.new(o, o._labelKeys)
 
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
     --- Field
@@ -208,48 +255,6 @@ end
 ---  * App
 function Puck:app()
     return self:parent():app()
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
---- Method
---- Returns the Color Puck Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function Puck:UI()
-    return axutils.cache(self, "_ui", function()
-        local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
-        return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
-    end, Puck.matches)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck:contentUI() -> axuielementObject
---- Method
---- Returns the Content Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function Puck:contentUI()
-    return self:parent():UI()
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck:isShowing() -> boolean
---- Method
---- Gets whether or not the Color Puck is showing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing or `false` if not.
-function Puck:isShowing()
-    return self:UI() ~= nil
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:show() -> cp.apple.finalcutpro.inspector.color.ColorPuck

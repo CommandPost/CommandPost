@@ -73,11 +73,11 @@ function MenuButton.new(parent, finderFn)
         value = UI:mutate(
             function(original)
                 local ui = original()
-                return ui and ui:attributeValue("AXValue")
+                return ui and ui:attributeValue("AXTitle")
             end,
             function(value, original)
                 local ui = original()
-                if ui and not ui:attributeValue("AXValue") == value then
+                if ui and not ui:attributeValue("AXTitle") == value then
                     local items = ui:doPress()[1]
                     for _,item in items do
                         if item:title() == value then

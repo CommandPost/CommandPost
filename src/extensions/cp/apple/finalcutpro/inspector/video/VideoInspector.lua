@@ -64,11 +64,11 @@
 --------------------------------------------------------------------------------
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
-local Button                            = require("cp.ui.Button")
-local CheckBox                          = require("cp.ui.CheckBox")
-local PropertyRow                       = require("cp.ui.PropertyRow")
-local TextField                         = require("cp.ui.TextField")
-local PopUpButton                       = require("cp.ui.PopUpButton")
+
+local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+
+local hasProperties                     = IP.hasProperties
+local header, slider, xy, popUpButton, checkBox = IP.header, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
 
 --------------------------------------------------------------------------------
 --
@@ -76,107 +76,6 @@ local PopUpButton                       = require("cp.ui.PopUpButton")
 --
 --------------------------------------------------------------------------------
 local VideoInspector = {}
-
-local function propShow(self)
-    local parent = self:parent()
-    parent:show()
-    self.header:expanded(true)
-    return self
-end
-
-local function propHide(self)
-    self.header:expanded(false)
-    return self
-end
-
-local function rowRow(row, lKey, index)
-    return row:parent():row(lKey, index)
-end
-
--- creates a new header row PropertyRow with some additional properties:
--- * enabled - The 'enabled' checkbox.
--- * toggle - the Hide/Show toggle button
--- * reset  - The reset button
--- * expanded - a cp.prop which gets/sets whether the row is expanded.
-local function headerRow(labelKey, index)
-    return function(subProps)
-        local header = prop(function(self)
-            local row = self:row(labelKey, index)
-            row.enabled     = CheckBox.new(row, function() return axutils.childFromLeft(row:children(), 1) end)
-            row.toggle      = Button.new(row, function() return axutils.childFromRight(row:children(), 2) end)
-            row.reset       = Button.new(row, function() return axutils.childFromRight(row:children(), 1) end)
-            row.expanded    = prop(
-                function(theRow)
-                    local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
-                    return theRow.toggle:title() == iHide
-                end,
-                function(newValue, theRow, theProp)
-                    local currentValue = theProp:get()
-                    if newValue ~= currentValue then
-                        theRow.toggle()
-                    end
-                end
-            ):bind(row)
-
-            -- gets called by propertyRows
-            row.row = rowRow
-
-            if subProps then
-                prop.bind(row)(subProps)
-                -- hijack the 'show' function
-                for _,p in pairs(subProps) do
-                    local subRow = p()
-                    subRow.header = row
-                    subRow.show = propShow
-                    subRow.hide = propHide
-                end
-            end
-
-            return row
-        end):cached()
-
-
-        return header
-    end
-end
-
-local function propertyRow(labelKey, prepareFn, index)
-    return prop(function(self)
-        local row = self:row(labelKey, index)
-        row.reset       = Button.new(row, function() return axutils.childFromRight(row:children(), 1) end)
-
-        if prepareFn then
-            prepareFn(row)
-        end
-
-        return row
-    end):cached()
-end
-
-local function xyProperty(labelKey, index)
-    return propertyRow(labelKey, function(row)
-        row.x = TextField.new(row, function() return axutils.childFromLeft(axutils.childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
-        row.y = TextField.new(row, function() return axutils.childFromLeft(axutils.childrenMatching(row:children(), TextField.matches), 2) end, tonumber)
-    end, index)
-end
-
-local function sliderProperty(labelKey, index)
-    return propertyRow(labelKey, function(row)
-        row.value = TextField.new(row, function() return axutils.childFromLeft(row:children(), 3) end, tonumber)
-    end, index)
-end
-
-local function menuProperty(labelKey, index)
-    return propertyRow(labelKey, function(row)
-        row.value = PopUpButton.new(row, function() return axutils.childFromRight(row:children(), 2) end)
-    end, index)
-end
-
-local function checkBoxProperty(labelKey, index)
-    return propertyRow(labelKey, function(row)
-        row.value = CheckBox.new(row, function() return axutils.childFromLeft(axutils.childMatching(row:children(), CheckBox.matches), 1) end)
-    end, index)
-end
 
 --- cp.apple.finalcutpro.inspector.video.VideoInspector.matches(element)
 --- Function
@@ -253,45 +152,49 @@ function VideoInspector.new(parent) -- luacheck: ignore
                 return nil
             end)
         end),
+    }
 
-        effects             = headerRow "FFInspectorBrickEffects" {},
-        compositing         = headerRow "FFHeliumBlendCompositingEffect" {
-            blendMode       = menuProperty "FFHeliumBlendMode",
-            opacity         = sliderProperty "FFHeliumBlendOpacity",
-        },
+    -- specify that the `contentUI` contains the PropertyRows.
+    hasProperties(o, o.contentUI) {
+        effects             = header "FFInspectorBrickEffects" {},
 
-        transform           = headerRow "FFHeliumXFormEffect" {
-            position        = xyProperty "FFHeliumXFormPosition",
-            rotation        = sliderProperty "FFHeliumXFormRotation",
-            scaleAll        = sliderProperty "FFHeliumXFormScaleInspector",
-            scaleX          = sliderProperty "FFHeliumXFormScaleXInspector",
-            scaleY          = sliderProperty "FFHeliumXFormScaleYInspector",
-            anchor          = xyProperty "FFHeliumXFormAnchor",
+        compositing         = header "FFHeliumBlendCompositingEffect" {
+            blendMode       = popUpButton "FFHeliumBlendMode",
+            opacity         = slider "FFHeliumBlendOpacity",
         },
 
-        crop                = headerRow "FFHeliumCropEffect" {
-            type            = menuProperty "FFType",
-            left            = sliderProperty "FFCropLeft",
-            right           = sliderProperty "FFCropRight",
-            top             = sliderProperty "FFCropTop",
-            bottom          = sliderProperty "FFCropBottom",
+        transform           = header "FFHeliumXFormEffect" {
+            position        = xy "FFHeliumXFormPosition",
+            rotation        = slider "FFHeliumXFormRotation",
+            scaleAll        = slider "FFHeliumXFormScaleInspector",
+            scaleX          = slider "FFHeliumXFormScaleXInspector",
+            scaleY          = slider "FFHeliumXFormScaleYInspector",
+            anchor          = xy "FFHeliumXFormAnchor",
         },
-        distort             = headerRow "FFHeliumDistortEffect" {
-            bottomLeft      = xyProperty "PerspectiveTile::Bottom Left",
-            bottomRight     = xyProperty "PerspectiveTile::Bottom Right",
-            topRight        = xyProperty "PerspectiveTile::Top Right",
-            topLeft         = xyProperty "PerspectiveTile::Top Left",
+
+        crop                = header "FFHeliumCropEffect" {
+            type            = popUpButton "FFType",
+            left            = slider "FFCropLeft",
+            right           = slider "FFCropRight",
+            top             = slider "FFCropTop",
+            bottom          = slider "FFCropBottom",
         },
-        stabilization       = headerRow "FFStabilizationEffect" {
-            method          = menuProperty "FFStabilizationAlgorithmRequested",
-            smoothing       = sliderProperty "FFStabilizationInertiaCamSmooth",
-            tripodMode      = checkBoxProperty "FFStabilizationUseTripodMode",
+        distort             = header "FFHeliumDistortEffect" {
+            bottomLeft      = xy "PerspectiveTile::Bottom Left",
+            bottomRight     = xy "PerspectiveTile::Bottom Right",
+            topRight        = xy "PerspectiveTile::Top Right",
+            topLeft         = xy "PerspectiveTile::Top Left",
         },
-        rollingShutter      = headerRow "FFRollingShutterEffect" {
-            amount          = menuProperty "FFRollingShutterAmount",
+        stabilization       = header "FFStabilizationEffect" {
+            method          = popUpButton "FFStabilizationAlgorithmRequested",
+            smoothing       = slider "FFStabilizationInertiaCamSmooth",
+            tripodMode      = checkBox "FFStabilizationUseTripodMode",
         },
-        spatialConform      = headerRow "FFHeliumConformEffect" {
-            type            = menuProperty("FFType", 2),
+        rollingShutter      = header "FFRollingShutterEffect" {
+            amount          = popUpButton "FFRollingShutterAmount",
+        },
+        spatialConform      = header "FFHeliumConformEffect" {
+            type            = popUpButton("FFType", 2),
         },
     }
 
@@ -344,31 +247,6 @@ function VideoInspector:show()
         self:parent():selectTab("Video")
     end
     return self
-end
-
---- cp.apple.finalcutpro.inspector.video.VideoInspector:row(labelKey, index) -> PropertyRow
---- Method
---- Returns a `PropertyRow` for a row with the specified label key.
----
---- Parameters:
---- * labelKey  - The key for the label (see FCP App `keysWithString` method).
----
---- Returns:
---- * The `PropertyRow`.
-function VideoInspector:row(labelKey, index)
-    local key = labelKey
-    if index ~= nil and index > 1 then
-        key = labelKey .. "_" .. tostring(index)
-    end
-
-    local row = self._rows[key]
-
-    if not row then
-        row = PropertyRow.new(self, labelKey, "contentUI", index)
-        self._rows[key] = row
-    end
-
-    return row
 end
 
 return VideoInspector
