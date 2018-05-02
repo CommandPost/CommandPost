@@ -936,6 +936,10 @@ function mod.mt:scanSystemMotionTemplates(language)
     --------------------------------------------------------------------------------
     local path = "/Library/Application Support/Final Cut Pro/Templates.localized"
     local pathToAbsolute = fs.pathToAbsolute(path)
+    if not pathToAbsolute then
+        log.df("Folder does not exist: %s", path)
+        return nil
+    end
 
     --------------------------------------------------------------------------------
     -- Restore from cache:

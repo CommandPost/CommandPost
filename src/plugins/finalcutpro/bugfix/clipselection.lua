@@ -130,26 +130,28 @@ local function mouseClickHandler(event)
                         -- only select clips that intersect with the selection range.
                         local allSelectedClips = mod.timelineContents:selectedClipsUI()
                         local selectedClips = {}
-                        for _,clipUI in ipairs(allSelectedClips) do
-                            local clipFrame = clipUI:attributeValue("AXFrame")
-                            if clipFrame ~= nil then
-                                local intersect = selectionRect:intersect(clipFrame)
-                                if intersect ~= nil and intersect.w > 0 and intersect.h > 0 then
-                                    insert(selectedClips, clipUI)
+                        if allSelectedClips then
+                            for _,clipUI in ipairs(allSelectedClips) do
+                                local clipFrame = clipUI:attributeValue("AXFrame")
+                                if clipFrame ~= nil then
+                                    local intersect = selectionRect:intersect(clipFrame)
+                                    if intersect ~= nil and intersect.w > 0 and intersect.h > 0 then
+                                        insert(selectedClips, clipUI)
+                                    end
                                 end
                             end
-                        end
-                        if selectedClips then
-                            if flags.cmd or flags.shift then
-                                for _,clip in ipairs(mod.previousClips) do
-                                    insert(selectedClips, clip)
+                            if selectedClips then
+                                if flags.cmd or flags.shift then
+                                    for _,clip in ipairs(mod.previousClips) do
+                                        insert(selectedClips, clip)
+                                    end
                                 end
-                            end
-                            mod.timelineContents:selectClips(selectedClips)
-                            local selectedCount, allCount = #selectedClips, #allSelectedClips
-                            local prevCount = #mod.previousClips
-                            if selectedCount ~= allCount and selectedCount + prevCount ~= allCount then
-                                log.df("FCPX BUGFIX: Ignored %s rogue clips.", #allSelectedClips - #selectedClips)
+                                mod.timelineContents:selectClips(selectedClips)
+                                local selectedCount, allCount = #selectedClips, #allSelectedClips
+                                local prevCount = mod.previousClips and #mod.previousClips
+                                if selectedCount ~= allCount and selectedCount + prevCount ~= allCount then
+                                    log.df("FCPX BUGFIX: Ignored %s rogue clips.", #allSelectedClips - #selectedClips)
+                                end
                             end
                         end
                     end)
@@ -211,7 +213,7 @@ mod.enabled = config.prop("bugfix_clipselection", true)
 --- Variable
 --- Checks if the plugin is currently active, depending on `enabled` and which
 --- version of Final Cut Pro is currently installed.
-mod.active = mod.enabled:AND(fcp.getVersion:IS("10.4.1")):watch(
+mod.active = mod.enabled:AND(fcp.isRunning):AND(fcp.getVersion:IS("10.4.1")):watch(
     function(active)
         if active then
             mod.activate()

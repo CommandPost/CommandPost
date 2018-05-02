@@ -32,7 +32,7 @@ local find = string.find
 
 -- TODO: Add documentation
 function MenuButton.matches(element)
-    return element:attributeValue("AXRole") == "AXMenuButton"
+    return element and element:attributeValue("AXRole") == "AXMenuButton"
 end
 
 --- cp.ui.MenuButton.new(parent, finderFn) -> MenuButton

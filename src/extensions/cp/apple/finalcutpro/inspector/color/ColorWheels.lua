@@ -122,8 +122,9 @@ function ColorWheels.new(parent)
         function(self)
             local ui = self:contentUI()
             if ui then
-                -- 'all wheels' mode has at least 2 color wheels, 'single wheels' does not.
-                return axutils.childMatching(ui, ColorWheel.matches, 2) ~= nil
+                local wheelOne = axutils.childMatching(ui, ColorWheel.matches, 1)
+                local wheelTwo = axutils.childMatching(ui, ColorWheel.matches, 2)
+                return wheelOne and wheelTwo and wheelOne:attributeValue("AXPosition").y ~= wheelTwo:attributeValue("AXPosition").y or false
             end
             return false
         end,

@@ -44,7 +44,7 @@ local StaticText = {}
 --- Returns:
 --- * If `true`, the element is a Static Text element.
 function StaticText.matches(element)
-    return element:attributeValue("AXRole") == "AXStaticText"
+    return element and element:attributeValue("AXRole") == "AXStaticText"
 end
 
 --- cp.ui.StaticText.new(parent, finderFn[, convertFn]) -> StaticText

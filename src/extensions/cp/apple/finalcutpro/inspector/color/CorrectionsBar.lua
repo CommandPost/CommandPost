@@ -25,8 +25,9 @@ local log                               = require("hs.logger").new("colorInspect
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
-local MenuButton                        = require("cp.ui.MenuButton")
 local CheckBox                          = require("cp.ui.CheckBox")
+local just                              = require("cp.just")
+local MenuButton                        = require("cp.ui.MenuButton")
 local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -214,11 +215,16 @@ function CorrectionsBar:activate(correctionType, number)
     --------------------------------------------------------------------------------
     local correctionText = self:findCorrectionLabel(correctionType)
     if not correctionText then
-        log.ef("Invalid Correction Type: %s", correctionType)
+        log.ef("Invalid Correction Type: '%s' (%s)", correctionType, correctionText)
     end
 
     local menuButton = self:menuButton()
-    if menuButton:isShowing() then
+
+    local result = just.doUntil(function()
+        return menuButton:isShowing()
+    end)
+
+    if result then
         local pattern = "%s*"..correctionText.." "..number
         if not menuButton:selectItemMatching(pattern) then
             --------------------------------------------------------------------------------
@@ -226,9 +232,11 @@ function CorrectionsBar:activate(correctionType, number)
             --------------------------------------------------------------------------------
             pattern = "%+"..correctionText
             if not menuButton:selectItemMatching(pattern) then
-                log.ef("Invalid Correction Type: %s", correctionType)
+                log.ef("Invalid Correction Menu Item: '%s' (%s)", correctionType, correctionText)
             end
         end
+    else
+        log.ef("Corrections Bar Activation Failed due to menu button timing out.")
     end
 
     return self

@@ -293,7 +293,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     local lastPosition = nil
     local stopCounter = 0
     local originalOffset = 0
-    local viewer = self:app():viewer()
+    --local viewer = self:app():viewer()
     local threshold = Timeline.stopThreshold
 
     local incPlayheadStopped = function()
@@ -301,10 +301,13 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     end
 
     local playheadHasStopped = function()
+        return stopCounter == threshold
+        --[[
         if stopCounter ~= threshold and not viewer:isPlaying() then
             stopCounter = threshold
         end
         return stopCounter == threshold
+        --]]
     end
 
     -- Setting this to false unlocks the playhead.
@@ -405,7 +408,8 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     end
 
     -- Let's go!
-    timer.doAfter(Timeline.lockActive, check)
+    --timer.doAfter(Timeline.lockActive, check)
+    check()
 
     return self
 end

@@ -13,11 +13,21 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log				= require("hs.logger").new("prefadv")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local dialog			= require("hs.dialog")
 local ipc				= require("hs.ipc")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config			= require("cp.config")
 local html				= require("cp.web.html")
 
@@ -139,7 +149,10 @@ function mod.toggleCommandLineTool()
 
 end
 
-mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
+--- plugins.core.preferences.advanced.openErrorLogOnDockClick <cp.prop: boolean>
+--- Variable
+--- Open Error Log on Dock Icon Click.
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", true)
 
 --------------------------------------------------------------------------------
 --

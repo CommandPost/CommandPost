@@ -131,8 +131,17 @@ end
 ---  * Example usage:
 ---    `require("cp.apple.finalcutpro"):menuBar():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
 function MenuBar:selectMenu(path)
+
     local menuItemUI = self:findMenuUI(path)
-    if menuItemUI and menuItemUI:attributeValue("AXEnabled") then
+
+    --------------------------------------------------------------------------------
+    -- NOTE: For some reason this AXEnabled line was causing all kinds of issues.
+    --       I think it's because, like the Undo button, Final Cut Pro doesn't
+    --       actually update the menu until the user clicks the root menu item.
+    --------------------------------------------------------------------------------
+    --if menuItemUI and menuItemUI:attributeValue("AXEnabled") then
+
+    if menuItemUI then
         local result = menuItemUI:performAction("AXPress")
         if result then
             return true

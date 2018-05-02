@@ -381,7 +381,7 @@ function mod.init(deps)
                 if type(midiValue) == "number" then
                     local value = tools.round(midiValue / 16383* 0.8 - 0.4)
                     if midiValue == 16383/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                    fcp:inspector():color():colorWheels():master():show():brightnessValue(value)
                 end
             else
                 --------------------------------------------------------------------------------
@@ -396,7 +396,7 @@ function mod.init(deps)
                         value = midiValue / 128 * 0.8 - 0.4
                     end
                     if midiValue == 128/2 then value = 0 end
-                    fcp:inspector():color():colorWheels():highlights():show():brightnessValue(value)
+                    fcp:inspector():color():colorWheels():master():show():brightnessValue(value)
                 end
             end
         end,
