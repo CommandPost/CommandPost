@@ -70,7 +70,7 @@ local SplitGroup                        = require("cp.ui.SplitGroup")
 
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
-local childFromLeft, childFromRight, childrenMatching = axutils.childFromLeft, axutils.childFromRight, axutils.childrenMatching
+local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local section, slider, numberField, popUpButton      = IP.section, IP.slider, IP.numberField, IP.popUpButton
 
@@ -145,8 +145,8 @@ function AudioInspector.new(parent) -- luacheck: ignore
     function o:content()
         local content = self._content
         if not content then
-            content = SplitGroup.new(o, UI:mutate(function(original, self)
-                return axutils.cache(self, "_ui", function()
+            content = SplitGroup.new(o, UI:mutate(function(original, this)
+                return axutils.cache(this, "_ui", function()
                     local ui = original()
                     if ui then
                         local splitGroup = ui[1]
@@ -215,10 +215,10 @@ function AudioInspector.new(parent) -- luacheck: ignore
                         humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
                             frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)
                                 row.fiftyHz     = RadioButton.new(row, function()
-                                    return childFromLeft(childrenMatching(row:children(), RadioButton.matches), 1)
+                                    return childFromLeft(row:children(), 1, RadioButton.matches)
                                 end)
                                 row.sixtyHz     = RadioButton.new(row, function()
-                                    return childFromRight(childrenMatching(row:children(), RadioButton.matches), 1)
+                                    return childFromRight(row:children(), 1, RadioButton.matches)
                                 end)
                             end),
                         }

@@ -26,7 +26,6 @@ local StaticText            = require("cp.ui.StaticText")
 local TextField             = require("cp.ui.TextField")
 
 local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
-local childrenMatching              = axutils.childrenMatching
 
 local mod = {}
 
@@ -198,7 +197,7 @@ mod.simple = simple
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.textField(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end)
+        row.value = TextField.new(row, function() return childFromRight(row:children(), 1, TextField.matches) end)
     end, index)
 end
 
@@ -217,7 +216,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.numberField(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
+        row.value = TextField.new(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
     end, index)
 end
 
@@ -236,7 +235,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.staticText(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = StaticText.new(row, function() return childFromRight(childrenMatching(row:children(), StaticText.matches), 1) end)
+        row.value = StaticText.new(row, function() return childFromRight(row:children(), 1, StaticText.matches) end)
     end, index)
 end
 
@@ -256,8 +255,8 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.xy(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.x = TextField.new(row, function() return childFromLeft(childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
-        row.y = TextField.new(row, function() return childFromLeft(childrenMatching(row:children(), TextField.matches), 2) end, tonumber)
+        row.x = TextField.new(row, function() return childFromLeft(row:children(), 1, TextField.matches) end, tonumber)
+        row.y = TextField.new(row, function() return childFromLeft(row:children(), 2, TextField.matches) end, tonumber)
     end, index)
 end
 
@@ -277,7 +276,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.slider(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(childrenMatching(row:children(), TextField.matches), 1) end, tonumber)
+        row.value = TextField.new(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
     end, index)
 end
 
@@ -296,7 +295,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.menuButton(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = MenuButton.new(row, function() return childFromRight(childrenMatching(row:children(), MenuButton.matches), 1) end)
+        row.value = MenuButton.new(row, function() return childFromRight(row:children(), 1, MenuButton.matches) end)
     end, index)
 end
 
@@ -315,7 +314,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.popUpButton(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = PopUpButton.new(row, function() return childFromRight(childrenMatching(row:children(), PopUpButton.matches), 1) end)
+        row.value = PopUpButton.new(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
     end, index)
 end
 
@@ -334,7 +333,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.checkBox(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = CheckBox.new(row, function() return childFromLeft(childrenMatching(row:children(), CheckBox.matches), 1) end)
+        row.value = CheckBox.new(row, function() return childFromLeft(row:children(), 1, CheckBox.matches) end)
     end, index)
 end
 

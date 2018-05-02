@@ -20,16 +20,10 @@
 local log                               = require("hs.logger").new("inspector")
 
 --------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local geometry                          = require("hs.geometry")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
 
 local AudioInspector                    = require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
