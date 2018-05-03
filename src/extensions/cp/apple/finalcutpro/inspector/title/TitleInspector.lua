@@ -71,7 +71,7 @@ local IP                                = require("cp.apple.finalcutpro.inspecto
 
 local childFromRight                    = axutils.childFromRight
 local hasProperties, simple             = IP.hasProperties, IP.simple
-local section, slider, xy, popUpButton, checkBox = IP.section, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
+local section, slider                   = IP.section, IP.slider
 
 --------------------------------------------------------------------------------
 --

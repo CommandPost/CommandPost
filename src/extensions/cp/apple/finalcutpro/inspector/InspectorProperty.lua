@@ -13,7 +13,7 @@
 --- there is also a `section`, which is for rows which expand/collapse to reveal
 --- other properties.
 
-local log                   = require("hs.logger").new("InspectorProperty")
+-- local log                   = require("hs.logger").new("InspectorProperty")
 
 local is                    = require("cp.is")
 local prop                  = require("cp.prop")
