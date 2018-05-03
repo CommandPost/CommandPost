@@ -210,7 +210,7 @@ function AudioInspector.new(parent) -- luacheck: ignore
                             uniformity   = numberField "FFAudioAnalysisLabel_LoudnessUniformity",
                         },
                         noiseRemoval    = section "FFAudioAnalysisLabel_NoiseRemoval" {
-                            amount      = numberField("FFAudioAnalysisLabel_NoiseRemovalAmount", 2),
+                            amount      = numberField "FFAudioAnalysisLabel_NoiseRemovalAmount",
                         },
                         humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
                             frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)

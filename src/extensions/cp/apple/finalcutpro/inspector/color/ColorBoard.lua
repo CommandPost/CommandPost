@@ -448,7 +448,7 @@ end
 --- * The `RadioGroup`.
 function ColorBoard:aspectGroup()
     if not self._aspectGroup then
-        self._aspectGroup = RadioGroup:new(self, function()
+        self._aspectGroup = RadioGroup.new(self, function()
             return axutils.childWithRole(self:contentUI(), "AXRadioGroup")
         end)
     end

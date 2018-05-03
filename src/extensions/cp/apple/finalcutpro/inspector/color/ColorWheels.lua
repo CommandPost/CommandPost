@@ -250,7 +250,7 @@ end
 --- * The `RadioGroup`.
 function ColorWheels:wheelType()
     if not self._wheelType then
-        self._wheelType = RadioGroup:new(self,
+        self._wheelType = RadioGroup.new(self,
             function()
                 if not self:viewingAllWheels() then
                     local ui = self:contentUI()

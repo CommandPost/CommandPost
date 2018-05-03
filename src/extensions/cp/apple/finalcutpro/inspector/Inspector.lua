@@ -497,7 +497,7 @@ end
 ---  * TextInspector
 function Inspector:text()
     if not self._textInspector then
-        self._textInspector = TextInspector:new(self)
+        self._textInspector = TextInspector.new(self)
     end
     return self._textInspector
 end

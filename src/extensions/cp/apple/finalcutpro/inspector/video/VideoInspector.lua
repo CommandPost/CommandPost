@@ -8,7 +8,7 @@
 ---
 --- Video Inspector Module.
 ---
---- Header Rows (`compositing`, `transform`, etc.) have the following properties:
+--- Section Rows (`compositing`, `transform`, etc.) have the following properties:
 --- * enabled   - (cp.ui.CheckBox) Indicates if the section is enabled.
 --- * toggle    - (cp.ui.Button) Will toggle the Hide/Show button.
 --- * reset     - (cp.ui.Button) Will reset the contents of the section.
@@ -194,7 +194,7 @@ function VideoInspector.new(parent) -- luacheck: ignore
             amount          = popUpButton "FFRollingShutterAmount",
         },
         spatialConform      = section "FFHeliumConformEffect" {
-            type            = popUpButton("FFType", 2),
+            type            = popUpButton "FFType",
         },
     }
 

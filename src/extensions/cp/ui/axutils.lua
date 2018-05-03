@@ -29,6 +29,29 @@ local sort                      = table.sort
 
 local axutils = {}
 
+--- cp.ui.axutils.children(element) -> table | nil
+--- Function
+--- Finds the children for the element. If it is an `hs._asm.axuielement`, it will
+--- attempt to get the `AXChildren` attribute. If it is a table with a `children` function,
+--- that will get called. Otherwise, the element is returned.
+---
+--- Parameters:
+--- * element   - The element to retrieve the children of.
+---
+--- Returns:
+--- * the children table, or `nil`.
+function axutils.children(element)
+    local children = element
+    -- Try to get the children array directly, if present, to optimise the loop.
+    -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
+    if element.attributeValue then -- it's an AXUIElement
+        children = element:attributeValue("AXChildren") or element
+    elseif type(element.children) == "function" then
+        children = element:children()
+    end
+    return children
+end
+
 -- TODO: Add documentation
 function axutils.hasAttributeValue(element, name, value)
     return element and element:attributeValue(name) == value
@@ -106,12 +129,7 @@ end
 function axutils.childMatching(element, matcherFn, index)
     index = index or 1
     if element then
-        local children = element
-        -- Try to get the children array directly, if present, to optimise the loop.
-        -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-        if element.attributeValue then -- it's an AXUIElement
-            children = element:attributeValue("AXChildren") or element
-        end
+        local children = axutils.children(element)
         if #children > 0 then
             local count = 0
             for _,child in ipairs(children) do
@@ -141,12 +159,7 @@ end
 ---  * The child, or `nil` if the index is larger than the number of children.
 function axutils.childAtIndex(element, index, compareFn, matcherFn)
     if element and index > 0 then
-        local children = element
-        -- Try to get the children array directly, if present, to optimise the loop.
-        -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-        if element.attributeValue then -- it's an AXUIElement
-            children = element:attributeValue("AXChildren") or element
-        end
+        local children = axutils.children(element)
 
         if matcherFn then
             children = axutils.childrenMatching(children, matcherFn)

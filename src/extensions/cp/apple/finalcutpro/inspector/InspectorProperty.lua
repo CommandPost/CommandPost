@@ -13,6 +13,8 @@
 --- there is also a `section`, which is for rows which expand/collapse to reveal
 --- other properties.
 
+local log                   = require("hs.logger").new("InspectorProperty")
+
 local is                    = require("cp.is")
 local prop                  = require("cp.prop")
 
@@ -26,6 +28,7 @@ local StaticText            = require("cp.ui.StaticText")
 local TextField             = require("cp.ui.TextField")
 
 local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
+local childrenMatching      = axutils.childrenMatching
 
 local mod = {}
 
@@ -112,7 +115,19 @@ function mod.section(labelKey, index)
         local section = prop(function(self)
             local row = PropertyRow.new(self, labelKey, index)
             -- sections are also parents of other PropertyRows.
-            PropertyRow.prepareParent(row, row.propertiesUI)
+            PropertyRow.prepareParent(row, row.propertiesUI:mutate(function(original)
+                local propsUI = original()
+                local rowUI = row:UI()
+                if propsUI and rowUI then
+                    local frame = rowUI:frame()
+                    local rowPos = frame.y + frame.h
+                    return childrenMatching(propsUI, function(child)
+                        local childFrame = child:frame()
+                        return childFrame.y >= rowPos
+                    end)
+                end
+                return nil
+            end))
 
             row.enabled     = CheckBox.new(row, function() return childFromLeft(row:children(), 1) end)
             row.toggle      = Button.new(row, function() return childFromRight(row:children(), 2) end)
