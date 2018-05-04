@@ -519,7 +519,7 @@ end
 ---  * TitleInspector
 function Inspector:title()
     if not self._titleInspector then
-        self._titleInspector = TitleInspector:new(self)
+        self._titleInspector = TitleInspector.new(self)
     end
     return self._titleInspector
 end

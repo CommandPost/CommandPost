@@ -64,14 +64,11 @@
 --------------------------------------------------------------------------------
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
-local PopUpButton                       = require("cp.ui.PopUpButton")
-local MenuButton                        = require("cp.ui.MenuButton")
 
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
-local childFromRight                    = axutils.childFromRight
-local hasProperties, simple             = IP.hasProperties, IP.simple
-local section, slider                   = IP.section, IP.slider
+local hasProperties                     = IP.hasProperties
+local section                           = IP.section
 
 --------------------------------------------------------------------------------
 --
@@ -92,9 +89,13 @@ local TitleInspector = {}
 function TitleInspector.matches(element)
     if element then
         if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
-            local scrollArea = element[1]
-            if scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and #scrollArea > 1 then
-                return PopUpButton.matches(scrollArea[1])
+            local group = element[1]
+            if group:attributeValue("AXRole") == "AXGroup" and #group == 1 then
+                local scrollArea = group[1]
+                if scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and #scrollArea > 1 then
+                    local publishedParams = scrollArea[1]
+                    return publishedParams and publishedParams:attributeValue("AXRole") == "AXStaticText"
+                end
             end
         end
     end
@@ -147,7 +148,7 @@ function TitleInspector.new(parent)
             return axutils.cache(o, "_contentUI", function()
                 local ui = original()
                 if ui then
-                    local scrollArea = ui[1]
+                    local scrollArea = ui[1][1]
                     return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
                 end
                 return nil
@@ -155,31 +156,9 @@ function TitleInspector.new(parent)
         end),
     }
 
-    -- The 'Shape Preset' popup
-
-    o.shapePreset = PopUpButton.new(o, function()
-        local ui = o.contentUI()
-        return ui and PopUpButton.matches(ui[1]) and ui[1]
-    end)
-
     -- specify that the `contentUI` contains the PropertyRows.
     hasProperties(o, o.contentUI) {
-        basic             = section "basic viewset" {
-            font            = simple("XXX", function(row)
-                row.face        = MenuButton.new(row, function()
-                    return childFromRight(row:children(), 2, MenuButton.matches)
-                end)
-                row.face        = MenuButton.new(row, function()
-                    return childFromRight(row:children(), 1, MenuButton.matches)
-                end)
-            end),
-            size            = slider "XXX",
-            -- alignment            = simple("XXX", function(row)
-            -- end),
-            -- verticalAlignment    = simple("XXX", function(row)
-            -- end),
-        },
-
+        published             = section "Inspector Published Parameters Heading" {},
     }
 
     return o
