@@ -46,6 +46,6 @@ mod.LOG_NAME = "fcpWinFilter"
 mod.windowfilter = windowfilter.new(function(window)
     -- TODO: This should be taken from cp.apple.finalcutpro.BUNDLE_ID:
     return window and window:application():bundleID() == "com.apple.FinalCut"
-end, mod.LOGNAME)
+end, mod.LOG_NAME)
 
 return mod.windowfilter
