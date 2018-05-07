@@ -106,6 +106,15 @@ local function deepeq(a, b)
     return true
 end
 
+local function deepneq(a, b)
+    local ok, _ = deepeq(a, b)
+    if ok then
+        return false, format("%s == %s", inspect(a), inspect(b))
+    else
+        return true
+    end
+end
+
 -- Compatibility for Lua 5.1 and Lua 5.2
 local function args(...)
     return {n=select('#', ...), ...}
@@ -240,6 +249,7 @@ function test.case.mt:run()
         end
     end
     _ENV.eq = deepeq
+    _ENV.neq = deepneq
     _ENV.spy = spy
     -- prevent internal 'test' creations.
     test.new = noCase
