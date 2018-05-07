@@ -29,6 +29,7 @@ local fs                                        = require("hs.fs")
 local geometry                                  = require("hs.geometry")
 local host                                      = require("hs.host")
 local inspect                                   = require("hs.inspect")
+local json                                      = require("hs.json")
 local mouse                                     = require("hs.mouse")
 local osascript                                 = require("hs.osascript")
 local screen                                    = require("hs.screen")
@@ -1236,6 +1237,30 @@ function tools.iconFallback(...)
     end
     log.ef("Failed to find icon(s): " .. inspect(table.pack(...)))
     return config.iconPath
+end
+
+--- cp.tools.readJSONFile(path) -> table or nil
+--- Function
+--- Attempts to read the specified path as a JSON file.
+--- If the file cannot be found, `nil` is returned. If the file is
+--- not a JSON file, an error will occur.
+---
+--- Parameters:
+--- * path      - The JSON file path.
+---
+--- Returns:
+--- * The JSON file converted into table, or `nil`.
+function tools.readJSONFile(path)
+    local filePath = fs.pathToAbsolute(path)
+    if filePath then
+        local file = io.open(filePath, "r")
+        if file then
+            local content = file:read("*all")
+            file:close()
+            return json.decode(content)
+        end
+    end
+    return nil
 end
 
 return tools
