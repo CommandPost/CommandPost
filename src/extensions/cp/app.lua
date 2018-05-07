@@ -16,6 +16,7 @@ local ax                        = require("hs._asm.axuielement")
 local application               = require("hs.application")
 local applicationwatcher		= require("hs.application.watcher")
 local fs                        = require("hs.fs")
+local pathwatcher				= require("hs.pathwatcher")
 local timer                     = require("hs.timer")
 
 local languageID                = require("cp.i18n.languageID")
@@ -664,6 +665,25 @@ function mod._initWatchers()
             end
         end
     ):start()
+
+    --------------------------------------------------------------------------------
+    -- Setup Preferences Watcher:
+    --------------------------------------------------------------------------------
+    --log.df("Setting up Preferences Watcher...")
+    local plistPattern = [[^.-([^/]+)%.plist$]]
+    mod._preferencesWatcher = pathwatcher.new(PREFS_PATH, function(files)
+        for _,file in pairs(files) do
+            local bundleID = string.match(file, plistPattern)
+            if bundleID then
+                local app = mod._findApp(bundleID)
+                if app then
+                    -- force an update
+                    app:getPreferences(true)
+                end
+            end
+        end
+    end):start()
+
 end
 
 local function syncPreferences(bundleID)
