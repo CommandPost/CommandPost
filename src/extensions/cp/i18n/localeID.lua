@@ -238,7 +238,7 @@ end
 --- The matching `script` details, if appropriate. Will be `nil` if no script was specified in the `code`.
 
 function mod.mt:__tostring()
-    return self.name
+    return format("cp.i18n.localeID: %s [%s]", self.name, self.code)
 end
 
 -- we match if we have the same code.

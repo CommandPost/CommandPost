@@ -68,6 +68,62 @@ function mod.parse(code)
     return l, s, r
 end
 
+--- cp.i18n.languageID.forParts(languageCode[, scriptCode[, regionCode]]) -> cp.i18n.languageID
+--- Construtor
+--- Returns a `languageID` with the specified parts
+function mod.forParts(languageCode, scriptCode, regionCode)
+    local id
+    if languageCode then
+        local theLanguage, theRegion, theScript
+        local theCode, theName, theLocalName
+
+        theLanguage = language[languageCode]
+        if not theLanguage then
+            return nil, format("Unable to find language: %s", languageCode)
+        else
+            theCode = theLanguage.alpha2
+            theName = theLanguage.name
+            theLocalName = theLanguage.localName
+        end
+        if regionCode then
+            theRegion = region[regionCode]
+            if not theRegion then
+                return nil, format("Unable to find region: %s", regionCode)
+            else
+                theCode = theCode .. "-" .. theRegion.alpha2
+                theName = theName .. " (" .. theRegion.name .. ")"
+                theLocalName = theLocalName .. " (" .. theRegion.alpha2 .. ")"
+            end
+        end
+        if scriptCode then
+            theScript = script[scriptCode]
+            if not theScript then
+                return nil, format("Unable to find script: %s", scriptCode)
+            else
+                theCode = theCode .. "-" .. theScript.alpha4
+                theName = theName .. " (" .. theScript.name .. ")"
+                theLocalName = theLocalName .. " (" .. theScript.alpha2 .. ")"
+            end
+        end
+
+        id = cache[theCode]
+        if not id then
+            id = setmetatable({
+                code = theCode,
+                name = theName,
+                localName = theLocalName,
+                language = theLanguage,
+                region = theRegion,
+                script = theScript,
+            }, mod.mt)
+            cache[theCode] = id
+        end
+    else
+        return nil, format("Please provide a language code in argument #1")
+    end
+    return id
+end
+
 --- cp.i18n.languageID.forCode(code) -> cp.i18n.languageID, string
 --- Constructor
 --- Creates, or retrieves from the cache, a `languageID` instance for the specified `code`.
@@ -85,53 +141,38 @@ function mod.forCode(code)
     local id = cache[code]
     if not id then
         local languageCode, scriptCode, regionCode = mod.parse(code)
-        if languageCode then
-            local theLanguage, theRegion, theScript
-            local theCode, theName, theLocalName
-
-            theLanguage = language[languageCode]
-            if not theLanguage then
-                return nil, format("Unable to find language: %s", languageCode)
-            else
-                theCode = theLanguage.alpha2
-                theName = theLanguage.name
-                theLocalName = theLanguage.localName
-            end
-            if regionCode then
-                theRegion = region[regionCode]
-                if not theRegion then
-                    return nil, format("Unable to find region: %s", regionCode)
-                else
-                    theCode = theCode .. "-" .. theRegion.alpha2
-                    theName = theName .. " (" .. theRegion.name .. ")"
-                    theLocalName = theLocalName .. " (" .. theRegion.alpha2 .. ")"
-                end
-            end
-            if scriptCode then
-                theScript = script[scriptCode]
-                if not theScript then
-                    return nil, format("Unable to find script: %s", scriptCode)
-                else
-                    theCode = theCode .. "-" .. theScript.alpha4
-                    theName = theName .. " (" .. theScript.name .. ")"
-                    theLocalName = theLocalName .. " (" .. theScript.alpha2 .. ")"
-                end
-            end
-
-            id = setmetatable({
-                code = theCode,
-                name = theName,
-                localName = theLocalName,
-                language = theLanguage,
-                region = theRegion,
-                script = theScript,
-            }, mod.mt)
-            cache[code] = id
-        else
-            return nil, format("Unable to parse language ID: %s", code)
-        end
+        return mod.forParts(languageCode, scriptCode, regionCode)
     end
     return id
+end
+
+--- cp.i18n.languageID.forLocaleID(code[, prioritiseScript]) -> cp.i18n.languageID, string
+--- Constructor
+--- Creates, or retrieves from the cache, a `languageID` instance for the specified `cp.i18n.localeID`.
+--- Language IDs can only have either a script or a region, so if the locale has both, this will
+--- priortise the `region` by default. You can set `prioritiseScript` to `true` to use script instead.
+--- If only one or the other is set in the locale, `prioritiseScript` is ignored.
+---
+--- Parameters:
+--- * locale            - The `localeID` to convert
+--- * prioritiseScript  - If set to `true` and the locale has both a region and script then the script code will be used.
+---
+--- Returns:
+--- * The `languageID` for the `locale`, or `nil`
+--- * The error message if there was a problem.
+function mod.forLocaleID(locale, prioritiseScript)
+    local languageCode = locale.language.alpha2
+    local scriptCode = locale.script and locale.script.alpha4
+    local regionCode = locale.region and locale.region.alpha2
+
+    if scriptCode and regionCode then
+        if prioritiseScript then
+            regionCode = nil
+        else
+            scriptCode = nil
+        end
+    end
+    return mod.forParts(languageCode, scriptCode, regionCode)
 end
 
 --- cp.i18n.languageID:toLocaleID() -> cp.i18n.localeID

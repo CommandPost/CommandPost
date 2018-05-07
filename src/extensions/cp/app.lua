@@ -331,6 +331,7 @@ function mod.forBundleID(bundleID)
                     local bestLocale = self:bestSupportedLocale(value)
                     log.df("Found bestLocale: %s", inspect(bestLocale))
                     if bestLocale then
+                        local bestLanguage = languageID.forCode()
                         self:setPreference("AppleLanguages", {bestLocale.code})
                     else
                         error("Unsupported language: "..value.code)
@@ -753,7 +754,7 @@ function mod.mt:setPreference(key, value)
     local preferenceType
 
     if value == nil then
-        local executeString = "defaults delete " .. self._prefsPath .. " '" .. key .. "'"
+        local executeString = format("defaults delete %s '%s'", self:bundleID(), key)
         local output, ok = hs.execute(executeString)
         if ok then
             return true
@@ -788,7 +789,7 @@ function mod.mt:setPreference(key, value)
     end
 
     if preferenceType then
-        local executeString = "defaults write " .. self._prefsPath .. " '" .. key .. "' -" .. preferenceType .. " " .. value
+        local executeString = format("defaults write %s '%s' -%s %s", self:bundleID(), key, preferenceType, value)
         local output, ok = hs.execute(executeString)
         if ok then
             return true
