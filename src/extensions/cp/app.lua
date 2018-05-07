@@ -39,7 +39,7 @@ local apps = {}
 -- PREFS_PATH
 -- Constant
 -- The standard Preferences Path
-local PREFS_PATH = "~/Library/Preferences/"
+local PREFS_PATH = "~/Library/Preferences"
 
 local BASE_LOCALE = "Base"
 
@@ -733,9 +733,15 @@ function mod.mt:setPreference(key, value)
     local preferenceType
 
     if value == nil then
-        local executeString = format("defaults delete %s '%s'", self._prefsPath, key)
-        local _, executeStatus = hs.execute(executeString)
-        return executeStatus ~= nil
+        local executeString = "defaults delete " .. self._prefsPath .. " '" .. key .. "'"
+        local output, ok = hs.execute(executeString)
+        if ok then
+            return true
+        else
+            log.wf("Error occurred while deleting defaults: %s", output)
+            return false
+        end
+
     end
 
     if type(value) == "boolean" then
@@ -762,9 +768,14 @@ function mod.mt:setPreference(key, value)
     end
 
     if preferenceType then
-        local executeString = format("defaults write %s '%s' -%s %s", self._prefsPath, key, preferenceType, value)
-        local _, executeStatus = hs.execute(executeString)
-        return executeStatus ~= nil
+        local executeString = "defaults write " .. self._prefsPath .. " '" .. key .. "' -" .. preferenceType .. " " .. value
+        local output, ok = hs.execute(executeString)
+        if ok then
+            return true
+        else
+            log.wf("Error occurred while saving defaults: %s", output)
+            return false
+        end
     end
     return false
 end

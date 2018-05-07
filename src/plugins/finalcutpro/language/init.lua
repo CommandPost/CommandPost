@@ -73,8 +73,8 @@ function mod.change(locale)
     --------------------------------------------------------------------------------
     local currentLocale = fcp.app.currentLocale()
     if currentLocale ~= locale then
-        fcp.app.currentLocale(locale)
-        if fcp.app.currentLocale() ~= locale then
+        local result = fcp.app.currentLocale(locale)
+        if result ~= locale then
             dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
             return false
         end
