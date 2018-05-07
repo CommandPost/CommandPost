@@ -19,6 +19,9 @@
 --------------------------------------------------------------------------------
 local dialog        = require("cp.dialog")
 local fcp           = require("cp.apple.finalcutpro")
+local localeID      = require("cp.i18n.localeID")
+
+local insert        = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -38,30 +41,43 @@ local PRIORITY = 6
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.language.change(language) -> none
+--- plugins.finalcutpro.language.change(locale) -> none
 --- Function
---- Changes the Final Cut Pro Language.
+--- Changes the Final Cut Pro Language to the specified locale, if supported.
 ---
 --- Parameters:
----  * language - The language you want to change to.
+---  * locale - The `cp.i18n.localeID` or locale string you want to change to.
 ---
 --- Returns:
 ---  * `true` if successful otherwise `false`
-function mod.change(language)
+function mod.change(locale)
 
-    --------------------------------------------------------------------------------
-    -- If Final Cut Pro is running...
-    --------------------------------------------------------------------------------
-    if fcp:isRunning() and not dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage"), i18n("doYouWantToContinue")) then
+    if type(locale) == "string" then
+        locale = localeID.forCode(locale)
+    end
+
+    if locale == nil then
+        dialog.displayErrorMessage("failedToChangeLanguage")
         return false
     end
 
     --------------------------------------------------------------------------------
-    -- Update Final Cut Pro's settings::
+    -- If Final Cut Pro is running...
     --------------------------------------------------------------------------------
-    if not fcp.currentLanguage:set(language) then
-        dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
+    if fcp.app:running() and not dialog.displayYesNoQuestion(i18n("changeFinalCutProLanguage"), i18n("doYouWantToContinue")) then
         return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Update Final Cut Pro's settings:
+    --------------------------------------------------------------------------------
+    local currentLocale = fcp.app.currentLocale()
+    if currentLocale ~= locale then
+        fcp.app.currentLocale(locale)
+        if fcp.app.currentLocale() ~= locale then
+            dialog.displayErrorMessage(i18n("failedToChangeLanguage"))
+            return false
+        end
     end
 
     return true
@@ -77,24 +93,13 @@ end
 -- Returns:
 --  * The menu as a table.
 local function getFinalCutProLanguagesMenu()
-    local currentLanguage = fcp:currentLanguage()
-    if mod._lastFCPXLanguage ~= nil and mod._lastFCPXLanguage == currentLanguage and mod._lastFCPXLanguageCache ~= nil then
-        --log.df("Using FCPX Language Menu Cache")
-        return mod._lastFCPXLanguageCache
-    else
-        --log.df("Not using FCPX Language Menu Cache")
-        local result = {
-            { title = i18n("german"),           fn = function() mod.change("de") end,                checked = currentLanguage == "de"},
-            { title = i18n("english"),          fn = function() mod.change("en") end,                checked = currentLanguage == "en"},
-            { title = i18n("spanish"),          fn = function() mod.change("es") end,                checked = currentLanguage == "es"},
-            { title = i18n("french"),           fn = function() mod.change("fr") end,                checked = currentLanguage == "fr"},
-            { title = i18n("japanese"),         fn = function() mod.change("ja") end,                checked = currentLanguage == "ja"},
-            { title = i18n("chineseChina"),     fn = function() mod.change("zh_CN") end,             checked = currentLanguage == "zh_CN"},
-        }
-        mod._lastFCPXLanguage = currentLanguage
-        mod._lastFCPXLanguageCache = result
-        return result
+    local currentLocale = fcp.app:currentLocale()
+    local result = {}
+    for _,locale in ipairs(fcp.app:supportedLocales()) do
+        insert(result, { title = locale.localName,  fn = function() mod.change(locale) end, checked = currentLocale == locale })
     end
+    table.sort(result, function(a, b) return a.title < b.title end)
+    return result
 end
 
 --------------------------------------------------------------------------------
@@ -116,11 +121,6 @@ local plugin = {
 function plugin.init(deps)
 
     -------------------------------------------------------------------------------
-    -- Cache Languages on Load:
-    -------------------------------------------------------------------------------
-    getFinalCutProLanguagesMenu()
-
-    -------------------------------------------------------------------------------
     -- New Menu Section:
     -------------------------------------------------------------------------------
     local section = deps.top:addSection(PRIORITY)
@@ -129,7 +129,7 @@ function plugin.init(deps)
     -- The FCPX Languages Menu:
     -------------------------------------------------------------------------------
     local fcpxLangs = section:addMenu(100, function()
-        if fcp:isInstalled() then
+        if fcp.app:installed() then
             return i18n("finalCutProLanguage")
         end
     end)

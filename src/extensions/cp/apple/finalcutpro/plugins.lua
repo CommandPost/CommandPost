@@ -792,7 +792,12 @@ end
 function mod.mt:effectBundleStrings()
     local source = self._effectBundleStrings
     if not source then
-        source = strings.new():fromPlist(self:app():getPath() .. "/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFEffectBundleLocalizable.strings")
+        local app = self:app()
+        local context = {
+            appPath = app:getPath(),
+            language = app:currentLanguage(),
+        }
+        source = strings.new():context(context):fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFEffectBundleLocalizable.strings")
         self._effectBundleStrings = source
     end
     return source
@@ -800,7 +805,7 @@ end
 
 --- cp.apple.finalcutpro.plugins:translateEffectBundle(input, language) -> none
 --- Method
---- Translates an Effect Bundle Item
+--- Translates an Effect Bundle Item.
 ---
 --- Parameters:
 ---  * input - The original name
@@ -809,7 +814,7 @@ end
 --- Returns:
 ---  * The translated value for `input` in the specified language, if present.
 function mod.mt:translateEffectBundle(input, language)
-    return self:effectBundleStrings():find(language, input) or input
+    return self:effectBundleStrings():find(input, language) or input
 end
 
 --- cp.apple.finalcutpro.plugins:scanAppAudioEffectBundles() -> none
@@ -1056,10 +1061,13 @@ end
 function mod.mt:effectStrings()
     local source = self._effectStrings
     if not source then
-        source = strings.new()
-        local fcpPath = self:app():getPath()
-        source:fromPlist(fcpPath .. "/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${language}.lproj/Localizable.strings")
-        source:fromPlist(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/${language}.lproj/FFLocalizable.strings")
+        local app = self:app()
+        source = strings.new():context({
+            appPath = app:getPath(),
+            language = app:currentLanguage(),
+        })
+        source:fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${language}.lproj/Localizable.strings")
+        source:fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Versions/A/Resources/${language}.lproj/FFLocalizable.strings")
         self._effectStrings = source
     end
     return source

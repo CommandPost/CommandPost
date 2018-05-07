@@ -12,6 +12,7 @@
 
 -- local log				= require("hs.logger").new("plistsrc")
 
+local _                 = require("moses")
 local plist				= require("cp.plist")
 local fs				= require("hs.fs")
 local timer				= require("hs.timer")
@@ -39,34 +40,67 @@ mod.mt = {}
 --- The default number of seconds to cache results.
 mod.defaultCacheSeconds = 60.0
 
---- cp.strings.source.plist:pathToAbsolute(language) -> string
+--- cp.strings.source.plist:context([context]) -> table | self
+--- Method
+--- Gets or sets a context to be set for the source. This typically includes a `language`, which
+--- provides the default language code, but may have other source-specific properties.
+--- Calling this method may may clear caches, etc.
+---
+--- Eg:
+---
+--- ```lua
+--- mySource:context({language = "fr"}) -- set the default language to French.
+--- ```
+---
+--- Parameters:
+--- * context   - A table with values which may be used by the source.
+---
+--- Returns:
+--- * If a new context is provided, the `cp.string.source` is returned, otherwise the current context table is returned.
+function mod.mt:context(context)
+    if context ~= nil then
+        self._context = _.extend({}, context)
+        self:reset()
+        return self
+    else
+        return self._context
+    end
+end
+
+--- cp.strings.source.plist:pathToAbsolute([context]) -> string
 --- Method
 --- Finds the abolute path to the `plist` represented by this source for the specified langauge, or `nil` if it does not exist.
 ---
 --- Parameters:
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `context`	- The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
 ---
 --- Returns:
 ---  * The path to the file, or `nil` if not found.
-function mod.mt:pathToAbsolute(language)
-    local langPath = language and self._pathPattern:gsub("%${language}", language) or self._pathPattern
-    return fs.pathToAbsolute(langPath)
+function mod.mt:pathToAbsolute(context)
+    local ctx = _.extend({}, self._context, context)
+    local path = self._pathPattern
+    for key,value in pairs(ctx) do
+        path = path:gsub("${"..tostring(key).."}", tostring(value))
+    end
+    return fs.pathToAbsolute(path)
 end
 
---- cp.strings.source.plist:loadFile(language) -> string
+--- cp.strings.source.plist:loadFile([context]) -> string
 --- Method
---- Loads the plist file for the specified language, returning the value as a table.
+--- Loads the plist file for the specified context, returning the value as a table.
 ---
 --- Parameters:
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `context`	- The context to determine the absolute path with. This will be added to any values provided in the default [context](#context).
 ---
 --- Returns:
 ---  * The table for the specified language, or `nil` if the file doesn't exist.
-function mod.mt:loadFile(language)
-    local langFile = self:pathToAbsolute(language)
-    if not langFile and aliases[language] then
+function mod.mt:loadFile(context)
+    local ctx = _.extend({}, self._context, context)
+    local langFile = self:pathToAbsolute(context)
+    if not langFile and ctx.language and aliases[ctx.language] then
         -- try an alias
-        langFile = self:pathToAbsolute(aliases[language])
+        ctx.language = aliases[ctx.language]
+        langFile = self:pathToAbsolute(ctx)
     end
 
     self._cleanup:start()
@@ -76,41 +110,59 @@ function mod.mt:loadFile(language)
     return nil
 end
 
---- cp.strings.source.plist:find(language, key) -> string
+--- cp.strings.source.plist:find(key[, language]) -> string
 --- Method
 --- Finds the specified `key` value in the plist file for the specified `language`, if the plist can be found, and contains matching key value.
 ---
 --- Parameters:
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
 ---  * `key`		- The key to retrieve from the file.
+---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:find(language, key)
-    self._cache = self._cache or {}
-    self._cache[language] = self._cache[language] or self:loadFile(language) or {}
+function mod.mt:find(key, language)
+    local cache = self._cache
+    if cache == nil then
+        cache = {}
+        self._cache = cache
+    end
 
-    return unescapeXML(self._cache[language][escapeXML(key)])
+    local values = cache[language]
+    if values == nil then
+        local ctx = language and {language = language} or nil
+        values = self:loadFile(ctx) or {}
+        cache[language] = values
+    end
+
+    return unescapeXML(values[escapeXML(key)])
 end
 
---- cp.strings.source.plist:findKeys(language, pattern) -> {string}
+--- cp.strings.source.plist:findKeys(patterns[, language]) -> table of strings
 --- Method
 --- Finds the array of keys whos value matches the pattern in the plist file for the specified `language`, if the plist can be found, and contains matching key.
 ---
 --- Parameters:
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
 ---  * `pattern		- The value pattern.
+---  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround
-function mod.mt:findKeys(language, pattern)
+function mod.mt:findKeys(pattern, language)
+    local cache = self._cache
+    if cache == nil then
+        cache = {}
+        self._cache = cache
+    end
 
-    self._cache = self._cache or {}
-    self._cache[language] = self._cache[language] or self:loadFile(language) or {}
+    local values = cache[language]
+    if values == nil then
+        local ctx = language and {language = language} or nil
+        values = self:loadFile(ctx) or {}
+        cache[language] = values
+    end
 
     local keys = {}
-    local cache = self._cache[language]
-    for k,v in pairs(cache) do
+    for k,v in pairs(values) do
         v = unescapeXML(v)
         -- check if the pattern matches the beginning of the key value
         local s, e = find(v, pattern)
@@ -135,7 +187,7 @@ function mod.mt:reset()
     return self
 end
 
---- cp.strings.source.plist.new(language) -> source
+--- cp.strings.source.plist.new(pathPattern[, cacheSeconds]) -> source
 --- Constructor
 --- Creates a new `cp.strings` source that loads strings from a plist file.
 ---
@@ -149,6 +201,7 @@ mod.new = function(pathPattern, cacheSeconds)
     cacheSeconds = cacheSeconds or mod.defaultCacheSeconds
     local o = {
         _pathPattern = pathPattern,
+        _context = {},
     }
     o._cleanup = timer.delayed.new(cacheSeconds, function() o:reset() end)
     return setmetatable(o, {__index = mod.mt})

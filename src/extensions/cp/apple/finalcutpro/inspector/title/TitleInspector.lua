@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === cp.apple.finalcutpro.inspector.text.TitleInspector ===
+--- === cp.apple.finalcutpro.inspector.title.TitleInspector ===
 ---
 --- Title Inspector Module.
 ---
@@ -31,20 +31,20 @@
 ---
 --- For example:
 --- ```lua
---- local text = fcp:inspector():text()
+--- local title = fcp:inspector():title()
 --- -- Menu Property:
---- text:compositing():blendMode():value("Subtract")
+--- title:compositing():blendMode():value("Subtract")
 --- -- Slider Property:
---- text:compositing():opacity():value(50.0)
+--- title:compositing():opacity():value(50.0)
 --- -- XY Property:
---- text:transform():position():x(-10.0)
+--- title:transform():position():x(-10.0)
 --- -- CheckBox property:
---- text:stabilization():tripodMode():value(true)
+--- title:stabilization():tripodMode():value(true)
 --- ```
 ---
 --- You should also be able to show a specific property and it will be revealed:
 --- ```lua
---- text:stabilization():smoothing():show():value(1.5)
+--- title:stabilization():smoothing():show():value(1.5)
 --- ```
 
 
@@ -57,7 +57,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log								= require("hs.logger").new("textInspect")
+-- local log								= require("hs.logger").new("titleInspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -77,7 +77,7 @@ local section                           = IP.section
 --------------------------------------------------------------------------------
 local TitleInspector = {}
 
---- cp.apple.finalcutpro.inspector.text.TitleInspector.matches(element)
+--- cp.apple.finalcutpro.inspector.title.TitleInspector.matches(element)
 --- Function
 --- Checks if the provided element could be a TitleInspector.
 ---
@@ -102,7 +102,7 @@ function TitleInspector.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.text.TitleInspector.new(parent) -> cp.apple.finalcutpro.text.TitleInspector
+--- cp.apple.finalcutpro.inspector.title.TitleInspector.new(parent) -> cp.apple.finalcutpro.title.TitleInspector
 --- Constructor
 --- Creates a new `TitleInspector` object
 ---
@@ -164,7 +164,7 @@ function TitleInspector.new(parent)
     return o
 end
 
---- cp.apple.finalcutpro.inspector.text.TitleInspector:parent() -> table
+--- cp.apple.finalcutpro.inspector.title.TitleInspector:parent() -> table
 --- Method
 --- Returns the TitleInspector's parent table
 ---
@@ -177,7 +177,7 @@ function TitleInspector:parent()
     return self._parent
 end
 
---- cp.apple.finalcutpro.inspector.text.TitleInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.title.TitleInspector:app() -> table
 --- Method
 --- Returns the `cp.apple.finalcutpro` app table
 ---
@@ -196,7 +196,7 @@ end
 --
 --------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.inspector.text.TitleInspector:show() -> TitleInspector
+--- cp.apple.finalcutpro.inspector.title.TitleInspector:show() -> TitleInspector
 --- Method
 --- Shows the Title Inspector
 ---

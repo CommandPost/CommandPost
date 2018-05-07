@@ -585,7 +585,7 @@ end
 ---  * ShareInspector
 function Inspector:share()
     if not self._shareInspector then
-        self._shareInspector = ShareInspector:new(self)
+        self._shareInspector = ShareInspector.new(self)
     end
     return self._shareInspector
 end
