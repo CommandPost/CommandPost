@@ -4,7 +4,7 @@ local languageID    = require("cp.i18n.languageID")
 local localeID      = require("cp.i18n.localeID")
 
 local pack              = table.pack
-local parse, forCode, forParts, forLocale    = languageID.parse, languageID.forCode, languageID.forParts, langaugeID.forLocale
+local parse, forCode, forParts, forLocaleID    = languageID.parse, languageID.forCode, languageID.forParts, languageID.forLocaleID
 
 return test.suite("cp.i18n.languageID"):with {
     test("parse", function()
@@ -24,37 +24,34 @@ return test.suite("cp.i18n.languageID"):with {
     test("forParts", function()
         local id
 
-        id = forCode("en")
+        id = forParts("en")
         ok(eq(id.code, "en"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "en"))
 
-        id = forCode("en", nil, "AU")
+        id = forParts("en", nil, "AU")
         ok(eq(id.code, "en-AU"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region.alpha2, "AU"))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "en-AU"))
 
-        id = forCode("en", "Latn")
+        id = forParts("en", "Latn")
         ok(eq(id.code, "en-Latn"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script.alpha4, "Latn"))
-        ok(eq(tostring(id), "en-Latn"))
 
-        id = forCode("xx")
+        id = forParts("xx")
         ok(eq(id, nil))
 
-        id = forCode("en-XX")
+        id = forParts("en", nil, "XX")
         ok(eq(id, nil))
 
-        id = forCode("en-Xxxx")
+        id = forParts("en", "Xxxx")
         ok(eq(id, nil))
 
-        id = forCode("Bad Code")
+        id = forParts("Bad Code")
         ok(eq(id, nil))
 
     end),
@@ -67,21 +64,18 @@ return test.suite("cp.i18n.languageID"):with {
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "en"))
 
         id = forCode("en-AU")
         ok(eq(id.code, "en-AU"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region.alpha2, "AU"))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "en-AU"))
 
         id = forCode("en-Latn")
         ok(eq(id.code, "en-Latn"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script.alpha4, "Latn"))
-        ok(eq(tostring(id), "en-Latn"))
 
         id = forCode("xx")
         ok(eq(id, nil))
@@ -94,5 +88,39 @@ return test.suite("cp.i18n.languageID"):with {
 
         id = forCode("Bad Code")
         ok(eq(id, nil))
-    end)
+    end),
+
+    test("forLocale", function()
+        local id
+
+        local l = localeID.forCode
+        id = forLocaleID(l("en"))
+        ok(eq(id.code, "en"))
+        ok(eq(id.language.alpha2, "en"))
+        ok(eq(id.region, nil))
+        ok(eq(id.script, nil))
+
+        id = forLocaleID(l("en_AU"))
+        ok(eq(id.code, "en-AU"))
+        ok(eq(id.language.alpha2, "en"))
+        ok(eq(id.region.alpha2, "AU"))
+        ok(eq(id.script, nil))
+
+        id = forLocaleID(l("en-Latn"))
+        ok(eq(id.code, "en-Latn"))
+        ok(eq(id.language.alpha2, "en"))
+        ok(eq(id.region, nil))
+        ok(eq(id.script.alpha4, "Latn"))
+
+        id = forLocaleID(l("en-Latn_AU"))
+        ok(eq(id.code, "en-AU"))
+        ok(eq(id.language.alpha2, "en"))
+        ok(eq(id.region.alpha2, "AU"))
+
+        id = forLocaleID(l("en-Latn_AU"), true)
+        ok(eq(id.code, "en-Latn"))
+        ok(eq(id.language.alpha2, "en"))
+        ok(eq(id.region, nil))
+        ok(eq(id.script.alpha4, "Latn"))
+    end),
 }

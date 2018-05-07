@@ -16,13 +16,12 @@ local ax                        = require("hs._asm.axuielement")
 local application               = require("hs.application")
 local applicationwatcher		= require("hs.application.watcher")
 local fs                        = require("hs.fs")
-local pathwatcher				= require("hs.pathwatcher")
 local timer                     = require("hs.timer")
 
+local prefs                     = require("cp.app.prefs")
 local languageID                = require("cp.i18n.languageID")
 local localeID                  = require("cp.i18n.localeID")
 local just                      = require("cp.just")
-local plist                     = require("cp.plist")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 local axutils                   = require("cp.ui.axutils")
@@ -36,11 +35,6 @@ local mod = {}
 mod.mt = {}
 
 local apps = {}
-
--- PREFS_PATH
--- Constant
--- The standard Preferences Path
-local PREFS_PATH = "~/Library/Preferences"
 
 local BASE_LOCALE = "Base"
 
@@ -95,7 +89,7 @@ function mod.forBundleID(bundleID)
     if not theApp then
         theApp = prop.extend({
             _bundleID = bundleID,
-            _prefsPath = format("%s/%s.plist", PREFS_PATH, bundleID),
+            preferences = prefs.new(bundleID),
         }, mod.mt)
 
         local hsApplication = prop.new(function(self)
@@ -265,7 +259,7 @@ function mod.forBundleID(bundleID)
                 -- If the app is not running, we next try to determine the language using
                 -- the 'AppleLanguages' preference...
                 --------------------------------------------------------------------------------
-                local appLanguages = self:getPreference("AppleLanguages", nil)
+                local appLanguages = self.preferences.AppleLanguages
                 if appLanguages then
                     for _,lang in ipairs(appLanguages) do
                         if self:isSupportedLocale(lang) then
@@ -325,19 +319,17 @@ function mod.forBundleID(bundleID)
                 if value == theProp:get() then return end
 
                 if value == nil then
-                    if self:getPreference("AppleLanguages") == nil then return end
-                    self:setPreference("AppleLanguages", nil)
+                    if self.preferences.AppleLanguages == nil then return end
+                    self.preferences.AppleLanguages = nil
                 else
                     local bestLocale = self:bestSupportedLocale(value)
-                    log.df("Found bestLocale: %s", inspect(bestLocale))
                     if bestLocale then
-                        local bestLanguage = languageID.forCode()
-                        self:setPreference("AppleLanguages", {bestLocale.code})
+                        self.preferences.AppleLanguages = {bestLocale.code}
                     else
                         error("Unsupported language: "..value.code)
                     end
                 end
-                self._currentLanguage = nil
+                self._currentLocale = nil
                 if self:running() then
                     self:restart(20)
                 end
@@ -666,139 +658,6 @@ function mod._initWatchers()
             end
         end
     ):start()
-
-    --------------------------------------------------------------------------------
-    -- Setup Preferences Watcher:
-    --------------------------------------------------------------------------------
-    --log.df("Setting up Preferences Watcher...")
-    local plistPattern = [[^.-([^/]+)%.plist$]]
-    mod._preferencesWatcher = pathwatcher.new(PREFS_PATH, function(files)
-        for _,file in pairs(files) do
-            local bundleID = string.match(file, plistPattern)
-            if bundleID then
-                local app = mod._findApp(bundleID)
-                if app then
-                    -- force an update
-                    app:getPreferences(true)
-                end
-            end
-        end
-    end):start()
-
-end
-
-local function syncPreferences(bundleID)
-    -- log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
-    -- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
-    hs.execute(format([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("%s")']], bundleID))
-end
-
---- cp.app:getPreferences([forceReload]) -> table or nil
---- Method
---- Gets the application's preferences as a table. It checks if the preferences
---- file has been modified and reloads when necessary.
----
---- Parameters:
----  * forceReload	- If `true`, an optional reload will be forced even if the file hasn't been modified.
----
---- Returns:
----  * A table with all of the app's preferences, or `nil` if an error occurred.
-function mod.mt:getPreferences(forceReload)
-    local path = self._prefsPath
-    local modified = fs.attributes(path, "modification")
-    if forceReload or modified ~= self._preferencesModified then
-        syncPreferences(self:bundleID())
-
-        self._preferences = plist.binaryFileToTable(path) or nil
-        self._preferencesModified = fs.attributes(path, "modification")
-     end
-    return self._preferences
-end
-
---- cp.app:getPreference(value[, default[, forceReload]]) -> string or nil
---- Method
---- Get an individual preference value for the app.
----
---- Parameters:
----  * value 			- The preference you want to return
----  * default		    - The optional default value to return if the preference is not set.
----  * forceReload	    - If `true`, optionally forces a reload of the app's preferences.
----
---- Returns:
----  * A string with the preference value, or nil if an error occurred
-function mod.mt:getPreference(value, default, forceReload)
-    local result = nil
-    local preferencesTable = self:getPreferences(forceReload)
-    if preferencesTable then
-        result = preferencesTable[value]
-    end
-
-    if result == nil then
-        result = default
-    end
-
-    return result
-end
-
---- cp.app:setPreference(key, value) -> boolean
---- Method
---- Sets an individual appliaction preference.
----
---- Parameters:
----  * key - The preference you want to change.
----  * value - The value you want to set for that preference
----
---- Returns:
----  * `true` if executed successfully otherwise `false`.
-function mod.mt:setPreference(key, value)
-    local preferenceType
-
-    if value == nil then
-        local executeString = format("defaults delete %s '%s'", self:bundleID(), key)
-        local output, ok = hs.execute(executeString)
-        if ok then
-            return true
-        else
-            log.wf("Error occurred while deleting defaults: %s", output)
-            return false
-        end
-
-    end
-
-    if type(value) == "boolean" then
-        value = tostring(value)
-        preferenceType = "bool"
-    elseif type(value) == "table" then
-        local arrayString = ""
-        for i=1, #value do
-            arrayString = arrayString .. value[i]
-            if i ~= #value then
-                arrayString = arrayString .. ","
-            end
-        end
-        value = "'" .. arrayString .. "'"
-        preferenceType = "array"
-    elseif type(value) == "string" then
-        preferenceType = "string"
-        value = "'" .. value .. "'"
-    elseif type(value) == "number" then
-        preferenceType = "int"
-        value = tostring(value)
-    else
-        return false
-    end
-
-    if preferenceType then
-        local executeString = format("defaults write %s '%s' -%s %s", self:bundleID(), key, preferenceType, value)
-        local output, ok = hs.execute(executeString)
-        if ok then
-            return true
-        else
-            log.wf("Error occurred while saving defaults: %s", output)
-            return false
-        end
-    end
-    return false
 end
 
 --- cp.app:isSupportedLocale(locale) -> boolean

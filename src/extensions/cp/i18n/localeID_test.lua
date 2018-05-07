@@ -32,28 +32,24 @@ return test.suite("cp.i18n.languageID"):with {
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "English"))
 
         id = forCode("English")
         ok(eq(id.code, "en"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "English"))
 
         id = forCode("en_AU")
         ok(eq(id.code, "en_AU"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region.alpha2, "AU"))
         ok(eq(id.script, nil))
-        ok(eq(tostring(id), "English (Australia)"))
 
         id = forCode("en-Latn")
         ok(eq(id.code, "en-Latn"))
         ok(eq(id.language.alpha2, "en"))
         ok(eq(id.region, nil))
         ok(eq(id.script.alpha4, "Latn"))
-        ok(eq(tostring(id), "English (Latin)"))
 
         id = forCode("English_AU")
         ok(eq(id, nil))

@@ -102,7 +102,7 @@ function mod.forParts(languageCode, scriptCode, regionCode)
             else
                 theCode = theCode .. "-" .. theScript.alpha4
                 theName = theName .. " (" .. theScript.name .. ")"
-                theLocalName = theLocalName .. " (" .. theScript.alpha2 .. ")"
+                theLocalName = theLocalName .. " (" .. theScript.alpha4 .. ")"
             end
         end
 
@@ -138,12 +138,7 @@ end
 --- * The matching `languageID`, or `nil` if the language ID couldn't be found.
 --- * The error message, or `nil` if there was no problem.
 function mod.forCode(code)
-    local id = cache[code]
-    if not id then
-        local languageCode, scriptCode, regionCode = mod.parse(code)
-        return mod.forParts(languageCode, scriptCode, regionCode)
-    end
-    return id
+    return mod.forParts(mod.parse(code))
 end
 
 --- cp.i18n.languageID.forLocaleID(code[, prioritiseScript]) -> cp.i18n.languageID, string
@@ -214,7 +209,7 @@ end
 --- The matching `script` details, if appropriate. Will be `nil` if no script was specified in the `code`.
 
 function mod.mt:__tostring()
-    return self:displayName()
+    return format("cp.i18n.localeID: %s [%s]", self.name, self.code)
 end
 
 return mod

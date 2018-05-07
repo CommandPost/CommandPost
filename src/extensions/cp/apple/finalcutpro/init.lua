@@ -1046,7 +1046,7 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:getPreferences([forceReload]) -> table or nil
+--- cp.apple.finalcutpro:getPreferences() -> table or nil
 --- Method
 --- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
 --- file has been modified and reloads when necessary.
@@ -1056,26 +1056,25 @@ end
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
-function fcp:getPreferences(forceReload)
-    return self.app:getPreferences(forceReload)
+function fcp:getPreferences()
+    return self.app.preferences
 end
 
---- cp.apple.finalcutpro:getPreference(value, [default], [forceReload]) -> string or nil
+--- cp.apple.finalcutpro:getPreference(key, [default], [forceReload]) -> string or nil
 --- Method
 --- Get an individual Final Cut Pro preference
 ---
 --- Parameters:
----  * value 			- The preference you want to return
+---  * key 			- The preference you want to return
 ---  * [default]		- The optional default value to return if the preference is not set.
----  * [forceReload]	- If `true`, optionally forces a reload of the app's preferences.
 ---
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
-function fcp:getPreference(value, default, forceReload)
-    return self.app:getPreference(value, default, forceReload)
+function fcp:getPreference(key, default)
+    return self.app.preferences[key] or default
 end
 
---- cp.apple.finalcutpro:setPreference(key, value) -> boolean
+--- cp.apple.finalcutpro:setPreference(key, value) -> nil
 --- Method
 --- Sets an individual Final Cut Pro preference
 ---
@@ -1084,9 +1083,9 @@ end
 ---  * value - The value you want to set for that preference
 ---
 --- Returns:
----  * True if executed successfully otherwise False
+---  * `nil`
 function fcp:setPreference(key, value)
-    return self.app:setPreference(key, value)
+    self.app.preferences[key] = value
 end
 
 --- cp.apple.finalcutpro:importXML(path) -> boolean
