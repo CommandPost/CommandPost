@@ -40,6 +40,13 @@ local tools             = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.console.font.SPECIAL_FONTS -> table
+--- Constant
+--- Special Fonts that appear to have a different name in Final Cut Pro than they do in Font Book.
+mod.SPECIAL_FONTS = {
+    [".AppleSystemUIFont"] = "BlueGlyph"
+}
+
 --- plugins.finalcutpro.console.font.THIRD_PARTY_FONTS -> table
 --- Constant
 --- Fonts that could be installed by third party effects:
@@ -53,7 +60,7 @@ mod.THIRD_PARTY_FONTS = {
 --- Constant
 --- Fonts contained within the Final Cut Pro Application Bundle (in Flexo.framework).
 mod.FONTS_IN_FCP_BUNDLE = {
-    "Avenir Black Oblique",
+    "Avenir", --"Avenir Black Oblique",
     "Aviano Sans",
     "Banco",
     "Bank Gothic",
@@ -181,6 +188,16 @@ function mod.onChoices(choices)
     end
 
     --------------------------------------------------------------------------------
+    -- Special Fonts (found in Font Book):
+    --------------------------------------------------------------------------------
+    for familyName, fontName in pairs(mod.SPECIAL_FONTS) do
+        if styledtext.fontInfo(familyName) then
+            table.insert(fonts, fontName)
+            systemFonts[fontName] = true
+        end
+    end
+
+    --------------------------------------------------------------------------------
     -- System Fonts (found in Font Book):
     --------------------------------------------------------------------------------
     for _, fontName in pairs(styledtext.fontNames()) do
@@ -195,16 +212,16 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     local hash = {}
     local newFonts = {}
-    for _,v in ipairs(fonts) do
-        if (not hash[v]) then
-            if string.sub(v, 1, 1) == "." then
+    for _,fontName in ipairs(fonts) do
+        if (not hash[fontName]) then
+            if string.sub(fontName, 1, 1) == "." then
                 log.df("Skipping Hidden Font: %s", v)
             else
-                newFonts[#newFonts+1] = v
-                hash[v] = true
+                newFonts[#newFonts+1] = fontName
+                hash[fontName] = true
             end
         else
-            log.df("Skipping Duplicate: %s", v)
+            log.df("Skipping Duplicate: %s", fontName)
         end
     end
 
