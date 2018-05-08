@@ -171,11 +171,11 @@ function TextInspector.new(parent) -- luacheck: ignore
     hasProperties(o, o.contentUI) {
         basic             = section "FCP Text Inspector Basic Heading" {
             font            = simple("Text Font Folder", function(row)
-                row.family        = MenuButton.new(row, function()
-                    return childFromRight(row, 2, MenuButton.matches)
+                row.family        = PopUpButton.new(row, function()
+                    return childFromRight(row, 2, PopUpButton.matches)
                 end)
-                row.typeface        = MenuButton.new(row, function()
-                    return childFromRight(row, 1, MenuButton.matches)
+                row.typeface        = PopUpButton.new(row, function()
+                    return childFromRight(row, 1, PopUpButton.matches)
                 end)
             end),
             size            = slider "Text Format Size",
