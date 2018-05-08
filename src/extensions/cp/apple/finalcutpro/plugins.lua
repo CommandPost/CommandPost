@@ -1061,25 +1061,25 @@ end
 function mod.mt:effectStrings()
     local source = self._effectStrings
     if not source then
-        local app = self:app()
+        local app = self:app().app
         source = strings.new():context({
-            appPath = app:getPath(),
-            language = app:currentLanguage(),
+            appPath = app:path(),
+            locale = app:currentLocale().aliases,
         })
-        source:fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${language}.lproj/Localizable.strings")
-        source:fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Versions/A/Resources/${language}.lproj/FFLocalizable.strings")
+        source:fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${locale}.lproj/Localizable.strings")
+        source:fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Versions/A/Resources/${locale}.lproj/FFLocalizable.strings")
         self._effectStrings = source
     end
     return source
 end
 
--- translateInternalEffect(input, language) -> none
+-- translateInternalEffect(input, locale) -> none
 -- Function
 -- Translates an Effect Bundle Item
 --
 -- Parameters:
 --  * input - The original name
---  * language - The language code you want to attempt to translate to
+--  * locale - The `localeID` code you want to attempt to translate to
 --
 -- Returns:
 --  * Result as string
@@ -1087,8 +1087,8 @@ end
 -- Notes:
 --  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings")
 --  * translateInternalEffect("Draw Mask", "en")
-function mod.mt:translateInternalEffect(input, language)
-    return self:effectStrings():find(language, input) or input
+function mod.mt:translateInternalEffect(input, locale)
+    return self:effectStrings():find(locale, input) or input
 end
 
 -- compareOldMethodToNewMethodResults() -> none
@@ -1357,30 +1357,30 @@ function mod.mt:generators(language)
     return self:ofType(mod.types.generator, language)
 end
 
---- cp.apple.finalcutpro.plugins:scanAppBuiltInPlugins([language]) -> None
+--- cp.apple.finalcutpro.plugins:scanAppBuiltInPlugins([locale]) -> None
 --- Method
 --- Scan Built In Plugins.
 ---
 --- Parameters:
----  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The `cp.i18n.localeID` code to search for. Defaults to the current FCPX langauge.
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanAppBuiltInPlugins(language)
+function mod.mt:scanAppBuiltInPlugins(locale)
     --------------------------------------------------------------------------------
     -- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
     --------------------------------------------------------------------------------
     for pluginType,categories in pairs(mod.appBuiltinPlugins) do
         for category,plugins in pairs(categories) do
-            category = self:translateInternalEffect(category, language)
+            category = self:translateInternalEffect(category, locale)
             for _,plugin in pairs(plugins) do
-                self:registerPlugin(nil, pluginType, category, nil, self:translateInternalEffect(plugin, language), language)
+                self:registerPlugin(nil, pluginType, category, nil, self:translateInternalEffect(plugin, locale), language)
             end
         end
     end
 end
 
--- cp.apple.finalcutpro.plugins:_loadPluginVersionCache(rootPath, version, language, searchHistory) -> boolean
+-- cp.apple.finalcutpro.plugins:_loadPluginVersionCache(rootPath, version, locale, searchHistory) -> boolean
 -- Method
 -- Tries to load the cached plugin list from the specified root path. It will search previous version history if enabled and available.
 --
@@ -1392,20 +1392,20 @@ end
 --
 -- Notes:
 --  * When `searchHistory` is `true`, it will only search to the `0` patch level. E.g. `10.3.2` will stop searching at `10.3.0`.
-function mod.mt:_loadPluginVersionCache(rootPath, version, language, searchHistory)
+function mod.mt:_loadPluginVersionCache(rootPath, version, locale, searchHistory)
     version = type(version) == "string" and v(version) or version
-    local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, language))
+    local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, locale.code))
     if filePath then
         local file = io.open(filePath, "r")
         if file then
             local content = file:read("*all")
             file:close()
             local result = json.decode(content)
-            self._plugins[language] = result
+            self._plugins[locale.code] = result
             return result ~= nil
         end
     elseif searchHistory and version.patch > 0 then
-        return self:_loadPluginVersionCache(rootPath, v(version.major, version.minor, version.patch-1), language, searchHistory)
+        return self:_loadPluginVersionCache(rootPath, v(version.major, version.minor, version.patch-1), locale, searchHistory)
     end
     return false
 end
@@ -1437,23 +1437,23 @@ function mod.mt.clearCaches()
     return true
 end
 
--- cp.apple.finalcutpro.plugins:_loadAppPluginCache(language) -> boolean
+-- cp.apple.finalcutpro.plugins:_loadAppPluginCache(locale) -> boolean
 -- Method
 -- Attempts to load the app-bundled plugin list from the cache.
 --
 -- Parameters:
---  * `language` - The language code to load for.
+--  * `locale` - The localeID to load for.
 --
 -- Returns:
 --  * `true` if the cache was loaded successfully.
-function mod.mt:_loadAppPluginCache(language)
+function mod.mt:_loadAppPluginCache(locale)
     local fcpVersion = self:app():getVersion()
     if not fcpVersion then
         return false
     end
 
-    return self:_loadPluginVersionCache(USER_PLUGIN_CACHE, fcpVersion, language, false)
-        or self:_loadPluginVersionCache(CP_PLUGIN_CACHE, fcpVersion, language, true)
+    return self:_loadPluginVersionCache(USER_PLUGIN_CACHE, fcpVersion, locale, false)
+        or self:_loadPluginVersionCache(CP_PLUGIN_CACHE, fcpVersion, locale, true)
 end
 
 -- ensureDirectoryExists(rootPath, ...) -> string | nil
@@ -1527,27 +1527,27 @@ function mod.mt:_saveAppPluginCache(language)
     return false
 end
 
--- cp.apple.finalcutpro.plugins:scanAppPlugins(language) -> none
+-- cp.apple.finalcutpro.plugins:scanAppPlugins(locale) -> none
 -- Method
--- Scans App Plugins for a specific language.
+-- Scans App Plugins for a specific locale.
 --
 -- Parameters:
---  * language - The language code you want to scan for.
+--  * locale - The locale you want to scan for.
 --
 -- Returns:
 --  * None
-function mod.mt:scanAppPlugins(language)
+function mod.mt:scanAppPlugins(locale)
     --------------------------------------------------------------------------------
     -- First, try loading from the cache:
     --------------------------------------------------------------------------------
     local cacheStartTime = os.clock()
-    if not self:_loadAppPluginCache(language) then
+    if not self:_loadAppPluginCache(locale) then
 
         --------------------------------------------------------------------------------
         -- Scan Built-in Plugins:
         --------------------------------------------------------------------------------
         local startTime = os.clock()
-        self:scanAppBuiltInPlugins(language)
+        self:scanAppBuiltInPlugins(locale)
         local finishTime = os.clock()
         log.df("  * scanAppBuiltInPlugins(%s): %s", language, finishTime-startTime)
 
@@ -1648,9 +1648,9 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.mt:scan(language)
+function mod.mt:scan(locale)
 
-    language = language or self:getCurrentLanguage()
+    locale = locale or self:app().app:currentLocale()
 
     --------------------------------------------------------------------------------
     -- Reset Results Table:
@@ -1669,9 +1669,9 @@ function mod.mt:scan(language)
     --------------------------------------------------------------------------------
     log.df("* Scanning app-bundled plugins:")
     local startTime = os.clock()
-    self:scanAppPlugins(language)
+    self:scanAppPlugins(locale)
     local finishTime = os.clock()
-    log.df("    * scanAppPlugins(%s) took: %s", language, finishTime-startTime)
+    log.df("    * scanAppPlugins(%s) took: %s", locale.code, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan system-installed plugins:
@@ -1712,8 +1712,8 @@ end
 --- Returns:
 ---  * Nothing
 function mod.mt:scanAll()
-    for _,language in ipairs(self:app():getSupportedLanguages()) do
-        self:scan(language)
+    for _,locale in ipairs(self:app().app:supportedLocales()) do
+        self:scan(locale)
     end
 end
 

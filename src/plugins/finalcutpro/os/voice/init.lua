@@ -61,49 +61,6 @@ mod.commandTitles = {}
 --- Command By Title
 mod.commandsByTitle = {}
 
---- plugins.finalcutpro.os.voice.enabled <cp.prop: boolean>
---- Variable
---- Are Voice Commands Enabled?
-mod.enabled = config.prop("enableVoiceCommands", false):watch(function(enabled)
-    if enabled then
-        --------------------------------------------------------------------------------
-        -- Register Commands:
-        --------------------------------------------------------------------------------
-        if not mod._registered then
-            mod.registerCommands(mod._fcpxCmds)
-            mod.registerCommands(mod._globalCmds)
-            mod._registered = true
-        end
-
-        --------------------------------------------------------------------------------
-        -- Start Watchers:
-        --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp:watch({
-            active      = mod.update,
-            inactive    = mod.pause,
-        })
-    else
-        --------------------------------------------------------------------------------
-        -- Destroy Watchers:
-        --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
-    end
-    mod.update()
-end)
-
---- plugins.finalcutpro.os.voice.announcementsEnabled <cp.prop: boolean>
---- Variable
---- Announcements Enabled?
-mod.announcementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
-
---- plugins.finalcutpro.os.voice.visualAlertsEnabled <cp.prop: boolean>
---- Variable
---- Visual Alerts Enabled?
-mod.visualAlertsEnabled = config.prop("voiceCommandEnableVisualAlerts", false)
-
 --- plugins.finalcutpro.os.voice.openDictationSystemPreferences() -> none
 --- Function
 --- Open Dictation System Preferences
@@ -334,6 +291,42 @@ function mod.registerCommands(commands)
 
     table.sort(mod.commandTitles, function(a, b) return a < b end)
 end
+
+--- plugins.finalcutpro.os.voice.enabled <cp.prop: boolean>
+--- Variable
+--- Are Voice Commands Enabled?
+mod.enabled = config.prop("enableVoiceCommands", false):watch(function(enabled)
+    if enabled then
+        --------------------------------------------------------------------------------
+        -- Register Commands:
+        --------------------------------------------------------------------------------
+        if not mod._registered then
+            mod.registerCommands(mod._fcpxCmds)
+            mod.registerCommands(mod._globalCmds)
+            mod._registered = true
+        end
+    end
+end)
+
+--- plugins.finalcutpro.os.voice.active <cp.prop: boolean; read-only>
+--- Variable
+--- Are Voice Commands active? This will be true if they are both [enabled](#enabled) and FCP is frontmost.
+mod.active = mod.enabled:AND(fcp.app.frontmost):watch(function(active)
+    if not active then
+        mod.pause()
+    end
+    mod.update()
+end, true)
+
+--- plugins.finalcutpro.os.voice.announcementsEnabled <cp.prop: boolean>
+--- Variable
+--- Announcements Enabled?
+mod.announcementsEnabled = config.prop("voiceCommandEnableAnnouncements", false)
+
+--- plugins.finalcutpro.os.voice.visualAlertsEnabled <cp.prop: boolean>
+--- Variable
+--- Visual Alerts Enabled?
+mod.visualAlertsEnabled = config.prop("voiceCommandEnableVisualAlerts", false)
 
 --------------------------------------------------------------------------------
 --

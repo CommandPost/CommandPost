@@ -81,7 +81,6 @@ local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
-local pathwatcher								= require("hs.pathwatcher")
 
 local v											= require("semver")
 local moses										= require("moses")
@@ -144,21 +143,6 @@ fcp.EARLIEST_SUPPORTED_VERSION = v("10.3.2")
 --- Constant
 --- Final Cut Pro's Pasteboard UTI
 fcp.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
-
---- cp.apple.finalcutpro.PREFS_PATH
---- Constant
---- Final Cut Pro's Preferences Path
-fcp.PREFS_PATH = "~/Library/Preferences/"
-
---- cp.apple.finalcutpro.PREFS_PLIST_FILE
---- Constant
---- Final Cut Pro's Preferences File
-fcp.PREFS_PLIST_FILE = "com.apple.FinalCut.plist"
-
---- cp.apple.finalcutpro.PREFS_PLIST_PATH
---- Constant
---- Final Cut Pro's Preferences Path
-fcp.PREFS_PLIST_PATH = fcp.PREFS_PATH .. fcp.PREFS_PLIST_FILE
 
 --- cp.apple.finalcutpro.SUPPORTED_LANGUAGES
 --- Constant
@@ -1559,19 +1543,6 @@ function fcp:_initWatchers()
     windowfilter:subscribe("windowVisible", function()
         fcp.isModalDialogOpen:update()
     end)
-
-    --------------------------------------------------------------------------------
-    -- Setup Preferences Watcher:
-    --------------------------------------------------------------------------------
-    --log.df("Setting up Preferences Watcher...")
-    self._preferencesWatcher = pathwatcher.new(fcp.PREFS_PATH, function(files)
-        for _,file in pairs(files) do
-            if file:sub(string.len(fcp.PREFS_PLIST_FILE)*-1) == fcp.PREFS_PLIST_FILE then
-                self._watchers:notify("preferences")
-                return
-            end
-        end
-    end):start()
 end
 
 --------------------------------------------------------------------------------

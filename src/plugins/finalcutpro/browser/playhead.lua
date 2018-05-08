@@ -325,11 +325,11 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Remove Highlight when Final Cut Pro is inactive:
     --------------------------------------------------------------------------------
-    fcp:watch({
-        inactive	= function()
+    fcp.app.frontmost:watch(function(frontmost)
+        if not frontmost then
             mod.deleteHighlight()
-        end,
-    })
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Remove Highlight when the Command Editor window is open:

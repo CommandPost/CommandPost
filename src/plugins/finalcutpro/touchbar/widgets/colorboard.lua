@@ -26,6 +26,7 @@ local timer             = require("hs.timer")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
+local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -208,6 +209,13 @@ end
 --- Returns:
 ---  * None
 function mod.start(delay)
+    --------------------------------------------------------------------------------
+    -- Setup Timer:
+    --------------------------------------------------------------------------------
+    if not mod._timer then
+        mod._timer = timer.new(mod.updateInterval, update)
+    end
+
     if delay and type(delay) == "number" then
         timer.doAfter(delay, function()
             mod._timer:start()
@@ -227,7 +235,9 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    mod._timer:stop()
+    if mod._timer then
+        mod._timer:stop()
+    end
 end
 
 -- puckWidget(id, puck) -> `hs._asm.undocumented.touchbar.item` object -> TouchBar Item
@@ -243,23 +253,9 @@ end
 local function puckWidget(id, puck)
 
     --------------------------------------------------------------------------------
-    -- Setup Timer:
+    -- Record that we have created at least one widget.
     --------------------------------------------------------------------------------
-    if not mod._timer then
-        mod._timer = timer.new(mod.updateInterval, update)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Only enable the timer when Final Cut Pro is active:
-    --------------------------------------------------------------------------------
-    if not mod._fcpWatcher then
-        mod._fcpWatcher = fcp:watch({
-            active      = mod.start,
-            inactive    = mod.stop,
-            show        = mod.start,
-            hide        = mod.stop,
-        })
-    end
+    mod.hasWidgets(true)
 
     local pct = puck():percent()
     local angle = puck():angle()
@@ -700,6 +696,17 @@ function mod.init(deps)
     return mod
 
 end
+
+--- indicates if any widgests have been created
+mod.hasWidgets = prop.FALSE()
+
+mod.active = mod.hasWidgets:AND(fcp.app.frontmost:OR(fcp.app.showing)):watch(function(active)
+    if active then
+        mod.start()
+    else
+        mod.stop()
+    end
+end)
 
 --------------------------------------------------------------------------------
 --

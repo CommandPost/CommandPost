@@ -89,6 +89,10 @@ function mod.forBundleID(bundleID)
     if not theApp then
         theApp = prop.extend({
             _bundleID = bundleID,
+
+            --- cp.app.preferences <cp.app.prefs>
+            --- Field
+            --- Provides access to the application preferences data.
             preferences = prefs.new(bundleID),
         }, mod.mt)
 

@@ -38,13 +38,9 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Update Touch Bar Buttons when FCPX is active:
+    -- Update Buttons when FCPX is active:
     --------------------------------------------------------------------------------
-    fcp:watch({
-        active      = function() deps.manager.groupStatus("fcpx", true) end,
-        inactive    = function() deps.manager.groupStatus("fcpx", false) end,
-    })
-
+    fcp.app.frontmost:watch(function(frontmost) deps.manager.groupStatus("fcpx", frontmost) end)
 end
 
 return plugin

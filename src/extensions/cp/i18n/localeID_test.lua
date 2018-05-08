@@ -69,15 +69,18 @@ return test.suite("cp.i18n.languageID"):with {
 
     test("matches", function()
         local l = localeID.forCode
-        local en, en_AU, en_Latn, en_Latn_AU, de = l("en"), l("en_AU"), l("en-Latn"), l("en-Latn_AU"), l("de")
+        local en, en_AU, en_Latn, en_Latn_AU, en_NZ, de = l("en"), l("en_AU"), l("en-Latn"), l("en-Latn_AU"), l("en_NZ"), l("de")
 
-        ok(eq(en:matches(en), 3))
-        ok(eq(en:matches(en_AU), 2))
-        ok(eq(en:matches(en_Latn), 2))
-        ok(eq(en:matches(en_Latn_AU), 1))
-        ok(eq(en:matches(de), 0))
-        ok(eq(en_AU:matches(en_AU), 3))
-        ok(eq(en_AU:matches(en), 0))
-        ok(eq(en_AU:matches(en_Latn_AU), 2))
+        ok(eq(en:matches(de), 0))               -- no match - different language
+
+        ok(eq(en:matches(en), 3))               -- language, script, and region match exactly
+        ok(eq(en:matches(en_AU), 2.5))          -- language and script match, region half-match with one side "open".
+        ok(eq(en:matches(en_Latn), 2.5))        -- language and region match, script half-match with one side "open".
+        ok(eq(en:matches(en_Latn_AU), 2))       -- language matches, two half-matches for script and region.
+
+        ok(eq(en_AU:matches(en_AU), 3))         -- exact match
+        ok(eq(en_AU:matches(en), 2.5))          -- language and script match, region half-match with a `nil` on one side.
+        ok(eq(en_AU:matches(en_NZ), 2))         -- language and script match, but no match between specific regions.
+        ok(eq(en_AU:matches(en_Latn_AU), 2.5))  -- language and region match exactly, and the optional `script` value is different.
     end),
 }

@@ -752,14 +752,9 @@ end
 ---
 --- Parameters:
 ---  * `watchFn`        - The original watch function to remove. Must be the same instance that was added.
----  * `notifyNow`  - The function will be triggered immediately with the current state.  Defaults to `false`.
 ---
 --- Returns:
----  * `cp.prop`        - The same `cp.prop` instance
----  * `function`   - The watch function, which can be passed to [unwatch](#unwatch) to stop watching.
----
---- Notes:
----  * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
+---  * `true` if the function was watching and successfully removed, otherwise `false`.
 function prop.mt:unwatch(watchFn)
     return _unwatch(self._watchers, watchFn)
 end

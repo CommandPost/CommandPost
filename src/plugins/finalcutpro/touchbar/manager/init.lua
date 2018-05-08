@@ -27,6 +27,10 @@ local fcp                                       = require("cp.apple.finalcutpro"
 --------------------------------------------------------------------------------
 local mod = {}
 
+local function updateStatus(enabled)
+    mod._manager.groupStatus("fcpx", enabled)
+end
+
 --- plugins.finalcutpro.touchbar.manager.enabled <cp.prop: boolean>
 --- Field
 --- Is `true` if the plugin is enabled.
@@ -35,21 +39,14 @@ mod.enabled = config.prop("enableTouchBar", false):watch(function(enabled)
         --------------------------------------------------------------------------------
         -- Update Touch Bar Buttons when FCPX is active:
         --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp:watch({
-            active      = function() mod._manager.groupStatus("fcpx", true) end,
-            show        = function() mod._manager.groupStatus("fcpx", true) end,
-            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
-            hide        = function() mod._manager.groupStatus("fcpx", false) end,
-        })
-
+        fcp.app.frontmost:watch(updateStatus)
+        fcp.app.showing:watch(updateStatus)
     else
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
+        fcp.app.frontmost:unwatch(updateStatus)
+        fcp.app.showing:unwatch(updateStatus)
     end
 end)
 

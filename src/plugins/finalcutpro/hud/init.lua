@@ -768,13 +768,9 @@ function hud.update()
         --------------------------------------------------------------------------------
         -- Setup Watchers:
         --------------------------------------------------------------------------------
-        hud._fcpWatcher = fcp:watch({
-            active      = hud.updateVisibility,
-            inactive    = hud.updateVisibility,
-            show        = hud.updateVisibility,
-            hide        = hud.updateVisibility,
-            preferences = hud.refresh,
-        })
+        fcp.app.frontmost:watch(hud.updateVisibility)
+        fcp.app.showing:watch(hud.updateVisibility)
+
         hud._fcpFullScreenWatcher = fcp:fullScreenWindow():watch({
             show        = hud.updateVisibility,
             hide        = hud.updateVisibility,
@@ -783,6 +779,9 @@ function hud.update()
             open        = hud.updateVisibility,
             close       = hud.updateVisibility,
         })
+
+        -- refresh when the preferences change.
+        fcp.app.preferences:watch(hud.refresh)
 
         --------------------------------------------------------------------------------
         -- Create new HUD:
@@ -793,10 +792,9 @@ function hud.update()
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if hud._fcpWatcher and hud._fcpWatcher.id then
-            fcp:unwatch(hud._fcpWatcher.id)
-            hud._fcpWatcher = nil
-        end
+        fcp.app.frontmost:unwatch(hud.updateVisibility)
+        fcp.app.showing:unwatch(hud.updateVisibility)
+
         if hud._fcpFullScreenWatcher and hud._fcpFullScreenWatcher.id then
             fcp:fullScreenWindow():unwatch(hud._fcpFullScreenWatcher.id)
             hud._fcpFullScreenWatcher = nil

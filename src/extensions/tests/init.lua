@@ -15,6 +15,7 @@ return test.suite("cp"):with {
     "cp.i18n.localeID_test",
     "cp.is_test",
     "cp.prop.test",
+    "cp.strings._test",
     "cp.web.html_test",
     "cp.web.xml_test",
     "cp.ui.notifier_test",

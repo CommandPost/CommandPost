@@ -13,9 +13,12 @@
 -- local log				= require("hs.logger").new("plistsrc")
 
 local _                 = require("moses")
-local plist				= require("cp.plist")
+
 local fs				= require("hs.fs")
 local timer				= require("hs.timer")
+
+local plist				= require("cp.plist")
+local is                = require("cp.is")
 local text				= require("cp.web.text")
 
 local escapeXML, unescapeXML = text.escapeXML, text.unescapeXML
@@ -78,11 +81,31 @@ end
 ---  * The path to the file, or `nil` if not found.
 function mod.mt:pathToAbsolute(context)
     local ctx = _.extend({}, self._context, context)
-    local path = self._pathPattern
+    local inPaths = {self._pathPattern}
+    local outPaths
     for key,value in pairs(ctx) do
-        path = path:gsub("${"..tostring(key).."}", tostring(value))
+        outPaths = {}
+        for _,inPath in ipairs(inPaths) do
+            if is.list(value) then -- list of options
+                for _,v in ipairs(value) do
+                    local outPath = inPath:gsub("${"..tostring(key).."}", tostring(v))
+                    insert(outPaths, outPath)
+                end
+            else
+                local outPath = inPath:gsub("${"..tostring(key).."}", tostring(value))
+                insert(outPaths, outPath)
+            end
+        end
+        inPaths = outPaths
     end
-    return fs.pathToAbsolute(path)
+    -- now, go through the options and return the first match.
+    for _,path in ipairs(outPaths) do
+        local outPath = fs.pathToAbsolute(path)
+        if outPath then
+            return outPath
+        end
+    end
+    return nil
 end
 
 --- cp.strings.source.plist:loadFile([context]) -> string
@@ -96,12 +119,7 @@ end
 ---  * The table for the specified language, or `nil` if the file doesn't exist.
 function mod.mt:loadFile(context)
     local ctx = _.extend({}, self._context, context)
-    local langFile = self:pathToAbsolute(context)
-    if not langFile and ctx.language and aliases[ctx.language] then
-        -- try an alias
-        ctx.language = aliases[ctx.language]
-        langFile = self:pathToAbsolute(ctx)
-    end
+    local langFile = self:pathToAbsolute(ctx)
 
     self._cleanup:start()
     if langFile then
@@ -110,55 +128,45 @@ function mod.mt:loadFile(context)
     return nil
 end
 
---- cp.strings.source.plist:find(key[, language]) -> string
+--- cp.strings.source.plist:find(key[, context]) -> string
 --- Method
---- Finds the specified `key` value in the plist file for the specified `language`, if the plist can be found, and contains matching key value.
+--- Finds the specified `key` value in the plist, if the plist can be found, and contains matching key value.
 ---
 --- Parameters:
 ---  * `key`		- The key to retrieve from the file.
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `context`	- Optional table with additional/alternate context. It will be added to the current context temporarily.
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:find(key, language)
-    local cache = self._cache
-    if cache == nil then
-        cache = {}
-        self._cache = cache
-    end
-
-    local values = cache[language]
+function mod.mt:find(key, context)
+    local values = context == nil and self._cache or nil
     if values == nil then
-        local ctx = language and {language = language} or nil
-        values = self:loadFile(ctx) or {}
-        cache[language] = values
+        values = self:loadFile(context) or {}
+        if context == nil then
+            self._cache = values
+        end
     end
 
     return unescapeXML(values[escapeXML(key)])
 end
 
---- cp.strings.source.plist:findKeys(patterns[, language]) -> table of strings
+--- cp.strings.source.plist:findKeys(pattern[, context]) -> table of strings
 --- Method
 --- Finds the array of keys whos value matches the pattern in the plist file for the specified `language`, if the plist can be found, and contains matching key.
 ---
 --- Parameters:
----  * `pattern		- The value pattern.
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`).
+---  * `pattern`    - The value pattern.
+---  * `context`    - Optional additional/updated context table.
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround
-function mod.mt:findKeys(pattern, language)
-    local cache = self._cache
-    if cache == nil then
-        cache = {}
-        self._cache = cache
-    end
-
-    local values = cache[language]
+function mod.mt:findKeys(pattern, context)
+    local values = context == nil and self._cache or nil
     if values == nil then
-        local ctx = language and {language = language} or nil
-        values = self:loadFile(ctx) or {}
-        cache[language] = values
+        values = self:loadFile(context) or {}
+        if context == nil then
+            self._cache = values
+        end
     end
 
     local keys = {}

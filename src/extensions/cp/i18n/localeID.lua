@@ -18,6 +18,7 @@ local region            = require("cp.i18n.region")
 local script            = require("cp.i18n.script")
 
 local match, format     = string.match, string.format
+local insert            = table.insert
 
 local mod = {}
 mod.mt = {}
@@ -150,11 +151,16 @@ function mod.forCode(code)
             id = setmetatable({
                 code = theCode,
                 name = theName,
+                aliases = {code},
                 localName = theLocalName,
                 language = theLanguage,
                 script = theScript,
                 region = theRegion,
             }, mod.mt)
+
+            if theScript == nil and theRegion == nil then
+                insert(id.aliases, theLanguage.name)
+            end
             cache[code] = id
         else
             return nil, format("Unable to parse language ID: %s", code)
@@ -167,29 +173,31 @@ end
 --- Method
 --- This compares the `otherLocale` to this locale and returns a number indicating the 'strength'
 --- of the match. It will be a value between `0` and `3`. The `script` and `region` in any locale
---- are optional, and if they are not provided, the local will match with another locale which
+--- are optional, and if they are not provided, they are considered "open" and will match with another locale which
 --- has the script or region defined. However, it is considered to be a weaker match.
 ---
 --- For example:
 --- ```lua
 --- local l = localeID.forCode
---- local en, en_AU, en_Latn, en_Latn_AU, de = l("en"), l("en_AU"), l("en-Latn"), l("en-Latn_AU"), l("de")
+--- local en, en_AU, en_Latn, en_Latn_AU, en_NZ, de = l("en"), l("en_AU"), l("en-Latn"), l("en-Latn_AU"), l("en_NZ"), l("de")
 ---
---- en:matches(en)              == 3    -- matches exactly
---- en:matches(en_AU)           == 2    -- matches with one extra optional value filled in
---- en:matches(en_Latn)         == 2    -- matches with one extra optional value filled in
---- en:matches(en_Latn_AU)      == 1    -- matches with both optional values filled in
 --- en:matches(de)              == 0    -- no match - different language
 ---
+--- en:matches(en)              == 3    -- language, script, and region match exactly
+--- en:matches(en_AU)           == 2.5  -- language and script match, region half-match with one side "open".
+--- en:matches(en_Latn)         == 2.5  -- language and region match, script half-match with one side "open".
+--- en:matches(en_Latn_AU)      == 2    -- language matches, two half-matches for script and region.
+---
 --- en_AU:matches(en_AU)        == 3    -- exact match
---- en_AU:matches(en)           == 0    -- language matches, but no match because "en" is missing the "AU" `region`, which is required for a match.
---- en_AU:matches(en_Latn_AU)   == 2    -- language and region match exactly, and the optional `script` value is different.
+--- en_AU:matches(en)           == 2.5  -- language and script match, region half-match with a `nil` on one side.
+--- en_AU:matches(en_NZ)        == 2    -- language and script match, but no match between specific regions.
+--- en_AU:matches(en_Latn_AU)   == 2.5  -- language and region match exactly, and the optional `script` value is different.
 --- ```
 ---
 --- The higher the match value, the closer they are to matching. If selecting a from multiple locales which match you will generally want the highest-ranking match.
 ---
 --- Parameters:
---- * otherLocale       - The other locale to compare to
+--- * otherLocale       - The other locale to compare to.
 ---
 --- Returns:
 --- * A number from `0` to `3` indicating the match strength.
@@ -200,13 +208,13 @@ function mod.mt:matches(otherLocale)
             score = 1
             if self.script == otherLocale.script then -- strong match
                 score = score + 1
-            elseif self.script ~= nil then -- no match
-                return 0
+            elseif self.script == nil or otherLocale.script == nil then -- weaker
+                score = score + 0.5
             end
             if self.region == otherLocale.region then -- strong match
                 score = score + 1
-            elseif self.region ~= nil then -- no match
-                return 0
+            elseif self.region == nil or otherLocale.region == nil then -- no match
+                score = score + 0.5
             end
         end
     end

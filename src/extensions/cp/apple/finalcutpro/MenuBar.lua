@@ -19,6 +19,8 @@
 --------------------------------------------------------------------------------
 local log                                           = require("hs.logger").new("menubar")
 
+local fs                                            = require("hs.fs")
+
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
@@ -26,6 +28,8 @@ local archiver                                      = require("cp.plist.archiver
 local axutils                                       = require("cp.ui.axutils")
 local just                                          = require("cp.just")
 local plist                                         = require("cp.plist")
+
+local format                                        = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -506,21 +510,21 @@ function MenuBar:_visitMenuItems(visitFn, path, menu)
     end
 end
 
--- cp.apple.finalcutpro.MenuBar:_loadMainMenu(languages) -> table
+-- cp.apple.finalcutpro.MenuBar:_loadMainMenu() -> table
 -- Method
 -- Loads a Main Menu Language.
 --
 -- Parameters:
---  * languages - A table of languages.
+--  * None
 --
 -- Returns:
 --  * The menu table.
-function MenuBar:_loadMainMenu(languages)
-    languages = languages or self:app():getSupportedLanguages()
-    local menu = {} -- TODO: David, I don't understand the point of this table?
-    for _,language in ipairs(languages) do
-        if language then
-            self:_loadMainMenuLanguage(language, menu)
+function MenuBar:_loadMainMenu()
+    local locales = self:app().app:supportedLocales()
+    local menu = {}
+    for _,locale in ipairs(locales) do
+        if locale then
+            self:_loadMainMenuLanguage(locale, menu)
         else
             log.wf("Received a nil language request.")
         end
@@ -528,18 +532,31 @@ function MenuBar:_loadMainMenu(languages)
     return menu
 end
 
--- cp.apple.finalcutpro.MenuBar:_loadMainMenuLanguage(language, menu) -> table
+local MENU_NIB_PATH = "%s/Contents/Resources/%s.lproj/MainMenu.nib"
+
+local function findMenuNibPath(appPath, locale)
+    local path
+
+    path = fs.pathToAbsolute(format(MENU_NIB_PATH, appPath, locale.code))
+    if not path then
+        path = fs.pathToAbsolute(format(MENU_NIB_PATH, appPath, locale.name))
+    end
+
+    return path
+end
+
+-- cp.apple.finalcutpro.MenuBar:_loadMainMenuLanguage(locale, menu) -> table
 -- Method
 -- Loads a Main Menu Language.
 --
 -- Parameters:
---  * language - The language to load as a string.
+--  * locale - The `localeID`.
 --  * menu - The menu.
 --
 -- Returns:
 --  * The menu table.
-function MenuBar:_loadMainMenuLanguage(language, menu)
-    local menuPlist = plist.fileToTable(string.format("%s/Contents/Resources/%s.lproj/MainMenu.nib", self:app():getPath(), language))
+function MenuBar:_loadMainMenuLanguage(locale, menu)
+    local menuPlist = plist.fileToTable(findMenuNibPath(self:app():getPath(), locale))
     if menuPlist then
         local menuArchive = archiver.unarchive(menuPlist)
         --------------------------------------------------------------------------------
@@ -553,29 +570,29 @@ function MenuBar:_loadMainMenuLanguage(language, menu)
             end
         end
         if mainMenu then
-            return self:_processMenu(mainMenu, language, menu)
+            return self:_processMenu(mainMenu, locale, menu)
         else
-            log.ef("Unable to locate MainMenu in '%s.lproj/MainMenu.nib'.", language)
+            log.ef("Unable to locate MainMenu for %s.", locale)
             return nil
         end
     else
-        log.ef("Unable to load MainMenu.nib for specified language: %s", language)
+        log.ef("Unable to load MainMenu.nib for specified language: %s", locale)
         return nil
     end
 end
 
--- cp.apple.finalcutpro.MenuBar:_processMenu(menuData, language, menu) -> table
+-- cp.apple.finalcutpro.MenuBar:_processMenu(menuData, locale, menu) -> table
 -- Method
 -- Loads a Main Menu Language.
 --
 -- Parameters:
 --  * menuData - Menu data.
---  * language - Langauge as string.
+--  * locale - `cp.i18n.localeID`
 --  * menu - The menu.
 --
 -- Returns:
 --  * Menu
-function MenuBar:_processMenu(menuData, language, menu) -- luacheck: ignore
+function MenuBar:_processMenu(menuData, locale, menu) -- luacheck: ignore
     if not menuData then
         return nil
     end
@@ -586,13 +603,13 @@ function MenuBar:_processMenu(menuData, language, menu) -- luacheck: ignore
     if menuData.NSMenuItems then
         for i,itemData in ipairs(menuData.NSMenuItems) do
             local item = menu[i] or {}
-            item[language]  = itemData.NSTitle
+            item[locale.code]  = itemData.NSTitle
             item.separator  = itemData.NSIsSeparator
             --------------------------------------------------------------------------------
             -- Check if there is a submenu:
             --------------------------------------------------------------------------------
             if itemData.NSSubmenu then
-                item.submenu = MenuBar:_processMenu(itemData.NSSubmenu, language, item.submenu)
+                item.submenu = MenuBar:_processMenu(itemData.NSSubmenu, locale, item.submenu)
             end
             menu[i] = item
         end

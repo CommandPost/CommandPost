@@ -49,61 +49,57 @@ function mod.mt:context(context)
 end
 
 
---- cp.strings.source.table:add(keyValues, language) -> self
+--- cp.strings.source.table:add(keyValues) -> self
 --- Method
 --- Adds the specified table of key values in the specified language code.
 ---
 --- Parameters:
 ---  * `keyValues`  - The table of key/value pairs to define.
----  * `language`   - The language code to look for (e.g. `"en"`, or `"fr"`).
 ---
 --- Returns:
 ---  * The `cp.string.source`.
-function mod.mt:add(keyValues, language)
-    self._cache[language] = _.extend(self._cache[language] or {}, keyValues)
+function mod.mt:add(keyValues)
+    self._cache = _.extend(self._cache or {}, keyValues)
     return self
 end
 
---- cp.strings.source.table:find(key[, language]) -> string
+--- cp.strings.source.table:find(key) -> string
 --- Method
---- Finds the specified `key` value in the plist file for the specified `language`, if the plist can be found, and contains matching key value.
+--- Finds the specified `key` value in the plist file for the specified optional `context`,
+--- if the plist can be found, and contains matching key value.
 ---
 --- Parameters:
 ---  * `key`        - The key to retrieve the value for.
----  * `context`    - The language code to look for (e.g. `"en"`, or `"fr"`). If none is provided, the context is checked, and if none is found, `nil` is returned.
+---  * `context`    - An optional table with additional context.
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:find(key, language)
-    language = language or self._context.language
-    if language and self._cache[language] then
-        return self._cache[language][key]
+function mod.mt:find(key)
+    local values = self._cache
+    if values ~= nil then
+        return values[key]
     end
     return nil
 end
 
---- cp.strings.source.plist:findKeys(pattern[, language]) -> {string}
+--- cp.strings.source.plist:findKeys(pattern) -> {string}
 --- Method
 --- Finds the array of keys who's value matches the pattern in this table. It will check that the pattern matches the beginning of the value.
 ---
 --- Parameters:
 ---  * `pattern		- The string pattern to match.
----  * `language`	- The language code to look for (e.g. `"en"`, or `"fr"`). Defaults to the `language` in the context if none is provided.
+---  * `context`	- An optional additional context for the source.
 ---
 --- Returns:
 ---  * The array of keys, or `{}` if none were fround
-function mod.mt:findKeys(pattern, language)
+function mod.mt:findKeys(pattern)
     local keys = {}
-    language = language or self._context.language
-    if language then
-        local cache = self._cache[language]
-
-        if cache then
-            for k,v in pairs(cache) do
-                local s, e = find(v, pattern)
-                if s == 1 and e == len(v) then
-                    insert(keys, k)
-                end
+    local cache = self._cache
+    if cache then
+        for k,v in pairs(cache) do
+            local s, e = find(v, pattern)
+            if s == 1 and e == len(v) then
+                insert(keys, k)
             end
         end
     end

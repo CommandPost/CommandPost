@@ -19,7 +19,8 @@
 -- local log               = require("hs.logger").new("app_prefs")
 -- local inspect           = require("hs.inspect")
 
-local cfprefs = require("hs._asm.cfpreferences")
+local cfprefs               = require("hs._asm.cfpreferences")
+local pathwatcher			= require("hs.pathwatcher")
 
 local mod = {}
 mod.mt = {}
@@ -43,12 +44,22 @@ local function prefsPath(self)
     local path = data.path
     if not path then
         path = firstFilePath(data.bundleID)
-        if path then
-            path = path .. "/" .. data.bundleID .. ".plist"
-            data.path = path
-        end
+        data.path = path
     end
     return path
+end
+
+local function prefsFilePath(self)
+    local data = metadata(self)
+    local filePath = data.filePath
+    if not filePath then
+        local path = prefsPath(self)
+        if path then
+            filePath = path .. "/" .. data.bundleID .. ".plist"
+            data.filePath = filePath
+        end
+    end
+    return filePath
 end
 
 --- cp.app.prefs.new(bundleID) -> cp.app.prefs
@@ -102,8 +113,67 @@ function mod.bundleID(prefs)
     end
 end
 
+local PLIST_MATCH = "^.-([^/]+)%.plist$"
+
+--- cp.app.prefs.watch(prefs, watchFn) -> nil
+--- Function
+--- Adds a watch function which will be notified when the preferences change.
+--- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
+---
+--- Parameters:
+--- * prefs     - The `prefs` instance to watch.
+--- * watchFn   - The function that will get called.
+---
+--- Returns:
+--- * Nothing
+function mod.watch(prefs, watchFn)
+    if type(watchFn) ~= "function" then
+        error("The `watchFn` provided is not a function: " .. type(watchFn))
+    end
+
+    local data = metadata(prefs)
+    local watchers = data.watchers
+    if watchers == nil then
+        -- first watcher. set it up!
+        watchers = {}
+        data.watchers = watchers
+
+        --log.df("Setting up Preferences Watcher...")
+        local path = prefsPath(prefs)
+
+        data.pathwatcher = pathwatcher.new(path, function(files)
+            for _,file in pairs(files) do
+                local fileName = file:match(PLIST_MATCH)
+                if fileName == data.bundleID then
+                    for _,watcher in ipairs(watchers) do
+                        watcher(prefs)
+                    end
+                end
+            end
+        end):start()
+
+    end
+    table.insert(watchers, watchFn)
+end
+
+
+
 function mod.mt:__index(key)
-    local path = prefsPath(self)
+    if key == "watch" then
+        --- cp.app.prefs:watch(watchFn) -> nil
+        --- Function
+        --- Adds a watch function which will be notified when the preferences change.
+        --- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
+        ---
+        --- Parameters:
+        --- * watchFn   - The function that will get called.
+        ---
+        --- Returns:
+        --- * Nothing
+        return mod.watch
+    end
+
+    local path = prefsFilePath(self)
 
     if path then
         return cfprefs.getValue(key, path)
@@ -113,7 +183,7 @@ function mod.mt:__index(key)
 end
 
 function mod.mt:__newindex(key, value)
-    local path = prefsPath(self)
+    local path = prefsFilePath(self)
 
     if path and key then
         cfprefs.setValue(key, value, path)
@@ -124,7 +194,7 @@ end
 function mod.mt:__pairs()
     local keys
 
-    local path = prefsPath(self)
+    local path = prefsFilePath(self)
     keys = path and cfprefs.keyList(path) or nil
     local i = 0
 
