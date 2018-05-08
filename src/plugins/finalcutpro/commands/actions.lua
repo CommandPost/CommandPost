@@ -61,7 +61,7 @@ function mod.init(actionmanager, cmds)
 
 end
 
---- plugins.finalcutpro.commands.actionss.onChoices(choices) -> none
+--- plugins.finalcutpro.commands.actions.onChoices(choices) -> none
 --- Function
 --- Adds available choices to the  selection.
 ---

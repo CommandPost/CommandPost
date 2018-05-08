@@ -303,12 +303,12 @@ function Inspector:hide()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.Inspector:selectTab([tab]) -> boolean
+--- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean
 --- Method
 --- Selects a tab in the inspector.
 ---
 --- Parameters:
----  * [tab] - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
+---  * tab - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
 ---
 --- Returns:
 ---  * A string of the selected tab, otherwise `nil` if an error occurred.
@@ -344,6 +344,51 @@ function Inspector:selectTab(value)
         local title = subChild:attributeValue("AXTitle")
         if title == valueTitle then
             return subChild:performAction("AXPress")
+        end
+    end
+    return false
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:tabAvailable(tab) -> boolean
+--- Method
+--- Checks to see if a tab is currently available in the Inspector.
+---
+--- Parameters:
+---  * tab - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
+---
+--- Returns:
+---  * `true` if available otherwise `false`.
+---
+--- Notes:
+---  * Valid strings for `value` are as follows:
+---    * Audio
+---    * Color
+---    * Effect
+---    * Generator
+---    * Info
+---    * Share
+---    * Text
+---    * Title
+---    * Transition
+---    * Video
+function Inspector:tabAvailable(value)
+    local code = Inspector.INSPECTOR_TABS[value]
+    if not code then
+        log.ef("selectTab requires a valid tab string: %s", value)
+        return false
+    end
+    self:show()
+    if not self.isShowing() then
+        log.ef("Failed to open Inspector")
+        return false
+    end
+    local ui = self:topBarUI()
+    local app = self:app()
+    local valueTitle = app:string(code)
+    for _,subChild in ipairs(ui) do
+        local title = subChild:attributeValue("AXTitle")
+        if title == valueTitle then
+            return true
         end
     end
     return false
