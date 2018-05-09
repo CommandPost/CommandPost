@@ -24,5 +24,5 @@ def shortName( font ):
 	return name, family
 
 
-tt = ttLib.TTFont(sys.argv[1])
+tt = ttLib.TTFont(sys.argv[1], fontNumber=0)
 print shortName(tt)[1]
