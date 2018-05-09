@@ -160,14 +160,14 @@ end
 function axutils.childAtIndex(element, index, compareFn, matcherFn)
     if element and index > 0 then
         local children = axutils.children(element)
-
-        if matcherFn then
-            children = axutils.childrenMatching(children, matcherFn)
-        end
-
-        if #children >= index then
-            sort(children, compareFn)
-            return children[index]
+        if children then
+            if matcherFn then
+                children = axutils.childrenMatching(children, matcherFn)
+            end
+            if #children >= index then
+                sort(children, compareFn)
+                return children[index]
+            end
         end
     end
     return nil

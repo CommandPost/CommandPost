@@ -31,6 +31,7 @@ local styledtext        = require("hs.styledtext")
 --------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
+local font              = require("cp.font")
 local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -40,72 +41,64 @@ local tools             = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
+--- Constant
+--- Table of support font file extensions.
+mod.FONT_EXTENSIONS = {
+    "ttf",
+    "otf",
+    "ttc",
+}
+
+--- plugins.finalcutpro.console.font.getRunningFonts() -> none
+--- Function
+--- Shows the Final Cut Pro Console.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.getRunningFonts()
+    local result = {}
+    local fcpApp = fcp:application()
+    local processID = fcpApp and fcpApp:pid()
+    if processID then
+        local o, s, t, r = hs.execute("lsof -p " .. processID)
+        if o and s and t == "exit" and r == 0 then
+            local lines = tools.lines(o)
+            for _, line in pairs(lines) do
+                for _, ext in pairs(mod.FONT_EXTENSIONS) do
+                    if string.find("." .. string.lower(line), "." .. ext) then
+                        local path = string.sub(line, 85)
+                        if path then
+                            local fontFamily = font.getFontFamilyFromFile(path)
+                            if fontFamily and string.sub(fontFamily, 1, 1) ~= "." then
+                                table.insert(result, fontFamily)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return result
+end
+
 --- plugins.finalcutpro.console.font.SPECIAL_FONTS -> table
 --- Constant
 --- Special Fonts that appear to have a different name in Final Cut Pro than they do in Font Book.
 mod.SPECIAL_FONTS = {
-    [".AppleSystemUIFont"] = "BlueGlyph"
+    [".AppleSystemUIFont"] = "BlueGlyph",
+    ["Avenir Black Oblique"] = "Avenir",
+    ["Garamond Rough Medium"] = "Garamond Rough",
 }
 
---- plugins.finalcutpro.console.font.THIRD_PARTY_FONTS -> table
+--- plugins.finalcutpro.console.font.IGNORE_FONTS -> table
 --- Constant
---- Fonts that could be installed by third party effects:
-mod.THIRD_PARTY_FONTS = {
-    ["/Library/Application Support/FxFactory/idustrial revolution 3D Video Walls.fxtemplates/Assets/Fonts/3DSHAPESXEFFECTS-Regular.ttf"] = "3D SHAPES XEFFECTS",
-    ["/Library/Application Support/FxFactory/osmFCPX osm.iPhone.fxtemplates/Assets/Fonts/osm.font.ttf"] = "osm.font",
-    ["/Library/Application Support/FxFactory/osmFCPX osm.iPhone.fxtemplates/Assets/Fonts/osmiPhone-110.otf"] = "osm.font2",
-}
-
---- plugins.finalcutpro.console.font.FONTS_IN_FCP_BUNDLE -> table
---- Constant
---- Fonts contained within the Final Cut Pro Application Bundle (in Flexo.framework).
-mod.FONTS_IN_FCP_BUNDLE = {
-    "Avenir", --"Avenir Black Oblique",
-    "Aviano Sans",
-    "Banco",
-    "Bank Gothic",
-    "Basic Commercial",
-    "Beaufort Pro",
-    "Bebas Neue",
-    "Blair",
-    "Bradley Hand ITC TT",
-    "Brush Script MT",
-    "Comic Script",
-    "Coolvetica",
-    "DDT",
-    "Duality",
-    "Edwardian Script",
-    "Engravers Gothic",
-    "Flatbush",
-    "Forgotten Futurist",
-    "Garamond Rough",
-    "Garamond Rough Medium",
-    "Gaz",
-    "Georgia",
-    "Gill Sans",
-    "Goudy Old Style",
-    "Handwriting - Dakota",
-    "Hopper Script",
-    "ITC Franklin Gothic",
-    "Loopiejuice",
-    "Luminari",
-    "Meloriac",
-    "Misadventures",
-    "Octin Team",
-    "Old English Text",
-    "Operina Pro",
-    "Paleographic",
-    "Posterboard",
-    "Sabon Pro",
-    "Shababa",
-    "Shabash Pro",
-    "Sketch Block Light",
-    "Strenuous",
-    "Superclarendon",
-    "Synchro LET",
-    "Trattatello",
-    "VIP",
-    "Zingende",
+--- Fonts to ignore as they're used internally by Final Cut Pro or macOS.
+mod.IGNORE_FONTS = {
+    "FCMetro34"
 }
 
 --- plugins.finalcutpro.console.font.show() -> none
@@ -132,19 +125,24 @@ function mod.show()
         -- Setup Activator Callback:
         --------------------------------------------------------------------------------
         mod.activator:onActivate(function(handler, action, text)
+
+            log.df("action: %s", hs.inspect(action))
+
             if action and action.fontName and action.id then
                 local font = fcp:inspector():text():basic():font()
                 if font and font.family then
                     local ui = font.family:UI()
-                    ui:performAction("AXPress")
-                    local menu = ui:attributeValue("AXChildren")[1]
-                    if menu then
-                        local kids = menu:attributeValue("AXChildren")
-                        log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
-                        log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
-                        if menu[action.id] then
-                            log.df("Selecting item: %s (%s)", action.fontName, action.id)
-                            menu[action.id]:performAction("AXPress")
+                    if ui then
+                        ui:performAction("AXPress")
+                        local menu = ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
+                        if menu then
+                            local kids = menu:attributeValue("AXChildren")
+                            log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
+                            log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
+                            if menu[action.id] then
+                                log.df("Selecting item: %s (%s)", action.fontName, action.id)
+                                menu[action.id]:performAction("AXPress")
+                            end
                         end
                     end
                 end
@@ -168,24 +166,12 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     -- Build list of fonts:
     --------------------------------------------------------------------------------
-    local fonts = {}
     local systemFonts = {}
 
     --------------------------------------------------------------------------------
-    -- Fonts in Final Cut Pro Bundle (not found in Font Book):
+    -- Get a list of fonts currently being used by Final Cut Pro:
     --------------------------------------------------------------------------------
-    for _, fontName in pairs(mod.FONTS_IN_FCP_BUNDLE) do
-        table.insert(fonts, fontName)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Third Party Fonts (not found in Font Book):
-    --------------------------------------------------------------------------------
-    for path, fontName in pairs(mod.THIRD_PARTY_FONTS) do
-        if tools.doesFileExist(path) then
-            table.insert(fonts, fontName)
-        end
-    end
+    local fonts = mod.getRunningFonts()
 
     --------------------------------------------------------------------------------
     -- Special Fonts (found in Font Book):
@@ -193,7 +179,6 @@ function mod.onChoices(choices)
     for familyName, fontName in pairs(mod.SPECIAL_FONTS) do
         if styledtext.fontInfo(familyName) then
             table.insert(fonts, fontName)
-            systemFonts[fontName] = true
         end
     end
 
@@ -214,8 +199,8 @@ function mod.onChoices(choices)
     local newFonts = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) == "." then
-                log.df("Skipping Hidden Font: %s", v)
+            if string.sub(fontName, 1, 1) == "."  or fnutils.contains(mod.IGNORE_FONTS, fontName) then
+                log.df("Skipping Hidden/Ignored Font: %s", v)
             else
                 newFonts[#newFonts+1] = fontName
                 hash[fontName] = true
