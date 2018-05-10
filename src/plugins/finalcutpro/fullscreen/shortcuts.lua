@@ -17,13 +17,15 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("fullscreenShortcuts") -- luacheck: ignore
+local log                               = require("hs.logger").new("fullscreenShortcuts")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local timer                             = require("hs.timer")
+local timer                             = require("hs.timer")
+local window                            = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -261,6 +263,63 @@ function mod.checkCommand(whichModifier, whichKey)
     end
 end
 
+--- plugins.finalcutpro.fullscreen.shortcuts.updateDockIcon() -> none
+--- Function
+--- Update Dock Icon Visibility. Dock Icon will be disabled when FCPX is in fullscreen mode.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.updateDockIcon()
+    if mod._ignoreWatchers then
+        return
+    end
+    if fcp:isFrontmost() then
+        local ui = fcp:primaryWindow():UI()
+        local primaryWindow = ui and ui:asHSWindow()
+        if primaryWindow and primaryWindow:isFullScreen() then
+            if hs.dockIcon() then
+                --log.df("Fullscreen detected")
+                mod._ignoreWatchers = true
+                hs.dockIcon(false)
+                timer.doAfter(0.3, function()
+                    fcp:launch()
+                    mod._ignoreWatchers = false
+                end)
+            end
+            return
+        elseif primaryWindow and not primaryWindow:isFullScreen() then
+            if not hs.dockIcon() then
+                --log.df("Fullscreen NOT detected")
+                mod._ignoreWatchers = true
+                local originalFocusedWindow = window.focusedWindow()
+                hs.dockIcon(true)
+                timer.doAfter(0.3, function()
+                    if originalFocusedWindow then
+                        originalFocusedWindow:focus()
+                    end
+                    mod._ignoreWatchers = false
+                end)
+            end
+        end
+    else
+        if not hs.dockIcon() then
+            --log.df("Fullscreen NOT detected")
+            mod._ignoreWatchers = true
+            local originalFocusedWindow = window.focusedWindow()
+            hs.dockIcon(true)
+            timer.doAfter(0.3, function()
+                if originalFocusedWindow then
+                    originalFocusedWindow:focus()
+                end
+                mod._ignoreWatchers = false
+            end)
+        end
+    end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -278,6 +337,17 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
+    --------------------------------------------------------------------------------
+    -- Setup Watchers:
+    --------------------------------------------------------------------------------
+    mod._fcpWatcher = fcp:watch({
+        fullscreen  = mod.updateDockIcon,
+        inactive    = mod.updateDockIcon,
+        hide        = mod.updateDockIcon,
+        active      = mod.updateDockIcon,
+        show        = mod.updateDockIcon,
+    })
 
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
@@ -303,7 +373,15 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit()
+    --------------------------------------------------------------------------------
+    -- Check to see if we started in fullscreen mode:
+    --------------------------------------------------------------------------------
     mod.enabled:update()
+
+    --------------------------------------------------------------------------------
+    -- Update Dock Icon:
+    --------------------------------------------------------------------------------
+    mod.updateDockIcon()
 end
 
 return plugin
