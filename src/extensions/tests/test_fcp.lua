@@ -494,6 +494,22 @@ onRun(
             error(string.format("Unsupported 'locales' filter: %s", inspect(locales)))
         end
 
+        -- remove any old copies of the library
+        if attributes(TEST_DIRECTORY) ~= nil then
+            local ok, err = rmdir(TEST_DIRECTORY, true)
+            if not ok then
+                error(format("Unable to remove the temporary directory: %s", err))
+            end
+        end
+
+        -- set up the fresh test directory.
+        if fs.pathToAbsolute(TEST_DIRECTORY) == nil then
+            local ok, err = mkdir(TEST_DIRECTORY)
+            if not ok then
+                error(format("Unable to create '%s' directory: %s", TEST_DIRECTORY, err))
+            end
+        end
+
         -- Store the current locale:
         local originalLocale = fcp.app:currentLocale()
         local originalName = self.name
@@ -519,26 +535,14 @@ onRun(
         self.name = originalName
     end
 ):beforeEach(
-    function()
+    function(testcase)
         local ok, err
-        -- do this before each test
-        fcp:closeLibrary(TEST_LIBRARY)
 
-        -- remove any old copies of the library
-        if attributes(TEST_DIRECTORY) ~= nil then
-            ok, err = rmdir(TEST_DIRECTORY, true)
-            if not ok then
-                error(format("Unable to remove the temporary directory: %s", err))
-            end
-        end
+        local targetLibrary = "Test - " .. testcase.name
+
         -- create the target directory.
         libraryCount = libraryCount + 1
         local targetDirectory = format("%s/%d", TEST_DIRECTORY, libraryCount)
-
-        ok, err = mkdir(TEST_DIRECTORY)
-        if not ok then
-            error(format("Unable to create '%s' directory: %s", TEST_DIRECTORY, err))
-        end
 
         ok, err = mkdir(targetDirectory)
         if not ok then
@@ -553,12 +557,13 @@ onRun(
             error(format("Unable to find test library for FCP version: %s", fcp:version()))
         end
 
-        local output, status, type, rc = hs.execute(format([[cp -R "%s" "%s"]], sourceLibraryPath, targetDirectory))
+
+        local targetLibraryPath = format("%s/%s.fcpbundle", targetDirectory, targetLibrary)
+
+        local output, status, type, rc = hs.execute(format([[cp -R "%s" "%s"]], sourceLibraryPath, targetLibraryPath))
         if not status then
             error(format("Unable to copy the Test Library to '%s': %s (%s: %s)", targetDirectory, output, type, rc))
         end
-
-        local targetLibraryPath = format("%s/%s.fcpbundle", targetDirectory, TEST_LIBRARY)
 
         -- check it copied ok.
         if not fs.attributes(targetLibraryPath) then
@@ -566,7 +571,7 @@ onRun(
         end
 
         -- give the OS a second to catch up.
-        -- just.wait(1)
+        just.wait(1)
 
         fcp:launch()
         just.doUntil(
@@ -584,7 +589,7 @@ onRun(
         -- keep trying until the library loads successfully, waiting up to 5 seconds.
         just.doUntil(
             function()
-                return fcp:libraries():selectLibrary(TEST_LIBRARY) ~= nil
+                return fcp:libraries():selectLibrary(targetLibrary) ~= nil
             end,
             5.0
         )
@@ -601,13 +606,20 @@ onRun(
         end
     end
 ):afterEach(
-    function()
+    function(testcase)
+        local targetLibrary = "Test - " .. testcase.name
+        local targetDirectory = format("%s/%d", TEST_DIRECTORY, libraryCount)
+        local targetLibraryPath = format("%s/%s.fcpbundle", targetDirectory, targetLibrary)
+
         -- do this after each test.
-        fcp:closeLibrary(TEST_LIBRARY)
-        -- delete the temporary library copy.
-        local ok, err = rmdir(TEST_DIRECTORY, true)
-        if not ok then
-            error(format("Unable to remove the temporary directory: %s", err))
+        if fcp:closeLibrary(targetLibrary) then
+            -- delete the temporary library copy.
+            local ok, err = rmdir(targetLibraryPath, true)
+            if not ok then
+                error(format("Unable to remove the temporary directory: %s", err))
+            end
+        else
+            log.df("Unable to close '%s'", targetLibrary)
         end
     end
 )

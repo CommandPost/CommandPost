@@ -400,18 +400,18 @@ function test.suite.mt:run(...)
     pushSuite(self)
     result:start()
 
-    self:_run(function(Self, filter, ...)
-        local count = #Self.tests
-        for i,t in ipairs(Self.tests) do
+    self:_run(function(suite, filter, ...)
+        local count = #suite.tests
+        for i,t in ipairs(suite.tests) do
             if matchesFilter(t, i, count, filter) then
                 local ok, err = true, nil
-                if Self._beforeEach then
-                    ok, err = xpcall(Self._beforeEach, debug.traceback)
+                if suite._beforeEach then
+                    ok, err = xpcall(function() return suite._beforeEach(t) end, debug.traceback)
                 end
                 if ok then
                     t(...)
-                    if Self._afterEach then
-                        ok, err = xpcall(Self._afterEach, debug.traceback)
+                    if suite._afterEach then
+                        ok, err = xpcall(function() return suite._afterEach(t) end, debug.traceback)
                         if not ok then
                             if handler.error then
                                 handler.error(t, format("Error occurred after test '%s': %s", t.name, err))

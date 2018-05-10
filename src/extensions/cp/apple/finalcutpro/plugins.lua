@@ -23,7 +23,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                       = require("hs.logger").new("scan")
-local inspect                   = require("hs.inspect")
+-- local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -67,6 +67,15 @@ local THEME_PATTERN             = ".*<theme>(.+)</theme>.*"
 local FLAGS_PATTERN             = ".*<flags>(.+)</flags>.*"
 
 local OBSOLETE_FLAG             = 2
+
+-- set this to `true` via _fcp:plugins():outputReport(true) to enable reporting
+mod.outputReport = config.prop("fcpPluginsOutputReport", false)
+
+local function report(message, ...)
+    if mod.outputReport() then
+        log.df(message, ...)
+    end
+end
 
 --- cp.apple.finalcutpro.plugins.types
 --- Constant
@@ -279,7 +288,7 @@ function mod.mt:scanSystemAudioUnits(locale)
     local audioUnitsCache = config.get("audioUnitsCache", nil)
 
     if currentModification and lastModification and audioUnitsCache and currentModification == lastModification then
-        log.df("  * Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items)")
+        report("  * Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items)")
         for _, data in pairs(audioUnitsCache) do
             local coreAudioPlistPath = data.coreAudioPlistPath or nil
             local audioEffect = data.audioEffect or nil
@@ -334,11 +343,11 @@ function mod.mt:scanSystemAudioUnits(locale)
                 -- Cache Plugin:
                 --------------------------------------------------------------------------------
                 table.insert(cache, {
-                    ["coreAudioPlistPath"] = coreAudioPlistPath,
-                    ["audioEffect"] = audioEffect,
-                    ["category"] = category,
-                    ["plugin"] = plugin,
-                    ["locale"] = locale,
+                    coreAudioPlistPath = coreAudioPlistPath,
+                    audioEffect = audioEffect,
+                    category = category,
+                    plugin = plugin,
+                    locale = locale.code,
                 })
 
                 self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, locale)
@@ -351,7 +360,7 @@ function mod.mt:scanSystemAudioUnits(locale)
         if currentModification and #cache ~= 0 then
             config.set("audioUnitsCacheModification", currentModification)
             config.set("audioUnitsCache", cache)
-            log.df("  * Saved " .. #cache .. " Audio Units to Cache.")
+            report("  * Saved " .. #cache .. " Audio Units to Cache.")
         else
             log.ef("  * Failed to cache Audio Units.")
         end
@@ -388,7 +397,7 @@ function mod.mt:scanUserEffectsPresets(locale)
     local userEffectsPresetsCache = config.get("userEffectsPresetsCache", nil)
 
     if currentSize and lastSize and userEffectsPresetsCache and currentSize == lastSize then
-        log.df("  * Using User Effects Presets Cache (" .. tostring(#userEffectsPresetsCache) .. " items).")
+        report("  * Using User Effects Presets Cache (" .. tostring(#userEffectsPresetsCache) .. " items).")
         for _, data in pairs(userEffectsPresetsCache) do
             local effectPath = data.effectPath or nil
             local effectType = data.effectType or nil
@@ -418,11 +427,11 @@ function mod.mt:scanUserEffectsPresets(locale)
                         -- Cache Plugin:
                         --------------------------------------------------------------------------------
                         table.insert(cache, {
-                            ["effectPath"] = effectPath,
-                            ["effectType"] = type,
-                            ["category"] = category,
-                            ["plugin"] = plugin,
-                            ["locale"] = locale,
+                            effectPath = effectPath,
+                            effectType = type,
+                            category = category,
+                            plugin = plugin,
+                            locale = locale.code,
                         })
 
                     end
@@ -436,7 +445,7 @@ function mod.mt:scanUserEffectsPresets(locale)
         if currentSize and #cache ~= 0 then
             config.set("userEffectsPresetsCacheModification", currentSize)
             config.set("userEffectsPresetsCache", cache)
-            log.df("  * Saved " .. #cache .. " User Effects Presets to Cache.")
+            report("  * Saved " .. #cache .. " User Effects Presets to Cache.")
         else
             log.ef("  * Failed to cache User Effects Presets.")
         end
@@ -908,13 +917,13 @@ function mod.mt:scanUserMotionTemplates(locale)
             --------------------------------------------------------------------------------
             -- Restore from cache:
             --------------------------------------------------------------------------------
-            log.df("  * Loading User Motion Templates from Cache (%s items)", #userMotionTemplatesCache[locale.code])
-            for _, data in pairs(userMotionTemplatesCache[locale]) do
+            report("  * Loading User Motion Templates from Cache (%s items)", #userMotionTemplatesCache[locale.code])
+            for _, data in pairs(userMotionTemplatesCache[locale.code]) do
                 self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.locale)
             end
             return
         else
-            log.df("  * Could not find User Motion Template Cache for locale: %s", locale.code)
+            report("  * Could not find User Motion Template Cache for locale: %s", locale.code)
         end
     end
 
@@ -933,7 +942,7 @@ function mod.mt:scanUserMotionTemplates(locale)
         })
         config.set("userMotionTemplatesCacheSize", currentSize)
 
-        log.df("  * Saving User Motion Tempaltes to Cache (%s items)", #mod._motionTemplatesToCache)
+        report("  * Saving User Motion Tempaltes to Cache (%s items)", #mod._motionTemplatesToCache)
 
         mod._motionTemplatesToCache = nil
     end
@@ -958,7 +967,7 @@ function mod.mt:scanSystemMotionTemplates(locale)
     local path = "/Library/Application Support/Final Cut Pro/Templates.localized"
     local pathToAbsolute = fs.pathToAbsolute(path)
     if not pathToAbsolute then
-        log.df("Folder does not exist: %s", path)
+        report("Folder does not exist: %s", path)
         return nil
     end
 
@@ -974,19 +983,18 @@ function mod.mt:scanSystemMotionTemplates(locale)
             --------------------------------------------------------------------------------
             -- Restore from cache:
             --------------------------------------------------------------------------------
-            log.df("  * Loading System Motion Templates from Cache (%s items)", #systemMotionTemplatesCache[locale.code])
+            report("  * Loading System Motion Templates from Cache (%s items)", #systemMotionTemplatesCache[locale.code])
 
             --log.df("mod._motionTemplatesToCache: %s", hs.inspect(config.get("systemMotionTemplatesCache")))
 
 
             for _, data in pairs(systemMotionTemplatesCache[locale.code]) do
-                log.df("scanSystemMotionTemplates: cache value = %s", inspect(data))
                 self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.locale)
             end
 
             return
         else
-            log.df("  * Could not find System Motion Template Cache for locale: %s", locale.code)
+            report("  * Could not find System Motion Template Cache for locale: %s", locale.code)
         end
     end
 
@@ -1005,7 +1013,7 @@ function mod.mt:scanSystemMotionTemplates(locale)
         })
         config.set("systemMotionTemplatesCacheSize", currentSize)
 
-        log.df("  * Saving System Motion Templates to Cache (%s items)", #mod._motionTemplatesToCache)
+        report("  * Saving System Motion Templates to Cache (%s items)", #mod._motionTemplatesToCache)
 
         mod._motionTemplatesToCache = nil
     end
@@ -1127,9 +1135,9 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
     --------------------------------------------------------------------------------
     -- Debug Message:
     --------------------------------------------------------------------------------
-    log.df("-----------------------------------------------------------")
-    log.df(" COMPARING RESULTS TO THE RESULTS STORED IN YOUR SETTINGS:")
-    log.df("-----------------------------------------------------------\n")
+    report("-----------------------------------------------------------")
+    report(" COMPARING RESULTS TO THE RESULTS STORED IN YOUR SETTINGS:")
+    report("-----------------------------------------------------------\n")
 
     --------------------------------------------------------------------------------
     -- Plugin Types:
@@ -1148,9 +1156,9 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
     --------------------------------------------------------------------------------
     -- Debug Message:
     --------------------------------------------------------------------------------
-    log.df("---------------------------------------------------------")
-    log.df(" CHECKING LOCALE: %s", locale.code)
-    log.df("---------------------------------------------------------")
+    report("---------------------------------------------------------")
+    report(" CHECKING LOCALE: %s", locale.code)
+    report("---------------------------------------------------------")
 
     for oldType,newType in pairs(pluginTypes) do
         --------------------------------------------------------------------------------
@@ -1163,7 +1171,7 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
             --------------------------------------------------------------------------------
             -- Debug Message:
             --------------------------------------------------------------------------------
-            log.df(" - Checking Plugin Type: %s", oldType)
+            report(" - Checking Plugin Type: %s", oldType)
 
             local newPlugins = self._plugins[locale.code][newType]
             local newPluginNames = {}
@@ -1192,15 +1200,15 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
                 oldName = oldName or oldFullName
                 newPlugins = newPluginNames[oldFullName] or newPluginNames[oldName]
                 if not newPlugins then
-                    log.df("  - ERROR: Missing %s: %s", oldType, oldFullName)
+                    report("  - ERROR: Missing %s: %s", oldType, oldFullName)
                     errorCount = errorCount + 1
                 else
                     local unmatched = newPlugins.unmatched
                     local found = false
                     for i,plugin in ipairs(unmatched) do
-                        -- log.df("  - INFO:  Checking plugin: %s (%s)", plugin.name, plugin.theme)
+                        -- report("  - INFO:  Checking plugin: %s (%s)", plugin.name, plugin.theme)
                         if plugin.theme == oldTheme then
-                            -- log.df("  - INFO:  Exact match for plugin: %s (%s)", oldName, oldTheme)
+                            -- report("  - INFO:  Exact match for plugin: %s (%s)", oldName, oldTheme)
                             insert(newPlugins.matched, plugin)
                             remove(unmatched, i)
                             found = true
@@ -1208,7 +1216,7 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
                         end
                     end
                     if not found then
-                        -- log.df("  - INFO:  Partial for '%s' plugin.", oldFullName)
+                        -- report("  - INFO:  Partial for '%s' plugin.", oldFullName)
                         insert(newPlugins.partials, oldFullName)
                     end
                 end
@@ -1217,7 +1225,7 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
             for _, plugins in pairs(newPluginNames) do
                 if #plugins.partials ~= #plugins.unmatched then
                     for _,oldFullName in ipairs(plugins.partials) do
-                        log.df("  - ERROR: Old %s plugin unmatched: %s", newType, oldFullName)
+                        report("  - ERROR: Old %s plugin unmatched: %s", newType, oldFullName)
                         errorCount = errorCount + 1
                     end
 
@@ -1226,7 +1234,7 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
                         if plugin.theme then
                             newFullName = plugin.theme .." - "..newFullName
                         end
-                        log.df("  - ERROR: New %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
+                        report("  - ERROR: New %s plugin unmatched: %s\n\t\t%s", newType, newFullName, plugin.path)
                         errorCount = errorCount + 1
                     end
                 end
@@ -1236,12 +1244,12 @@ function mod.mt:compareOldMethodToNewMethodResults(locale)
             -- If all results matched:
             --------------------------------------------------------------------------------
             if errorCount == 0 then
-                log.df("  - SUCCESS: %s all matched!\n", oldType)
+                report("  - SUCCESS: %s all matched!\n", oldType)
             else
-                log.df("")
+                report("")
             end
         else
-            log.df(" - SKIPPING: Could not find settings for: %s (%s)", oldType, locale.code)
+            report(" - SKIPPING: Could not find settings for: %s (%s)", oldType, locale.code)
         end
     end
 end
@@ -1534,7 +1542,7 @@ end
 --  * `true` if the cache was saved successfully.
 function mod.mt:_saveAppPluginCache(locale)
     locale = localeID(locale)
-    log.df("  * Saving App Plugin Cache.")
+    report("  * Saving App Plugin Cache.")
     local fcpVersion = fcpApp:version()
     if not fcpVersion then
         log.ef("Failed to detect Final Cut Pro version: %s", fcpVersion)
@@ -1590,7 +1598,7 @@ function mod.mt:scanAppPlugins(locale)
         local startTime = os.clock()
         self:scanAppBuiltInPlugins(locale)
         local finishTime = os.clock()
-        log.df("  * scanAppBuiltInPlugins(%s): %s", locale.code, finishTime-startTime)
+        report("  * scanAppBuiltInPlugins(%s): %s", locale.code, finishTime-startTime)
 
         --------------------------------------------------------------------------------
         -- Scan Soundtrack Pro EDEL Effects:
@@ -1598,7 +1606,7 @@ function mod.mt:scanAppPlugins(locale)
         startTime = os.clock()
         self:scanAppEdelEffects(locale)
         finishTime = os.clock()
-        log.df("  * scanAppEdelEffects(%s): %s", locale.code, finishTime-startTime)
+        report("  * scanAppEdelEffects(%s): %s", locale.code, finishTime-startTime)
 
         --------------------------------------------------------------------------------
         -- Scan Audio Effect Bundles:
@@ -1606,7 +1614,7 @@ function mod.mt:scanAppPlugins(locale)
         startTime = os.clock()
         self:scanAppAudioEffectBundles(locale)
         finishTime = os.clock()
-        log.df("  * scanAppAudioEffectBundles(%s): %s", locale.code, finishTime-startTime)
+        report("  * scanAppAudioEffectBundles(%s): %s", locale.code, finishTime-startTime)
 
         --------------------------------------------------------------------------------
         -- Scan App Motion Templates:
@@ -1614,12 +1622,12 @@ function mod.mt:scanAppPlugins(locale)
         startTime = os.clock()
         self:scanAppMotionTemplates(locale)
         finishTime = os.clock()
-        log.df("   * scanAppMotionTemplates(%s): %s", locale.code, finishTime-startTime)
+        report("   * scanAppMotionTemplates(%s): %s", locale.code, finishTime-startTime)
 
         self:_saveAppPluginCache(locale)
     else
         local cacheFinishTime = os.clock()
-        log.df("  * Loaded App Plugins from Cache: %s", cacheFinishTime-cacheStartTime)
+        report("  * Loaded App Plugins from Cache: %s", cacheFinishTime-cacheStartTime)
     end
 
 end
@@ -1641,7 +1649,7 @@ function mod.mt:scanSystemPlugins(locale)
     local startTime = os.clock()
     self:scanSystemMotionTemplates(locale)
     local finishTime = os.clock()
-    log.df("  * scanSystemMotionTemplates(%s): %s", locale, finishTime-startTime)
+    report("  * scanSystemMotionTemplates(%s): %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan System Audio Units:
@@ -1649,7 +1657,7 @@ function mod.mt:scanSystemPlugins(locale)
     startTime = os.clock()
     self:scanSystemAudioUnits(locale)
     finishTime = os.clock()
-    log.df("  * scanSystemAudioUnits(%s): %s", locale, finishTime-startTime)
+    report("  * scanSystemAudioUnits(%s): %s", locale, finishTime-startTime)
 
 end
 
@@ -1670,7 +1678,7 @@ function mod.mt:scanUserPlugins(locale)
     local startTime = os.clock()
     self:scanUserEffectsPresets(locale)
     local finishTime = os.clock()
-    log.df("  * scanUserEffectsPresets(%s): %s", locale, finishTime-startTime)
+    report("  * scanUserEffectsPresets(%s): %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan User Motion Templates:
@@ -1678,7 +1686,7 @@ function mod.mt:scanUserPlugins(locale)
     startTime = os.clock()
     self:scanUserMotionTemplates(locale)
     finishTime = os.clock()
-    log.df("  * scanUserMotionTemplates(%s): %s", locale, finishTime-startTime)
+    report("  * scanUserMotionTemplates(%s): %s", locale, finishTime-startTime)
 
 end
 
@@ -1703,43 +1711,43 @@ function mod.mt:scan(locale)
     --------------------------------------------------------------------------------
     -- Debug Messaging:
     --------------------------------------------------------------------------------
-    log.df("---------------------------------------------------------")
-    log.df("FINAL CUT PRO PLUGIN SCANNER:")
-    log.df("---------------------------------------------------------")
+    report("---------------------------------------------------------")
+    report("FINAL CUT PRO PLUGIN SCANNER:")
+    report("---------------------------------------------------------")
 
     --------------------------------------------------------------------------------
     -- Scan app-bundled plugins:
     --------------------------------------------------------------------------------
-    log.df("* Scanning app-bundled plugins:")
+    report("* Scanning app-bundled plugins:")
     local startTime = os.clock()
     self:scanAppPlugins(locale)
     local finishTime = os.clock()
-    log.df("    * scanAppPlugins(%s) took: %s", locale.code, finishTime-startTime)
+    report("    * scanAppPlugins(%s) took: %s", locale.code, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan system-installed plugins:
     --------------------------------------------------------------------------------
-    log.df(" ")
-    log.df("* Scanning system-installed plugins:")
+    report(" ")
+    report("* Scanning system-installed plugins:")
     startTime = os.clock()
     self:scanSystemPlugins(locale)
     finishTime = os.clock()
-    log.df("    * scanSystemPlugins(%s) took: %s", locale, finishTime-startTime)
+    report("    * scanSystemPlugins(%s) took: %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan user-installed plugins:
     --------------------------------------------------------------------------------
-    log.df(" ")
-    log.df("* Scanning user-installed plugins:")
+    report(" ")
+    report("* Scanning user-installed plugins:")
     startTime = os.clock()
     self:scanUserPlugins(locale)
     finishTime = os.clock()
-    log.df("    * scanUserPlugins(%s) took: %s", locale, finishTime-startTime)
+    report("    * scanUserPlugins(%s) took: %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Debug Messaging:
     --------------------------------------------------------------------------------
-    log.df("---------------------------------------------------------")
+    report("---------------------------------------------------------")
 
     return self._plugins[locale]
 

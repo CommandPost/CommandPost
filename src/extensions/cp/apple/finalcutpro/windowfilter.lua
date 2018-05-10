@@ -17,7 +17,8 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local windowfilter                                  = require("hs.window.filter")
+local windowfilter              = require("hs.window.filter")
+local fcpApp                    = require("cp.apple.finalcutpro.app")
 
 --------------------------------------------------------------------------------
 --
@@ -44,8 +45,7 @@ mod.LOG_NAME = "fcpWinFilter"
 --- Returns:
 ---  * A new `windowfilter` instance
 mod.windowfilter = windowfilter.new(function(window)
-    -- TODO: This should be taken from cp.apple.finalcutpro.BUNDLE_ID:
-    return window and window:application():bundleID() == "com.apple.FinalCut"
+    return window and window:application():bundleID() == fcpApp:bundleID()
 end, mod.LOG_NAME)
 
 return mod.windowfilter

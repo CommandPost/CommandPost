@@ -142,7 +142,7 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:showSidebar()
-    self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Sidebar"})
+    self:app():menuBar():selectMenu({"Window", "Show in Workspace", "Sidebar"})
 end
 
 -- TODO: Add documentation

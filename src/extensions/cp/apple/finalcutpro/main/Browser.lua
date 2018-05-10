@@ -157,11 +157,11 @@ function Browser:showOnPrimary()
 
     -- if the browser is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
-        menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
+        menuBar:selectMenu({"Window", "Show in Secondary Display", "Browser"})
     end
     -- Then enable it in the primary
     if not self:isShowing() then
-        menuBar:checkMenu({"Window", "Show in Workspace", "Browser"})
+        menuBar:selectMenu({"Window", "Show in Workspace", "Browser"})
     end
     return self
 end

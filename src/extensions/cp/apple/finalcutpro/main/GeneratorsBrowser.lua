@@ -162,7 +162,7 @@ end
 --- * The Generators Browser.
 function GeneratorsBrowser:showSidebar()
     if not self:sidebar():isShowing() then
-        self:app():menuBar():checkMenu({"Window", "Show in Workspace", 1})
+        self:app():menuBar():selectMenu({"Window", "Show in Workspace", 1})
     end
 end
 

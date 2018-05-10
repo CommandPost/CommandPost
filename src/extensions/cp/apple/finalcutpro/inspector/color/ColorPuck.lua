@@ -369,8 +369,8 @@ function Puck:start()
     -- Disable skimming while the Puck is running:
     --------------------------------------------------------------------------------
     self.menuBar = self:parent():app():menuBar()
-    if self.skimming() then
-        self.menuBar:checkMenu({"View", "Skimming"})
+    if self:skimming() then
+        self.menuBar:selectMenu({"View", "Skimming"})
     end
 
     Puck._active = self
@@ -547,8 +547,8 @@ function Puck:cleanup()
         self.negative = nil
     end
     self.origin = nil
-    if self.skimming() and self.menuBar then
-        self.menuBar:checkMenu({"View", "Skimming"})
+    if self:skimming() and self.menuBar then
+        self.menuBar:selectMenu({"View", "Skimming"})
     end
     self.menuBar = nil
     Puck._active = nil

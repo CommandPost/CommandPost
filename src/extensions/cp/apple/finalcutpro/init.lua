@@ -516,17 +516,24 @@ end
 --- Returns:
 --- * `true` if successful, or `false` if not.
 function fcp:closeLibrary(title)
-    if self:isRunning() and self:libraries():selectLibrary(title) ~= nil then
-        self:selectMenu({"File", function(item)
-            local closeFormat = self:string("FFCloseLibraryFormat")
-            if closeFormat then
-                closeFormat = gsub(closeFormat, "%%@", title)
-                return find(item:title(), closeFormat) == 1
+    if self:isRunning() then
+        local libraries = self:libraries()
+        libraries:show()
+        just.doUntil(function() return libraries:isShowing() end, 5.0)
+        -- waiting here for a couple of seconds seems to make it less likely to crash FCP
+        just.wait(2.0)
+        if libraries:selectLibrary(title) ~= nil then
+            local closeLibrary = self:string("FFCloseLibraryFormat")
+            if closeLibrary then
+                closeLibrary = gsub(closeLibrary, "%%@", title)
             end
-            return false
-        end})
-        -- wait until the library actually closes, up to 5 seconds.
-        return just.doUntil(function() return self:libraries():selectLibrary(title) == nil end, 5.0)
+
+            self:selectMenu({"File", function(item)
+                return item:title() == closeLibrary
+            end})
+            -- wait until the library actually closes, up to 5 seconds.
+            return just.doUntil(function() return libraries:show():selectLibrary(title) == nil end, 10.0)
+        end
     end
     return false
 end

@@ -18,6 +18,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                                           = require("hs.logger").new("menubar")
+local inspect                                       = require("hs.inspect")
 
 local fs                                            = require("hs.fs")
 
@@ -196,54 +197,6 @@ function MenuBar:isEnabled(path)
     return menuItemUI and menuItemUI:attributeValue("AXEnabled")
 end
 
---- cp.apple.finalcutpro.MenuBar:checkMenu(path, wait) -> boolean
---- Method
---- Checks a menu item.
----
---- Parameters:
----  * path - At table containing the path to the menu bar item.
----  * wait - How long to wait before checking.
----
---- Returns:
----  * `true` if successful, otherwise `false`.
-function MenuBar:checkMenu(path, wait)
-    local menuItemUI = self:findMenuUI(path)
-    if menuItemUI then
-        if not _isMenuChecked(menuItemUI) then
-            menuItemUI:doPress()
-            if wait then
-                just.doUntil(function() return _isMenuChecked(menuItemUI) end, 5)
-            end
-        end
-        return true
-    end
-    return false
-end
-
---- cp.apple.finalcutpro.MenuBar:uncheckMenu(path, wait) -> boolean
---- Method
---- Uncheck's a menu item.
----
---- Parameters:
----  * path - At table containing the path to the menu bar item.
----  * wait - How long to wait before unchecking.
----
---- Returns:
----  * `true` if successful, otherwise `false`.
-function MenuBar:uncheckMenu(path, wait)
-    local menuItemUI = self:findMenuUI(path)
-    if menuItemUI then
-        if _isMenuChecked(menuItemUI) then
-            menuItemUI:doPress()
-            if wait then
-                just.doUntil(function() return not _isMenuChecked(menuItemUI) end, 5)
-            end
-        end
-        return true
-    end
-    return false
-end
-
 --- cp.apple.finalcutpro.MenuBar:addMenuFinder(finder) -> nothing
 --- Method
 --- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find' step and return either the matching child, or nil if it can't be found. It is used by the [addMenuFinder](#addMenuFinder) function. The `finder` should have the following signature:
@@ -408,7 +361,7 @@ function MenuBar:findMenuUI(path, locale)
             end
             table.insert(currentPath, menuItemName)
         else
-            log.wf("Unable to find a menu called '%s'", step)
+            log.wf("Unable to find a menu matching '%s'", inspect(step))
             return nil
         end
     end
