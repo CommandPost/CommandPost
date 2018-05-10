@@ -698,7 +698,7 @@ function tools.trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
---- cp.tools.lines(string) -> table
+--- cp.tools.lines(string) -> table | nil
 --- Function
 --- Splits a string containing multiple lines of text into a table.
 ---
@@ -706,18 +706,22 @@ end
 ---  * string - the string you want to process
 ---
 --- Returns:
----  * A table
+---  * A table or `nil` if the parameter is not a string.
 function tools.lines(str)
-    local t = {}
-    local function helper(line)
-        line = tools.trim(line)
-        if line ~= nil and line ~= "" then
-            table.insert(t, line)
+    if str and type(str) == "string" then
+        local t = {}
+        local function helper(line)
+            line = tools.trim(line)
+            if line ~= nil and line ~= "" then
+                table.insert(t, line)
+            end
+            return ""
         end
-        return ""
+        helper((str:gsub("(.-)\r?\n", helper)))
+        return t
+    else
+        return nil
     end
-    helper((str:gsub("(.-)\r?\n", helper)))
-    return t
 end
 
 --- cp.tools.executeWithAdministratorPrivileges(input[, stopOnError]) -> boolean or string

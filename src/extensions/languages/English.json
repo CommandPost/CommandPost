@@ -1114,5 +1114,9 @@
 		"core_disk_automount_label"							   : "Disk Automount",
 		"cpFontConsole_title"								   : "Open Font Console",
 		"fcpx_fonts_action"									   : "Fonts",
+		"pleaseSelectATitle"								   : "Please select a title in the timeline and try again.",
+		"fontScanInitalisationMessage"                         : "CommandPost needs to scan your system for fonts.\n\nThis may take several minutes. Another alert will appear when the scanning is complete.",
+		"fontScanComplete"                                     : "The font scan is complete! You can now use the Font Console.",
+		"fontScanError"										   : "An error has occured where the number of fonts in the CommandPost Console is different to the number of fonts in Final Cut Pro.\n\nThe font cache will be trashed. Please try again.",
     }
 }

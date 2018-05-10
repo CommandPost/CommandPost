@@ -183,7 +183,7 @@ function PropertyRow.new(parent, labelKey, index)
                     return label
                 end
             end
-            log.wf("Unabled to find a label with these keys: %s", index, inspect(self._labelKeys))
+            log.wf("Unable to find a label with these keys: [%s]%s", index, inspect(self._labelKeys))
             return nil
         end):cached():monitor(parent:app().currentLocale),
     }
@@ -281,7 +281,7 @@ function PropertyRow:children()
 end
 
 function PropertyRow:__tostring()
-    return self:label() or self._labelKeys()[1]
+    return self:label() or (self._labelKeys and type(self._labelKeys) == "function" and self._labelKeys() and self._labelKeys()[1]) or "Unnamed Property Row"
 end
 
 return PropertyRow
