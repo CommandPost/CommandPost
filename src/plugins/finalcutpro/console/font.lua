@@ -22,8 +22,9 @@ local log				= require("hs.logger").new("fontConsole")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fs                = require("hs.fs")
 local fnutils           = require("hs.fnutils")
+local fs                = require("hs.fs")
+local inspect           = require("hs.inspect")
 local styledtext        = require("hs.styledtext")
 
 --------------------------------------------------------------------------------
@@ -33,6 +34,7 @@ local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local font              = require("cp.font")
+local just              = require("cp.just")
 local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -133,28 +135,34 @@ function mod.onActivate(handler, action, text)
             local ui = font.family:UI()
             if ui then
                 ui:performAction("AXPress")
-                local menu = ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
+                local menu = just.doUntil(function()
+                    return ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
+                end)
                 if menu then
                     local kids = menu:attributeValue("AXChildren")
                     if kids then
                         local difference = #kids - mod._consoleFontCount
-
-                        --------------------------------------------------------------------------------
-                        -- Debugging:
-                        --------------------------------------------------------------------------------
-                        log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
-                        log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
-                        log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
-
                         if difference == 0 then
                             if menu[action.id] then
+                                --------------------------------------------------------------------------------
+                                -- Click on chosen font:
+                                --------------------------------------------------------------------------------
                                 --log.df("Selecting item: %s (%s)", action.fontName, action.id)
-                                menu[action.id]:performAction("AXPress")
+                                local result = menu[action.id]:performAction("AXPress")
+                                if result then
+                                    return
+                                end
                             end
                         else
                             --------------------------------------------------------------------------------
                             -- Wrong number of fonts comparing Console with Popup:
                             --------------------------------------------------------------------------------
+                            local cachedFonts = mod.cachedFonts()
+                            log.df("Cached Fonts: %s", inspect(cachedFonts))
+                            log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
+                            log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
+                            log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
+
                             dialog.displayErrorMessage(i18n("fontScanError"))
                             mod.cachedFonts(nil)
                             mod.activator:refresh()
@@ -164,6 +172,10 @@ function mod.onActivate(handler, action, text)
             end
         end
     end
+    --------------------------------------------------------------------------------
+    -- Something funky has happened:
+    --------------------------------------------------------------------------------
+    dialog.displayErrorMessage(i18n("unexpectedError"))
 end
 
 --- plugins.finalcutpro.console.font.show() -> none
