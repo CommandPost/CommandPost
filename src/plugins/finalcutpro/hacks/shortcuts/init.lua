@@ -85,7 +85,7 @@ end
 function private.hacksPath(resourceName)
     assert(type(resourceName) == "string", "Expected argument #1 to be a string")
     if mod.commandSetsPath and fcp:isInstalled() then
-        local ver = v(fcp:getVersion())
+        local ver = fcp:version()
         local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)
         return fs.pathToAbsolute(target)
     else

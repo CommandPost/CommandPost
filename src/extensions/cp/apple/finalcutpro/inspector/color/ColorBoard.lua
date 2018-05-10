@@ -134,7 +134,7 @@ function ColorBoard.matchesCurrent(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard:new(parent) -> ColorBoard object
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.new(parent) -> ColorBoard object
 --- Method
 --- Creates a new ColorBoard object
 ---
@@ -143,18 +143,90 @@ end
 ---
 --- Returns:
 ---  * A ColorBoard object
--- TODO: Use a Function instead of a Method.
-function ColorBoard:new(parent) -- luacheck: ignore
-    local o = {
+function ColorBoard.new(parent)
+    local o = prop.extend({
         _parent = parent,
-        _child = {}
-    }
-    prop.extend(o, ColorBoard)
+        _child = {},
+    }, ColorBoard)
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard.isColorInspectorSupported <cp.prop: boolean; read-only>
+    local UI = parent.correctorUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            local ui = original()
+            if ui and ui[1] then
+                local board = ui[1]
+                return ColorBoard.matches(board) and board or nil
+            end
+            return nil
+        end, ColorBoard.matches)
+    end)
+
+    local contentUI = UI:mutate(function(original, self)
+        return axutils.cache(self, "_content", function()
+            local ui = original()
+            -----------------------------------------------------------------------
+            -- Returns the appropriate UI depending on the version:
+            -----------------------------------------------------------------------
+            return ui and ((#ui == 1 and ui[1]) or ui) or nil
+        end)
+    end)
+
+    local isShowing = UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and ui:attributeValue("AXSize").w > 0
+    end)
+
+    local isActive = prop.new(function(self)
+        return self:aspectGroup():isShowing()
+    end)
+
+    local topToolbarUI = UI:mutate(function(original, self)
+        return axutils.cache(self, "_topToolbar", function()
+            local ui = original()
+            if ui then
+                for _,child in ipairs(ui) do
+                    if axutils.childWith(child, "AXIdentifier", id "BackButton") then
+                        return child
+                    end
+                end
+            end
+            return nil
+        end)
+    end)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.UI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
---- Checks if the Color Inspector (from 10.4) is supported.
-    o.isColorInspectorSupported = parent:app():inspector():color().isSupported:wrap(o)
+--- Returns the `hs._asm.axuielement` object for the Color Board.
+        UI = UI,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.contentUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the `hs._asm.axuielement` object for the Color Board's content.
+        contentUI = contentUI,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.isShowing <cp.prop: boolean; read-only; live>
+--- Field
+--- Returns whether or not the Color Board is visible.
+        isShowing = isShowing,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:isActive <cp.prop: boolean; read-only>
+--- Field
+--- Returns whether or not the Color Board is active
+        isActive = isActive,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.topToolbarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Gets the `hs._asm.axuielement` object for the top toolbar (i.e. where the Back Button is located in Final Cut Pro 10.3)
+---
+--- Notes:
+---  * This object doesn't exist in Final Cut Pro 10.4 as the Color Board is now contained within the Color Inspector
+        topToolbarUI = topToolbarUI,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.isAdvanced <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the advanced Color Inspector (from 10.4) is supported.
+        isAdvanced = parent.isAdvanced,
+    }
 
     return o
 end
@@ -190,72 +262,6 @@ end
 -- COLORBOARD UI:
 --
 -----------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Color Board
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object
-function ColorBoard:UI()
-    return axutils.cache(self, "_ui", function()
-        local ui = self:parent():correctorUI()
-        if ui and ui[1] then
-            local board = ui[1]
-            return ColorBoard.matches(board) and board or nil
-        end
-        return nil
-    end, ColorBoard.matches)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:contentUI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Color Board's content.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object
-function ColorBoard:contentUI()
-    return axutils.cache(self, "_content", function()
-        local ui = self:UI()
-        -----------------------------------------------------------------------
-        -- Returns the appropriate UI depending on the version:
-        -----------------------------------------------------------------------
-        return ui and ((#ui == 1 and ui[1]) or ui) or nil
-    end)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:isShowing() -> boolean
---- Method
---- Returns whether or not the Color Board is visible
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the Color Board is showing, otherwise `false`
-ColorBoard.isShowing = prop.new(function(self)
-    local ui = self:UI()
-    return ui ~= nil and ui:attributeValue("AXSize").w > 0
-end):bind(ColorBoard)
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:isActive() -> boolean
---- Method
---- Returns whether or not the Color Board is active
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the Color Board is active, otherwise `false`
-ColorBoard.isActive = prop.new(function(self)
-    return self:aspectGroup():isShowing()
-end):bind(ColorBoard)
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:show() -> ColorBoard object
 --- Method
@@ -328,32 +334,6 @@ function ColorBoard:childUI(axID)
     return axutils.cache(self._child, "_"..axID, function()
         local ui = self:contentUI()
         return ui and axutils.childWithID(ui, axID)
-    end)
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:topToolbarUI() -> hs._asm.axuielement object
---- Method
---- Gets the `hs._asm.axuielement` object for the top toolbar (i.e. where the Back Button is located in Final Cut Pro 10.3)
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
----
---- Notes:
----  * This object doesn't exist in Final Cut Pro 10.4 as the Color Board is now contained within the Color Inspector
-function ColorBoard:topToolbarUI()
-    return axutils.cache(self, "_topToolbar", function()
-        local ui = self:UI()
-        if ui then
-            for _,child in ipairs(ui) do
-                if axutils.childWith(child, "AXIdentifier", id "BackButton") then
-                    return child
-                end
-            end
-        end
-        return nil
     end)
 end
 

@@ -129,6 +129,7 @@ function MenuButton:selectItem(index)
                 items:doCancel()
             end
         end
+        self.value:update()
     end
     return false
 end
@@ -137,7 +138,7 @@ function MenuButton:selectItemMatching(pattern)
     local ui = self:UI()
     if ui then
         ui:doPress()
-        local items = just.doUntil(function() return ui[1] end, 3)
+        local items = just.doUntil(function() return ui[1] end, 5, 0.01)
         if items then
             for _,item in ipairs(items) do
                 local title = item:attributeValue("AXTitle")
@@ -150,14 +151,10 @@ function MenuButton:selectItemMatching(pattern)
                     end
                 end
             end
-
-            --------------------------------------------------------------------------------
-            -- NOTE: The below was generating an error: "attempt to call a nil value
-            --       (method 'doCancel')", so Chris has commented out.
-            --------------------------------------------------------------------------------
             -- if we got this far, we couldn't find it.
-            --items:doCancel()
+            items:performAction("AXCancel")
         end
+        self.value:update()
     end
     return false
 end

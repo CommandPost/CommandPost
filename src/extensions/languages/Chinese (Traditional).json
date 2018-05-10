@@ -770,7 +770,6 @@
         "watchFolderXMLHelp": "只要將FCPXML文件添加到以下任何一個監視文件夾中，此功能就允許您接收macOS通知。您可以從通知中將<b>導入</ b>這些文件直接導入您當前的Final Cut Pro時間線。按<b>導入</ b>時，如果按住<b> SHIFT </ b>，則會導入所有未完成的文件。",
         "performBatchExport": "執行批量導出",
         "monitor": "監控",
-        "finalcutpro_watchers_version_label": "觀察者：版本",
         "preferences": "優先",
         "colorBoard": "色板",
         "advancedPanelTooltip": "高級首選項",

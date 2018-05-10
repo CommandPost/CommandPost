@@ -323,7 +323,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Check Versions & Language:
     --------------------------------------------------------------------------------
-    local fcpVersion            = fcp:getVersion() or "Unknown"
+    local fcpVersion            = fcp:version() or "Unknown"
     local fcpPath               = fcp:getPath() or "Unknown"
     local osVersion             = tools.macOSVersion() or "Unknown"
     local fcpLocale             = fcp:currentLocale()

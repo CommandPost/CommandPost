@@ -890,7 +890,6 @@
         "watchFolderXMLHelp"                                   : "This feature allows you to recieve macOS notfications whenever a FCPXML file is added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
         "performBatchExport"                                   : "Perform Batch Export",
         "monitor"                                              : "Monitor",
-        "finalcutpro_watchers_version_label"                   : "Watchers: Version",
         "preferences"                                          : "Preferences",
         "colorBoard"                                           : "Color Board",
         "colorBoard2"                                          : "CB",

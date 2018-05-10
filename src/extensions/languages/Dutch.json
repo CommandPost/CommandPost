@@ -770,7 +770,6 @@
         "watchFolderXMLHelp": "Met deze functie kunt u macOS-notificaties ontvangen wanneer een FCPXML-bestand wordt toegevoegd aan een van de onderstaande kijkmappen. Vanaf de melding kunt u deze bestanden <b> Importeren </ b> rechtstreeks naar uw huidige Final Cut Pro-tijdlijn. Als u <b> SHIFT </ b> ingedrukt houdt wanneer u op <b> Import </ b> drukt, worden alle openstaande bestanden geïmporteerd.",
         "performBatchExport": "Voer batchexport uit",
         "monitor": "Monitor",
-        "finalcutpro_watchers_version_label": "Watchers: versie",
         "preferences": "voorkeuren",
         "colorBoard": "Color Board",
         "advancedPanelTooltip": "Geavanceerde voorkeuren",

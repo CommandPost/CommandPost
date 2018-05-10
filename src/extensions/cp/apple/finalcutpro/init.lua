@@ -226,11 +226,6 @@ prop.bind(fcp) {
     --- Is Final Cut visible on screen?
     isShowing = fcp.app.showing,
 
-    --- cp.apple.finalcutpro.getVersion <cp.prop: string; read-only; live>
-    --- Field
-    --- Version of Final Cut Pro as string.
-    getVersion = fcp.app.versionString,
-
     --- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
     --- Field
     --- Is any version of Final Cut Pro Installed?

@@ -195,17 +195,26 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             local color = fcp:inspector():color()
             color:show()
-            just.doUntil(
-                function()
-                    return color:isShowing()
-                end,
-                1
-            )
+            just.doUntil(function() return color:isShowing() end, 1)
             ok(color:isShowing())
             ok(color:corrections():isShowing())
 
             color:hide()
             ok(not color:isShowing())
+        end
+    ),
+    test(
+        "Color Inspector Corrections Selector",
+        function()
+            local color = fcp:inspector():color()
+            local corrections = color:corrections()
+            corrections:show()
+
+            ok(eq(corrections:activate("Color Board"), true))
+            ok(eq(color:colorBoard():isShowing(), true))
+
+            ok(eq(corrections:activate("Color Wheels"), true))
+            ok(eq(color:colorWheels():isShowing(), true))
         end
     ),
     test(
@@ -222,17 +231,12 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             local colorBoard = fcp:colorBoard()
             colorBoard:show()
-            just.doUntil(
-                function()
-                    return colorBoard:isShowing()
-                end,
-                5
-            )
+            just.doUntil(function()return colorBoard:isShowing()end, 5)
             ok(colorBoard:isShowing())
 
             local testPuck = function(puck, hasAngle)
                 -- check the pucks
-                ok(puck:select():isShowing())
+                ok(eq(puck:select():isShowing(),true))
                 ok(eq(puck:percent(15), 15), puck)
                 ok(eq(puck:percent(), 15), puck)
                 ok(eq(puck:percent(100), 100), puck)

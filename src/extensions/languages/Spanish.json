@@ -770,7 +770,6 @@
         "watchFolderXMLHelp": "Esta característica le permite recibir notificaciones de macOS cada vez que se agrega un archivo FCPXML a cualquiera de las siguientes carpetas de observación. Desde la notificación, puede <b> Importar </ b> estos archivos directamente a su línea de tiempo actual de Final Cut Pro. Si mantiene presionada <b> MAYÚS </ b> al presionar <b> Importar </ b>, importará todos los archivos pendientes.",
         "performBatchExport": "Realizar la exportación por lotes",
         "monitor": "Monitor",
-        "finalcutpro_watchers_version_label": "Vigilantes: versión",
         "preferences": "Preferencias",
         "colorBoard": "Tablero de color",
         "advancedPanelTooltip": "Preferencias avanzadas",

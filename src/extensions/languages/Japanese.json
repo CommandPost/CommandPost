@@ -770,7 +770,6 @@
         "watchFolderXMLHelp": "この機能を使用すると、FCPXMLファイルが以下の時計フォルダのいずれかに追加されるたびに、macOS通知を受け取ることができます。通知から、これらのファイルを現在のFinal Cut Proのタイムラインに直接<b>インポート</ b>することができます。 <b>インポート</ b>を押したときに<b>シフト</ b>を押し続けると、未処理のファイルがすべてインポートされます。",
         "performBatchExport": "バッチエクスポートを実行する",
         "monitor": "モニター",
-        "finalcutpro_watchers_version_label": "ウォッチャー：バージョン",
         "preferences": "設定",
         "colorBoard": "カラーボード",
         "advancedPanelTooltip": "高度な設定",

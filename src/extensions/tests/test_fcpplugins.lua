@@ -5,12 +5,13 @@ local test				= require("cp.test")
 local config			= require("cp.config")
 local plugins		    = require("cp.apple.finalcutpro.plugins")
 local localeID          = require("cp.i18n.localeID")
+local v                 = require("semver")
 
 local PLUGINS_PATH = config.scriptPath .. "/tests/fcp/plugins"
 local EFFECTS_PATH = PLUGINS_PATH .. "/Effects.localized"
 
 local app = {
-    getVersion = function() return "10.4" end,
+    version = function() return v("10.4") end,
     getPath = function() return "/Applications/Final Cut Pro.app" end
 }
 

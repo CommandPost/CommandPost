@@ -45,6 +45,8 @@ local v                                 = require("semver")
 --------------------------------------------------------------------------------
 local ColorInspector = {}
 
+local ADVANCED_VERSION = v("10.4")
+
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.matches(element)
 --- Function
 --- Checks if the specified element is the Color Inspector element.
@@ -93,10 +95,10 @@ function ColorInspector.new(parent)
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.UI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `hs._asm.axuielement` object for the Color Inspector. Prior to FCPX 10.4 this will be the Color Board.
-    o.UI = prop(function(self)
+    o.UI = parent.panelUI:mutate(function(original, self)
         return axutils.cache(self, "_ui",
             function()
-                local ui = self:parent():panelUI()
+                local ui = original()
                 return ColorInspector.matches(ui) and ui or nil
             end,
             ColorInspector.matches
@@ -140,12 +142,20 @@ function ColorInspector.new(parent)
         )
     end):bind(o)
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector.isSupported <cp.prop: boolean; read-only>
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.isShowing <cp.prop: boolean; read-only; live>
 --- Field
---- Is the Color Inspector supported in the installed version of Final Cut Pro?
-    o.isSupported = parent:app().getVersion:mutate(function(original)
+--- Checks if the Color Inspector is visible.
+    o.isShowing = o.UI:mutate(function(original)
+        return original() ~= nil
+    end):bind(o)
+
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector.isAdvanced <cp.prop: boolean; read-only>
+--- Field
+--- Is the Color Inspector the advanced version that was added in 10.4?
+    o.isAdvanced = parent:app().app.version:mutate(function(original)
         local version = original()
-        return version and v(version) >= v("10.4")
+        return version and version >= ADVANCED_VERSION
     end):bind(o)
 
     return o
@@ -205,34 +215,6 @@ end
 -- COLOR INSPECTOR:
 --
 --------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector:isShowing([correctionType]) -> boolean
---- Method
---- Returns whether or not the Color Inspector is visible
----
---- Parameters:
----  * [correctionType] - A string containing the name of the Correction Type (see cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES).
----
---- Returns:
----  * `true` if the Color Inspector is showing, otherwise `false`
-function ColorInspector:isShowing(correctionType)
-    if correctionType then
-        local correctionsUI = self:corrections():UI()
-        if correctionsUI then
-            local menuButton = axutils.childWith(correctionsUI, "AXRole", "AXMenuButton")
-            local colorBoardText = self:app():string(self.CORRECTION_TYPES[correctionType])
-            if menuButton and colorBoardText and string.find(menuButton:attributeValue("AXTitle"), colorBoardText) then
-                return true
-            else
-                return false
-            end
-        else
-            return false
-        end
-    else
-        return self:UI() ~= nil
-    end
-end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:show() -> self
 --- Method
@@ -312,7 +294,7 @@ end
 ---  * A new ColorBoard object
 function ColorInspector:colorBoard()
     if not self._colorBoard then
-        self._colorBoard = ColorBoard:new(self)
+        self._colorBoard = ColorBoard.new(self)
     end
     return self._colorBoard
 end

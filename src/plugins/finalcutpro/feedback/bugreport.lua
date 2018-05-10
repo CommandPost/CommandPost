@@ -342,7 +342,7 @@ function mod.open(bugReport)
         mod.externalDevices = tools.getExternalDevices()
     end
 
-    mod.finalCutProVersion = fcp.getVersion()
+    mod.finalCutProVersion = fcp:versionString()
 
     --------------------------------------------------------------------------------
     -- Use last Position or Centre on Screen:
