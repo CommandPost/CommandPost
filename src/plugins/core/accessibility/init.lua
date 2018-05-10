@@ -52,6 +52,10 @@ mod.enabled = prop.new(hs.accessibilityState):watch(function(enabled)
             local systemPrefs = application.applicationsForBundleID("com.apple.systempreferences")
             if systemPrefs and next(systemPrefs) ~= nil then
                 systemPrefs[1]:kill()
+                --------------------------------------------------------------------------------
+                -- Give focus back to CommandPost:
+                --------------------------------------------------------------------------------
+                mod.setup:focus()
             end
         end
         mod.completeSetupPanel()
