@@ -22,6 +22,7 @@ local log                                       = require("hs.logger").new("setu
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local drawing                                   = require("hs.drawing")
 local screen                                    = require("hs.screen")
 local timer                                     = require("hs.timer")
 local webview                                   = require("hs.webview")
@@ -259,6 +260,12 @@ local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod.webview = nil
+            --------------------------------------------------------------------------------
+            -- Close button on window clicked:
+            --------------------------------------------------------------------------------
+            if not mod._userClosing then
+                config.application():kill()
+            end
         end
     elseif action == "frameChange" then
         if frame then
@@ -297,6 +304,10 @@ function mod.new()
         -- Use last Position or Centre on Screen:
         --------------------------------------------------------------------------------
         local defaultRect = mod.position()
+        if defaultRect then
+            defaultRect.w = mod.DEFAULT_WIDTH
+            defaultRect.h = mod.DEFAULT_HEIGHT
+        end
         if tools.isOffScreen(defaultRect) then
             defaultRect = centredPosition()
         end
@@ -324,7 +335,7 @@ function mod.new()
         }
 
         mod.webview = webview.new(defaultRect, options, mod.controller)
-            :windowStyle({"titled"})
+            :windowStyle({"titled", "closable", "nonactivating", "miniaturizable"})
             :shadow(true)
             :allowNewWindows(false)
             :allowTextEntry(true)
@@ -338,7 +349,7 @@ function mod.new()
         --------------------------------------------------------------------------------
         mod.webview:show()
         mod.visible:update()
-        mod.focus()
+        --mod.focus()
     end
 end
 
@@ -386,6 +397,7 @@ end
 ---  * None
 function mod.delete()
     if mod.webview then
+        mod._userClosing = true
         mod.webview:delete()
         mod.webview = nil
         mod._panelQueue = {}
@@ -420,6 +432,8 @@ end
 --- Returns:
 ---  * None
 function mod.focus()
+    mod.webview:bringToFront()
+    --[[
     mod.visible:update()
     if mod.webview then
         timer.doAfter(0.1, function()
@@ -429,6 +443,7 @@ function mod.focus()
         return true
     end
     return false
+    --]]
 end
 
 --- plugins.core.setup.nextPanel() -> boolean
@@ -447,7 +462,7 @@ function mod.nextPanel()
         table.remove(mod._panelQueue, 1)
         mod._processedPanels = mod._processedPanels+1
         mod.update()
-        mod.focus()
+        --mod.focus()
         return true
     else
         mod.delete()

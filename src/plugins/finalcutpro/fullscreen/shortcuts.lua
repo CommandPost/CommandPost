@@ -17,13 +17,12 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("fullscreenShortcuts")
+--local log                               = require("hs.logger").new("fullscreenShortcuts")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
-local timer                             = require("hs.timer")
 local timer                             = require("hs.timer")
 local window                            = require("hs.window")
 
