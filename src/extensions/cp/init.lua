@@ -26,7 +26,7 @@ local log                       = logger.new("cp")
 history                         = require("cp.console.history")
 
 --------------------------------------------------------------------------------
--- Show Dock Icon during boot:
+-- Show Dock Icon:
 --------------------------------------------------------------------------------
 hs.dockIcon(true)
 
@@ -395,11 +395,6 @@ function mod.init()
     if alertUUID then
         alert.closeSpecific(alertUUID)
     end
-
-    --------------------------------------------------------------------------------
-    -- Hide Dock Icon:
-    --------------------------------------------------------------------------------
-    hs.dockIcon(false)
 
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:

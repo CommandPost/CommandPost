@@ -1351,7 +1351,7 @@ function fcp:_initWatchers()
 
     if not self._watchers then
         --log.df("Setting up Final Cut Pro Watchers...")
-        self._watchers = watcher.new("active", "inactive", "launched", "terminated", "preferences")
+        self._watchers = watcher.new("active", "inactive", "launched", "terminated", "preferences", "fullscreen")
     end
 
     --------------------------------------------------------------------------------
@@ -1361,6 +1361,15 @@ function fcp:_initWatchers()
     windowfilter:subscribe("windowVisible", function()
         fcp.isModalDialogOpen:update()
     end)
+
+    --------------------------------------------------------------------------------
+    -- Final Cut Pro Window goes full screen:
+    --------------------------------------------------------------------------------
+    -- TODO: Move this to cp.app
+    windowfilter:subscribe({"windowFullscreened", "windowUnfullscreened"}, function()
+        self._watchers:notify("fullscreen")
+    end)
+
 end
 
 --------------------------------------------------------------------------------
