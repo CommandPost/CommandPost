@@ -75,8 +75,9 @@ local mod = {}
 ---  * None
 function mod.show()
     local ui = fcp:viewer():UI()
-    if ui and ui[1] then
-        local frame = ui[1]:attributeValue("AXFrame")
+    local fcpFrame = ui and axutils.childWithRole(ui, "AXSplitGroup")
+    if fcpFrame then
+        local frame = fcpFrame:attributeValue("AXFrame")
         if frame then
             --------------------------------------------------------------------------------
             -- New Canvas:
@@ -308,7 +309,7 @@ end
 --- plugins.finalcutpro.viewer.overlays.gridEnabled <cp.prop: boolean>
 --- Variable
 --- Is Viewer Grid Enabled
-mod.gridEnabled = config.prop("fcpViewerGridEnabled", true)
+mod.gridEnabled = config.prop("fcpViewerGridEnabled", false)
 
 --- plugins.finalcutpro.viewer.overlays.gridMode <cp.prop: number>
 --- Variable
@@ -559,8 +560,9 @@ function plugin.init(deps)
     mod._menu = menubar.new(false)
     mod._eventtap = eventtap.new({eventtap.event.types.rightMouseUp}, function(event)
         local ui = fcp:viewer():UI()
-        if ui and ui[2] then
-            local barFrame = ui[2]:attributeValue("AXFrame")
+        local topBar = ui and axutils.childFromTop(ui, 1)
+        if topBar then
+            local barFrame = topBar:attributeValue("AXFrame")
             local location = event:location() and geometry.point(event:location())
             if barFrame and location and location:inside(geometry.rect(barFrame)) then
                 if mod._menu then
