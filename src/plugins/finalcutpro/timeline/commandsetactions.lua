@@ -66,11 +66,11 @@ function mod.init()
     mod._handler = mod._actionmanager.addHandler(GROUP .. "_shortcuts", GROUP)
         :onChoices(function(choices)
             local fcpPath = fcp:getPath()
-            local currentLanguage = fcp:currentLanguage()
-            if fcpPath and currentLanguage then
+            local currentLocale = fcp:currentLocale()
+            if fcpPath and currentLocale then
 
-                local namePath 			= fcpPath .. "/Contents/Resources/" .. currentLanguage .. ".lproj/NSProCommandNames.strings"
-                local descriptionPath 	= fcpPath .. "/Contents/Resources/" .. currentLanguage .. ".lproj/NSProCommandDescriptions.strings"
+                local namePath 			= fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandNames.strings"
+                local descriptionPath 	= fcpPath .. "/Contents/Resources/" .. currentLocale.code .. ".lproj/NSProCommandDescriptions.strings"
 
                 local nameData 			= plist.fileToTable(namePath)
                 local descriptionData 	= plist.fileToTable(descriptionPath)
@@ -107,7 +107,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Reset the handler choices when the Final Cut Pro language changes:
     --------------------------------------------------------------------------------
-    fcp.currentLanguage:watch(function()
+    fcp.currentLocale:watch(function()
         mod._handler:reset()
         timer.doAfter(0.01, function() mod._handler.choices:update() end)
     end)

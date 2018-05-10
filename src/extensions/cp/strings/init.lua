@@ -94,7 +94,7 @@ end
 ---  * The value of the key, or `nil` if not found.
 function mod.mt:findInSources(key, context, quiet)
     for _,source in ipairs(self._sources) do
-        local value = source:find(key, context, quiet)
+        local value = source:find(key, context)
         if value then return value end
     end
     return nil

@@ -83,4 +83,11 @@ return test.suite("cp.i18n.languageID"):with {
         ok(eq(en_AU:matches(en_NZ), 2))         -- language and script match, but no match between specific regions.
         ok(eq(en_AU:matches(en_Latn_AU), 2.5))  -- language and region match exactly, and the optional `script` value is different.
     end),
+
+    test("for name not code", function()
+        local english = localeID("English")
+        ok(eq(english.code, "en"))
+        ok(eq(english.name, "English"))
+        ok(eq(english.aliases, {"en", "English"}))
+    end),
 }

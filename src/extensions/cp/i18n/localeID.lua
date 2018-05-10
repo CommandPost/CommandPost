@@ -151,7 +151,7 @@ function mod.forCode(code)
             id = setmetatable({
                 code = theCode,
                 name = theName,
-                aliases = {code},
+                aliases = {theCode},
                 localName = theLocalName,
                 language = theLanguage,
                 script = theScript,
@@ -258,5 +258,16 @@ end
 function mod.mt:__lt(other)
     return tostring(self) < tostring(other)
 end
+
+-- converts the value to a localeID
+setmetatable(mod, {
+    __call = function(_, value)
+        if mod.is(value) then
+            return value
+        elseif value ~= nil then
+            return mod.forCode(tostring(value))
+        end
+    end,
+})
 
 return mod

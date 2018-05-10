@@ -17,7 +17,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("plgnactns")
+-- local log               = require("hs.logger").new("plgnactns")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -116,7 +116,7 @@ function mod.init(actionmanager, generators, titles, transitions, audioeffects, 
     --------------------------------------------------------------------------------
     -- Reset the handler choices when the Final Cut Pro language changes:
     --------------------------------------------------------------------------------
-    fcp.currentLanguage:watch(function()
+    fcp.currentLocale:watch(function()
         for _,handler in pairs(mod._handlers) do
             handler:reset()
             timer.doAfter(0.01, function() handler.choices:update() end)

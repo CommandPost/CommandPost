@@ -123,4 +123,19 @@ return test.suite("cp.i18n.languageID"):with {
         ok(eq(id.region, nil))
         ok(eq(id.script.alpha4, "Latn"))
     end),
+
+    test("cast", function()
+        local id
+
+        id = languageID("en-AU")
+        ok(eq(id.code, "en-AU"))
+
+        local id2 = languageID(id)
+        ok(eq(id, id2))
+
+        local id3 = languageID(localeID("en_AU"))
+        ok(eq(id3.code, "en-AU"))
+        ok(eq(id3, id))
+
+    end),
 }

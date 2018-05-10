@@ -29,6 +29,19 @@ local LANG_PATTERN = "^([a-z][a-z])$"
 local LANG_REGION_PATTERN = "^([a-z][a-z])-([A-Z][A-Z])$"
 local LANG_SCRIPT_PATTERN = "^([a-z][a-z])-(%a%a%a%a)$"
 
+--- cp.i18n.languageID.is(thing) -> boolean
+--- Function
+--- Checks if the `thing` is a languageID instance.
+---
+--- Parameters:
+--- * thing     - the thing to check.
+---
+--- Returns:
+--- * `true` if the `thing` is a `languageID`, otherwise `false`.
+function mod.is(thing)
+    return type(thing) == "table" and getmetatable(thing) == mod.mt
+end
+
 --- cp.i18n.languageID.parse(code) -> string, string, string
 --- Function
 --- Parses a `language ID` into three possible string components:
@@ -209,7 +222,20 @@ end
 --- The matching `script` details, if appropriate. Will be `nil` if no script was specified in the `code`.
 
 function mod.mt:__tostring()
-    return format("cp.i18n.localeID: %s [%s]", self.name, self.code)
+    return format("cp.i18n.languageID: %s [%s]", self.name, self.code)
 end
+
+-- attempts to cast the value to a languageID.
+setmetatable(mod, {
+    __call = function(_, value)
+        if mod.is(value) then
+            return value
+        elseif localeID.is(value) then
+            return mod.forLocaleID(value)
+        elseif value ~= nil then
+            return mod.forCode(tostring(value))
+        end
+    end,
+})
 
 return mod

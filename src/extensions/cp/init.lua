@@ -326,7 +326,8 @@ function mod.init()
     local fcpVersion            = fcp:getVersion() or "Unknown"
     local fcpPath               = fcp:getPath() or "Unknown"
     local osVersion             = tools.macOSVersion() or "Unknown"
-    local fcpLanguage           = fcp:currentLanguage() or "Unknown"
+    local fcpLocale             = fcp:currentLocale()
+    local fcpLanguage           = fcpLocale and fcpLocale.code or "Unknown"
 
     --------------------------------------------------------------------------------
     -- Clear The Console:

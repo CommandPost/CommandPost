@@ -23,6 +23,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                       = require("hs.logger").new("scan")
+local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -36,13 +37,16 @@ local json                      = require("hs.json")
 --------------------------------------------------------------------------------
 local archiver                  = require("cp.plist.archiver")
 local config                    = require("cp.config")
-local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
+local localeID                  = require("cp.i18n.localeID")
 local localized                 = require("cp.localized")
 local plist                     = require("cp.plist")
 local strings                   = require("cp.strings")
 local text                      = require("cp.web.text")
 local tools                     = require("cp.tools")
 local watcher                   = require("cp.watcher")
+
+local fcpApp                    = require("cp.apple.finalcutpro.app")
+local id                        = require("cp.apple.finalcutpro.ids") "LogicPlugins"
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -253,17 +257,17 @@ local function endsWith(str, ending)
     return str:len() >= len and str:sub(len * -1) == ending
 end
 
---- cp.apple.finalcutpro.plugins:scanSystemAudioUnits() -> none
+--- cp.apple.finalcutpro.plugins:scanSystemAudioUnits(locale) -> none
 --- Function
 --- Scans for Validated Audio Units, and saves the results to a cache for faster subsequent startup times.
 ---
 --- Parameters:
----  * None
+---  * locale   - the locale to scan in.
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanSystemAudioUnits(language)
-
+function mod.mt:scanSystemAudioUnits(locale)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
     -- Restore from cache:
     --------------------------------------------------------------------------------
@@ -281,8 +285,8 @@ function mod.mt:scanSystemAudioUnits(language)
             local audioEffect = data.audioEffect or nil
             local category = data.category or nil
             local plugin = data.plugin or nil
-            local lan = data.language or nil
-            self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, lan)
+            local loc = data.locale or nil
+            self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, loc)
         end
         return
     end
@@ -334,10 +338,10 @@ function mod.mt:scanSystemAudioUnits(language)
                     ["audioEffect"] = audioEffect,
                     ["category"] = category,
                     ["plugin"] = plugin,
-                    ["language"] = language,
+                    ["locale"] = locale,
                 })
 
-                self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, language)
+                self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, locale)
             end
         end
 
@@ -357,16 +361,17 @@ function mod.mt:scanSystemAudioUnits(language)
 
 end
 
---- cp.apple.finalcutpro.plugins:scanUserEffectsPresets(language) -> none
+--- cp.apple.finalcutpro.plugins:scanUserEffectsPresets(locale) -> none
 --- Function
 --- Scans Final Cut Pro Effects Presets
 ---
 --- Parameters:
----  * `language`    - The language to scan for.
+---  * `locale`    - The locale to scan for.
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanUserEffectsPresets(language)
+function mod.mt:scanUserEffectsPresets(locale)
+    locale = localeID(locale)
 
     --------------------------------------------------------------------------------
     -- User Presets Path:
@@ -389,7 +394,7 @@ function mod.mt:scanUserEffectsPresets(language)
             local effectType = data.effectType or nil
             local category = data.category or nil
             local plugin = data.plugin or nil
-            local lan = data.language or nil
+            local lan = data.locale or nil
             self:registerPlugin(effectPath, effectType, category, "Final Cut", plugin, lan)
         end
         return
@@ -407,7 +412,7 @@ function mod.mt:scanUserEffectsPresets(language)
                     local effectType = preset.effectType or preset.presetEffectType
                     if category then
                         local type = effectType == "effect.audio.effect" and audioEffect or videoEffect
-                        self:registerPlugin(effectPath, type, category, "Final Cut", plugin, language)
+                        self:registerPlugin(effectPath, type, category, "Final Cut", plugin, locale)
 
                         --------------------------------------------------------------------------------
                         -- Cache Plugin:
@@ -417,7 +422,7 @@ function mod.mt:scanUserEffectsPresets(language)
                             ["effectType"] = type,
                             ["category"] = category,
                             ["plugin"] = plugin,
-                            ["language"] = language,
+                            ["locale"] = locale,
                         })
 
                     end
@@ -506,9 +511,10 @@ mod._getMotionTheme = getMotionTheme
 --  * The plugin name.
 --  * The plugin theme.
 --  * `true` if the plugin is obsolete
-local function getPluginName(path, pluginExt, language)
+local function getPluginName(path, pluginExt, locale)
     if path and tools.doesDirectoryExist(path) then
-        local localName, realName = getLocalizedName(path, language)
+        locale = localeID(locale)
+        local localName, realName = getLocalizedName(path, locale)
         if realName then
             local targetExt = "."..pluginExt
             for file in fs.dir(path) do
@@ -527,7 +533,7 @@ local function getPluginName(path, pluginExt, language)
 end
 mod._getPluginName = getPluginName
 
---- cp.apple.finalcutpro.plugins:scanPluginsDirectory(language, path, filter) -> boolean
+--- cp.apple.finalcutpro.plugins:scanPluginsDirectory(locale, path, filter) -> boolean
 --- Method
 --- Scans a root plugins directory. Plugins directories have a standard structure which comes in two flavours:
 ---
@@ -535,18 +541,19 @@ mod._getPluginName = getPluginName
 ---   2. <type>/<group>/<plugin name>/<plugin name>.<ext>
 ---   3. <type>/<group>/<theme>/<plugin name>/<plugin name>.<ext>
 ---
---- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of languages.
+--- This is somewhat complicated by 'localization', wherein each of the folder levels may have a `.localized` extension. If this is the case, it will contain a subfolder called `.localized`, which in turn contains files which describe the local name for the folder in any number of locales.
 ---
---- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `language` provided. Other languages are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
+--- This function will drill down through the contents of the specified `path`, assuming the above structure, and then register any contained plugins in the `locale` provided. Other locales are ignored, other than some use of English when checking for specific effect types (Effect, Generator, etc.).
 ---
 --- Parameters:
----  * `language`   - The language code to scan for (e.g. "en" or "fr").
+---  * `locale`   - The locale code to scan for (e.g. "en" or "fr").
 ---  * `path`       - The path of the root plugin directory to scan.
 ---  * `checkFn`    - A function which will receive the path being scanned and return `true` if it should be scanned.
 ---
 --- Returns:
 ---  * `true` if the plugin directory was successfully scanned.
-function mod.mt:scanPluginsDirectory(language, path, checkFn)
+function mod.mt:scanPluginsDirectory(locale, path, checkFn)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
     -- Check that the directoryPath actually exists:
     --------------------------------------------------------------------------------
@@ -581,7 +588,7 @@ function mod.mt:scanPluginsDirectory(language, path, checkFn)
                     extension = mt.extension,
                     check = checkFn or function() return true end,
                 }
-                failure = failure or not self:scanPluginTypeDirectory(language, typePath, plugin)
+                failure = failure or not self:scanPluginTypeDirectory(locale, typePath, plugin)
             end
         end
     end
@@ -589,19 +596,19 @@ function mod.mt:scanPluginsDirectory(language, path, checkFn)
     return not failure
 end
 
--- cp.apple.finalcutpro.plugins:handlePluginDirectory(language, path, plugin) -> boolean
+-- cp.apple.finalcutpro.plugins:handlePluginDirectory(locale, path, plugin) -> boolean
 -- Method
 -- Handles a Plugin Directory.
 --
 -- Parameters:
---  * `language`    - The language to scan with.
+--  * `locale`    - The locale to scan with.
 --  * `path`        - The path to the plugin type directory.
 --  * `plugin`      - A table containing the plugin details collected so far.
 --
 -- Returns:
 --  * `true` if it's a legit plugin directory, even if we didn't register it, otherwise `false` if it's not a plugin directory.
-function mod.mt:handlePluginDirectory(language, path, plugin)
-    local pluginName, themeName, obsolete = getPluginName(path, plugin.extension, language)
+function mod.mt:handlePluginDirectory(locale, path, plugin)
+    local pluginName, themeName, obsolete = getPluginName(path, plugin.extension, locale)
     if pluginName then
         plugin.name = pluginName
         plugin.themeLocal = plugin.themeLocal or themeName
@@ -616,7 +623,7 @@ function mod.mt:handlePluginDirectory(language, path, plugin)
                 plugin.categoryLocal,
                 plugin.themeLocal,
                 plugin.name,
-                language
+                locale
             )
         end
         --------------------------------------------------------------------------------
@@ -630,18 +637,19 @@ function mod.mt:handlePluginDirectory(language, path, plugin)
     return false
 end
 
--- cp.apple.finalcutpro.plugins:scanPluginTypeDirectory(language, path, plugin) -> boolean
+-- cp.apple.finalcutpro.plugins:scanPluginTypeDirectory(locale, path, plugin) -> boolean
 -- Method
 -- Scans a folder as a plugin type folder, such as 'Effects', 'Transitions', etc. The contents will be folders that are 'groups' of plugins, containing related plugins.
 --
 -- Parameters:
---  * `language`    - The language to scan with.
+--  * `locale`    - The locale to scan with.
 --  * `path`        - The path to the plugin type directory.
 --  * `plugin`      - A table containing the plugin details collected so far.
 --
 -- Returns:
 --  * `true` if the folder was scanned successfully.
-function mod.mt:scanPluginTypeDirectory(language, path, plugin)
+function mod.mt:scanPluginTypeDirectory(locale, path, plugin)
+    locale = localeID(locale)
     local failure = false
 
     for file in fs.dir(path) do
@@ -650,9 +658,9 @@ function mod.mt:scanPluginTypeDirectory(language, path, plugin)
             local childPath = path .. "/" .. file
             local attrs = fs.attributes(childPath)
             if attrs and attrs.mode == "directory" then
-                if not self:handlePluginDirectory(language, childPath, p) then
-                    p.categoryLocal, p.categoryReal = getLocalizedName(childPath, language)
-                    failure = failure or not self:scanPluginCategoryDirectory(language, childPath, p)
+                if not self:handlePluginDirectory(locale, childPath, p) then
+                    p.categoryLocal, p.categoryReal = getLocalizedName(childPath, locale)
+                    failure = failure or not self:scanPluginCategoryDirectory(locale, childPath, p)
                 end
             end
         end
@@ -661,18 +669,19 @@ function mod.mt:scanPluginTypeDirectory(language, path, plugin)
     return not failure
 end
 
---- cp.apple.finalcutpro.plugins:scanPluginCategoryDirectory(language, path, plugin) -> boolean
+--- cp.apple.finalcutpro.plugins:scanPluginCategoryDirectory(locale, path, plugin) -> boolean
 --- Method
 --- Scans a folder as a plugin category folder. The contents will be folders that are either theme folders or actual plugins.
 ---
 --- Parameters:
----  * `language`        - The language to scan with.
+---  * `locale`        - The locale to scan with.
 ---  * `path`            - The path to the plugin type directory
 ---  * `plugin`      - A table containing the plugin details collected so far.
 ---
 --- Returns:
 ---  * `true` if the folder was scanned successfully.
-function mod.mt:scanPluginCategoryDirectory(language, path, plugin)
+function mod.mt:scanPluginCategoryDirectory(locale, path, plugin)
+    locale = localeID(locale)
     local failure = false
 
     for file in fs.dir(path) do
@@ -681,9 +690,9 @@ function mod.mt:scanPluginCategoryDirectory(language, path, plugin)
             local childPath = path .. "/" .. file
             local attrs = fs.attributes(childPath)
             if attrs and attrs.mode == "directory" then
-                if not self:handlePluginDirectory(language, childPath, p) then
-                    p.themeLocal, p.themeReal = getLocalizedName(childPath, language)
-                    failure = failure or not self:scanPluginThemeDirectory(language, childPath, p)
+                if not self:handlePluginDirectory(locale, childPath, p) then
+                    p.themeLocal, p.themeReal = getLocalizedName(childPath, locale)
+                    failure = failure or not self:scanPluginThemeDirectory(locale, childPath, p)
                 end
             end
         end
@@ -692,55 +701,57 @@ function mod.mt:scanPluginCategoryDirectory(language, path, plugin)
     return not failure
 end
 
---- cp.apple.finalcutpro.plugins:scanPluginThemeDirectory(language, path, plugin) -> boolean
+--- cp.apple.finalcutpro.plugins:scanPluginThemeDirectory(locale, path, plugin) -> boolean
 --- Method
 --- Scans a folder as a plugin theme folder. The contents will be plugin folders.
 ---
 --- Parameters:
----  * `language`        - The language to scan with.
+---  * `locale`        - The locale to scan with.
 ---  * `path`            - The path to the plugin type directory
 ---  * `plugin`          - A table containing the plugin details collected so far.
 ---
 --- Returns:
 ---  * `true` if the folder was scanned successfully.
-function mod.mt:scanPluginThemeDirectory(language, path, plugin)
+function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
+    locale = localeID(locale)
     for file in fs.dir(path) do
         if file:sub(1,1) ~= "." then
             local p = copy(plugin)
             local pluginPath = path .. "/" .. file
             if fs.attributes(pluginPath).mode == "directory" then
-                self:handlePluginDirectory(language, pluginPath, p)
+                self:handlePluginDirectory(locale, pluginPath, p)
             end
         end
     end
     return true
 end
 
---- cp.apple.finalcutpro.plugins:registerPlugin(path, type, categoryName, themeName, pluginName, language) -> plugin
+--- cp.apple.finalcutpro.plugins:registerPlugin(path, type, categoryName, themeName, pluginName, locale) -> plugin
 --- Method
 --- Registers a plugin with the specified details.
 ---
 --- Parameters:
 ---  * `path`           - The path to the plugin directory.
 ---  * `type`           - The type of plugin
----  * `categoryName`   - The category name, in the specified language.
----  * `themeName`      - The theme name, in the specified language. May be `nil` if not in a theme.
----  * `pluginName`     - The plugin name, in the specified language.
----  * `language`       - The language code (e.g. "en", "fr", "de")
+---  * `categoryName`   - The category name, in the specified locale.
+---  * `themeName`      - The theme name, in the specified locale. May be `nil` if not in a theme.
+---  * `pluginName`     - The plugin name, in the specified locale.
+---  * `locale`         - The `cp.i18n.localeID` or string code for same (e.g. "en", "fr", "de")
 ---
 --- Returns:
 ---  * The plugin object.
-function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, language)
+function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, locale)
+    locale = localeID(locale)
     local plugins = self._plugins
     if not plugins then
         plugins = {}
         self._plugins = plugins
     end
 
-    local lang = plugins[language]
+    local lang = plugins[locale.code]
     if not lang then
         lang = {}
-        plugins[language] = lang
+        plugins[locale.code] = lang
     end
 
     local types = lang[type]
@@ -755,7 +766,7 @@ function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, 
         category = categoryName,
         theme = themeName,
         name = pluginName,
-        language = language,
+        locale = locale.code,
     }
     insert(types, plugin)
     --------------------------------------------------------------------------------
@@ -792,29 +803,30 @@ end
 function mod.mt:effectBundleStrings()
     local source = self._effectBundleStrings
     if not source then
-        local app = self:app()
         local context = {
-            appPath = app:getPath(),
-            language = app:currentLanguage(),
+            appPath = fcpApp:path(),
+            locale = fcpApp:currentLocale().aliases,
         }
-        source = strings.new():context(context):fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFEffectBundleLocalizable.strings")
+        source = strings.new():context(context):fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Resources/${locale}.lproj/FFEffectBundleLocalizable.strings")
         self._effectBundleStrings = source
     end
     return source
 end
 
---- cp.apple.finalcutpro.plugins:translateEffectBundle(input, language) -> none
+--- cp.apple.finalcutpro.plugins:translateEffectBundle(input, locale) -> none
 --- Method
 --- Translates an Effect Bundle Item.
 ---
 --- Parameters:
 ---  * input - The original name
----  * language - The language code you want to attempt to translate to
+---  * locale - The locale code you want to attempt to translate to
 ---
 --- Returns:
----  * The translated value for `input` in the specified language, if present.
-function mod.mt:translateEffectBundle(input, language)
-    return self:effectBundleStrings():find(input, language) or input
+---  * The translated value for `input` in the specified locale, if present.
+function mod.mt:translateEffectBundle(input, locale)
+    locale = localeID(locale)
+    local context = { locale = locale.aliases }
+    return self:effectBundleStrings():find(input, context) or input
 end
 
 --- cp.apple.finalcutpro.plugins:scanAppAudioEffectBundles() -> none
@@ -826,9 +838,10 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanAppAudioEffectBundles(language)
+function mod.mt:scanAppAudioEffectBundles(locale)
+    locale = localeID(locale)
     local audioEffect = mod.types.audioEffect
-    local path = self:app():getPath() .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles"
+    local path = fcpApp:path() .. "/Contents/Frameworks/Flexo.framework/Resources/Effect Bundles"
     if tools.doesDirectoryExist(path) then
         for file in fs.dir(path) do
             --------------------------------------------------------------------------------
@@ -836,27 +849,28 @@ function mod.mt:scanAppAudioEffectBundles(language)
             --------------------------------------------------------------------------------
             local name, category, type = string.match(file, "^([^%.]+)%.([^%.]+)%.([^%.]+)%.effectBundle$")
             if name and type == "audio" then
-                local plugin = self:translateEffectBundle(name, language)
-                self:registerPlugin(path .. "/" .. file, audioEffect, category, "Final Cut", plugin, language)
+                local plugin = self:translateEffectBundle(name, locale)
+                self:registerPlugin(path .. "/" .. file, audioEffect, category, "Final Cut", plugin, locale)
             end
         end
     end
 end
 
---- cp.apple.finalcutpro.plugins:scanAppMotionTemplates(language) -> none
+--- cp.apple.finalcutpro.plugins:scanAppMotionTemplates(locale) -> none
 --- Method
 --- Scans for app-provided Final Cut Pro Plugins.
 ---
 --- Parameters:
----  * `language`    - The language to scan for.
+---  * `locale`    - The locale to scan for.
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanAppMotionTemplates(language)
-    local fcpPath = self:app():getPath()
-    self:scanPluginsDirectory(language, fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized")
+function mod.mt:scanAppMotionTemplates(locale)
+    locale = localeID(locale)
+    local fcpPath = fcpApp:path()
+    self:scanPluginsDirectory(locale, fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/PETemplates.localized")
     self:scanPluginsDirectory(
-        language,
+        locale,
         fcpPath .. "/Contents/PlugIns/MediaProviders/MotionEffect.fxp/Contents/Resources/Templates.localized",
         --------------------------------------------------------------------------------
         -- We filter out the 'Simple' category here, since it contains
@@ -866,16 +880,17 @@ function mod.mt:scanAppMotionTemplates(language)
     )
 end
 
---- cp.apple.finalcutpro.plugins:scanUserMotionTemplates(language) -> none
+--- cp.apple.finalcutpro.plugins:scanUserMotionTemplates(locale) -> none
 --- Method
 --- Scans for user-provided Final Cut Pro Plugins.
 ---
 --- Parameters:
----  * `language`    - The language to scan for.
+---  * `locale`    - The locale to scan for.
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanUserMotionTemplates(language)
+function mod.mt:scanUserMotionTemplates(locale)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
     -- User Motion Templates Path:
     --------------------------------------------------------------------------------
@@ -889,17 +904,17 @@ function mod.mt:scanUserMotionTemplates(language)
     local lastSize = config.get("userMotionTemplatesCacheSize", nil)
     local userMotionTemplatesCache = config.get("userMotionTemplatesCache", nil)
     if currentSize and lastSize and currentSize == lastSize then
-        if userMotionTemplatesCache and userMotionTemplatesCache[language] and #userMotionTemplatesCache[language] > 0 then
+        if userMotionTemplatesCache and userMotionTemplatesCache[locale.code] and #userMotionTemplatesCache[locale.code] > 0 then
             --------------------------------------------------------------------------------
             -- Restore from cache:
             --------------------------------------------------------------------------------
-            log.df("  * Loading User Motion Templates from Cache (%s items)", #userMotionTemplatesCache[language])
-            for _, data in pairs(userMotionTemplatesCache[language]) do
-                self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.language)
+            log.df("  * Loading User Motion Templates from Cache (%s items)", #userMotionTemplatesCache[locale.code])
+            for _, data in pairs(userMotionTemplatesCache[locale]) do
+                self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.locale)
             end
             return
         else
-            log.df("  * Could not find User Motion Template Cache for language: %s", language)
+            log.df("  * Could not find User Motion Template Cache for locale: %s", locale.code)
         end
     end
 
@@ -908,13 +923,13 @@ function mod.mt:scanUserMotionTemplates(language)
     --------------------------------------------------------------------------------
     mod._motionTemplatesToCache = nil
     mod._motionTemplatesToCache = {}
-    local result = self:scanPluginsDirectory(language, path)
+    local result = self:scanPluginsDirectory(locale, path)
     if result and currentSize then
         --------------------------------------------------------------------------------
         -- Save to cache:
         --------------------------------------------------------------------------------
         config.set("userMotionTemplatesCache", {
-            [language] = mod._motionTemplatesToCache,
+            [locale.code] = mod._motionTemplatesToCache,
         })
         config.set("userMotionTemplatesCacheSize", currentSize)
 
@@ -925,16 +940,17 @@ function mod.mt:scanUserMotionTemplates(language)
     return result
 end
 
---- cp.apple.finalcutpro.plugins:scanSystemMotionTemplates(language) -> none
+--- cp.apple.finalcutpro.plugins:scanSystemMotionTemplates(locale) -> none
 --- Method
 --- Scans for system-provided Final Cut Pro Plugins.
 ---
 --- Parameters:
----  * `language`    - The language to scan for.
+---  * `locale`    - The locale to scan for.
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanSystemMotionTemplates(language)
+function mod.mt:scanSystemMotionTemplates(locale)
+    locale = localeID(locale)
 
     --------------------------------------------------------------------------------
     -- User Motion Templates Path:
@@ -954,22 +970,23 @@ function mod.mt:scanSystemMotionTemplates(language)
     local systemMotionTemplatesCache = config.get("systemMotionTemplatesCache", nil)
 
     if currentSize and lastSize and currentSize == lastSize then
-        if systemMotionTemplatesCache and systemMotionTemplatesCache[language] and #systemMotionTemplatesCache[language] > 0 then
+        if systemMotionTemplatesCache and systemMotionTemplatesCache[locale.code] and #systemMotionTemplatesCache[locale.code] > 0 then
             --------------------------------------------------------------------------------
             -- Restore from cache:
             --------------------------------------------------------------------------------
-            log.df("  * Loading System Motion Templates from Cache (%s items)", #systemMotionTemplatesCache[language])
+            log.df("  * Loading System Motion Templates from Cache (%s items)", #systemMotionTemplatesCache[locale.code])
 
             --log.df("mod._motionTemplatesToCache: %s", hs.inspect(config.get("systemMotionTemplatesCache")))
 
 
-            for _, data in pairs(systemMotionTemplatesCache[language]) do
-                self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.language)
+            for _, data in pairs(systemMotionTemplatesCache[locale.code]) do
+                log.df("scanSystemMotionTemplates: cache value = %s", inspect(data))
+                self:registerPlugin(data.path, data.type, data.category, data.theme, data.name, data.locale)
             end
 
             return
         else
-            log.df("  * Could not find System Motion Template Cache for language: %s", language)
+            log.df("  * Could not find System Motion Template Cache for locale: %s", locale.code)
         end
     end
 
@@ -978,13 +995,13 @@ function mod.mt:scanSystemMotionTemplates(language)
     --------------------------------------------------------------------------------
     mod._motionTemplatesToCache = nil
     mod._motionTemplatesToCache = {}
-    local result = self:scanPluginsDirectory(language, path)
+    local result = self:scanPluginsDirectory(locale, path)
     if result and currentSize then
         --------------------------------------------------------------------------------
         -- Save to cache:
         --------------------------------------------------------------------------------
         config.set("systemMotionTemplatesCache", {
-            [language] = mod._motionTemplatesToCache,
+            [locale.code] = mod._motionTemplatesToCache,
         })
         config.set("systemMotionTemplatesCacheSize", currentSize)
 
@@ -1005,11 +1022,12 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.mt:scanAppEdelEffects(language)
+function mod.mt:scanAppEdelEffects(locale)
+    locale = localeID(locale)
     local audioEffect = mod.types.audioEffect
     for category, plugins in pairs(mod.appEdelEffects) do
         for _, plugin in ipairs(plugins) do
-            self:registerPlugin(nil, audioEffect, category, "Logic", plugin, language)
+            self:registerPlugin(nil, audioEffect, category, "Logic", plugin, locale)
         end
     end
 
@@ -1018,7 +1036,7 @@ function mod.mt:scanAppEdelEffects(language)
     -- yet, so aborted this method:
     --------------------------------------------------------------------------------
     --[[
-    local path = self:app():getPath() .. "/Contents/Frameworks/Flexo.framework/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
+    local path = fcpApp():path() .. "/Contents/Frameworks/Flexo.framework/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
     if tools.doesDirectoryExist(path) then
         for file in fs.dir(path) do
             local filePath = fs.pathToAbsolute(path .. "/" .. file)
@@ -1028,18 +1046,18 @@ function mod.mt:scanAppEdelEffects(language)
                 local category = "All"
                 local plugin = file
 
-                for _, currentLanguage in pairs(mod.supportedLanguages) do
+                for _, currentlocale in pairs(mod.supportedlocales) do
 
-                    if not mod._plugins[currentLanguage]["AudioEffects"] then
-                        mod._plugins[currentLanguage]["AudioEffects"] = {}
+                    if not mod._plugins[currentLocale.code]["AudioEffects"] then
+                        mod._plugins[currentLocale.code]["AudioEffects"] = {}
                     end
 
-                    if not mod._plugins[currentLanguage]["AudioEffects"][category] then
-                        mod._plugins[currentLanguage]["AudioEffects"][category] = {}
+                    if not mod._plugins[currentLocale.code]["AudioEffects"][category] then
+                        mod._plugins[currentLocale.code]["AudioEffects"][category] = {}
                     end
 
-                    local pluginID = #mod._plugins[currentLanguage]["AudioEffects"][category] + 1
-                    mod._plugins[currentLanguage]["AudioEffects"][category][pluginID] = plugin
+                    local pluginID = #mod._plugins[currentLocale.code]["AudioEffects"][category] + 1
+                    mod._plugins[currentLocale.code]["AudioEffects"][category][pluginID] = plugin
 
                 end
             end
@@ -1061,10 +1079,9 @@ end
 function mod.mt:effectStrings()
     local source = self._effectStrings
     if not source then
-        local app = self:app().app
         source = strings.new():context({
-            appPath = app:path(),
-            locale = app:currentLocale().aliases,
+            appPath = fcpApp:path(),
+            locale = fcpApp:currentLocale().aliases,
         })
         source:fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${locale}.lproj/Localizable.strings")
         source:fromPlist("${appPath}/Contents/Frameworks/Flexo.framework/Versions/A/Resources/${locale}.lproj/FFLocalizable.strings")
@@ -1088,7 +1105,11 @@ end
 --  * require("cp.plist").fileToTable("/Applications/Final Cut Pro.app/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/English.lproj/Localizable.strings")
 --  * translateInternalEffect("Draw Mask", "en")
 function mod.mt:translateInternalEffect(input, locale)
-    return self:effectStrings():find(locale, input) or input
+    locale = localeID(locale)
+    local context = {
+        locale = locale.aliases
+    }
+    return self:effectStrings():find(input, context) or input
 end
 
 -- compareOldMethodToNewMethodResults() -> none
@@ -1100,7 +1121,8 @@ end
 --
 -- Returns:
 --  * None
-function mod.mt:compareOldMethodToNewMethodResults(language)
+function mod.mt:compareOldMethodToNewMethodResults(locale)
+    locale = localeID(locale)
 
     --------------------------------------------------------------------------------
     -- Debug Message:
@@ -1127,14 +1149,14 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
     -- Debug Message:
     --------------------------------------------------------------------------------
     log.df("---------------------------------------------------------")
-    log.df(" CHECKING LANGUAGE: %s", language)
+    log.df(" CHECKING LOCALE: %s", locale.code)
     log.df("---------------------------------------------------------")
 
     for oldType,newType in pairs(pluginTypes) do
         --------------------------------------------------------------------------------
         -- Get settings from GUI Scripting Results:
         --------------------------------------------------------------------------------
-        local oldPlugins = config.get(language .. ".all" .. oldType)
+        local oldPlugins = config.get(locale.code .. ".all" .. oldType)
 
         if oldPlugins then
 
@@ -1143,7 +1165,7 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
             --------------------------------------------------------------------------------
             log.df(" - Checking Plugin Type: %s", oldType)
 
-            local newPlugins = self._plugins[language][newType]
+            local newPlugins = self._plugins[locale.code][newType]
             local newPluginNames = {}
             if newPlugins then
                 for _,plugin in ipairs(newPlugins) do
@@ -1219,7 +1241,7 @@ function mod.mt:compareOldMethodToNewMethodResults(language)
                 log.df("")
             end
         else
-            log.df(" - SKIPPING: Could not find settings for: %s (%s)", oldType, language)
+            log.df(" - SKIPPING: Could not find settings for: %s (%s)", oldType, locale.code)
         end
     end
 end
@@ -1252,109 +1274,115 @@ function mod.mt:init()
     -- Define Soundtrack Pro EDEL Effects Paths:
     --------------------------------------------------------------------------------
     self.appEdelEffectPaths = {
-        self:app():getPath() .. "/Contents/Frameworks/Flexo.framework/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
+        fcpApp:path() .. "/Contents/Frameworks/Flexo.framework/PlugIns/Audio/EDEL.bundle/Contents/Resources/Plug-In Settings"
     }
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro 10.4 Specific Effects:
     --------------------------------------------------------------------------------
-    local version = self:app():getVersion()
-    if version and v(version) >= v("10.4") then
+    local version = fcpApp:version()
+    if version and version >= v("10.4") then
         mod.appBuiltinPlugins[mod.types.videoEffect]["FFEffectCategoryColor"] = { "FFCorrectorColorBoard", "PAEColorCurvesEffectDisplayName", "PAECorrectorEffectDisplayName", "PAELUTEffectDisplayName", "HDRTools::Filter Name", "PAEHSCurvesEffectDisplayName" }
     end
 
     return self
 end
 
---- cp.apple.finalcutpro.plugins:ofType(type[, language]) -> table
+--- cp.apple.finalcutpro.plugins:ofType(type[, locale]) -> table
 --- Method
---- Finds the plugins of the specified type (`types.videoEffect`, etc.) and if provided, language.
+--- Finds the plugins of the specified type (`types.videoEffect`, etc.) and if provided, locale.
 ---
 --- Parameters:
 ---  * `type`        - The plugin type. See `types` for the complete list.
----  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
 ---  * A table of the available plugins of the specified type.
-function mod.mt:ofType(type, language)
+function mod.mt:ofType(type, locale)
+    locale = localeID(locale)
     local plugins = self._plugins
-    local langCode = self:app():getSupportedLanguage(language or self:app():currentLanguage())
-    if not langCode then
-        log.wf("Unsupported language was requested: %s", language)
+    local bestLocale = fcpApp:bestSupportedLocale(locale) or fcpApp:currentLocale()
+    if not bestLocale then
+        log.wf("Unsupported locale was requested: %s", locale.code)
         return nil
     end
 
-    if not plugins or not plugins[langCode] then
-        plugins = self:scan(langCode)
+    if not plugins or not plugins[bestLocale.code] then
+        plugins = self:scan(bestLocale)
     else
-        plugins = plugins[langCode]
+        plugins = plugins[bestLocale.code]
     end
     return plugins and plugins[type]
 end
 
---- cp.apple.finalcutpro.plugins:videoEffects([language]) -> table
+--- cp.apple.finalcutpro.plugins:videoEffects([locale]) -> table
 --- Method
 --- Finds the 'video effect' plugins.
 ---
 --- Parameters:
----  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
 ---  * A table of the available plugins.
-function mod.mt:videoEffects(language)
-    return self:ofType(mod.types.videoEffect, language)
+function mod.mt:videoEffects(locale)
+    locale = localeID(locale)
+    return self:ofType(mod.types.videoEffect, locale)
 end
 
---- cp.apple.finalcutpro.plugins:audioEffects([language]) -> table
+--- cp.apple.finalcutpro.plugins:audioEffects([locale]) -> table
 --- Method
 --- Finds the 'audio effect' plugins.
 ---
 --- Parameters:
----  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
 ---  * A table of the available plugins.
-function mod.mt:audioEffects(language)
-    return self:ofType(mod.types.audioEffect, language)
+function mod.mt:audioEffects(locale)
+    locale = localeID(locale)
+    return self:ofType(mod.types.audioEffect, locale)
 end
 
---- cp.apple.finalcutpro.plugins:titles([language]) -> table
+--- cp.apple.finalcutpro.plugins:titles([locale]) -> table
 --- Method
 --- Finds the 'title' plugins.
 ---
 --- Parameters:
----  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
 ---  * A table of the available plugins.
-function mod.mt:titles(language)
-    return self:ofType(mod.types.title, language)
+function mod.mt:titles(locale)
+    locale = localeID(locale)
+    return self:ofType(mod.types.title, locale)
 end
 
---- cp.apple.finalcutpro.plugins:transitions([language]) -> table
+--- cp.apple.finalcutpro.plugins:transitions([locale]) -> table
 --- Method
 --- Finds the 'transitions' plugins.
 ---
 --- Parameters:
---- * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+--- * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
 --- * A table of the available plugins.
-function mod.mt:transitions(language)
-    return self:ofType(mod.types.transition, language)
+function mod.mt:transitions(locale)
+    locale = localeID(locale)
+    return self:ofType(mod.types.transition, locale)
 end
 
---- cp.apple.finalcutpro.plugins:generators([language]) -> table
+--- cp.apple.finalcutpro.plugins:generators([locale]) -> table
 --- Method
 --- Finds the 'generator' plugins.
 ---
 --- Parameters:
----  * `language`    - The language code to search for (e.g. "en"). Defaults to the current FCPX langauge.
+---  * `locale`    - The locale code to search for (e.g. "en"). Defaults to the current FCPX langauge.
 ---
 --- Returns:
 ---  * A table of the available plugins.
-function mod.mt:generators(language)
-    return self:ofType(mod.types.generator, language)
+function mod.mt:generators(locale)
+    locale = localeID(locale)
+    return self:ofType(mod.types.generator, locale)
 end
 
 --- cp.apple.finalcutpro.plugins:scanAppBuiltInPlugins([locale]) -> None
@@ -1367,14 +1395,15 @@ end
 --- Returns:
 ---  * None
 function mod.mt:scanAppBuiltInPlugins(locale)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
-    -- Add Supported Languages, Plugin Types & Built-in Effects to Results Table:
+    -- Add Supported locales, Plugin Types & Built-in Effects to Results Table:
     --------------------------------------------------------------------------------
     for pluginType,categories in pairs(mod.appBuiltinPlugins) do
         for category,plugins in pairs(categories) do
             category = self:translateInternalEffect(category, locale)
             for _,plugin in pairs(plugins) do
-                self:registerPlugin(nil, pluginType, category, nil, self:translateInternalEffect(plugin, locale), language)
+                self:registerPlugin(nil, pluginType, category, nil, self:translateInternalEffect(plugin, locale), locale)
             end
         end
     end
@@ -1387,12 +1416,13 @@ end
 -- Parameters:
 --  * `rootPath`         - The path the version folders are stored under.
 --  * `version`          - The FCPX version number.
---  * `language`         - The language to load.
+--  * `locale`         - The locale to load.
 --  * `searchHistory`    - If `true`, previous versions of this minor version will be searched.
 --
 -- Notes:
 --  * When `searchHistory` is `true`, it will only search to the `0` patch level. E.g. `10.3.2` will stop searching at `10.3.0`.
 function mod.mt:_loadPluginVersionCache(rootPath, version, locale, searchHistory)
+    locale = localeID(locale)
     version = type(version) == "string" and v(version) or version
     local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, locale.code))
     if filePath then
@@ -1434,6 +1464,14 @@ function mod.mt.clearCaches()
             return false
         end
     end
+    config.set("audioUnitsCacheModification", nil)
+    config.set("audioUnitsCache", nil)
+    config.set("userEffectsPresetsCacheModification", nil)
+    config.set("userEffectsPresetsCache", nil)
+    config.set("userMotionTemplatesCache", nil)
+    config.set("userMotionTemplatesCacheSize", nil)
+    config.set("systemMotionTemplatesCache", nil)
+    config.set("systemMotionTemplatesCacheSize", nil)
     return true
 end
 
@@ -1447,7 +1485,8 @@ end
 -- Returns:
 --  * `true` if the cache was loaded successfully.
 function mod.mt:_loadAppPluginCache(locale)
-    local fcpVersion = self:app():getVersion()
+    locale = localeID(locale)
+    local fcpVersion = fcpApp:versionString()
     if not fcpVersion then
         return false
     end
@@ -1482,25 +1521,26 @@ local function ensureDirectoryExists(rootPath, ...)
     return fs.pathToAbsolute(fullPath)
 end
 
--- cp.apple.finalcutpro.plugins:_saveAppPluginCache(language) -> boolean
+-- cp.apple.finalcutpro.plugins:_saveAppPluginCache(locale) -> boolean
 -- Method
 -- Saves the current plugin cache as the 'app-bundled' cache.
 --
 -- Note: This should only be called before any system or user level plugins are loaded!
 --
 -- Parameters:
---  * `language`     The language
+--  * `locale`     The locale
 --
 -- Returns:
 --  * `true` if the cache was saved successfully.
-function mod.mt:_saveAppPluginCache(language)
+function mod.mt:_saveAppPluginCache(locale)
+    locale = localeID(locale)
     log.df("  * Saving App Plugin Cache.")
-    local fcpVersion = self:app():getVersion()
+    local fcpVersion = fcpApp:version()
     if not fcpVersion then
         log.ef("Failed to detect Final Cut Pro version: %s", fcpVersion)
         return false
     end
-    local version = tostring(v(fcpVersion))
+    local version = tostring(fcpVersion)
     if not version then
         log.ef("Failed to translate Final Cut Pro version: %s", version)
         return false
@@ -1509,8 +1549,8 @@ function mod.mt:_saveAppPluginCache(language)
     if not path then
         return false
     end
-    local cachePath = path .. "/plugins."..language..".json"
-    local plugins = self._plugins[language]
+    local cachePath = path .. "/plugins."..locale.code..".json"
+    local plugins = self._plugins[locale.code]
     if plugins then
         local file = io.open(cachePath, "w")
         if file then
@@ -1537,6 +1577,7 @@ end
 -- Returns:
 --  * None
 function mod.mt:scanAppPlugins(locale)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
     -- First, try loading from the cache:
     --------------------------------------------------------------------------------
@@ -1549,33 +1590,33 @@ function mod.mt:scanAppPlugins(locale)
         local startTime = os.clock()
         self:scanAppBuiltInPlugins(locale)
         local finishTime = os.clock()
-        log.df("  * scanAppBuiltInPlugins(%s): %s", language, finishTime-startTime)
+        log.df("  * scanAppBuiltInPlugins(%s): %s", locale.code, finishTime-startTime)
 
         --------------------------------------------------------------------------------
         -- Scan Soundtrack Pro EDEL Effects:
         --------------------------------------------------------------------------------
         startTime = os.clock()
-        self:scanAppEdelEffects(language)
+        self:scanAppEdelEffects(locale)
         finishTime = os.clock()
-        log.df("  * scanAppEdelEffects(%s): %s", language, finishTime-startTime)
+        log.df("  * scanAppEdelEffects(%s): %s", locale.code, finishTime-startTime)
 
         --------------------------------------------------------------------------------
         -- Scan Audio Effect Bundles:
         --------------------------------------------------------------------------------
         startTime = os.clock()
-        self:scanAppAudioEffectBundles(language)
+        self:scanAppAudioEffectBundles(locale)
         finishTime = os.clock()
-        log.df("  * scanAppAudioEffectBundles(%s): %s", language, finishTime-startTime)
+        log.df("  * scanAppAudioEffectBundles(%s): %s", locale.code, finishTime-startTime)
 
         --------------------------------------------------------------------------------
         -- Scan App Motion Templates:
         --------------------------------------------------------------------------------
         startTime = os.clock()
-        self:scanAppMotionTemplates(language)
+        self:scanAppMotionTemplates(locale)
         finishTime = os.clock()
-        log.df("   * scanAppMotionTemplates(%s): %s", language, finishTime-startTime)
+        log.df("   * scanAppMotionTemplates(%s): %s", locale.code, finishTime-startTime)
 
-        self:_saveAppPluginCache(language)
+        self:_saveAppPluginCache(locale)
     else
         local cacheFinishTime = os.clock()
         log.df("  * Loaded App Plugins from Cache: %s", cacheFinishTime-cacheStartTime)
@@ -1583,59 +1624,61 @@ function mod.mt:scanAppPlugins(locale)
 
 end
 
--- cp.apple.finalcutpro.plugins:scanSystemPlugins(language) -> none
+-- cp.apple.finalcutpro.plugins:scanSystemPlugins(locale) -> none
 -- Method
--- Scans System Plugins for a specific language.
+-- Scans System Plugins for a specific locale.
 --
 -- Parameters:
---  * language - The language code you want to scan for.
+--  * locale - The locale code you want to scan for.
 --
 -- Returns:
 --  * None
-function mod.mt:scanSystemPlugins(language)
+function mod.mt:scanSystemPlugins(locale)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
     -- Scan System-level Motion Templates:
     --------------------------------------------------------------------------------
     local startTime = os.clock()
-    self:scanSystemMotionTemplates(language)
+    self:scanSystemMotionTemplates(locale)
     local finishTime = os.clock()
-    log.df("  * scanSystemMotionTemplates(%s): %s", language, finishTime-startTime)
+    log.df("  * scanSystemMotionTemplates(%s): %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan System Audio Units:
     --------------------------------------------------------------------------------
     startTime = os.clock()
-    self:scanSystemAudioUnits(language)
+    self:scanSystemAudioUnits(locale)
     finishTime = os.clock()
-    log.df("  * scanSystemAudioUnits(%s): %s", language, finishTime-startTime)
+    log.df("  * scanSystemAudioUnits(%s): %s", locale, finishTime-startTime)
 
 end
 
--- cp.apple.finalcutpro.plugins:scanUserPlugins(language) -> none
+-- cp.apple.finalcutpro.plugins:scanUserPlugins(locale) -> none
 -- Method
--- Scans User Plugins for a specific language.
+-- Scans User Plugins for a specific locale.
 --
 -- Parameters:
---  * language - The language code you want to scan for.
+--  * locale - The locale code you want to scan for.
 --
 -- Returns:
 --  * None
-function mod.mt:scanUserPlugins(language)
+function mod.mt:scanUserPlugins(locale)
+    locale = localeID(locale)
     --------------------------------------------------------------------------------
     -- Scan User Effect Presets:
     --------------------------------------------------------------------------------
     local startTime = os.clock()
-    self:scanUserEffectsPresets(language)
+    self:scanUserEffectsPresets(locale)
     local finishTime = os.clock()
-    log.df("  * scanUserEffectsPresets(%s): %s", language, finishTime-startTime)
+    log.df("  * scanUserEffectsPresets(%s): %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan User Motion Templates:
     --------------------------------------------------------------------------------
     startTime = os.clock()
-    self:scanUserMotionTemplates(language)
+    self:scanUserMotionTemplates(locale)
     finishTime = os.clock()
-    log.df("  * scanUserMotionTemplates(%s): %s", language, finishTime-startTime)
+    log.df("  * scanUserMotionTemplates(%s): %s", locale, finishTime-startTime)
 
 end
 
@@ -1650,7 +1693,7 @@ end
 ---  * None
 function mod.mt:scan(locale)
 
-    locale = locale or self:app().app:currentLocale()
+    locale = localeID(locale) or fcpApp:currentLocale()
 
     --------------------------------------------------------------------------------
     -- Reset Results Table:
@@ -1679,9 +1722,9 @@ function mod.mt:scan(locale)
     log.df(" ")
     log.df("* Scanning system-installed plugins:")
     startTime = os.clock()
-    self:scanSystemPlugins(language)
+    self:scanSystemPlugins(locale)
     finishTime = os.clock()
-    log.df("    * scanSystemPlugins(%s) took: %s", language, finishTime-startTime)
+    log.df("    * scanSystemPlugins(%s) took: %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Scan user-installed plugins:
@@ -1689,22 +1732,22 @@ function mod.mt:scan(locale)
     log.df(" ")
     log.df("* Scanning user-installed plugins:")
     startTime = os.clock()
-    self:scanUserPlugins(language)
+    self:scanUserPlugins(locale)
     finishTime = os.clock()
-    log.df("    * scanUserPlugins(%s) took: %s", language, finishTime-startTime)
+    log.df("    * scanUserPlugins(%s) took: %s", locale, finishTime-startTime)
 
     --------------------------------------------------------------------------------
     -- Debug Messaging:
     --------------------------------------------------------------------------------
     log.df("---------------------------------------------------------")
 
-    return self._plugins[language]
+    return self._plugins[locale]
 
 end
 
 --- cp.apple.finalcutpro.plugins:scanAll() -> nil
 --- Method
---- Scans all supported languages, loading them into memory.
+--- Scans all supported locales, loading them into memory.
 ---
 --- Parameters:
 ---  * None
@@ -1712,7 +1755,7 @@ end
 --- Returns:
 ---  * Nothing
 function mod.mt:scanAll()
-    for _,locale in ipairs(self:app().app:supportedLocales()) do
+    for _,locale in ipairs(fcpApp:supportedLocales()) do
         self:scan(locale)
     end
 end

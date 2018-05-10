@@ -676,9 +676,8 @@ end
 --- Returns:
 --- * `true` if it is supported, otherwise `false`.
 function mod.mt:isSupportedLocale(locale)
-    if type(locale) == "string" then
-        locale = localeID.forCode(locale)
-    end
+    locale = localeID(locale)
+
     if localeID.is(locale) then
         for _,sl in ipairs(self:supportedLocales()) do
             if sl:matches(locale) > 0 then
@@ -700,10 +699,10 @@ end
 --- Returns:
 --- * The closest supported locale or `nil` if none are available in the language.
 function mod.mt:bestSupportedLocale(locale)
-    if type(locale) == "string" then
-        locale = localeID.forCode(locale)
-    end
-    if localeID.is(locale) then
+    -- cast to localeID
+    locale = localeID(locale)
+
+    if locale then
         local currentLocale = nil
         local currentScore = 0
         for _,sl in ipairs(self:supportedLocales()) do

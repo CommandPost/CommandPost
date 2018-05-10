@@ -3,12 +3,14 @@ local test				= require("cp.test")
 -- local inspect			= require("hs.inspect")
 
 local config			= require("cp.config")
-local plugins		= require("cp.apple.finalcutpro.plugins")
+local plugins		    = require("cp.apple.finalcutpro.plugins")
+local localeID          = require("cp.i18n.localeID")
 
 local PLUGINS_PATH = config.scriptPath .. "/tests/fcp/plugins"
 local EFFECTS_PATH = PLUGINS_PATH .. "/Effects.localized"
 
 local app = {
+    getVersion = function() return "10.4" end,
     getPath = function() return "/Applications/Final Cut Pro.app" end
 }
 
@@ -32,14 +34,14 @@ return test.suite("cp.apple.finalcutpro.plugins"):with(
             check = function() return true end,
         }
 
-        scanner:scanPluginThemeDirectory("en", testTheme, plugin)
+        scanner:scanPluginThemeDirectory(localeID("en"), testTheme, plugin)
         local p = {en = {Effect = {
             {
                 path = testTheme .. "/Themed Test Effect",
                 type = "Effect",
                 theme = "Test Theme",
                 name = "Themed Test Effect",
-                language = "en",
+                locale = localeID("en"),
             }
         }}}
         ok(eq(scanner._plugins, p))
@@ -48,6 +50,7 @@ return test.suite("cp.apple.finalcutpro.plugins"):with(
     test("Scan Category", function()
         local testCategory = EFFECTS_PATH .. "/Test"
         local scanner = plugins.new(app)
+        local en = localeID("en")
 
         local plugin = {
             type = "Effect",
@@ -55,21 +58,21 @@ return test.suite("cp.apple.finalcutpro.plugins"):with(
             check = function() return true end,
         }
 
-        scanner:scanPluginCategoryDirectory("en", testCategory, plugin)
+        scanner:scanPluginCategoryDirectory(en, testCategory, plugin)
         local p = {en = {Effect = {
             {
                 path = testCategory .. "/Test Effect",
                 type = "Effect",
                 theme = nil,
                 name = "Test Effect",
-                language = "en",
+                locale = en,
             },
             {
                 path = testCategory .. "/Test Theme/Themed Test Effect",
                 type = "Effect",
                 theme = "Test Theme",
                 name = "Themed Test Effect",
-                language = "en",
+                locale = en,
             },
         }}}
         ok(eq(scanner._plugins, p))
@@ -78,6 +81,7 @@ return test.suite("cp.apple.finalcutpro.plugins"):with(
     test("Scan Effects", function()
         local path = EFFECTS_PATH
         local scanner = plugins.new(app)
+        local en = localeID("en")
 
         local plugin = {
             type = "Effect",
@@ -88,27 +92,12 @@ return test.suite("cp.apple.finalcutpro.plugins"):with(
         scanner:scanPluginTypeDirectory("en", path, plugin)
         local p = {en = {Effect = {
             {
-                path = path .. "/Local.localized/Local Effect.localized",
-                type = "Effect",
-                category = "Local EN",
-                theme = nil,
-                name = "Local Effect EN",
-                language = "en",
-            },
-            {
-                category = "Local EN",
-                language = "en",
-                name = "Versioned Effect EN",
-                path = path .. "/Local.localized/Versioned Effect.v2.localized",
-                type = "Effect"
-            },
-            {
                 path = path .. "/Test/Test Effect",
                 type = "Effect",
                 category = "Test",
                 theme = nil,
                 name = "Test Effect",
-                language = "en",
+                locale = en,
             },
             {
                 path = path .. "/Test/Test Theme/Themed Test Effect",
@@ -116,7 +105,22 @@ return test.suite("cp.apple.finalcutpro.plugins"):with(
                 category = "Test",
                 theme = "Test Theme",
                 name = "Themed Test Effect",
-                language = "en",
+                locale = en,
+            },
+            {
+                path = path .. "/Local.localized/Local Effect.localized",
+                type = "Effect",
+                category = "Local EN",
+                theme = nil,
+                name = "Local Effect EN",
+                locale = en,
+            },
+            {
+                category = "Local EN",
+                locale = en,
+                name = "Versioned Effect EN",
+                path = path .. "/Local.localized/Versioned Effect.v2.localized",
+                type = "Effect"
             },
         }}}
         ok(eq(scanner._plugins, p))

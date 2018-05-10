@@ -28,6 +28,7 @@ local archiver                                      = require("cp.plist.archiver
 local axutils                                       = require("cp.ui.axutils")
 local just                                          = require("cp.just")
 local plist                                         = require("cp.plist")
+local localeID                                      = require("cp.i18n.localeID")
 
 local format                                        = string.format
 
@@ -107,7 +108,7 @@ end
 
 --- cp.apple.finalcutpro.MenuBar:getMainMenu() -> table
 --- Method
---- Returns a table of all the possible Menu Bar values for each language.
+--- Returns a table of all the possible Menu Bar values for each supported locale.
 ---
 --- Parameters:
 ---  * None
@@ -248,14 +249,14 @@ end
 --- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find' step and return either the matching child, or nil if it can't be found. It is used by the [addMenuFinder](#addMenuFinder) function. The `finder` should have the following signature:
 ---
 --- ```lua
---- function(parentItem, path, childName, language) -> childItem
+--- function(parentItem, path, childName, locale) -> childItem
 --- ```
 ---
 --- The elements are:
 --- * `parentItem`  - The `AXMenuItem` containing the children. E.g. the `Go To` menu under `Window`.
---- * `path`        - An array of strings in the specified language leading to the parent item. E.g. `{"Window", "Go To"}`.
---- * `childName`   - The name of the next child to find, in the specified language. E.g. `"Libraries"`.
---- * `language`    - The language that the menu titles are in.
+--- * `path`        - An array of strings in the specified locale leading to the parent item. E.g. `{"Window", "Go To"}`.
+--- * `childName`   - The name of the next child to find, in the specified locale. E.g. `"Libraries"`.
+--- * `locale`      - The `cp.i18n.localeID` that the menu titles are in.
 --- * `childItem`   - The `AXMenuItem` that was found, or `nil` if not found.
 ---
 --- Parameters:
@@ -267,31 +268,32 @@ function MenuBar:addMenuFinder(finder)
     self._itemFinders[#self._itemFinders+1] = finder
 end
 
--- _translateTitle(menuMap, title, sourceLanguage, targetLanguage) -> string
+-- _translateTitle(menuMap, title, sourceLocale, targetLocale) -> string
 -- Function
--- Looks through the `menuMap` to find a matching title in the source language,
--- and returns the equivalent in the target language, or the original title if it can't be found.
+-- Looks through the `menuMap` to find a matching title in the source locale,
+-- and returns the equivalent in the target locale, or the original title if it can't be found.
 --
 -- Parameters:
 --  * menuMap - A table containing the menu map.
 --  * title - The title
---  * sourceLanguage - Source Language
---  * targetLanguage - Target language
+--  * sourceLocale - Source `cp.i18n.localeID`
+--  * targetLocale - Target `cp.i18n.localeID`
 --
 -- Returns:
 --  * The translated title as a string.
-local function _translateTitle(menuMap, title, sourceLanguage, targetLanguage)
+local function _translateTitle(menuMap, title, sourceLocale, targetLocale)
     if menuMap then
+        local sourceCode, targetCode = localeID(sourceLocale).code, localeID(targetLocale).code
         for _ in ipairs(menuMap) do
-            if menuMap[sourceLanguage] == title then
-                return menuMap[targetLanguage]
+            if menuMap[sourceCode] == title then
+                return menuMap[targetCode]
             end
         end
     end
     return title
 end
 
---- cp.apple.finalcutpro.MenuBar:findMenuUI(path) -> Menu UI
+--- cp.apple.finalcutpro.MenuBar:findMenuUI(path[, locale]) -> Menu UI
 --- Method
 --- Finds a specific Menu UI element for the provided path.
 --- E.g. `findMenuUI({"Edit", "Copy"})` returns the 'Copy' menu item in the 'Edit' menu.
@@ -303,11 +305,11 @@ end
 ---
 --- Parameters:
 ---  * `path`       - The path list to search for.
----  * `language`   - The language code the path is in. E.g. "en" or "fr". Defaults to the
+---  * `locale`     - The locale code the path is in. E.g. "en" or "fr". Defaults to the current app locale.
 ---
 --- Returns:
 ---  * The Menu UI, or `nil` if it could not be found.
-function MenuBar:findMenuUI(path, language)
+function MenuBar:findMenuUI(path, locale)
     assert(type(path) == "table" and #path > 0, "Please provide a table array of menu steps.")
 
     --------------------------------------------------------------------------------
@@ -315,8 +317,8 @@ function MenuBar:findMenuUI(path, language)
     --------------------------------------------------------------------------------
     local menuMap = self:getMainMenu()
     local menuUI = self:UI()
-    language = language or "en"
-    local appLang = self:app():currentLanguage() or "en"
+    locale = localeID(locale) or localeID("en")
+    local appLocale = self:app():currentLocale()
 
     if not menuUI then
         return nil
@@ -339,7 +341,7 @@ function MenuBar:findMenuUI(path, language)
             -- Access it by index:
             --------------------------------------------------------------------------------
             menuItemUI = menuUI[step]
-            menuItemName = _translateTitle(menuMap, menuItemUI, appLang, language)
+            menuItemName = _translateTitle(menuMap, menuItemUI, appLocale, locale)
         elseif type(step) == "function" then
             --------------------------------------------------------------------------------
             -- Check each child against the function:
@@ -347,7 +349,7 @@ function MenuBar:findMenuUI(path, language)
             for _,child in ipairs(menuUI) do
                 if step(child) then
                     menuItemUI = child
-                    menuItemName = _translateTitle(menuMap, menuItemUI, appLang, language)
+                    menuItemName = _translateTitle(menuMap, menuItemUI, appLocale, locale)
                     break
                 end
             end
@@ -360,7 +362,7 @@ function MenuBar:findMenuUI(path, language)
             -- Check with the finder functions:
             --------------------------------------------------------------------------------
             for _,finder in ipairs(self._itemFinders) do
-                menuItemUI = finder(menuUI, currentPath, step, language)
+                menuItemUI = finder(menuUI, currentPath, step, locale)
                 if menuItemUI then
                     break
                 end
@@ -371,10 +373,10 @@ function MenuBar:findMenuUI(path, language)
                 -- See if the menu is in the map:
                 --------------------------------------------------------------------------------
                 for _,item in ipairs(menuMap) do
-                    if item[language] == step then
+                    if item[locale.code] == step then
                         menuItemUI = item.item
                         if not axutils.isValid(menuItemUI) then
-                            menuItemUI = axutils.childWith(menuUI, "AXTitle", item[appLang])
+                            menuItemUI = axutils.childWith(menuUI, "AXTitle", item[appLocale.code])
                             --------------------------------------------------------------------------------
                             -- Cache the menu item, since getting children can be expensive:
                             --------------------------------------------------------------------------------
@@ -512,7 +514,7 @@ end
 
 -- cp.apple.finalcutpro.MenuBar:_loadMainMenu() -> table
 -- Method
--- Loads a Main Menu Language.
+-- Loads a Main Menu in all supported locales.
 --
 -- Parameters:
 --  * None
@@ -520,13 +522,13 @@ end
 -- Returns:
 --  * The menu table.
 function MenuBar:_loadMainMenu()
-    local locales = self:app().app:supportedLocales()
+    local locales = self:app():supportedLocales()
     local menu = {}
     for _,locale in ipairs(locales) do
         if locale then
-            self:_loadMainMenuLanguage(locale, menu)
+            self:_loadMainMenuLocale(locale, menu)
         else
-            log.wf("Received a nil language request.")
+            log.wf("A supported locale was `nil`.")
         end
     end
     return menu
@@ -535,19 +537,15 @@ end
 local MENU_NIB_PATH = "%s/Contents/Resources/%s.lproj/MainMenu.nib"
 
 local function findMenuNibPath(appPath, locale)
-    local path
-
-    path = fs.pathToAbsolute(format(MENU_NIB_PATH, appPath, locale.code))
-    if not path then
-        path = fs.pathToAbsolute(format(MENU_NIB_PATH, appPath, locale.name))
+    for _,alias in pairs(locale.aliases) do
+        local path = fs.pathToAbsolute(format(MENU_NIB_PATH, appPath, alias))
+        if path then return path end
     end
-
-    return path
 end
 
--- cp.apple.finalcutpro.MenuBar:_loadMainMenuLanguage(locale, menu) -> table
+-- cp.apple.finalcutpro.MenuBar:_loadMainMenuLocale(locale, menu) -> table
 -- Method
--- Loads a Main Menu Language.
+-- Loads a Main Menu locale.
 --
 -- Parameters:
 --  * locale - The `localeID`.
@@ -555,7 +553,7 @@ end
 --
 -- Returns:
 --  * The menu table.
-function MenuBar:_loadMainMenuLanguage(locale, menu)
+function MenuBar:_loadMainMenuLocale(locale, menu)
     local menuPlist = plist.fileToTable(findMenuNibPath(self:app():getPath(), locale))
     if menuPlist then
         local menuArchive = archiver.unarchive(menuPlist)
@@ -570,29 +568,29 @@ function MenuBar:_loadMainMenuLanguage(locale, menu)
             end
         end
         if mainMenu then
-            return self:_processMenu(mainMenu, locale, menu)
+            return MenuBar._processMenu(mainMenu, locale, menu)
         else
             log.ef("Unable to locate MainMenu for %s.", locale)
             return nil
         end
     else
-        log.ef("Unable to load MainMenu.nib for specified language: %s", locale)
+        log.ef("Unable to load MainMenu.nib for specified locale: %s", locale.code)
         return nil
     end
 end
 
--- cp.apple.finalcutpro.MenuBar:_processMenu(menuData, locale, menu) -> table
--- Method
--- Loads a Main Menu Language.
+-- cp.apple.finalcutpro.MenuBar._processMenu(menuData, locale, menu) -> table
+-- Function
+-- Loads a Main Menu locale.
 --
 -- Parameters:
 --  * menuData - Menu data.
---  * locale - `cp.i18n.localeID`
+--  * locale - The `cp.i18n.localeID` to process.
 --  * menu - The menu.
 --
 -- Returns:
 --  * Menu
-function MenuBar:_processMenu(menuData, locale, menu) -- luacheck: ignore
+function MenuBar._processMenu(menuData, locale, menu)
     if not menuData then
         return nil
     end
@@ -609,7 +607,7 @@ function MenuBar:_processMenu(menuData, locale, menu) -- luacheck: ignore
             -- Check if there is a submenu:
             --------------------------------------------------------------------------------
             if itemData.NSSubmenu then
-                item.submenu = MenuBar:_processMenu(itemData.NSSubmenu, locale, item.submenu)
+                item.submenu = MenuBar._processMenu(itemData.NSSubmenu, locale, item.submenu)
             end
             menu[i] = item
         end

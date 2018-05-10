@@ -11,6 +11,7 @@
 --- Note: This will load the file on each request. To have values cached, use the `cp.strings` module and specify a `plist` as a source.
 
 -- local log				= require("hs.logger").new("plistsrc")
+-- local inspect           = require("hs.inspect")
 
 local _                 = require("moses")
 
@@ -24,16 +25,6 @@ local text				= require("cp.web.text")
 local escapeXML, unescapeXML = text.escapeXML, text.unescapeXML
 local find, len			= string.find, string.len
 local insert			= table.insert
-
-local aliases = {
-    de	= "German",
-    en	= "English",
-    es	= "Spanish",
-    fr	= "French",
-    it	= "Italian",
-    ja	= "Japanese",
-}
-
 
 local mod = {}
 mod.mt = {}

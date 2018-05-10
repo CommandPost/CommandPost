@@ -185,7 +185,7 @@ function PropertyRow.new(parent, labelKey, index)
             end
             log.wf("Unabled to find a label with these keys: %s", index, inspect(self._labelKeys))
             return nil
-        end):cached():monitor(parent:app().currentLanguage),
+        end):cached():monitor(parent:app().currentLocale),
     }
 
 --- cp.ui.PropertyRow.UI <cp.prop: hs._asm.axuielement; read-only>

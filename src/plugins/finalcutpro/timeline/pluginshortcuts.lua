@@ -91,10 +91,10 @@ end
 --- Table of shortcuts.
 mod.shortcuts = prop(
     function()
-        return config.get(fcp:currentLanguage() .. ".pluginShortcuts", {})
+        return config.get(fcp:currentLocale().code .. ".pluginShortcuts", {})
     end,
     function(value)
-        config.set(fcp:currentLanguage() .. ".pluginShortcuts", value)
+        config.set(fcp:currentLocale().code .. ".pluginShortcuts", value)
     end
 )
 
