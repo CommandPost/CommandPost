@@ -22,7 +22,6 @@ local log                                       = require("hs.logger").new("setu
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local drawing                                   = require("hs.drawing")
 local screen                                    = require("hs.screen")
 local timer                                     = require("hs.timer")
 local webview                                   = require("hs.webview")
