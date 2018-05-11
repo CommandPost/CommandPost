@@ -66,6 +66,7 @@ local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 local StaticText                        = require("cp.ui.StaticText")
 
+local strings                           = require("cp.apple.finalcutpro.strings")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local childFromBottom, childFromTop     = axutils.childFromBottom, axutils.childFromTop
@@ -95,7 +96,7 @@ function ShareInspector.matches(element)
         if element:attributeValue("AXRole") == "AXGroup" and #element > 1 then
             local scrollArea = childFromBottom(element, 1)
             if scrollArea:attributeValue("AXRole") == "AXScrollArea" then
-                local attributesLabel = "Attributes"
+                local attributesLabel = strings:find("FFInspectorModuleProjectSharingTitle")
                 local attributesUI = childFromTop(scrollArea, 1, StaticText.matches)
                 return hasAttributeValue(attributesUI, "AXValue", attributesLabel)
             end

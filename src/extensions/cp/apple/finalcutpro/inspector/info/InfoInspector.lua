@@ -26,6 +26,7 @@ local axutils                           = require("cp.ui.axutils")
 local MenuButton                        = require("cp.ui.MenuButton")
 local prop                              = require("cp.prop")
 
+local strings                           = require("cp.apple.finalcutpro.strings")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local hasProperties                     = IP.hasProperties
@@ -65,9 +66,11 @@ InfoInspector.metadataViews = {
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function InfoInspector.matches(element)
-    return element ~= nil and #element >= 4
-        and #axutils.childrenWithRole(element, "AXStaticText") == 3
-        and axutils.childWithRole(element, "AXScrollArea") ~= nil
+    if element ~= nil and #element >= 4 and #axutils.childrenWithRole(element, "AXStaticText") == 3 then
+        local scrollArea = axutils.childWithRole(element, "AXScrollArea")
+        return scrollArea and scrollArea:attributeValue("AXDescription") == strings:find("FFInspectorModuleMetadataScrollViewAXDescription")
+    end
+    return false
 end
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector.new(parent) -> InfoInspector object
