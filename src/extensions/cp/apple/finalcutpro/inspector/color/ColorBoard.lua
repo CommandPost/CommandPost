@@ -354,7 +354,7 @@ end
 --- * The `ColorBoardAspect`.
 function ColorBoard:color()
     if not self._color then
-        self._color = Aspect:new(self, 1, true)
+        self._color = Aspect.new(self, 1, true)
     end
     return self._color
 end
@@ -370,7 +370,7 @@ end
 --- * The `ColorBoardAspect`.
 function ColorBoard:saturation()
     if not self._saturation then
-        self._saturation = Aspect:new(self, 2)
+        self._saturation = Aspect.new(self, 2)
     end
     return self._saturation
 end
@@ -386,7 +386,7 @@ end
 --- * The `ColorBoardAspect`.
 function ColorBoard:exposure()
     if not self._exposure then
-        self._exposure = Aspect:new(self, 3)
+        self._exposure = Aspect.new(self, 3)
     end
     return self._exposure
 end

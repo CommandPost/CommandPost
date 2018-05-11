@@ -54,7 +54,7 @@ function ColorBoardAspect.matches(element)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:new(parent, index[, hasAngle]) -> ColorBoardAspect
---- Function
+--- Constructor
 --- Creates a new `ColorBoardAspect` object.
 ---
 --- Parameters:
@@ -64,8 +64,7 @@ end
 ---
 --- Returns:
 ---  * A new `ColorBoardAspect object.
--- TODO: Use a function instead of a method.
-function ColorBoardAspect:new(parent, index, hasAngle) -- luacheck: ignore
+function ColorBoardAspect.new(parent, index, hasAngle)
     if index < 1 or index > #ColorBoardAspect.ids then
         error(format("The index must be between 1 and %s: %s", #ColorBoardAspect.ids, inspect(index)))
     end

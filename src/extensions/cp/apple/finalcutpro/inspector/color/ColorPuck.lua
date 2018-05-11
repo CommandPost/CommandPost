@@ -169,7 +169,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     }
 
     -- prepare the parent to provide the content UI.
-    PropertyRow.prepareParent(o, UI)
+    PropertyRow.prepareParent(o, function() return parent:UI() end)
 
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.row <cp.prop: PropertyRow>
     --- Field
