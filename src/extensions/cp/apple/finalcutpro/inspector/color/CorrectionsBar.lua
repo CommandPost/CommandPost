@@ -240,13 +240,15 @@ function CorrectionsBar:activate(correctionType, number)
             pattern = "%+"..correctionText
             if not menuButton:selectItemMatching(pattern) then
                 log.ef("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+                return false
             end
         end
+        return true
     else
         log.ef("Corrections Bar activation failed due to menu button timing out.")
     end
 
-    return self
+    return false
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
