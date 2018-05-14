@@ -1,6 +1,6 @@
 --- === hs.tangent ===
 ---
---- **Tangent Control Surface Extension**
+--- Tangent Control Surface Extension
 ---
 --- **API Version:** TUBE Version 3.2 - TIPC Rev 4 (22nd February 2017)
 ---
@@ -12,14 +12,13 @@
 ---
 --- You can download the Tangent Developer Support Pack & Tangent Hub Installer for Mac [here](http://www.tangentwave.co.uk/developer-support/).
 ---
---- This extension was thrown together by [Chris Hocking](http://latenitefilms.com) for [CommandPost](http://commandpost.io).
+--- This extension was thrown together by [Chris Hocking](https://github.com/latenitefilms), then dramatically improved by [David Peterson](https://github.com/randomeizer) for [CommandPost](http://commandpost.io).
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-
 local log                                       = require("hs.logger").new("tangent")
 local inspect                                   = require("hs.inspect")
 
@@ -29,24 +28,11 @@ local timer                                     = require("hs.timer")
 
 local unpack, pack, format                      = string.unpack, string.pack, string.format
 
-local function isNumber(value)
-    return type(value) == "number"
-end
-
-local function isNotTable(value)
-    return type(value) ~= "table"
-end
-
-local function isNotList(value)
-    return isNotTable(value) or #value == 0
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
 
 --------------------------------------------------------------------------------
@@ -58,31 +44,35 @@ local mod = {}
 --- Definitions for IPC Commands from the HUB to Hammerspoon.
 ---
 --- Notes:
---- * `connected`                       - a connection is established with the Hub.
---- * `disconnected`                    - the connection is dropped with the Hub.
---- * `initiateComms`                   - sent when the Hub wants to initiate communications.
---- * `parameterChange`                 - a parameter was incremented.
---- * `parameterReset`                  - a parameter was reset.
---- * `parameterValueRequest`           - the Hub wants the current value of the parameter.
---- * `menuChange`                      - The menu was changed, `+1` or `-1`.
---- * `menuReset`                       - The menu was reset.
---- * `menuStringRequest`               - The application should send a `menuString` with the current value.
---- * `actionOn`                        - An action button was pressed.
---- * `actionOff`                       - An action button was released.
---- * `modeChange`                      - The current mode was changed.
---- * `transport`                       - The transport.
---- * `unmanagedPanelCapabilities`      - Send by the Hub to advertise an unmanaged panel.
---- * `unmanagedButtonDown`             - A button on an unmanaged panel was pressed.
---- * `unmanagedButtonUp`               - A button on an unmanaged panel was released.
---- * `unmanagedEncoderChange`          - An encoder (dial/wheel) on an unmanaged panel changed.
---- * `unmanagedDisplayRefresh`         - Triggered when an unmanaged panel's display needs to update.
---- * `panelConnectionState`            - A panel's connection state changed.
+---  * `connected`                       - a connection is established with the Hub.
+---  * `disconnected`                    - the connection is dropped with the Hub.
+---  * `initiateComms`                   - sent when the Hub wants to initiate communications.
+---  * `parameterChange`                 - a parameter was incremented.
+---  * `parameterReset`                  - a parameter was reset.
+---  * `parameterValueRequest`           - the Hub wants the current value of the parameter.
+---  * `menuChange`                      - The menu was changed, `+1` or `-1`.
+---  * `menuReset`                       - The menu was reset.
+---  * `menuStringRequest`               - The application should send a `menuString` with the current value.
+---  * `actionOn`                        - An action button was pressed.
+---  * `actionOff`                       - An action button was released.
+---  * `modeChange`                      - The current mode was changed.
+---  * `transport`                       - The transport.
+---  * `unmanagedPanelCapabilities`      - Send by the Hub to advertise an unmanaged panel.
+---  * `unmanagedButtonDown`             - A button on an unmanaged panel was pressed.
+---  * `unmanagedButtonUp`               - A button on an unmanaged panel was released.
+---  * `unmanagedEncoderChange`          - An encoder (dial/wheel) on an unmanaged panel changed.
+---  * `unmanagedDisplayRefresh`         - Triggered when an unmanaged panel's display needs to update.
+---  * `panelConnectionState`            - A panel's connection state changed.
 mod.fromHub = {
-    -- custom notifications
+    --------------------------------------------------------------------------------
+    -- Custom Notifications:
+    --------------------------------------------------------------------------------
     connected                                   = 0xFF01,
     disconnected                                = 0xFF02,
 
-    -- official definitions
+    --------------------------------------------------------------------------------
+    -- Official Definitions:
+    --------------------------------------------------------------------------------
     initiateComms                               = 0x01,
     parameterChange                             = 0x02,
     parameterReset                              = 0x03,
@@ -126,23 +116,23 @@ mod.reserved = {
 --- Definitions for reserved action IDs.
 ---
 --- Notes:
---- * `alt`                     - toggles the 'ALT' function.
---- * `nextKnobBank`            - switches to the next knob bank.
---- * `prevKnobBank`            - switches to the previous knob bank.
---- * `nextButtonBank`          - switches to the next button bank.
---- * `prevBasketBank`          - switches to the previous button bank.
---- * `nextTrackerballBank`     - switches to the next trackerball bank.
---- * `prevTrackerballBank`     - switches to the previous trackerball bank.
---- * `nextMode`                - switches to the next mode.
---- * `prevMode`                - switches to the previous mode.
---- * `goToMode`                - switches to the specified mode, requiring a Argument with the mode ID.
---- * `toggleJogShuttle`        - toggles jog/shuttle mode.
---- * `toggleMouseEmulation`    - toggles mouse emulation.
---- * `fakeKeypress`            - generates a keypress, requiring an Argument with the key code.
---- * `showHUD`                 - shows the HUD on screen.
---- * `goToKnobBank`            - goes to the specific knob bank, requiring an Argument with the bank number.
---- * `goToButtonBank`          - goes to the specific button bank, requiring an Argument with the bank number.
---- * `goToTrackerballBank`     - goes to the specific trackerball bank, requiring an Argument with the bank number.
+---  * `alt`                     - toggles the 'ALT' function.
+---  * `nextKnobBank`            - switches to the next knob bank.
+---  * `prevKnobBank`            - switches to the previous knob bank.
+---  * `nextButtonBank`          - switches to the next button bank.
+---  * `prevBasketBank`          - switches to the previous button bank.
+---  * `nextTrackerballBank`     - switches to the next trackerball bank.
+---  * `prevTrackerballBank`     - switches to the previous trackerball bank.
+---  * `nextMode`                - switches to the next mode.
+---  * `prevMode`                - switches to the previous mode.
+---  * `goToMode`                - switches to the specified mode, requiring a Argument with the mode ID.
+---  * `toggleJogShuttle`        - toggles jog/shuttle mode.
+---  * `toggleMouseEmulation`    - toggles mouse emulation.
+---  * `fakeKeypress`            - generates a keypress, requiring an Argument with the key code.
+---  * `showHUD`                 - shows the HUD on screen.
+---  * `goToKnobBank`            - goes to the specific knob bank, requiring an Argument with the bank number.
+---  * `goToButtonBank`          - goes to the specific button bank, requiring an Argument with the bank number.
+---  * `goToTrackerballBank`     - goes to the specific trackerball bank, requiring an Argument with the bank number.
     action = {
         _                                       = 0x80000000,
         alt                                     = 0x80000001,
@@ -169,8 +159,8 @@ mod.reserved = {
 --- A table of reserved parameter IDs.
 ---
 --- Notes:
---- * `transportRing`           - transport ring.
---- * `fakeKeypress`            - sends a fake keypress.
+---  * `transportRing`           - transport ring.
+---  * `fakeKeypress`            - sends a fake keypress.
     parameter = {
         _                                       = 0x81000000,
         transportRing                           = 0x81000001,
@@ -197,11 +187,53 @@ mod.panelType = {
     [0x11]  = "Ripple",
 }
 
+-- ERROR_OFFSET -> number
+-- Constant
+-- Error Offset.
 local ERROR_OFFSET = -1
 
 --------------------------------------------------------------------------------
 -- HELPER FUNCTIONS:
 --------------------------------------------------------------------------------
+
+-- isNumber(value) -> boolean
+-- Function
+-- Checks to see whether or not `value` is a number.
+--
+-- Parameters:
+--  * value - The value to check.
+--
+-- Returns:
+--  * A boolean.
+local function isNumber(value)
+    return type(value) == "number"
+end
+
+-- isNotTable(value) -> boolean
+-- Function
+-- Checks to see whether or not `value` is not a table.
+--
+-- Parameters:
+--  * value - The value to check.
+--
+-- Returns:
+--  * A boolean.
+local function isNotTable(value)
+    return type(value) ~= "table"
+end
+
+-- isNotList(value) -> boolean
+-- Function
+-- Checks to see whether or not `value` is not a list.
+--
+-- Parameters:
+--  * value - The value to check.
+--
+-- Returns:
+--  * A boolean.
+local function isNotList(value)
+    return isNotTable(value) or #value == 0
+end
 
 -- doesDirectoryExist(path) -> string
 -- Function
@@ -385,12 +417,24 @@ local function processCommands(commands)
     end
 end
 
+-- errorResponse(message) -> nil, number
+-- Function
+-- Writes an error message to the Hammerspoon Console.
+--
+-- Parameters:
+--  * message - The error message.
+--
+-- Returns:
+--  * `nil`
+--  * The error offset number.
 local function errorResponse(message)
     log.ef(message)
     return nil, ERROR_OFFSET
 end
 
--- collection of handlers for messages received from the Hub.
+-- receiveHandler -> table
+-- Variable
+-- Collection of handlers for messages received from the Hub.
 local receiveHandler = {
     --------------------------------------------------------------------------------
     -- InitiateComms (0x01)
@@ -1138,12 +1182,12 @@ end
 --- If no details are provided the ones stored in the module are used.
 ---
 --- Parameters:
---- * appName       - The human-readable name of the application.
---- * systemPath    - A string containing the absolute path of the directory that contains the Controls and Default Map XML files (Path String)
---- * userPath      - A string containing the absolute path of the directory that contains the User’s Default Map XML files (Path String)
+---  * appName       - The human-readable name of the application.
+---  * systemPath    - A string containing the absolute path of the directory that contains the Controls and Default Map XML files (Path String)
+---  * userPath      - A string containing the absolute path of the directory that contains the User’s Default Map XML files (Path String)
 ---
 --- Returns:
---- * `true` if successful, `false` and an error message if there was a problem.
+---  * `true` if successful, `false` and an error message if there was a problem.
 function mod.sendApplicationDefinition(appName, systemPath, userPath)
     appName = appName or mod._applicationName
     systemPath = systemPath or mod._systemPath
@@ -1187,12 +1231,12 @@ end
 --- showing the parameter value.
 ---
 --- Parameters:
---- * paramID - The ID value of the parameter (Unsigned Int)
---- * value - The current value of the parameter (Float)
---- * atDefault - if `true` the value represents the default. Defaults to `false`.
+---  * paramID - The ID value of the parameter (Unsigned Int)
+---  * value - The current value of the parameter (Float)
+---  * atDefault - if `true` the value represents the default. Defaults to `false`.
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendParameterValue(paramID, value, atDefault)
     --------------------------------------------------------------------------------
     -- Format: 0x82, <paramID>, <value>, <atDefault>
@@ -1226,12 +1270,12 @@ end
 --- value for the menu. However the `atDefault` flag will still be recognised.
 ---
 --- Parameters:
---- * menuID - The ID value of the menu (Unsigned Int)
---- * value - The current ‘value’ of the parameter represented as a string
---- * atDefault - if `true` the value represents the default. Otherwise `false`.
+---  * menuID - The ID value of the menu (Unsigned Int)
+---  * value - The current ‘value’ of the parameter represented as a string
+---  * atDefault - if `true` the value represents the default. Otherwise `false`.
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendMenuString(menuID, value, atDefault)
     --------------------------------------------------------------------------------
     -- Format: 0x83, <menuID>, <valueStrLen>, <valueStr>, <atDefault>
@@ -1263,10 +1307,10 @@ end
 --- software-controls it is currently controlling.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendAllChange()
     --------------------------------------------------------------------------------
     -- Format: 0x84
@@ -1282,10 +1326,10 @@ end
 --- software-controls it is controlling.
 ---
 --- Parameters:
---- * modeID - The ID value of the mode (Unsigned Int)
+---  * modeID - The ID value of the mode (Unsigned Int)
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendModeValue(modeID)
     --------------------------------------------------------------------------------
     -- Format: 0x85, <modeID>
@@ -1303,18 +1347,18 @@ end
 
 --- hs.tangent.sendDisplayText(messages[, doubleHeight]) -> boolean, string
 --- Function
---- * Updates the Hub with a number of character strings that will be displayed
+---  * Updates the Hub with a number of character strings that will be displayed
 ---   on connected panels if there is space.
---- * Strings may either be 32 character, single height or 16 character
+---  * Strings may either be 32 character, single height or 16 character
 ---   double-height. They will be displayed in the order received; the first
 ---   string displayed at the top of the display.
---- * If a string is not defined as double-height then it will occupy the
+---  * If a string is not defined as double-height then it will occupy the
 ---   next line.
---- * If a string is defined as double-height then it will occupy the next
+---  * If a string is defined as double-height then it will occupy the next
 ---   2 lines.
---- * The maximum number of lines which will be used by the application
+---  * The maximum number of lines which will be used by the application
 ---   must be indicated in the Controls XML file.
---- * Text which exceeds 32 (single-height) or 16 (double-height) characters will be truncated.
+---  * Text which exceeds 32 (single-height) or 16 (double-height) characters will be truncated.
 ---
 --- Example:
 ---
@@ -1327,11 +1371,11 @@ end
 --- If all text is single-height, the `doubleHeight` table can be omitted.
 ---
 --- Parameters:
---- * messages      - A list of messages to send.
---- * doubleHeight  - An optional list of `boolean`s indicating if the corresponding message is double-height.
+---  * messages      - A list of messages to send.
+---  * doubleHeight  - An optional list of `boolean`s indicating if the corresponding message is double-height.
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendDisplayText(messages, doubleHeight)
     --------------------------------------------------------------------------------
     -- DisplayText (0x86)
@@ -1370,7 +1414,9 @@ function mod.sendDisplayText(messages, doubleHeight)
                         numberToByteString(#messages)
 
     for i,value in ipairs(messages) do
-        -- trim to size
+        --------------------------------------------------------------------------------
+        -- Trim to size:
+        --------------------------------------------------------------------------------
         if not type(value) == "string" then
             return false, format("Invalid message #%s: %s", i, inspect(value))
         end
@@ -1390,14 +1436,14 @@ end
 
 --- hs.tangent.sendUnmanagedPanelCapabilitiesRequest(panelID) -> boolean, string
 --- Function
---- * Only used when working in Unmanaged panel mode
---- * Requests the Hub to respond with an UnmanagedPanelCapabilities (0x30) command.
+---  * Only used when working in Unmanaged panel mode
+---  * Requests the Hub to respond with an UnmanagedPanelCapabilities (0x30) command.
 ---
 --- Parameters:
---- * panelID - The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+---  * panelID - The ID of the panel as reported in the InitiateComms command (Unsigned Int)
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendUnmanagedPanelCapabilitiesRequest(panelID)
     --------------------------------------------------------------------------------
     -- Format: 0xA0, <panelID>
@@ -1415,22 +1461,23 @@ end
 
 --- hs.tangent.sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message) -> boolean, string
 --- Function
---- * Only used when working in Unmanaged panel mode.
---- * Updates the Hub with text that will be displayed on a specific panel at
+---  * Only used when working in Unmanaged panel mode.
+---  * Updates the Hub with text that will be displayed on a specific panel at
 ---   the given line and starting position where supported by the panel capabilities.
---- * If the most significant bit of any individual text character in `message`
+---  * If the most significant bit of any individual text character in `message`
 ---   is set it will be displayed as inversed with dark text on a light background.
 ---
 --- Parameters:
---- * panelID       - The ID of the panel as reported in the InitiateComms command (Unsigned Int)
---- * displayID     - The ID of the display to be written to (Unsigned Int)
---- * lineNum       - The line number of the display to be written to with `1` as the top line (Unsigned Int)
---- * pos           - The position on the line to start writing from with `1` as the first column (Unsigned Int)
---- * message       - A line of text (Character String)
+---  * panelID       - The ID of the panel as reported in the InitiateComms command (Unsigned Int)
+---  * displayID     - The ID of the display to be written to (Unsigned Int)
+---  * lineNum       - The line number of the display to be written to with `1` as the top line (Unsigned Int)
+---  * pos           - The position on the line to start writing from with `1` as the first column (Unsigned Int)
+---  * message       - A line of text (Character String)
 ---
 --- Returns:
---- * `true` if successful, or `false` and an error message if not.
+---  * `true` if successful, or `false` and an error message if not.
 function mod.sendUnmanagedDisplayWrite(panelID, displayID, lineNum, pos, message)
+    --------------------------------------------------------------------------------
     -- Format: 0xA1, <panelID>, <displayID>, <lineNum>, <pos>, <dispStrLen>, <dispStr>
     --
     -- panelID: The ID of the panel as reported in the InitiateComms command (Unsigned Int)
@@ -1469,21 +1516,21 @@ end
 
 --- hs.tangent.sendRenameControl(targetID, newName) -> boolean, string
 --- Function
---- * Renames a control dynamically.
---- * The string supplied will replace the normal text which has been
+---  * Renames a control dynamically.
+---  * The string supplied will replace the normal text which has been
 ---   derived from the Controls XML file.
---- * To remove any existing replacement name set `newName` to `""`,
+---  * To remove any existing replacement name set `newName` to `""`,
 ---   this will remove any renaming and return the system to the normal
 ---   display text
---- * When applied to Modes, the string displayed on buttons which mapped to
+---  * When applied to Modes, the string displayed on buttons which mapped to
 ---   the reserved "Go To Mode" action for this particular mode will also change.
 ---
 --- Parameters:
---- * targetID  - The id of any application defined Parameter, Menu, Action or Mode (Unsigned Int)
---- * newName   - The new name to apply.
+---  * targetID  - The id of any application defined Parameter, Menu, Action or Mode (Unsigned Int)
+---  * newName   - The new name to apply.
 ---
 --- Returns:
---- * `true` if successful, `false` and an error message if not.
+---  * `true` if successful, `false` and an error message if not.
 function mod.sendRenameControl(targetID, newName)
     --------------------------------------------------------------------------------
     -- Format: 0xA2, <targetID>, <nameStrLen>, <nameStr>
@@ -1508,16 +1555,16 @@ end
 
 --- hs.tangent.sendHighlightControl(targetID, active) -> boolean, string
 --- Function
---- * Highlights the control on any panel where this feature is available.
---- * When applied to Modes, buttons which are mapped to the reserved "Go To
+---  * Highlights the control on any panel where this feature is available.
+---  * When applied to Modes, buttons which are mapped to the reserved "Go To
 ---   Mode" action for this particular mode will highlight.
 ---
 --- Parameters:
---- * targetID      - The id of any application defined Parameter, Menu, Action or Mode (Unsigned Int)
---- * active        - If `true`, the control is highlighted, otherwise it is not.
+---  * targetID      - The id of any application defined Parameter, Menu, Action or Mode (Unsigned Int)
+---  * active        - If `true`, the control is highlighted, otherwise it is not.
 ---
 --- Returns:
---- * `true` if sent successfully, `false` and an error message if no.
+---  * `true` if sent successfully, `false` and an error message if no.
 function mod.sendHighlightControl(targetID, active)
     --------------------------------------------------------------------------------
     -- targetID: The id of any application defined Parameter, Menu, Action or Mode (Unsigned Int)
@@ -1537,20 +1584,20 @@ end
 
 --- hs.tangent.sendIndicateControl(targetID, indicated) -> boolean, string
 --- Function
---- * Sets the Indicator of the control on any panel where this feature is
+---  * Sets the Indicator of the control on any panel where this feature is
 ---   available.
---- * This indicator is driven by the `atDefault` argument for Parameters and
+---  * This indicator is driven by the `atDefault` argument for Parameters and
 ---   Menus. This command therefore only applies to controls mapped to Actions
 ---   and Modes.
---- * When applied to Modes, buttons which are mapped to the reserved "Go To
+---  * When applied to Modes, buttons which are mapped to the reserved "Go To
 ---   Mode" action for this particular mode will have their indicator set.
 ---
 --- Parameters:
---- * targetID      - The id of any application defined Parameter, Menu, Action or Mode
---- * active        - If `true`, the control is indicated, otherwise it is not.
+---  * targetID      - The id of any application defined Parameter, Menu, Action or Mode
+---  * active        - If `true`, the control is indicated, otherwise it is not.
 ---
 --- Returns:
---- * `true` if sent successfully, `false` and an error message if no.
+---  * `true` if sent successfully, `false` and an error message if no.
 function mod.sendIndicateControl(targetID, active)
     --------------------------------------------------------------------------------
     -- Format: 0xA4, <targetID>, <state>
@@ -1572,16 +1619,16 @@ end
 
 --- hs.tangent.sendPanelConnectionStatesRequest())
 --- Function
---- * Requests the Hub to respond with a sequence of PanelConnectionState
+---  * Requests the Hub to respond with a sequence of PanelConnectionState
 ---   (0x35) commands to report the connected/disconnected status of each
 ---   configured panel.
---- * A single request may result in multiple state responses.
+---  * A single request may result in multiple state responses.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if sent successfully, `false` and an error message if not.
+---  * `true` if sent successfully, `false` and an error message if not.
 function mod.sendPanelConnectionStatesRequest()
     --------------------------------------------------------------------------------
     -- Format: 0xA5
@@ -1591,8 +1638,15 @@ function mod.sendPanelConnectionStatesRequest()
     return mod.send(byteString)
 end
 
-local connectionWatcher = nil
-
+-- notifyDisconnected() -> none
+-- Function
+-- Triggers the disconnection notification callback and stops the Connection Watcher.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 local function notifyDisconnected()
     if mod._callback then
         mod._callback({{id=mod.fromHub.disconnected, metadata={
@@ -1600,11 +1654,13 @@ local function notifyDisconnected()
             port = mod.port,
         }}})
     end
-    if connectionWatcher then connectionWatcher:stop() end
+    if mod._connectionWatcher then mod._connectionWatcher:stop() end
 end
 
--- tracks the tangent socket connection
-connectionWatcher = timer.new(1.0, function()
+-- hs.tangent._connectionWatcher -> timer
+-- Variable
+-- Tracks the Tangent socket connection.
+mod._connectionWatcher = timer.new(1.0, function()
     if not mod.connected() then
         mod._socket = nil
         notifyDisconnected()
@@ -1625,11 +1681,19 @@ function mod.disconnect()
         mod._socket:disconnect()
         mod._socket = nil
         notifyDisconnected()
-        connectionWatcher:stop()
+        mod._connectionWatcher:stop()
     end
 end
 
-local MESSAGE_SIZE, MESSAGE_BODY = 1, 2
+-- MESSAGE_SIZE -> number
+-- Constant
+-- Message Size.
+local MESSAGE_SIZE = 1
+
+-- MESSAGE_BODY -> number
+-- Constant
+-- Message Body.
+local MESSAGE_BODY = 2
 
 --- hs.tangent.connect(applicationName, systemPath[, userPath]) -> boolean, errorMessage
 --- Function
@@ -1685,7 +1749,11 @@ function mod.connect(applicationName, systemPath, userPath)
                 -- Each message starts with an integer value indicating the number of bytes.
                 --------------------------------------------------------------------------------
                 local messageSize = byteStringToNumber(data, 1, 4)
-                timer.doAfter(mod.interval, function() mod._socket:read(messageSize, MESSAGE_BODY) end)
+                timer.doAfter(mod.interval, function()
+                    if mod._socket then
+                        mod._socket:read(messageSize, MESSAGE_BODY)
+                    end
+                end)
             elseif tag == MESSAGE_BODY then
                 --------------------------------------------------------------------------------
                 -- We've read the rest of series of commands:
@@ -1695,7 +1763,11 @@ function mod.connect(applicationName, systemPath, userPath)
                 --------------------------------------------------------------------------------
                 -- Get set up for the next series of commands:
                 --------------------------------------------------------------------------------
-                timer.doAfter(mod.interval, function() mod._socket:read(4, MESSAGE_SIZE) end)
+                timer.doAfter(mod.interval, function()
+                    if mod._socket then
+                        mod._socket:read(4, MESSAGE_SIZE)
+                    end
+                end)
             end
         end)
         :connect(mod.ipAddress, mod.port, function()
@@ -1709,8 +1781,10 @@ function mod.connect(applicationName, systemPath, userPath)
                 }}})
             end
 
-            -- watch for disconnections.
-            connectionWatcher:start()
+            --------------------------------------------------------------------------------
+            -- Watch for disconnections:
+            --------------------------------------------------------------------------------
+            mod._connectionWatcher:start()
 
             --------------------------------------------------------------------------------
             -- Read the first 4 bytes, which will trigger the callback:
