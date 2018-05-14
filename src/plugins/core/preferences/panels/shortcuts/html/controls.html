@@ -7,6 +7,7 @@
 	%}
 			{* editor(group) *}
 	{%	else %}
+		<input class="search" placeholder="Filter Shortcuts" />
 		<table class="shortcuts">
 			<thead>
 				<tr>
@@ -15,7 +16,7 @@
 					<th class="rowKeyCode">{{ i18n "shortcutsKey" }}</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="list">
 			{(html/rows.html, _.extend({group = group}, context))}
 			</tbody>
 		</table>
@@ -23,5 +24,8 @@
 		end --if
 	%}
 	</div>
+	<script>
+		var shortcutList_{{ id }} = new List('shortcutsGroup_{{ id }}', {valueNames: ['rowLabel']});
+	</script>
 {% end %}
 </div>

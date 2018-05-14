@@ -70,10 +70,6 @@
 	overflow-y: scroll;
 }
 
-.shortcuts tbody tr:nth-child(even) {
-	background-color: #f5f5f5
-}
-
 .shortcuts tbody tr:hover {
 	background-color: #006dd4;
 	color: white;

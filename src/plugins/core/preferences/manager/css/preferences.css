@@ -86,6 +86,25 @@ select {
 	max-height: 200px;
 	overflow: auto;
 }
+.search {
+	float: left;
+	-webkit-appearance: none;
+	-webkit-box-shadow: none;
+	-webkit-rtl-ordering: logical;
+	-webkit-user-select: text;
+	color: #959595;
+	background-color:#161616;
+	border-style: solid;
+	border-color: #0a0a0a;
+	border-width: 2px;
+	border-radius: 6px;
+	text-align: center;
+	font-size: 13px;
+	height: 20px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	width: 99%;
+}
 .uiItem {
 	padding-left:20px;
 	padding-right:20px;
