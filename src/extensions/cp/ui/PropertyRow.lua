@@ -185,8 +185,11 @@ function PropertyRow.new(parent, labelKey, index)
             end
             log.wf("Unable to find a label with these keys: [%s]%s", index, inspect(self._labelKeys))
             return nil
-        end):cached():monitor(parent:app().currentLocale),
+        end):monitor(parent:app().currentLocale),
     }
+
+    -- keep an eye on the label as an indicator of when to update.
+    uiFinder:monitor(o.label)
 
 --- cp.ui.PropertyRow.UI <cp.prop: hs._asm.axuielement; read-only>
 --- Field

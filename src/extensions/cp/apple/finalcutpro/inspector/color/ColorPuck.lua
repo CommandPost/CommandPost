@@ -18,6 +18,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 -- local log                                    = require("hs.logger").new("colorPuck")
+-- local inspect                                = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -124,25 +125,25 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
         yShift = 0
     }, Puck)
 
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
-            return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
-        end, Puck.matches)
-    end)
+    prop.bind(o) {
+        --- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
+        --- Method
+        --- Returns the Color Puck Accessibility Object
+        ---
+        --- Parameters:
+        ---  * None
+        ---
+        --- Returns:
+        ---  * An `axuielementObject` or `nil`
+        UI = prop(function(self)
+            return axutils.cache(self, "_ui", function()
+                local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
+                return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
+            end, Puck.matches)
+        end),
+    }
 
     prop.bind(o) {
---- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
---- Method
---- Returns the Color Puck Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-        UI = UI,
-
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:contentUI() -> axuielementObject
 --- Method
 --- Returns the Content Accessibility Object
@@ -152,7 +153,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 ---
 --- Returns:
 ---  * An `axuielementObject` or `nil`
-        contentUI = UI,
+        contentUI = o.UI,
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:isShowing() -> boolean
 --- Method
@@ -163,7 +164,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 ---
 --- Returns:
 ---  * `true` if showing or `false` if not.
-        isShowing = UI:mutate(function(original)
+        isShowing = o.UI:mutate(function(original)
             return original() ~= nil
         end)
     }

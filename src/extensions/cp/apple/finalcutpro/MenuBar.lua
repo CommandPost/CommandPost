@@ -27,7 +27,6 @@ local fs                                            = require("hs.fs")
 --------------------------------------------------------------------------------
 local archiver                                      = require("cp.plist.archiver")
 local axutils                                       = require("cp.ui.axutils")
-local just                                          = require("cp.just")
 local plist                                         = require("cp.plist")
 local localeID                                      = require("cp.i18n.localeID")
 

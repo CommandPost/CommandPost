@@ -372,10 +372,10 @@ end
 --- Returns:
 ---  * The valid cached value.
 function axutils.cache(source, key, finderFn, verifyFn)
-    local value = source[key]
-    if not axutils.isValid(value) or verifyFn and not verifyFn(value) then
+    local value = source and source[key]
+    if value == nil or not axutils.isValid(value) or verifyFn and not verifyFn(value) then
         value = finderFn()
-        if axutils.isValid(value) then
+        if axutils.isValid(value) and source then
             source[key] = value
         else
             return nil
