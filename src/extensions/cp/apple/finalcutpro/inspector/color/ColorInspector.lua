@@ -227,7 +227,7 @@ end
 ---  * ColorInspector object
 function ColorInspector:show()
     if not self:isShowing() then
-        self:app():menuBar():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
+        self:app():menu():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
     end
     return self
 end

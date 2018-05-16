@@ -77,7 +77,7 @@ end
 ---  * None
 function mod.reload()
     local choices = {}
-    fcp:menuBar():visitMenuItems(function(path, menuItem)
+    fcp:menu():visitMenuItems(function(path, menuItem)
         local title = menuItem:title()
 
         if path[1] ~= "Apple" then
@@ -107,7 +107,7 @@ end
 --- Returns:
 ---  * None
 function mod.onChoices(choices)
-    if not fcp:menuBar():isShowing() or not mod._choices then
+    if not fcp:menu():isShowing() or not mod._choices then
         return true
     end
 
@@ -159,7 +159,7 @@ function mod.onExecute(action)
     if action and action.path then
         fcp:launch()
 
-        fcp:menuBar():selectMenu(action.path)
+        fcp:menu():selectMenu(action.path)
         return true
     end
     return false

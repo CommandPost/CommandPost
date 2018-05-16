@@ -142,8 +142,8 @@ function ExportDialog:show()
         --------------------------------------------------------------------------------
         -- Open the window:
         --------------------------------------------------------------------------------
-        if self:app():menuBar():isEnabled({"File", "Share", 1}) then
-            self:app():menuBar():selectMenu({"File", "Share", 1})
+        if self:app():menu():isEnabled({"File", "Share", 1}) then
+            self:app():menu():selectMenu({"File", "Share", 1})
             just.doUntil(function() return self:UI() end)
         end
     end

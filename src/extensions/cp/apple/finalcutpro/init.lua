@@ -83,7 +83,6 @@ local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 
 local v											= require("semver")
-local moses										= require("moses")
 
 local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
@@ -93,17 +92,20 @@ local shortcut									= require("cp.commands.shortcut")
 local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
-local axutils									= require("cp.ui.axutils")
 local notifier									= require("cp.ui.notifier")
+
+local app                                       = require("cp.apple.finalcutpro.app")
+local menu                                      = require("cp.apple.finalcutpro.menu")
+local plugins									= require("cp.apple.finalcutpro.plugins")
+local fcpStrings                                = require("cp.apple.finalcutpro.strings")
+
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
 local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
 local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
-local destinations								= require("cp.apple.finalcutpro.export.destinations")
 local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
 local kc										= require("cp.apple.finalcutpro.keycodes")
 local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
-local MenuBar									= require("cp.apple.finalcutpro.MenuBar")
 local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
@@ -111,12 +113,7 @@ local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
 local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
-local app                                       = require("cp.apple.finalcutpro.app")
-local plugins									= require("cp.apple.finalcutpro.plugins")
-local fcpStrings                                = require("cp.apple.finalcutpro.strings")
-
-
-local format, gsub, find						= string.format, string.gsub, string.find
+local format, gsub 						        = string.format, string.gsub
 
 --------------------------------------------------------------------------------
 --
@@ -578,55 +575,21 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:menuBar() -> menuBar object
+
+--- cp.apple.finalcutpro:menu() -> cp.app.menu
 --- Method
---- Returns the Final Cut Pro Menu Bar
+--- Returns the `cp.app.menu` for FCP.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A MenuBar object
-function fcp:menuBar()
-    if not self._menuBar then
-        local menuBar = MenuBar:new(self)
-        ----------------------------------------------------------------------------------------
-        -- Add a finder for Share Destinations:
-        ----------------------------------------------------------------------------------------
-        menuBar:addMenuFinder(function(parentItem, path, childName)
-            if moses.isEqual(path, {"File", "Share"}) then
-                childName = childName:match("(.*)…$") or childName
-                local index = destinations.indexOf(childName)
-                if index then
-                    local children = parentItem:attributeValue("AXChildren")
-                    return children[index]
-                end
-            end
-            return nil
-        end)
-        ----------------------------------------------------------------------------------------
-        -- Add a finder for missing menus:
-        ----------------------------------------------------------------------------------------
-        local missingMenuMap = {
-            { path = {"Final Cut Pro"},					child = "Commands",			key = "CommandSubmenu" },
-            { path = {"Final Cut Pro", "Commands"},		child = "Customize…",		key = "Customize" },
-            { path = {"Clip"},							child = "Open Clip",		key = "FFOpenInTimeline" },
-            { path = {"Window", "Show in Workspace"},	child = "Sidebar",			key = "PEEventsLibrary" },
-            { path = {"Window", "Show in Workspace"},	child = "Timeline",			key = "PETimeline" },
-        }
-
-        menuBar:addMenuFinder(function(parentItem, path, childName)
-            for _,item in ipairs(missingMenuMap) do
-                if moses.isEqual(path, item.path) and childName == item.child then
-                    return axutils.childWith(parentItem, "AXTitle", self:string(item.key))
-                end
-            end
-            return nil
-        end)
-
-        self._menuBar = menuBar
+---  * The `cp.app.menu` for the app.
+function fcp:menu()
+    if not self._menu then
+        self._menu = menu
     end
-    return self._menuBar
+    return self._menu
 end
 
 --- cp.apple.finalcutpro:selectMenu(path) -> boolean
@@ -640,7 +603,7 @@ end
 --- Returns:
 ---  * `true` if the press was successful.
 function fcp:selectMenu(path)
-    return self:menuBar():selectMenu(path)
+    return self:menu():selectMenu(path)
 end
 
 ----------------------------------------------------------------------------------------

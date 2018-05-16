@@ -91,7 +91,7 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:show()
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
     -- Go there direct
     menuBar:selectMenu({"Window", "Go To", MediaBrowser.TITLE})
     just.doUntil(function() return self:isShowing() end)
@@ -142,7 +142,7 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:showSidebar()
-    self:app():menuBar():selectMenu({"Window", "Show in Workspace", "Sidebar"})
+    self:app():menu():selectMenu({"Window", "Show in Workspace", "Sidebar"})
 end
 
 -- TODO: Add documentation

@@ -129,7 +129,7 @@ function mod.apply(action)
         --------------------------------------------------------------------------------
         -- Trigger 'Paste' from Menubar:
         --------------------------------------------------------------------------------
-        local menuBar = fcp:menuBar()
+        local menuBar = fcp:menu()
         if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
             menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
         else
@@ -257,7 +257,7 @@ function mod.apply(action)
     --------------------------------------------------------------------------------
     -- Trigger 'Copy' from Menubar:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     menuBar:selectMenu({"Edit", "Copy"})
     local newPasteboard = nil
     just.doUntil(function()

@@ -50,7 +50,7 @@ return test.suite("cp.ids"):with(
         -- wait for the app to finish loading.
         just.doUntil(function() return appUI:attributeValue("AXMenuBar") ~= nil end, 5)
 
-        local item = appUI:menuBar()[2][1][1]
+        local item = appUI:menu()[2][1][1]
 
         ok(item ~= nil)
         ok(eq(item:title(), "About Preview")) -- note, only works in English

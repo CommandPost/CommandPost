@@ -137,7 +137,7 @@ if next(queryString) ~= nil then
 		local keyword = queryString["keyword"]
 		log.df("Adding Keyword: %s", keyword)
 
-		local keywordEditorOpen = fcp:menuBar():isEnabled({"Mark", "Hide Keyword Editor"})
+		local keywordEditorOpen = fcp:menu():isEnabled({"Mark", "Hide Keyword Editor"})
 
 		if not keywordEditorOpen then
 			fcp:selectMenu({"Mark", "Show Keyword Editor"})

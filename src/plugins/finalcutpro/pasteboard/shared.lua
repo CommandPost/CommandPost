@@ -260,7 +260,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:isEnabled({"Edit", "Copy"}) then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
@@ -357,7 +357,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipNameAndFolder()
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:isEnabled({"Edit", "Copy"}) then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end

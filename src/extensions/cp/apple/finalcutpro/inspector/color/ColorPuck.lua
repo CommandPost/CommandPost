@@ -369,7 +369,7 @@ function Puck:start()
     --------------------------------------------------------------------------------
     -- Disable skimming while the Puck is running:
     --------------------------------------------------------------------------------
-    self.menuBar = self:parent():app():menuBar()
+    self.menuBar = self:parent():app():menu()
     if self:skimming() then
         self.menuBar:selectMenu({"View", "Skimming"})
     end

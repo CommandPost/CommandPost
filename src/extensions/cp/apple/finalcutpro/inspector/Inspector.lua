@@ -204,7 +204,7 @@ function Inspector.new(parent)
             self:show()
             local currentValue = thisProp:get()
             if newValue ~= currentValue then
-                self:app():menuBar():selectMenu({"View", "Toggle Inspector Height"})
+                self:app():menu():selectMenu({"View", "Toggle Inspector Height"})
             end
         end
     ):bind(o)
@@ -275,7 +275,7 @@ function Inspector:show(tab)
         -- Show the parent:
         -----------------------------------------------------------------------
         if parent:show():isShowing() and not self:isShowing() then
-            local menuBar = self:app():menuBar()
+            local menuBar = self:app():menu()
             -----------------------------------------------------------------------
             -- Enable it in the primary:
             -----------------------------------------------------------------------
@@ -296,7 +296,7 @@ end
 ---  * The `Inspector` instance.
 function Inspector:hide()
     if self:isShowing() then
-        local menuBar = self:app():menuBar()
+        local menuBar = self:app():menu()
         -- Uncheck it from the primary workspace
         menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
     end

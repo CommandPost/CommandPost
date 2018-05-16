@@ -18,6 +18,7 @@ local applicationwatcher		= require("hs.application.watcher")
 local fs                        = require("hs.fs")
 local timer                     = require("hs.timer")
 
+local menu                      = require("cp.app.menu")
 local prefs                     = require("cp.app.prefs")
 local languageID                = require("cp.i18n.languageID")
 local localeID                  = require("cp.i18n.localeID")
@@ -85,18 +86,24 @@ end
 --- Returns:
 --- * The `cp.app` for the bundle.
 function mod.forBundleID(bundleID)
+    assert(type(bundleID) == "string", "`bundleID` must be a string")
     local theApp = apps[bundleID]
     if not theApp then
         theApp = prop.extend({
             _bundleID = bundleID,
-
-            --- cp.app.preferences <cp.app.prefs>
-            --- Field
-            --- Provides access to the application preferences data.
-            preferences = prefs.new(bundleID),
+            _preferences = prefs.new(bundleID),
         }, mod.mt)
 
-        local hsApplication = prop.new(function(self)
+        -- cp.prop wrapper for prefs, which will notify watchers when updates happen.
+        local preferences = prop(function(self)
+            return self._preferences
+        end)
+        -- watch the `prefs` for changes, updating watchers of the cp.prop.
+        preferences:preWatch(function(_, _)
+            prefs.watch(theApp._preferences, function() preferences:update() end)
+        end)
+
+        local hsApplication = prop(function(self)
             local hsApp = self._hsApplication
             if not hsApp or hsApp:bundleID() == nil or not hsApp:isRunning() then
                 local result = application.applicationsForBundleID(self._bundleID)
@@ -252,24 +259,16 @@ function mod.forBundleID(bundleID)
 
         local currentLocale = prop(
             function(self)
-                -- use the cache if present.
-                if self._currentLocale ~= nil then
-                    return self._currentLocale
-                end
-
-                -- TODO: Add checking menus. I believe this is for cases where the system language is not supported by the app, but another language gets selected by default?
-
                 --------------------------------------------------------------------------------
                 -- If the app is not running, we next try to determine the language using
                 -- the 'AppleLanguages' preference...
                 --------------------------------------------------------------------------------
-                local appLanguages = self.preferences.AppleLanguages
+                local appLanguages = self:preferences().AppleLanguages
                 if appLanguages then
                     for _,lang in ipairs(appLanguages) do
                         if self:isSupportedLocale(lang) then
                             local currentLocale = localeID.forCode(lang)
                             if currentLocale then
-                                self._currentLocale = currentLocale
                                 return currentLocale
                             end
                         end
@@ -293,7 +292,6 @@ function mod.forBundleID(bundleID)
                                     local theLocale = theLanguage:toLocaleID()
                                     local bestLocale = self:bestSupportedLocale(theLocale)
                                     if bestLocale then
-                                        self._currentLocale = bestLocale
                                         return bestLocale
                                     end
                                 end
@@ -310,25 +308,22 @@ function mod.forBundleID(bundleID)
                 return self._currentLocale
             end,
             function(value, self, theProp)
-                if value ~= nil then
-                    if type(value) == "string" then
-                        value = localeID.forCode(value)
-                    end
-                    if not localeID.is(value) then
-                        error(format("The provided value is not a cp.i18n.localeID: %s", inspect(value)))
-                    end
+                value = localeID(value)
+                if not localeID.is(value) then
+                    error(format("The provided value is not a cp.i18n.localeID: %s", inspect(value)))
                 end
 
                 -- if the new value matches the current value, don't do anything.
                 if value == theProp:get() then return end
 
+                local thePrefs = self:preferences()
                 if value == nil then
-                    if self.preferences.AppleLanguages == nil then return end
-                    self.preferences.AppleLanguages = nil
+                    if thePrefs.AppleLanguages == nil then return end
+                    thePrefs.AppleLanguages = nil
                 else
                     local bestLocale = self:bestSupportedLocale(value)
                     if bestLocale then
-                        self.preferences.AppleLanguages = {bestLocale.code}
+                        thePrefs.AppleLanguages = {bestLocale.code}
                     else
                         error("Unsupported language: "..value.code)
                     end
@@ -342,6 +337,14 @@ function mod.forBundleID(bundleID)
 
 
         prop.bind(theApp) {
+            --- cp.app.preferences <cp.prop: cp.app.prefs; read-only; live>
+            --- Field
+            --- Provides access to the application preferences data.
+            ---
+            --- Notes:
+            --- * While you can't overwrite the `preferences` property itself, you can modify individual preferences *inside* the returned table.
+            preferences = preferences,
+
             --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
             --- Field
             --- Returns the running `hs.application` for the application, or `nil` if it's not running.
@@ -444,7 +447,7 @@ function mod.forBundleID(bundleID)
 end
 
 --- cp.app:bundleID() -> string
---- Function
+--- Method
 --- Returns the Bundle ID for the app.
 ---
 --- Parameters:
@@ -454,6 +457,22 @@ end
 --- * The Bundle ID.
 function mod.mt:bundleID()
     return self._bundleID
+end
+
+--- cp.app:menu() -> cp.app.menu
+--- Method
+--- Returns the main `menu` for the application.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `cp.app.menu` for the `cp.app` instance.
+function mod.mt:menu()
+    if not self._menu then
+        self._menu = menu.new(self)
+    end
+    return self._menu
 end
 
 --- cp.app:launch(waitSeconds) -> self
@@ -709,6 +728,7 @@ function mod.mt:bestSupportedLocale(locale)
             local score = sl:matches(locale)
             if score > currentScore then
                 currentLocale = sl
+                currentScore = score
             end
         end
         return currentLocale
@@ -729,5 +749,11 @@ function mod.mt:update()
     self.hsApplication:update()
     return self
 end
+
+setmetatable(mod, {
+    __call = function(_, key)
+        return mod.forBundleID(key)
+    end,
+})
 
 return mod

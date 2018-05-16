@@ -16,6 +16,7 @@ local log           = require("hs.logger").new("testfcp")
 local inspect       = require("hs.inspect")
 
 local fs            = require("hs.fs")
+local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
@@ -193,6 +194,15 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector",
         function()
+            local tc = fcp:timeline():contents()
+            -- get the set of clips (expand secondary storylines)
+            local clips = tc:clipsUI(true)
+            if #clips < 1 then
+                error("Unable to find any clips to adjust color for.")
+            end
+            -- select the first clip.
+            tc:selectClip(clips[1])
+
             local color = fcp:inspector():color()
             color:show()
             just.doUntil(function() return color:isShowing() end, 1)
@@ -206,6 +216,16 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Color Inspector Corrections Selector",
         function()
+            local tc = fcp:timeline():contents()
+            -- get the set of clips (expand secondary storylines)
+            local clips = tc:clipsUI(true)
+            if #clips < 1 then
+                error("Unable to find any clips to adjust color for.")
+            end
+            -- select the first clip.
+            tc:selectClip(clips[1])
+
+            -- activate the colour inspector
             local color = fcp:inspector():color()
             local corrections = color:corrections()
             corrections:show()
@@ -584,6 +604,7 @@ onRun(
             end,
             10
         )
+
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
         if not fcp:openLibrary(targetLibraryPath) then
@@ -617,11 +638,16 @@ onRun(
 
         -- do this after each test.
         if fcp:closeLibrary(targetLibrary) then
-            -- delete the temporary library copy.
-            local ok, err = rmdir(targetLibraryPath, true)
-            if not ok then
-                error(format("Unable to remove the temporary directory: %s", err))
-            end
+            -- wait until the library actually closes...
+            just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 5, 0.1)
+
+            timer.doAfter(1, function()
+                -- delete the temporary library copy.
+                local ok, err = rmdir(targetLibraryPath, true)
+                if not ok then
+                    error(format("Unable to remove the temporary directory: %s", err))
+                end
+            end)
         else
             log.df("Unable to close '%s'", targetLibrary)
         end

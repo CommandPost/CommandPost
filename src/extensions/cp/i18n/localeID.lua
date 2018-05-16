@@ -203,6 +203,7 @@ end
 --- * A number from `0` to `3` indicating the match strength.
 function mod.mt:matches(otherLocale)
     local score = 0
+    otherLocale = mod(otherLocale)
     if mod.is(otherLocale) then
         if self.language == otherLocale.language then
             score = 1

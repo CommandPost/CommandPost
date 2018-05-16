@@ -10,8 +10,8 @@
 --- This has been populated with common lookups for user interface values
 --- that appear in Final Cut Pro.
 
-local log                   = require("hs.logger").new("fcpStrings")
-local inspect               = require("hs.inspect")
+-- local log                   = require("hs.logger").new("fcpStrings")
+-- local inspect               = require("hs.inspect")
 
 local app                   = require("cp.apple.finalcutpro.app")
 local strings               = require("cp.strings")
@@ -76,11 +76,10 @@ function mod:findKeys(string, locale)
     if locale then
         locale = localeID(locale)
         context = {locale = locale.aliases}
-        log.df("findKeys: context = %s", inspect(context))
     end
     return self._strings and self._strings:findKeys(string, context)
 end
 
-app.running:watch(function() resetStrings() end, true)
+app.currentLocale:watch(function() resetStrings() end, true)
 
 return mod

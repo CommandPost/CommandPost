@@ -273,7 +273,7 @@ end
 function Libraries:openClipTitled(name)
     if self:selectClipTitled(name) then
         self:app():launch()
-        local menuBar = self:app():menuBar()
+        local menuBar = self:app():menu()
 
         -- ensure the Libraries browser is focused
         menuBar:selectMenu({"Window", "Go To", "Libraries"})

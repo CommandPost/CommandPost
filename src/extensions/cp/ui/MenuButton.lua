@@ -69,7 +69,7 @@ function MenuButton.new(parent, finderFn)
 
         --- cp.ui.MenuButton.value <cp.prop: anything>
         --- Field
-        --- Returns or sets the current MenuBar value.
+        --- Returns or sets the current MenuButton value.
         value = UI:mutate(
             function(original)
                 local ui = original()

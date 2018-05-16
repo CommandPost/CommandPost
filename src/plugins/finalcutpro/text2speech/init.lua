@@ -402,7 +402,7 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Check if Timeline can be enabled:
     --------------------------------------------------------------------------------
-    result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
+    result = fcp:menu():isEnabled({"Window", "Go To", "Timeline"})
     if result then
         fcp:selectMenu({"Window", "Go To", "Timeline"})
     else
@@ -413,14 +413,14 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Perform Paste:
     --------------------------------------------------------------------------------
-    result = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
+    result = fcp:menu():isEnabled({"Edit", "Paste as Connected Clip"})
     if result then
         fcp:selectMenu({"Edit", "Paste as Connected Clip"})
     else
         --------------------------------------------------------------------------------
         -- Try one more time...
         --------------------------------------------------------------------------------
-        local takeTwo = fcp:menuBar():isEnabled({"Edit", "Paste as Connected Clip"})
+        local takeTwo = fcp:menu():isEnabled({"Edit", "Paste as Connected Clip"})
         if takeTwo then
             fcp:selectMenu({"Edit", "Paste as Connected Clip"})
         else
@@ -602,7 +602,7 @@ function mod._completeProcess()
             --------------------------------------------------------------------------------
             -- Check if Timeline can be enabled:
             --------------------------------------------------------------------------------
-            if fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"}) then
+            if fcp:menu():isEnabled({"Window", "Go To", "Timeline"}) then
                 fcp:selectMenu({"Window", "Go To", "Timeline"})
             else
                 dialog.displayErrorMessage("Failed to activate timeline in Text to Speech Plugin.")
@@ -623,10 +623,10 @@ function mod._completeProcess()
         --------------------------------------------------------------------------------
         if not mod.insertIntoTimeline() then
             result = just.doUntil(function()
-                return fcp:menuBar():isEnabled({"Edit", "Undo Paste"})
+                return fcp:menu():isEnabled({"Edit", "Undo Paste"})
             end, 3)
             if result then
-                if fcp:menuBar():isEnabled({"Edit", "Undo Paste"}) then
+                if fcp:menu():isEnabled({"Edit", "Undo Paste"}) then
                     fcp:selectMenu({"Edit", "Undo Paste"})
                 else
                     dialog.displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
@@ -878,7 +878,7 @@ function mod.show()
     --------------------------------------------------------------------------------
     -- Check if Timeline can be enabled:
     --------------------------------------------------------------------------------
-    local result = fcp:menuBar():isEnabled({"Window", "Go To", "Timeline"})
+    local result = fcp:menu():isEnabled({"Window", "Go To", "Timeline"})
     if not result then
         log.wf("Failed to activate timeline in Text to Speech Plugin.")
     end
