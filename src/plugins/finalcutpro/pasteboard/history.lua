@@ -30,7 +30,7 @@ local config                                = require("cp.config")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local DEFAULT_VALUE                         = true
+local DEFAULT_VALUE                         = false
 local TOOLS_PRIORITY                        = 1000
 local OPTIONS_PRIORITY                      = 1000
 
