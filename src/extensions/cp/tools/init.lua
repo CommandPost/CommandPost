@@ -247,31 +247,33 @@ end
 
 --- cp.tools.getRAMSize() -> string
 --- Function
---- Returns RAM Size.
+--- Returns RAM Size in a format Apple's Feedback form expects.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * String
+---  * The RAM size as a string, or "" if unknown.
 function tools.getRAMSize()
     local memSize = host.vmStat()["memSize"]
     local rounded = tools.round(memSize/1073741824, 0)
-
     if rounded <= 2 then
-        return "2 GB"
+        return "2GB"
     elseif rounded >= 3 and rounded <= 4 then
-        return "3-4 GB"
+        return "3-4GB"
     elseif rounded >= 5 and rounded <= 8 then
-        return "5-8 GB"
+        return "5-8GB"
     elseif rounded >= 9 and rounded <= 16 then
-        return "9-16 GB"
+        return "9-16GB"
     elseif rounded >= 17 and rounded <= 32 then
-        return "17-32 GB"
+        return "17-32GB"
+    elseif rounded == 64 then
+        return "64GB"
+    elseif rounded == 128 then
+        return "128GB"
     else
-        return "More than 32 GB"
+        return ""
     end
-
 end
 
 --- cp.tools.getModelName() -> string
@@ -342,13 +344,19 @@ function tools.getVRAMSize()
             end
         end
         if result >= 256 and result <= 512 then
-            return "256 MB-512 MB"
+            return "256MB-512MB"
         elseif result >= 512 and result <= 1024 then
-            return "512 MB-1 GB"
-        elseif result >= 1024 and result <= 2048 then
-            return "1-2 GB"
-        elseif result > 2048 then
-            return "More than 2 GB"
+            return "512MB-1GB"
+        elseif result == 1024 then
+            return "1GB"
+        elseif result == 2048 then
+            return "2GB"
+        elseif result == 4096 then
+            return "4GB"
+        elseif result == 8192 then
+            return "8GB"
+        elseif result == 16384 then
+            return "16GB"
         end
     end
     return ""
@@ -356,22 +364,35 @@ end
 
 --- cp.tools.getmacOSVersion() -> string
 --- Function
---- Returns macOS Version.
+--- Returns the macOS Version in the format that Apple's Feedback Form expects.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * String
+---  * The macOS version as a string or "" if unknown.
 function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
-        local label = "OS X"
-        if v(macOSVersion) >= v("10.12") then
-            label = "macOS"
+        local result = ""
+        if v(macOSVersion) >= v("10.13") then
+            result = "macOS High Sierra" .. " " .. tostring(macOSVersion)
+        elseif v(macOSVersion) >= v("10.12") then
+            result = "macOS Sierra 10.12.x"
+        elseif v(macOSVersion) >= v("10.11") then
+            result = "OS X El Capitan 10.11.x"
+        elseif v(macOSVersion) >= v("10.10") then
+            result = "OS X El Capitan 10.10.x"
+        elseif v(macOSVersion) >= v("10.9") then
+            result = "OS X Mavericks 10.9.x"
+        elseif v(macOSVersion) >= v("10.8") then
+            result = "OS X Mountain Lion 10.8.x"
+        elseif v(macOSVersion) <= v("10.7") then
+            result = "OS X Lion 10.7.x or earlier"
         end
-        return label .. " " .. tostring(macOSVersion)
+        return result
     end
+    return ""
 end
 
 --- cp.tools.getUSBDevices() -> string
