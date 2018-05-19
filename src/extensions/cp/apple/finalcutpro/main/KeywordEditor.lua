@@ -23,6 +23,7 @@ local log                               = require("hs.logger").new("keywordEdito
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
+local just                              = require("cp.just")
 local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -448,21 +449,39 @@ function KeyboardShortcuts:keyword(item, value)
                 --------------------------------------------------------------------------------
                 -- String Setter:
                 --------------------------------------------------------------------------------
+                textfields[1]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
+
+                textfields[item]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[item]:attributeValue("AXFocused") == true end)
+
                 if textfields[item]:setAttributeValue("AXValue", value) then
                     if textfields[item]:performAction("AXConfirm") then
+                        textfields[1]:setAttributeValue("AXFocused", true)
+                        just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
+
                         return value
                     end
                 end
             elseif type(value) == "table" then
                 --------------------------------------------------------------------------------
-                -- String Setter:
+                -- Table Setter:
                 --------------------------------------------------------------------------------
                 local result = ""
                 for _, v in pairs(value) do
                     result = result .. v .. ", "
                 end
+
+                textfields[1]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
+
+                textfields[item]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[item]:attributeValue("AXFocused") == true end)
+
                 if textfields[item]:setAttributeValue("AXValue", result) then
                     if textfields[item]:performAction("AXConfirm") then
+                        textfields[1]:setAttributeValue("AXFocused", true)
+                        just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
                         return value
                     end
                 end
