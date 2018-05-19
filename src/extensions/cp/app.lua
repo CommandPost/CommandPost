@@ -17,6 +17,7 @@ local application               = require("hs.application")
 local applicationwatcher		= require("hs.application.watcher")
 local fs                        = require("hs.fs")
 local timer                     = require("hs.timer")
+local windowfilter              = require("hs.window.filter")
 
 local menu                      = require("cp.app.menu")
 local prefs                     = require("cp.app.prefs")
@@ -26,11 +27,15 @@ local just                      = require("cp.just")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 local axutils                   = require("cp.ui.axutils")
+local notifier					= require("cp.ui.notifier")
 
 local v							= require("semver")
 
 local insert                    = table.insert
 local format                    = string.format
+
+-- Disable Window Filter Errors (the wfilter errors are too annoying):
+windowfilter.setLogLevel("nothing")
 
 local mod = {}
 mod.mt = {}
@@ -597,6 +602,24 @@ function mod.mt:hide()
     return self
 end
 
+
+--- cp.app:notifier() -> cp.ui.notifier
+--- Method
+--- Returns a `notifier` that is tracking the application UI element. It has already been started.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The notifier.
+function mod.mt:notifier()
+    if not self._notifier then
+        self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
+    end
+    return self._notifier
+end
+
+
 function mod.mt:__tostring()
     return format("cp.app: %s", self:bundleID())
 end
@@ -749,6 +772,35 @@ function mod.mt:update()
     self.hsApplication:update()
     return self
 end
+
+-- Watchers to keep the contents up-to-date.
+
+-- cp.apple.finalcutpro.windowfilter.LOG_NAME -> string
+-- Constant
+-- The name of the `hs.logger` instance.
+local LOG_NAME = "appWinFilter"
+
+local function findApp(w)
+    if w then
+        return apps[w:application():bundleID()]
+    end
+end
+
+local function updateWindowsUI(window)
+    local app = findApp(window)
+    if app then
+        -- check if any windows are open
+        app.windowsUI:update()
+    end
+end
+
+local appWindowFilter = windowfilter.new(function(window)
+    return findApp(window) ~= nil
+end, LOG_NAME)
+
+appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
+appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
+appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
 
 setmetatable(mod, {
     __call = function(_, key)

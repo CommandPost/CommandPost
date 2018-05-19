@@ -54,7 +54,7 @@ function PrimaryWindow.matches(w)
     return w and w:attributeValue("AXTitle") == "Final Cut Pro" and (subrole == "AXStandardWindow" or subrole == "AXDialog")
 end
 
---- cp.apple.finalcutpro.main.PrimaryWindow:new(app) -> PrimaryWindow object
+--- cp.apple.finalcutpro.main.PrimaryWindow.new(app) -> PrimaryWindow object
 --- Method
 --- Creates a new PrimaryWindow.
 ---
@@ -63,43 +63,183 @@ end
 ---
 --- Returns:
 ---  * PrimaryWindow
-function PrimaryWindow:new(app)
+function PrimaryWindow.new(app)
     local o = prop.extend({
-        _app = app
+        _app = app,
     }, PrimaryWindow)
-
-    local window = Window:new(function()
-        return axutils.cache(self, "_ui", function()
-            return axutils.childMatching(app:windowsUI(), PrimaryWindow.matches)
+    local window = Window.new(app.windowsUI:mutate(function(original)
+        return axutils.cache(o, "_ui", function()
+            return axutils.childMatching(original(), PrimaryWindow.matches)
         end,
         PrimaryWindow.matches)
-    end)
+    end))
     o._window = window
 
+    prop.bind(o) {
 --- cp.apple.finalcutpro.main.PrimaryWindow.UI <cp.prop: axuielement; read-only>
 --- Field
 --- The `axuielement` for the window.
-    o.UI = window.UI:wrap(o)
+        UI = window.UI,
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.hsWindow <cp.prop: hs.window; read-only>
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
-    o.hsWindow = window.hsWindow:wrap(o)
+        hsWindow = window.hsWindow,
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isShowing <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is visible.
-    o.isShowing = window.visible:wrap(o)
+        isShowing = window.visible,
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.isFullScreen <cp.prop: boolean>
 --- Field
 --- Is `true` if the window is full-screen.
-    o.isFullScreen = window.fullScreen:wrap(o)
+        isFullScreen = window.fullScreen,
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.frame <cp.prop: frame>
 --- Field
 --- The current position (x, y, width, height) of the window.
-    o.frame = window.frame:wrap(o)
+        frame = window.frame,
+    }
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.rootGroupUI() <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the top AXSplitGroup as a `hs._asm.axuielement` object
+    local rootGroupUI = window.UI:mutate(function(original, self)
+        return axutils.cache(self, "_rootGroup", function()
+            local ui = original()
+            return ui and axutils.childWith(ui, "AXRole", "AXSplitGroup")
+        end)
+    end)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.leftGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the left group UI as a `hs._asm.axuielement` object
+    local leftGroupUI = rootGroupUI:mutate(function(original)
+        local root = original()
+        if root then
+            for _,child in ipairs(root) do
+                -----------------------------------------------------------------------
+                -- The left group has only one child:
+                -----------------------------------------------------------------------
+                if #child == 1 then
+                    return child[1]
+                end
+            end
+        end
+        return nil
+    end)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.rightGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the right group UI as a `hs._asm.axuielement` object.
+    local rightGroupUI = rootGroupUI:mutate(function(original)
+        local root = original()
+        if root and #root >= 3 then -- NOTE: Chris changed from "== 3" to ">= 3" because this wasn't working with FCPX 10.4 as there seems to be two AXSplitters.
+            if #(root[1]) >= 3 then
+                return root[1]
+            else
+                return root[2]
+            end
+        end
+        return nil
+    end)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.topGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the top group UI as a `hs._asm.axuielement` object.
+    local topGroupUI = leftGroupUI:mutate(function(original)
+        local left = original()
+        if left then
+            if #left < 3 then
+                -----------------------------------------------------------------------
+                -- Either top or bottom is visible.
+                -- It's impossible to determine which it at this level,
+                -- so just return the non-empty one:
+                -----------------------------------------------------------------------
+                for _,child in ipairs(left) do
+                    if #child > 0 then
+                        return child[1]
+                    end
+                end
+            elseif #left >= 3 then
+                -----------------------------------------------------------------------
+                -- Both top and bottom are visible. Grab the highest AXGroup:
+                -----------------------------------------------------------------------
+                local top = nil
+                for _,child in ipairs(left) do
+                    if child:attributeValue("AXRole") == "AXGroup" then
+                        if top == nil or top:frame().y > child:frame().y then
+                            top = child
+                        end
+                    end
+                end
+                if top then return top[1] end
+            end
+        end
+        return nil
+    end)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow:bottomGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the bottom group UI as a `hs._asm.axuielement` object.
+    local bottomGroupUI = leftGroupUI:mutate(function(original)
+        local left = original()
+        if left then
+            if #left < 3 then
+                -----------------------------------------------------------------------
+                -- Either top or bottom is visible.
+                -- It's impossible to determine which it at this level,
+                -- so just return the non-empty one:
+                -----------------------------------------------------------------------
+                for _,child in ipairs(left) do
+                    if #child > 0 then
+                        return child[1]
+                    end
+                end
+            elseif #left >= 3 then
+                -----------------------------------------------------------------------
+                -- Both top and bottom are visible. Grab the lowest AXGroup:
+                -----------------------------------------------------------------------
+                local top = nil
+                for _,child in ipairs(left) do
+                    if child:attributeValue("AXRole") == "AXGroup" then
+                        if top == nil or top:frame().y < child:frame().y then
+                            top = child
+                        end
+                    end
+                end
+                if top then return top[1] end
+            end
+        end
+        return nil
+    end)
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI that contains the `Viewer`.
+    local viewerGroupUI = topGroupUI
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.timelineGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI that contains the `Timeline`.
+    local timelineGroupUI = bottomGroupUI
+
+--- cp.apple.finalcutpro.main.PrimaryWindow.browserGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI which contains the Browser.
+    local browserGroupUI = topGroupUI
+
+    prop.bind(o) {
+        rootGroupUI = rootGroupUI,
+        leftGroupUI = leftGroupUI,
+        rightGroupUI = rightGroupUI,
+        topGroupUI = topGroupUI,
+        bottomGroupUI = bottomGroupUI,
+        viewerGroupUI = viewerGroupUI,
+        timelineGroupUI = timelineGroupUI,
+        browserGroupUI = browserGroupUI,
+    }
 
     return o
 end
@@ -149,155 +289,6 @@ end
 
 -----------------------------------------------------------------------
 --
--- UI STRUCTURE:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.main.PrimaryWindow:rootGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the top AXSplitGroup as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:rootGroupUI()
-    return axutils.cache(self, "_rootGroup", function()
-        local ui = self:UI()
-        return ui and axutils.childWith(ui, "AXRole", "AXSplitGroup")
-    end)
-end
-
---- cp.apple.finalcutpro.main.PrimaryWindow:leftGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the left group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:leftGroupUI()
-    local root = self:rootGroupUI()
-    if root then
-        for _,child in ipairs(root) do
-            -----------------------------------------------------------------------
-            -- The left group has only one child:
-            -----------------------------------------------------------------------
-            if #child == 1 then
-                return child[1]
-            end
-        end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.main.PrimaryWindow:rightGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the right group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:rightGroupUI()
-    local root = self:rootGroupUI()
-    if root and #root >= 3 then -- NOTE: Chris changed from "== 3" to ">= 3" because this wasn't working with FCPX 10.4 as there seems to be two AXSplitters.
-        if #(root[1]) >= 3 then
-            return root[1]
-        else
-            return root[2]
-        end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.main.PrimaryWindow:topGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the top group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:topGroupUI()
-    local left = self:leftGroupUI()
-    if left then
-        if #left < 3 then
-            -----------------------------------------------------------------------
-            -- Either top or bottom is visible.
-            -- It's impossible to determine which it at this level,
-            -- so just return the non-empty one:
-            -----------------------------------------------------------------------
-            for _,child in ipairs(left) do
-                if #child > 0 then
-                    return child[1]
-                end
-            end
-        elseif #left >= 3 then
-            -----------------------------------------------------------------------
-            -- Both top and bottom are visible. Grab the highest AXGroup:
-            -----------------------------------------------------------------------
-            local top = nil
-            for _,child in ipairs(left) do
-                if child:attributeValue("AXRole") == "AXGroup" then
-                    if top == nil or top:frame().y > child:frame().y then
-                        top = child
-                    end
-                end
-            end
-            if top then return top[1] end
-        end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.main.PrimaryWindow:bottomGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the bottom group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:bottomGroupUI()
-    local left = self:leftGroupUI()
-    if left then
-        if #left < 3 then
-            -----------------------------------------------------------------------
-            -- Either top or bottom is visible.
-            -- It's impossible to determine which it at this level,
-            -- so just return the non-empty one:
-            -----------------------------------------------------------------------
-            for _,child in ipairs(left) do
-                if #child > 0 then
-                    return child[1]
-                end
-            end
-        elseif #left >= 3 then
-            -----------------------------------------------------------------------
-            -- Both top and bottom are visible. Grab the lowest AXGroup:
-            -----------------------------------------------------------------------
-            local top = nil
-            for _,child in ipairs(left) do
-                if child:attributeValue("AXRole") == "AXGroup" then
-                    if top == nil or top:frame().y < child:frame().y then
-                        top = child
-                    end
-                end
-            end
-            if top then return top[1] end
-        end
-    end
-    return nil
-end
-
------------------------------------------------------------------------
---
 -- INSPECTOR:
 --
 -----------------------------------------------------------------------
@@ -343,56 +334,6 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.PrimaryWindow:viewerGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the viewer group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:viewerGroupUI()
-    return self:topGroupUI()
-end
-
------------------------------------------------------------------------
---
--- TIMELINE GROUP UI:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.main.PrimaryWindow:timelineGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the timeline group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:timelineGroupUI()
-    return self:bottomGroupUI()
-end
-
------------------------------------------------------------------------
---
--- BROWSER:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.main.PrimaryWindow:browserGroupUI() -> hs._asm.axuielement object
---- Method
---- Returns the browser group UI as a `hs._asm.axuielement` object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `hs._asm.axuielement` object
-function PrimaryWindow:browserGroupUI()
-    return self:topGroupUI()
-end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow:toolbar() -> PrimaryToolbar
 --- Method

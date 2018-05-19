@@ -68,21 +68,138 @@ function Window.matches(element)
     return element and element:attributeValue("AXRole") == "AXWindow"
 end
 
---- cp.ui.Window:new(finderFn) -> Window
+--- cp.ui.Window.new(uiProp) -> Window
 --- Constructor
 --- Creates a new Window
 ---
 --- Parameters:
----  * `finderFn`   - a function which will provide the `axuielement` for the window to work with.
+---  * `uiProp`   - a `cp.prop` that returns the `hs._asm.axuielement` for the window.
 ---
 --- Returns:
 ---  * A new `Window` instance.
--- TODO: Use a function instead of a method.
-function Window:new(finderFn) -- luacheck: ignore
+function Window.new(uiProp)
 
-    assert(finderFn, "Please provide a finder function.")
-    local o = {_finder = finderFn}
-    prop.extend(o, Window)
+    assert(prop.is(uiProp), "Please provide a finder function.")
+    local o = prop.extend({UI = uiProp}, Window)
+
+--- cp.ui.Window.hsWindow <cp.prop: hs.window; read-only>
+--- Field
+--- The `hs.window` instance for the window, or `nil` if it can't be found.
+    local hsWindow = o.UI:mutate(
+        function(original)
+            local ui = original()
+            return ui and ui:asHSWindow()
+        end
+    )
+
+--- cp.ui.Window.id <cp.prop: number; read-only>
+--- Field
+--- The unique ID for the window.
+    local id = hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window ~= nil and window:id()
+        end
+    )
+
+--- cp.ui.Window.visible <cp.prop: boolean; read-only>
+--- Field
+--- Returns `true` if the window is visible on a screen.
+    local visible = hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window ~= nil and window:isVisible()
+        end
+    ):bind(Window)
+
+--- cp.ui.Window.focused <cp.prop: boolean>
+--- Field
+--- Is `true` if the window has mouse/keyboard focused.
+--- Note: Setting to `false` has no effect, since 'defocusing' isn't definable.
+    local focused = hsWindow:mutate(
+        function(original)
+            return original() == hswindow.focusedWindow()
+        end,
+        function(focused, original)
+            local window = original()
+            if window and focused then
+                window:focus()
+            end
+        end
+    )
+
+--- cp.ui.Window.exists <cp.prop: boolean; read-only>
+--- Field
+--- Returns `true` if the window exists. It may not be visible.
+    local exists = o.UI:mutate(
+        function(ui)
+            return ui ~= nil
+        end
+    )
+
+--- cp.ui.Window.minimized <cp.prop: boolean>
+--- Field
+--- Returns `true` if the window exists and is minimised.
+    local minimized = hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window ~= nil and window:isMinimized()
+        end,
+        function(minimized, original)
+            local window = original()
+            if window then
+                if minimized then
+                    window:minimize()
+                else
+                    window:unminimize()
+                end
+            end
+        end
+    )
+
+--- cp.ui.Window.frame <cp.prop: hs.geometry rect>
+--- Field
+--- The `hs.geometry` rect value describing the window's position.
+    local frame = hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window and window:frame()
+        end,
+        function(frame, original)
+            local window = original()
+            if window then
+                window:move(frame)
+            end
+            return window
+        end
+    )
+
+--- cp.ui.Window.fullScreen <cp.prop: boolean>
+--- Field
+--- Returns `true` if the window is full-screen.
+    local fullScreen = hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window ~= nil and window:isFullScreen()
+        end,
+        function(window, fullScreen)
+            if window then
+                window:setFullScreen(fullScreen)
+            end
+            return window
+        end
+    )
+
+    prop.bind(o) {
+        hsWindow = hsWindow,
+        id = id,
+        visible = visible,
+        focused = focused,
+        exists = exists,
+        minimized = minimized,
+        frame = frame,
+        fullScreen = fullScreen,
+    }
 
     -- Window Visible:
     _watch(hswindowfilter.windowVisible, o, o.visible)
@@ -105,128 +222,11 @@ function Window:new(finderFn) -- luacheck: ignore
     -- Window Full-Screened:
     _watch(hswindowfilter.windowFullscreened, o, o.fullScreen)
 
+    -- Window is un-Full-Screened:
+    _watch(hswindowfilter.windowUnfullscreened, o, o.fullScreen)
+
     return o
 end
-
---- cp.ui.Window.UI <cp.prop: axuielement; read-only>
---- Field
---- Returns the `axuielement` UI for the window, or `nil` if it can't be found.
-Window.UI = prop(
-    function(self)
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        Window.matches)
-    end
-):bind(Window)
-
---- cp.ui.Window.hsWindow <cp.prop: hs.window; read-only>
---- Field
---- The `hs.window` instance for the window, or `nil` if it can't be found.
-Window.hsWindow = Window.UI:mutate(
-    function(original)
-        local ui = original()
-        return ui and ui:asHSWindow()
-    end
-):bind(Window)
-
---- cp.ui.Window.id <cp.prop: number; read-only>
---- Field
---- The unique ID for the window.
-Window.id = Window.hsWindow:mutate(
-    function(original)
-        local window = original()
-        return window ~= nil and window:id()
-    end
-):bind(Window)
-
---- cp.ui.Window.visible <cp.prop: boolean; read-only>
---- Field
---- Returns `true` if the window is visible on a screen.
-Window.visible = Window.hsWindow:mutate(
-    function(original)
-        local window = original()
-        return window ~= nil and window:isVisible()
-    end
-):bind(Window)
-
---- cp.ui.Window.focused <cp.prop: boolean>
---- Field
---- Is `true` if the window has mouse/keyboard focused.
---- Note: Setting to `false` has no effect, since 'defocusing' isn't definable.
-Window.focused = Window.hsWindow:mutate(
-    function(original)
-        return original() == hswindow.focusedWindow()
-    end,
-    function(focused, original)
-        local window = original()
-        if window and focused then
-            window:focus()
-        end
-    end
-):bind(Window)
-
---- cp.ui.Window.exists <cp.prop: boolean; read-only>
---- Field
---- Returns `true` if the window exists. It may not be visible.
-Window.exists = Window.UI:mutate(
-    function(ui)
-        return ui ~= nil
-    end
-):bind(Window)
-
---- cp.ui.Window.minimized <cp.prop: boolean>
---- Field
---- Returns `true` if the window exists and is minimised.
-Window.minimized = Window.hsWindow:mutate(
-    function(original)
-        local window = original()
-        return window ~= nil and window:isMinimized()
-    end,
-    function(minimized, original)
-        local window = original()
-        if window then
-            if minimized then
-                window:minimize()
-            else
-                window:unminimize()
-            end
-        end
-    end
-):bind(Window)
-
---- cp.ui.Window.frame <cp.prop: hs.geometry rect>
---- Field
---- The `hs.geometry` rect value describing the window's position.
-Window.frame = Window.hsWindow:mutate(
-    function(original)
-        local window = original()
-        return window and window:frame()
-    end,
-    function(frame, original)
-        local window = original()
-        if window then
-            window:move(frame)
-        end
-        return window
-    end
-):bind(Window)
-
---- cp.ui.Window.fullScreen <cp.prop: boolean>
---- Field
---- Returns `true` if the window is full-screen.
-Window.fullScreen = Window.hsWindow:mutate(
-    function(original)
-        local window = original()
-        return window and window:isFullScreen()
-    end,
-    function(window, fullScreen)
-        if window then
-            window:setFullScreen(fullScreen)
-        end
-        return window
-    end
-):bind(Window)
 
 --- cp.ui.Window.close() -> boolean
 --- Method

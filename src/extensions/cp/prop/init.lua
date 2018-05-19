@@ -260,6 +260,7 @@ local inspect           = require("hs.inspect")
 local fnutils           = require("hs.fnutils")
 
 local format            = string.format
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -575,6 +576,10 @@ function prop.mt:bind(owner, key)
         if not self._label then
             self._label = key
         end
+        if not self._aliases then
+            self._aliases = {}
+        end
+        insert(self._aliases, key)
     end
     return self
 end
@@ -1683,9 +1688,9 @@ function prop.bind(owner, relaxed)
         for k,v in pairs(bindings) do
             if prop.is(v) then
                 local vOwner = v:owner()
-                if vOwner == nil then -- it's unowned.
+                if vOwner == nil or vOwner == owner then -- it's unowned/owned by the owner already.
                     v:bind(owner, k)
-                elseif vOwner ~= owner then -- it's already owned. wrap instead.
+                elseif vOwner ~= owner then -- it's owned by someone else. wrap instead.
                     v:wrap(owner, k)
                 end
             elseif not relaxed then

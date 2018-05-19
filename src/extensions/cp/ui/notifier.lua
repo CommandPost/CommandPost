@@ -13,10 +13,10 @@
 --- For example:
 ---
 --- ```lua
---- local observer = require("cp.ui.notifier")
+--- local notifier = require("cp.ui.notifier")
 --- local function finder() ... end -- returns the axuielement
---- local o = observer.new("com.apple.FinalCut", finder)
---- o:addWatcher("AXValueChanged", function(observer, element, notification, details) ... end)
+--- local o = notifier.new("com.apple.FinalCut", finder)
+--- o:addWatcher("AXValueChanged", function(notifier, element, notification, details) ... end)
 --- o:start()
 --- ```
 

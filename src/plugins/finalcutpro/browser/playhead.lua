@@ -332,22 +332,13 @@ function plugin.init(deps)
     end)
 
     --------------------------------------------------------------------------------
-    -- Remove Highlight when the Command Editor window is open:
+    -- Remove Highlight when a modal window like Command Editor is open:
     --------------------------------------------------------------------------------
-    fcp:commandEditor():watch({
-        show		= function()
+    fcp.app.modalDialogOpen:watch(function(open)
+        if open then
             mod.deleteHighlight()
-        end,
-    })
-
-    --------------------------------------------------------------------------------
-    -- Remove Highlight when the Media Import window is open:
-    --------------------------------------------------------------------------------
-    fcp:mediaImport():watch({
-        show		= function()
-            mod.deleteHighlight()
-        end,
-    })
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:

@@ -92,8 +92,6 @@ local shortcut									= require("cp.commands.shortcut")
 local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
-local notifier									= require("cp.ui.notifier")
-
 local app                                       = require("cp.apple.finalcutpro.app")
 local menu                                      = require("cp.apple.finalcutpro.menu")
 local plugins									= require("cp.apple.finalcutpro.plugins")
@@ -214,9 +212,14 @@ prop.bind(fcp) {
     isRunning = fcp.app.running,
 
     --- cp.apple.finalcutpro.UI <cp.prop: hs._asm.axuielement; read-only; live>
-    --- Method
+    --- Field
     --- The Final Cut Pro `axuielement`, if available.
     UI = fcp.app.UI,
+
+    --- cp.apple.finalcutpro.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- Field
+    --- Returns the UI containing the list of windows in the app.
+    windowsUI = fcp.app.windowsUI,
 
     --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only; live>
     --- Field
@@ -363,10 +366,7 @@ end
 --- Returns:
 --- * The notifier.
 function fcp:notifier()
-    if not self._notifier then
-        self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
-    end
-    return self._notifier
+    return self.app:notifier()
 end
 
 --- cp.apple.finalcutpro:launch([waitSeconds]) -> self
@@ -641,7 +641,7 @@ end
 ---  * The Primary Window
 function fcp:primaryWindow()
     if not self._primaryWindow then
-        self._primaryWindow = PrimaryWindow:new(self)
+        self._primaryWindow = PrimaryWindow.new(self)
     end
     return self._primaryWindow
 end
@@ -657,7 +657,7 @@ end
 ---  * The Secondary Window
 function fcp:secondaryWindow()
     if not self._secondaryWindow then
-        self._secondaryWindow = SecondaryWindow:new(self)
+        self._secondaryWindow = SecondaryWindow.new(self)
     end
     return self._secondaryWindow
 end
@@ -740,19 +740,6 @@ function fcp:exportDialog()
         self._exportDialog = ExportDialog:new(self)
     end
     return self._exportDialog
-end
-
---- cp.apple.finalcutpro:windowsUI() -> axuielement
---- Method
---- Returns the UI containing the list of windows in the app.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The axuielement, or nil if the application is not running.
-function fcp:windowsUI()
-    return self.app:windowsUI()
 end
 
 ----------------------------------------------------------------------------------------
