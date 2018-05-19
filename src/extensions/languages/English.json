@@ -1135,5 +1135,8 @@
 		"finalcutpro_viewer_overlays_label"					   : "Viewer: Overlays",
 		"saveCurrentFrameToStillsMemory"					   : "Save Current Frame to Stills Memory",
 		"viewStillsMemory"     						           : "View Stills Memory",
+		"cpPasteTextAsCaption_title"						   : "Paste Text as Caption",
+		"finalcutpro_timeline_captions_label"		           : "Timeline: Captions",
+
     }
 }
