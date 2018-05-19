@@ -298,10 +298,33 @@ end
 --- Returns:
 ---  * None
 function mod.update()
-    mod.hide()
-    if mod.gridEnabled() or mod.activeMemory() ~= 0 then
-        if fcp.isFrontmost() and fcp:viewer():isShowing() then
+    --------------------------------------------------------------------------------
+    -- If Final Cut Pro is Front Most & Viewer is Showing:
+    --------------------------------------------------------------------------------
+    if fcp.isFrontmost() and fcp:viewer():isShowing() then
+        --------------------------------------------------------------------------------
+        -- Start the Keyboard Watcher:
+        --------------------------------------------------------------------------------
+        if mod._eventtap then
+            --log.df("Starting Keyboard Monitor")
+            mod._eventtap:start()
+        end
+        --------------------------------------------------------------------------------
+        -- Show the grid if enabled:
+        --------------------------------------------------------------------------------
+        if mod.gridEnabled() or mod.activeMemory() ~= 0 then
             mod.show()
+        else
+            mod.hide()
+        end
+    else
+        --------------------------------------------------------------------------------
+        -- Otherwise hide the grid and disable the Keyboard Watcher:
+        --------------------------------------------------------------------------------
+        mod.hide()
+        if mod._eventtap then
+            --log.df("Stopping Keyboard Monitor")
+            mod._eventtap:stop()
         end
     end
 end
@@ -634,7 +657,7 @@ function plugin.init(deps)
                 end
             end
         end
-    end):start()
+    end)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro is shown/hidden:
