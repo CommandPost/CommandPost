@@ -50,7 +50,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Cache the last Command Set Path:
     --------------------------------------------------------------------------------
-    mod.lastCommandSetPath = fcp:getActiveCommandSetPath()
+    mod.lastCommandSetPath = fcp:activeCommandSetPath()
 
     --------------------------------------------------------------------------------
     -- Update Preferences Cache when Final Cut Pro Preferences file is modified:
@@ -59,10 +59,10 @@ function mod.init()
         --------------------------------------------------------------------------------
         -- Update the Command Set Cache:
         --------------------------------------------------------------------------------
-        local activeCommandSetPath = fcp:getActiveCommandSetPath()
+        local activeCommandSetPath = fcp:activeCommandSetPath()
         if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
             --log.df("Updating Final Cut Pro Command Editor Cache.")
-            fcp:getActiveCommandSet(true)
+            fcp:activeCommandSet(true)
             mod.lastCommandSetPath = activeCommandSetPath
         end
     end)
@@ -75,7 +75,7 @@ function mod.init()
         --log.df("Setting up User Command Set Watcher: %s", userCommandSetPath)
         mod.commandSetWatcher = pathwatcher.new(userCommandSetPath .. "/", function()
             --log.df("Updating Final Cut Pro Command Editor Cache.")
-            fcp:getActiveCommandSet(true)
+            fcp:activeCommandSet(true)
         end):start()
     end
 

@@ -8,11 +8,6 @@
 ---
 --- Represents the Final Cut Pro application, providing functions that allow different tasks to be accomplished.
 ---
---- This module provides an API to work with the FCPX application. There are a couple of types of files:
----
---- * `init.lua` - the main module that gets imported.
---- * `axutils.lua` - some utility functions for working with `axuielement` objects.
----
 --- Generally, you will `require` the `cp.apple.finalcutpro` module to import it, like so:
 ---
 --- ```lua
@@ -21,7 +16,7 @@
 ---
 --- Then, there are the `UpperCase` files, which represent the application itself:
 ---
---- * `MenuBar` 	- The main menu bar.
+--- * `MenuBar` 	            - The main menu bar.
 --- * `prefs/PreferencesWindow` - The preferences window.
 --- * etc...
 ---
@@ -31,7 +26,7 @@
 --- fcp:preferencesWindow():show()
 --- ```
 ---
---- In general, as long as FCPX is running, actions can be performed directly, and the API will perform the required operations to achieve it. For example, to toggle the 'Create Optimized Media' checkbox in the 'Import' section of the 'Preferences' window, you can simply do this:
+--- In general, as long as Final Cut Pro is running, actions can be performed directly, and the API will perform the required operations to achieve it. For example, to toggle the 'Create Optimized Media' checkbox in the 'Import' section of the 'Preferences' window, you can simply do this:
 ---
 --- ```lua
 --- fcp:preferencesWindow():importPanel():toggleCreateOptimizedMedia()
@@ -74,43 +69,59 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local logname									= "fcp"
-local log										= require("hs.logger").new(logname)
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("fcp")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
 
-local v											= require("semver")
-
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
-local shortcut									= require("cp.commands.shortcut")
 local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
+local commandeditor								= require("cp.apple.commandeditor")
+local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
+
 local app                                       = require("cp.apple.finalcutpro.app")
+local strings                                   = require("cp.apple.finalcutpro.strings")
 local menu                                      = require("cp.apple.finalcutpro.menu")
 local plugins									= require("cp.apple.finalcutpro.plugins")
-local fcpStrings                                = require("cp.apple.finalcutpro.strings")
 
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
-local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
-local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
-local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
-local kc										= require("cp.apple.finalcutpro.keycodes")
-local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
-local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
+local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
-local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
+local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
+local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
+local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local v											= require("semver")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
 
 --------------------------------------------------------------------------------
@@ -123,7 +134,7 @@ local fcp = {
     --- Constant
     --- The `cp.app` for Final Cut Pro.
     app = app,
-    strings = fcpStrings,
+    strings = strings,
 }
 
 --- cp.apple.finalcutpro.BUNDLE_ID
@@ -198,7 +209,10 @@ function fcp:init()
     return self
 end
 
--- bind the `cp.app` props to the FCP instance for easy access/backwards compatibility.
+--------------------------------------------------------------------------------
+-- Bind the `cp.app` props to the Final Cut Pro instance for easy
+-- access/backwards compatibility:
+--------------------------------------------------------------------------------
 prop.bind(fcp) {
 
     --- cp.apple.finalcutpro.application <cp.prop: hs.application; read-only>
@@ -342,20 +356,6 @@ function fcp:bundleID()
     return self.app:bundleID()
 end
 
---- cp.apple.finalcutpro:getPasteboardUTI() -> string
---- Method
---- Returns the Final Cut Pro Pasteboard UTI
----
---- Parameters:
----  * None
----
---- Returns:
----  * A string of the Final Cut Pro Pasteboard UTI
--- TODO: This should be a function rather than a method.
-function fcp:getPasteboardUTI() -- luacheck: ignore
-    return fcp.PASTEBOARD_UTI
-end
-
 --- cp.apple.finalcutpro:notifier() -> cp.ui.notifier
 --- Method
 --- Returns a notifier that is tracking the application UI element. It has already been started.
@@ -468,8 +468,7 @@ end
 ---
 --- Returns:
 --- * `true` if successful, or `false` if not.
--- TODO: This should be a function rather than a method.
-function fcp:openLibrary(path) -- luacheck: ignore
+function fcp.openLibrary(path)
     assert(type(path) == "string", "Please provide a valid path to the FCP Library.")
     if fs.attributes(path) == nil then
         log.ef("Unable to find an FCP Library file at the provided path: %s", path)
@@ -512,7 +511,10 @@ function fcp:closeLibrary(title)
         local libraries = self:libraries()
         libraries:show()
         just.doUntil(function() return libraries:isShowing() end, 5.0)
-        -- waiting here for a couple of seconds seems to make it less likely to crash FCP
+        --------------------------------------------------------------------------------
+        -- Waiting here for a couple of seconds seems to make it less likely to
+        -- crash Final Cut Pro:
+        --------------------------------------------------------------------------------
         just.wait(2.0)
         if libraries:selectLibrary(title) ~= nil then
             local closeLibrary = self:string("FFCloseLibraryFormat")
@@ -523,7 +525,9 @@ function fcp:closeLibrary(title)
             self:selectMenu({"File", function(item)
                 return item:title() == closeLibrary
             end})
-            -- wait until the library actually closes, up to 5 seconds.
+            --------------------------------------------------------------------------------
+            -- Wait until the library actually closes, up to 5 seconds:
+            --------------------------------------------------------------------------------
             return just.doUntil(function() return libraries:show():selectLibrary(title) == nil end, 10.0)
         end
     end
@@ -1035,16 +1039,10 @@ end
 --- Returns:
 ---  * A path as a string or `nil` if the folder doesn't exist.
 function fcp.userCommandSetPath()
-    local path = "~/Library/Application Support/Final Cut Pro/Command Sets/"
-    local absolutePath = fs.pathToAbsolute(path)
-    if absolutePath then
-        return absolutePath
-    else
-        return nil
-    end
+    return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
 end
 
---- cp.apple.finalcutpro:getActiveCommandSetPath() -> string or nil
+--- cp.apple.finalcutpro:activeCommandSetPath() -> string or nil
 --- Method
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 ---
@@ -1052,17 +1050,12 @@ end
 ---  * None
 ---
 --- Returns:
----  * The 'Active Command Set' value, or the 'Default' command set if none is set.
-function fcp:getActiveCommandSetPath()
-    local result = self:getPreference("Active Command Set") or nil
-    if result == nil then
-        -- In the unlikely scenario that this is the first time FCPX has been run:
-        result = self:getDefaultCommandSetPath()
-    end
-    return result
+---  * The 'Active Command Set' value, or the 'Default' Command Set if this is the first time Final Cut Pro has been run.
+function fcp:activeCommandSetPath()
+    return self:getPreference("Active Command Set") or self:defaultCommandSetPath()
 end
 
---- cp.apple.finalcutpro:getDefaultCommandSetPath([locale]) -> string
+--- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string
 --- Method
 --- Gets the path to the 'Default' Command Set.
 ---
@@ -1071,28 +1064,30 @@ end
 ---
 --- Returns:
 ---  * The 'Default' Command Set path, or `nil` if an error occurred
-function fcp:getDefaultCommandSetPath(locale)
+function fcp:defaultCommandSetPath(locale)
     locale = localeID(locale) or self:currentLocale()
     return self:getPath() .. "/Contents/Resources/" .. locale.code .. ".lproj/Default.commandset"
 end
 
---- cp.apple.finalcutpro:getCommandSet(path) -> string
---- Method
---- Loads the Command Set at the specified path into a table.
+--- cp.apple.finalcutpro.commandSet(path) -> string
+--- Function
+--- Gets the Command Set at the specified path as a table.
 ---
 --- Parameters:
----  * `path`	- The path to the command set.
+---  * `path`	- The path to the Command Set.
 ---
 --- Returns:
 ---  * The Command Set as a table, or `nil` if there was a problem.
--- TODO: This should be a function rather than a method.
-function fcp:getCommandSet(path) -- luacheck: ignore
-    if fs.attributes(path) ~= nil then
+function fcp.commandSet(path)
+    if not fs.attributes(path) then
+        log.ef("Invalid Command Set Path: %s", path)
+        return nil
+    else
         return plist.fileToTable(path)
     end
 end
 
---- cp.apple.finalcutpro:getActiveCommandSet([forceReload]) -> table or nil
+--- cp.apple.finalcutpro:activeCommandSet([forceReload]) -> table or nil
 --- Method
 --- Returns the 'Active Command Set' as a Table. The result is cached, so pass in
 --- `true` for `forceReload` if you want to reload it.
@@ -1102,17 +1097,17 @@ end
 ---
 --- Returns:
 ---  * A table of the Active Command Set's contents, or `nil` if an error occurred
-function fcp:getActiveCommandSet(forceReload)
-
+function fcp:activeCommandSet(forceReload)
     if forceReload or not self._activeCommandSet then
-        local path = self:getActiveCommandSetPath()
-        self._activeCommandSet = self:getCommandSet(path)
-        -- reset the command cache since we've loaded a new set.
+        local path = self:activeCommandSetPath()
+        self._activeCommandSet = self.commandSet(path)
+        ----------------------------------------------------------------------------------------
+        -- Reset the command cache since we've loaded a new set:
+        ----------------------------------------------------------------------------------------
         if self._activeCommands then
             self._activeCommands = nil
         end
     end
-
     return self._activeCommandSet
 end
 
@@ -1135,56 +1130,17 @@ function fcp:getCommandShortcuts(id)
 
     local shortcuts = activeCommands[id]
     if not shortcuts then
-        local commandSet = self:getActiveCommandSet()
-
-        local fcpxCmds = commandSet[id]
-
-        if fcpxCmds == nil then
+        local commandSet = self:activeCommandSet()
+        shortcuts = commandeditor.shortcutsFromCommandSet(id, commandSet)
+        if not shortcuts then
             return nil
         end
-
-        if #fcpxCmds == 0 then
-            fcpxCmds = { fcpxCmds }
-        end
-
-        shortcuts = {}
-
-        for _,fcpxCmd in ipairs(fcpxCmds) do
-            local modifiers = nil
-            local keyCode = nil
-            local keypadModifier = false
-
-            if fcpxCmd["modifiers"] ~= nil then
-                if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
-                modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
-            elseif fcpxCmd["modifierMask"] ~= nil then
-                modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
-                if tools.tableContains(modifiers, "numericpad") then
-                    keypadModifier = true
-                end
-            end
-
-            if fcpxCmd["characterString"] ~= nil then
-                if keypadModifier then
-                    keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["characterString"])
-                else
-                    keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
-                end
-            elseif fcpxCmd["character"] ~= nil then
-                if keypadModifier then
-                    keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])
-                else
-                    keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
-                end
-            end
-
-            if keyCode ~= nil and keyCode ~= "" then
-                shortcuts[#shortcuts + 1] = shortcut.new(modifiers, keyCode)
-            end
-        end
-
-        activeCommands[id] = shortcuts
+        ----------------------------------------------------------------------------------------
+        -- Cache the value for faster access next time:
+        ----------------------------------------------------------------------------------------
+        self._activeCommands[id] = shortcuts
     end
+
     return shortcuts
 end
 
@@ -1200,14 +1156,11 @@ end
 function fcp:performShortcut(whichShortcut)
     self:launch()
     local shortcuts = self:getCommandShortcuts(whichShortcut)
-
     if shortcuts and #shortcuts > 0 then
         shortcuts[1]:trigger()
-    else
-        return false
+        return true
     end
-
-    return true
+    return false
 end
 
 ----------------------------------------------------------------------------------------
@@ -1229,20 +1182,6 @@ end
 ---  * `true` if the locale is supported.
 function fcp:isSupportedLocale(locale)
     return self.app:isSupportedLocale(locale)
-end
-
---- cp.apple.finalcutpro:getFlexoLanguages() -> table
---- Method
---- Returns a table of languages Final Cut Pro's Flexo Framework supports
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table of languages Final Cut Pro supports
--- TODO: This should be a function rather than a method.
-function fcp:getFlexoLanguages() -- luacheck: ignore
-    return fcp.FLEXO_LANGUAGES
 end
 
 --------------------------------------------------------------------------------
