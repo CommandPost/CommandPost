@@ -90,7 +90,6 @@ local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
-local tools										= require("cp.tools")
 local watcher									= require("cp.watcher")
 
 local commandeditor								= require("cp.apple.commandeditor")
@@ -693,7 +692,7 @@ end
 ---  * The Final Cut Pro Command Editor
 function fcp:commandEditor()
     if not self._commandEditor then
-        self._commandEditor = CommandEditor:new(self)
+        self._commandEditor = CommandEditor.new(self)
     end
     return self._commandEditor
 end
@@ -709,7 +708,7 @@ end
 ---  * The Final Cut Pro Keyword Editor
 function fcp:keywordEditor()
     if not self._keywordEditor then
-        self._keywordEditor = KeywordEditor:new(self)
+        self._keywordEditor = KeywordEditor.new(self)
     end
     return self._keywordEditor
 end
@@ -725,7 +724,7 @@ end
 ---  * The Final Cut Pro Media Import Window
 function fcp:mediaImport()
     if not self._mediaImport then
-        self._mediaImport = MediaImport:new(self)
+        self._mediaImport = MediaImport.new(self)
     end
     return self._mediaImport
 end
@@ -741,7 +740,7 @@ end
 ---  * The Final Cut Pro Export Dialog Box
 function fcp:exportDialog()
     if not self._exportDialog then
-        self._exportDialog = ExportDialog:new(self)
+        self._exportDialog = ExportDialog.new(self)
     end
     return self._exportDialog
 end

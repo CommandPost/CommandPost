@@ -135,7 +135,7 @@ function ColorBoard.matchesCurrent(element)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.new(parent) -> ColorBoard object
---- Method
+--- Constructor
 --- Creates a new ColorBoard object
 ---
 --- Parameters:

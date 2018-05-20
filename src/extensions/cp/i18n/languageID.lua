@@ -1,5 +1,11 @@
---- === cp.i18n.languageID ===
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
+--- === cp.i18n.languageID ===
+---
 --- As per [Apple's documentation](https://developer.apple.com/library/content/documentation/MacOSX/Conceptual/BPInternational/LanguageandLocaleIDs/LanguageandLocaleIDs.html#//apple_ref/doc/uid/10000171i-CH15-SW6),
 --- a `language ID` is a code which identifies either a language used across multiple regions,
 --- a dialect from a specific region, or a script used in multiple regions. See the [parse](#parse) function for details.
@@ -10,16 +16,35 @@
 ---
 --- You can also convert the resulting table back to the code via `tostring`, or the [code](#code) method.
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log               = require("hs.logger").new("languageID")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local language          = require("cp.i18n.language")
+local localeID          = require("cp.i18n.localeID")
 local region            = require("cp.i18n.region")
 local script            = require("cp.i18n.script")
 
-local localeID          = require("cp.i18n.localeID")
-
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local match, format     = string.match, string.format
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 mod.mt = {}
 mod.mt.__index = mod.mt
@@ -34,10 +59,10 @@ local LANG_SCRIPT_PATTERN = "^([a-z][a-z])-(%a%a%a%a)$"
 --- Checks if the `thing` is a languageID instance.
 ---
 --- Parameters:
---- * thing     - the thing to check.
+---  * thing     - the thing to check.
 ---
 --- Returns:
---- * `true` if the `thing` is a `languageID`, otherwise `false`.
+---  * `true` if the `thing` is a `languageID`, otherwise `false`.
 function mod.is(thing)
     return type(thing) == "table" and getmetatable(thing) == mod.mt
 end
@@ -51,9 +76,9 @@ end
 ---
 --- This is one of the following patterns:
 ---
---- * `[language]` - eg. `"en"`, or `"fr"`. The covers the language across all languages and scripts.
---- * `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
---- * `[language]-[region]` - eg. "en-AU" for Australian English, "fr-CA" for Canadian French, etc.
+---  * `[language]` - eg. `"en"`, or `"fr"`. The covers the language across all languages and scripts.
+---  * `[language]-[script]` - eg. "az-Arab" for Azerbaijani in Arabic script, "az-Latn" for Azerbaijani in Latin script.
+---  * `[language]-[region]` - eg. "en-AU" for Australian English, "fr-CA" for Canadian French, etc.
 ---
 --- It will then return the matched component in three return values: language, region, script.
 --- If a script is specified, the `region` will be `nil`. Eg.:
@@ -63,12 +88,12 @@ end
 --- ```
 ---
 --- Parameters:
---- * code      - The `language ID` code. Eg. "en-AU".
+---  * code      - The `language ID` code. Eg. "en-AU".
 ---
 --- Returns:
---- * language  - The two-character lower-case alpha language code.
---- * script    - the four-character mixed-case alpha script code.
---- * region    - The two-character upper-case alpha region code.
+---  * language  - The two-character lower-case alpha language code.
+---  * script    - the four-character mixed-case alpha script code.
+---  * region    - The two-character upper-case alpha region code.
 function mod.parse(code)
     local l, s, r
     l = match(code, LANG_PATTERN)
@@ -82,8 +107,16 @@ function mod.parse(code)
 end
 
 --- cp.i18n.languageID.forParts(languageCode[, scriptCode[, regionCode]]) -> cp.i18n.languageID
---- Construtor
---- Returns a `languageID` with the specified parts
+--- Constructor
+--- Returns a `languageID` with the specified parts.
+---
+--- Parameters:
+---  * languageCode - Language code
+---  * scriptCode - Optional Script code
+---  * regionCode - Optional Region Code
+---
+--- Returns:
+---  * A `cp.i18n.languageID` object.
 function mod.forParts(languageCode, scriptCode, regionCode)
     local id
     if languageCode then
@@ -145,11 +178,11 @@ end
 --- `nil` is returned.
 ---
 --- Parameters:
---- * code      - The language ID code.
+---  * code      - The language ID code.
 ---
 --- Returns:
---- * The matching `languageID`, or `nil` if the language ID couldn't be found.
---- * The error message, or `nil` if there was no problem.
+---  * The matching `languageID`, or `nil` if the language ID couldn't be found.
+---  * The error message, or `nil` if there was no problem.
 function mod.forCode(code)
     return mod.forParts(mod.parse(code))
 end
@@ -162,12 +195,12 @@ end
 --- If only one or the other is set in the locale, `prioritiseScript` is ignored.
 ---
 --- Parameters:
---- * locale            - The `localeID` to convert
---- * prioritiseScript  - If set to `true` and the locale has both a region and script then the script code will be used.
+---  * locale            - The `localeID` to convert
+---  * prioritiseScript  - If set to `true` and the locale has both a region and script then the script code will be used.
 ---
 --- Returns:
---- * The `languageID` for the `locale`, or `nil`
---- * The error message if there was a problem.
+---  * The `languageID` for the `locale`, or `nil`
+---  * The error message if there was a problem.
 function mod.forLocaleID(locale, prioritiseScript)
     local languageCode = locale.language.alpha2
     local scriptCode = locale.script and locale.script.alpha4
@@ -188,10 +221,10 @@ end
 --- Returns the `cp.i18n.localeID` equivalent for this `languageID`.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The matching `localeID`.
+---  * The matching `localeID`.
 function mod.mt:toLocaleID()
     local localeCode = self.language.alpha2
     if self.script then

@@ -33,6 +33,9 @@ local prop              = require("cp.prop")
 --------------------------------------------------------------------------------
 local touchbar          = require("hs._asm.undocumented.touchbar")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert            = table.insert
 local format            = string.format
 local abs               = math.abs
@@ -697,9 +700,14 @@ function mod.init(deps)
 
 end
 
---- indicates if any widgests have been created
+--- plugins.finalcutpro.touchbar.widgets.colorboard.hasWidgets <cp.prop: boolean>
+--- Variable
+--- Indicates if any widgests have been created.
 mod.hasWidgets = prop.FALSE()
 
+--- plugins.finalcutpro.touchbar.widgets.colorboard.active <cp.prop: boolean>
+--- Variable
+--- Indicates if the widget is active.
 mod.active = mod.hasWidgets:AND(fcp.app.frontmost:OR(fcp.app.showing)):watch(function(active)
     if active then
         mod.start()

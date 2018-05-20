@@ -54,8 +54,8 @@ function MediaImport.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.import.MediaImport:new(app) -> MediaImport
---- Function
+--- cp.apple.finalcutpro.import.MediaImport.new(app) -> MediaImport
+--- Constructor
 --- Creates a new Media Import object.
 ---
 --- Parameters:
@@ -63,8 +63,7 @@ end
 ---
 --- Returns:
 ---  * A new MediaImport object.
--- TODO: Use a function instead of a method.
-function MediaImport:new(app) -- luacheck: ignore
+function MediaImport.new(app)
     local o = {_app = app}
     return prop.extend(o, MediaImport)
 end

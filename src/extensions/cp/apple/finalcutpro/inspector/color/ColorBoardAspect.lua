@@ -53,7 +53,7 @@ function ColorBoardAspect.matches(element)
     return element and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:new(parent, index[, hasAngle]) -> ColorBoardAspect
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.new(parent, index[, hasAngle]) -> ColorBoardAspect
 --- Constructor
 --- Creates a new `ColorBoardAspect` object.
 ---

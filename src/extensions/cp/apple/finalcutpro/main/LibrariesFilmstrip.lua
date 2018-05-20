@@ -120,7 +120,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:playhead()
     if not self._playhead then
-        self._playhead = Playhead:new(self, false, function()
+        self._playhead = Playhead.new(self, false, function()
             return self:contentsUI()
         end)
     end
@@ -130,7 +130,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead:new(self, true, function()
+        self._skimmingPlayhead = Playhead.new(self, true, function()
             return self:contentsUI()
         end)
     end

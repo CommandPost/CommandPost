@@ -338,7 +338,7 @@ end
 ---  * A new ColorCurves object
 function ColorInspector:colorCurves()
     if not self._colorCurves then
-        self._colorCurves = ColorCurves:new(self)
+        self._colorCurves = ColorCurves.new(self)
     end
     return self._colorCurves
 end
@@ -360,7 +360,7 @@ end
 ---  * A new HueSaturationCurves object
 function ColorInspector:hueSaturationCurves()
     if not self._hueSaturationCurves then
-        self._hueSaturationCurves = HueSaturationCurves:new(self)
+        self._hueSaturationCurves = HueSaturationCurves.new(self)
     end
     return self._hueSaturationCurves
 end

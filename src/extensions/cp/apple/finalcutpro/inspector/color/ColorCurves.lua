@@ -70,8 +70,8 @@ ColorCurves.CURVES = {
     ["Blue"]            = "Primatte::Blue",
 }
 
---- cp.apple.finalcutpro.inspector.color.ColorCurves:new(parent) -> ColorCurves object
---- Method
+--- cp.apple.finalcutpro.inspector.color.ColorCurves.new(parent) -> ColorCurves object
+--- Constructor
 --- Creates a new ColorCurves object
 ---
 --- Parameters:
@@ -79,8 +79,7 @@ ColorCurves.CURVES = {
 ---
 --- Returns:
 ---  * A ColorInspector object
--- TODO: Use a Function instead of a Method.
-function ColorCurves:new(parent) -- luacheck: ignore
+function ColorCurves.new(parent)
 
     local o = {
         _parent = parent,

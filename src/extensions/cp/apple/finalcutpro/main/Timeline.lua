@@ -182,7 +182,7 @@ end
 -- TODO: Add documentation
 function Timeline:contents()
     if not self._content then
-        self._content = TimelineContent:new(self)
+        self._content = TimelineContent.new(self)
     end
     return self._content
 end

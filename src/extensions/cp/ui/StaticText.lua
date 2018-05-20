@@ -17,8 +17,8 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("textField")
-local inspect                       = require("hs.inspect")
+--local log							= require("hs.logger").new("textField")
+--local inspect                       = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:

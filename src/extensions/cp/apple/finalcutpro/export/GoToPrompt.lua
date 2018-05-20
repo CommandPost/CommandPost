@@ -51,7 +51,7 @@ function GoToPrompt.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.export.GoToPrompt:new(app) -> GoToPrompt
+--- cp.apple.finalcutpro.export.GoToPrompt.new(app) -> GoToPrompt
 --- Function
 --- Creates a new Go To Prompt object.
 ---
@@ -60,9 +60,7 @@ end
 ---
 --- Returns:
 ---  * A new GoToPrompt object.
--- TODO: Use a function instead of a method.
-function GoToPrompt:new(parent) -- luacheck: ignore
-
+function GoToPrompt.new(parent)
     local o = {_parent = parent}
     return prop.extend(o, GoToPrompt)
 end

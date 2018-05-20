@@ -37,8 +37,7 @@ function TimelineContents.matches(element)
 end
 
 -- TODO: Add documentation
--- TODO: Convert into a constructor function
-function TimelineContents:new(parent) -- luacheck: ignore
+function TimelineContents.new(parent)
     local o = {_parent = parent}
     return prop.extend(o, TimelineContents)
 end
@@ -117,7 +116,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:playhead()
     if not self._playhead then
-        self._playhead = Playhead:new(self, false, function()
+        self._playhead = Playhead.new(self, false, function()
             return self:UI()
         end)
     end
@@ -127,11 +126,10 @@ end
 -- TODO: Add documentation
 function TimelineContents:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead:new(self, true)
+        self._skimmingPlayhead = Playhead.new(self, true)
     end
     return self._skimmingPlayhead
 end
-
 
 -----------------------------------------------------------------------
 --

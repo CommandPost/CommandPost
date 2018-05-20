@@ -37,7 +37,7 @@ local fcp                               = require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.pasteTextAsCaption() -> none
+--- plugins.finalcutpro.timeline.captions.pasteTextAsCaption() -> none
 --- Function
 --- Paste Text As Caption
 ---

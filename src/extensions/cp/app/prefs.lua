@@ -1,5 +1,11 @@
---- === cp.app.prefs ===
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
+--- === cp.app.prefs ===
+---
 --- Provides access to application preferences, typically stored via `NSUserDefaults` or `CFProperties`.
 --- To access the preferences, simply pass in the Bundle ID (eg. "com.apple.Preview") and it will return
 --- a table whose keys can be accessed or updated, or iterated via `ipairs`.
@@ -19,9 +25,23 @@
 -- local log               = require("hs.logger").new("app_prefs")
 -- local inspect           = require("hs.inspect")
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local cfprefs               = require("hs._asm.cfpreferences")
 local pathwatcher			= require("hs.pathwatcher")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 mod.mt = {}
 
@@ -67,10 +87,10 @@ end
 --- Creates a new `cp.app.prefs` instance, pointing at the specified `bundleID`.
 ---
 --- Parameters:
---- * bundleID      The Bundle ID to access preferences for.
+---  * bundleID      The Bundle ID to access preferences for.
 ---
 --- Returns:
---- * A new `cp.app.prefs` with read/write access to the application's preferences.
+---  * A new `cp.app.prefs` with read/write access to the application's preferences.
 function mod.new(bundleID)
     local o =
         setmetatable(
@@ -90,10 +110,10 @@ end
 --- Checks if the `thing` is a `cp.app.prefs` instance.
 ---
 --- Parameters:
---- * thing     - The value to check
+---  * thing     - The value to check
 ---
 --- Returns:
---- * `true` if if's a `prefs`, otherwise `false`.
+---  * `true` if if's a `prefs`, otherwise `false`.
 function mod.is(thing)
     return type(thing) == "table" and getmetatable(thing) == mod.mt
 end
@@ -103,10 +123,10 @@ end
 --- Retrieves the `bundleID` associated with the `cp.app.prefs` instance.
 ---
 --- Parameters:
---- * prefs     - the `prefs` object to query
+---  * prefs     - the `prefs` object to query
 ---
 --- Returns:
---- * The Bundle ID string, or `nil` if it's not a `cp.app.prefs`.
+---  * The Bundle ID string, or `nil` if it's not a `cp.app.prefs`.
 function mod.bundleID(prefs)
     if mod.is(prefs) then
         return metadata(prefs).bundleID
@@ -121,11 +141,11 @@ local PLIST_MATCH = "^.-([^/]+)%.plist$"
 --- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
 ---
 --- Parameters:
---- * prefs     - The `prefs` instance to watch.
---- * watchFn   - The function that will get called.
+---  * prefs     - The `prefs` instance to watch.
+---  * watchFn   - The function that will get called.
 ---
 --- Returns:
---- * Nothing
+---  * Nothing
 function mod.watch(prefs, watchFn)
     if type(watchFn) ~= "function" then
         error("The `watchFn` provided is not a function: " .. type(watchFn))
@@ -166,10 +186,10 @@ function mod.mt:__index(key)
         --- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
         ---
         --- Parameters:
-        --- * watchFn   - The function that will get called.
+        ---  * watchFn   - The function that will get called.
         ---
         --- Returns:
-        --- * Nothing
+        ---  * Nothing
         return mod.watch
     end
 

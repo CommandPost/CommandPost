@@ -59,8 +59,8 @@ function ExportDialog.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.export.ExportDialog:new(app) -> ExportDialog
---- Function
+--- cp.apple.finalcutpro.export.ExportDialog.new(app) -> ExportDialog
+--- Constructor
 --- Creates a new Export Dialog object.
 ---
 --- Parameters:
@@ -68,8 +68,7 @@ end
 ---
 --- Returns:
 ---  * A new ExportDialog object.
--- TODO: Use a function instead of a method.
-function ExportDialog:new(app) -- luacheck: ignore
+function ExportDialog.new(app)
     local o = {_app = app}
     return prop.extend(o, ExportDialog)
 end
@@ -99,7 +98,7 @@ end
 function ExportDialog:UI()
     return axutils.cache(self, "_ui", function()
         local windowsUI = self:app():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
+        return windowsUI and self._findWindowUI(windowsUI)
     end,
     ExportDialog.matches)
 end
@@ -113,8 +112,7 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` or `nil`
--- TODO: Use a function instead of a method.
-function ExportDialog:_findWindowUI(windows) -- luacheck: ignore
+function ExportDialog._findWindowUI(windows)
     for _,window in ipairs(windows) do
         if ExportDialog.matches(window) then return window end
     end
@@ -229,7 +227,7 @@ end
 ---  * The SaveSheet.
 function ExportDialog:saveSheet()
     if not self._saveSheet then
-        self._saveSheet = SaveSheet:new(self)
+        self._saveSheet = SaveSheet.new(self)
     end
     return self._saveSheet
 end

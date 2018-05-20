@@ -24,7 +24,6 @@ local log                                       = require("hs.logger").new("tool
 --------------------------------------------------------------------------------
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
-local fnutils                                   = require("hs.fnutils")
 local fs                                        = require("hs.fs")
 local geometry                                  = require("hs.geometry")
 local host                                      = require("hs.host")
