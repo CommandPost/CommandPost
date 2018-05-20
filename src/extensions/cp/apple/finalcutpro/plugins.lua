@@ -750,7 +750,10 @@ end
 --- Returns:
 ---  * The plugin object.
 function mod.mt:registerPlugin(path, type, categoryName, themeName, pluginName, locale)
-    locale = localeID(locale)
+
+    -- TODO: Chris added `fcpApp:currentLocale()` because for some reason `locale` was coming in as `nil`?
+    locale = localeID(locale) or fcpApp:currentLocale()
+
     local plugins = self._plugins
     if not plugins then
         plugins = {}

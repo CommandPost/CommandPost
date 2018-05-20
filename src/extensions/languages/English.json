@@ -1142,6 +1142,6 @@
 		"viewStillsMemory"     						           : "View Stills Memory",
 		"cpPasteTextAsCaption_title"						   : "Paste Text as Caption",
 		"finalcutpro_timeline_captions_label"		           : "Timeline: Captions",
-
+		"finalcutpro_console_font_label"					   : "Console: Font",
     }
 }

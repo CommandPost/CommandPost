@@ -223,12 +223,14 @@ function mod.show()
     end
 end
 
---- plugins.finalcutpro.commands.actions.onChoices(choices) -> none
+
+
+--- plugins.finalcutpro.commands.actions.onChoices([choices]) -> none
 --- Function
---- Adds available choices to the  selection.
+--- Adds available choices to the selection.
 ---
 --- Parameters:
---- * `choices` - The `cp.choices` to add choices to.
+--- * `choices` - The optional `cp.choices` to add choices to.
 ---
 --- Returns:
 --- * None
@@ -303,14 +305,16 @@ function mod.onChoices(choices)
                     font = { size = 18 },
                 })
             end
-            choices
-                :add(name)
-                :subText("")
-                :id(fontName)
-                :params({
-                    fontName = fontName,
-                    id = id,
-                })
+            if choices then
+                choices
+                    :add(name)
+                    :subText("")
+                    :id(fontName)
+                    :params({
+                        fontName = fontName,
+                        id = id,
+                    })
+            end
             --log.df("%s: %s", id, fontName)
     end
 
@@ -352,8 +356,9 @@ end
 ---
 --- Returns:
 --- * None
-function mod.onExecute()
-    --log.df("action: %s", hs.inspect(action))
+function mod.onExecute(action)
+    if not mod._consoleFontCount then mod.onChoices() end
+    mod.onActivate(nil, action)
 end
 
 --------------------------------------------------------------------------------

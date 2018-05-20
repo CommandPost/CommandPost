@@ -257,6 +257,14 @@ local function touchBarPanelCallback(id, params)
             local groupID = params["groupID"]
 
             mod.activator[groupID]:onActivate(function(handler, action, text)
+
+                --------------------------------------------------------------------------------
+                -- Process Stylised Text:
+                --------------------------------------------------------------------------------
+                if text and type(text) == "userdata" then
+                    text = text:convert("text")
+                end
+
                 local actionTitle = text
                 local handlerID = handler:id()
 

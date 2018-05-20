@@ -122,7 +122,16 @@ local function tangentPanelCallback(id, params)
             -- Setup Activator Callback:
             --------------------------------------------------------------------------------
             mod.activator:onActivate(function(handler, action, text)
+
+                    --------------------------------------------------------------------------------
+                    -- Process Stylised Text:
+                    --------------------------------------------------------------------------------
+                    if text and type(text) == "userdata" then
+                        text = text:convert("text")
+                    end
+
                     local actionTitle = text
+
                     local handlerID = handler:id()
                     local buttonID = params.buttonID
                     mod._favourites.saveAction(buttonID, actionTitle, handlerID, action)
