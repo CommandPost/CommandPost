@@ -357,7 +357,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.buttonCallback(object, buttonID, pressed)
+function mod.buttonCallback(_, buttonID, pressed)
     if pressed then
         local handlerID = mod.getActionHandlerID(tostring(convertButtonID(buttonID)), mod.activeGroup())
         local action = mod.getAction(tostring(convertButtonID(buttonID)), mod.activeGroup())
@@ -476,7 +476,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.appWatcherCallback(name, event, app)
+function mod.appWatcherCallback(_, _, app)
     if app and app:bundleID() == "com.elgato.StreamDeck" then
         log.ef("Stream Deck App is running. This must be closed to activate Stream Deck support in CommandPost.")
         mod.enabled(false)
@@ -550,7 +550,7 @@ end)
 ---
 --- Returns:
 ---  * None
-function mod.init(deps, env)
+function mod.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod
 end
@@ -591,7 +591,7 @@ end
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps, env)
+function plugin.postInit()
     if mod.enabled() then
         mod.start()
     end

@@ -23,7 +23,6 @@ local log                                       = require("hs.logger").new("setu
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local screen                                    = require("hs.screen")
-local timer                                     = require("hs.timer")
 local webview                                   = require("hs.webview")
 
 --------------------------------------------------------------------------------

@@ -33,7 +33,6 @@ local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local commandeditor						= require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
-local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --

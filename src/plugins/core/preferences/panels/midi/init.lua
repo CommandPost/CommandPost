@@ -26,7 +26,6 @@ local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
 local inspect                                   = require("hs.inspect")
 local midi                                      = require("hs.midi")
-local timer                                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
