@@ -39,7 +39,7 @@ local prop                          = require("cp.prop")
 --------------------------------------------------------------------------------
 local Window = {}
 
-hswindowfilter.setLogLevel("error") -- The wfilter errors are too annoying.
+hswindowfilter.setLogLevel("nothing") -- The wfilter errors are too annoying.
 local filter = hswindowfilter.new()
 
 -- _watch(event, window, ...)

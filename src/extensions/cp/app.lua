@@ -794,7 +794,7 @@ end
 
 -- Watchers to keep the contents up-to-date.
 
--- cp.apple.finalcutpro.windowfilter.LOG_NAME -> string
+-- LOG_NAME -> string
 -- Constant
 -- The name of the `hs.logger` instance.
 local LOG_NAME = "appWinFilter"

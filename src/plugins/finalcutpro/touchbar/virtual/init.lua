@@ -130,8 +130,8 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Update the Virtual Touch Bar position if either of the main windows move:
         --------------------------------------------------------------------------------
-        mod._fcpPrimaryWindowWatcher = fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
-        mod._fcpSecondaryWindowWatcher = fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
 
         --------------------------------------------------------------------------------
         -- Start the Virtual Touch Bar:

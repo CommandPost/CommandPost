@@ -35,11 +35,6 @@ local prop          = require("cp.prop")
 local tools         = require("cp.tools")
 
 --------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local v             = require("semver")
-
---------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
@@ -688,12 +683,11 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Refresh Shortcuts if Command Editor is Closed:
     --------------------------------------------------------------------------------
-    fcp:commandEditor():watch({
-        close = function()
-                    --log.df("Updating Hacks Shortcuts due to Command Editor closing.")
-                    mod.refresh()
-                end
-    })
+    fcp:commandEditor().isShowing:watch(function(showing)
+        if not showing then
+            mod.refresh()
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Renders the Shortcut Editor Panel:

@@ -28,8 +28,6 @@ local prop							= require("cp.prop")
 local Alert							= require("cp.ui.Alert")
 local Window						= require("cp.ui.Window")
 
-local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
-
 local Inspector						= require("cp.apple.finalcutpro.inspector.Inspector")
 local PrimaryToolbar				= require("cp.apple.finalcutpro.main.PrimaryToolbar")
 
@@ -67,6 +65,8 @@ function PrimaryWindow.new(app)
     local o = prop.extend({
         _app = app,
     }, PrimaryWindow)
+
+    -- provides access to common AXWindow properties.
     local window = Window.new(app.windowsUI:mutate(function(original)
         return axutils.cache(o, "_ui", function()
             return axutils.childMatching(original(), PrimaryWindow.matches)
@@ -371,48 +371,6 @@ function PrimaryWindow:alert()
         self._alert = Alert.new(self)
     end
     return self._alert
-end
-
------------------------------------------------------------------------
---
--- WATCHERS:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.main.PrimaryWindow:watch() -> string
---- Method
---- Watch for events that happen in the command editor
---- The optional functions will be called when the window
---- is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
----    * `show(window)` - Triggered when the window is shown.
----    * `hide(window)` - Triggered when the window is hidden.
----    * `move(window)` - Triggered when the window is moved.
----
---- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function PrimaryWindow:watch(events)
-    if not self._watcher then
-        self._watcher = WindowWatcher:new(self)
-    end
-    return self._watcher:watch(events)
-end
-
---- cp.apple.finalcutpro.main.PrimaryWindow:unwatch() -> string
---- Method
---- Un-watches an event based on the specified ID.
----
---- Parameters:
----  * `id` - An ID has returned by `watch`
----
---- Returns:
----  * None
-function PrimaryWindow:unwatch(id)
-    if self._watcher then
-        self._watcher:unwatch(id)
-    end
 end
 
 return PrimaryWindow

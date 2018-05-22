@@ -100,12 +100,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", DEFAULT_VAL
         --------------------------------------------------------------------------------
         -- Watch for the full screen window:
         --------------------------------------------------------------------------------
-        if not mod._fcpFullScreenWindowWatcher then
-            mod._fcpFullScreenWindowWatcher = fcp:fullScreenWindow():watch({
-                show    = mod.update,
-                hide    = mod.update,
-            })
-        end
+        fcp:fullScreenWindow().isFullScreen:watch(mod.update)
 
         mod.watcherWorking = false
 
@@ -128,10 +123,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", DEFAULT_VAL
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if mod._fcpFullScreenWindowWatcher and mod._fcpFullScreenWindowWatcher.id then
-            fcp:fullScreenWindow():unwatch(mod._fcpFullScreenWindowWatcher.id)
-            mod._fcpFullScreenWindowWatcher = nil
-        end
+        fcp:fullScreenWindow().isFullScreen:unwatch(mod.update)
         if mod.keyUpWatcher then
             mod.keyUpWatcher:stop()
             mod.keyUpWatcher = nil

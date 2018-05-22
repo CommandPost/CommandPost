@@ -90,10 +90,8 @@ local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
-local watcher									= require("cp.watcher")
 
 local commandeditor								= require("cp.apple.commandeditor")
-local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
 local app                                       = require("cp.apple.finalcutpro.app")
 local strings                                   = require("cp.apple.finalcutpro.strings")
@@ -200,7 +198,6 @@ fcp.PLAYER_QUALITY = {
 --- Returns:
 ---  * The app.
 function fcp:init()
-    self:_initWatchers()
     self.app.hsApplication:watch(function() self:reset() end)
 
     -- set initial state
@@ -676,7 +673,7 @@ end
 ---  * The Full Screen Playback Window
 function fcp:fullScreenWindow()
     if not self._fullScreenWindow then
-        self._fullScreenWindow = FullScreenWindow:new(self)
+        self._fullScreenWindow = FullScreenWindow.new(self)
     end
     return self._fullScreenWindow
 end
@@ -1181,78 +1178,6 @@ end
 ---  * `true` if the locale is supported.
 function fcp:isSupportedLocale(locale)
     return self.app:isSupportedLocale(locale)
-end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                               W A T C H E R S                              --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro:watch(events) -> string
---- Method
---- Watch for events that happen in the application.
---- The optional functions will be called when the window is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
---- 	* `active`		- Triggered when the application is the active application.
---- 	* `inactive`	- Triggered when the application is no longer the active application.
----     * `launched		- Triggered when the application is launched.
----     * `terminated	- Triggered when the application has been closed.
---- 	* `preferences`	- Triggered when the application preferences are updated.
----
---- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function fcp:watch(events)
-    return self._watchers:watch(events)
-end
-
---- cp.apple.finalcutpro:unwatch(id) -> boolean
---- Method
---- Stop watching for events that happen in the application for the specified ID.
----
---- Parameters:
----  * `id` 	- The ID object which was returned from the `watch(...)` function.
----
---- Returns:
----  * `true` if the ID was watching and has been removed.
-function fcp:unwatch(id)
-    return self._watchers:unwatch(id)
-end
-
--- cp.apple.finalcutpro:_initWatchers() -> none
--- Method
--- Initialise all the various Final Cut Pro Watchers.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-function fcp:_initWatchers()
-
-    if not self._watchers then
-        --log.df("Setting up Final Cut Pro Watchers...")
-        self._watchers = watcher.new("active", "inactive", "launched", "terminated", "preferences", "fullscreen")
-    end
-
-    --------------------------------------------------------------------------------
-    -- Final Cut Pro Window becomes visible:
-    --------------------------------------------------------------------------------
-    -- TODO: Move this to cp.app
-    windowfilter:subscribe("windowVisible", function()
-        fcp.isModalDialogOpen:update()
-    end)
-
-    --------------------------------------------------------------------------------
-    -- Final Cut Pro Window goes full screen:
-    --------------------------------------------------------------------------------
-    -- TODO: Move this to cp.app
-    windowfilter:subscribe({"windowFullscreened", "windowUnfullscreened"}, function()
-        self._watchers:notify("fullscreen")
-    end)
-
 end
 
 --------------------------------------------------------------------------------

@@ -6,7 +6,7 @@
 --- CP 'dockless' when an app we are working with goes full-screen. Otherwise
 --- our drawing/canvas images will not display correctly.
 
-local log                               = require("hs.logger").new("dockicon")
+-- local log                               = require("hs.logger").new("dockicon")
 
 local timer                             = require("hs.timer")
 local window                            = require("hs.window")

@@ -32,7 +32,6 @@ local id                            = require("cp.apple.finalcutpro.ids") "Expor
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
-local WindowWatcher                 = require("cp.apple.finalcutpro.WindowWatcher")
 
 --------------------------------------------------------------------------------
 --
@@ -230,45 +229,6 @@ function ExportDialog:saveSheet()
         self._saveSheet = SaveSheet.new(self)
     end
     return self._saveSheet
-end
-
------------------------------------------------------------------------
---
--- WATCHERS:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.export.ExportDialog:watch() -> table
---- Method
---- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
----
---- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function ExportDialog:watch(events)
-    if not self._watcher then
-        self._watcher = WindowWatcher:new(self)
-    end
-    return self._watcher:watch(events)
-end
-
---- cp.apple.finalcutpro.export.ExportDialog:unwatch(id) -> none
---- Method
---- Unwatches an event.
----
---- Parameters:
----  * id - An ID as a string of the event you want to unwatch.
----
---- Returns:
----  * None
-function ExportDialog:unwatch(theID)
-    if self._watcher then
-        self._watcher:unwatch(theID)
-    end
 end
 
 return ExportDialog

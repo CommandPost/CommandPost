@@ -26,7 +26,7 @@ local axutils                       = require("cp.ui.axutils")
 local id                            = require("cp.apple.finalcutpro.ids") "MediaImporter"
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
-local WindowWatcher                 = require("cp.apple.finalcutpro.WindowWatcher")
+local Window                        = require("cp.ui.Window")
 
 --------------------------------------------------------------------------------
 --
@@ -34,6 +34,22 @@ local WindowWatcher                 = require("cp.apple.finalcutpro.WindowWatche
 --
 --------------------------------------------------------------------------------
 local MediaImport = {}
+
+-- _findWindowUI(windows) -> hs._asm.axuielementObject | nil
+-- Method
+-- Finds a matching window UI.
+--
+-- Parameters:
+--  * windows - A table of `hs.window` objects
+--
+-- Returns:
+--  * An `axuielement` or `nil`
+local function _findWindowUI(windows)
+    for _,window in ipairs(windows) do
+        if MediaImport.matches(window) then return window end
+    end
+    return nil
+end
 
 --- cp.apple.finalcutpro.import.MediaImport.matches(element) -> boolean
 --- Function
@@ -64,8 +80,53 @@ end
 --- Returns:
 ---  * A new MediaImport object.
 function MediaImport.new(app)
-    local o = {_app = app}
-    return prop.extend(o, MediaImport)
+    local o = prop.extend({_app = app}, MediaImport)
+
+--- cp.apple.finalcutpro.import.MediaImport:UI() -> axuielementObject
+--- Method
+--- Returns the Media Import Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` or `nil`
+    local UI = app.windowsUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            local windowsUI = original()
+            return windowsUI and _findWindowUI(windowsUI)
+        end,
+        MediaImport.matches)
+    end)
+
+    local window = Window.new(UI)
+    o._window = window
+
+    prop.bind(o) {
+        UI = UI,
+
+--- cp.apple.finalcutpro.import.MediaImport.hsWindow <cp.prop: hs.window; read-only>
+--- Field
+--- The `hs.window` instance for the window, or `nil` if it can't be found.
+        hsWindow = window.hsWindow,
+
+--- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is visible.
+        isShowing = window.visible,
+
+--- cp.apple.finalcutpro.import.MediaImport.isFullScreen <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is full-screen.
+        isFullScreen = window.fullScreen,
+
+--- cp.apple.finalcutpro.import.MediaImport.frame <cp.prop: frame>
+--- Field
+--- The current position (x, y, width, height) of the window.
+        frame = window.frame,
+    }
+
+    return o
 end
 
 --- cp.apple.finalcutpro.import.MediaImport:app() -> App
@@ -81,46 +142,9 @@ function MediaImport:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.import.MediaImport:UI() -> axuielementObject
---- Method
---- Returns the Media Import Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function MediaImport:UI()
-    return axutils.cache(self, "_ui", function()
-        local windowsUI = self:app():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
-    end,
-    MediaImport.matches)
+function MediaImport:window()
+    return self._window
 end
-
--- cp.apple.finalcutpro.import.MediaImport:_findWindowUI(windows) -> axuielementObject | nil
--- Method
--- Finds a matching window UI.
---
--- Parameters:
---  * windows - A table of `hs.window` objects
---
--- Returns:
---  * An `axuielementObject` or `nil`
--- TODO: Use a function instead of a method.
-function MediaImport:_findWindowUI(windows) -- luacheck: ignore
-    for _,window in ipairs(windows) do
-        if MediaImport.matches(window) then return window end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the Media Import window showing?
-MediaImport.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(MediaImport)
 
 --- cp.apple.finalcutpro.import.MediaImport:show() -> cp.apple.finalcutpro.import.MediaImport
 --- Method
@@ -194,45 +218,6 @@ end
 function MediaImport:getTitle()
     local ui = self:UI()
     return ui and ui:title()
-end
-
------------------------------------------------------------------------
---
--- WATCHERS
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.import.MediaImport:watch() -> table
---- Method
---- Watch for events that happen in the Media Import window. The optional functions will be called when the window is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
----    * `show(window)` - Triggered when the window is shown.
----    * `hide(window)` - Triggered when the window is hidden.
----
---- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function MediaImport:watch(events)
-    if not self._watcher then
-        self._watcher = WindowWatcher:new(self)
-    end
-    return self._watcher:watch(events)
-end
-
---- cp.apple.finalcutpro.import.MediaImport:unwatch() -> none
---- Method
---- Removes the watch with the specified ID.
----
---- Parameters:
----  * `id` - The ID returned from `watch` that wants to be removed.
----
---- Returns:
----  * None
-function MediaImport:unwatch(theID)
-    if self._watcher then
-        self._watcher:unwatch(theID)
-    end
 end
 
 return MediaImport

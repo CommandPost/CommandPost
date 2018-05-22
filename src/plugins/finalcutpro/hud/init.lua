@@ -771,14 +771,8 @@ function hud.update()
         fcp.app.frontmost:watch(hud.updateVisibility)
         fcp.app.showing:watch(hud.updateVisibility)
 
-        hud._fcpFullScreenWatcher = fcp:fullScreenWindow():watch({
-            show        = hud.updateVisibility,
-            hide        = hud.updateVisibility,
-        })
-        hud._fcpCommandEditorWatcher = fcp:commandEditor():watch({
-            open        = hud.updateVisibility,
-            close       = hud.updateVisibility,
-        })
+        fcp:fullScreenWindow().isShowing:watch(hud.updateVisibility)
+        fcp:commandEditor().isShowing:watch(hud.updateVisibility)
 
         -- refresh when the preferences change.
         fcp.app.preferences:watch(hud.refresh)
@@ -795,14 +789,8 @@ function hud.update()
         fcp.app.frontmost:unwatch(hud.updateVisibility)
         fcp.app.showing:unwatch(hud.updateVisibility)
 
-        if hud._fcpFullScreenWatcher and hud._fcpFullScreenWatcher.id then
-            fcp:fullScreenWindow():unwatch(hud._fcpFullScreenWatcher.id)
-            hud._fcpFullScreenWatcher = nil
-        end
-        if hud._fcpCommandEditorWatcher and hud._fcpCommandEditorWatcher.id then
-            fcp:commandEditor():unwatch(hud._fcpCommandEditorWatcher.id)
-            hud._fcpCommandEditorWatcher = nil
-        end
+        fcp:fullScreenWindow().isShowing:unwatch(hud.updateVisibility)
+        fcp:commandEditor().isShowing:unwatch(hud.updateVisibility)
 
         --------------------------------------------------------------------------------
         -- Delete the HUD:

@@ -28,7 +28,6 @@ local application           = require("hs.application")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp                   = require("cp.apple.finalcutpro")
-local windowfilter          = require("cp.apple.finalcutpro.windowfilter")
 local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -86,21 +85,9 @@ function mod.init(tangentManager)
     --------------------------------------------------------------------------------
     fcp.isFrontmost:watch(function()
         if mod.colorFinaleInstalled() then
-            mod.colorFinaleWindow:update()
+            mod.colorFinaleWindowUI:update()
         end
     end)
-
-    local function updateWindow(w)
-        if w and (w == mod._cfWindow or startsWith(w:title(), WINDOW_TITLE)) then
-            mod.colorFinaleWindow:update()
-            mod._cfWindow = w
-        end
-    end
-
-    windowfilter:subscribe(
-        {"windowVisible","windowNotVisible"},
-        updateWindow, true
-    )
 
     --------------------------------------------------------------------------------
     -- Add an interruption to Tangent Manager:
@@ -110,13 +97,28 @@ function mod.init(tangentManager)
     return mod
 end
 
---- plugins.colorfinale.tangent.colorFinaleWindow <cp.prop: boolean>
+--- plugins.colorfinale.tangent.colorFinaleWindowUI <cp.prop: hs._asm.axuielement; read-only>
 --- Variable
---- Checks to see if an object is a Color Finale window.
-mod.colorFinaleWindow = prop(function()
-    local windows = fcp:windowsUI()
+--- Returns the `axuielement` for the ColorFinale window, if present.
+mod.colorFinaleWindowUI = fcp.windowsUI:mutate(function(original)
+    local windows = original()
     if windows then
         for _,w in ipairs(fcp:windowsUI()) do
+            if startsWith(w:attributeValue("AXTitle"), WINDOW_TITLE) then
+                return w
+            end
+        end
+    end
+    return nil
+end)
+
+--- plugins.colorfinale.tangent.colorFinaleVisible <cp.prop: boolean; read-only; live>
+--- Variable
+--- Checks to see if an object is a Color Finale window.
+mod.colorFinaleVisible = mod.colorFinaleWindowUI:mutate(function(original)
+    local windows = original()
+    if windows then
+        for _,w in ipairs(windows) do
             if startsWith(w:attributeValue("AXTitle"), WINDOW_TITLE) then
                 return true
             end
@@ -125,7 +127,7 @@ mod.colorFinaleWindow = prop(function()
     return false
 end)
 
---- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean>
+--- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if ColorFinale is installed.
 mod.colorFinaleInstalled = prop(function()
@@ -133,10 +135,10 @@ mod.colorFinaleInstalled = prop(function()
     return info ~= nil
 end)
 
---- plugins.colorfinale.tangent.colorFinaleActive <cp.prop: boolean>
+--- plugins.colorfinale.tangent.colorFinaleActive <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if ColorFinale is active.
-mod.colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleWindow)
+mod.colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleVisible)
 
 --------------------------------------------------------------------------------
 --
