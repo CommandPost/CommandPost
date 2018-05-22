@@ -35,5 +35,4 @@ local ids               = require("cp.ids")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 return ids.new(config.scriptPath .. "/cp/apple/finalcutpro/ids/v/", app.versionString)

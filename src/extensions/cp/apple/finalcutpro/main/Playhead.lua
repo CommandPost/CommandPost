@@ -97,7 +97,7 @@ end
 ---
 --- Returns:
 --- * The new `Playhead` instance.
-function Playhead:new(parent, skimming, containerFn)
+function Playhead.new(parent, skimming, containerFn)
     local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
     return prop.extend(o, Playhead)
 end

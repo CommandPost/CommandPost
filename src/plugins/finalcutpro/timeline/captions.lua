@@ -1,12 +1,12 @@
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
---                 P R E F E R E N C E S    W A T C H E R                     --
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---- === plugins.finalcutpro.watchers.preferences ===
+--- === plugins.finalcutpro.timeline.captions ===
 ---
---- Final Cut Pro Preferences Watcher.
+--- Caption Tools
 
 --------------------------------------------------------------------------------
 --
@@ -17,17 +17,18 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log               = require("hs.logger").new("prefWatcher")
+--local log                               = require("hs.logger").new("pasteTextAsCaption")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local pathwatcher       = require("hs.pathwatcher")
+local pasteboard                        = require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp               = require("cp.apple.finalcutpro")
+local dialog                            = require("cp.dialog")
+local fcp                               = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -36,51 +37,49 @@ local fcp               = require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.watchers.preferences.init() -> none
+--- plugins.finalcutpro.timeline.captions.pasteTextAsCaption() -> none
 --- Function
---- Initialise the module.
+--- Paste Text As Caption
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * None
-function mod.init()
+function mod.pasteTextAsCaption()
 
     --------------------------------------------------------------------------------
-    -- Cache the last Command Set Path:
+    -- Check Pasteboard contents for text:
     --------------------------------------------------------------------------------
-    mod.lastCommandSetPath = fcp:activeCommandSetPath()
+    local contents = pasteboard.readString()
+    if not contents then
+       dialog.displayErrorMessage("Could not 'Paste Text as Caption' because no text could be found on the Pasteboard.")
+    end
 
     --------------------------------------------------------------------------------
-    -- Update Preferences Cache when Final Cut Pro Preferences file is modified:
+    -- Check that the timeline is showing:
     --------------------------------------------------------------------------------
-    fcp.app.preferences:watch(function()
-        --------------------------------------------------------------------------------
-        -- Update the Command Set Cache:
-        --------------------------------------------------------------------------------
-        local activeCommandSetPath = fcp:activeCommandSetPath()
-        if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
-            --log.df("Updating Final Cut Pro Command Editor Cache.")
-            fcp:activeCommandSet(true)
-            mod.lastCommandSetPath = activeCommandSetPath
-        end
-    end)
+    local timeline = fcp:timeline()
+    timeline:show()
+    if not timeline:isShowing() then
+        dialog.displayErrorMessage("Could not 'Paste Text as Caption' because the timeline could not be made visible.")
+    end
 
     --------------------------------------------------------------------------------
-    -- Refresh Command Set Cache if a Command Set is modified:
+    -- Add Caption:
     --------------------------------------------------------------------------------
-    local userCommandSetPath = fcp.userCommandSetPath()
-    if userCommandSetPath then
-        --log.df("Setting up User Command Set Watcher: %s", userCommandSetPath)
-        mod.commandSetWatcher = pathwatcher.new(userCommandSetPath .. "/", function()
-            --log.df("Updating Final Cut Pro Command Editor Cache.")
-            fcp:activeCommandSet(true)
-        end):start()
+    if not fcp:selectMenu({"Edit", "Captions", "Add Caption"}) then
+        dialog.displayErrorMessage("Could not 'Paste Text as Caption' because a new caption could not be added.")
+    end
+
+    --------------------------------------------------------------------------------
+    -- Paste Text:
+    --------------------------------------------------------------------------------
+    if not fcp:selectMenu({"Edit", "Paste"}) then
+        dialog.displayErrorMessage("Could not 'Paste Text as Caption' because we could not paste text back into Final Cut Pro.")
     end
 
 end
-
 
 --------------------------------------------------------------------------------
 --
@@ -88,15 +87,27 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id = "finalcutpro.watchers.preferences",
+    id = "finalcutpro.timeline.captions",
     group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]    = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init()
-    return mod.init()
+function plugin.init(deps)
+
+    --------------------------------------------------------------------------------
+    -- Add Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        deps.fcpxCmds:add("cpPasteTextAsCaption")
+            :whenActivated(mod.pasteTextAsCaption)
+    end
+
+    return mod
 end
 
 return plugin

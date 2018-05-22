@@ -1,5 +1,11 @@
---- === cp.app ===
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--                   C  O  M  M  A  N  D  P  O  S  T                          --
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
+--- === cp.app ===
+---
 --- This class assists with working with macOS apps. It provides functions for
 --- finding, checking the running status, version number, path, and many other
 --- values related to an application. It also provides support for launching,
@@ -9,28 +15,49 @@
 --- * `cp.app` instances are long-lived. You request it once and it will stay up-to-date even if the app quits.
 --- * It makes extensive use of `cp.prop`, so you can `watch` many most properties of the app and get live notifications when they change.
 
-local log                       = require("hs.logger").new("app")
-local inspect                   = require("hs.inspect")
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 
-local ax                        = require("hs._asm.axuielement")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                       = require("hs.logger").new("app")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application               = require("hs.application")
 local applicationwatcher		= require("hs.application.watcher")
+local ax                        = require("hs._asm.axuielement")
 local fs                        = require("hs.fs")
+local inspect                   = require("hs.inspect")
 local timer                     = require("hs.timer")
 local windowfilter              = require("hs.window.filter")
 
-local menu                      = require("cp.app.menu")
-local prefs                     = require("cp.app.prefs")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils                   = require("cp.ui.axutils")
+local just                      = require("cp.just")
 local languageID                = require("cp.i18n.languageID")
 local localeID                  = require("cp.i18n.localeID")
-local just                      = require("cp.just")
+local menu                      = require("cp.app.menu")
+local notifier					= require("cp.ui.notifier")
+local prefs                     = require("cp.app.prefs")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
-local axutils                   = require("cp.ui.axutils")
-local notifier					= require("cp.ui.notifier")
 
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
 local v							= require("semver")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert                    = table.insert
 local format                    = string.format
 
@@ -39,10 +66,20 @@ windowfilter.setLogLevel("nothing")
 
 local COMMANDPOST_BUNDLE_ID = "org.latenitefilms.CommandPost"
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 mod.mt = {}
 
 local apps = {}
+
+--------------------------------------------------------------------------------
+-- Disable Window Filter Errors (the wfilter errors are too annoying):
+--------------------------------------------------------------------------------
+windowfilter.setLogLevel("nothing")
 
 local BASE_LOCALE = "Base"
 

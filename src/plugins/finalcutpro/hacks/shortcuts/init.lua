@@ -465,7 +465,7 @@ end
 -- Returns:
 --  * None
 function private.applyCommandSetShortcuts()
-    local commandSet = fcp:getActiveCommandSet(true)
+    local commandSet = fcp:activeCommandSet(true)
 
     --log.df("Applying Final Cut Pro Shortcuts to Final Cut Pro Commands.")
     private.applyShortcuts(mod.fcpxCmds, commandSet)
@@ -671,13 +671,13 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Cache the last Command Set Path:
     --------------------------------------------------------------------------------
-    mod.lastCommandSetPath = fcp:getActiveCommandSetPath()
+    mod.lastCommandSetPath = fcp:activeCommandSetPath()
 
     --------------------------------------------------------------------------------
     -- Refresh Shortcuts if the Command Set Path in Preferences file is modified:
     --------------------------------------------------------------------------------
     fcp.app.preferences:watch(function()
-        local activeCommandSetPath = fcp:getActiveCommandSetPath()
+        local activeCommandSetPath = fcp:activeCommandSetPath()
         if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
             --log.df("Updating Final Cut Pro Command Editor Cache.")
             mod.refresh()

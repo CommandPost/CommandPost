@@ -217,7 +217,7 @@ end
 --
 -- Returns:
 -- * Nothing
-local function windowCallback(action, webview, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod._webview = nil

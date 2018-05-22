@@ -92,7 +92,7 @@ end
 ---
 --- Returns:
 ---  * The value of the key, or `nil` if not found.
-function mod.mt:findInSources(key, context, quiet)
+function mod.mt:findInSources(key, context) -- TODO: Quiet isn't actually used?
     for _,source in ipairs(self._sources) do
         local value = source:find(key, context)
         if value then return value end

@@ -60,8 +60,8 @@ function CommandEditor.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:new(app) -> CommandEditor
---- Function
+--- cp.apple.finalcutpro.cmd.CommandEditor.new(app) -> CommandEditor
+--- Constructor
 --- Creates a new Command Editor object.
 ---
 --- Parameters:
@@ -69,8 +69,7 @@ end
 ---
 --- Returns:
 ---  * A new CommandEditor object.
--- TODO: Use a function instead of a method.
-function CommandEditor:new(app) -- luacheck: ignore
+function CommandEditor.new(app)
     local o = {_app = app}
     return prop.extend(o, CommandEditor)
 end
@@ -100,13 +99,13 @@ end
 function CommandEditor:UI()
     return axutils.cache(self, "_ui", function()
         local windowsUI = self:app():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
+        return windowsUI and self._findWindowUI(windowsUI)
     end,
     CommandEditor.matches)
 end
 
 -- cp.apple.finalcutpro.cmd.CommandEditor:_findWindowUI(windows) -> window | nil
--- Method
+-- Function
 -- Gets the Window UI.
 --
 -- Parameters:
@@ -114,8 +113,7 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` or `nil`
--- TODO: Use a function instead of a method.
-function CommandEditor:_findWindowUI(windows) -- luacheck: ignore
+function CommandEditor._findWindowUI(windows)
     for _,window in ipairs(windows) do
         if CommandEditor.matches(window) then return window end
     end

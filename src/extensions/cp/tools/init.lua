@@ -24,7 +24,6 @@ local log                                       = require("hs.logger").new("tool
 --------------------------------------------------------------------------------
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
-local fnutils                                   = require("hs.fnutils")
 local fs                                        = require("hs.fs")
 local geometry                                  = require("hs.geometry")
 local host                                      = require("hs.host")
@@ -1062,66 +1061,6 @@ function tools.cleanupButtonText(value)
     end
 
     return value
-
-end
-
---- cp.tools.modifierMatch(inputA, inputB) -> boolean
---- Function
---- Compares two modifier tables.
----
---- Parameters:
----  * inputA - table of modifiers
----  * inputB - table of modifiers
----
---- Returns:
----  * `true` if there's a match otherwise `false`
----
---- Notes:
----  * This function only takes into account 'ctrl', 'alt', 'cmd', 'shift'.
-function tools.modifierMatch(inputA, inputB)
-
-    local match = true
-
-    if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-    if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-    if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-    if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
-
-    return match
-
-end
-
---- cp.tools.modifierMaskToModifiers() -> table
---- Function
---- Translate Keyboard Modifiers from Apple's Plist Format into Hammerspoon Format
----
---- Parameters:
----  * value - Modifiers String
----
---- Returns:
----  * table
-function tools.modifierMaskToModifiers(value)
-
-    local modifiers = {
-        ["alphashift"]  = 1 << 16,
-        ["shift"]       = 1 << 17,
-        ["control"]     = 1 << 18,
-        ["option"]      = 1 << 19,
-        ["command"]     = 1 << 20,
-        ["numericpad"]  = 1 << 21,
-        ["help"]        = 1 << 22,
-        ["function"]    = 1 << 23,
-    }
-
-    local answer = {}
-
-    for k, a in pairs(modifiers) do
-        if (value & a) == a then
-            table.insert(answer, k)
-        end
-    end
-
-    return answer
 
 end
 

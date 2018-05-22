@@ -795,8 +795,15 @@ end
 function activator.mt:refreshChooser()
     local theChooser = self:chooser()
     theChooser:refreshChoicesCallback()
-    theChooser:hide()
-    theChooser:show()
+
+    --------------------------------------------------------------------------------
+    -- This is a workaround for when we need to update the Chooser based on a
+    -- right click option (i.e. changing sections):
+    --------------------------------------------------------------------------------
+    if theChooser:isVisible() then
+        theChooser:hide()
+        theChooser:show()
+    end
 end
 
 --- plugins.core.action.activator:show()

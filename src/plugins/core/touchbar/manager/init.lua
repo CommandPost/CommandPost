@@ -552,7 +552,7 @@ end
 --
 -- Returns:
 --  * None
-local function addButton(icon, action, label, id)
+local function addButton(icon, _, label, id)
     if not label then
         label = ""
     end
@@ -579,7 +579,7 @@ end
 --
 -- Returns:
 --  * None
-local function addWidget(icon, action, label, id)
+local function addWidget(_, action, _, id)
     if action and action.id then
         local widget = widgets:get(action.id)
         if widget then
@@ -1001,7 +1001,7 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.virtual.callback(obj, message)
+function mod.virtual.callback(_, message)
     if message == "didEnter" then
         mod.mouseInsideTouchbar = true
     elseif message == "didExit" then
@@ -1145,7 +1145,7 @@ end
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-function mod.init(deps, env)
+function mod.init(deps)
     mod._actionmanager = deps.actionmanager
     return mod
 end
@@ -1184,7 +1184,7 @@ end
 --------------------------------------------------------------------------------
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.postInit(deps, env)
+function plugin.postInit(deps)
 
     --------------------------------------------------------------------------------
     -- Setup Actions:

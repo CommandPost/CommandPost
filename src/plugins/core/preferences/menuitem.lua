@@ -28,7 +28,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
-function plugin.init(deps, env)
+function plugin.init(deps)
 
     deps.bottom
 

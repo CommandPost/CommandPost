@@ -18,7 +18,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("menuaction")
+--local log               = require("hs.logger").new("menuaction")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -107,7 +107,7 @@ end
 --- Returns:
 ---  * None
 function mod.onChoices(choices)
-    if not fcp:menu():isShowing() or not mod._choices then
+    if not fcp:isFrontmost() or not mod._choices then
         return true
     end
 

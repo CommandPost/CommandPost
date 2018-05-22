@@ -23,6 +23,7 @@ local log                               = require("hs.logger").new("keywordEdito
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
+local just                              = require("cp.just")
 local prop                              = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -32,8 +33,8 @@ local prop                              = require("cp.prop")
 --------------------------------------------------------------------------------
 local KeywordEditor = {}
 
---- cp.apple.finalcutpro.main.KeywordEditor:new(parent) -> KeywordEditor object
---- Method
+--- cp.apple.finalcutpro.main.KeywordEditor.new(parent) -> KeywordEditor object
+--- Constructor
 --- Creates a new KeywordEditor object
 ---
 --- Parameters:
@@ -41,7 +42,7 @@ local KeywordEditor = {}
 ---
 --- Returns:
 ---  * A KeywordEditor object
-function KeywordEditor:new(parent)
+function KeywordEditor.new(parent)
     local o = {
         _parent = parent,
         _child = {}
@@ -129,13 +130,13 @@ end
 function KeywordEditor:UI()
     return axutils.cache(self, "_ui", function()
         local windowsUI = self:parent():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
+        return windowsUI and self._findWindowUI(windowsUI)
     end,
     KeywordEditor.matches)
 end
 
 -- cp.apple.finalcutpro.main.KeywordEditor_findWindowUI(windows) -> hs._asm.axuielement object | nil
--- Method
+-- Function
 -- Finds the Keyword Editor window.
 --
 -- Parameters:
@@ -143,7 +144,7 @@ end
 --
 -- Returns:
 --  * A `hs._asm.axuielement` object if succesful otherwise `nil`
-function KeywordEditor:_findWindowUI(windows)
+function KeywordEditor._findWindowUI(windows)
     for _,window in ipairs(windows) do
         if KeywordEditor.matches(window) then return window end
     end
@@ -324,7 +325,7 @@ function KeywordEditor:keyboardShortcuts()
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:new(parent) -> KeyboardShortcuts object
---- Method
+--- Constructor
 --- Creates a new KeyboardShortcuts object
 ---
 --- Parameters:
@@ -332,7 +333,7 @@ end
 ---
 --- Returns:
 ---  * A KeyboardShortcuts object
-function KeyboardShortcuts:new(parent)
+function KeyboardShortcuts.new(parent)
     local o = {
         _parent = parent,
         _child = {}
@@ -448,21 +449,39 @@ function KeyboardShortcuts:keyword(item, value)
                 --------------------------------------------------------------------------------
                 -- String Setter:
                 --------------------------------------------------------------------------------
+                textfields[1]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
+
+                textfields[item]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[item]:attributeValue("AXFocused") == true end)
+
                 if textfields[item]:setAttributeValue("AXValue", value) then
                     if textfields[item]:performAction("AXConfirm") then
+                        textfields[1]:setAttributeValue("AXFocused", true)
+                        just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
+
                         return value
                     end
                 end
             elseif type(value) == "table" then
                 --------------------------------------------------------------------------------
-                -- String Setter:
+                -- Table Setter:
                 --------------------------------------------------------------------------------
                 local result = ""
                 for _, v in pairs(value) do
                     result = result .. v .. ", "
                 end
+
+                textfields[1]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
+
+                textfields[item]:setAttributeValue("AXFocused", true)
+                just.doUntil(function() return textfields[item]:attributeValue("AXFocused") == true end)
+
                 if textfields[item]:setAttributeValue("AXValue", result) then
                     if textfields[item]:performAction("AXConfirm") then
+                        textfields[1]:setAttributeValue("AXFocused", true)
+                        just.doUntil(function() return textfields[1]:attributeValue("AXFocused") == true end)
                         return value
                     end
                 end

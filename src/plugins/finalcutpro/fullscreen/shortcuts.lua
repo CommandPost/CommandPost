@@ -28,10 +28,10 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp                               = require("cp.apple.finalcutpro")
 local config                            = require("cp.config")
+local fcp                               = require("cp.apple.finalcutpro")
+local commandeditor						= require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
-local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -184,7 +184,7 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.performCommand(cmd, whichModifier, whichKey)
     local chars = cmd['characterString']
-    if chars and chars ~= "" and whichKey == shortcut.textToKeyCode(chars) and tools.modifierMatch(whichModifier, cmd['modifiers']) then
+    if chars and chars ~= "" and whichKey == shortcut.textToKeyCode(chars) and commandeditor.modifierMatch(whichModifier, cmd['modifiers']) then
         --------------------------------------------------------------------------------
         -- Perform the keystroke:
         --------------------------------------------------------------------------------
@@ -223,7 +223,7 @@ function mod.checkCommand(whichModifier, whichKey)
         --------------------------------------------------------------------------------
         -- Get Active Command Set:
         --------------------------------------------------------------------------------
-        local activeCommandSet = fcp:getActiveCommandSet()
+        local activeCommandSet = fcp:activeCommandSet()
         if type(activeCommandSet) ~= "table" then
             --log.df("Failed to get Active Command Set. Error occurred in plugins.fullscreen.shortcuts.checkCommand().")
             return

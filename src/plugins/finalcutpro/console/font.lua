@@ -22,8 +22,6 @@ local log				= require("hs.logger").new("fontConsole")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fnutils           = require("hs.fnutils")
-local fs                = require("hs.fs")
 local inspect           = require("hs.inspect")
 local styledtext        = require("hs.styledtext")
 
@@ -128,11 +126,11 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.onActivate(handler, action, text)
+function mod.onActivate(_, action, _)
     if action and action.fontName and action.id then
-        local font = fcp:inspector():text():basic():font()
-        if font and font.family then
-            local ui = font.family:UI()
+        local f = fcp:inspector():text():basic():font()
+        if f and f.family then
+            local ui = f.family:UI()
             if ui then
                 ui:performAction("AXPress")
                 local menu = just.doUntil(function()
@@ -225,12 +223,14 @@ function mod.show()
     end
 end
 
---- plugins.finalcutpro.commands.actions.onChoices(choices) -> none
+
+
+--- plugins.finalcutpro.commands.actions.onChoices([choices]) -> none
 --- Function
---- Adds available choices to the  selection.
+--- Adds available choices to the selection.
 ---
 --- Parameters:
---- * `choices` - The `cp.choices` to add choices to.
+--- * `choices` - The optional `cp.choices` to add choices to.
 ---
 --- Returns:
 --- * None
@@ -275,7 +275,7 @@ function mod.onChoices(choices)
     local hash = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then
+            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then -- luacheck: ignore
                 --log.df("Skipping Hidden/Ignored Font: %s", fontName)
             else
                 if mod.RENAME_FONTS[fontName] then
@@ -285,7 +285,7 @@ function mod.onChoices(choices)
                 newFonts[#newFonts+1] = fontName
                 hash[fontName] = true
             end
-        else
+        --else
             --log.df("Skipping Duplicate: %s", fontName)
         end
     end
@@ -305,14 +305,16 @@ function mod.onChoices(choices)
                     font = { size = 18 },
                 })
             end
-            choices
-                :add(name)
-                :subText("")
-                :id(fontName)
-                :params({
-                    fontName = fontName,
-                    id = id,
-                })
+            if choices then
+                choices
+                    :add(name)
+                    :subText("")
+                    :id(fontName)
+                    :params({
+                        fontName = fontName,
+                        id = id,
+                    })
+            end
             --log.df("%s: %s", id, fontName)
     end
 
@@ -342,7 +344,7 @@ end
 --- Returns:
 --- * The ID as a string.
 function mod.getId(action)
-    return string.format("%s:%s", ID, action.id)
+    return string.format("%s:%s", "fcpx_fonts", action.id)
 end
 
 --- plugins.finalcutpro.commands.actions.onExecute(action) -> none
@@ -355,7 +357,8 @@ end
 --- Returns:
 --- * None
 function mod.onExecute(action)
-    --log.df("action: %s", hs.inspect(action))
+    if not mod._consoleFontCount then mod.onChoices() end
+    mod.onActivate(nil, action)
 end
 
 --------------------------------------------------------------------------------

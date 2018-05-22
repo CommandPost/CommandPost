@@ -88,7 +88,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             -- just.wait(1)
             -- fcp:closeLibrary(TEST_LIBRARY)
             -- -- just.wait(5)
-            -- fcp:openLibrary(TEST_LIBRARY_PATH)
+            -- fcp.openLibrary(TEST_LIBRARY_PATH)
 
             -- Export Dialog
             ok(not fcp:exportDialog():isShowing())
@@ -607,7 +607,7 @@ onRun(
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
-        if not fcp:openLibrary(targetLibraryPath) then
+        if not fcp.openLibrary(targetLibraryPath) then
             error(format("Unable to open the Test Library: %s", targetLibraryPath))
         end
 

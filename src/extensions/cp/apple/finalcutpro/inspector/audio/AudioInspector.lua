@@ -109,8 +109,7 @@ end
 ---
 --- Returns:
 ---  * A `AudioInspector` object
--- TODO: Use a function instead of a method.
-function AudioInspector.new(parent) -- luacheck: ignore
+function AudioInspector.new(parent)
     local o
     o = prop.extend({
         _parent = parent,
