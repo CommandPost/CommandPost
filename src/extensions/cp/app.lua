@@ -37,6 +37,8 @@ local format                    = string.format
 -- Disable Window Filter Errors (the wfilter errors are too annoying):
 windowfilter.setLogLevel("nothing")
 
+local COMMANDPOST_BUNDLE_ID = "org.latenitefilms.CommandPost"
+
 local mod = {}
 mod.mt = {}
 
@@ -77,6 +79,13 @@ function mod.apps()
     end
     return result
 end
+
+local frontmostApp = nil
+
+--- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
+--- Field
+--- Returns the most recent 'registered' app that was active, other than CommandPost itself.
+mod.frontmostApp = prop(function() return frontmostApp end)
 
 --- cp.app.forBundleID(bundleID)
 --- Constructor
@@ -223,7 +232,14 @@ function mod.forBundleID(bundleID)
 
         local windowsUI = UI:mutate(function(original)
             local ui = original()
-            return ui and ui:attributeValue("AXWindows")
+            local windows = ui and ui:attributeValue("AXWindows")
+            if windows ~= nil and #windows == 0 then
+                local mainWindow = ui:attributeValue("AXMainWindow")
+                if mainWindow then
+                    insert(windows, mainWindow)
+                end
+            end
+            return windows
         end)
 
         -- Localization/I18N
@@ -445,6 +461,26 @@ function mod.forBundleID(bundleID)
 
         apps[bundleID] = theApp
 
+        -- -- add a watcher to update 'frontmostApp'
+        -- frontmost:watch(function(isFrontmost, self)
+        --     if self:bundleID() == COMMANDPOST_BUNDLE_ID then
+        --         if isFrontmost then
+        --             commandPostFrontmost = true
+        --         elseif commandPostFrontmost then
+        --             frontmostApp = nil
+        --             commandPostFrontmost = false
+        --         end
+        --     else
+        --         if isFrontmost then
+        --             frontmostApp = self
+        --             commandPostFrontmost = false
+        --         elseif frontmostApp == self then
+        --             frontmostApp = nil
+        --         end
+        --     end
+        --     mod.frontmostApp:update()
+        -- end, true)
+
         mod._initWatchers()
     end
 
@@ -648,64 +684,6 @@ function mod._findApp(bundleID, appName)
     return app
 end
 
--- cp.app._initWatchers() -> none
--- Method
--- Initialise all the various applicaiton watcheres.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-function mod._initWatchers()
-    if mod._appWatcher then
-        return
-    end
-
-    --------------------------------------------------------------------------------
-    -- Setup Application Watcher:
-    --------------------------------------------------------------------------------
-    --log.df("Setting up Application Watcher...")
-    mod._appWatcher = applicationwatcher.new(
-        function(appName, eventType, hsApp)
-            local app = mod._findApp(hsApp:bundleID(), appName)
-
-            -- log.df("Application event: bundleID: %s; appName: '%s'; type: %s", bundleID, appName, eventType)
-            if app then
-                if eventType == applicationwatcher.activated then
-                    timer.doAfter(0.01, function()
-                        app.showing:update()
-                        app.frontmost:update()
-                    end)
-                    return
-                elseif eventType == applicationwatcher.deactivated then
-                    timer.doAfter(0.01, function()
-                        app.showing:update()
-                        app.frontmost:update()
-                    end)
-                    return
-                elseif eventType == applicationwatcher.launched then
-                    timer.doAfter(0.01, function()
-                        log.df("launched. Updating hs.application etc.")
-                        app.hsApplication:update()
-                        app.running:update()
-                        app.frontmost:update()
-                    end)
-                    return
-                elseif eventType == applicationwatcher.terminated then
-                    timer.doAfter(0.01, function()
-                        log.df("terminated. Updating hs.application etc.")
-                        app.hsApplication:update()
-                        app.running:update()
-                        app.frontmost:update()
-                    end)
-                    return
-                end
-            end
-        end
-    ):start()
-end
-
 --- cp.app:isSupportedLocale(locale) -> boolean
 --- Method
 --- Checks if the specified locale is supported. The `locale` can
@@ -773,6 +751,10 @@ function mod.mt:update()
     return self
 end
 
+----------------------------------------------------------------------------
+-- API Config
+----------------------------------------------------------------------------
+
 -- Watchers to keep the contents up-to-date.
 
 -- cp.apple.finalcutpro.windowfilter.LOG_NAME -> string
@@ -780,32 +762,110 @@ end
 -- The name of the `hs.logger` instance.
 local LOG_NAME = "appWinFilter"
 
-local function findApp(w)
+local function findAppForWindow(w)
     if w then
         return apps[w:application():bundleID()]
     end
 end
 
 local function updateWindowsUI(window)
-    local app = findApp(window)
+    local app = findAppForWindow(window)
     if app then
         -- check if any windows are open
         app.windowsUI:update()
     end
 end
 
-local appWindowFilter = windowfilter.new(function(window)
-    return findApp(window) ~= nil
-end, LOG_NAME)
+local function updateFrontmostApp(app)
+    if app then
+        if app:bundleID() ~= COMMANDPOST_BUNDLE_ID then
+            frontmostApp = app
+        end
+    else
+        frontmostApp = nil
+    end
+    mod.frontmostApp:update()
+end
 
-appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
-appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
-appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
+-- cp.app._initWatchers() -> none
+-- Method
+-- Initialise all the various application watchers.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function mod._initWatchers()
+    if mod._appWatcher then
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Setup Application Watcher:
+    --------------------------------------------------------------------------------
+    --log.df("Setting up Application Watcher...")
+    mod._appWatcher = applicationwatcher.new(
+        function(appName, eventType, hsApp)
+            local app = mod._findApp(hsApp:bundleID(), appName)
+
+            -- log.df("Application event: bundleID: %s; appName: '%s'; type: %s", bundleID, appName, eventType)
+            if app then
+                if eventType == applicationwatcher.activated then
+                    timer.doAfter(0.01, function()
+                        app.showing:update()
+                        app.frontmost:update()
+                        updateFrontmostApp(app)
+                    end)
+                    return
+                elseif eventType == applicationwatcher.deactivated then
+                    timer.doAfter(0.01, function()
+                        app.showing:update()
+                        app.frontmost:update()
+                    end)
+                    return
+                elseif eventType == applicationwatcher.launched then
+                    timer.doAfter(0.01, function()
+                        log.df("launched. Updating hs.application etc.")
+                        app.hsApplication:update()
+                        app.running:update()
+                        app.frontmost:update()
+                        -- updateFrontmostApp(app)
+                    end)
+                    return
+                elseif eventType == applicationwatcher.terminated then
+                    timer.doAfter(0.01, function()
+                        log.df("terminated. Updating hs.application etc.")
+                        app.hsApplication:update()
+                        app.running:update()
+                        app.frontmost:update()
+                    end)
+                    return
+                end
+            elseif hsApp:bundleID() ~= COMMANDPOST_BUNDLE_ID then
+                updateFrontmostApp(nil)
+            end
+        end
+    ):start()
+
+    local appWindowFilter = windowfilter.new(function(window)
+        return findAppForWindow(window) ~= nil
+    end, LOG_NAME)
+
+    appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
+    appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
+    appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
+
+    mod._appWindowFilter = appWindowFilter
+end
 
 setmetatable(mod, {
     __call = function(_, key)
         return mod.forBundleID(key)
     end,
 })
+
+-- register CommandPost as an app
+mod.forBundleID(COMMANDPOST_BUNDLE_ID)
 
 return mod
