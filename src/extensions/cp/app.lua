@@ -863,7 +863,6 @@ function mod._initWatchers()
                     return
                 elseif eventType == applicationwatcher.launched then
                     timer.doAfter(0.01, function()
-                        log.df("launched. Updating hs.application etc.")
                         app.hsApplication:update()
                         app.running:update()
                         app.frontmost:update()
@@ -872,7 +871,6 @@ function mod._initWatchers()
                     return
                 elseif eventType == applicationwatcher.terminated then
                     timer.doAfter(0.01, function()
-                        log.df("terminated. Updating hs.application etc.")
                         app.hsApplication:update()
                         app.running:update()
                         app.frontmost:update()
