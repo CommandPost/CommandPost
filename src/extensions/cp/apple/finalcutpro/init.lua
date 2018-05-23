@@ -214,42 +214,42 @@ prop.bind(fcp) {
     --- cp.apple.finalcutpro.application <cp.prop: hs.application; read-only>
     --- Field
     --- Returns the running `hs.application` for Final Cut Pro, or `nil` if it's not running.
-    application = fcp.app.hsApplication,
+    application = app.hsApplication,
 
     --- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
     --- Field
     --- Is Final Cut Pro Running?
-    isRunning = fcp.app.running,
+    isRunning = app.running,
 
     --- cp.apple.finalcutpro.UI <cp.prop: hs._asm.axuielement; read-only; live>
     --- Field
     --- The Final Cut Pro `axuielement`, if available.
-    UI = fcp.app.UI,
+    UI = app.UI,
 
     --- cp.apple.finalcutpro.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
     --- Field
     --- Returns the UI containing the list of windows in the app.
-    windowsUI = fcp.app.windowsUI,
+    windowsUI = app.windowsUI,
 
     --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only; live>
     --- Field
     --- Is Final Cut visible on screen?
-    isShowing = fcp.app.showing,
+    isShowing = app.showing,
 
     --- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
     --- Field
     --- Is any version of Final Cut Pro Installed?
-    isInstalled = fcp.app.installed,
+    isInstalled = app.installed,
 
     --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only; live>
     --- Field
     --- Is Final Cut Pro Frontmost?
-    isFrontmost = fcp.app.frontmost,
+    isFrontmost = app.frontmost,
 
     --- cp.apple.finalcutpro:isModalDialogOpen <cp.prop: boolean; read-only>
     --- Field
     --- Is a modal dialog currently open?
-    isModalDialogOpen = fcp.app.modalDialogOpen,
+    isModalDialogOpen = app.modalDialogOpen,
 
     --- cp.apple.finalcutpro.isSupported <cp.prop: boolean; read-only; live>
     --- Field
@@ -257,7 +257,7 @@ prop.bind(fcp) {
     ---
     --- Note:
     ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
-    isSupported = fcp.app.version:mutate(function(original)
+    isSupported = app.version:mutate(function(original)
         local version = original()
         return version ~= nil and version >= fcp.EARLIEST_SUPPORTED_VERSION
     end),
@@ -265,22 +265,22 @@ prop.bind(fcp) {
     --- cp.apple.finalcutpro.supportedLocales <cp.prop: table of cp.i18n.localeID; read-only>
     --- Field
     --- The list of supported locales for this version of FCPX.
-    supportedLocales = fcp.app.supportedLocales,
+    supportedLocales = app.supportedLocales,
 
     --- cp.apple.finalcutpro.currentLocale <cp.prop: cp.i18n.localeID; live>
     --- Field
     --- Gets and sets the current locale for FCPX.
-    currentLocale = fcp.app.currentLocale,
+    currentLocale = app.currentLocale,
 
     --- cp.apple.finalcutpro.version <cp.prop: semver; read-only; live>
     --- Field
     --- The version number of the running or default installation of FCPX as a `semver`.
-    version = fcp.app.version,
+    version = app.version,
 
     --- cp.apple.finalcutpro.versionString <cp.prop: string; read-only; live>
     --- Field
     --- The version number of the running or default installation of FCPX as a `string`.
-    versionString = fcp.app.versionString,
+    versionString = app.versionString,
 }
 
 prop.bind(fcp) {
@@ -418,6 +418,7 @@ end
 ---  * The FCP instance.
 function fcp:hide()
     self.app:hide()
+    return self
 end
 
 --- cp.apple.finalcutpro:quit([waitSeconds]) -> self
