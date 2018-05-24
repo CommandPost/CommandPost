@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     C  O  M  M  A  N  D      A C T I O N                   --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.commands.actions ===
 ---
 --- An `action` which will execute a command with matching group/id values.
@@ -21,16 +15,26 @@
 local dialog            = require("cp.dialog")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local format = string.format
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- ID -> string
+-- Constant
+-- Commands ID.
 local ID    = "cmds"
-local GROUP = "global"
 
-local format = string.format
+-- GROUP -> string
+-- Constant
+-- Global ID.
+local GROUP = "global"
 
 --- plugins.core.commands.actions.init(actionmanager, cmds) -> none
 --- Function
@@ -52,7 +56,9 @@ function mod.init(actionmanager, cmds)
     :onExecute(mod.onExecute)
     :onActionId(mod.getId)
 
-    -- watch for any aditional commands added after this point...
+    --------------------------------------------------------------------------------
+    -- Watch for any additional commands added after this point:
+    --------------------------------------------------------------------------------
     cmds:watch({
         add     = function() mod._handler:reset() end
     })
@@ -180,11 +186,6 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
-    --------------------------------------------------------------------------------
-    -- TODO: Moving `mod.init()` from `plugin.init()` to `plugin.postInit()`
-    --       is just a temporary fix until David comes up with a better fix in
-    --       issue #897.
-    --------------------------------------------------------------------------------
     mod.init(deps.actionmanager, deps.cmds)
     return mod
 end

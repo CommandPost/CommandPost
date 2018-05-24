@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.disk.automount ===
 ---
 --- Automatic Disk Mounting & Unmounting.
@@ -89,22 +83,25 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
+    local global, prefs = deps.global, deps.prefs
+    local hasBattery = battery.powerSource()
+
     --------------------------------------------------------------------------------
     -- Watch for power source changes:
     --------------------------------------------------------------------------------
-    battery.powerSource:watch(function(value)
-        if value == "Battery Power" and mod.autoUnmountOnBattery() then
-            log.df("Unmounting all external drives when on battery power...")
-            dialog.displayNotification(i18n("unmountingExternalDrivesMsg"))
-            mod.unmountPhysicalDrives()
-        elseif value == "AC Power" and mod.autoMountOnAC() then
-            log.df("Mounting external drives when on AC power...")
-            dialog.displayNotification(i18n("mountingExternalDrivesMsg"))
-            mod.mountPhysicalDrives()
-        end
-    end, true)
-
-    local global, prefs = deps.global, deps.prefs
+    if hasBattery then
+        battery.powerSource:watch(function(value)
+            if value == "Battery Power" and mod.autoUnmountOnBattery() then
+                log.df("Unmounting all external drives when on battery power...")
+                dialog.displayNotification(i18n("unmountingExternalDrivesMsg"))
+                mod.unmountPhysicalDrives()
+            elseif value == "AC Power" and mod.autoMountOnAC() then
+                log.df("Mounting external drives when on AC power...")
+                dialog.displayNotification(i18n("mountingExternalDrivesMsg"))
+                mod.mountPhysicalDrives()
+            end
+        end, true)
+    end
 
     --------------------------------------------------------------------------------
     -- Add Commands:
@@ -125,6 +122,7 @@ function plugin.init(deps)
             label       = i18n("autoUnmountOnBattery"),
             checked     = mod.autoUnmountOnBattery,
             onchange    = function(_, params) mod.autoUnmountOnBattery(params.checked) end,
+            disabled    = not hasBattery
         }
     )
     :addCheckbox(22,
@@ -132,6 +130,7 @@ function plugin.init(deps)
             label       = i18n("autoMountOnAC"),
             checked     = mod.autoMountOnAC,
             onchange    = function(_, params) mod.autoMountOnAC(params.checked) end,
+            disabled    = not hasBattery
         }
     )
 

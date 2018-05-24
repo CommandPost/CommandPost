@@ -274,12 +274,14 @@ function Inspector:show(tab)
         -----------------------------------------------------------------------
         -- Show the parent:
         -----------------------------------------------------------------------
-        if parent:show():isShowing() and not self:isShowing() then
+        if parent and parent:show() and parent:show():isShowing() and not self:isShowing() then
             local menuBar = self:app():menu()
             -----------------------------------------------------------------------
             -- Enable it in the primary:
             -----------------------------------------------------------------------
-            menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
+            if menuBar then
+                menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
+            end
         end
     end
     return self

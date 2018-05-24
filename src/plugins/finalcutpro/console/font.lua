@@ -128,52 +128,147 @@ end
 ---  * None
 function mod.onActivate(_, action, _)
     if action and action.fontName and action.id then
-        local f = fcp:inspector():text():basic():font()
-        if f and f.family then
-            local ui = f.family:UI()
-            if ui then
-                ui:performAction("AXPress")
-                local menu = just.doUntil(function()
-                    return ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
-                end)
-                if menu then
-                    local kids = menu:attributeValue("AXChildren")
-                    if kids then
-                        local difference = #kids - mod._consoleFontCount
-                        if difference == 0 then
-                            if menu[action.id] then
-                                --------------------------------------------------------------------------------
-                                -- Click on chosen font:
-                                --------------------------------------------------------------------------------
-                                --log.df("Selecting item: %s (%s)", action.fontName, action.id)
-                                local result = menu[action.id]:performAction("AXPress")
-                                if result then
-                                    return
-                                end
-                            end
-                        else
-                            --------------------------------------------------------------------------------
-                            -- Wrong number of fonts comparing Console with Popup:
-                            --------------------------------------------------------------------------------
-                            local cachedFonts = mod.cachedFonts()
-                            log.df("Cached Fonts: %s", inspect(cachedFonts))
-                            log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
-                            log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
-                            log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
 
-                            dialog.displayErrorMessage(i18n("fontScanError"))
-                            mod.cachedFonts(nil)
-                            mod.activator:refresh()
-                        end
-                    end
+        --------------------------------------------------------------------------------
+        -- Make sure Inspector is open:
+        --------------------------------------------------------------------------------
+        local inspector = fcp:inspector()
+        inspector:show()
+        if not just.doUntil(function() return inspector:isShowing() end) then
+            dialog.displayErrorMessage("Failed to open the Inspector.")
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Make sure the Text Inspector is open:
+        --------------------------------------------------------------------------------
+        local text = inspector:text()
+        text:show()
+        if not just.doUntil(function() return text:isShowing() end) then
+            dialog.displayMessage(i18n("pleaseSelectATitle"))
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Make sure we can get the currently selected font:
+        --------------------------------------------------------------------------------
+        local f = text:basic():font()
+        if not f or not f.family then
+            dialog.displayErrorMessage(string.format("Failed to get Font Dropdown: %s", f))
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get the Font Family UI:
+        --------------------------------------------------------------------------------
+        local ui = f.family:UI()
+        if not ui then
+            dialog.displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Activate the drop down:
+        --------------------------------------------------------------------------------
+        ui:performAction("AXPress")
+        local menu = just.doUntil(function()
+            return ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
+        end)
+        if not menu then
+            dialog.displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Get the kids:
+        --------------------------------------------------------------------------------
+        local kids = menu:attributeValue("AXChildren")
+        if not kids then
+            dialog.displayErrorMessage(string.format("Failed to get Font Kids: %s", kids))
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Compare the number of items in the drop down to what we've cached:
+        --------------------------------------------------------------------------------
+        local difference = #kids - mod._consoleFontCount
+        if difference == 0 then
+            if menu[action.id] then
+                --------------------------------------------------------------------------------
+                -- Click on chosen font:
+                --------------------------------------------------------------------------------
+                --log.df("Selecting item: %s (%s)", action.fontName, action.id)
+                local result = menu[action.id]:performAction("AXPress")
+                if result then
+                    return
                 end
             end
+        else
+            --------------------------------------------------------------------------------
+            -- Wrong number of fonts comparing Console with Popup:
+            --------------------------------------------------------------------------------
+            local cachedFonts = mod.cachedFonts()
+            log.df("--------------------------------------------------------------------------------")
+            log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
+            log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
+            log.df("--------------------------------------------------------------------------------")
+            log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
+            log.df("--------------------------------------------------------------------------------")
+            log.df("Cached Fonts: %s", inspect(cachedFonts))
+            log.df("--------------------------------------------------------------------------------")
+            log.df("Fonts: %s", inspect(mod._debugFontList))
+            log.df("--------------------------------------------------------------------------------")
+
+            dialog.displayErrorMessage(string.format("An error has occured where the number of fonts in the CommandPost Console (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThe font cache will be trashed. Please try again.", mod._consoleFontCount, #kids))
+
+            --------------------------------------------------------------------------------
+            -- NOTE: I attempted this before realising that even the AXPopupButton doesn't
+            --       have an AXValue - doh!
+            --------------------------------------------------------------------------------
+            --[[
+            if dialog.displayYesNoQuestion(string.format("The number of fonts in Final Cut Pro (%s), is different to what we calculated (%s).", #kids, mod._consoleFontCount), "Would you like to run a test to attempt to fix? This can take several minutes.") then
+                local items = {}
+                for i=1, #kids do
+                    --------------------------------------------------------------------------------
+                    -- Activate the drop down:
+                    --------------------------------------------------------------------------------
+                    ui:performAction("AXPress")
+                    local menu = just.doUntil(function()
+                        return ui:attributeValue("AXChildren") and ui:attributeValue("AXChildren")[1]
+                    end)
+                    if not menu then
+                        dialog.displayErrorMessage(string.format("Failed to get Font Family UI: %s", ui))
+                        return
+                    end
+
+                    if menu[i] then
+                        local result = menu[i]:performAction("AXPress")
+                        if not result then
+                            dialog.displayErrorMessage("Could not select font item, so aborting test.")
+                            return
+                        end
+                        table.insert(items, menu:attributeValue("AXValue"))
+                    end
+                end
+
+                log.df("items: %s", hs.inspect(items))
+            end
+            --]]
+
+            --------------------------------------------------------------------------------
+            -- Trash Cache:
+            --------------------------------------------------------------------------------
+            mod.cachedFonts(nil)
+            if mod.activator then
+                mod.activator:refresh()
+            end
         end
+    else
+        --------------------------------------------------------------------------------
+        -- Bad Action:
+        --------------------------------------------------------------------------------
+        dialog.displayErrorMessage("Something went wrong with the action you supplied. Try re-applying the action and try again.")
     end
-    --------------------------------------------------------------------------------
-    -- Something funky has happened:
-    --------------------------------------------------------------------------------
-    dialog.displayErrorMessage(i18n("unexpectedError"))
 end
 
 --- plugins.finalcutpro.console.font.show() -> none
@@ -188,6 +283,11 @@ end
 function mod.show()
     local hasCache = mod.cachedFonts() ~= nil
     local inspector = fcp:inspector()
+    inspector:show()
+    if not just.doUntil(function() return inspector:isShowing() end) then
+        dialog.displayErrorMessage("Failed to open the Inspector.")
+        return
+    end
     if not inspector:tabAvailable("Text") then
         dialog.displayMessage(i18n("pleaseSelectATitle"))
         return
@@ -275,11 +375,11 @@ function mod.onChoices(choices)
     local hash = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then -- luacheck: ignore
-                --log.df("Skipping Hidden/Ignored Font: %s", fontName)
+            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then
+                log.df("Skipping Hidden/Ignored Font: %s", fontName)
             else
                 if mod.RENAME_FONTS[fontName] then
-                    --log.df("Renaming Font: %s = %s", fontName, mod.RENAME_FONTS[fontName])
+                    log.df("Renaming Font: %s = %s", fontName, mod.RENAME_FONTS[fontName])
                     fontName = mod.RENAME_FONTS[fontName]
                 end
                 newFonts[#newFonts+1] = fontName
@@ -319,6 +419,11 @@ function mod.onChoices(choices)
     end
 
     --------------------------------------------------------------------------------
+    -- Get a list of fonts for debugging purposes:
+    --------------------------------------------------------------------------------
+    mod._debugFontList = newFonts
+
+    --------------------------------------------------------------------------------
     -- Display initialisation message:
     --------------------------------------------------------------------------------
     if mod._firstTime then
@@ -331,6 +436,11 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     mod._consoleFontCount = newFonts and #newFonts or 0
     --log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
+
+    --------------------------------------------------------------------------------
+    -- Fuck things up (for science):
+    --------------------------------------------------------------------------------
+    --mod._consoleFontCount = mod._consoleFontCount + 1
 
 end
 

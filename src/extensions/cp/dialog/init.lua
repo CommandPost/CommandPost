@@ -341,19 +341,20 @@ function dialog.displayMessage(whatMessage, optionalButtons)
 
 end
 
---- cp.dialog.displayYesNoQuestion(message) -> boolean
+--- cp.dialog.displayYesNoQuestion(message, informativeText) -> boolean
 --- Function
 --- Displays a "Yes" or "No" question.
 ---
 --- Parameters:
 ---  * whatMessage - The message you want to display as a string
+---  * informativeText - Informative text.
 ---
 --- Returns:
 ---  * `true` if yes is clicked otherwise `false`
 ---
 --- Notes:
 ---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.alert`
-function dialog.displayYesNoQuestion(message, informativeText) -- returns true or false
+function dialog.displayYesNoQuestion(message, informativeText)
 
     if not message then message = "" end
     if not informativeText then informativeText = "" end
