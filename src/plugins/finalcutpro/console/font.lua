@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.console.font ===
 ---
 --- Final Cut Pro Font Console
@@ -68,6 +62,7 @@ mod.IGNORE_FONTS = {
     ["Garamond Rough Medium"] = "Garamond Rough Medium",    -- Final Cut Pro Internal Font not available in Final Cut Pro Inspector.
     ["Avenir Book"] = "Avenir Book",                        -- System font not available in Final Cut Pro Inspector.
     ["Myriad Pro Light"] = "Myriad Pro Light",              -- System font not available in Final Cut Pro Inspector.
+    ["Refrigerator Deluxe Heavy"] = "Refrigerator Deluxe"   -- Obscure
 }
 
 --- plugins.finalcutpro.console.font.cachedFonts <cp.prop: table>
@@ -101,6 +96,18 @@ function mod.getRunningFonts()
                             if path then
                                 local fontFamily = font.getFontFamilyFromFile(path)
                                 if fontFamily and string.sub(fontFamily, 1, 1) ~= "." then
+                                    --------------------------------------------------------------------------------
+                                    -- Add workaround:
+                                    --------------------------------------------------------------------------------
+                                    local ff = styledtext.fontInfo(fontFamily)
+                                    if ff then
+                                        if ff.familyName ~= ".AppleSystemUIFont" then
+                                            if ff.displayName == fontFamily and ff.familyName ~= fontFamily then
+                                                log.df("CHANGING FONT: %s", fontFamily)
+                                                fontFamily = ff.familyName
+                                            end
+                                        end
+                                    end
                                     table.insert(result, fontFamily)
                                 end
                             end
@@ -251,7 +258,7 @@ function mod.onActivate(_, action, _)
                     end
                 end
 
-                log.df("items: %s", hs.inspect(items))
+                log.df("items: %s", inspect(items))
             end
             --]]
 
@@ -298,6 +305,7 @@ function mod.show()
         --------------------------------------------------------------------------------
         if not mod.cachedFonts() then
             mod._firstTime = true
+            mod._warningDisplayed = true
             dialog.displayMessage(i18n("fontScanInitalisationMessage"))
         end
 
@@ -323,8 +331,6 @@ function mod.show()
     end
 end
 
-
-
 --- plugins.finalcutpro.commands.actions.onChoices([choices]) -> none
 --- Function
 --- Adds available choices to the selection.
@@ -335,6 +341,14 @@ end
 --- Returns:
 --- * None
 function mod.onChoices(choices)
+
+    --------------------------------------------------------------------------------
+    -- Display warning if this is the first time we've loaded fonts:
+    --------------------------------------------------------------------------------
+    if not mod._warningDisplayed then
+        dialog.displayMessage(i18n("fontScanConsoleInitalisationMessage"))
+        mod._warningDisplayed = true
+    end
 
     local fonts
     local newFonts = {}
@@ -375,11 +389,11 @@ function mod.onChoices(choices)
     local hash = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then
-                log.df("Skipping Hidden/Ignored Font: %s", fontName)
+            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then -- luacheck: ignore
+                --log.df("Skipping Hidden/Ignored Font: %s", fontName)
             else
                 if mod.RENAME_FONTS[fontName] then
-                    log.df("Renaming Font: %s = %s", fontName, mod.RENAME_FONTS[fontName])
+                    --log.df("Renaming Font: %s = %s", fontName, mod.RENAME_FONTS[fontName])
                     fontName = mod.RENAME_FONTS[fontName]
                 end
                 newFonts[#newFonts+1] = fontName

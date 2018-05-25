@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                       M I D I    C O N T R O L S                           --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.midi.controls.controlui.absolute ===
 ---
 --- Adds the ability to control any Final Cut Pro User Interface Element via a MIDI Knob/Slider.
@@ -39,6 +33,9 @@ local dialog            = require("cp.dialog")
 --------------------------------------------------------------------------------
 local mod = {}
 
+-- plugins.finalcutpro.midi.controls.controlui.absolute._changedValue -> number
+-- Variable
+-- Changed Value.
 mod._changedValue = 0
 
 -- controlPressed() -> boolean

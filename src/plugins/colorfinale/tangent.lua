@@ -26,10 +26,9 @@ local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local mod ={}
 
 -- APP_BUNDLE_ID -> string
 -- Constant
@@ -40,6 +39,13 @@ local APP_BUNDLE_ID = "com.colorfinale.LUTManager"
 -- Constant
 -- ColorFinale Window Title
 local WINDOW_TITLE = "Color Finale"
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod ={}
 
 -- startsWith(value, startValue) -> boolean
 -- Function

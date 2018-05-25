@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.inspector.InspectorProperty ===
 ---
 --- `InspectorProperty` contains helper functions for handling common property
@@ -13,8 +7,20 @@
 --- there is also a `section`, which is for rows which expand/collapse to reveal
 --- other properties.
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log                   = require("hs.logger").new("InspectorProperty")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local is                    = require("cp.is")
 local prop                  = require("cp.prop")
 
@@ -27,9 +33,17 @@ local PropertyRow           = require("cp.ui.PropertyRow")
 local StaticText            = require("cp.ui.StaticText")
 local TextField             = require("cp.ui.TextField")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local childFromLeft, childFromRight = axutils.childFromLeft, axutils.childFromRight
-local childrenMatching      = axutils.childrenMatching
+local childrenMatching              = axutils.childrenMatching
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 --- cp.apple.finalcutpro.inspector.InspectorProperty.hasProperties(parent, uiFinder) -> boolean

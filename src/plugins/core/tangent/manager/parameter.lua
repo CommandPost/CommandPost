@@ -1,27 +1,43 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                T A N G E N T    M A N A G E R    P L U G I N               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.tangent.manager.parameter ===
 ---
 --- Represents a Tangent Parameter
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log               = require("hs.logger").new("tng_param")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local tangent           = require("hs.tangent")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
 local is                = require("cp.is")
 
 local named             = require("named")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format            = string.format
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local parameter = {}
-
 parameter.mt = named({})
 
 --- plugins.core.tangent.manager.parameter.new(id[, name[, parent]) -> parameter
@@ -29,12 +45,12 @@ parameter.mt = named({})
 --- Creates a new `Parameter` instance.
 ---
 --- Parameters:
---- * id        - The ID number of the parameter.
---- * name      - The name of the parameter.
---- * parent    - The parent of the parameter.
+---  * id        - The ID number of the parameter.
+---  * name      - The name of the parameter.
+---  * parent    - The parent of the parameter.
 ---
 --- Returns:
---- * the new `parameter`.
+---  * the new `parameter`.
 function parameter.new(id, name, parent)
     local o = prop.extend({
         id = id,
@@ -64,10 +80,10 @@ end
 --- Checks if the `other` is a `parameter` instance.
 ---
 --- Parameters:
---- * other     - The other object to test.
+---  * other     - The other object to test.
 ---
 --- Returns:
---- * `true` if it is a `parameter`, `false` if not.
+---  * `true` if it is a `parameter`, `false` if not.
 function parameter.is(other)
     return type(other) == "table" and getmetatable(other) == parameter.mt
 end
@@ -77,10 +93,10 @@ end
 --- Returns the `group` or `controls` that contains this parameter.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The parent.
+---  * The parent.
 function parameter.mt:parent()
     return self._parent
 end
@@ -90,10 +106,10 @@ end
 --- Returns the `controls` the parameter belongs to.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `controls`, or `nil` if not specified.
+---  * The `controls`, or `nil` if not specified.
 function parameter.mt:controls()
     local parent = self:parent()
     if parent then
@@ -107,10 +123,10 @@ end
 --- Gets or sets the minimum value for the parameter.
 ---
 --- Parameters:
---- * value     - The new value.
+---  * value     - The new value.
 ---
 --- Returns:
---- * If `value` is `nil`, the current value is returned, otherwise returns `self`.
+---  * If `value` is `nil`, the current value is returned, otherwise returns `self`.
 function parameter.mt:minValue(value)
     if value ~= nil then
         self._minValue = value
@@ -120,16 +136,15 @@ function parameter.mt:minValue(value)
     end
 end
 
-
 --- plugins.core.tangent.manager.parameter:maxValue([value]) -> number | self
 --- Method
 --- Gets or sets the maximum value for the parameter.
 ---
 --- Parameters:
---- * value     - The new value.
+---  * value     - The new value.
 ---
 --- Returns:
---- * If `value` is `nil`, the current value is returned, otherwise returns `self`.
+---  * If `value` is `nil`, the current value is returned, otherwise returns `self`.
 function parameter.mt:maxValue(value)
     if value ~= nil then
         self._maxValue = value
@@ -144,10 +159,10 @@ end
 --- Gets or sets the step size for the parameter.
 ---
 --- Parameters:
---- * value     - The new value.
+---  * value     - The new value.
 ---
 --- Returns:
---- * If `value` is `nil`, the current value is returned, otherwise returns `self`.
+---  * If `value` is `nil`, the current value is returned, otherwise returns `self`.
 function parameter.mt:stepSize(value)
     if value ~= nil then
         self._stepSize = value
@@ -165,10 +180,10 @@ end
 --- `function() -> number`
 ---
 --- Parameters:
---- * getFn     - The function to call when the Tangent requests the parameter value.
+---  * getFn     - The function to call when the Tangent requests the parameter value.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function parameter.mt:onGet(getFn)
     if is.nt.fn(getFn) then
         error("Please provide a `get` function: %s", type(getFn))
@@ -183,10 +198,10 @@ end
 --- none has been set, `nil` is returned.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The current value, or `nil` if it can't be accessed.
+---  * The current value, or `nil` if it can't be accessed.
 function parameter.mt:get()
     if self._get and self:active() then
         return self._get()
@@ -204,10 +219,10 @@ end
 --- The return value should be the new value of the parameter.
 ---
 --- Parameters:
---- * getFn     - The function to call when the Tangent requests the parameter change.
+---  * getFn     - The function to call when the Tangent requests the parameter change.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function parameter.mt:onChange(changeFn)
     if is.nt.fn(changeFn) then
         error("Please provide a `change` function: %s", type(changeFn))
@@ -222,10 +237,10 @@ end
 --- none has been set, `nil` is returned.
 ---
 --- Parameters:
---- * amount    - The amount to change the parameter.
+---  * amount    - The amount to change the parameter.
 ---
 --- Returns:
---- * The current value, or `nil` if it can't be accessed.
+---  * The current value, or `nil` if it can't be accessed.
 function parameter.mt:change(amount)
     if self._change and self:active() then
         local ok, result = xpcall(function() self._change(amount) end, debug.traceback)
@@ -246,10 +261,10 @@ end
 --- `function() -> nil`
 ---
 --- Parameters:
---- * resetFn     - The function to call when the Tangent requests the parameter reset.
+---  * resetFn     - The function to call when the Tangent requests the parameter reset.
 ---
 --- Returns:
---- * The `parameter` instance.
+---  * The `parameter` instance.
 function parameter.mt:onReset(resetFn)
     if is.nt.fn(resetFn) then
         error("Please provide a `reset` function: %s", type(resetFn))
@@ -263,10 +278,10 @@ end
 --- Executes the `reset` function if present. Returns the current value of the parameter after reset.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The current value, or `nil` if it can't be accessed.
+---  * The current value, or `nil` if it can't be accessed.
 function parameter.mt:reset()
     if self._reset and self:active() then
         self._reset()
@@ -288,10 +303,10 @@ end
 --- Returns the `xml` configuration for the Parameter.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `xml` for the Parameter.
+---  * The `xml` for the Parameter.
 function parameter.mt:xml()
     return x.Parameter { id=format("%#010x", self.id) } (
         function()

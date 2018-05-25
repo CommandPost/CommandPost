@@ -28,15 +28,21 @@ local config        = require("cp.config")
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local mod = {}
 
 -- LANGUAGE_PATH -> string
 -- Constant
 -- Language Path.
 local LANGUAGE_PATH = config.languagePath
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
 
 --- plugins.core.language.installedLanguages() -> table
 --- Variable

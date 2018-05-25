@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.prefs.ImportPanel ===
 ---
 --- Import Panel Module.
@@ -13,13 +7,23 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
--- local log								= require("hs.logger").new("importPanel")
--- local inspect							= require("hs.inspect")
 
-local just								= require("cp.just")
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+-- local log								= require("hs.logger").new("importPanel")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+-- local inspect							= require("hs.inspect")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
 local CheckBox							= require("cp.ui.CheckBox")
+local just								= require("cp.just")
+local prop								= require("cp.prop")
 local RadioButton						= require("cp.ui.RadioButton")
 
 local id								= require("cp.apple.finalcutpro.ids") "ImportPanel"

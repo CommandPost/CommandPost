@@ -1,25 +1,54 @@
 --- === cp.localized ===
 ---
 --- Helps look up localized names for folders.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log										= require("hs.logger").new("localized")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fs 										= require("hs.fs")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local text										= require("cp.text")
 local matcher									= require("cp.text.matcher")
 local wtext										= require("cp.web.text")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local pathToAbsolute							= fs.pathToAbsolute
 local escapeXML, unescapeXML					= wtext.escapeXML, wtext.unescapeXML
 local isBinaryPlist, binaryFileToTable			= plist.isBinaryPlist, plist.binaryFileToTable
 local match										= string.match
 
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
 local KEY_VALUE			= matcher('^%"(.+)%"%s*%=%s*%"(.+)%";.*$')
 local UNICODE_ESCAPE	= matcher('%\\[Uu]%d%d%d%d')
 local CHAR_ESCAPE		= matcher('%\\(.)')
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local function uParser(s)
     return utf8.char(tonumber(s:sub(3):encode(), 16))
 end

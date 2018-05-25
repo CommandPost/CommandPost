@@ -1,15 +1,9 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.console.history ===
 ---
 --- Console History Manager.
-
--- Created by @asmagill
--- https://github.com/asmagill/hammerspoon-config-take2/blob/master/utils/_actions/consoleHistory.lua
+---
+--- Originally created by @asmagill
+--- https://github.com/asmagill/hammerspoon-config-take2/blob/master/utils/_actions/consoleHistory.lua
 
 --------------------------------------------------------------------------------
 --
