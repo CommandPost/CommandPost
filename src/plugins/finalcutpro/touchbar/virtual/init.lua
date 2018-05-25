@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---               V I R T U A L   T O U C H B A R     P L U G I N              --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.touchbar.virtual ===
 ---
 --- Virtual Touch Bar Plugin.
@@ -69,6 +63,10 @@ function mod._checkVisibility(active)
     end
 end
 
+local function updateStatus(enabled)
+    mod._manager.groupStatus("fcpx", enabled)
+end
+
 --- plugins.finalcutpro.touchbar.virtual.enabled <cp.prop: boolean>
 --- Field
 --- Is `true` if the plugin is enabled.
@@ -115,12 +113,8 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Update Touch Bar Buttons when FCPX is active:
         --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp:watch({
-            active      = function() mod._manager.groupStatus("fcpx", true) end,
-            show        = function() mod._manager.groupStatus("fcpx", true) end,
-            inactive    = function() mod._manager.groupStatus("fcpx", false) end,
-            hide        = function() mod._manager.groupStatus("fcpx", false) end,
-        })
+        fcp.app.frontmost:watch(updateStatus)
+        fcp.app.showing:watch(updateStatus)
 
         --------------------------------------------------------------------------------
         -- Disable/Enable the Touchbar when the Command Editor/etc is open:
@@ -130,8 +124,8 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Update the Virtual Touch Bar position if either of the main windows move:
         --------------------------------------------------------------------------------
-        mod._fcpPrimaryWindowWatcher = fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
-        mod._fcpSecondaryWindowWatcher = fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
 
         --------------------------------------------------------------------------------
         -- Start the Virtual Touch Bar:
@@ -155,10 +149,9 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
+        fcp.app.frontmost:unwatch(updateStatus)
+        fcp.app.showing:unwatch(updateStatus)
+
         if mod._fcpCommandEditorWatcher then
             mod._fcpCommandEditorWatcher:unwatch(mod._checkVisibility)
             mod._fcpCommandEditorWatcher = nil

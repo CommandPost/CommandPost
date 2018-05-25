@@ -7,7 +7,7 @@ globals = { -- luacheck:ignore
 	"history",
 	"string",
 	-- used in cp.test
-	"ok", "eq", "spy",
+	"ok", "eq", "neq", "spy",
 }
 
 ignore = { -- luacheck:ignore

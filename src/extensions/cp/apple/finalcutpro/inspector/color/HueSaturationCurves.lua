@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.inspector.color.HueSaturationCurves ===
 ---
 --- Hue/Saturation Curves Module.
@@ -72,8 +66,8 @@ HueSaturationCurves.CURVES = {
     ["Orange"]          = "FFConsumerSolidOrange",
 }
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:new(parent) -> HueSaturationCurves object
---- Method
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.new(parent) -> HueSaturationCurves object
+--- Constructor
 --- Creates a new HueSaturationCurves object
 ---
 --- Parameters:
@@ -81,8 +75,7 @@ HueSaturationCurves.CURVES = {
 ---
 --- Returns:
 ---  * A HueSaturationCurves object
--- TODO: Use a function instead of a method.
-function HueSaturationCurves:new(parent) -- luacheck: ignore
+function HueSaturationCurves.new(parent)
     local o = {
         _parent = parent,
         _child = {}

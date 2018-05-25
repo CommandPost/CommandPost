@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.viewer.overlays ===
 ---
 --- Final Cut Pro Viewer Overlays.
@@ -64,6 +58,68 @@ local FCP_COLOR_BLUE        = "#5760e7"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.viewer.overlays.gridEnabled <cp.prop: boolean>
+--- Variable
+--- Is Viewer Grid Enabled
+mod.gridEnabled = config.prop("fcpViewerGridEnabled", false)
+
+--- plugins.finalcutpro.viewer.overlays.gridMode <cp.prop: number>
+--- Variable
+--- Viewer Grid Mode
+mod.gridMode = config.prop("fcpViewerGridMode", DEFAULT_MODE)
+
+--- plugins.finalcutpro.viewer.overlays.gridColor <cp.prop: string>
+--- Variable
+--- Viewer Grid Color as HTML value
+mod.gridColor = config.prop("fcpViewerGridColor", DEFAULT_COLOR)
+
+--- plugins.finalcutpro.viewer.overlays.gridAlpha <cp.prop: number>
+--- Variable
+--- Viewer Grid Alpha
+mod.gridAlpha = config.prop("fcpViewerGridAlpha", DEFAULT_ALPHA)
+
+--- plugins.finalcutpro.viewer.overlays.customGridColor <cp.prop: string>
+--- Variable
+--- Viewer Custom Grid Color as HTML value
+mod.customGridColor = config.prop("fcpViewerCustomGridColor", nil)
+
+--- plugins.finalcutpro.viewer.overlays.gridSpacing <cp.prop: number>
+--- Variable
+--- Viewer Custom Grid Color as HTML value
+mod.gridSpacing = config.prop("fcpViewerGridSpacing", DEFAULT_GRID_SPACING)
+
+--- plugins.finalcutpro.viewer.overlays.activeMemory <cp.prop: number>
+--- Variable
+--- Viewer Custom Grid Color as HTML value
+mod.activeMemory = config.prop("fcpViewerActiveMemory", 0)
+
+--- plugins.finalcutpro.viewer.overlays.stillsLayout <cp.prop: string>
+--- Variable
+--- Stills layout.
+mod.stillsLayout = config.prop("fcpViewerStillsLayout", DEFAULT_STILLS_LAYOUT)
+
+--- plugins.finalcutpro.viewer.overlays.guidePosition <cp.prop: table>
+--- Variable
+--- Guide Position.
+mod.guidePosition = config.prop("fcpViewerGuidePosition", {})
+
+--- plugins.finalcutpro.viewer.overlays.getViewerUI() -> axuielementObject
+--- Function
+--- Gets the Viewer UI.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.getViewerUI()
+    local ui = fcp:viewer():UI()
+    local splitGroup = ui and axutils.childWithRole(ui, "AXSplitGroup")
+    local groups = splitGroup and axutils.childrenWithRole(splitGroup, "AXGroup")
+    local fcpFrame = groups and groups[#groups]
+    return fcpFrame
+end
+
 --- plugins.finalcutpro.viewer.overlays.show() -> none
 --- Function
 --- Show's the Viewer Grid.
@@ -74,8 +130,13 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-    local ui = fcp:viewer():UI()
-    local fcpFrame = ui and axutils.childWithRole(ui, "AXSplitGroup")
+
+    --------------------------------------------------------------------------------
+    -- First, we must destroy any existing canvas:
+    --------------------------------------------------------------------------------
+    mod.hide()
+
+    local fcpFrame = mod.getViewerUI()
     if fcpFrame then
         local frame = fcpFrame:attributeValue("AXFrame")
         if frame then
@@ -269,6 +330,8 @@ function mod.show()
             mod._canvas:level("status")
             mod._canvas:show()
         end
+    else
+        mod.hide()
     end
 end
 
@@ -312,7 +375,13 @@ function mod.update()
         --------------------------------------------------------------------------------
         -- Show the grid if enabled:
         --------------------------------------------------------------------------------
-        if mod.gridEnabled() or mod.activeMemory() ~= 0 then
+        local activeMemory = mod.activeMemory()
+        local gridEnabled = mod.gridEnabled()
+
+        --log.df("activeMemory: %s", activeMemory)
+        --log.df("gridEnabled: %s", gridEnabled)
+
+        if gridEnabled or activeMemory ~= 0 then
             mod.show()
         else
             mod.hide()
@@ -328,51 +397,6 @@ function mod.update()
         end
     end
 end
-
---- plugins.finalcutpro.viewer.overlays.gridEnabled <cp.prop: boolean>
---- Variable
---- Is Viewer Grid Enabled
-mod.gridEnabled = config.prop("fcpViewerGridEnabled", false)
-
---- plugins.finalcutpro.viewer.overlays.gridMode <cp.prop: number>
---- Variable
---- Viewer Grid Mode
-mod.gridMode = config.prop("fcpViewerGridMode", DEFAULT_MODE)
-
---- plugins.finalcutpro.viewer.overlays.gridColor <cp.prop: string>
---- Variable
---- Viewer Grid Color as HTML value
-mod.gridColor = config.prop("fcpViewerGridColor", DEFAULT_COLOR)
-
---- plugins.finalcutpro.viewer.overlays.gridAlpha <cp.prop: number>
---- Variable
---- Viewer Grid Alpha
-mod.gridAlpha = config.prop("fcpViewerGridAlpha", DEFAULT_ALPHA)
-
---- plugins.finalcutpro.viewer.overlays.customGridColor <cp.prop: string>
---- Variable
---- Viewer Custom Grid Color as HTML value
-mod.customGridColor = config.prop("fcpViewerCustomGridColor", nil)
-
---- plugins.finalcutpro.viewer.overlays.gridSpacing <cp.prop: number>
---- Variable
---- Viewer Custom Grid Color as HTML value
-mod.gridSpacing = config.prop("fcpViewerGridSpacing", DEFAULT_GRID_SPACING)
-
---- plugins.finalcutpro.viewer.overlays.activeMemory <cp.prop: number>
---- Variable
---- Viewer Custom Grid Color as HTML value
-mod.activeMemory = config.prop("fcpViewerActiveMemory", 0)
-
---- plugins.finalcutpro.viewer.overlays.stillsLayout <cp.prop: string>
---- Variable
---- Stills layout.
-mod.stillsLayout = config.prop("fcpViewerStillsLayout", DEFAULT_STILLS_LAYOUT)
-
---- plugins.finalcutpro.viewer.overlays.guidePosition <cp.prop: table>
---- Variable
---- Guide Position.
-mod.guidePosition = config.prop("fcpViewerGuidePosition", {})
 
 --- plugins.finalcutpro.viewer.overlays.getStillsFolderPath() -> string | nil
 --- Function
@@ -409,10 +433,9 @@ end
 --- Returns:
 ---  * None
 function mod.saveMemory(id)
+    local viewer = mod.getViewerUI()
     local result = false
-    local ui = fcp:viewer():UI()
-    if ui and ui[1] then
-        local viewer = ui[1]
+    if viewer then
         local path = mod.getStillsFolderPath()
         if path then
             local snapshot = axutils.snapshot(viewer, path .. "/memory" .. id .. ".png")
@@ -442,13 +465,15 @@ end
 function mod.getMemory(id)
     local path = mod.getStillsFolderPath()
     if path then
-        local result = image.imageFromPath(path .. "/memory" .. id .. ".png")
-        if result then
-            return result
-        else
-            return nil
+        local imagePath = path .. "/memory" .. id .. ".png"
+        if tools.doesFileExist(imagePath) then
+            local result = image.imageFromPath(imagePath)
+            if result then
+                return result
+            end
         end
     end
+    return nil
 end
 
 --- plugins.finalcutpro.viewer.overlays.viewMemory(id) -> none
@@ -465,7 +490,8 @@ function mod.viewMemory(id)
     if activeMemory == id then
         mod.activeMemory(0)
     else
-        if mod.getMemory(id) then
+        local result = mod.getMemory(id)
+        if result then
             mod.activeMemory(id)
         end
     end
@@ -630,11 +656,11 @@ function plugin.init(deps)
                         { title = "-", disabled = true },
                         { title = string.upper(i18n("stillFrames")) .. ":", disabled = true },
                         { title = "  " .. i18n("view"), menu = {
-                            { title = i18n("memory") .. " 1", checked = mod.activeMemory() == 1, fn = function() mod.viewMemory(1) end },
-                            { title = i18n("memory") .. " 2", checked = mod.activeMemory() == 2, fn = function() mod.viewMemory(2) end },
-                            { title = i18n("memory") .. " 3", checked = mod.activeMemory() == 3, fn = function() mod.viewMemory(3) end },
-                            { title = i18n("memory") .. " 4", checked = mod.activeMemory() == 4, fn = function() mod.viewMemory(4) end },
-                            { title = i18n("memory") .. " 5", checked = mod.activeMemory() == 5, fn = function() mod.viewMemory(5) end },
+                            { title = i18n("memory") .. " 1", checked = mod.activeMemory() == 1, fn = function() mod.viewMemory(1) end, disabled = not mod.getMemory(1) },
+                            { title = i18n("memory") .. " 2", checked = mod.activeMemory() == 2, fn = function() mod.viewMemory(2) end, disabled = not mod.getMemory(2) },
+                            { title = i18n("memory") .. " 3", checked = mod.activeMemory() == 3, fn = function() mod.viewMemory(3) end, disabled = not mod.getMemory(3) },
+                            { title = i18n("memory") .. " 4", checked = mod.activeMemory() == 4, fn = function() mod.viewMemory(4) end, disabled = not mod.getMemory(4) },
+                            { title = i18n("memory") .. " 5", checked = mod.activeMemory() == 5, fn = function() mod.viewMemory(5) end, disabled = not mod.getMemory(5) },
                         }},
                         { title = "  " .. i18n("save"), menu = {
                             { title = i18n("memory") .. " 1", fn = function() mod.saveMemory(1) end },

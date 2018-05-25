@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.timeline.matchframe ===
 ---
 --- Match Frame Tools for Final Cut Pro.
@@ -65,7 +59,7 @@ local function ninjaPasteboardCopy()
     --------------------------------------------------------------------------------
     -- Trigger 'copy' from Menubar:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:isEnabled({"Edit", "Copy"}) then
         menuBar:selectMenu({"Edit", "Copy"})
     else
@@ -169,7 +163,7 @@ function mod.multicamMatchFrame(goBackToTimeline)
     --------------------------------------------------------------------------------
     -- Open in Angle Editor:
     --------------------------------------------------------------------------------
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:isEnabled({"Clip", "Open in Angle Editor"}) then
         menuBar:selectMenu({"Clip", "Open in Angle Editor"})
     else
@@ -318,7 +312,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Check the option is available in the current context
     --------------------------------------------------------------------------------
-    if not fcp:menuBar():isEnabled({"File", "Reveal in Browser"}) then
+    if not fcp:menu():isEnabled({"File", "Reveal in Browser"}) then
         return nil
     end
 
@@ -337,7 +331,7 @@ function mod.matchFrame(focus)
     --------------------------------------------------------------------------------
     -- Trigger the menu item to reveal the clip
     --------------------------------------------------------------------------------
-    fcp:menuBar():selectMenu({"File", "Reveal in Browser"})
+    fcp:menu():selectMenu({"File", "Reveal in Browser"})
 
     if focus then
         --------------------------------------------------------------------------------

@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.inspector.Inspector ===
 ---
 --- Inspector
@@ -20,16 +14,10 @@
 local log                               = require("hs.logger").new("inspector")
 
 --------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local geometry                          = require("hs.geometry")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
 
 local AudioInspector                    = require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
@@ -210,7 +198,7 @@ function Inspector.new(parent)
             self:show()
             local currentValue = thisProp:get()
             if newValue ~= currentValue then
-                self:app():menuBar():selectMenu({"View", "Toggle Inspector Height"})
+                self:app():menu():selectMenu({"View", "Toggle Inspector Height"})
             end
         end
     ):bind(o)
@@ -280,12 +268,14 @@ function Inspector:show(tab)
         -----------------------------------------------------------------------
         -- Show the parent:
         -----------------------------------------------------------------------
-        if parent:show():isShowing() and not self:isShowing() then
-            local menuBar = self:app():menuBar()
+        if parent and parent:show() and parent:show():isShowing() and not self:isShowing() then
+            local menuBar = self:app():menu()
             -----------------------------------------------------------------------
             -- Enable it in the primary:
             -----------------------------------------------------------------------
-            menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
+            if menuBar then
+                menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
+            end
         end
     end
     return self
@@ -302,19 +292,19 @@ end
 ---  * The `Inspector` instance.
 function Inspector:hide()
     if self:isShowing() then
-        local menuBar = self:app():menuBar()
+        local menuBar = self:app():menu()
         -- Uncheck it from the primary workspace
         menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
     end
     return self
 end
 
---- cp.apple.finalcutpro.inspector.Inspector:selectTab([tab]) -> boolean
+--- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean
 --- Method
 --- Selects a tab in the inspector.
 ---
 --- Parameters:
----  * [tab] - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
+---  * tab - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
 ---
 --- Returns:
 ---  * A string of the selected tab, otherwise `nil` if an error occurred.
@@ -350,6 +340,51 @@ function Inspector:selectTab(value)
         local title = subChild:attributeValue("AXTitle")
         if title == valueTitle then
             return subChild:performAction("AXPress")
+        end
+    end
+    return false
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:tabAvailable(tab) -> boolean
+--- Method
+--- Checks to see if a tab is currently available in the Inspector.
+---
+--- Parameters:
+---  * tab - A string from the `cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS` table
+---
+--- Returns:
+---  * `true` if available otherwise `false`.
+---
+--- Notes:
+---  * Valid strings for `value` are as follows:
+---    * Audio
+---    * Color
+---    * Effect
+---    * Generator
+---    * Info
+---    * Share
+---    * Text
+---    * Title
+---    * Transition
+---    * Video
+function Inspector:tabAvailable(value)
+    local code = Inspector.INSPECTOR_TABS[value]
+    if not code then
+        log.ef("selectTab requires a valid tab string: %s", value)
+        return false
+    end
+    self:show()
+    if not self.isShowing() then
+        log.ef("Failed to open Inspector")
+        return false
+    end
+    local ui = self:topBarUI()
+    local app = self:app()
+    local valueTitle = app:string(code)
+    for _,subChild in ipairs(ui) do
+        local title = subChild:attributeValue("AXTitle")
+        if title == valueTitle then
+            return true
         end
     end
     return false
@@ -459,7 +494,7 @@ end
 ---  * InfoInspector
 function Inspector:info()
     if not self._infoInspector then
-        self._infoInspector = InfoInspector:new(self)
+        self._infoInspector = InfoInspector.new(self)
     end
     return self._infoInspector
 end
@@ -503,7 +538,7 @@ end
 ---  * TextInspector
 function Inspector:text()
     if not self._textInspector then
-        self._textInspector = TextInspector:new(self)
+        self._textInspector = TextInspector.new(self)
     end
     return self._textInspector
 end
@@ -525,7 +560,7 @@ end
 ---  * TitleInspector
 function Inspector:title()
     if not self._titleInspector then
-        self._titleInspector = TitleInspector:new(self)
+        self._titleInspector = TitleInspector.new(self)
     end
     return self._titleInspector
 end
@@ -569,7 +604,7 @@ end
 ---  * AudioInspector
 function Inspector:audio()
     if not self._audioInspector then
-        self._audioInspector = AudioInspector:new(self)
+        self._audioInspector = AudioInspector.new(self)
     end
     return self._audioInspector
 end
@@ -591,7 +626,7 @@ end
 ---  * ShareInspector
 function Inspector:share()
     if not self._shareInspector then
-        self._shareInspector = ShareInspector:new(self)
+        self._shareInspector = ShareInspector.new(self)
     end
     return self._shareInspector
 end

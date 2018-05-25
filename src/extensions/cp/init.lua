@@ -1,12 +1,6 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp ===
 ---
---- Core CommandPost functionality
+--- Core CommandPost functionality.
 
 --------------------------------------------------------------------------------
 --
@@ -304,10 +298,12 @@ function mod.init()
         --------------------------------------------------------------------------------
         -- Disabled plugins by default:
         --------------------------------------------------------------------------------
+        --[[
         config.set("plugins.disabled", {
             ["core.webapp"] = true,
             ["core.preferences.panels.webapp"] = true,
         })
+        --]]
 
         --------------------------------------------------------------------------------
         -- Enable Automatic Launch by default:
@@ -323,10 +319,11 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Check Versions & Language:
     --------------------------------------------------------------------------------
-    local fcpVersion            = fcp:getVersion() or "Unknown"
+    local fcpVersion            = fcp:version() or "Unknown"
     local fcpPath               = fcp:getPath() or "Unknown"
     local osVersion             = tools.macOSVersion() or "Unknown"
-    local fcpLanguage           = fcp:currentLanguage() or "Unknown"
+    local fcpLocale             = fcp:currentLocale()
+    local fcpLanguage           = fcpLocale and fcpLocale.code or "Unknown"
 
     --------------------------------------------------------------------------------
     -- Clear The Console:

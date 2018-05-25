@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     C  O  M  M  A  N  D      A C T I O N                   --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.commands.actions ===
 ---
 --- An `action` which will execute a command with matching group/id values.
@@ -61,7 +55,7 @@ function mod.init(actionmanager, cmds)
 
 end
 
---- plugins.finalcutpro.commands.actionss.onChoices(choices) -> none
+--- plugins.finalcutpro.commands.actions.onChoices(choices) -> none
 --- Function
 --- Adds available choices to the  selection.
 ---

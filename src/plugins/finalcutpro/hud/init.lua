@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                                H U D                                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.hud ===
 ---
 --- Final Cut Pro HUD.
@@ -431,8 +425,8 @@ hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 --- Returns:
 ---  * Button value
 function hud.getButton(index, defaultValue)
-    local currentLanguage = fcp:currentLanguage()
-    return config.get(string.format("%s.hudButton.%d", currentLanguage, index), defaultValue)
+    local currentLocale = fcp:currentLocale()
+    return config.get(string.format("%s.hudButton.%d", currentLocale.code, index), defaultValue)
 end
 
 --- plugins.finalcutpro.hud.getButtonCommand() -> string
@@ -504,8 +498,8 @@ end
 --- Returns:
 ---  * None
 function hud.setButton(index, value)
-    local currentLanguage = fcp:currentLanguage()
-    config.set(string.format("%s.hudButton.%d", currentLanguage, index), value)
+    local currentLocale = fcp:currentLocale()
+    config.set(string.format("%s.hudButton.%d", currentLocale.code, index), value)
 end
 
 --- plugins.finalcutpro.hud.updateVisibility() -> none
@@ -768,21 +762,14 @@ function hud.update()
         --------------------------------------------------------------------------------
         -- Setup Watchers:
         --------------------------------------------------------------------------------
-        hud._fcpWatcher = fcp:watch({
-            active      = hud.updateVisibility,
-            inactive    = hud.updateVisibility,
-            show        = hud.updateVisibility,
-            hide        = hud.updateVisibility,
-            preferences = hud.refresh,
-        })
-        hud._fcpFullScreenWatcher = fcp:fullScreenWindow():watch({
-            show        = hud.updateVisibility,
-            hide        = hud.updateVisibility,
-        })
-        hud._fcpCommandEditorWatcher = fcp:commandEditor():watch({
-            open        = hud.updateVisibility,
-            close       = hud.updateVisibility,
-        })
+        fcp.app.frontmost:watch(hud.updateVisibility)
+        fcp.app.showing:watch(hud.updateVisibility)
+
+        fcp:fullScreenWindow().isShowing:watch(hud.updateVisibility)
+        fcp:commandEditor().isShowing:watch(hud.updateVisibility)
+
+        -- refresh when the preferences change.
+        fcp.app.preferences:watch(hud.refresh)
 
         --------------------------------------------------------------------------------
         -- Create new HUD:
@@ -793,18 +780,11 @@ function hud.update()
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if hud._fcpWatcher and hud._fcpWatcher.id then
-            fcp:unwatch(hud._fcpWatcher.id)
-            hud._fcpWatcher = nil
-        end
-        if hud._fcpFullScreenWatcher and hud._fcpFullScreenWatcher.id then
-            fcp:fullScreenWindow():unwatch(hud._fcpFullScreenWatcher.id)
-            hud._fcpFullScreenWatcher = nil
-        end
-        if hud._fcpCommandEditorWatcher and hud._fcpCommandEditorWatcher.id then
-            fcp:commandEditor():unwatch(hud._fcpCommandEditorWatcher.id)
-            hud._fcpCommandEditorWatcher = nil
-        end
+        fcp.app.frontmost:unwatch(hud.updateVisibility)
+        fcp.app.showing:unwatch(hud.updateVisibility)
+
+        fcp:fullScreenWindow().isShowing:unwatch(hud.updateVisibility)
+        fcp:commandEditor().isShowing:unwatch(hud.updateVisibility)
 
         --------------------------------------------------------------------------------
         -- Delete the HUD:

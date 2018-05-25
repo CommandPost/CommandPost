@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.action.handler ===
 ---
 --- A support class for handler handlers. It is not used directly, rather
@@ -170,19 +164,28 @@ handler.mt.choices = prop(function(self)
 end)
 :bind(handler.mt)
 
--- plugins.core.action.handler._onChoices(choices) -> nil
--- Method
+-- plugins.core.action.handler._onChoices() -> none
+-- Function
 -- Default handler for adding choices. Throws an error message.
 --
 -- Parameters:
--- * `choices`  - The `cp.choices` to add to.
+-- * None
 --
 -- Returns:
--- * Nothing
+-- * None
 function handler.mt._onChoices(_)
     log.df("unimplemented: handler:onChoices(choicesFn)")
 end
 
+-- plugins.core.action.handler._onActionId() -> none
+-- Function
+-- Default handler for returning action ID. Throws an error message.
+--
+-- Parameters:
+-- * None
+--
+-- Returns:
+-- * None
 function handler.mt._onActionId(_)
     log.df("unimplemented: handler:onActionId(actionFn)")
 end

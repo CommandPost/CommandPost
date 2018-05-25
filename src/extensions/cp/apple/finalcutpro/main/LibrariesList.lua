@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.LibrariesList ===
 ---
 --- Libraries List Module.
@@ -13,17 +7,21 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local _									= require("moses")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
+local Clip								= require("cp.apple.finalcutpro.content.Clip")
+local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
+local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
+local prop								= require("cp.prop")
 local Table								= require("cp.ui.Table")
 
-local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
-
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
-
-local prop								= require("cp.prop")
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local _									= require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -122,7 +120,7 @@ end
 -- TODO: Add documentation
 function List:playhead()
     if not self._playhead then
-        self._playhead = Playhead:new(self, false, function()
+        self._playhead = Playhead.new(self, false, function()
             return self:playerUI()
         end)
     end
@@ -132,7 +130,7 @@ end
 -- TODO: Add documentation
 function List:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead:new(self, true, function()
+        self._skimmingPlayhead = Playhead.new(self, true, function()
             return self:playerUI()
         end)
     end

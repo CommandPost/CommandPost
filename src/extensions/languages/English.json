@@ -890,7 +890,6 @@
         "watchFolderXMLHelp"                                   : "This feature allows you to recieve macOS notfications whenever a FCPXML file is added into any of the below watch folders. From the notification you can then <b>Import</b> these files directly to your current Final Cut Pro timeline. If you hold down <b>SHIFT</b> when pressing <b>Import</b>, it will import all the outstanding files.",
         "performBatchExport"                                   : "Perform Batch Export",
         "monitor"                                              : "Monitor",
-        "finalcutpro_watchers_version_label"                   : "Watchers: Version",
         "preferences"                                          : "Preferences",
         "colorBoard"                                           : "Color Board",
         "colorBoard2"                                          : "CB",
@@ -1112,6 +1111,13 @@
 		"finalcutpro_timeline_colorwheels_label"			   : "Timeline: Color Wheel Actions",
 		"finalcutpro_export_batch_manager_label"	           : "Manager: Batch Export",
 		"core_disk_automount_label"							   : "Disk Automount",
+		"cpFontConsole_title"								   : "Open Font Console",
+		"fcpx_fonts_action"									   : "Fonts",
+		"pleaseSelectATitle"								   : "Please select a title in the timeline and try again.",
+		"fontScanInitalisationMessage"                         : "CommandPost needs to scan your system for fonts.\n\nThis may take several minutes. Another alert will appear when the scanning is complete.",
+		"fontScanConsoleInitalisationMessage"                  : "CommandPost needs to scan your system for fonts.\n\nThis may take several minutes. The Console will appear when the scanning is complete.",
+		"fontScanComplete"                                     : "The font scan is complete! You can now use the Font Console.",
+		"fontScanError"										   : "An error has occured where the number of fonts in the CommandPost Console is different to the number of fonts in Final Cut Pro.\n\nThe font cache will be trashed. Please try again.",
 		"cpViewerBasicGrid_title"							   : "Toggle Viewer Basic Grid",
 		"cpViewerDraggableGuide_title"						   : "Toggle Viewer Draggable Guide",
 		"black"												   : "Black",
@@ -1137,6 +1143,6 @@
 		"viewStillsMemory"     						           : "View Stills Memory",
 		"cpPasteTextAsCaption_title"						   : "Paste Text as Caption",
 		"finalcutpro_timeline_captions_label"		           : "Timeline: Captions",
-
+		"finalcutpro_console_font_label"					   : "Console: Font",
     }
 }

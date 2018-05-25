@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.action.activator ===
 ---
 --- This module provides provides a way of activating choices provided by action handlers.
@@ -41,7 +35,7 @@ local application               = require("hs.application")
 local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
-local inspect                   = require("hs.inspect") -- luacheck: ignore
+local inspect                   = require("hs.inspect")
 local menubar                   = require("hs.menubar")
 local mouse                     = require("hs.mouse")
 local screen                    = require("hs.screen")
@@ -60,6 +54,24 @@ local prop                      = require("cp.prop")
 local _                         = require("moses")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local sort, insert              = table.sort, table.insert
+local concat                    = fnutils.concat
+local format                    = string.format
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- PACKAGE -> string
+-- Constant
+-- The Package ID.
+local PACKAGE = "action.activator."
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
@@ -67,12 +79,6 @@ local _                         = require("moses")
 local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
-
-local sort, insert              = table.sort, table.insert
-local concat                    = fnutils.concat
-local format                    = string.format
-
-local PACKAGE = "action.activator."
 
 -- applyHiddenTo(choice, hidden) -> none
 -- Function
@@ -140,9 +146,9 @@ function activator.new(id, manager)
     -- The ID of a single handler to source
     o._allowedHandlers = prop.THIS(nil):bind(o)
 
---- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
---- Field
---- Contains all handlers that are allowed in this activator.
+    --- plugins.core.action.activator:allowedHandlers <cp.prop: table of handlers; read-only>
+    --- Field
+    --- Contains all handlers that are allowed in this activator.
     o.allowedHandlers = o._manager.handlers:mutate(
         function(original)
             local handlers = original()
@@ -795,8 +801,15 @@ end
 function activator.mt:refreshChooser()
     local theChooser = self:chooser()
     theChooser:refreshChoicesCallback()
-    theChooser:hide()
-    theChooser:show()
+
+    --------------------------------------------------------------------------------
+    -- This is a workaround for when we need to update the Chooser based on a
+    -- right click option (i.e. changing sections):
+    --------------------------------------------------------------------------------
+    if theChooser:isVisible() then
+        theChooser:hide()
+        theChooser:show()
+    end
 end
 
 --- plugins.core.action.activator:show()

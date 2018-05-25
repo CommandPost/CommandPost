@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.timeline.pluginshortcuts ===
 ---
 --- Controls for Final Cut Pro's Plugin Shortcuts (for use with Hack Shortcuts).
@@ -91,10 +85,10 @@ end
 --- Table of shortcuts.
 mod.shortcuts = prop(
     function()
-        return config.get(fcp:currentLanguage() .. ".pluginShortcuts", {})
+        return config.get(fcp:currentLocale().code .. ".pluginShortcuts", {})
     end,
     function(value)
-        config.set(fcp:currentLanguage() .. ".pluginShortcuts", value)
+        config.set(fcp:currentLocale().code .. ".pluginShortcuts", value)
     end
 )
 

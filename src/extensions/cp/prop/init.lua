@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.prop ===
 ---
 --- This is a utility library for helping keep track of single-value property states. Each property provides access to a single value. Must be readable, but may be read-only. It works by creating a table which has a `get` and (optionally) a `set` function which are called when changing the state.
@@ -260,6 +254,7 @@ local inspect           = require("hs.inspect")
 local fnutils           = require("hs.fnutils")
 
 local format            = string.format
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -575,6 +570,10 @@ function prop.mt:bind(owner, key)
         if not self._label then
             self._label = key
         end
+        if not self._aliases then
+            self._aliases = {}
+        end
+        insert(self._aliases, key)
     end
     return self
 end
@@ -752,14 +751,9 @@ end
 ---
 --- Parameters:
 ---  * `watchFn`        - The original watch function to remove. Must be the same instance that was added.
----  * `notifyNow`  - The function will be triggered immediately with the current state.  Defaults to `false`.
 ---
 --- Returns:
----  * `cp.prop`        - The same `cp.prop` instance
----  * `function`   - The watch function, which can be passed to [unwatch](#unwatch) to stop watching.
----
---- Notes:
----  * You can watch immutable values. Wrapped `cp.prop` instances may not be immutable, and any changes to them will cause watchers to be notified up the chain.
+---  * `true` if the function was watching and successfully removed, otherwise `false`.
 function prop.mt:unwatch(watchFn)
     return _unwatch(self._watchers, watchFn)
 end
@@ -1688,9 +1682,9 @@ function prop.bind(owner, relaxed)
         for k,v in pairs(bindings) do
             if prop.is(v) then
                 local vOwner = v:owner()
-                if vOwner == nil then -- it's unowned.
+                if vOwner == nil or vOwner == owner then -- it's unowned/owned by the owner already.
                     v:bind(owner, k)
-                elseif vOwner ~= owner then -- it's already owned. wrap instead.
+                elseif vOwner ~= owner then -- it's owned by someone else. wrap instead.
                     v:wrap(owner, k)
                 end
             elseif not relaxed then

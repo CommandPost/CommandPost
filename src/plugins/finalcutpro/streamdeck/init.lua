@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                 S T R E A M    D E C K     P L U G I N                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.streamdeck ===
 ---
 --- Stream Deck Plugin for Final Cut Pro.
@@ -38,13 +32,9 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Update Touch Bar Buttons when FCPX is active:
+    -- Update Buttons when FCPX is active:
     --------------------------------------------------------------------------------
-    fcp:watch({
-        active      = function() deps.manager.groupStatus("fcpx", true) end,
-        inactive    = function() deps.manager.groupStatus("fcpx", false) end,
-    })
-
+    fcp.app.frontmost:watch(function(frontmost) deps.manager.groupStatus("fcpx", frontmost) end)
 end
 
 return plugin

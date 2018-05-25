@@ -1,22 +1,32 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                T A N G E N T    M A N A G E R    P L U G I N               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.tangent.manager.action ===
 ---
 --- Represents a Tangent Action
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local is                = require("cp.is")
+local named             = require("named")
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
-local is                = require("cp.is")
 
-local named             = require("named")
-
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format            = string.format
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local action = {}
-
 action.mt = named({})
 
 --- plugins.core.tangent.manager.action.new(id[, name]) -> action
@@ -53,6 +63,15 @@ function action.new(id, name, parent)
     return o
 end
 
+--- plugins.core.tangent.manager.action.is() -> boolean
+--- Method
+--- Is an object an action?
+---
+--- Parameters:
+--- * otherThing - Object to test.
+---
+--- Returns:
+--- * `true` if the object is an action otherwise `false`.
 function action.is(otherThing)
     return is.table(otherThing) and getmetatable(otherThing) == action.mt
 end

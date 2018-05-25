@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                        C O M P R E S S O R     A P I                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.compressor ===
 ---
 --- Represents the Compressor application, providing functions that allow different tasks to be accomplished.
@@ -13,67 +7,147 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log										= require("hs.logger").new("compressor")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local application								= require("hs.application")
 local fnutils									= require("hs.fnutils")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local app                                       = require("cp.apple.compressor.app")
 local just										= require("cp.just")
 local prop										= require("cp.prop")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local v                                         = require("semver")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local App = {}
+local compressor = {
+    app = app,
+}
 
 --- cp.apple.compressor.BUNDLE_ID
 --- Constant
 --- Compressor's Bundle ID
-App.BUNDLE_ID = "com.apple.Compressor"
+compressor.BUNDLE_ID = "com.apple.Compressor"
 
 --- cp.apple.compressor.ALLOWED_IMPORT_VIDEO_EXTENSIONS
 --- Constant
 --- Table of video file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_VIDEO_EXTENSIONS = {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
+compressor.ALLOWED_IMPORT_VIDEO_EXTENSIONS = {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
 
 --- cp.apple.compressor.ALLOWED_IMPORT_AUDIO_EXTENSIONS
 --- Constant
 --- Table of audio file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
+compressor.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
 
 --- cp.apple.compressor.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 --- Constant
 --- Table of image file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_IMAGE_EXTENSIONS = {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
+compressor.ALLOWED_IMPORT_IMAGE_EXTENSIONS = {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
 
 --- cp.apple.compressor.ALLOWED_IMPORT_ALL_EXTENSIONS
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(App.ALLOWED_IMPORT_AUDIO_EXTENSIONS, App.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
+compressor.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(compressor.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(compressor.ALLOWED_IMPORT_AUDIO_EXTENSIONS, compressor.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
 
---- cp.apple.compressor:application() -> hs.application
---- Method
---- Returns the hs.application for Compressor.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The hs.application, or nil if the application is not installed.
-function App:application()
-    if self:isInstalled() then
-        local result = application.applicationsForBundleID(App.BUNDLE_ID) or nil
-        -- If there is at least one copy running, return the first one
-        if result and #result > 0 then
-            return result[1]
-        end
-    end
-    return nil
+--- cp.apple.compressor.EARLIEST_SUPPORTED_VERSION <semver>
+--- Constant
+--- The earliest version this API supports.
+compressor.EARLIEST_SUPPORTED_VERSION = v("4.3")
+
+function compressor:init()
+    return self
 end
 
---- cp.apple.compressor:getBundleID() -> string
+prop.bind(compressor) {
+    --- cp.apple.compressor.application <cp.prop: hs.application; read-only>
+    --- Field
+    --- Returns the running `hs.application` for Final Cut Pro, or `nil` if it's not running.
+    application = app.hsApplication,
+
+    --- cp.apple.compressor.isRunning <cp.prop: boolean; read-only>
+    --- Field
+    --- Is Final Cut Pro Running?
+    isRunning = app.running,
+
+    --- cp.apple.compressor.UI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- Field
+    --- The Final Cut Pro `axuielement`, if available.
+    UI = app.UI,
+
+    --- cp.apple.compressor.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- Field
+    --- Returns the UI containing the list of windows in the app.
+    windowsUI = app.windowsUI,
+
+    --- cp.apple.compressor.isShowing <cp.prop: boolean; read-only; live>
+    --- Field
+    --- Is Final Cut visible on screen?
+    isShowing = app.showing,
+
+    --- cp.apple.compressor.isInstalled <cp.prop: boolean; read-only>
+    --- Field
+    --- Is any version of Final Cut Pro Installed?
+    isInstalled = app.installed,
+
+    --- cp.apple.compressor:isFrontmost <cp.prop: boolean; read-only; live>
+    --- Field
+    --- Is Final Cut Pro Frontmost?
+    isFrontmost = app.frontmost,
+
+    --- cp.apple.compressor:isModalDialogOpen <cp.prop: boolean; read-only>
+    --- Field
+    --- Is a modal dialog currently open?
+    isModalDialogOpen = app.modalDialogOpen,
+
+    --- cp.apple.compressor.isSupported <cp.prop: boolean; read-only; live>
+    --- Field
+    --- Is a supported version of Final Cut Pro installed?
+    ---
+    --- Note:
+    ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.compressor.EARLIEST_SUPPORTED_VERSION`
+    isSupported = app.version:mutate(function(original)
+        local version = original()
+        return version ~= nil and version >= compressor.EARLIEST_SUPPORTED_VERSION
+    end),
+
+    --- cp.apple.compressor.supportedLocales <cp.prop: table of cp.i18n.localeID; read-only>
+    --- Field
+    --- The list of supported locales for this version of FCPX.
+    supportedLocales = app.supportedLocales,
+
+    --- cp.apple.compressor.currentLocale <cp.prop: cp.i18n.localeID; live>
+    --- Field
+    --- Gets and sets the current locale for FCPX.
+    currentLocale = app.currentLocale,
+
+    --- cp.apple.compressor.version <cp.prop: semver; read-only; live>
+    --- Field
+    --- The version number of the running or default installation of FCPX as a `semver`.
+    version = app.version,
+
+    --- cp.apple.compressor.versionString <cp.prop: string; read-only; live>
+    --- Field
+    --- The version number of the running or default installation of FCPX as a `string`.
+    versionString = app.versionString,
+}
+
+--- cp.apple.compressor:bundleID() -> string
 --- Method
 --- Returns the Compressor Bundle ID
 ---
@@ -82,66 +156,52 @@ end
 ---
 --- Returns:
 ---  * A string of the Compressor Bundle ID
-function App:bundleID() -- luacheck: ignore
-    return App.BUNDLE_ID
+function compressor:bundleID()
+    return self.app:bundleID()
 end
 
---- cp.apple.compressor:launch() -> boolean
+--- cp.apple.compressor:notifier() -> cp.ui.notifier
+--- Method
+--- Returns a notifier that is tracking the application UI element. It has already been started.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The notifier.
+function compressor:notifier()
+    return self.app:notifier()
+end
+
+--- cp.apple.compressor:launch([waitSeconds]) -> self
 --- Method
 --- Launches Compressor, or brings it to the front if it was already running.
 ---
 --- Parameters:
----  * None
+---  * waitSeconds      - if provided, we will wait for up to the specified seconds for the launch to complete.
 ---
 --- Returns:
 ---  * `true` if Compressor was either launched or focused, otherwise false (e.g. if Compressor doesn't exist)
-function App:launch()
-
-    local result
-
-    local app = self:application()
-    if app == nil then
-        -- Compressor is Closed:
-        result = application.launchOrFocusByBundleID(App.BUNDLE_ID)
-    else
-        -- Compressor is Open:
-        if not app:isFrontmost() then
-            -- Open if not Active:
-            result = application.launchOrFocusByBundleID(App.BUNDLE_ID)
-        else
-            -- Already frontmost:
-            return true
-        end
-    end
-
-    return result
+function compressor:launch(waitSeconds)
+    self.app:launch(waitSeconds)
+    return self
 end
 
---- cp.apple.compressor:restart() -> boolean
+--- cp.apple.compressor:restart([waitSeconds]) -> self
 --- Method
 --- Restart the application.
 ---
 --- Parameters:
----  * None
+---  * waitSeconds  - if provided, we will wait for up to the specified seconds for the restart to complete before returning.
 ---
 --- Returns:
 ---  * `true` if the application was running and restarted successfully.
-function App:restart()
-    local app = self:application()
-    if app then
-        -- Kill Compressor:
-        self:quit()
-
-        -- Wait until Compressor is Closed (checking every 0.1 seconds for up to 20 seconds):
-        just.doWhile(function() return self:isRunning() end, 20, 0.1)
-
-        -- Launch Compressor:
-        return self:launch()
-    end
-    return false
+function compressor:restart(waitSeconds)
+    self.app:restart(waitSeconds)
+    return self
 end
 
---- cp.apple.compressor:show() -> cp.apple.compressor object
+--- cp.apple.compressor:show() -> self
 --- Method
 --- Activate Compressor
 ---
@@ -149,21 +209,13 @@ end
 ---  * None
 ---
 --- Returns:
----  * An `cp.apple.compressor` object otherwise `nil`
-function App:show()
-    local app = self:application()
-    if app then
-        if app:isHidden() then
-            app:unhide()
-        end
-        if app:isRunning() then
-            app:activate()
-        end
-    end
+---  * The compressor instance.
+function compressor:show()
+    self.app:show()
     return self
 end
 
---- cp.apple.compressor:hide() -> cp.apple.compressor object
+--- cp.apple.compressor:hide() -> self
 --- Method
 --- Hides Compressor
 ---
@@ -171,29 +223,23 @@ end
 ---  * None
 ---
 --- Returns:
----  * An `cp.apple.compressor` object otherwise `nil`
-function App:hide()
-    local app = self:application()
-    if app then
-        app:hide()
-    end
+---  * The compressor instance.
+function compressor:hide()
+    self.app:hide()
     return self
 end
 
---- cp.apple.compressor:quit() -> cp.apple.compressor object
+--- cp.apple.compressor:quit([waitSeconds]) -> self
 --- Method
 --- Quits Compressor
 ---
 --- Parameters:
----  * None
+---  * waitSeconds  - if provided, we will wait for the specified time for the quit to complete before returning.
 ---
 --- Returns:
----  * An `cp.apple.compressor` object otherwise `nil`
-function App:quit()
-    local app = self:application()
-    if app then
-        app:kill()
-    end
+---  * The `compressor` instance.
+function compressor:quit(waitSeconds)
+    self.app:quit(waitSeconds)
     return self
 end
 
@@ -206,42 +252,9 @@ end
 ---
 --- Returns:
 ---  * A string containing Compressor's filesystem path, or `nil` if the bundle identifier could not be located
-function App.getPath()
-    return application.pathForBundleID(App.BUNDLE_ID)
+function compressor:getPath()
+    return self.app:path()
 end
-
---- cp.apple.compressor.isRunning <cp.prop: boolean; read-only>
---- Field
---- Is the app is running?
-App.isRunning = prop.new(function(self)
-    local app = self:application()
-    return app and app:isRunning()
-end):bind(App)
-
---- cp.apple.compressor.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is Compressor Showing?
-App.isShowing = prop.new(function(owner)
-    local app = owner:application()
-    return app ~= nil and app:isRunning() and not app:isHidden()
-end):bind(App)
-
---- cp.apple.compressor.isInstalled <cp.prop: boolean; read-only>
---- Field
---- Is a supported version of Compressor Installed?
-App.isInstalled = prop.new(function()
-    local app = application.infoForBundleID(App.BUNDLE_ID)
-    if app then return true end
-    return false
-end):bind(App)
-
---- cp.apple.compressor.isFrontmost <cp.prop: boolean; read-only>
---- Field
---- Is Compressor Frontmost?
-App.isFrontmost = prop.new(function(owner)
-    local app = owner:application()
-    return app and app:isFrontmost()
-end):bind(App)
 
 --- cp.apple.compressor:getVersion() -> string | nil
 --- Method
@@ -255,14 +268,14 @@ end):bind(App)
 ---
 --- Notes:
 ---  * If Compressor is running it will get the version of the active Compressor application, otherwise, it will use hs.application.infoForBundleID() to find the version.
-function App:getVersion()
+function compressor:getVersion()
     local app = self:application()
     if app then
         return app and app["CFBundleShortVersionString"] or nil
     else
-        local info = application.infoForBundleID(App.BUNDLE_ID)
+        local info = application.infoForBundleID(compressor.BUNDLE_ID)
         return info and info["CFBundleShortVersionString"] or nil
     end
 end
 
-return App
+return compressor

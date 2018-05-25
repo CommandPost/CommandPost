@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---            T O U C H B A R    P R E F E R E N C E S    P A N E L           --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.preferences.panels.touchbar ===
 ---
 --- Touch Bar Preferences Panel
@@ -257,6 +251,14 @@ local function touchBarPanelCallback(id, params)
             local groupID = params["groupID"]
 
             mod.activator[groupID]:onActivate(function(handler, action, text)
+
+                --------------------------------------------------------------------------------
+                -- Process Stylised Text:
+                --------------------------------------------------------------------------------
+                if text and type(text) == "userdata" then
+                    text = text:convert("text")
+                end
+
                 local actionTitle = text
                 local handlerID = handler:id()
 

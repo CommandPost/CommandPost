@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                          M I D I     P L U G I N                           --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.midi.manager ===
 ---
 --- MIDI Manager Plugin for Final Cut Pro.
@@ -38,6 +32,11 @@ local mod = {}
 --- Group ID
 mod.ID = "fcpx"
 
+-- used to update the group status
+local function updateGroupStatus(enabled)
+    mod._manager.groupStatus(mod.ID, enabled)
+end
+
 --- plugins.finalcutpro.midi.manager.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable MIDI Support.
@@ -46,20 +45,14 @@ mod.enableMIDI = config.prop("enableMIDI", false):watch(function(enabled)
         --------------------------------------------------------------------------------
         -- Update MIDI Commands when Final Cut Pro is shown or hidden:
         --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp:watch({
-            active      = function() mod._manager.groupStatus(mod.ID, true) end,
-            inactive    = function() mod._manager.groupStatus(mod.ID, false) end,
-            show        = function() mod._manager.groupStatus(mod.ID, true) end,
-            hide        = function() mod._manager.groupStatus(mod.ID, false) end,
-        })
+        fcp.app.frontmost:watch(updateGroupStatus)
+        fcp.app.showing:watch(updateGroupStatus)
     else
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
+        fcp.app.frontmost:unwatch(updateGroupStatus)
+        fcp.app.showing:unwatch(updateGroupStatus)
     end
 end)
 

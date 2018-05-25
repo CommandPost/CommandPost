@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     M I D I    M A N A G E R    P L U G I N                --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.midi.manager ===
 ---
 --- MIDI Manager Plugin.
@@ -631,6 +625,14 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
     if not buttons[group][button] then
         buttons[group][button] = {}
     end
+
+    --------------------------------------------------------------------------------
+    -- Process Stylised Text:
+    --------------------------------------------------------------------------------
+    if actionTitle and type(actionTitle) == "userdata" then
+        actionTitle = actionTitle:convert("text")
+    end
+
     buttons[group][button]["actionTitle"] = actionTitle
     buttons[group][button]["handlerID"] = handlerID
     buttons[group][button]["action"] = action

@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---               P A S T E B O A R D    M A N A G E R    P L U G I N          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.pasteboard.manager ===
 ---
 --- Pasteboard Manager.
@@ -297,7 +291,7 @@ end
 ---  * None
 function mod.copyWithCustomClipName()
     log.d("Copying Clip with custom Clip Name")
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end

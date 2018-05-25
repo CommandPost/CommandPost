@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                         M E N U    A C T I O N                             --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.menu.menuaction ===
 ---
 --- A `action` which will trigger an Final Cut Pro menu with a matching path, if available/enabled.
@@ -18,7 +12,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("menuaction")
+--local log               = require("hs.logger").new("menuaction")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -77,7 +71,7 @@ end
 ---  * None
 function mod.reload()
     local choices = {}
-    fcp:menuBar():visitMenuItems(function(path, menuItem)
+    fcp:menu():visitMenuItems(function(path, menuItem)
         local title = menuItem:title()
 
         if path[1] ~= "Apple" then
@@ -107,7 +101,7 @@ end
 --- Returns:
 ---  * None
 function mod.onChoices(choices)
-    if not fcp:menuBar():isShowing() or not mod._choices then
+    if not fcp:isFrontmost() or not mod._choices then
         return true
     end
 
@@ -159,7 +153,7 @@ function mod.onExecute(action)
     if action and action.path then
         fcp:launch()
 
-        fcp:menuBar():selectMenu(action.path)
+        fcp:menu():selectMenu(action.path)
         return true
     end
     return false

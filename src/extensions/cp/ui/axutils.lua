@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                  C O M M A N D P O S T    U I    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.ui.axutils ===
 ---
 --- Utility functions to support `hs._asm.axuielement`
@@ -19,6 +13,8 @@ local fnutils					= require("hs.fnutils")
 
 local canvas					= require("hs.canvas")
 
+local sort                      = table.sort
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -26,6 +22,29 @@ local canvas					= require("hs.canvas")
 --------------------------------------------------------------------------------
 
 local axutils = {}
+
+--- cp.ui.axutils.children(element) -> table | nil
+--- Function
+--- Finds the children for the element. If it is an `hs._asm.axuielement`, it will
+--- attempt to get the `AXChildren` attribute. If it is a table with a `children` function,
+--- that will get called. Otherwise, the element is returned.
+---
+--- Parameters:
+--- * element   - The element to retrieve the children of.
+---
+--- Returns:
+--- * the children table, or `nil`.
+function axutils.children(element)
+    local children = element
+    -- Try to get the children array directly, if present, to optimise the loop.
+    -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
+    if element.attributeValue then -- it's an AXUIElement
+        children = element:attributeValue("AXChildren") or element
+    elseif type(element.children) == "function" then
+        children = element:children()
+    end
+    return children
+end
 
 -- TODO: Add documentation
 function axutils.hasAttributeValue(element, name, value)
@@ -104,12 +123,7 @@ end
 function axutils.childMatching(element, matcherFn, index)
     index = index or 1
     if element then
-        local children = element
-        -- Try to get the children array directly, if present, to optimise the loop.
-        -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-        if element.attributeValue then -- it's an AXUIElement
-            children = element:attributeValue("AXChildren") or element
-        end
+        local children = axutils.children(element)
         if #children > 0 then
             local count = 0
             for _,child in ipairs(children) do
@@ -125,7 +139,7 @@ function axutils.childMatching(element, matcherFn, index)
     return nil
 end
 
---- cp.ui.axutils.childAtIndex(element, index, compareFn) -> axuielement
+--- cp.ui.axutils.childAtIndex(element, index, compareFn[, matcherFn]) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted using the `compareFn`.
 ---
@@ -133,20 +147,21 @@ end
 ---  * element		- the axuielement or array of axuielements
 ---  * index		- the index number of the child to find.
 ---  * compareFn	- a function to compare the elements.
+---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
-function axutils.childAtIndex(element, index, compareFn)
+function axutils.childAtIndex(element, index, compareFn, matcherFn)
     if element and index > 0 then
-        local children = element
-        -- Try to get the children array directly, if present, to optimise the loop.
-        -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-        if element.attributeValue then -- it's an AXUIElement
-            children = element:attributeValue("AXChildren") or element
-        end
-        if #children >= index then
-            table.sort(children, compareFn)
-            return children[index]
+        local children = axutils.children(element)
+        if children then
+            if matcherFn then
+                children = axutils.childrenMatching(children, matcherFn)
+            end
+            if #children >= index then
+                sort(children, compareFn)
+                return children[index]
+            end
         end
     end
     return nil
@@ -213,46 +228,49 @@ function axutils.compareBottomToTop(a, b)
     return aFrame and bFrame and aFrame.y + aFrame.h > bFrame.y + bFrame.h or false
 end
 
---- cp.ui.axutils.childFromLeft(element, index) -> axuielement
+--- cp.ui.axutils.childFromLeft(element, index[, matcherFn]) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted left-to-right.
 ---
 --- Parameters:
 ---  * element		- the axuielement or array of axuielements
 ---  * index		- the index number of the child to find.
+---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
-function axutils.childFromLeft(element, index)
-    return axutils.childAtIndex(element, index, axutils.compareLeftToRight)
+function axutils.childFromLeft(element, index, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compareLeftToRight, matcherFn)
 end
 
---- cp.ui.axutils.childFromRight(element, index) -> axuielement
+--- cp.ui.axutils.childFromRight(element, index[, matcherFn]) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted right-to-left.
 ---
 --- Parameters:
 ---  * element		- the axuielement or array of axuielements
 ---  * index		- the index number of the child to find.
+---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
-function axutils.childFromRight(element, index)
-    return axutils.childAtIndex(element, index, axutils.compareRightToLeft)
+function axutils.childFromRight(element, index, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compareRightToLeft, matcherFn)
 end
 
---- cp.ui.axutils.childFromTop(element, index) -> axuielement
+--- cp.ui.axutils.childFromTop(element, index[, matcherFn]) -> axuielement
 --- Function
 --- Searches for the child element which is at number `index` when sorted top-to-bottom.
 ---
 --- Parameters:
 ---  * element		- the axuielement or array of axuielements
 ---  * index		- the index number of the child to find.
+---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
-function axutils.childFromTop(element, index)
-    return axutils.childAtIndex(element, index, axutils.compareTopToBottom)
+function axutils.childFromTop(element, index, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compareTopToBottom, matcherFn)
 end
 
 --- cp.ui.axutils.childFromBottom(element, index) -> axuielement
@@ -262,11 +280,12 @@ end
 --- Parameters:
 ---  * element		- the axuielement or array of axuielements
 ---  * index		- the index number of the child to find.
+---  * matcherFn    - an optional function which is passed each child and returns `true` if the child should be processed.
 ---
 --- Returns:
 ---  * The child, or `nil` if the index is larger than the number of children.
-function axutils.childFromBottom(element, index)
-    return axutils.childAtIndex(element, index, axutils.compareBottomToTop)
+function axutils.childFromBottom(element, index, matcherFn)
+    return axutils.childAtIndex(element, index, axutils.compareBottomToTop, matcherFn)
 end
 
 --- cp.ui.axutils.childrenWith(element, name, value) -> axuielement
@@ -347,10 +366,10 @@ end
 --- Returns:
 ---  * The valid cached value.
 function axutils.cache(source, key, finderFn, verifyFn)
-    local value = source[key]
-    if not axutils.isValid(value) or verifyFn and not verifyFn(value) then
+    local value = source and source[key]
+    if value == nil or not axutils.isValid(value) or verifyFn and not verifyFn(value) then
         value = finderFn()
-        if axutils.isValid(value) then
+        if axutils.isValid(value) and source then
             source[key] = value
         else
             return nil

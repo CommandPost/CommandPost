@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.inspector.color.ColorWheels ===
 ---
 --- Color Wheels Module.
@@ -105,6 +99,8 @@ function ColorWheels.new(parent)
             return ui and #ui == 1 and #ui[1] == 1 and ui[1][1] or nil
         end)
     end):bind(o)
+
+    PropertyRow.prepareParent(o, o.contentUI)
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheels.isShowing <cp.prop: boolean; read-only>
 --- Field
@@ -248,7 +244,7 @@ end
 --- * The `RadioGroup`.
 function ColorWheels:wheelType()
     if not self._wheelType then
-        self._wheelType = RadioGroup:new(self,
+        self._wheelType = RadioGroup.new(self,
             function()
                 if not self:viewingAllWheels() then
                     local ui = self:contentUI()
@@ -342,7 +338,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:mixRow()
     if not self._mixRow then
-        self._mixRow = PropertyRow.new(self, "FFChannelMixName", "contentUI")
+        self._mixRow = PropertyRow.new(self, "FFChannelMixName")
     end
     return self._mixRow
 end
@@ -393,7 +389,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:temperatureRow()
     if not self._temperatureRow then
-        self._temperatureRow = PropertyRow.new(self, "PAECorrectorEffectTemperature", "contentUI")
+        self._temperatureRow = PropertyRow.new(self, "PAECorrectorEffectTemperature")
     end
     return self._temperatureRow
 end
@@ -444,7 +440,7 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:tintRow()
     if not self._tintRow then
-        self._tintRow = PropertyRow.new(self, "PAECorrectorEffectTint", "contentUI")
+        self._tintRow = PropertyRow.new(self, "PAECorrectorEffectTint")
     end
     return self._tintRow
 end
@@ -495,14 +491,14 @@ end
 ---  * The `PropertyRow`.
 function ColorWheels:hueRow()
     if not self._hueRow then
-        self._hueRow = PropertyRow.new(self, "PAECorrectorEffectHue", "contentUI")
+        self._hueRow = PropertyRow.new(self, "PAECorrectorEffectHue")
     end
     return self._hueRow
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheels:hueTextField() -> cp.ui.Slider
+--- cp.apple.finalcutpro.inspector.color.ColorWheels:hueTextField() -> cp.ui.TextField
 --- Method
---- Returns a `Slider` that provides access to the 'Hue' slider.
+--- Returns a `TextField` that provides access to the 'Hue' slider.
 ---
 --- Parameters:
 ---  * None

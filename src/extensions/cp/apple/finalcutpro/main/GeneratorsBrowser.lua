@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.GeneratorsBrowser ===
 ---
 --- Generators Browser Module.
@@ -13,9 +7,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("timline")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 -- local inspect							= require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -79,7 +84,7 @@ end):bind(GeneratorsBrowser)
 
 -- TODO: Add documentation
 function GeneratorsBrowser:show()
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
     -- Go there direct
     menuBar:selectMenu({"Window", "Go To", GeneratorsBrowser.TITLE})
     just.doUntil(function() return self:isShowing() end)
@@ -162,7 +167,7 @@ end
 --- * The Generators Browser.
 function GeneratorsBrowser:showSidebar()
     if not self:sidebar():isShowing() then
-        self:app():menuBar():checkMenu({"Window", "Show in Workspace", 1})
+        self:app():menu():selectMenu({"Window", "Show in Workspace", 1})
     end
 end
 

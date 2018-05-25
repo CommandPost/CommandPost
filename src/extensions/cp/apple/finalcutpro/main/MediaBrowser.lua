@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.MediaBrowser ===
 ---
 --- Media Browser Module.
@@ -13,8 +7,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("mediaBrowser")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -91,7 +92,7 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:show()
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
     -- Go there direct
     menuBar:selectMenu({"Window", "Go To", MediaBrowser.TITLE})
     just.doUntil(function() return self:isShowing() end)
@@ -142,7 +143,7 @@ end
 
 -- TODO: Add documentation
 function MediaBrowser:showSidebar()
-    self:app():menuBar():checkMenu({"Window", "Show in Workspace", "Sidebar"})
+    self:app():menu():selectMenu({"Window", "Show in Workspace", "Sidebar"})
 end
 
 -- TODO: Add documentation

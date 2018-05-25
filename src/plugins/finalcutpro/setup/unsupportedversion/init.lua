@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.setup.unsupportedversion ===
 ---
 --- Unsupported version setup panel.
@@ -53,7 +47,7 @@ function plugin.init(deps)
     -- The last version we notified about:
     --------------------------------------------------------------------------------
     local notified = mod.notifiedVersion
-    local notNotified = notified:ISNOT(fcp.getVersion)
+    local notNotified = notified:ISNOT(fcp.versionString)
     --------------------------------------------------------------------------------
     -- Require setup if FCP is unsupported and we have not notified about
     -- this version:
@@ -70,12 +64,12 @@ function plugin.init(deps)
                     :addIcon(iconPath)
                     :addHeading(i18n("finalcutproUnsupportedVersionTitle"))
                     :addParagraph(i18n("finalcutproUnsupportedVersionText", {
-                        thisVersion = fcp:getVersion(), minVersion = minVersion
+                        thisVersion = fcp:versionString(), minVersion = minVersion
                     }), false)
                     :addButton({
                         label		= i18n("continue"),
                         onclick		= function()
-                            notified(fcp:getVersion())
+                            notified(fcp:versionString())
                             setup.nextPanel()
                         end
                     })

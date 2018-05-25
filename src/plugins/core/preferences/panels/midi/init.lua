@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                 M I D I    P R E F E R E N C E S    P A N E L              --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.preferences.panels.midi ===
 ---
 --- MIDI Preferences Panel
@@ -26,7 +20,6 @@ local dialog                                    = require("hs.dialog")
 local image                                     = require("hs.image")
 local inspect                                   = require("hs.inspect")
 local midi                                      = require("hs.midi")
-local timer                                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -633,6 +626,12 @@ local function midiPanelCallback(id, params)
             --------------------------------------------------------------------------------
             local groupID = params["groupID"]
             mod.activator[groupID]:onActivate(function(handler, action, text)
+                --------------------------------------------------------------------------------
+                -- Process Stylised Text:
+                --------------------------------------------------------------------------------
+                if text and type(text) == "userdata" then
+                    text = text:convert("text")
+                end
                 local actionTitle = text
                 local handlerID = handler:id()
                 mod._midi.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)

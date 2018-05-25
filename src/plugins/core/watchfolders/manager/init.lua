@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                  W A T C H   F O L D E R    M A N A G E R                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.watchfolders.manager ===
 ---
 --- Manager for the CommandPost Watch Folders Panel.
@@ -217,7 +211,7 @@ end
 --
 -- Returns:
 -- * Nothing
-local function windowCallback(action, webview, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod._webview = nil

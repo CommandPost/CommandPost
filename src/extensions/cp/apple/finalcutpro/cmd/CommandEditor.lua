@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.cmd.CommandEditor ===
 ---
 --- Command Editor Module.
@@ -32,7 +26,7 @@ local Button                        = require("cp.ui.Button")
 local id                            = require("cp.apple.finalcutpro.ids") "CommandEditor"
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
-local WindowWatcher                 = require("cp.apple.finalcutpro.WindowWatcher")
+local Window                        = require("cp.ui.Window")
 
 --------------------------------------------------------------------------------
 --
@@ -40,6 +34,22 @@ local WindowWatcher                 = require("cp.apple.finalcutpro.WindowWatche
 --
 --------------------------------------------------------------------------------
 local CommandEditor = {}
+
+-- _findWindowUI(windows) -> window | nil
+-- Function
+-- Gets the Window UI.
+--
+-- Parameters:
+--  * windows - Table of windows.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
+local function _findWindowUI(windows)
+    for _,window in ipairs(windows) do
+        if CommandEditor.matches(window) then return window end
+    end
+    return nil
+end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.matches(element) -> boolean
 --- Function
@@ -60,8 +70,8 @@ function CommandEditor.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:new(app) -> CommandEditor
---- Function
+--- cp.apple.finalcutpro.cmd.CommandEditor.new(app) -> CommandEditor
+--- Constructor
 --- Creates a new Command Editor object.
 ---
 --- Parameters:
@@ -69,10 +79,49 @@ end
 ---
 --- Returns:
 ---  * A new CommandEditor object.
--- TODO: Use a function instead of a method.
-function CommandEditor:new(app) -- luacheck: ignore
-    local o = {_app = app}
-    return prop.extend(o, CommandEditor)
+function CommandEditor.new(app)
+    local o = prop.extend({_app = app}, CommandEditor)
+
+    local UI = app.windowsUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            local windowsUI = original()
+            return windowsUI and _findWindowUI(windowsUI)
+        end,
+        CommandEditor.matches)
+    end)
+
+    -- provides access to common AXWindow properties.
+    local window = Window.new(UI)
+    o._window = window
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.cmd.CommandEditor.UI <cp.prop: axuielement; read-only>
+--- Field
+--- The `axuielement` for the window.
+        UI = UI,
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.hsWindow <cp.prop: hs.window; read-only>
+--- Field
+--- The `hs.window` instance for the window, or `nil` if it can't be found.
+        hsWindow = window.hsWindow,
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.isShowing <cp.prop: boolean; live>
+--- Field
+--- Is `true` if the window is visible.
+        isShowing = window.visible,
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.isFullScreen <cp.prop: boolean; live>
+--- Field
+--- Is `true` if the window is full-screen.
+        isFullScreen = window.fullScreen,
+
+--- cp.apple.finalcutpro.cmd.CommandEditor.frame <cp.prop: frame; live>
+--- Field
+--- The current position (x, y, width, height) of the window.
+        frame = window.frame,
+    }
+
+    return o
 end
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:app() -> App
@@ -88,46 +137,18 @@ function CommandEditor:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.cmd.CommandEditor:UI() -> axuielementObject
+--- cp.apple.finalcutpro.cmd.CommandEditor:window() -> cp.ui.Window
 --- Method
---- Returns the Command Editor Accessibility Object
+--- Returns the `Window` for the Command Editor.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * An `axuielementObject` or `nil`
-function CommandEditor:UI()
-    return axutils.cache(self, "_ui", function()
-        local windowsUI = self:app():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
-    end,
-    CommandEditor.matches)
+---  * The `Window`.
+function CommandEditor:window()
+    return self._window
 end
-
--- cp.apple.finalcutpro.cmd.CommandEditor:_findWindowUI(windows) -> window | nil
--- Method
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
--- TODO: Use a function instead of a method.
-function CommandEditor:_findWindowUI(windows) -- luacheck: ignore
-    for _,window in ipairs(windows) do
-        if CommandEditor.matches(window) then return window end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the Command Editor showing?
-CommandEditor.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(CommandEditor)
 
 --- cp.apple.finalcutpro.cmd.CommandEditor:show() -> cp.apple.finalcutpro.cmd.CommandEditor
 --- Method
@@ -141,8 +162,8 @@ end):bind(CommandEditor)
 function CommandEditor:show()
     if not self:isShowing() then
         -- open the window
-        if self:app():menuBar():isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
-            self:app():menuBar():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
+        if self:app():menu():isEnabled({"Final Cut Pro", "Commands", "Customize…"}) then
+            self:app():menu():selectMenu({"Final Cut Pro", "Commands", "Customize…"})
             just.doUntil(function() return self:UI() end)
         end
     end
@@ -219,40 +240,6 @@ end
 function CommandEditor:getTitle()
     local ui = self:UI()
     return ui and ui:title()
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor:watch() -> table
---- Method
---- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
----    * `open(window)` - Triggered when the window is shown.
----    * `close(window)` - Triggered when the window is hidden.
----    * `move(window)` - Triggered when the window is moved.
----
---- Returns:
----  * A table which contains an ID which can be passed to `unwatch` to stop watching.
-function CommandEditor:watch(events)
-    if not self._watcher then
-        self._watcher = WindowWatcher:new(self)
-    end
-    return self._watcher:watch(events)
-end
-
---- cp.apple.finalcutpro.cmd.CommandEditor:unwatch(id) -> none
---- Method
---- Unwatches an event.
----
---- Parameters:
----  * id - An ID as a string of the event you want to unwatch.
----
---- Returns:
----  * None
-function CommandEditor:unwatch(theID)
-    if self._watcher then
-        self._watcher:unwatch(theID)
-    end
 end
 
 return CommandEditor

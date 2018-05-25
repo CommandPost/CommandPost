@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.export.SaveSheet ===
 ---
 --- Save Sheet
@@ -51,7 +45,7 @@ function SaveSheet.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.export.SaveSheet:new(app) -> SaveSheet
+--- cp.apple.finalcutpro.export.SaveSheet.new(app) -> SaveSheet
 --- Function
 --- Creates a new SaveSheet object.
 ---
@@ -60,8 +54,7 @@ end
 ---
 --- Returns:
 ---  * A new SaveSheet object.
--- TODO: Use a function instead of a method.
-function SaveSheet:new(parent) -- luacheck: ignore
+function SaveSheet.new(parent)
     local o = {_parent = parent}
     return prop.extend(o, SaveSheet)
 end
@@ -115,7 +108,7 @@ SaveSheet.isShowing = prop.new(function(self)
     return self:UI() ~= nil or self:replaceAlert():isShowing()
 end):bind(SaveSheet)
 
---- cp.apple.finalcutpro.export.GoToPrompt:hide() -> none
+--- cp.apple.finalcutpro.export.SaveSheet:hide() -> none
 --- Method
 --- Hides the Save Sheet
 ---
@@ -246,7 +239,7 @@ end
 ---  * A `GoToPrompt` object.
 function SaveSheet:goToPrompt()
     if not self._goToPrompt then
-        self._goToPrompt = GoToPrompt:new(self)
+        self._goToPrompt = GoToPrompt.new(self)
     end
     return self._goToPrompt
 end

@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                 F U L L S C R E E N     S H O R T C U T S                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.fullscreen.shortcuts ===
 ---
 --- Fullscreen Shortcuts
@@ -24,15 +18,14 @@
 --------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local timer                             = require("hs.timer")
-local window                            = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp                               = require("cp.apple.finalcutpro")
 local config                            = require("cp.config")
+local fcp                               = require("cp.apple.finalcutpro")
+local commandeditor						= require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
-local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -101,12 +94,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", DEFAULT_VAL
         --------------------------------------------------------------------------------
         -- Watch for the full screen window:
         --------------------------------------------------------------------------------
-        if not mod._fcpFullScreenWindowWatcher then
-            mod._fcpFullScreenWindowWatcher = fcp:fullScreenWindow():watch({
-                show    = mod.update,
-                hide    = mod.update,
-            })
-        end
+        fcp:fullScreenWindow().isFullScreen:watch(mod.update)
 
         mod.watcherWorking = false
 
@@ -129,10 +117,7 @@ mod.enabled = config.prop("enableShortcutsDuringFullscreenPlayback", DEFAULT_VAL
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if mod._fcpFullScreenWindowWatcher and mod._fcpFullScreenWindowWatcher.id then
-            fcp:fullScreenWindow():unwatch(mod._fcpFullScreenWindowWatcher.id)
-            mod._fcpFullScreenWindowWatcher = nil
-        end
+        fcp:fullScreenWindow().isFullScreen:unwatch(mod.update)
         if mod.keyUpWatcher then
             mod.keyUpWatcher:stop()
             mod.keyUpWatcher = nil
@@ -185,7 +170,7 @@ end
 ---  * `true` if successful otherwise `false`
 function mod.performCommand(cmd, whichModifier, whichKey)
     local chars = cmd['characterString']
-    if chars and chars ~= "" and whichKey == shortcut.textToKeyCode(chars) and tools.modifierMatch(whichModifier, cmd['modifiers']) then
+    if chars and chars ~= "" and whichKey == shortcut.textToKeyCode(chars) and commandeditor.modifierMatch(whichModifier, cmd['modifiers']) then
         --------------------------------------------------------------------------------
         -- Perform the keystroke:
         --------------------------------------------------------------------------------
@@ -224,7 +209,7 @@ function mod.checkCommand(whichModifier, whichKey)
         --------------------------------------------------------------------------------
         -- Get Active Command Set:
         --------------------------------------------------------------------------------
-        local activeCommandSet = fcp:getActiveCommandSet()
+        local activeCommandSet = fcp:activeCommandSet()
         if type(activeCommandSet) ~= "table" then
             --log.df("Failed to get Active Command Set. Error occurred in plugins.fullscreen.shortcuts.checkCommand().")
             return
@@ -262,63 +247,6 @@ function mod.checkCommand(whichModifier, whichKey)
     end
 end
 
---- plugins.finalcutpro.fullscreen.shortcuts.updateDockIcon() -> none
---- Function
---- Update Dock Icon Visibility. Dock Icon will be disabled when FCPX is in fullscreen mode.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.updateDockIcon()
-    if mod._ignoreWatchers then
-        return
-    end
-    if fcp:isFrontmost() then
-        local ui = fcp:primaryWindow():UI()
-        local primaryWindow = ui and ui:asHSWindow()
-        if primaryWindow and primaryWindow:isFullScreen() then
-            if hs.dockIcon() then
-                --log.df("Fullscreen detected")
-                mod._ignoreWatchers = true
-                hs.dockIcon(false)
-                timer.doAfter(0.3, function()
-                    fcp:launch()
-                    mod._ignoreWatchers = false
-                end)
-            end
-            return
-        elseif primaryWindow and not primaryWindow:isFullScreen() then
-            if not hs.dockIcon() then
-                --log.df("Fullscreen NOT detected")
-                mod._ignoreWatchers = true
-                local originalFocusedWindow = window.focusedWindow()
-                hs.dockIcon(true)
-                timer.doAfter(0.3, function()
-                    if originalFocusedWindow then
-                        originalFocusedWindow:focus()
-                    end
-                    mod._ignoreWatchers = false
-                end)
-            end
-        end
-    else
-        if not hs.dockIcon() then
-            --log.df("Fullscreen NOT detected")
-            mod._ignoreWatchers = true
-            local originalFocusedWindow = window.focusedWindow()
-            hs.dockIcon(true)
-            timer.doAfter(0.3, function()
-                if originalFocusedWindow then
-                    originalFocusedWindow:focus()
-                end
-                mod._ignoreWatchers = false
-            end)
-        end
-    end
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -336,18 +264,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-
-    --------------------------------------------------------------------------------
-    -- Setup Watchers:
-    --------------------------------------------------------------------------------
-    mod._fcpWatcher = fcp:watch({
-        fullscreen  = mod.updateDockIcon,
-        inactive    = mod.updateDockIcon,
-        hide        = mod.updateDockIcon,
-        active      = mod.updateDockIcon,
-        show        = mod.updateDockIcon,
-    })
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
@@ -376,11 +292,6 @@ function plugin.postInit()
     -- Check to see if we started in fullscreen mode:
     --------------------------------------------------------------------------------
     mod.enabled:update()
-
-    --------------------------------------------------------------------------------
-    -- Update Dock Icon:
-    --------------------------------------------------------------------------------
-    mod.updateDockIcon()
 end
 
 return plugin

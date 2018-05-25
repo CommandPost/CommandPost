@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                T A N G E N T    M A N A G E R    P L U G I N               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.tangent.manager ===
 ---
 --- Tangent Control Surface Manager
@@ -395,9 +389,9 @@ local fromHub = {
         -- TODO: FCPX specific code should not be in `core`.
         if fcp:isFrontmost() then
             if metadata.jogValue == 1 then
-                fcp:menuBar():selectMenu({"Mark", "Next", "Frame"})
+                fcp:menu():selectMenu({"Mark", "Next", "Frame"})
             elseif metadata.jogValue == -1 then
-                fcp:menuBar():selectMenu({"Mark", "Previous", "Frame"})
+                fcp:menu():selectMenu({"Mark", "Previous", "Frame"})
             end
         end
     end,

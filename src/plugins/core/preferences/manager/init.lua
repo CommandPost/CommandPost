@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     P R E F E R E N C E S   M A N A G E R                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.preferences.manager ===
 ---
 --- Manager for the CommandPost Preferences Window.
@@ -235,7 +229,7 @@ end
 --
 -- Returns:
 -- * None
-local function windowCallback(action, webview, frame)
+local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod._webview = nil

@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.LibrariesBrowser ===
 ---
 --- Libraries Browser Module.
@@ -13,8 +7,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log								= require("hs.logger").new("librariesBrowser")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -273,7 +274,7 @@ end
 function Libraries:openClipTitled(name)
     if self:selectClipTitled(name) then
         self:app():launch()
-        local menuBar = self:app():menuBar()
+        local menuBar = self:app():menu()
 
         -- ensure the Libraries browser is focused
         menuBar:selectMenu({"Window", "Go To", "Libraries"})

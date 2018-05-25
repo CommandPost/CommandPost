@@ -1,13 +1,17 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                T A N G E N T    M A N A G E R    P L U G I N               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.tangent.manager.group ===
 ---
 --- Represents a Tangent Group. Groups can also be used to enable/disable multiple
 --- Parameters/Actions/Menus by enabling/disabling the containing group.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop              = require("cp.prop")
 local x                 = require("cp.web.xml")
 local is                = require("cp.is")
@@ -17,11 +21,18 @@ local parameter         = require("parameter")
 local menu              = require("menu")
 local binding           = require("binding")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert            = table.insert
 local format            = string.format
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local group = {}
-
 group.mt = {}
 
 --- plugins.core.tangent.manager.group.new(name, parent, controls)
@@ -29,8 +40,8 @@ group.mt = {}
 --- Creates a new `Group` instance.
 ---
 --- Parameters:
---- * name      - The name of the group.
---- * parent    - The parent group.
+---  * name      - The name of the group.
+---  * parent    - The parent group.
 function group.new(name, parent)
     if is.blank(name) then
         error("Group names cannot be empty")
@@ -61,10 +72,10 @@ end
 --- Checks if the `otherThing` is a `group`.
 ---
 --- Parameters:
---- * otherThing    - The thing to check.
+---  * otherThing    - The thing to check.
 ---
 --- Returns:
---- * `true` if it is a `group`, `false` otherwise.
+---  * `true` if it is a `group`, `false` otherwise.
 function group.is(otherThing)
     return is.table(otherThing) and getmetatable(otherThing) == group.mt
 end
@@ -74,10 +85,10 @@ end
 --- Returns the parent of the group, which should be either a `group`, `controls` or `nil`.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The group's parents.
+---  * The group's parents.
 function group.mt:parent()
     return self._parent
 end
@@ -87,10 +98,10 @@ end
 --- Retrieves the `controls` for this group. May be `nil` if the group was created independently.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `controls`, or `nil`.
+---  * The `controls`, or `nil`.
 function group.mt:controls()
     local parent = self:parent()
     if group.is(parent) then
@@ -105,10 +116,10 @@ end
 --- Adds a subgroup to this group.
 ---
 --- Parameters
---- * name  - the name of the new sub-group
+---  * name  - the name of the new sub-group
 ---
 --- Returns:
---- * The new `group`
+---  * The new `group`
 function group.mt:group(name)
     local groups = self._groups
     if not groups then
@@ -149,11 +160,11 @@ end
 --- Adds an `action` to this group.
 ---
 --- Parameters
---- * id    - The ID number of the new action
---- * name  - The name of the action.
+---  * id    - The ID number of the new action
+---  * name  - The name of the action.
 ---
 --- Returns:
---- * The new `action`
+---  * The new `action`
 function group.mt:action(id, name)
     local actions = self._actions
     if not actions then
@@ -174,11 +185,11 @@ end
 --- Adds an `parameter` to this group.
 ---
 --- Parameters
---- * id    - The ID number of the new parameter
---- * name  - The name of the parameter.
+---  * id    - The ID number of the new parameter
+---  * name  - The name of the parameter.
 ---
 --- Returns:
---- * The new `parameter`
+---  * The new `parameter`
 function group.mt:parameter(id, name)
     local parameters = self._parameters
     if not parameters then
@@ -199,11 +210,11 @@ end
 --- Adds an `menu` to this group.
 ---
 --- Parameters
---- * id    - The ID number of the new menu
---- * name  - The name of the menu.
+---  * id    - The ID number of the new menu
+---  * name  - The name of the menu.
 ---
 --- Returns:
---- * The new `menu`
+---  * The new `menu`
 function group.mt:menu(id, name)
     local menus = self._menus
     if not menus then
@@ -224,11 +235,11 @@ end
 --- Adds an `binding` to this group.
 ---
 --- Parameters
---- * id    - The ID number of the new binding
---- * name  - The name of the binding.
+---  * id    - The ID number of the new binding
+---  * name  - The name of the binding.
 ---
 --- Returns:
---- * The new `binding`
+---  * The new `binding`
 function group.mt:binding(name)
     local bindings = self._bindings
     if not bindings then
@@ -248,10 +259,10 @@ end
 --- the group. It does not remove sub-groups. Use with care!
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `group` instance.
+---  * The `group` instance.
 function group.mt:reset()
     self:_unregisterAll(self._actions)
     self:_unregisterAll(self._parameters)
@@ -267,10 +278,10 @@ end
 --- Returns the `xml` configuration for the Group.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `xml` for the Group.
+---  * The `xml` for the Group.
 function group.mt:xml()
     return x.Group { name=self.name } (
         function()

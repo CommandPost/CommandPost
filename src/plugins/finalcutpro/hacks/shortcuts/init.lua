@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                H A C K S     S H O R T C U T S     P L U G I N             --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.hacks.shortcuts ===
 ---
 --- Plugin that allows the user to customise the CommandPost shortcuts
@@ -33,11 +27,6 @@ local commands      = require("cp.commands")
 local fcp           = require("cp.apple.finalcutpro")
 local prop          = require("cp.prop")
 local tools         = require("cp.tools")
-
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local v             = require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -85,7 +74,7 @@ end
 function private.hacksPath(resourceName)
     assert(type(resourceName) == "string", "Expected argument #1 to be a string")
     if mod.commandSetsPath and fcp:isInstalled() then
-        local ver = v(fcp:getVersion())
+        local ver = fcp:version()
         local target = string.format("%s/%s/%s", mod.commandSetsPath, ver, resourceName)
         return fs.pathToAbsolute(target)
     else
@@ -465,7 +454,7 @@ end
 -- Returns:
 --  * None
 function private.applyCommandSetShortcuts()
-    local commandSet = fcp:getActiveCommandSet(true)
+    local commandSet = fcp:activeCommandSet(true)
 
     --log.df("Applying Final Cut Pro Shortcuts to Final Cut Pro Commands.")
     private.applyShortcuts(mod.fcpxCmds, commandSet)
@@ -671,31 +660,28 @@ function mod.init(deps, env)
     --------------------------------------------------------------------------------
     -- Cache the last Command Set Path:
     --------------------------------------------------------------------------------
-    mod.lastCommandSetPath = fcp:getActiveCommandSetPath()
+    mod.lastCommandSetPath = fcp:activeCommandSetPath()
 
     --------------------------------------------------------------------------------
     -- Refresh Shortcuts if the Command Set Path in Preferences file is modified:
     --------------------------------------------------------------------------------
-    fcp:watch({
-        preferences = function()
-            local activeCommandSetPath = fcp:getActiveCommandSetPath()
-            if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
-                --log.df("Updating Final Cut Pro Command Editor Cache.")
-                mod.refresh()
-                mod.lastCommandSetPath = activeCommandSetPath
-            end
-        end,
-    })
+    fcp.app.preferences:watch(function()
+        local activeCommandSetPath = fcp:activeCommandSetPath()
+        if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
+            --log.df("Updating Final Cut Pro Command Editor Cache.")
+            mod.refresh()
+            mod.lastCommandSetPath = activeCommandSetPath
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Refresh Shortcuts if Command Editor is Closed:
     --------------------------------------------------------------------------------
-    fcp:commandEditor():watch({
-        close = function()
-                    --log.df("Updating Hacks Shortcuts due to Command Editor closing.")
-                    mod.refresh()
-                end
-    })
+    fcp:commandEditor().isShowing:watch(function(showing)
+        if not showing then
+            mod.refresh()
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Renders the Shortcut Editor Panel:

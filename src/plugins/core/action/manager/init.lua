@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.action.manager ===
 ---
 --- Action Manager Module.
@@ -39,6 +33,29 @@ local activator					= require("activator")
 local handler					= require("handler")
 
 --------------------------------------------------------------------------------
+-- Local Extensions:
+--------------------------------------------------------------------------------
+local copy		    = fnutils.copy
+local format	    = string.format
+local insert        = table.insert
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- ARRAY_DELIM -> string
+-- Constant
+-- Array Delimiter.
+local ARRAY_DELIM   = "||"
+
+-- UNDEFINED -> string
+-- Constant
+-- Undefined String.
+local UNDEFINED     = "_undefined"
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
@@ -50,13 +67,6 @@ local mod = {
     _activators	= {},
     _cache		= {},
 }
-
-local ARRAY_DELIM   = "||"
-local UNDEFINED     = "_undefined"
-
-local insert        = table.insert
-local copy		    = fnutils.copy
-local format	    = string.format
 
 -- freezeParams(params) -> string
 -- Function

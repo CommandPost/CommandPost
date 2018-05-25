@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                T O O L S     S U P P O R T     L I B R A R Y               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.tools ===
 ---
 --- A collection of handy miscellaneous tools for Lua development.
@@ -24,11 +18,11 @@ local log                                       = require("hs.logger").new("tool
 --------------------------------------------------------------------------------
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
-local fnutils                                   = require("hs.fnutils")
 local fs                                        = require("hs.fs")
 local geometry                                  = require("hs.geometry")
 local host                                      = require("hs.host")
 local inspect                                   = require("hs.inspect")
+local json                                      = require("hs.json")
 local mouse                                     = require("hs.mouse")
 local osascript                                 = require("hs.osascript")
 local screen                                    = require("hs.screen")
@@ -718,7 +712,7 @@ function tools.trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
---- cp.tools.lines(string) -> table
+--- cp.tools.lines(string) -> table | nil
 --- Function
 --- Splits a string containing multiple lines of text into a table.
 ---
@@ -726,18 +720,22 @@ end
 ---  * string - the string you want to process
 ---
 --- Returns:
----  * A table
+---  * A table or `nil` if the parameter is not a string.
 function tools.lines(str)
-    local t = {}
-    local function helper(line)
-        line = tools.trim(line)
-        if line ~= nil and line ~= "" then
-            table.insert(t, line)
+    if str and type(str) == "string" then
+        local t = {}
+        local function helper(line)
+            line = tools.trim(line)
+            if line ~= nil and line ~= "" then
+                table.insert(t, line)
+            end
+            return ""
         end
-        return ""
+        helper((str:gsub("(.-)\r?\n", helper)))
+        return t
+    else
+        return nil
     end
-    helper((str:gsub("(.-)\r?\n", helper)))
-    return t
 end
 
 --- cp.tools.executeWithAdministratorPrivileges(input[, stopOnError]) -> boolean or string
@@ -1060,66 +1058,6 @@ function tools.cleanupButtonText(value)
 
 end
 
---- cp.tools.modifierMatch(inputA, inputB) -> boolean
---- Function
---- Compares two modifier tables.
----
---- Parameters:
----  * inputA - table of modifiers
----  * inputB - table of modifiers
----
---- Returns:
----  * `true` if there's a match otherwise `false`
----
---- Notes:
----  * This function only takes into account 'ctrl', 'alt', 'cmd', 'shift'.
-function tools.modifierMatch(inputA, inputB)
-
-    local match = true
-
-    if fnutils.contains(inputA, "ctrl") and not fnutils.contains(inputB, "ctrl") then match = false end
-    if fnutils.contains(inputA, "alt") and not fnutils.contains(inputB, "alt") then match = false end
-    if fnutils.contains(inputA, "cmd") and not fnutils.contains(inputB, "cmd") then match = false end
-    if fnutils.contains(inputA, "shift") and not fnutils.contains(inputB, "shift") then match = false end
-
-    return match
-
-end
-
---- cp.tools.modifierMaskToModifiers() -> table
---- Function
---- Translate Keyboard Modifiers from Apple's Plist Format into Hammerspoon Format
----
---- Parameters:
----  * value - Modifiers String
----
---- Returns:
----  * table
-function tools.modifierMaskToModifiers(value)
-
-    local modifiers = {
-        ["alphashift"]  = 1 << 16,
-        ["shift"]       = 1 << 17,
-        ["control"]     = 1 << 18,
-        ["option"]      = 1 << 19,
-        ["command"]     = 1 << 20,
-        ["numericpad"]  = 1 << 21,
-        ["help"]        = 1 << 22,
-        ["function"]    = 1 << 23,
-    }
-
-    local answer = {}
-
-    for k, a in pairs(modifiers) do
-        if (value & a) == a then
-            table.insert(answer, k)
-        end
-    end
-
-    return answer
-
-end
-
 --- cp.tools.incrementFilename(value) -> string
 --- Function
 --- Increments the filename.
@@ -1257,6 +1195,30 @@ function tools.iconFallback(...)
     end
     log.ef("Failed to find icon(s): " .. inspect(table.pack(...)))
     return config.iconPath
+end
+
+--- cp.tools.readJSONFile(path) -> table or nil
+--- Function
+--- Attempts to read the specified path as a JSON file.
+--- If the file cannot be found, `nil` is returned. If the file is
+--- not a JSON file, an error will occur.
+---
+--- Parameters:
+--- * path      - The JSON file path.
+---
+--- Returns:
+--- * The JSON file converted into table, or `nil`.
+function tools.readJSONFile(path)
+    local filePath = fs.pathToAbsolute(path)
+    if filePath then
+        local file = io.open(filePath, "r")
+        if file then
+            local content = file:read("*all")
+            file:close()
+            return json.decode(content)
+        end
+    end
+    return nil
 end
 
 return tools

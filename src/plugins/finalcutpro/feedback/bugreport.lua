@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     B U G    R E P O R T    P L U G I N                    --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.feedback.bugreport ===
 ---
 --- Sends Apple a Bug Report or Feature Request for Final Cut Pro.
@@ -342,7 +336,7 @@ function mod.open(bugReport)
         mod.externalDevices = tools.getExternalDevices()
     end
 
-    mod.finalCutProVersion = fcp.getVersion()
+    mod.finalCutProVersion = fcp:versionString()
 
     --------------------------------------------------------------------------------
     -- Use last Position or Centre on Screen:

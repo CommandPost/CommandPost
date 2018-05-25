@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.export.ExportDialog ===
 ---
 --- Export Dialog Module.
@@ -32,7 +26,6 @@ local id                            = require("cp.apple.finalcutpro.ids") "Expor
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
-local WindowWatcher                 = require("cp.apple.finalcutpro.WindowWatcher")
 
 --------------------------------------------------------------------------------
 --
@@ -59,8 +52,8 @@ function ExportDialog.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.export.ExportDialog:new(app) -> ExportDialog
---- Function
+--- cp.apple.finalcutpro.export.ExportDialog.new(app) -> ExportDialog
+--- Constructor
 --- Creates a new Export Dialog object.
 ---
 --- Parameters:
@@ -68,8 +61,7 @@ end
 ---
 --- Returns:
 ---  * A new ExportDialog object.
--- TODO: Use a function instead of a method.
-function ExportDialog:new(app) -- luacheck: ignore
+function ExportDialog.new(app)
     local o = {_app = app}
     return prop.extend(o, ExportDialog)
 end
@@ -99,7 +91,7 @@ end
 function ExportDialog:UI()
     return axutils.cache(self, "_ui", function()
         local windowsUI = self:app():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
+        return windowsUI and self._findWindowUI(windowsUI)
     end,
     ExportDialog.matches)
 end
@@ -113,8 +105,7 @@ end
 --
 -- Returns:
 --  * An `axuielementObject` or `nil`
--- TODO: Use a function instead of a method.
-function ExportDialog:_findWindowUI(windows) -- luacheck: ignore
+function ExportDialog._findWindowUI(windows)
     for _,window in ipairs(windows) do
         if ExportDialog.matches(window) then return window end
     end
@@ -142,8 +133,8 @@ function ExportDialog:show()
         --------------------------------------------------------------------------------
         -- Open the window:
         --------------------------------------------------------------------------------
-        if self:app():menuBar():isEnabled({"File", "Share", 1}) then
-            self:app():menuBar():selectMenu({"File", "Share", 1})
+        if self:app():menu():isEnabled({"File", "Share", 1}) then
+            self:app():menu():selectMenu({"File", "Share", 1})
             just.doUntil(function() return self:UI() end)
         end
     end
@@ -229,48 +220,9 @@ end
 ---  * The SaveSheet.
 function ExportDialog:saveSheet()
     if not self._saveSheet then
-        self._saveSheet = SaveSheet:new(self)
+        self._saveSheet = SaveSheet.new(self)
     end
     return self._saveSheet
-end
-
------------------------------------------------------------------------
---
--- WATCHERS:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.export.ExportDialog:watch() -> table
---- Method
---- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
----
---- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function ExportDialog:watch(events)
-    if not self._watcher then
-        self._watcher = WindowWatcher:new(self)
-    end
-    return self._watcher:watch(events)
-end
-
---- cp.apple.finalcutpro.export.ExportDialog:unwatch(id) -> none
---- Method
---- Unwatches an event.
----
---- Parameters:
----  * id - An ID as a string of the event you want to unwatch.
----
---- Returns:
----  * None
-function ExportDialog:unwatch(theID)
-    if self._watcher then
-        self._watcher:unwatch(theID)
-    end
 end
 
 return ExportDialog

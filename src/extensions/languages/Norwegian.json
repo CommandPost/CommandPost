@@ -770,7 +770,6 @@
         "watchFolderXMLHelp": "Denne funksjonen lar deg motta MacOS notfications når en FCPXML-fil legges til i noen av de følgende se mappene. Fra varselet kan du <b> Importer </ b> disse filene direkte til din nåværende Final Cut Pro tidslinje. Hvis du holder nede <b> SHIFT </ b> når du trykker <b> Importer </ b>, vil den importere alle de utestående filene.",
         "performBatchExport": "Utfør Batch Export",
         "monitor": "Følge",
-        "finalcutpro_watchers_version_label": "Vaktmestere: Versjon",
         "preferences": "Preferanser",
         "colorBoard": "Fargebrett",
         "advancedPanelTooltip": "Avanserte preferanser",

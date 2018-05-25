@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.Viewer ===
 ---
 --- Viewer Module.
@@ -432,7 +426,7 @@ end
 
 -- TODO: Add documentation
 function Viewer:showOnPrimary()
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
 
     -- if it is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
@@ -449,7 +443,7 @@ end
 
 -- TODO: Add documentation
 function Viewer:showOnSecondary()
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
 
     if not self:isOnSecondary() then
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
@@ -465,7 +459,7 @@ end
 
 -- TODO: Add documentation
 function Viewer:hide()
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
 
     if self:isEventViewer() then
         -- Uncheck it from the primary workspace

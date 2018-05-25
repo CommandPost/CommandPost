@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---      S M A R T    C O L L E C T I O N S    L A B E L    P L U G I N        --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.hacks.smartcollectionslabel ===
 ---
 --- Smart Collections Label.
@@ -86,8 +80,8 @@ function mod.change()
     -- Update plist for every Flexo language:
     --------------------------------------------------------------------------------
     local executeCommands = {}
-    for k, _ in pairs(fcp:getFlexoLanguages()) do
-        local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp:getFlexoLanguages()[k] .. ".lproj/FFLocalizable.strings'"
+    for k, _ in pairs(fcp.FLEXO_LANGUAGES) do
+        local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.FLEXO_LANGUAGES[k] .. ".lproj/FFLocalizable.strings'"
         executeCommands[#executeCommands + 1] = executeCommand
     end
     local result = tools.executeWithAdministratorPrivileges(executeCommands)

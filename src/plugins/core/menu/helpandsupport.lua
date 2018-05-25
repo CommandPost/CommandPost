@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                    H E L P   &   S U P P O R T   M E N U                   --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.menu.helpandsupport ===
 ---
 --- The Help & Support menu section.
@@ -28,13 +22,6 @@ local fcp                       = require("cp.apple.finalcutpro")
 local PRIORITY                  = 8888888
 local PREFERENCES_PRIORITY      = 8
 local SETTING                   = "menubarHelpEnabled"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
 --
@@ -63,6 +50,7 @@ function plugin.init(dependencies)
     --------------------------------------------------------------------------------
     -- Disable the section if the Timeline option is disabled:
     --------------------------------------------------------------------------------
+    local sectionEnabled = config.prop(SETTING, true)
     section:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
 
     --------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-local unpack = unpack or table.unpack -- lua 5.2 compat
+local unpack = table.unpack -- lua 5.2 compat
 
 -- matches a string of type %{age}
 local function interpolateValue(string, variables)

@@ -38,13 +38,41 @@
 ---  * `CDATA`	- will generate a `&lt;![CDATA[ ... ]]&gt;` section with the content contained.
 ---  * `__`		- (double underscore) will generate a `&lt!-- ... --&gt` comment block.
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log				= require "hs.logger" .new "xml"
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 -- local inspect			= require "hs.inspect"
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local block				= require "cp.web.block"
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local gsub              = string.gsub
 
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- XML_ENTITIES -> table
+-- Constant
+-- XML Entities.
 local XML_ENTITIES = {
     ["&"] = "&amp;",
     ["<"] = "&lt;",
@@ -53,14 +81,26 @@ local XML_ENTITIES = {
     ["'"] = "&apos;",
 }
 
+-- DEFAULT_ENCODING -> string
+-- Constant
+-- Default Encoding.
 local DEFAULT_ENCODING = "UTF-8"
+
+-- DEFAULT_STANDALONE -> string
+-- Constant
+-- Default Standalone.
 local DEFAULT_STANDALONE = "yes"
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local xml = {}
 
 local function xmlEscape(s)
     return gsub(s, "[\"><'&]", XML_ENTITIES)
 end
-
-local xml = {}
 
 --- cp.web.xml.is(value) -> boolean
 --- Function

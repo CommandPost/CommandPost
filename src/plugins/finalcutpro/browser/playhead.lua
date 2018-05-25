@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                      P L A Y H E A D     P L U G I N                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.browser.playhead ===
 ---
 --- Browser Playhead Plugin.
@@ -325,29 +319,20 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Remove Highlight when Final Cut Pro is inactive:
     --------------------------------------------------------------------------------
-    fcp:watch({
-        inactive	= function()
+    fcp.app.frontmost:watch(function(frontmost)
+        if not frontmost then
             mod.deleteHighlight()
-        end,
-    })
+        end
+    end)
 
     --------------------------------------------------------------------------------
-    -- Remove Highlight when the Command Editor window is open:
+    -- Remove Highlight when a modal window like Command Editor is open:
     --------------------------------------------------------------------------------
-    fcp:commandEditor():watch({
-        show		= function()
+    fcp.app.modalDialogOpen:watch(function(open)
+        if open then
             mod.deleteHighlight()
-        end,
-    })
-
-    --------------------------------------------------------------------------------
-    -- Remove Highlight when the Media Import window is open:
-    --------------------------------------------------------------------------------
-    fcp:mediaImport():watch({
-        show		= function()
-            mod.deleteHighlight()
-        end,
-    })
+        end
+    end)
 
     --------------------------------------------------------------------------------
     -- Setup Preferences Panel:

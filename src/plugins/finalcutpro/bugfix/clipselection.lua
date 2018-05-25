@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.bugfix.clipselection ===
 ---
 --- Fixes a bug in Final Cut Pro 10.4.1 that selects unwanted clips when
@@ -213,7 +207,7 @@ mod.enabled = config.prop("bugfix_clipselection", true)
 --- Variable
 --- Checks if the plugin is currently active, depending on `enabled` and which
 --- version of Final Cut Pro is currently installed.
-mod.active = mod.enabled:AND(fcp.isRunning):AND(fcp.getVersion:IS("10.4.1")):watch(
+mod.active = mod.enabled:AND(fcp.isRunning):AND(fcp.versionString:IS("10.4.1")):watch(
     function(active)
         if active then
             mod.activate()

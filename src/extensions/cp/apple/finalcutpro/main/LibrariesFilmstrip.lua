@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.LibrariesFilmstrip ===
 ---
 --- Libraries Filmstrip Module.
@@ -13,16 +7,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local _									= require("moses")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
-
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
-
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
-
+local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local _									= require("moses")
 
 --------------------------------------------------------------------------------
 --
@@ -120,7 +118,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:playhead()
     if not self._playhead then
-        self._playhead = Playhead:new(self, false, function()
+        self._playhead = Playhead.new(self, false, function()
             return self:contentsUI()
         end)
     end
@@ -130,7 +128,7 @@ end
 -- TODO: Add documentation
 function Filmstrip:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead:new(self, true, function()
+        self._skimmingPlayhead = Playhead.new(self, true, function()
             return self:contentsUI()
         end)
     end

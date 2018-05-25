@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.inspector.color.ColorBoardAspect ===
 ---
 --- Represents a particular aspect of the color board (Color/Saturation/Exposure).
@@ -53,8 +47,8 @@ function ColorBoardAspect.matches(element)
     return element and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:new(parent, index[, hasAngle]) -> ColorBoardAspect
---- Function
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.new(parent, index[, hasAngle]) -> ColorBoardAspect
+--- Constructor
 --- Creates a new `ColorBoardAspect` object.
 ---
 --- Parameters:
@@ -64,8 +58,7 @@ end
 ---
 --- Returns:
 ---  * A new `ColorBoardAspect object.
--- TODO: Use a function instead of a method.
-function ColorBoardAspect:new(parent, index, hasAngle) -- luacheck: ignore
+function ColorBoardAspect.new(parent, index, hasAngle)
     if index < 1 or index > #ColorBoardAspect.ids then
         error(format("The index must be between 1 and %s: %s", #ColorBoardAspect.ids, inspect(index)))
     end
@@ -234,7 +227,7 @@ function ColorBoardAspect:master()
     if not self._master then
         self._master = ColorPuck.new(
             self, ColorPuck.RANGE.master,
-            {"PAECorrectorEffectMaster", "cb master puck display name"},
+            "cb master puck display name",
             self._hasAngle
         )
     end
@@ -254,7 +247,7 @@ function ColorBoardAspect:shadows()
     if not self._shadows then
         self._shadows = ColorPuck.new(
             self, ColorPuck.RANGE.shadows,
-            {"PAECorrectorEffectShadows", "cb shadow puck display name"},
+            "cb shadow puck display name",
             self._hasAngle
         )
     end
@@ -274,7 +267,7 @@ function ColorBoardAspect:midtones()
     if not self._midtones then
         self._midtones = ColorPuck.new(
             self, ColorPuck.RANGE.midtones,
-            {"PAECorrectorEffectMidtones", "cb midtone puck display name"},
+            "cb midtone puck display name",
             self._hasAngle
         )
     end
@@ -294,7 +287,7 @@ function ColorBoardAspect:highlights()
     if not self._highlights then
         self._highlights = ColorPuck.new(
             self, ColorPuck.RANGE.highlights,
-            {"PAECorrectorEffectHighlights", "cb highlight puck display name"},
+            "cb highlight puck display name",
             self._hasAngle
         )
     end

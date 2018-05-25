@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---         S T R E A M    D E C K    P R E F E R E N C E S    P A N E L       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.preferences.panels.streamdeck ===
 ---
 --- Stream Deck Preferences Panel
@@ -251,9 +245,14 @@ local function streamDeckPanelCallback(id, params)
             --------------------------------------------------------------------------------
             local groupID = params["groupID"]
             mod.activator[groupID]:onActivate(function(handler, action, text)
+                    --------------------------------------------------------------------------------
+                    -- Process Stylised Text:
+                    --------------------------------------------------------------------------------
+                    if text and type(text) == "userdata" then
+                        text = text:convert("text")
+                    end
                     local actionTitle = text
                     local handlerID = handler:id()
-
                     mod._sd.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
                     mod._manager.refresh()
                 end)

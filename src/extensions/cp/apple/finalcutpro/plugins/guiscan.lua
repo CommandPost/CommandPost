@@ -1,13 +1,37 @@
+--- === cp.apple.finalcutpro.plugins.guiscan ===
+---
+--- Final Cut Pro GUI Plugin Scanner.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log					= require("hs.logger").new("guiscan")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local dialog				= require("cp.dialog")
 local fcp					= require("cp.apple.finalcutpro")
 local plugins				= require("cp.apple.finalcutpro.plugins")
 local just					= require("cp.just")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert, remove		= table.insert, table.remove
 local format				= string.format
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 -- scanVideoEffects() -> table
@@ -384,7 +408,7 @@ local function scanTitles()
     return allTitles
 end
 
--- cp.apple.finalcutpro.plugins.guiscan.check([language]) -> boolean, string
+-- cp.apple.finalcutpro.plugins.guiscan.check([locale]) -> boolean, string
 -- Function
 -- Compares the list of plugins created via file scanning to that produced by GUI scanning.
 -- A detailed report is output in the Error Log.
@@ -395,14 +419,14 @@ end
 -- Returns:
 --  * `true` if all plugins match.
 --  * The text value of the report.
-function mod.check(language)
+function mod.check(locale)
 
-    language = language or fcp:currentLanguage()
+    locale = locale or fcp.app:currentLocale()
 
     local value = ""
     local function ln(str, ...) value = value .. format(str, ...) .. "\n" end
 
-    fcp.currentLanguage:set(language)
+    fcp.app.currentLocale:set(locale)
     fcp:launch()
     just.doUntil(function() return fcp:isFrontmost() end, 20, 0.1)
 
@@ -431,7 +455,7 @@ function mod.check(language)
     -- Debug Message:
     --------------------------------------------------------------------------------
     ln("---------------------------------------------------------")
-    ln(" CHECKING LANGUAGE: %s", language)
+    ln(" CHECKING LANGUAGE: %s", locale.code)
     ln("---------------------------------------------------------")
 
     local failed = false
@@ -440,7 +464,7 @@ function mod.check(language)
         --------------------------------------------------------------------------------
         -- Get settings from GUI Scripting Results:
         --------------------------------------------------------------------------------
-        local oldPlugins = scanner(language)
+        local oldPlugins = scanner()
 
         if oldPlugins then
 
@@ -449,7 +473,7 @@ function mod.check(language)
             --------------------------------------------------------------------------------
             ln("  - Checking Plugin Type: %s", newType)
 
-            local newPlugins = fcp:plugins():ofType(newType, language)
+            local newPlugins = fcp:plugins():ofType(newType, locale)
             local newPluginNames = {}
             if newPlugins then
                 for _,plugin in ipairs(newPlugins) do
@@ -529,7 +553,7 @@ function mod.check(language)
             end
             failed = failed or (errorCount ~= 0)
         else
-            ln(" - SKIPPING: Could not find settings for: %s (%s)", newType, language)
+            ln(" - SKIPPING: Could not find settings for: %s (%s)", newType, locale.code)
         end
     end
 
@@ -538,8 +562,8 @@ end
 
 function mod.checkAll()
     local failed, value = false, ""
-    for _,language in ipairs(fcp:getSupportedLanguages()) do
-        local ok, result = mod.check(language)
+    for _,locale in ipairs(fcp.app:getSupportedLocales()) do
+        local ok, result = mod.check(locale)
         failed = failed or not ok
         value = value .. result .. "\n"
     end

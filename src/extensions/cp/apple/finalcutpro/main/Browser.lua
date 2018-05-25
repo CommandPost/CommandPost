@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.Browser ===
 ---
 --- Browser Module.
@@ -153,15 +147,15 @@ end
 -- TODO: Add documentation
 function Browser:showOnPrimary()
     -- show the parent.
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
 
     -- if the browser is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
-        menuBar:checkMenu({"Window", "Show in Secondary Display", "Browser"})
+        menuBar:selectMenu({"Window", "Show in Secondary Display", "Browser"})
     end
     -- Then enable it in the primary
     if not self:isShowing() then
-        menuBar:checkMenu({"Window", "Show in Workspace", "Browser"})
+        menuBar:selectMenu({"Window", "Show in Workspace", "Browser"})
     end
     return self
 end
@@ -169,7 +163,7 @@ end
 -- TODO: Add documentation
 function Browser:showOnSecondary()
     -- show the parent.
-    local menuBar = self:app():menuBar()
+    local menuBar = self:app():menu()
 
     if not self:isOnSecondary() then
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Browser"})
@@ -181,7 +175,7 @@ end
 function Browser:hide()
     if self:isShowing() then
         -- Uncheck it from the workspace
-        self:app():menuBar():selectMenu({"Window", "Show in Workspace", "Browser"})
+        self:app():menu():selectMenu({"Window", "Show in Workspace", "Browser"})
     end
     return self
 end

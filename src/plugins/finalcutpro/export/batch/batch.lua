@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                  B A T C H    E X P O R T    P L U G I N                   --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.export.batch ===
 ---
 --- Batch Export Plugin
@@ -17,7 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log           = require("hs.logger").new("batch")
+--local log           = require("hs.logger").new("batch")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -943,7 +937,7 @@ function mod.changeExportDestinationPreset()
         return false
     end
 
-    local shareMenuItems = fcp:menuBar():findMenuItemsUI({"File", "Share"})
+    local shareMenuItems = fcp:menu():findMenuItemsUI({"File", "Share"})
     if not shareMenuItems then
         dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
         return false
@@ -1101,7 +1095,7 @@ function mod.getDestinationPreset()
     -- If there's no existing destination, then try use the Default Destination:
     --------------------------------------------------------------------------------
     if destinationPreset == nil then
-        local defaultItem = fcp:menuBar():findMenuUI({"File", "Share", function(menuItem)
+        local defaultItem = fcp:menu():findMenuUI({"File", "Share", function(menuItem)
             return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
         end})
         if defaultItem ~= nil then
@@ -1117,7 +1111,7 @@ function mod.getDestinationPreset()
     -- If that fails, try the first item on the list:
     --------------------------------------------------------------------------------
     if destinationPreset == nil then
-        local firstItem = fcp:menuBar():findMenuUI({"File", "Share", 1})
+        local firstItem = fcp:menu():findMenuUI({"File", "Share", 1})
         if firstItem ~= nil then
             local title = firstItem:attributeValue("AXTitle")
             if title then

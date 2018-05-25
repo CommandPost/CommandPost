@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.test ===
 ---
 --- CommandPost Test Scripts.
@@ -104,6 +98,15 @@ local function deepeq(a, b)
         if a[k] == nil or not deepeq(v, a[k]) then return notequal(a, b) end
     end
     return true
+end
+
+local function deepneq(a, b)
+    local ok, _ = deepeq(a, b)
+    if ok then
+        return false, format("%s == %s", inspect(a), inspect(b))
+    else
+        return true
+    end
 end
 
 -- Compatibility for Lua 5.1 and Lua 5.2
@@ -240,6 +243,7 @@ function test.case.mt:run()
         end
     end
     _ENV.eq = deepeq
+    _ENV.neq = deepneq
     _ENV.spy = spy
     -- prevent internal 'test' creations.
     test.new = noCase
@@ -390,18 +394,18 @@ function test.suite.mt:run(...)
     pushSuite(self)
     result:start()
 
-    self:_run(function(Self, filter, ...)
-        local count = #Self.tests
-        for i,t in ipairs(Self.tests) do
+    self:_run(function(suite, filter, ...)
+        local count = #suite.tests
+        for i,t in ipairs(suite.tests) do
             if matchesFilter(t, i, count, filter) then
                 local ok, err = true, nil
-                if Self._beforeEach then
-                    ok, err = xpcall(Self._beforeEach, debug.traceback)
+                if suite._beforeEach then
+                    ok, err = xpcall(function() return suite._beforeEach(t) end, debug.traceback)
                 end
                 if ok then
                     t(...)
-                    if Self._afterEach then
-                        ok, err = xpcall(Self._afterEach, debug.traceback)
+                    if suite._afterEach then
+                        ok, err = xpcall(function() return suite._afterEach(t) end, debug.traceback)
                         if not ok then
                             if handler.error then
                                 handler.error(t, format("Error occurred after test '%s': %s", t.name, err))

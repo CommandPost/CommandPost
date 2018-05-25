@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.Playhead ===
 ---
 --- Playhead Module.
@@ -97,7 +91,7 @@ end
 ---
 --- Returns:
 --- * The new `Playhead` instance.
-function Playhead:new(parent, skimming, containerFn)
+function Playhead.new(parent, skimming, containerFn)
     local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
     return prop.extend(o, Playhead)
 end

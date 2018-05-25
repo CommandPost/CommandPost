@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.KeywordEditor ===
 ---
 --- Keyword Editor Module.
@@ -33,8 +27,8 @@ local prop                              = require("cp.prop")
 --------------------------------------------------------------------------------
 local KeywordEditor = {}
 
---- cp.apple.finalcutpro.main.KeywordEditor:new(parent) -> KeywordEditor object
---- Method
+--- cp.apple.finalcutpro.main.KeywordEditor.new(parent) -> KeywordEditor object
+--- Constructor
 --- Creates a new KeywordEditor object
 ---
 --- Parameters:
@@ -42,7 +36,7 @@ local KeywordEditor = {}
 ---
 --- Returns:
 ---  * A KeywordEditor object
-function KeywordEditor:new(parent)
+function KeywordEditor.new(parent)
     local o = {
         _parent = parent,
         _child = {}
@@ -130,13 +124,13 @@ end
 function KeywordEditor:UI()
     return axutils.cache(self, "_ui", function()
         local windowsUI = self:parent():windowsUI()
-        return windowsUI and self:_findWindowUI(windowsUI)
+        return windowsUI and self._findWindowUI(windowsUI)
     end,
     KeywordEditor.matches)
 end
 
 -- cp.apple.finalcutpro.main.KeywordEditor_findWindowUI(windows) -> hs._asm.axuielement object | nil
--- Method
+-- Function
 -- Finds the Keyword Editor window.
 --
 -- Parameters:
@@ -144,7 +138,7 @@ end
 --
 -- Returns:
 --  * A `hs._asm.axuielement` object if succesful otherwise `nil`
-function KeywordEditor:_findWindowUI(windows)
+function KeywordEditor._findWindowUI(windows)
     for _,window in ipairs(windows) do
         if KeywordEditor.matches(window) then return window end
     end
@@ -325,7 +319,7 @@ function KeywordEditor:keyboardShortcuts()
 end
 
 --- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:new(parent) -> KeyboardShortcuts object
---- Method
+--- Constructor
 --- Creates a new KeyboardShortcuts object
 ---
 --- Parameters:
@@ -333,7 +327,7 @@ end
 ---
 --- Returns:
 ---  * A KeyboardShortcuts object
-function KeyboardShortcuts:new(parent)
+function KeyboardShortcuts.new(parent)
     local o = {
         _parent = parent,
         _child = {}

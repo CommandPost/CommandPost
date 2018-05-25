@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---              S H A R E D    P A S T E B O A R D    P L U G I N             --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.pasteboard.shared ===
 ---
 --- Shared Pasteboard Plugin.
@@ -260,7 +254,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:isEnabled({"Edit", "Copy"}) then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end
@@ -357,7 +351,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipNameAndFolder()
-    local menuBar = fcp:menuBar()
+    local menuBar = fcp:menu()
     if menuBar:isEnabled({"Edit", "Copy"}) then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
         if result == false then return end

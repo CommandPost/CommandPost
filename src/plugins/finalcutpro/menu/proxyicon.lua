@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                    P R O X Y    I C O N    P L U G I N                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.menu.proxyicon ===
 ---
 --- Final Cut Pro Proxy Icon Plugin.
@@ -56,11 +50,9 @@ mod.enabled = config.prop("enableProxyMenuIcon", ENABLED_DEFAULT):watch(function
         --------------------------------------------------------------------------------
         -- Update Menubar Icon on Final Cut Pro Preferences Update:
         --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp:watch({
-            preferences = function()
-                mod.menuManager:updateMenubarIcon()
-            end,
-        })
+        mod._fcpWatchID = fcp.app.preferences:watch(function()
+            mod.menuManager:updateMenubarIcon()
+        end)
     else
         --------------------------------------------------------------------------------
         -- Destroy Watchers:

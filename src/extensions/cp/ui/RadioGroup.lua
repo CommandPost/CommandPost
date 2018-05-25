@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.ui.RadioGroup ===
 ---
 --- Represents an `AXRadioGroup`, providing utility methods.
@@ -50,7 +44,7 @@ function RadioGroup.matches(element)
     return element and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup:new(parent, finderFn[, cached]) -> RadioGroup
+--- cp.ui.RadioGroup.new(parent, finderFn[, cached]) -> RadioGroup
 --- Method
 --- Creates a new RadioGroup.
 ---
@@ -61,8 +55,7 @@ end
 ---
 --- Returns:
 --- * The new `RadioGroup` instance.
--- TODO: Use a function instead of a method.
-function RadioGroup:new(parent, finderFn, cached) -- luacheck: ignore
+function RadioGroup.new(parent, finderFn, cached)
     local o = prop.extend({
         _parent = parent,
         _finder = finderFn,

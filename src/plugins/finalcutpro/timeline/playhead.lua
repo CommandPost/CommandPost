@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.timeline.playhead ===
 ---
 --- Manages features relating to the Timeline Playhead.
@@ -66,7 +60,7 @@ function mod.update()
 
     local watcher = mod.getScrollingTimelineWatcher()
 
-    if fcp:isFrontmost() and (scrolling or locked) then
+    if fcp.app.frontmost() and (scrolling or locked) then
         fcp:timeline():lockPlayhead(scrolling)
         if scrolling and not watcher:isEnabled() then
             watcher:start()
@@ -78,8 +72,6 @@ function mod.update()
         watcher:stop()
         fcp:timeline():unlockPlayhead()
     end
-
-    mod.updateWatcher()
 end
 
 --- plugins.finalcutpro.timeline.playhead.scrollingTimeline <cp.prop: boolean>
@@ -232,32 +224,16 @@ mod.playheadLocked = config.prop("lockTimelinePlayhead", false):watch(function(a
     mod.update()
 end)
 
---- plugins.finalcutpro.timeline.playhead.updateWatcher() -> none
---- Function
---- Creates or destroys the Final Cut Pro watcher.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.updateWatcher()
-    if mod.playheadLocked() or mod.scrollingTimeline() then
-        if not mod._fcpWatchID then
-            mod._fcpWatchID = fcp:watch(
-                {
-                    active      = mod.update,
-                    inactive    = mod.update,
-                }
-            )
-        end
+--- plugins.finalcutpro.timeline.playhead.playheadTracked <cp.prop: boolean; read-only; live>
+--- Variable
+--- Checks if the playhead is being actively tracked, either by scrolling timeline or the playhead lock.
+mod.playheadTracked = mod.scrollingTimeline:OR(mod.playheadLocked):watch(function(tracking)
+    if tracking then
+        fcp.app.frontmost:watch(mod.update)
     else
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
+        fcp.app.frontmost:unwatch(mod.update)
     end
-end
+end)
 
 --------------------------------------------------------------------------------
 --
@@ -308,7 +284,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Update Watcher:
     --------------------------------------------------------------------------------
-    mod.updateWatcher()
+    mod.playheadTracked:update()
 
     return mod
 end

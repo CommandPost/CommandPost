@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                T A N G E N T    M A N A G E R    P L U G I N               --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.tangent.manager.named ===
 ---
 --- Provides common functions for 'named' Tangent nodes
@@ -11,34 +5,38 @@
 --- Tables with `named` in it's metatable chain will have `name` methods added
 --- as described below.
 
---- plugins.core.tangent.manager.named:nameX(value) -> string | self
---- Method
---- Sets the name `X`, where `X` is a number as defined when the `named` was creted.
----
---- Parameters:
---- * value - The new name value.
----
---- Returns:
---- * The current value, or `self` if a new value was provided.
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 
---- plugins.core.tangent.manager.named:name(value) -> string | self
---- Method
---- Gets or sets the full name.
----
---- Parameters:
---- * value - The new name value.
----
---- Returns:
---- * `self`
-
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log               = require("hs.logger").new("tg_named")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 -- local inspect           = require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local tools             = require("cp.tools")
 local x                 = require("cp.web.xml")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local match             = string.match
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local named = {}
 
 -- makeStringTangentFriendly(value) -> none
@@ -86,6 +84,15 @@ local function getNames(self, create)
     return names
 end
 
+--- plugins.core.tangent.manager.named:name(value) -> string | self
+--- Method
+--- Gets or sets the full name.
+---
+--- Parameters:
+--- * value - The new name value.
+---
+--- Returns:
+--- * `self`
 local function name(self, value)
     if value ~= nil then
         local names = getNames(self, true)
@@ -97,6 +104,15 @@ local function name(self, value)
     end
 end
 
+--- plugins.core.tangent.manager.named:nameX(value) -> string | self
+--- Method
+--- Sets the name `X`, where `X` is a number as defined when the `named` was creted.
+---
+--- Parameters:
+--- * value - The new name value.
+---
+--- Returns:
+--- * The current value, or `self` if a new value was provided.
 named.mt.__index = function(_, key)
     if key == "name" then
         return name

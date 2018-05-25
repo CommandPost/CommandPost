@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.inspector.color.CorrectionsBar ===
 ---
 --- The Correction selection/management bar at the top of the ColorInspector
@@ -41,7 +35,12 @@ local sort = table.sort
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.CORRECTION_TYPES
 --- Constant
---- Table of Correction Types
+--- Table of Correction Types:
+---
+--- * "Color Board"
+--- * "Color Wheels"
+--- * "Color Curves"
+--- * "Hue/Saturation Curves"
 CorrectionsBar.CORRECTION_TYPES = {
     ["Color Board"]             = "FFCorrectorColorBoard",
     ["Color Wheels"]            = "PAECorrectorEffectDisplayName",
@@ -84,6 +83,45 @@ function CorrectionsBar.new(parent)
     local o = prop.extend({
         _parent = parent,
     }, CorrectionsBar)
+
+    local UI = parent.topBarUI:mutate(function(original)
+        return axutils.cache(o, "_ui",
+            function()
+                local ui = original()
+                if ui then
+                    local barUI = ui[1]
+                    return CorrectionsBar.matches(barUI) and barUI or nil
+                else
+                    return nil
+                end
+            end,
+            CorrectionsBar.matches
+        )
+    end)
+
+    local isShowing = UI:mutate(function(original)
+        return original ~= nil
+    end)
+
+    prop.bind(o) {
+        --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.UI <cp.prop: hs._asm.axuielement; read-only; live>
+        --- Field
+        --- Returns the `hs._asm.axuielement` object.
+        UI = UI,
+
+        --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.isShowing <cp.prop: boolean; read-only; live>
+        --- Field
+        --- Is the Corrections Bar currently showing?
+        isShowing = isShowing,
+    }
+
+    --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.correction <cp.ui.MenuButton>
+    --- Field
+    --- The `MenuButton` that lists the current correction.
+    o.correction = MenuButton.new(o, function()
+        return axutils.childWithRole(UI(), "AXMenuButton")
+    end)
+
     return o
 end
 
@@ -113,42 +151,6 @@ function CorrectionsBar:app()
     return self:parent():app()
 end
 
---- cp.apple.finalcutpro.inspector.color.CorrectionsBar:UI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `hs._asm.axuielement` object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object or `nil`.
-function CorrectionsBar:UI()
-    return axutils.cache(self, "_ui",
-        function()
-            local ui = self:parent():topBarUI()
-            if ui then
-                local barUI = ui[1]
-                return CorrectionsBar.matches(barUI) and barUI or nil
-            else
-                return nil
-            end
-        end,
-        CorrectionsBar.matches
-    )
-end
-
---- cp.apple.finalcutpro.inspector.color.CorrectionsBar:isShowing() -> boolean
---- Method
---- Is the Corrections Bar currently showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function CorrectionsBar:isShowing()
-    return self:UI() ~= nil
-end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:show() -> self
 --- Method
@@ -161,6 +163,7 @@ end
 --- * The `CorrectionsBar` instance.
 function CorrectionsBar:show()
     self:parent():show()
+    just.doUntil(self.isShowing, 5)
     return self
 end
 
@@ -220,9 +223,7 @@ function CorrectionsBar:activate(correctionType, number)
 
     local menuButton = self:menuButton()
 
-    local result = just.doUntil(function()
-        return menuButton:isShowing()
-    end)
+    local result = just.doUntil(menuButton.isShowing)
 
     if result then
         local pattern = "%s*"..correctionText.." "..number
@@ -232,14 +233,16 @@ function CorrectionsBar:activate(correctionType, number)
             --------------------------------------------------------------------------------
             pattern = "%+"..correctionText
             if not menuButton:selectItemMatching(pattern) then
-                log.ef("Invalid Correction Menu Item: '%s' (%s)", correctionType, correctionText)
+                log.ef("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+                return false
             end
         end
+        return true
     else
-        log.ef("Corrections Bar Activation Failed due to menu button timing out.")
+        log.ef("Corrections Bar activation failed due to menu button timing out.")
     end
 
-    return self
+    return false
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
@@ -263,7 +266,7 @@ function CorrectionsBar:add(correctionType)
 
     local pattern = "%+"..correctionText
     if not menuButton:selectItemMatching(pattern) then
-        log.ef("Invalid Correction Type: %s", correctionType)
+        log.ef("Unable to find correction: '%s' (%s)", correctionType, correctionText)
     end
 
     return self
