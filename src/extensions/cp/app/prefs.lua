@@ -26,6 +26,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 -- local log               = require("hs.logger").new("app_prefs")
+-- local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -47,7 +48,13 @@ local METADATA = {}
 local function firstFilePath(bundleID)
     local paths = cfprefs.applicationMap()[bundleID]
     if paths and #paths > 0 then
-        return paths[1].filePath
+        local path = paths[1]
+        if type(path) == "string" then
+            local filePath = string.match(path, "file://(.+)/")
+            return filePath or path
+        else
+            return path.filePath
+        end
     end
     return nil
 end
@@ -89,8 +96,7 @@ end
 --- Returns:
 ---  * A new `cp.app.prefs` with read/write access to the application's preferences.
 function mod.new(bundleID)
-    local o =
-        setmetatable(
+    local o = setmetatable(
         {
             [METADATA] = {
                 bundleID = bundleID
@@ -172,8 +178,6 @@ function mod.watch(prefs, watchFn)
     end
     table.insert(watchers, watchFn)
 end
-
-
 
 function mod.mt:__index(key)
     if key == "watch" then
