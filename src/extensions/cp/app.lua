@@ -361,9 +361,9 @@ function mod.forBundleID(bundleID)
                 --------------------------------------------------------------------------------
                 -- If that also fails, we use the base locale, or failing that, English:
                 --------------------------------------------------------------------------------
-                self._currentLocale = self:baseLocale() or localeID.forCode("en")
+                local locale = self:baseLocale() or localeID.forCode("en")
 
-                return self._currentLocale
+                return locale
             end,
             function(value, self, theProp)
                 value = localeID(value)
@@ -386,7 +386,6 @@ function mod.forBundleID(bundleID)
                         error("Unsupported language: "..value.code)
                     end
                 end
-                self._currentLocale = nil
                 if self:running() then
                     self:restart(20)
                 end

@@ -10,14 +10,22 @@
 --- This has been populated with common lookups for user interface values
 --- that appear in Final Cut Pro.
 
--- local log                   = require("hs.logger").new("fcpStrings")
--- local inspect               = require("hs.inspect")
+local log                   = require("hs.logger").new("fcpStrings")
+local inspect               = require("hs.inspect")
 
+local fs                    = require("hs.fs")
 local app                   = require("cp.apple.finalcutpro.app")
+local config                = require("cp.config")
 local strings               = require("cp.strings")
 local localeID              = require("cp.i18n.localeID")
 
+local v                     = require("semver")
+
+local insert, sort          = table.insert, table.sort
+
 local mod = {}
+
+local extraPath = config.scriptPath .. "/cp/apple/finalcutpro/strings/"
 
 mod._strings = strings.new()
 :fromPlist("${appPath}/Contents/Resources/${locale}.lproj/PELocalizable.strings")
@@ -25,11 +33,91 @@ mod._strings = strings.new()
 :fromPlist("${appPath}/Contents/Frameworks/LunaKit.framework/Resources/${locale}.lproj/Commands.strings")
 :fromPlist("${appPath}/Contents/Frameworks/Ozone.framework/Resources/${locale}.lproj/Localizable.strings") -- Text
 :fromPlist("${appPath}/Contents/PlugIns/InternalFiltersXPC.pluginkit/Contents/PlugIns/Filters.bundle/Contents/Resources/${locale}.lproj/Localizable.strings") -- Added for Final Cut Pro 10.4
+:fromPlist("${extraPath}/${locale}/${fcpVersion}.strings")
 
-local function resetStrings()
-    mod._strings:context({
+-- toVersion(value) -> semver
+-- Function
+-- Converts the string/semver value to a semver
+--
+-- Parameters:
+-- * value	- The value to convert
+--
+-- Returns:
+-- * The value as a `semver`, or `nil` if it's not a valid version value.
+local function toVersion(value)
+    if value then
+        return type(value) == "string" and v(value) or value
+    end
+    return nil
+end
+
+mod._versionCache = {}
+
+-- cp.apple.finalcutpro.strings:versions(locale) -> table
+-- Method
+-- Returns the list of specific version strings files available for the specified locale.
+function mod:_versions(locale)
+    local versions = self._versionCache[locale.code]
+    if not versions then
+        versions = {}
+        local stringsPath = extraPath .. locale.code
+        local path = fs.pathToAbsolute(stringsPath)
+        if path then
+            for file in fs.dir(path) do
+                if file:sub(-8) == ".strings" then
+                    local versionString = file:sub(1, -9)
+                    local version = toVersion(versionString)
+                    if version then
+                        insert(versions, version)
+                    end
+                end
+            end
+            sort(versions)
+        end
+        self._versionCache[locale.code] = versions
+    end
+    return versions
+end
+
+-- cp.ids:_previousVersion([version]) -> semver
+-- Method
+-- Returns the previous version number that has stored IDs.
+--
+-- Parameters:
+--  * version		- The version number you want to load as a string (i.e. "10.4.0") or a `semver`, or `nil` to use the current version.
+--
+-- Returns:
+--  * A `semver` instance for the previous version.
+function mod:_bestVersion(locale, version)
+    version = toVersion(version or self:currentVersion())
+
+    -- check if we're working with a specific version
+    local versions = self:_versions(locale)
+    if version == nil then
+        return #versions > 0 and versions[#versions] or nil
+    end
+
+    local prev = nil
+
+    for _,ver in ipairs(versions) do
+        if ver < version then
+            prev = ver
+        end
+        if ver > version then
+            break
+        end
+    end
+    return prev
+end
+
+function mod:reset()
+    local currentLocale = app:currentLocale()
+
+    self._strings:context({
         appPath = app:path(),
-        locale = app:currentLocale().aliases,
+        locale = currentLocale.aliases,
+        extraPath = extraPath,
+        fcpVersion = self:_bestVersion(currentLocale, app:version())
     })
 end
 
@@ -53,7 +141,10 @@ function mod:find(key, locale, quiet)
     local context = nil
     if locale ~= nil then
         locale = localeID(locale)
-        context = {locale = locale.aliases}
+        context = {
+            locale = locale.aliases,
+            fcpVersion = self:_bestVersion(locale, app:version())
+        }
     end
     return self._strings and self._strings:find(key, context, quiet)
 end
@@ -80,6 +171,7 @@ function mod:findKeys(string, locale)
     return self._strings and self._strings:findKeys(string, context)
 end
 
-app.currentLocale:watch(function() resetStrings() end, true)
+app.currentLocale:watch(function() mod:reset() end, true)
+app.version:watch(function() mod:reset() end, true)
 
 return mod
