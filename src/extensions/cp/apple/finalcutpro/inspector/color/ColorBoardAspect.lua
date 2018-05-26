@@ -227,7 +227,7 @@ function ColorBoardAspect:master()
     if not self._master then
         self._master = ColorPuck.new(
             self, ColorPuck.RANGE.master,
-            "cb master puck display name",
+            {"CPColorBoardMaster", "cb master puck display name"},
             self._hasAngle
         )
     end
@@ -247,7 +247,7 @@ function ColorBoardAspect:shadows()
     if not self._shadows then
         self._shadows = ColorPuck.new(
             self, ColorPuck.RANGE.shadows,
-            "cb shadow puck display name",
+            {"CPBolorBoardShadows", "cb shadow puck display name"},
             self._hasAngle
         )
     end
@@ -267,7 +267,7 @@ function ColorBoardAspect:midtones()
     if not self._midtones then
         self._midtones = ColorPuck.new(
             self, ColorPuck.RANGE.midtones,
-            "cb midtone puck display name",
+            {"CPColorBoardMidtones", "cb midtone puck display name"},
             self._hasAngle
         )
     end
@@ -287,7 +287,7 @@ function ColorBoardAspect:highlights()
     if not self._highlights then
         self._highlights = ColorPuck.new(
             self, ColorPuck.RANGE.highlights,
-            "cb highlight puck display name",
+            {"CPColorBoardHighlights", "cb highlight puck display name"},
             self._hasAngle
         )
     end
