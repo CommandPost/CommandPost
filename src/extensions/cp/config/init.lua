@@ -96,6 +96,11 @@ mod.bundledPluginsPath	= mod.basePath .. "/plugins"
 --- The path to user configuration folders
 mod.userConfigRootPath = os.getenv("HOME") .. "/Library/Application Support/CommandPost"
 
+--- cp.config.cachePath -> string
+--- Constant
+--- The path to the CommandPost Cache folder.
+mod.cachePath = os.getenv("HOME") .. "/Library/Caches/" .. hs.processInfo.bundleID
+
 --- cp.config.userPluginsPath -> string
 --- Constant
 --- The path to user plugins

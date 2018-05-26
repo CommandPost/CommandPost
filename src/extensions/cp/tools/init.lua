@@ -16,6 +16,7 @@ local log                                       = require("hs.logger").new("tool
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local application                               = require("hs.application")
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
 local fs                                        = require("hs.fs")
@@ -57,6 +58,34 @@ tools.DEFAULT_DELAY     = 0
 local leftMouseDown     = eventtap.event.types["leftMouseDown"]
 local leftMouseUp       = eventtap.event.types["leftMouseUp"]
 local clickState        = eventtap.event.properties.mouseEventClickState
+
+-- string:split(delimiter) -> table
+-- Function
+-- Splits a string into a table, separated by a separator pattern.
+--
+-- Parameters:
+--  * delimiter - Separator pattern
+--
+-- Returns:
+--  * table
+function string:split(delimiter) -- luacheck: ignore
+   local list = {}
+   local pos = 1
+   if string.find("", delimiter, 1) then -- this would result in endless loops
+      error("delimiter matches empty string: %s", delimiter)
+   end
+   while true do
+      local first, last = self:find(delimiter, pos)
+      if first then -- found?
+         insert(list, self:sub(pos, first-1))
+         pos = last+1
+      else
+         insert(list, self:sub(pos))
+         break
+      end
+   end
+   return list
+end
 
 --- cp.tools.getKeysSortedByValue(tbl, sortFunction) -> table
 --- Function
@@ -507,12 +536,21 @@ end
 ---  * String
 function tools.getEmail(fullname)
     if not fullname then return "" end
+    local contacts = application.get("Contacts")
+    local wasRunning = false
+    if contacts then
+        wasRunning = true
+    end
     local appleScript = [[
         tell application "Contacts"
             return value of first email of person "]] .. fullname .. [["
         end tell
     ]]
     local _,result = osascript.applescript(appleScript)
+    contacts = application.get("Contacts")
+    if contacts and not wasRunning then
+        contacts:kill()
+    end
     if result then
         return result
     else
@@ -1111,11 +1149,11 @@ end
 --- any contents recursively.
 ---
 --- Parameters:
---- * `path`        - The absolute path to remove
---- * `recursive`   - If `true`, the contents of the directory will be removed first.
+---  * `path`        - The absolute path to remove
+---  * `recursive`   - If `true`, the contents of the directory will be removed first.
 ---
 --- Returns:
---- * `true` if successful, or `nil, err` if there was a problem.
+---  * `true` if successful, or `nil, err` if there was a problem.
 function tools.rmdir(path, recursive)
     if recursive then
         -- remove the contents.
@@ -1197,28 +1235,45 @@ function tools.iconFallback(...)
     return config.iconPath
 end
 
---- cp.tools.readJSONFile(path) -> table or nil
+--- cp.tools.endsWith(str, ending) -> boolean
 --- Function
---- Attempts to read the specified path as a JSON file.
---- If the file cannot be found, `nil` is returned. If the file is
---- not a JSON file, an error will occur.
+--- Checks to see if `str` has the same ending as `ending`.
 ---
 --- Parameters:
---- * path      - The JSON file path.
+---  * str       - String to analysis
+---  * ending    - End of string to compare against
 ---
 --- Returns:
---- * The JSON file converted into table, or `nil`.
-function tools.readJSONFile(path)
-    local filePath = fs.pathToAbsolute(path)
-    if filePath then
-        local file = io.open(filePath, "r")
-        if file then
-            local content = file:read("*all")
-            file:close()
-            return json.decode(content)
+---  * table
+function tools.endsWith(str, ending)
+    local len = #ending
+    return str:len() >= len and str:sub(len * -1) == ending
+end
+
+--- cp.tools.ensureDirectoryExists(rootPath, ...) -> string | nil
+--- Function
+--- Ensures all steps on a provided path exist. If not, attempts to create them.
+--- If it fails, `nil` is returned.
+---
+--- Parameters:
+---  * `rootPath` - The root path (should already exist).
+---  * `...`      - The list of path steps to create
+---
+--- Returns:
+---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
+function tools.ensureDirectoryExists(rootPath, ...)
+    local fullPath = rootPath
+    for _,path in ipairs(table.pack(...)) do
+        fullPath = fullPath .. "/" .. path
+        if not fs.pathToAbsolute(fullPath) then
+            local success, err = fs.mkdir(fullPath)
+            if not success then
+                log.ef("Problem ensuring that '%s' exists: %s", fullPath, err)
+                return nil
+            end
         end
     end
-    return nil
+    return fs.pathToAbsolute(fullPath)
 end
 
 return tools

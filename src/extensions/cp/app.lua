@@ -12,8 +12,8 @@
 --- quitting, and other activities related to applications.
 ---
 --- This extension differs from the `hs.application` extension in several ways:
---- * `cp.app` instances are long-lived. You request it once and it will stay up-to-date even if the app quits.
---- * It makes extensive use of `cp.prop`, so you can `watch` many most properties of the app and get live notifications when they change.
+---  * `cp.app` instances are long-lived. You request it once and it will stay up-to-date even if the app quits.
+---  * It makes extensive use of `cp.prop`, so you can `watch` many most properties of the app and get live notifications when they change.
 
 --------------------------------------------------------------------------------
 --
@@ -61,10 +61,21 @@ local v							= require("semver")
 local insert                    = table.insert
 local format                    = string.format
 
--- Disable Window Filter Errors (the wfilter errors are too annoying):
-windowfilter.setLogLevel("nothing")
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
 
-local COMMANDPOST_BUNDLE_ID = "org.latenitefilms.CommandPost"
+-- COMMANDPOST_BUNDLE_ID -> string
+-- Constant
+-- CommandPost's Bundle ID string.
+local COMMANDPOST_BUNDLE_ID = hs.processInfo.bundleID
+
+-- BASE_LOCALE -> string
+-- Constant
+-- Base Locale.
+local BASE_LOCALE = "Base"
 
 --------------------------------------------------------------------------------
 --
@@ -80,8 +91,6 @@ local apps = {}
 -- Disable Window Filter Errors (the wfilter errors are too annoying):
 --------------------------------------------------------------------------------
 windowfilter.setLogLevel("nothing")
-
-local BASE_LOCALE = "Base"
 
 --- cp.app.bundleIDs() -> table
 --- Function
@@ -675,7 +684,6 @@ function mod.mt:hide()
     return self
 end
 
-
 --- cp.app:notifier() -> cp.ui.notifier
 --- Method
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
@@ -691,7 +699,6 @@ function mod.mt:notifier()
     end
     return self._notifier
 end
-
 
 function mod.mt:__tostring()
     return format("cp.app: %s", self:bundleID())
