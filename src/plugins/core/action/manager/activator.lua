@@ -62,17 +62,23 @@ local format                    = string.format
 
 --------------------------------------------------------------------------------
 --
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- PACKAGE -> string
+-- Constant
+-- The Package ID.
+local PACKAGE = "action.activator."
+
+--------------------------------------------------------------------------------
+--
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local activator = {}
 activator.mt = {}
 activator.mt.__index = activator.mt
-
--- PACKAGE -> string
--- Constant
--- The Package ID.
-local PACKAGE = "action.activator."
 
 -- applyHiddenTo(choice, hidden) -> none
 -- Function

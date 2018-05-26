@@ -41,16 +41,9 @@ local insert        = table.insert
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local mod = {
-    _actions	= {},
-    _actionIds	= {},
-    _handlers	= {},
-    _activators	= {},
-    _cache		= {},
-}
 
 -- ARRAY_DELIM -> string
 -- Constant
@@ -61,6 +54,19 @@ local ARRAY_DELIM   = "||"
 -- Constant
 -- Undefined String.
 local UNDEFINED     = "_undefined"
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {
+    _actions	= {},
+    _actionIds	= {},
+    _handlers	= {},
+    _activators	= {},
+    _cache		= {},
+}
 
 -- freezeParams(params) -> string
 -- Function

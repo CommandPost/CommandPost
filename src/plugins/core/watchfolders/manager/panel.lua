@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                  W A T C H   F O L D E R    M A N A G E R                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.watchfolders.manager.panel ===
 ---
 --- Watch Folder Panel Manager.
@@ -31,12 +25,12 @@ local ui                                        = require("cp.web.ui")
 --
 --------------------------------------------------------------------------------
 
--- DEFAULT_PRIORITY
+-- DEFAULT_PRIORITY -> number
 -- Constant
 -- The default priority for panels.
 local DEFAULT_PRIORITY = 0
 
--- HANDLER_PRIORITY
+-- HANDLER_PRIORITY -> number
 -- Constant
 -- The default priority for handler scripts.
 local HANDLER_PRIORITY = 1000000

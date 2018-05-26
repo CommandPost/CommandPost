@@ -2,10 +2,15 @@
 ---
 --- Functions for managing text on the web.
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
 local schar = string.char
 local gsub = string.gsub
-
-local mod = {}
 
 local function sub_hex_ent(s)
     return schar(tonumber(s, 16))

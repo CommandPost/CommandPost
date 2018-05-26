@@ -1,19 +1,23 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.strings ===
 ---
 --- The `cp.strings` for I18N lookups related to Final Cut Pro.
 --- This has been populated with common lookups for user interface values
 --- that appear in Final Cut Pro.
 
-local log                   = require("hs.logger").new("fcpStrings")
-local inspect               = require("hs.inspect")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+-- local log                   = require("hs.logger").new("fcpStrings")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+-- local inspect               = require("hs.inspect")
 local fs                    = require("hs.fs")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local app                   = require("cp.apple.finalcutpro.app")
 local config                = require("cp.config")
 local strings               = require("cp.strings")
@@ -23,6 +27,11 @@ local v                     = require("semver")
 
 local insert, sort          = table.insert, table.sort
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 local extraPath = config.scriptPath .. "/cp/apple/finalcutpro/strings/"

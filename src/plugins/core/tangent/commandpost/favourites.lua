@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.tangent.commandpost.favourites ===
 ---
 --- Tangent Favourites.
@@ -36,13 +30,45 @@ local tools                                     = require("cp.tools")
 --------------------------------------------------------------------------------
 local _                                         = require("moses")
 
-local mod = {}
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
 
+-- FAVOURITES_FILE -> number
+-- Constant
+-- Favourites File Name.
 local FAVOURITES_FILE = "favourites.json"
 
-mod.ID = 0x0ACF0000 -- All > CommandPost > Favourites
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+-- plugins.core.tangent.commandpost.favourites.ID -> number
+-- Constant
+-- ID for "All > CommandPost > Favourites".
+mod.ID = 0x0ACF0000
+
+-- plugins.core.tangent.commandpost.favourites.MAX_ITEMS -> number
+-- Constant
+-- Maximum number of favourites.
 mod.MAX_ITEMS = 50
 
+--- plugins.core.tangent.commandpost.favourites.init() -> none
+--- Function
+--- Initialise Module.
+---
+--- Parameters:
+---  * tangentManager - Tangent Manager Plugin
+---  * actionManager - Action Manager Plugin
+---  * cpGroup - CommandPost Group
+---
+--- Returns:
+---  * None
 function mod.init(tangentManager, actionManager, cpGroup)
     mod._tangentManager = tangentManager
 
@@ -54,13 +80,24 @@ function mod.init(tangentManager, actionManager, cpGroup)
     mod.updateControls()
 end
 
+--- plugins.core.tangent.commandpost.favourites.updateControls() -> none
+--- Function
+--- Update Controls
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function mod.updateControls()
 
     local max = mod.MAX_ITEMS
     local group = mod._group
     local faves = mod.favourites()
 
-    -- clear existing actions
+    --------------------------------------------------------------------------------
+    -- Clear existing actions:
+    --------------------------------------------------------------------------------
     group:reset()
 
     local id = mod.ID
@@ -83,7 +120,9 @@ function mod.updateControls()
         end
     end
 
-    -- ensure the new controls are sent to Tangent Mapper
+    --------------------------------------------------------------------------------
+    -- Ensure the new controls are sent to Tangent Mapper:
+    --------------------------------------------------------------------------------
     mod._tangentManager.updateControls()
 end
 
@@ -148,7 +187,10 @@ local function saveToFile(favourites)
         fs.mkdir(configPath)
     end
 
-    -- create a table where numbers are converted to strings, to enable JSON encoding
+    --------------------------------------------------------------------------------
+    -- Create a table where numbers are converted to strings,
+    -- to enable JSON encoding:
+    --------------------------------------------------------------------------------
     local faves = {}
     for i = 1, mod.MAX_ITEMS do
         local favourite = favourites[i]
@@ -256,11 +298,8 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-
     mod.init(deps.tangentManager, deps.actionManager, deps.cpGroup)
-
     return mod
-
 end
 
 return plugin

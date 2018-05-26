@@ -15,15 +15,21 @@ local feedback          = require("cp.feedback")
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
+-- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local mod = {}
 
 -- PRIORITY -> number
 -- Constant
 -- The menubar position priority.
 local PRIORITY = 2
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
 
 --- plugins.core.helpandsupport.feedback.show() -> nil
 --- Function

@@ -17,19 +17,48 @@ local log                                           = require("hs.logger").new("
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local inspect                                       = require("hs.inspect")
 local fs                                            = require("hs.fs")
+local inspect                                       = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local localeID                                      = require("cp.i18n.localeID")
-local prop                                          = require("cp.prop")
-local plist                                         = require("cp.plist")
 local archiver                                      = require("cp.plist.archiver")
 local axutils                                       = require("cp.ui.axutils")
+local localeID                                      = require("cp.i18n.localeID")
+local plist                                         = require("cp.plist")
+local prop                                          = require("cp.prop")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format                                        = string.format
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- BASE_LOCALE -> string
+-- Constant
+-- Base Locale string.
+local BASE_LOCALE = "Base"
+
+-- NIB_EXT -> string
+-- Constant
+-- NIB File Extension.
+local NIB_EXT = "nib"
+
+-- STRINGS_EXT -> string
+-- Constant
+-- Strings File Extension.
+local STRINGS_EXT = "strings"
+
+-- MENU_FILE_PATH -> string
+-- Constant
+-- Menu File Path.
+local MENU_FILE_PATH = "%s/Contents/Resources/%s.lproj/%s.%s"
 
 --------------------------------------------------------------------------------
 --
@@ -39,19 +68,15 @@ local format                                        = string.format
 local menu = {}
 menu.mt = {}
 
-local BASE_LOCALE = "Base"
-
 --- cp.app.menu.ROLE -> string
 --- Constant
 --- The menu role
 menu.ROLE = "AXMenuBar"
 
+--- cp.app.menu.NIB_FILE -> string
+--- Constant
+--- Main NIB File.
 menu.NIB_FILE = "NSMainNibFile"
-
-local NIB_EXT = "nib"
-local STRINGS_EXT = "strings"
-
-local MENU_FILE_PATH = "%s/Contents/Resources/%s.lproj/%s.%s"
 
 local function findMenuNibPath(app, localeAliases, nibName)
     local appPath = app:path()

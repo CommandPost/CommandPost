@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.main.LibrariesFilmstrip ===
 ---
 --- Libraries Filmstrip Module.
@@ -13,16 +7,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local _									= require("moses")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
-
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
-
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
-
+local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local _									= require("moses")
 
 --------------------------------------------------------------------------------
 --

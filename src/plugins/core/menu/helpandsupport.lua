@@ -25,13 +25,6 @@ local SETTING                   = "menubarHelpEnabled"
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local sectionEnabled = config.prop(SETTING, true)
-
---------------------------------------------------------------------------------
---
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
@@ -57,6 +50,7 @@ function plugin.init(dependencies)
     --------------------------------------------------------------------------------
     -- Disable the section if the Timeline option is disabled:
     --------------------------------------------------------------------------------
+    local sectionEnabled = config.prop(SETTING, true)
     section:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
 
     --------------------------------------------------------------------------------

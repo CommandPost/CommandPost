@@ -6,15 +6,35 @@
 --- CP 'dockless' when an app we are working with goes full-screen. Otherwise
 --- our drawing/canvas images will not display correctly.
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log                               = require("hs.logger").new("dockicon")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local timer                             = require("hs.timer")
 local window                            = require("hs.window")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local app                               = require("cp.app")
 local fcp                               = require("cp.apple.finalcutpro")
 local prop                              = require("cp.prop")
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
 --- plugins.finalcutpro.fullscreen.dockicon.dockIconEnabled <cp.prop: boolean; read-only; live>

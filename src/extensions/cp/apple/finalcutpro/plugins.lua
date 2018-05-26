@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.plugins ===
 ---
 --- Scans an entire system for Final Cut Pro Effects, Generators, Titles & Transitions.
@@ -23,11 +17,11 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                       = require("hs.logger").new("scan")
--- local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+-- local inspect                   = require("hs.inspect")
 local fnutils                   = require("hs.fnutils")
 local fs                        = require("hs.fs")
 local json                      = require("hs.json")
@@ -55,6 +49,27 @@ local v                         = require("semver")
 
 --------------------------------------------------------------------------------
 --
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- THEME_PATTERN -> string
+-- Constant
+-- Theme Pattern
+local THEME_PATTERN = ".*<theme>(.+)</theme>.*"
+
+-- FLAGS_PATTERN -> string
+-- Constant
+-- Flags Pattern
+local FLAGS_PATTERN = ".*<flags>(.+)</flags>.*"
+
+-- OBSOLETE_FLAG -> number
+-- Constant
+-- Obsolete Flag
+local OBSOLETE_FLAG = 2
+
+--------------------------------------------------------------------------------
+--
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -63,13 +78,8 @@ local mod                       = {}
 mod.mt                          = {}
 mod.mt.__index                  = mod.mt
 
-local THEME_PATTERN             = ".*<theme>(.+)</theme>.*"
-local FLAGS_PATTERN             = ".*<flags>(.+)</flags>.*"
-
-local OBSOLETE_FLAG             = 2
-
 -- set this to `true` via _fcp:plugins():outputReport(true) to enable reporting
-mod.outputReport = config.prop("fcpPluginsOutputReport", false)
+mod.outputReport = config.prop("fcpPluginsOutputReport", true)
 
 local function report(message, ...)
     if mod.outputReport() then
