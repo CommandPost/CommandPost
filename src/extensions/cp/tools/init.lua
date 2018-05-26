@@ -41,23 +41,42 @@ local config                                    = require("cp.config")
 local v                                         = require("semver")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local insert                                    = table.insert
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- LEFT_MOUSE_DOWN -> number
+-- Constant
+-- Left Mouse Down ID.
+local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
+
+-- LEFT_MOUSE_UP -> number
+-- Constant
+-- Left Mouse Up ID.
+local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
+
+-- CLICK_STATE -> number
+-- Constant
+-- Click State ID.
+local CLICK_STATE = eventtap.event.properties.mouseEventClickState
+
+-- DEFAULT_DELAY -> number
+-- Constant
+-- Default Delay.
+local DEFAULT_DELAY = 0
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local tools = {}
-
---------------------------------------------------------------------------------
--- CONSTANTS:
---------------------------------------------------------------------------------
-tools.DEFAULT_DELAY     = 0
-
---------------------------------------------------------------------------------
--- LOCAL VARIABLES:
---------------------------------------------------------------------------------
-local leftMouseDown     = eventtap.event.types["leftMouseDown"]
-local leftMouseUp       = eventtap.event.types["leftMouseUp"]
-local clickState        = eventtap.event.properties.mouseEventClickState
 
 -- string:split(delimiter) -> table
 -- Function
@@ -100,7 +119,7 @@ end
 function tools.getKeysSortedByValue(tbl, sortFunction)
     local keys = {}
     for key in pairs(tbl) do
-        table.insert(keys, key)
+        insert(keys, key)
     end
     table.sort(keys, function(a, b)
         return sortFunction(tbl[a], tbl[b])
@@ -152,7 +171,7 @@ end
 
 --- cp.tools.mergeTable(target, ...) -> table
 --- Function
---- Gives you the file system volume format of a path.
+--- Merges multiple tables into a target table.
 ---
 --- Parameters:
 ---  * target   - The target table
@@ -229,14 +248,14 @@ function tools.split(str, pat)
     local s, e, cap = str:find(fpat, 1)
     while s do
       if s ~= 1 or cap ~= "" then
-         table.insert(t,cap)
+         insert(t,cap)
       end
       last_end = e+1
       s, e, cap = str:find(fpat, last_end)
     end
     if last_end <= #str then
       cap = str:sub(last_end)
-      table.insert(t, cap)
+      insert(t, cap)
     end
     return t
 end
@@ -765,7 +784,7 @@ function tools.lines(str)
         local function helper(line)
             line = tools.trim(line)
             if line ~= nil and line ~= "" then
-                table.insert(t, line)
+                insert(t, line)
             end
             return ""
         end
@@ -879,11 +898,11 @@ end
 --- Returns:
 ---  * None
 function tools.leftClick(point, delay, clickNumber)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
-    eventtap.event.newMouseEvent(leftMouseDown, point):setProperty(clickState, clickNumber):post()
+    eventtap.event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
     if delay > 0 then timer.usleep(delay) end
-    eventtap.event.newMouseEvent(leftMouseUp, point):setProperty(clickState, clickNumber):post()
+    eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
@@ -897,7 +916,7 @@ end
 --- Returns:
 ---  * None
 function tools.doubleLeftClick(point, delay)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     tools.leftClick(point, delay, 1)
     tools.leftClick(point, delay, 2)
 end
@@ -913,7 +932,7 @@ end
 --- Returns:
 ---  * None
 function tools.ninjaMouseClick(point, delay)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
@@ -931,7 +950,7 @@ end
 --- Returns:
 ---  * None
 function tools.ninjaDoubleClick(point, delay)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.doubleLeftClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
