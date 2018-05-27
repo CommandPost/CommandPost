@@ -3,7 +3,7 @@
 --- Scans an entire system for Final Cut Pro Effects, Generators, Titles & Transitions.
 ---
 --- Usage:
---- ```
+--- ```lua
 ---     require("cp.apple.finalcutpro"):plugins():scan()
 --- ```
 
@@ -24,13 +24,13 @@ local log                       = require("hs.logger").new("scan")
 -- local inspect                   = require("hs.inspect")
 local fnutils                   = require("hs.fnutils")
 local fs                        = require("hs.fs")
-local json                      = require("hs.json")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local archiver                  = require("cp.plist.archiver")
 local config                    = require("cp.config")
+local json                      = require("cp.json")
 local localeID                  = require("cp.i18n.localeID")
 local localized                 = require("cp.localized")
 local plist                     = require("cp.plist")
@@ -46,6 +46,15 @@ local id                        = require("cp.apple.finalcutpro.ids") "LogicPlug
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
 local v                         = require("semver")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local contains                  = fnutils.contains
+local copy                      = fnutils.copy
+local getLocalizedName          = localized.getLocalizedName
+local insert, remove            = table.insert, table.remove
+local unescapeXML               = text.unescapeXML
 
 --------------------------------------------------------------------------------
 --
@@ -68,26 +77,52 @@ local FLAGS_PATTERN = ".*<flags>(.+)</flags>.*"
 -- Obsolete Flag
 local OBSOLETE_FLAG = 2
 
+-- CP_FCP_CACHE_FOLDER -> string
+-- Constant
+-- Final Cut Pro Cache Folder Name.
+local CP_FCP_CACHE_FOLDER = "Final Cut Pro"
+
+-- CP_FCP_CACHE_PATH -> string
+-- Constant
+-- User Plugin Cache Path.
+local CP_FCP_CACHE_PATH = config.cachePath .. "/" .. CP_FCP_CACHE_FOLDER
+
+-- CP_PLUGIN_CACHE_PATH -> number
+-- Constant
+-- CommandPost Plugin Cache Path.
+local CP_PLUGIN_CACHE_PATH = config.scriptPath .. "/cp/apple/finalcutpro/plugins/cache"
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod                       = {}
-
 mod.mt                          = {}
 mod.mt.__index                  = mod.mt
 
--- set this to `true` via _fcp:plugins():outputReport(true) to enable reporting
+--- cp.apple.finalcutpro.plugins.outputReport <cp.prop: boolean>
+--- Variable
+--- Set this to `false` via `_fcp:plugins():outputReport(false)` to disable reporting.
 mod.outputReport = config.prop("fcpPluginsOutputReport", true)
 
+-- report(message, ...) -> none
+-- Function
+-- Reports a message to the Error Log.
+--
+-- Parameters:
+--  * message - The message to report
+--  * ... - Any other messages
+--
+-- Returns:
+--  * None
 local function report(message, ...)
     if mod.outputReport() then
         log.df(message, ...)
     end
 end
 
---- cp.apple.finalcutpro.plugins.types
+--- cp.apple.finalcutpro.plugins.types -> table
 --- Constant
 --- Table of the different audio/video/transition/generator types.
 mod.types = {
@@ -98,17 +133,17 @@ mod.types = {
     transition  = "transition",
 }
 
---- cp.apple.finalcutpro.plugins.coreAudioPreferences
+--- cp.apple.finalcutpro.plugins.coreAudioPreferences -> string
 --- Constant
 --- Core Audio Preferences File Path
 mod.coreAudioPreferences = "/System/Library/Components/CoreAudio.component/Contents/Info.plist"
 
---- cp.apple.finalcutpro.plugins.audioUnitsCache
+--- cp.apple.finalcutpro.plugins.audioUnitsCache -> string
 --- Constant
 --- Path to the Audio Units Cache
 mod.audioUnitsCache      = "~/Library/Preferences/com.apple.audio.InfoHelper.plist"
 
---- cp.apple.finalcutpro.plugins.appBuiltinPlugins
+--- cp.apple.finalcutpro.plugins.appBuiltinPlugins -> table
 --- Constant
 --- Table of built-in plugins
 mod.appBuiltinPlugins = {
@@ -134,7 +169,7 @@ mod.appBuiltinPlugins = {
     },
 }
 
---- cp.apple.finalcutpro.plugins.appEdelEffects
+--- cp.apple.finalcutpro.plugins.appEdelEffects -> table
 --- Constant
 --- Table of Built-in Soundtrack Pro EDEL Effects.
 mod.appEdelEffects = {
@@ -202,7 +237,7 @@ mod.appEdelEffects = {
     },
 }
 
---- cp.apple.finalcutpro.plugins.types
+--- cp.apple.finalcutpro.plugins.types -> table
 --- Constant
 --- Table of the different Motion Template Extensions
 mod.motionTemplates = {
@@ -224,56 +259,17 @@ mod.motionTemplates = {
     }
 }
 
---------------------------------------------------------------------------------
--- HELPER FUNCTIONS:
---------------------------------------------------------------------------------
-local contains                  = fnutils.contains
-local copy                      = fnutils.copy
-local getLocalizedName          = localized.getLocalizedName
-local insert, remove            = table.insert, table.remove
-local unescapeXML               = text.unescapeXML
-
--- string:split(delimiter) -> table
+-- doesCacheDirectoryExist() -> boolean
 -- Function
--- Splits a string into a table, separated by a separator pattern.
+-- Ensures the cache directory exists.
 --
 -- Parameters:
---  * delimiter - Separator pattern
+--  * None
 --
 -- Returns:
---  * table
-function string:split(delimiter) -- luacheck: ignore
-   local list = {}
-   local pos = 1
-   if string.find("", delimiter, 1) then -- this would result in endless loops
-      error("delimiter matches empty string: %s", delimiter)
-   end
-   while true do
-      local first, last = self:find(delimiter, pos)
-      if first then -- found?
-         insert(list, self:sub(pos, first-1))
-         pos = last+1
-      else
-         insert(list, self:sub(pos))
-         break
-      end
-   end
-   return list
-end
-
--- endsWith(str, ending) -> boolean
--- Function
--- Checks to see if `str` has the same ending as `ending`.
---
--- Parameters:
---  * str       - String to analysis
---  * ending    - End of string to compare against
---
--- Returns:
---  * table
-local function endsWith(str, ending)
-    local len = #ending
-    return str:len() >= len and str:sub(len * -1) == ending
+--  * `true` if successful otherwise `false`
+local function doesCacheDirectoryExist()
+    return tools.ensureDirectoryExists("~/Library/Caches", hs.processInfo.bundleID, CP_FCP_CACHE_FOLDER) ~= nil
 end
 
 --- cp.apple.finalcutpro.plugins:scanSystemAudioUnits(locale) -> none
@@ -295,7 +291,7 @@ function mod.mt:scanSystemAudioUnits(locale)
 
     local currentModification = fs.attributes(cacheFile) and fs.attributes(cacheFile).modification
     local lastModification = config.get("audioUnitsCacheModification", nil)
-    local audioUnitsCache = config.get("audioUnitsCache", nil)
+    local audioUnitsCache = json.read(CP_FCP_CACHE_PATH .. "/Audio Units.json")
 
     if currentModification and lastModification and audioUnitsCache and currentModification == lastModification then
         report("  * Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items)")
@@ -368,9 +364,14 @@ function mod.mt:scanSystemAudioUnits(locale)
         -- Save Cache:
         --------------------------------------------------------------------------------
         if currentModification and #cache ~= 0 then
-            config.set("audioUnitsCacheModification", currentModification)
-            config.set("audioUnitsCache", cache)
-            report("  * Saved " .. #cache .. " Audio Units to Cache.")
+            if doesCacheDirectoryExist() then
+                if json.write(CP_FCP_CACHE_PATH .. "/Audio Units.json", cache) then
+                    config.set("audioUnitsCacheModification", currentModification)
+                    report("  * Saved " .. #cache .. " Audio Units to Cache.")
+                else
+                    log.ef("  * Failed to cache Audio Units.")
+                end
+            end
         else
             log.ef("  * Failed to cache Audio Units.")
         end
@@ -404,7 +405,7 @@ function mod.mt:scanUserEffectsPresets(locale)
 
     local currentSize = fs.attributes(path) and fs.attributes(path).size
     local lastSize = config.get("userEffectsPresetsCacheModification", nil)
-    local userEffectsPresetsCache = config.get("userEffectsPresetsCache", nil)
+    local userEffectsPresetsCache = json.read(CP_FCP_CACHE_PATH .. "/User Effects Presets.json")
 
     if currentSize and lastSize and userEffectsPresetsCache and currentSize == lastSize then
         report("  * Using User Effects Presets Cache (" .. tostring(#userEffectsPresetsCache) .. " items).")
@@ -453,9 +454,14 @@ function mod.mt:scanUserEffectsPresets(locale)
         -- Save Cache:
         --------------------------------------------------------------------------------
         if currentSize and #cache ~= 0 then
-            config.set("userEffectsPresetsCacheModification", currentSize)
-            config.set("userEffectsPresetsCache", cache)
-            report("  * Saved " .. #cache .. " User Effects Presets to Cache.")
+            if doesCacheDirectoryExist() then
+                if json.write(CP_FCP_CACHE_PATH .. "/User Effects Presets.json", cache) then
+                    config.set("userEffectsPresetsCacheModification", currentSize)
+                    report("  * Saved " .. #cache .. " User Effects Presets to Cache.")
+                else
+                    log.ef("  * Failed to cache User Effects Presets.")
+                end
+            end
         else
             log.ef("  * Failed to cache User Effects Presets.")
         end
@@ -490,12 +496,12 @@ local function getMotionTheme(filename)
             local line = file:read("*l")
             if line == nil then break end
             if not inTemplate then
-                inTemplate = endsWith(line, "<template>")
+                inTemplate = tools.endsWith(line, "<template>")
             end
             if inTemplate then
                 theme = theme or line:match(THEME_PATTERN)
                 flags = line:match(FLAGS_PATTERN) or flags
-                if endsWith(line, "</template>") then
+                if tools.endsWith(line, "</template>") then
                     break
                 end
             end
@@ -537,7 +543,7 @@ local function getPluginName(path, pluginExt, locale)
         if realName then
             local targetExt = "."..pluginExt
             for file in fs.dir(path) do
-                if endsWith(file, targetExt) then
+                if tools.endsWith(file, targetExt) then
                     local name = file:sub(1, (targetExt:len()+1)*-1)
                     local pluginPath = path .. "/" .. name .. targetExt
                     if name == realName then
@@ -924,7 +930,7 @@ function mod.mt:scanUserMotionTemplates(locale)
     --------------------------------------------------------------------------------
     local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
     local lastSize = config.get("userMotionTemplatesCacheSize", nil)
-    local userMotionTemplatesCache = config.get("userMotionTemplatesCache", nil)
+    local userMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/User Motion Templates.json")
     if currentSize and lastSize and currentSize == lastSize then
         if userMotionTemplatesCache and userMotionTemplatesCache[locale.code] and #userMotionTemplatesCache[locale.code] > 0 then
             --------------------------------------------------------------------------------
@@ -950,13 +956,13 @@ function mod.mt:scanUserMotionTemplates(locale)
         --------------------------------------------------------------------------------
         -- Save to cache:
         --------------------------------------------------------------------------------
-        config.set("userMotionTemplatesCache", {
-            [locale.code] = mod._motionTemplatesToCache,
-        })
-        config.set("userMotionTemplatesCacheSize", currentSize)
-
-        report("  * Saving User Motion Tempaltes to Cache (%s items)", #mod._motionTemplatesToCache)
-
+        local cache = { [locale.code] = mod._motionTemplatesToCache }
+        if json.write(CP_FCP_CACHE_PATH .. "/User Motion Templates.json", cache) then
+            config.set("userMotionTemplatesCacheSize", currentSize)
+            report("  * Saving User Motion Tempaltes to Cache (%s items)", #mod._motionTemplatesToCache)
+        else
+            log.ef("  * Failed to cache User Motion Templates.")
+        end
         mod._motionTemplatesToCache = nil
     end
     return result
@@ -989,7 +995,7 @@ function mod.mt:scanSystemMotionTemplates(locale)
     --------------------------------------------------------------------------------
     local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
     local lastSize = config.get("systemMotionTemplatesCacheSize", nil)
-    local systemMotionTemplatesCache = config.get("systemMotionTemplatesCache", nil)
+    local systemMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/System Motion Templates.json")
 
     if currentSize and lastSize and currentSize == lastSize then
         if systemMotionTemplatesCache and systemMotionTemplatesCache[locale.code] and #systemMotionTemplatesCache[locale.code] > 0 then
@@ -1021,13 +1027,13 @@ function mod.mt:scanSystemMotionTemplates(locale)
         --------------------------------------------------------------------------------
         -- Save to cache:
         --------------------------------------------------------------------------------
-        config.set("systemMotionTemplatesCache", {
-            [locale.code] = mod._motionTemplatesToCache,
-        })
-        config.set("systemMotionTemplatesCacheSize", currentSize)
-
-        report("  * Saving System Motion Templates to Cache (%s items)", #mod._motionTemplatesToCache)
-
+        local cache = { [locale.code] = mod._motionTemplatesToCache }
+        if json.write(CP_FCP_CACHE_PATH .. "/System Motion Templates.json", cache) then
+            config.set("systemMotionTemplatesCacheSize", currentSize)
+            report("  * Saving System Motion Templates to Cache (%s items)", #mod._motionTemplatesToCache)
+        else
+            log.ef("  * Failed to cache System Motion Templates.")
+        end
         mod._motionTemplatesToCache = nil
     end
     return result
@@ -1461,9 +1467,6 @@ function mod.mt:_loadPluginVersionCache(rootPath, version, locale, searchHistory
     return false
 end
 
-local USER_PLUGIN_CACHE = "~/Library/Caches/org.latenitefilms.CommandPost/FinalCutPro"
-local CP_PLUGIN_CACHE   = config.scriptPath .. "/cp/apple/finalcutpro/plugins/cache"
-
 --- cp.apple.finalcutpro.plugins.clearCaches() -> boolean
 --- Function
 --- Clears any local caches created for tracking the plugins.
@@ -1477,7 +1480,7 @@ local CP_PLUGIN_CACHE   = config.scriptPath .. "/cp/apple/finalcutpro/plugins/ca
 --- Notes:
 ---  * Does not uninstall any of the actual plugins.
 function mod.mt.clearCaches()
-    local cachePath = fs.pathToAbsolute(USER_PLUGIN_CACHE)
+    local cachePath = fs.pathToAbsolute(CP_FCP_CACHE_PATH)
     if cachePath then
         local ok, err = tools.rmdir(cachePath, true)
         if not ok then
@@ -1486,12 +1489,8 @@ function mod.mt.clearCaches()
         end
     end
     config.set("audioUnitsCacheModification", nil)
-    config.set("audioUnitsCache", nil)
     config.set("userEffectsPresetsCacheModification", nil)
-    config.set("userEffectsPresetsCache", nil)
-    config.set("userMotionTemplatesCache", nil)
     config.set("userMotionTemplatesCacheSize", nil)
-    config.set("systemMotionTemplatesCache", nil)
     config.set("systemMotionTemplatesCacheSize", nil)
     return true
 end
@@ -1512,34 +1511,8 @@ function mod.mt:_loadAppPluginCache(locale)
         return false
     end
 
-    return self:_loadPluginVersionCache(USER_PLUGIN_CACHE, fcpVersion, locale, false)
-        or self:_loadPluginVersionCache(CP_PLUGIN_CACHE, fcpVersion, locale, true)
-end
-
--- ensureDirectoryExists(rootPath, ...) -> string | nil
--- Function
--- Ensures all steps on a provided path exist. If not, attempts to create them.
--- If it fails, `nil` is returned.
---
--- Parameters:
---  * `rootPath` - The root path (should already exist).
---  * `...`      - The list of path steps to create
---
--- Returns:
---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
-local function ensureDirectoryExists(rootPath, ...)
-    local fullPath = rootPath
-    for _,path in ipairs(table.pack(...)) do
-        fullPath = fullPath .. "/" .. path
-        if not fs.pathToAbsolute(fullPath) then
-            local success, err = fs.mkdir(fullPath)
-            if not success then
-                log.ef("Problem ensuring that '%s' exists: %s", fullPath, err)
-                return nil
-            end
-        end
-    end
-    return fs.pathToAbsolute(fullPath)
+    return self:_loadPluginVersionCache(CP_FCP_CACHE_PATH, fcpVersion, locale, false)
+        or self:_loadPluginVersionCache(CP_PLUGIN_CACHE_PATH, fcpVersion, locale, true)
 end
 
 -- cp.apple.finalcutpro.plugins:_saveAppPluginCache(locale) -> boolean
@@ -1566,7 +1539,7 @@ function mod.mt:_saveAppPluginCache(locale)
         log.ef("Failed to translate Final Cut Pro version: %s", version)
         return false
     end
-    local path = ensureDirectoryExists("~/Library/Caches", "org.latenitefilms.CommandPost", "FinalCutPro", version)
+    local path = tools.ensureDirectoryExists("~/Library/Caches", "org.latenitefilms.CommandPost", "Final Cut Pro", version)
     if not path then
         return false
     end

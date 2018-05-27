@@ -26,6 +26,17 @@ local tools         = require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- cp.font.FONT_PATHS -> table
+--- Constant
+--- Table of all the locations on macOS that Fonts can be installed.
+mod.FONT_PATHS = {
+    "~/Library/Fonts/",
+    "/Library/Fonts/",
+    "/Network/Library/Fonts/",
+    "/System/Library/Fonts/",
+    "/System Folder/Fonts/",
+}
+
 -- cp.font.getFontFamilyFromFile(path) -> string | nil
 -- Function
 -- Gets the Font Family Name from a file.

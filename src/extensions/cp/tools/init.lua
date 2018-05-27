@@ -16,6 +16,7 @@ local log                                       = require("hs.logger").new("tool
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local application                               = require("hs.application")
 local base64                                    = require("hs.base64")
 local eventtap                                  = require("hs.eventtap")
 local fs                                        = require("hs.fs")
@@ -40,23 +41,70 @@ local config                                    = require("cp.config")
 local v                                         = require("semver")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local insert                                    = table.insert
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- LEFT_MOUSE_DOWN -> number
+-- Constant
+-- Left Mouse Down ID.
+local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
+
+-- LEFT_MOUSE_UP -> number
+-- Constant
+-- Left Mouse Up ID.
+local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
+
+-- CLICK_STATE -> number
+-- Constant
+-- Click State ID.
+local CLICK_STATE = eventtap.event.properties.mouseEventClickState
+
+-- DEFAULT_DELAY -> number
+-- Constant
+-- Default Delay.
+local DEFAULT_DELAY = 0
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local tools = {}
 
---------------------------------------------------------------------------------
--- CONSTANTS:
---------------------------------------------------------------------------------
-tools.DEFAULT_DELAY     = 0
-
---------------------------------------------------------------------------------
--- LOCAL VARIABLES:
---------------------------------------------------------------------------------
-local leftMouseDown     = eventtap.event.types["leftMouseDown"]
-local leftMouseUp       = eventtap.event.types["leftMouseUp"]
-local clickState        = eventtap.event.properties.mouseEventClickState
+-- string:split(delimiter) -> table
+-- Function
+-- Splits a string into a table, separated by a separator pattern.
+--
+-- Parameters:
+--  * delimiter - Separator pattern
+--
+-- Returns:
+--  * table
+function string:split(delimiter) -- luacheck: ignore
+   local list = {}
+   local pos = 1
+   if string.find("", delimiter, 1) then -- this would result in endless loops
+      error("delimiter matches empty string: %s", delimiter)
+   end
+   while true do
+      local first, last = self:find(delimiter, pos)
+      if first then -- found?
+         insert(list, self:sub(pos, first-1))
+         pos = last+1
+      else
+         insert(list, self:sub(pos))
+         break
+      end
+   end
+   return list
+end
 
 --- cp.tools.getKeysSortedByValue(tbl, sortFunction) -> table
 --- Function
@@ -71,7 +119,7 @@ local clickState        = eventtap.event.properties.mouseEventClickState
 function tools.getKeysSortedByValue(tbl, sortFunction)
     local keys = {}
     for key in pairs(tbl) do
-        table.insert(keys, key)
+        insert(keys, key)
     end
     table.sort(keys, function(a, b)
         return sortFunction(tbl[a], tbl[b])
@@ -123,7 +171,7 @@ end
 
 --- cp.tools.mergeTable(target, ...) -> table
 --- Function
---- Gives you the file system volume format of a path.
+--- Merges multiple tables into a target table.
 ---
 --- Parameters:
 ---  * target   - The target table
@@ -200,14 +248,14 @@ function tools.split(str, pat)
     local s, e, cap = str:find(fpat, 1)
     while s do
       if s ~= 1 or cap ~= "" then
-         table.insert(t,cap)
+         insert(t,cap)
       end
       last_end = e+1
       s, e, cap = str:find(fpat, last_end)
     end
     if last_end <= #str then
       cap = str:sub(last_end)
-      table.insert(t, cap)
+      insert(t, cap)
     end
     return t
 end
@@ -507,12 +555,21 @@ end
 ---  * String
 function tools.getEmail(fullname)
     if not fullname then return "" end
+    local contacts = application.get("Contacts")
+    local wasRunning = false
+    if contacts then
+        wasRunning = true
+    end
     local appleScript = [[
         tell application "Contacts"
             return value of first email of person "]] .. fullname .. [["
         end tell
     ]]
     local _,result = osascript.applescript(appleScript)
+    contacts = application.get("Contacts")
+    if contacts and not wasRunning then
+        contacts:kill()
+    end
     if result then
         return result
     else
@@ -727,7 +784,7 @@ function tools.lines(str)
         local function helper(line)
             line = tools.trim(line)
             if line ~= nil and line ~= "" then
-                table.insert(t, line)
+                insert(t, line)
             end
             return ""
         end
@@ -841,11 +898,11 @@ end
 --- Returns:
 ---  * None
 function tools.leftClick(point, delay, clickNumber)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     clickNumber = clickNumber or 1
-    eventtap.event.newMouseEvent(leftMouseDown, point):setProperty(clickState, clickNumber):post()
+    eventtap.event.newMouseEvent(LEFT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
     if delay > 0 then timer.usleep(delay) end
-    eventtap.event.newMouseEvent(leftMouseUp, point):setProperty(clickState, clickNumber):post()
+    eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
@@ -859,7 +916,7 @@ end
 --- Returns:
 ---  * None
 function tools.doubleLeftClick(point, delay)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     tools.leftClick(point, delay, 1)
     tools.leftClick(point, delay, 2)
 end
@@ -875,7 +932,7 @@ end
 --- Returns:
 ---  * None
 function tools.ninjaMouseClick(point, delay)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
@@ -893,7 +950,7 @@ end
 --- Returns:
 ---  * None
 function tools.ninjaDoubleClick(point, delay)
-    delay = delay or tools.DEFAULT_DELAY
+    delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.doubleLeftClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
@@ -1111,11 +1168,11 @@ end
 --- any contents recursively.
 ---
 --- Parameters:
---- * `path`        - The absolute path to remove
---- * `recursive`   - If `true`, the contents of the directory will be removed first.
+---  * `path`        - The absolute path to remove
+---  * `recursive`   - If `true`, the contents of the directory will be removed first.
 ---
 --- Returns:
---- * `true` if successful, or `nil, err` if there was a problem.
+---  * `true` if successful, or `nil, err` if there was a problem.
 function tools.rmdir(path, recursive)
     if recursive then
         -- remove the contents.
@@ -1197,28 +1254,45 @@ function tools.iconFallback(...)
     return config.iconPath
 end
 
---- cp.tools.readJSONFile(path) -> table or nil
+--- cp.tools.endsWith(str, ending) -> boolean
 --- Function
---- Attempts to read the specified path as a JSON file.
---- If the file cannot be found, `nil` is returned. If the file is
---- not a JSON file, an error will occur.
+--- Checks to see if `str` has the same ending as `ending`.
 ---
 --- Parameters:
---- * path      - The JSON file path.
+---  * str       - String to analysis
+---  * ending    - End of string to compare against
 ---
 --- Returns:
---- * The JSON file converted into table, or `nil`.
-function tools.readJSONFile(path)
-    local filePath = fs.pathToAbsolute(path)
-    if filePath then
-        local file = io.open(filePath, "r")
-        if file then
-            local content = file:read("*all")
-            file:close()
-            return json.decode(content)
+---  * table
+function tools.endsWith(str, ending)
+    local len = #ending
+    return str:len() >= len and str:sub(len * -1) == ending
+end
+
+--- cp.tools.ensureDirectoryExists(rootPath, ...) -> string | nil
+--- Function
+--- Ensures all steps on a provided path exist. If not, attempts to create them.
+--- If it fails, `nil` is returned.
+---
+--- Parameters:
+---  * `rootPath` - The root path (should already exist).
+---  * `...`      - The list of path steps to create
+---
+--- Returns:
+---  * The full path, if it exists, or `nil` if unable to create the directory for some reason.
+function tools.ensureDirectoryExists(rootPath, ...)
+    local fullPath = rootPath
+    for _,path in ipairs(table.pack(...)) do
+        fullPath = fullPath .. "/" .. path
+        if not fs.pathToAbsolute(fullPath) then
+            local success, err = fs.mkdir(fullPath)
+            if not success then
+                log.ef("Problem ensuring that '%s' exists: %s", fullPath, err)
+                return nil
+            end
         end
     end
-    return nil
+    return fs.pathToAbsolute(fullPath)
 end
 
 return tools

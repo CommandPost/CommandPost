@@ -25,14 +25,29 @@ local streamdeck                                = require("hs.streamdeck")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
+local json                                      = require("cp.json")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local mod = {}
+
+--- plugins.core.streamdeck.manager.DEFAULT_GROUP -> string
+--- Constant
+--- The default group.
+mod.DEFAULT_GROUP = "global"
+
+--- plugins.core.streamdeck.manager.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "Stream Deck.json"
+
+--- plugins.core.streamdeck.manager.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "Stream Deck"
 
 -- plugins.core.streamdeck.manager._groupStatus -> table
 -- Variable
@@ -52,12 +67,7 @@ mod.maxItems = 15
 --- plugins.core.streamdeck.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved Touch Bar Buttons
-mod._items = config.prop("streamDeckButtons", {})
-
---- plugins.core.streamdeck.manager.defaultGroup -> string
---- Variable
---- The default group.
-mod.defaultGroup = "global"
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.core.streamdeck.manager.clear() -> none
 --- Function
@@ -280,7 +290,7 @@ function mod.activeGroup()
             return group
         end
     end
-    return mod.defaultGroup
+    return mod.DEFAULT_GROUP
 
 end
 
