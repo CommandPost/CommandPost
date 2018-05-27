@@ -28,23 +28,8 @@ local fcp               = require("cp.apple.finalcutpro")
 local font              = require("cp.font")
 local json              = require("cp.json")
 local just              = require("cp.just")
+local prop              = require("cp.prop")
 local tools             = require("cp.tools")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- CP_FCP_CACHE_FOLDER -> string
--- Constant
--- Final Cut Pro Cache Folder Name.
-local CP_FCP_CACHE_FOLDER = "Final Cut Pro"
-
--- CP_FCP_CACHE_PATH -> string
--- Constant
--- User Plugin Cache Path.
-local CP_FCP_CACHE_PATH = config.cachePath .. "/" .. CP_FCP_CACHE_FOLDER
 
 --------------------------------------------------------------------------------
 --
@@ -53,18 +38,15 @@ local CP_FCP_CACHE_PATH = config.cachePath .. "/" .. CP_FCP_CACHE_FOLDER
 --------------------------------------------------------------------------------
 local mod = {}
 
--- doesCacheDirectoryExist() -> boolean
--- Function
--- Ensures the cache directory exists.
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if successful otherwise `false`
-local function doesCacheDirectoryExist()
-    return tools.ensureDirectoryExists("~/Library/Caches", hs.processInfo.bundleID, CP_FCP_CACHE_FOLDER) ~= nil
-end
+--- plugins.finalcutpro.console.font.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "Fonts.json"
+
+--- plugins.finalcutpro.console.font.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "Final Cut Pro"
 
 --- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
 --- Constant
@@ -95,15 +77,10 @@ mod.IGNORE_FONTS = {
     ["Refrigerator Deluxe Heavy"] = "Refrigerator Deluxe"   -- Obscure
 }
 
---- plugins.finalcutpro.console.font.CACHE_PATH -> string
---- Constant
---- Path to Font Cache.
-mod.CACHE_PATH = config.cachePath .. "/Final Cut Pro/Fonts.json"
-
---- plugins.finalcutpro.console.font.cachedFonts <cp.prop: table>
+--- plugins.finalcutpro.console.font.cachedFonts <cp.prop: table | nil>
 --- Field
---- Table of cached fonts
-mod.cachedFonts = config.prop("cachedFonts", nil)
+--- Table of cached fonts.
+mod.cachedFonts = json.prop(config.cachePath, mod.FOLDER_NAME, mod.FILE_NAME, nil)
 
 --- plugins.finalcutpro.console.font.getRunningFonts() -> none
 --- Function
@@ -380,7 +357,7 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     -- Get cached fonts:
     --------------------------------------------------------------------------------
-    local cachedFonts = json.read(mod.CACHE_PATH)
+    local cachedFonts = mod.cachedFonts()
 
     --------------------------------------------------------------------------------
     -- Display warning if this is the first time we've loaded fonts:
@@ -406,9 +383,7 @@ function mod.onChoices(choices)
         --------------------------------------------------------------------------------
         --log.df("Gatherering list of fonts in active use by Final Cut Pro.")
         fonts = mod.getRunningFonts()
-        if doesCacheDirectoryExist() then
-            json.write(mod.CACHE_PATH, fonts)
-        end
+        mod.cachedFonts(fonts)
     end
 
     --------------------------------------------------------------------------------

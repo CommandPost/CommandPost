@@ -51,16 +51,6 @@ mod.FILE_NAME = "Stream Deck.json"
 --- Folder Name where settings file is contained.
 mod.FOLDER_NAME = "Stream Deck"
 
---- plugins.core.streamdeck.manager.SETTINGS_PATH -> string
---- Constant
---- Settings Path.
-mod.SETTINGS_PATH = config.userConfigRootPath .. "/" .. mod.FOLDER_NAME
-
---- plugins.core.streamdeck.manager.SETTINGS_FILE_PATH -> string
---- Constant
---- Settings File Path.
-mod.SETTINGS_FILE_PATH = mod.SETTINGS_PATH .. "/" .. mod.FILE_NAME
-
 -- plugins.core.streamdeck.manager._groupStatus -> table
 -- Variable
 -- Group Statuses.
@@ -79,40 +69,7 @@ mod.maxItems = 15
 --- plugins.core.streamdeck.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved Touch Bar Buttons
-mod._items = prop.new(function()
-    --------------------------------------------------------------------------------
-    -- Getter:
-    --------------------------------------------------------------------------------
-        if tools.ensureDirectoryExists(config.userConfigRootPath, mod.FOLDER_NAME) then
-            if tools.doesFileExist(mod.SETTINGS_FILE_PATH) then
-                local result = json.read(mod.SETTINGS_FILE_PATH)
-                if result then
-                    return result
-                else
-                    log.ef("Failed to read Stream Deck Settings file: %s", mod.SETTINGS_FILE_PATH)
-                end
-            end
-        else
-            log.ef("Failed to create Stream Deck Settings folder: %s", mod.SETTINGS_PATH)
-        end
-        --------------------------------------------------------------------------------
-        -- Return Default Settings:
-        --------------------------------------------------------------------------------
-        return {}
-    end,
-    function(value)
-    --------------------------------------------------------------------------------
-    -- Setter:
-    --------------------------------------------------------------------------------
-        if tools.ensureDirectoryExists(config.userConfigRootPath, mod.FOLDER_NAME) then
-            local result = json.write(mod.SETTINGS_FILE_PATH, value)
-            if not result then
-                log.ef("Failed to save to Stream Deck Settings file: %s", mod.SETTINGS_FILE_PATH)
-            end
-        else
-            log.ef("Failed to create Stream Deck Settings folder: %s", mod.SETTINGS_PATH)
-        end
-    end)
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.core.streamdeck.manager.clear() -> none
 --- Function

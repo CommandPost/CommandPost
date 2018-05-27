@@ -11,13 +11,19 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("json")
+local log                                       = require("hs.logger").new("json")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local fs                                        = require("hs.fs")
 local json                                      = require("hs.json")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local prop                                      = require("cp.prop")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -94,7 +100,7 @@ function mod.encode(...)
     return json.encode(...)
 end
 
---- hs.json.decode(jsonString) -> table
+--- cp.json.decode(jsonString) -> table
 --- Function
 --- Decodes JSON into a table
 ---
@@ -108,6 +114,69 @@ end
 ---  * This is useful for retrieving some of the more complex lua table structures as a persistent setting (see `hs.settings`)
 function mod.decode(...)
     return json.decode(...)
+end
+
+--- cp.json.prop(folder, filename, defaultValue) -> cp.prop
+--- Function
+--- Returns a `cp.prop` instance for a JSON file.
+---
+--- Parameters:
+---  * path - The path to the JSON folder (i.e. "~/Library/Caches")
+---  * folder - The folder containing the JSON file (i.e. "Final Cut Pro")
+---  * filename - The filename of the JSON file (i.e. "Test.json")
+---  * defaultValue - The default value if the JSON file doesn't exist yet.
+---
+--- Returns:
+---  * A `cp.prop` instance.
+function mod.prop(path, folder, filename, defaultValue)
+
+    if not path then
+        log.ef("Folder is required for `cp.json.prop`.")
+        return nil
+    end
+    if not filename then
+        log.ef("Filename is required for `cp.json.prop`.")
+        return nil
+    end
+
+    local fullPath = path .. "/" .. folder
+    local fullFilePath = path .. "/" .. folder .. "/" .. filename
+
+    return prop.new(function()
+    --------------------------------------------------------------------------------
+    -- Getter:
+    --------------------------------------------------------------------------------
+        if tools.ensureDirectoryExists(path, folder) then
+            if tools.doesFileExist(fullFilePath) then
+                local result = mod.read(fullFilePath)
+                if result then
+                    return result
+                else
+                    log.ef("Failed to read JSON file: %s", fullFilePath)
+                end
+            end
+        else
+            log.ef("Failed to create JSON folder: %s", fullPath)
+        end
+        --------------------------------------------------------------------------------
+        -- Return Default Value:
+        --------------------------------------------------------------------------------
+        return defaultValue
+    end,
+    function(value)
+    --------------------------------------------------------------------------------
+    -- Setter:
+    --------------------------------------------------------------------------------
+        if tools.ensureDirectoryExists(path, folder) then
+            local result = mod.write(fullFilePath, value)
+            if not result then
+                log.ef("Failed to save JSON file: %s", fullFilePath)
+            end
+        else
+            log.ef("Failed to create JSON folder: %s", fullPath)
+        end
+    end)
+
 end
 
 return mod
