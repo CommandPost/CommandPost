@@ -26,8 +26,6 @@ local streamdeck                                = require("hs.streamdeck")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local json                                      = require("cp.json")
-local prop                                      = require("cp.prop")
-local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --

@@ -28,7 +28,6 @@ local fcp               = require("cp.apple.finalcutpro")
 local font              = require("cp.font")
 local json              = require("cp.json")
 local just              = require("cp.just")
-local prop              = require("cp.prop")
 local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------

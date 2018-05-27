@@ -27,7 +27,6 @@ local timer                                     = require("hs.timer")
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local json                                      = require("cp.json")
-local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
