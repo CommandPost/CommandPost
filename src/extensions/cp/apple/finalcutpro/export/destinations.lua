@@ -10,6 +10,7 @@ local log                       = require("hs.logger").new("destinations")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local fs                        = require("hs.fs")
 local pathwatcher               = require("hs.pathwatcher")
 
 --------------------------------------------------------------------------------
@@ -38,12 +39,28 @@ mod.PREFERENCES_PATH    = "~/Library/Preferences"
 --- cp.apple.finalcutpro.export.destinations.DESTINATIONS_FILE -> string
 --- Constant
 --- The Destinations File.
-mod.DESTINATIONS_FILE   = "com.apple.FinalCut.UserDestinations.plist"
+mod.DESTINATIONS_FILE   = "com.apple.FinalCut.UserDestinations"
+
+mod.DESTINATIONS_PATTERN = ".*" .. mod.DESTINATIONS_FILE .. "[1-9]%.plist"
 
 --- cp.apple.finalcutpro.export.destinations.DESTINATIONS_PATH -> string
 --- Constant
 --- The Destinations Path.
-mod.DESTINATIONS_PATH   = mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE
+mod.DESTINATIONS_PATH   = mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. ".plist"
+
+local function findDestinationsPath()
+    -- in some situations, you can end up with "com.apple.FinalCut.UserDestinations2.plist", and, one assumes 3, 4, etc.
+    local path = fs.pathToAbsolute(mod.DESTINATIONS_PATH)
+    if not path then -- try with numbers 1-9
+        for i=1,9 do
+            path = fs.pathToAbsolute(mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. tostring(i) .. ".plist")
+            if path then
+                return path
+            end
+        end
+    end
+    return path
+end
 
 -- load() -> table | nil, string
 -- Function
@@ -55,7 +72,7 @@ mod.DESTINATIONS_PATH   = mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE
 -- Returns:
 --  * None
 local function load()
-    local destinationsPlist, err = plist.fileToTable(mod.DESTINATIONS_PATH)
+    local destinationsPlist, err = plist.fileToTable(findDestinationsPath())
     if destinationsPlist then
         return archiver.unarchiveBase64(destinationsPlist.FFShareDestinationsKey).root
     else
@@ -76,8 +93,8 @@ local function watch()
     if not mod._watcher then
         mod._watcher = pathwatcher.new(mod.PREFERENCES_PATH, function(files)
             for _,file in pairs(files) do
-                if file:sub(string.len(mod.DESTINATIONS_FILE)*-1) == mod.DESTINATIONS_FILE then
-                  local err
+                if file:match(mod.DESTINATIONS_PATTERN) ~= nil then
+                    local err
                     mod._details, err = load()
                     if err then
                         log.wf("Unable to load FCPX User Destinations")
@@ -100,8 +117,13 @@ end
 ---  * The table of Share Destinations.
 function mod.details()
     if not mod._details then
-        mod._details = load()
-        watch()
+        local list, err = load()
+        if list then
+            mod._details = list
+            watch()
+        else
+            return list, err
+        end
     end
     return mod._details
 end
@@ -116,11 +138,11 @@ end
 --- Returns:
 ---  * The table of Share Destination names.
 function mod.names()
-    local list = mod.details()
+    local list, err = mod.details()
     if list then
         return _.map(list, function(_, e) return e.name end)
     else
-        return nil
+        return nil, err
     end
 end
 

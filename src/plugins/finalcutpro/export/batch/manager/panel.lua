@@ -227,6 +227,22 @@ function panel:addParagraph(priority, content, escaped, class)
     return self:addContent(priority, html.p { class=getClass({class=class}) } (content, escaped))
 end
 
+--- plugins.finalcutpro.export.batch.manager.panel:addStatus(priority, content, default) -> panel
+--- Method
+--- Adds a Paragraph to the panel
+---
+--- Parameters:
+---  * content - The content value
+---  * default - The default value to display if the `content` is `nil`. It will be displayed with a different style.
+---
+--- Returns:
+--- * The panel object.
+function panel:addStatus(priority, content, default)
+    return self:addParagraph(priority, function()
+        return content or html.span {class = "default"} (default)
+    end, false, "status")
+end
+
 --- plugins.finalcutpro.export.batch.manager.panel:addCheckbox(priority, params) -> panel
 --- Method
 --- Adds a checkbox to the panel with the specified `priority` and `params`.

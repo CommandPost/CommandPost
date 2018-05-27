@@ -33,7 +33,10 @@ local fcp           = require("cp.apple.finalcutpro")
 local just          = require("cp.just")
 local tools         = require("cp.tools")
 local html          = require("cp.web.html")
-local ui            = require("cp.web.ui")
+
+local destinations  = require("cp.apple.finalcutpro.export.destinations")
+
+local insert        = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -943,39 +946,17 @@ function mod.changeExportDestinationPreset()
         return false
     end
 
-    local destinations = {}
+    local destinationList = destinations.names() or {}
 
     if compressor:isInstalled() then
-        destinations[#destinations + 1] = i18n("sendToCompressor")
-    end
-
-    for i = 1, #shareMenuItems-2 do
-        local item = shareMenuItems[i]
-        local title = item:attributeValue("AXTitle")
-        if title ~= nil then
-            local value = string.sub(title, 1, -4)
-            --------------------------------------------------------------------------------
-            -- It's the default:
-            --------------------------------------------------------------------------------
-            if item:attributeValue("AXMenuItemCmdChar") then
-                --------------------------------------------------------------------------------
-                -- Remove (default) text:
-                --------------------------------------------------------------------------------
-                local firstBracket = string.find(value, " %(", 1)
-                if firstBracket == nil then
-                    firstBracket = string.find(value, "（", 1)
-                end
-                value = string.sub(value, 1, firstBracket - 1)
-            end
-            destinations[#destinations + 1] = value
-        end
+        insert(destinationList, 1, i18n("sendToCompressor"))
     end
 
     local batchExportDestinationPreset = config.get("batchExportDestinationPreset")
     local defaultItems = {}
     if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
 
-    local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinations, defaultItems)
+    local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, defaultItems)
     if result and #result > 0 then
         config.set("batchExportDestinationPreset", result[1])
     end
@@ -1372,9 +1353,6 @@ function plugin.init(deps)
         height      = 650,
     })
 
-        :addContent(nextID(), ui.style([[
-
-        ]]))
         :addHeading(nextID(), "Batch Export from Browser")
         :addParagraph(nextID(), function()
                 local clipCount = mod._clips and #mod._clips or 0
@@ -1383,14 +1361,7 @@ function plugin.init(deps)
                 return "Final Cut Pro will export the " ..  clipCountString .. "selected " ..  itemString .. " in the browser to the following location:"
             end)
         :addParagraph(nextID(), html.br())
-        :addContent(nextID(), function()
-                local destinationFolder = mod.getDestinationFolder()
-                if destinationFolder then
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationFolder .."</p></div>"
-                else
-                    return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Folder Selected</p>]]
-                end
-            end, false)
+        :addStatus(nextID(), mod.getDestinationFolder(), "No Destination Folder Selected")
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
@@ -1411,11 +1382,13 @@ function plugin.init(deps)
                     if trimmedDestinationPreset then
                         destinationPreset = trimmedDestinationPreset
                     end
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationPreset .."</p></div>"
+                    return html.div {style="white-space: nowrap; overflow: hidden;"} (
+                        html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationPreset)
+                    )
                 else
-                    return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Preset Selected</p>]]
+                    return html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} "No Destination Preset Selected"
                 end
-            end, false)
+            end)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
@@ -1430,11 +1403,13 @@ function plugin.init(deps)
                 local useCustomFilename = mod.useCustomFilename()
                 if useCustomFilename then
                     local customFilename = mod.customFilename() or mod.DEFAULT_CUSTOM_FILENAME
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. customFilename .."</p></div>"
+                    return html.div {style = "white-space: nowrap; overflow: hidden;"} (
+                        html.p {class = "uiItem", style = "color:#5760e7; font-weight:bold;"} (customFilename)
+                    )
                 else
-                    return [[<p class="uiItem" style="color:#3f9253; font-weight:bold;">Original Clip/Project Name</p>]]
+                    return html.p {class = "uiItem", style = "color:#3f9253; font-weight:bold"} "Original Clip/Project Name"
                 end
-            end, false)
+            end)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
@@ -1504,11 +1479,13 @@ function plugin.init(deps)
         :addContent(nextID(), function()
                 local destinationFolder = mod.getDestinationFolder()
                 if destinationFolder then
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationFolder .."</p></div>"
+                    return html.div {style="white-space: nowrap; overflow: hidden;"} (
+                        html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationFolder)
+                    )
                 else
-                    return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Folder Selected</p>]]
+                    html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} "No Destination Folder Selected"
                 end
-            end, false)
+            end)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
@@ -1529,11 +1506,13 @@ function plugin.init(deps)
                     if trimmedDestinationPreset then
                         destinationPreset = trimmedDestinationPreset
                     end
-                    return [[<div style="white-space: nowrap; overflow: hidden;"><p class="uiItem" style="color:#5760e7; font-weight:bold;">]] .. destinationPreset .."</p></div>"
+                    return html.div {style="white-space: nowrap; overflow: hidden;"} (
+                        html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationPreset)
+                    )
                 else
-                    return [[<p class="uiItem" style="color:#d1393e; font-weight:bold;">No Destination Preset Selected</p>]]
+                    return html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} ("No Destination Preset Selected")
                 end
-            end, false)
+            end)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
