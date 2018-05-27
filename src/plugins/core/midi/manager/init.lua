@@ -26,6 +26,8 @@ local timer                                     = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
+local json                                      = require("cp.json")
+local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -151,6 +153,31 @@ end
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
+--- plugins.core.midi.manager.DEFAULT_GROUP -> string
+--- Constant
+--- The default group.
+mod.DEFAULT_GROUP = "global"
+
+--- plugins.core.midi.manager.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "MIDI Controls.json"
+
+--- plugins.core.midi.manager.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "MIDI Controls"
+
+--- plugins.core.midi.manager.SETTINGS_PATH -> string
+--- Constant
+--- Settings Path.
+mod.SETTINGS_PATH = config.userConfigRootPath .. "/" .. mod.FOLDER_NAME
+
+--- plugins.core.midi.manager.SETTINGS_FILE_PATH -> string
+--- Constant
+--- Settings File Path.
+mod.SETTINGS_FILE_PATH = mod.SETTINGS_PATH .. "/" .. mod.FILE_NAME
 
 --- plugins.core.midi.manager.DEFAULT_MIDI_CONTROLS -> table
 --- Constant
@@ -526,10 +553,14 @@ mod.DEFAULT_MIDI_CONTROLS = {
 --- Whether or not the MIDI Manager is in learning mode.
 mod.learningMode = false
 
---
--- MIDI Device Names:
---
+-- plugins.core.midi.manager._deviceNames -> table
+-- Constant
+-- MIDI Device Names.
 mod._deviceNames = {}
+
+-- plugins.core.midi.manager._virtualDevices -> table
+-- Constant
+-- MIDI Virtual Devices.
 mod._virtualDevices = {}
 
 -- plugins.core.midi.manager._groupStatus -> table
@@ -580,12 +611,40 @@ mod.maxItems = 150
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved MIDI items
-mod._items = config.prop("midiControls", mod.DEFAULT_MIDI_CONTROLS)
-
---- plugins.core.midi.manager.defaultGroup -> string
---- Variable
---- The default group.
-mod.defaultGroup = "global"
+mod._items = prop.new(function()
+    --------------------------------------------------------------------------------
+    -- Getter:
+    --------------------------------------------------------------------------------
+        if tools.ensureDirectoryExists(config.userConfigRootPath, mod.FOLDER_NAME) then
+            if tools.doesFileExist(mod.SETTINGS_FILE_PATH) then
+                local result = json.read(mod.SETTINGS_FILE_PATH)
+                if result then
+                    return result
+                else
+                    log.ef("Failed to read MIDI Settings file: %s", mod.SETTINGS_FILE_PATH)
+                end
+            end
+        else
+            log.ef("Failed to create MIDI Settings folder: %s", mod.SETTINGS_PATH)
+        end
+        --------------------------------------------------------------------------------
+        -- Return Default Settings:
+        --------------------------------------------------------------------------------
+        return mod.DEFAULT_MIDI_CONTROLS
+    end,
+    function(value)
+    --------------------------------------------------------------------------------
+    -- Setter:
+    --------------------------------------------------------------------------------
+        if tools.ensureDirectoryExists(config.userConfigRootPath, mod.FOLDER_NAME) then
+            local result = json.write(mod.SETTINGS_FILE_PATH, value)
+            if not result then
+                log.ef("Failed to save to MIDI Settings file: %s", mod.SETTINGS_FILE_PATH)
+            end
+        else
+            log.ef("Failed to create MIDI Settings folder: %s", mod.SETTINGS_PATH)
+        end
+    end)
 
 --- plugins.core.midi.manager.clear() -> none
 --- Function
@@ -721,7 +780,7 @@ function mod.activeGroup()
             return group
         end
     end
-    return mod.defaultGroup
+    return mod.DEFAULT_GROUP
 
 end
 

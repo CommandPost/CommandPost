@@ -32,10 +32,39 @@ local tools             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- CP_FCP_CACHE_FOLDER -> string
+-- Constant
+-- Final Cut Pro Cache Folder Name.
+local CP_FCP_CACHE_FOLDER = "Final Cut Pro"
+
+-- CP_FCP_CACHE_PATH -> string
+-- Constant
+-- User Plugin Cache Path.
+local CP_FCP_CACHE_PATH = config.cachePath .. "/" .. CP_FCP_CACHE_FOLDER
+
+--------------------------------------------------------------------------------
+--
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- doesCacheDirectoryExist() -> boolean
+-- Function
+-- Ensures the cache directory exists.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if successful otherwise `false`
+local function doesCacheDirectoryExist()
+    return tools.ensureDirectoryExists("~/Library/Caches", hs.processInfo.bundleID, CP_FCP_CACHE_FOLDER) ~= nil
+end
 
 --- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
 --- Constant
@@ -377,7 +406,9 @@ function mod.onChoices(choices)
         --------------------------------------------------------------------------------
         --log.df("Gatherering list of fonts in active use by Final Cut Pro.")
         fonts = mod.getRunningFonts()
-        json.write(mod.CACHE_PATH, fonts)
+        if doesCacheDirectoryExist() then
+            json.write(mod.CACHE_PATH, fonts)
+        end
     end
 
     --------------------------------------------------------------------------------
