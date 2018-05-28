@@ -593,14 +593,16 @@ function mod.batchExportBrowserClips(clips)
         --------------------------------------------------------------------------------
         local needDelay = false
         just.doUntil(function()
-            local ui = fcp:UI()
-            local children = ui and ui:attributeValue("AXChildren")
+            local fcpUI = fcp:UI()
+            local children = fcpUI and fcpUI:attributeValue("AXChildren")
             local windows = children and axutils.childrenWithRole(children, "AXWindow")
             local hasSheet = false
-            for _, window in pairs(windows) do
-                local sheets = axutils.childrenWithRole(window, "AXSheet")
-                if #sheets ~= 0 then
-                    hasSheet = true
+            if windows then
+                for _, window in pairs(windows) do
+                    local sheets = axutils.childrenWithRole(window, "AXSheet")
+                    if #sheets ~= 0 then
+                        hasSheet = true
+                    end
                 end
             end
             if hasSheet then needDelay = true end
