@@ -588,6 +588,28 @@ function mod.batchExportBrowserClips(clips)
             end
         end
 
+        --------------------------------------------------------------------------------
+        -- Wait until all AXSheet's are gone:
+        --------------------------------------------------------------------------------
+        local needDelay = false
+        just.doUntil(function()
+            local ui = fcp:UI()
+            local children = ui and ui:attributeValue("AXChildren")
+            local windows = children and axutils.childrenWithRole(children, "AXWindow")
+            local hasSheet = false
+            for _, window in pairs(windows) do
+                local sheets = axutils.childrenWithRole(window, "AXSheet")
+                if #sheets ~= 0 then
+                    hasSheet = true
+                end
+            end
+            if hasSheet then needDelay = true end
+            return not hasSheet
+        end)
+        if needDelay then
+            just.wait(1)
+        end
+
     end
     return true
 end
