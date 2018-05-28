@@ -574,7 +574,13 @@ function menu.mt:findMenuUI(path, locale)
             end
             table.insert(currentPath, menuItemName)
         else
-            log.wf("Unable to find a menu matching '%s' (%s) in %s", inspect(step), locale, appLocale)
+            local stepString
+            if type(step) == "function" then
+                stepString = step()
+            else
+                stepString = step
+            end
+            log.wf("Unable to find a menu matching '%s' (%s) in %s", inspect(stepString), locale, appLocale)
             return nil
         end
     end
