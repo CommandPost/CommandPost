@@ -26,6 +26,7 @@ local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local font              = require("cp.font")
+local json              = require("cp.json")
 local just              = require("cp.just")
 local tools             = require("cp.tools")
 
@@ -35,6 +36,16 @@ local tools             = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+--- plugins.finalcutpro.console.font.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "Fonts.json"
+
+--- plugins.finalcutpro.console.font.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "Final Cut Pro"
 
 --- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
 --- Constant
@@ -65,10 +76,10 @@ mod.IGNORE_FONTS = {
     ["Refrigerator Deluxe Heavy"] = "Refrigerator Deluxe"   -- Obscure
 }
 
---- plugins.finalcutpro.console.font.cachedFonts <cp.prop: table>
+--- plugins.finalcutpro.console.font.cachedFonts <cp.prop: table | nil>
 --- Field
---- Table of cached fonts
-mod.cachedFonts = config.prop("cachedFonts", nil)
+--- Table of cached fonts.
+mod.cachedFonts = json.prop(config.cachePath, mod.FOLDER_NAME, mod.FILE_NAME, nil)
 
 --- plugins.finalcutpro.console.font.getRunningFonts() -> none
 --- Function
@@ -103,7 +114,7 @@ function mod.getRunningFonts()
                                     if ff then
                                         if ff.familyName ~= ".AppleSystemUIFont" then
                                             if ff.displayName == fontFamily and ff.familyName ~= fontFamily then
-                                                log.df("CHANGING FONT: %s", fontFamily)
+                                                --log.df("CHANGING FONT: %s", fontFamily)
                                                 fontFamily = ff.familyName
                                             end
                                         end
@@ -116,7 +127,7 @@ function mod.getRunningFonts()
                 end
             end
         else
-            log.ef("Failed to run lsof on Final Cut Pro.")
+            log.ef("Failed to run `lsof` on Final Cut Pro.")
         end
     end
     return result
@@ -265,7 +276,7 @@ function mod.onActivate(_, action, _)
             --------------------------------------------------------------------------------
             -- Trash Cache:
             --------------------------------------------------------------------------------
-            mod.cachedFonts(nil)
+            os.remove(mod.CACHE_PATH)
             if mod.activator then
                 mod.activator:refresh()
             end
@@ -343,9 +354,14 @@ end
 function mod.onChoices(choices)
 
     --------------------------------------------------------------------------------
+    -- Get cached fonts:
+    --------------------------------------------------------------------------------
+    local cachedFonts = mod.cachedFonts()
+
+    --------------------------------------------------------------------------------
     -- Display warning if this is the first time we've loaded fonts:
     --------------------------------------------------------------------------------
-    if not mod._warningDisplayed then
+    if not mod._warningDisplayed and not cachedFonts then
         dialog.displayMessage(i18n("fontScanConsoleInitalisationMessage"))
         mod._warningDisplayed = true
     end
@@ -353,11 +369,6 @@ function mod.onChoices(choices)
     local fonts
     local newFonts = {}
     local systemFonts = {}
-
-    --------------------------------------------------------------------------------
-    -- Get cached fonts:
-    --------------------------------------------------------------------------------
-    local cachedFonts = mod.cachedFonts()
 
     if cachedFonts then
         --------------------------------------------------------------------------------
@@ -369,6 +380,7 @@ function mod.onChoices(choices)
         --------------------------------------------------------------------------------
         -- Get a list of fonts currently being used by Final Cut Pro & Cache:
         --------------------------------------------------------------------------------
+        --log.df("Gatherering list of fonts in active use by Final Cut Pro.")
         fonts = mod.getRunningFonts()
         mod.cachedFonts(fonts)
     end

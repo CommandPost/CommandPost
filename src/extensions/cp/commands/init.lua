@@ -42,7 +42,10 @@ local commands = {}
 commands.mt = {}
 commands.mt.__index = commands.mt
 
-commands.defaultExtension = ".cpShortcuts"
+--- cp.commands.DEFAULT_EXTENSION -> string
+--- Constant
+--- The menubar position priority.
+commands.DEFAULT_EXTENSION = ".cpShortcuts"
 
 commands._groups = {}
 
@@ -51,7 +54,7 @@ commands._groups = {}
 --- Returns an array of IDs of command groups which have been created.
 ---
 --- Parameters:
---- * N/A
+--- * None
 ---
 --- Returns:
 ---  * `table` - The array of group IDs.
@@ -373,10 +376,6 @@ function commands.mt:loadShortcuts(data)
     end
 end
 
---------------------------------------------------------------------------------
--- GET HISTORY PATH:
---------------------------------------------------------------------------------
-
 --- cp.commands.getShortcutsPath(name) -> string
 --- Function
 --- Returns the path to the named shortcut set.
@@ -393,12 +392,8 @@ function commands.getShortcutsPath(name)
         end
     end
 
-    return shortcutsPath .. name .. commands.defaultExtension
+    return shortcutsPath .. name .. commands.DEFAULT_EXTENSION
 end
-
---------------------------------------------------------------------------------
--- GET HISTORY:
---------------------------------------------------------------------------------
 
 --- cp.commands.loadFromFile(name) -> boolean
 --- Function
@@ -442,10 +437,6 @@ function commands.loadFromFile(name)
     end
     return true
 end
-
---------------------------------------------------------------------------------
--- SET HISTORY:
---------------------------------------------------------------------------------
 
 --- cp.commands.saveToFile(name) -> boolean
 --- Function
