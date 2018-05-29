@@ -266,7 +266,7 @@ end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow:show() -> PrimaryWindow
 --- Method
---- Attempts to focus the specified window.
+--- Shows the Primary Window.
 ---
 --- Parameters:
 ---  * None

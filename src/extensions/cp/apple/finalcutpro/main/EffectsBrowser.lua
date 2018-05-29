@@ -563,8 +563,6 @@ function EffectsBrowser:applyItem(itemUI)
     return self
 end
 
-
-
 --- cp.apple.finalcutpro.main.EffectsBrowser:getCurrentTitles() -> table
 --- Method
 --- Returns the list of titles for all effects/transitions currently visible.
@@ -681,7 +679,7 @@ end
 
 --- cp.apple.finalcutpro.main.EffectsBrowser:search() -> PopUpButton
 --- Method
---- Gets the group.
+--- Gets the Search Popup Button object.
 ---
 --- Parameters:
 ---  * None

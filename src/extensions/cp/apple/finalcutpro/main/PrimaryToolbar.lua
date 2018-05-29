@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.main.PrimaryToolbar ===
 ---
---- Timeline Toolbar
+--- Timeline Toolbar.
 
 --------------------------------------------------------------------------------
 --
@@ -29,20 +29,47 @@ local CheckBox							= require("cp.ui.CheckBox")
 --------------------------------------------------------------------------------
 local PrimaryToolbar = {}
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryToolbar.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function PrimaryToolbar.matches(element)
     return element and element:attributeValue("AXRole") == "AXToolbar"
 end
 
+-- getParent(element) -> none
+-- Function
+-- Get the parent object of a `axuielementObject`.
+--
+-- Parameters:
+--  * element - A `axuielementObject`.
+--
+-- Returns:
+--  * The parent of the `element` as a `axuielementObject`.
 local function getParent(element)
     return element and element:attributeValue("AXParent")
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryToolbar.new(parent) -> PrimaryToolbar
+--- Constructor
+--- Creates a new `PrimaryToolbar` instance.
+---
+--- Parameters:
+---  * parent - The parent object.
+---
+--- Returns:
+---  * A new `PrimaryToolbar` object.
 function PrimaryToolbar.new(parent)
     local o = prop.extend({_parent = parent}, PrimaryToolbar)
 
-    -- a CheckBox instance to access the browser button.
+    --------------------------------------------------------------------------------
+    -- A CheckBox instance to access the browser button:
+    --------------------------------------------------------------------------------
     o._browserShowing = CheckBox.new(o, function()
         local group = axutils.childFromRight(o:UI(), 4)
         if group and group:attributeValue("AXRole") == "AXGroup" then
@@ -51,19 +78,26 @@ function PrimaryToolbar.new(parent)
         return nil
     end)
 
---- cp.apple.finalcutpro.main.PrimaryToolbar.browserShowing <cp.prop: boolean>
---- Field
---- If `true`, the browser panel is showing. Can be modified or watched.
+    --- cp.apple.finalcutpro.main.PrimaryToolbar.browserShowing <cp.prop: boolean>
+    --- Field
+    --- If `true`, the browser panel is showing. Can be modified or watched.
     o.browserShowing = o._browserShowing.checked:wrap(o)
 
-    -- watch for AXValueChanged notifications in the app for this CheckBox
+    --------------------------------------------------------------------------------
+    -- Watch for AXValueChanged notifications in the app for this CheckBox:
+    --------------------------------------------------------------------------------
     o:app():notifier():addWatcher("AXValueChanged", function(element)
         if element:attributeValue("AXRole") == "AXImage" then
             local eParent = getParent(element)
             if eParent then
-                -- browser showing check
+                --------------------------------------------------------------------------------
+                -- Browser showing check:
+                --------------------------------------------------------------------------------
                 local bsParent = getParent(o._browserShowing:UI())
-                if eParent == bsParent then -- update the checked status for any watchers.
+                if eParent == bsParent then
+                    --------------------------------------------------------------------------------
+                    -- Update the checked status for any watchers:
+                    --------------------------------------------------------------------------------
                     -- log.df("value changed: parent: %s", _inspect(eParent))
                     o._browserShowing.checked:update()
                 end
@@ -74,12 +108,28 @@ function PrimaryToolbar.new(parent)
     return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryToolbar:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
 function PrimaryToolbar:parent()
     return self._parent
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryToolbar:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function PrimaryToolbar:app()
     return self:parent():app()
 end
@@ -90,7 +140,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryToolbar:UI() -> axuielementObject
+--- Method
+--- Gets the Primary Toolbar UI.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `axuielementObject`
 function PrimaryToolbar:UI()
     return axutils.cache(self, "_ui", function()
         return axutils.childMatching(self:parent():UI(), PrimaryToolbar.matches)
@@ -98,7 +156,9 @@ function PrimaryToolbar:UI()
     PrimaryToolbar.matches)
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.PrimaryToolbar.isShowing <cp.prop: boolean>
+--- Variable
+--- Is the Primary Toolbar showing?
 PrimaryToolbar.isShowing = prop.new(function(self)
     return self:UI() ~= nil
 end):bind(PrimaryToolbar)
@@ -109,6 +169,15 @@ end):bind(PrimaryToolbar)
 --
 -----------------------------------------------------------------------
 
+--- cp.apple.finalcutpro.main.PrimaryToolbar:shareButton() -> Button
+--- Method
+--- Gets the Share Button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Button` object.
 function PrimaryToolbar:shareButton()
     if not self._shareButton then
         self._shareButton = Button.new(self, function() return axutils.childFromRight(self:UI(), 1) end)
@@ -116,6 +185,15 @@ function PrimaryToolbar:shareButton()
     return self._shareButton
 end
 
+--- cp.apple.finalcutpro.main.PrimaryToolbar:browserButton() -> CheckBox
+--- Method
+--- Gets the Browser Button Checkbox.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `CheckBox` object.
 function PrimaryToolbar:browserButton()
     if not self._browserButton then
         self._browserButton = CheckBox.new(self, function()
