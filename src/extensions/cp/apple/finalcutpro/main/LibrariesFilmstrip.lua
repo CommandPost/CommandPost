@@ -387,7 +387,7 @@ function LibrariesFilmstrip:showClipAt(index)
     return false
 end
 
---- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectClip(clip) -> boolean
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip.selectClip(clip) -> boolean
 --- Function
 --- Selects a clip.
 ---
@@ -396,7 +396,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful otherwise `false`.
-function LibrariesFilmstrip:selectClip(clip)
+function LibrariesFilmstrip.selectClip(clip)
     if clip then
         local clipUI = clip:UI()
         if axutils.isValid(clipUI) then
