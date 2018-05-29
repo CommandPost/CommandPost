@@ -472,7 +472,7 @@ end
 ---  * GeneratorInspector
 function Inspector:generator()
     if not self._generatorInspector then
-        self._generatorInspector = GeneratorInspector:new(self)
+        self._generatorInspector = GeneratorInspector.new(self)
     end
     return self._generatorInspector
 end
@@ -516,7 +516,7 @@ end
 ---  * EffectInspector
 function Inspector:effect()
     if not self._effectInspector then
-        self._effectInspector = EffectInspector:new(self)
+        self._effectInspector = EffectInspector.new(self)
     end
     return self._effectInspector
 end
@@ -582,7 +582,7 @@ end
 ---  * TransitionInspector
 function Inspector:transition()
     if not self._transitionInspector then
-        self._transitionInspector = TransitionInspector:new(self)
+        self._transitionInspector = TransitionInspector.new(self)
     end
     return self._transitionInspector
 end

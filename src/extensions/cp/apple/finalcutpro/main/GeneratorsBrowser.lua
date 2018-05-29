@@ -126,7 +126,7 @@ end
 -- TODO: Add documentation
 function GeneratorsBrowser:contents()
     if not self._contents then
-        self._contents = ScrollArea:new(self, function()
+        self._contents = ScrollArea.new(self, function()
             local group = axutils.childMatching(self:mainGroupUI(), function(child)
                 return child:role() == "AXGroup" and #child == 1
             end)

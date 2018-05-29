@@ -24,7 +24,7 @@ function ScrollArea.matches(element)
 end
 
 -- TODO: Add documentation
-function ScrollArea:new(parent, finderFn)
+function ScrollArea.new(parent, finderFn)
     local o = {_parent = parent, _finder = finderFn}
     setmetatable(o, self)
     self.__index = self

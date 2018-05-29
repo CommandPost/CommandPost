@@ -817,7 +817,7 @@ end
 ---  * the Browser
 function fcp:browser()
     if not self._browser then
-        self._browser = Browser:new(self)
+        self._browser = Browser.new(self)
     end
     return self._browser
 end

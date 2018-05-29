@@ -80,7 +80,7 @@ function Playhead.find(containerUI, skimming)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Playhead:new(parent, skimming, containerFn) -> Playhead
+--- cp.apple.finalcutpro.main.Playhead.new(parent, skimming, containerFn) -> Playhead
 --- Constructor
 --- Constructs a new Playhead
 ---

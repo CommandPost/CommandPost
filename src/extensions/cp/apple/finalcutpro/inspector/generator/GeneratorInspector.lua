@@ -25,8 +25,8 @@ local prop                              = require("cp.prop")
 --------------------------------------------------------------------------------
 local GeneratorInspector = {}
 
---- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:new(parent) -> GeneratorInspector object
---- Method
+--- cp.apple.finalcutpro.inspector.generator.GeneratorInspector.new(parent) -> GeneratorInspector object
+--- Constructor
 --- Creates a new GeneratorInspector object
 ---
 --- Parameters:
@@ -34,8 +34,7 @@ local GeneratorInspector = {}
 ---
 --- Returns:
 ---  * A GeneratorInspector object
--- TODO: Use a function instead of a method.
-function GeneratorInspector:new(parent) -- luacheck: ignore
+function GeneratorInspector.new(parent)
     local o = {
         _parent = parent,
         _child = {}
