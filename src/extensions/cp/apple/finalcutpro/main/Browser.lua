@@ -152,7 +152,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+-- _findBrowser(...) -> window | nil
+-- Function
+-- Gets the Browser UI.
+--
+-- Parameters:
+--  * ... - Table of windows.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
 function Browser._findBrowser(...)
     for i = 1,select("#", ...) do
         local window = select(i, ...)
