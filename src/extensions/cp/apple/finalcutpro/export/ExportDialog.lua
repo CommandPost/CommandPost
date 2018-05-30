@@ -35,23 +35,6 @@ local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveS
 --------------------------------------------------------------------------------
 local ExportDialog = {}
 
-
--- _findWindowUI(windows) -> window | nil
--- Function
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-local function _findWindowUI(windows)
-    for _,window in ipairs(windows) do
-        if ExportDialog.matches(window) then return window end
-    end
-    return nil
-end
-
 --- cp.apple.finalcutpro.export.ExportDialog.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
@@ -84,8 +67,7 @@ function ExportDialog.new(app)
 
     local UI = app.windowsUI:mutate(function(original, self)
         return axutils.cache(self, "_ui", function()
-            local windowsUI = original()
-            return windowsUI and _findWindowUI(windowsUI)
+            return axutils.childMatching(original(), ExportDialog.matches)
         end,
         ExportDialog.matches)
     end)
