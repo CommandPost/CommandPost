@@ -224,10 +224,20 @@ mod.enabled = config.prop("enableTouchBar", false):watch(function(enabled)
     end
 end)
 
+--------------------------------------------------------------------------------
+-- Workaround for legacy (plist) Touch Bar Buttons:
+--------------------------------------------------------------------------------
+local defaultControls = {}
+local legacyControls = config.get("touchBarButtons", nil)
+if legacyControls then
+    defaultControls = legacyControls
+    config.set("touchBarButtons", nil)
+end
+
 --- plugins.core.touchbar.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved Touch Bar Buttons
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
 
 --- plugins.core.touchbar.manager.supported <cp.prop: boolean; read-only>
 --- Field
