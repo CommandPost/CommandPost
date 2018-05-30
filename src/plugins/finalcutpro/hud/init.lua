@@ -274,10 +274,14 @@ local function getEnv()
 
     env.debugMode   = config.developerMode()
 
-    local playerQuality = fcp:getPreference("FFPlayerQuality", fcp.PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE)
+    local viewer = fcp:viewer()
 
-    if playerQuality == fcp.PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE then
+    if viewer:usingProxies() then
         env.media   = {
+            text    = i18n("proxy"),
+            class   = "bad",
+        }
+        env.quality = {
             text    = i18n("proxy"),
             class   = "bad",
         }
@@ -286,18 +290,17 @@ local function getEnv()
             text    = i18n("originalOptimised"),
             class   = "good",
         }
-    end
-
-    if playerQuality == fcp.PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY then
-        env.quality = {
-            text    = i18n("betterQuality"),
-            class   = "good",
-        }
-    else
-        env.quality = {
-            text    = playerQuality == fcp.PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE and i18n("betterPerformance") or i18n("proxy"),
-            class   = "bad",
-        }
+        if viewer:betterQuality() then
+            env.quality = {
+                text    = i18n("betterQuality"),
+                class   = "good",
+            }
+        else
+            env.quality = {
+                text    = i18n("betterPerformance"),
+                class   = "bad",
+            }
+        end
     end
 
     local backgroundRender  = fcp:getPreference("FFAutoStartBGRender", true)

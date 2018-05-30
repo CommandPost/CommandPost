@@ -27,6 +27,7 @@ checkbox {
 select {
 	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAALCAAAAACW+8h0AAAAOUlEQVQI12NwdExaFOvoyOAYNG/hnABHhqB5nZ69cwIY5na5Orr2zmJwhAAMGiYPUw/T7+iYDDIPAPKdHMdxG+BNAAAAAElFTkSuQmCC) no-repeat 95% 50%;
 	-webkit-appearance: none;
+	appearance: none;
 	text-shadow:0 1px 0 rgba(0,0,0,0.4);
 	background-color: rgba(65,65,65,1);
 	color: #bfbfbc;
@@ -76,6 +77,7 @@ select {
 }
 .textarea {
 	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
 	padding: 4px 4px;
 	margin: 10px 0px;
 	background-color: #161616;
@@ -93,6 +95,17 @@ select {
 	margin-bottom: 2px;
 	margin-right: 0px;
 	margin-left: 0px;
+}
+
+.status {
+	color: #5760e7;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.status .default {
+	color: #d1393e;
 }
 
 h3.uiItem {
@@ -121,9 +134,12 @@ hr {
 .api input[type=text] {
 	float: left;
 	-webkit-appearance: none;
+	appearance: none;
 	-webkit-box-shadow: none;
+	box-shadow: none;
 	-webkit-rtl-ordering: logical;
 	-webkit-user-select: text;
+	user-select: text;
 	color: #959595;
 	background-color:#161616;
 	border-style: solid;
@@ -139,9 +155,12 @@ hr {
 .api input[type=text]:focus {
 	float: left;
 	-webkit-appearance: none;
+	appearance: none;
 	-webkit-box-shadow: none;
+	box-shadow: none;
 	-webkit-rtl-ordering: logical;
 	-webkit-user-select: text;
+	user-select: text;
 	color: #959595;
 	border-style: solid;
 	border-color: #1a3868;

@@ -67,17 +67,12 @@ function mod.set()
     -- Ask user what to set the backup interval to:
     --------------------------------------------------------------------------------
     local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage(i18n("changeBackupIntervalTextbox"), i18n("changeBackupIntervalError"), FFPeriodicBackupInterval)
-    if not userSelectedBackupInterval then
-        return "Cancel"
-    end
 
     --------------------------------------------------------------------------------
     -- Update plist:
     --------------------------------------------------------------------------------
-    local result = fcp:setPreference(PREFERENCES_KEY, tostring(userSelectedBackupInterval))
-    if result == nil then
-        dialog.displayErrorMessage(i18n("backupIntervalFail"))
-        return "Failed"
+    if userSelectedBackupInterval then
+        fcp:setPreference(PREFERENCES_KEY, tostring(userSelectedBackupInterval))
     end
 end
 

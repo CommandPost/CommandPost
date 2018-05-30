@@ -48,6 +48,9 @@ local mod = {}
 --- Show Timeline in Player Enabled?
 mod.enabled = prop.new(
     function()
+        --------------------------------------------------------------------------------
+        -- Get Preference:
+        --------------------------------------------------------------------------------
         local value = fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
         if value == 1 then
             value = true
@@ -56,22 +59,16 @@ mod.enabled = prop.new(
         end
         return value
     end,
-
     function(value)
-
+        --------------------------------------------------------------------------------
+        -- Set Preference:
+        --------------------------------------------------------------------------------
         if value then
             value = 1
         else
             value = 0
         end
-
-        --------------------------------------------------------------------------------
-        -- Update plist:
-        --------------------------------------------------------------------------------
-        if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-            dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-            return
-        end
+        fcp:setPreference(PREFERENCES_KEY, value)
     end
 )
 

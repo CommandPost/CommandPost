@@ -76,12 +76,7 @@ end)
 ---  * String containing the Proxy Title
 function mod.generateProxyTitle()
     if mod.enabled() then
-        local FFPlayerQuality = fcp:getPreference("FFPlayerQuality")
-        if FFPlayerQuality == fcp.PLAYER_QUALITY.PROXY then
-            return " " .. mod.PROXY_ICON
-        else
-            return " " .. mod.ORIGINAL_ICON
-        end
+        return fcp:viewer():usingProxies() and " " .. mod.PROXY_ICON or " " .. mod.ORIGINAL_ICON
     end
     return ""
 end

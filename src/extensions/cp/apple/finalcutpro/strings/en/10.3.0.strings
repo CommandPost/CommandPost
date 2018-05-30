@@ -4,14 +4,12 @@
 <plist version="1.0">
 <dict>
     <key>CPViewerViewOptimized</key>
-    <string>最適化／オリジナル</string>
+    <string>Optimized/Original</string>
     <key>CPViewerViewProxy</key>
-    <string>プロキシ</string>
+    <string>Proxy</string>
     <key>CPViewerViewBetterQuality</key>
-    <string>高品質</string>
+    <string>Better Quality</string>
     <key>CPViewerViewBetterPerformance</key>
-    <string>パフォーマンス優先</string>
-    <key>CPColorBoardMidtones</key>
-    <string>中間色調</string>
+    <string>Better Performance</string>
 </dict>
 </plist>
