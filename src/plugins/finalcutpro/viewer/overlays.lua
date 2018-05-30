@@ -578,15 +578,15 @@ function mod.setCustomGridColor()
     hs.focus()
 end
 
---- contextualMenu(event) -> none
---- Function
---- Builds the Final Cut Pro Overlay contextual menu.
----
---- Parameters:
----  * event - The `hs.eventtap` event
----
---- Returns:
----  * None
+-- contextualMenu(event) -> none
+-- Function
+-- Builds the Final Cut Pro Overlay contextual menu.
+--
+-- Parameters:
+--  * event - The `hs.eventtap` event
+--
+-- Returns:
+--  * None
 local function contextualMenu(event)
     local ui = fcp:viewer():UI()
     local topBar = ui and axutils.childFromTop(ui, 1)
