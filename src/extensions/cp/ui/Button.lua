@@ -116,7 +116,7 @@ function Button:isEnabled()
     return ui ~= nil and ui:enabled()
 end
 
---- cp.ui.Button:press() -> self
+--- cp.ui.Button:press() -> self, boolean
 --- Method
 --- Performs a button press action, if the button is available.
 ---
@@ -125,10 +125,12 @@ end
 ---
 --- Returns:
 --- * The `Button` instance.
+--- * `true` if the button was actually pressed successfully.
 function Button:press()
+    local success = false
     local ui = self:UI()
-    if ui then ui:doPress() end
-    return self
+    if ui then success = ui:doPress() == true end
+    return self, success
 end
 
 -- Allows the button to be called like a function which will trigger a `press`.

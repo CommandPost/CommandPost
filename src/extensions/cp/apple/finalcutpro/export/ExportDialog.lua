@@ -11,7 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                           = require("hs.logger").new("PrefsDlg")
+local log                           = require("hs.logger").new("PrefsDlg")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -23,6 +23,7 @@
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local id                            = require("cp.apple.finalcutpro.ids") "ExportDialog"
+local dialog                        = require("cp.dialog")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
@@ -119,23 +120,91 @@ ExportDialog.isShowing = prop.new(function(self)
     return self:UI() ~= nil
 end):bind(ExportDialog)
 
---- cp.apple.finalcutpro.export.ExportDialog:show() -> cp.apple.finalcutpro.export.ExportDialog
+local function isDefaultItem(menuItem)
+    return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
+end
+
+local destinationFormat = "(.+)…"
+
+--- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
 --- Method
---- Shows the Export Dialog
+--- Shows the Export Dialog with the Destination that matches the `destinationSelect`.
 ---
 --- Parameters:
----  * None
+---  * destinationSelect    - The name, number or match function of the destination to export with.
+---  * ignoreProxyWarning   - if `true`, the warning regarding exporting Proxies will be ignored.
+---  * ignoreMissingMedia   - if `true`, the warning regarding exporting with missing media will be ignored.
+---  * quiet                - if `true`, no dialogs will be shown if there is an error.
 ---
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.ExportDialog` object for method chaining.
-function ExportDialog:show()
+---  * If an error occurred, the message is returned as the second value
+---
+--- Notes:
+--- * If providing a function, it will be passed one item - the name of the destination, and should return `true` to indicate a match. The name will not contain " (default)" if present.
+function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet)
     if not self:isShowing() then
+        if destinationSelect == nil then
+            destinationSelect = isDefaultItem
+        elseif type(destinationSelect) ~= "number" then
+            local defaultFormat = self:app().strings:find("FFShareDefaultApplicationFormat")
+            defaultFormat = defaultFormat:gsub("([()])", "%%%1"):gsub("%%@", "(.+)") .. "…"
+            local dest = destinationSelect
+            -- this function will match based on the destination title, minus "(default)" and "…" if present.
+            destinationSelect = function(menuItem)
+                local title = menuItem:attributeValue("AXTitle")
+                if title == nil then
+                    return false
+                elseif isDefaultItem(menuItem) then
+                    title = title:match(defaultFormat)
+                else
+                    title = title:match(destinationFormat)
+                end
+                return type(dest) == "function" and dest(title) or title == tostring(dest)
+            end
+        end
         --------------------------------------------------------------------------------
         -- Open the window:
         --------------------------------------------------------------------------------
-        if self:app():menu():isEnabled({"File", "Share", 1}) then
-            self:app():menu():selectMenu({"File", "Share", 1})
-            just.doUntil(function() return self:UI() end)
+        local fcp = self:app()
+        local menuItem = fcp:menu():findMenuUI({"File", "Share", destinationSelect})
+        if menuItem:attributeValue("AXEnabled") then
+            menuItem:doPress()
+
+            local alert = fcp:alert()
+
+            local counter = 0
+            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+            local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
+            while not self:isShowing() and counter < 100 do
+                if alert:isShowing() then
+                    if alert:containsText(proxyPlaybackEnabled, true) then
+                        if ignoreProxyWarning then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportProxyFilesDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
+                    elseif alert:containsText(missingMedia) then
+                        if ignoreMissingMedia then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportMissingFilesDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
+                    else
+                        local msg = i18n("batchExportUnexpectedAlert")
+                        return self, msg
+                    end
+                else
+                    just.wait(0.1)
+                end
+                counter = counter + 1
+            end
         end
     end
     return self

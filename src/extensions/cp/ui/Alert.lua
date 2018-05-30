@@ -92,14 +92,14 @@ end
 
 -- TODO: Add documentation
 function Alert:pressCancel()
-    self:cancel():press()
-    return self
+    local _, success = self:cancel():press()
+    return self, success
 end
 
 -- TODO: Add documentation
 function Alert:pressDefault()
-    self:default():press()
-    return self
+    local _, success = self:default():press()
+    return self, success
 end
 
 --- cp.ui.Alert:containsText(value[, plain]) -> boolean

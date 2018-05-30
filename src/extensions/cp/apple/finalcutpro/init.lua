@@ -173,15 +173,6 @@ fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd"
 --- Table of all file extensions Final Cut Pro can import.
 fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
 
---- cp.apple.finalcutpro.PLAYER_QUALITY
---- Constant
---- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
-fcp.PLAYER_QUALITY = {
-    ["ORIGINAL_BETTER_QUALITY"]     = 10,
-    ["ORIGINAL_BETTER_PERFORMANCE"] = 5,
-    ["PROXY"]                       = 4,
-}
-
 --- cp.apple.finalcutpro:init() -> App
 --- Function
 --- Initialises the app instance representing Final Cut Pro.
@@ -972,7 +963,7 @@ end
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
 function fcp:getPreference(key, default)
-    return self.app.preferences[key] or default
+    return self.app.preferences()[key] or default
 end
 
 --- cp.apple.finalcutpro:setPreference(key, value) -> nil
@@ -986,7 +977,7 @@ end
 --- Returns:
 ---  * `nil`
 function fcp:setPreference(key, value)
-    self.app.preferences[key] = value
+    self.app.preferences()[key] = value
 end
 
 --- cp.apple.finalcutpro:importXML(path) -> boolean

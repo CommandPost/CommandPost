@@ -25,7 +25,6 @@ local mouse         = require("hs.mouse")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils       = require("cp.ui.axutils")
 local compressor    = require("cp.apple.compressor")
 local config        = require("cp.config")
 local dialog        = require("cp.dialog")
@@ -97,21 +96,6 @@ mod.ignoreMissingEffects = config.prop("batchExportIgnoreMissingEffects", false)
 --- Defines whether or not a Batch Export should Ignore Proxies.
 mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
 
--- selectShare() -> boolean
--- Function
--- Select Share Destination from the Final Cut Pro Menubar
---
--- Parameters:
---  * None
---
--- Returns:
---  * `true` if successful otherwise `false`
-local function selectShare(destinationPreset)
-    return fcp:selectMenu({"File", "Share", function(menuItem)
-        local title = menuItem:attributeValue("AXTitle")
-        return title and destinationPreset and string.sub(title, 1, string.len(destinationPreset)) == destinationPreset
-    end})
-end
 
 --- plugins.finalcutpro.export.batch.sendTimelineClipsToCompressor(clips) -> boolean
 --- Function
@@ -398,7 +382,7 @@ function mod.batchExportBrowserClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure Libraries panel is focussed:
+        -- Make sure Libraries panel is focused:
         --------------------------------------------------------------------------------
         fcp:selectMenu({"Window", "Go To", "Libraries"})
 
@@ -417,97 +401,10 @@ function mod.batchExportBrowserClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Trigger Export:
-        --------------------------------------------------------------------------------
-        if not selectShare(destinationPreset) then
-            dialog.displayErrorMessage("Could not trigger Share Menu Item." .. errorFunction)
-            return false
-        end
-
-        --------------------------------------------------------------------------------
         -- Wait for Export Dialog to open:
         --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
-
-        --------------------------------------------------------------------------------
-        -- Handle this dialog box:
-        --
-        -- This project is currently set to use proxy media.
-        -- FFShareProxyPlaybackEnabledMessageText
-        --------------------------------------------------------------------------------
-        if not just.doUntil(function() return exportDialog:isShowing() end) then
-            local windowUIs = fcp:windowsUI()
-            if windowUIs then
-                for _, windowUI in pairs(windowUIs) do
-                    local sheets = axutils.childrenWithRole(windowUI, "AXSheet")
-                    if sheets then
-                        for _, sheet in pairs(sheets) do
-                            local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
-                                if child and child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == fcp:string("FFShareProxyPlaybackEnabledMessageText") then
-                                    return child
-                                end
-                            end)
-                            if matchingSheet and #matchingSheet == 1 and continueButton then
-                                if mod.ignoreProxies() then
-                                    --------------------------------------------------------------------------------
-                                    -- Press the 'Continue' button:
-                                    --------------------------------------------------------------------------------
-                                    continueButton:performAction("AXPress")
-                                else
-                                    dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
-                                    return false
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Handle this dialog box:
-        --
-        -- “%@” has missing or offline titles, effects, generators, or media.
-        -- FFMissingMediaMessageText
-        --------------------------------------------------------------------------------
-        if not just.doUntil(function() return exportDialog:isShowing() end) then
-            local triggerError = true
-            local windowUIs = fcp:windowsUI()
-            if windowUIs then
-                for _, windowUI in pairs(windowUIs) do
-                    local sheets = axutils.childrenWithRole(windowUI, "AXSheet")
-                    if sheets then
-                        for _, sheet in pairs(sheets) do
-                            local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
-                                if child and child:attributeValue("AXRole") == "AXStaticText" and string.find(child:attributeValue("AXValue"), string.gsub(fcp:string("FFMissingMediaMessageText"), [[“%%@” ]], "")) then
-                                    return child
-                                end
-                            end)
-                            if matchingSheet and #matchingSheet == 1 and continueButton then
-                                if mod.ignoreMissingEffects() then
-                                    --------------------------------------------------------------------------------
-                                    -- Press the 'Continue' button:
-                                    --------------------------------------------------------------------------------
-                                    result = continueButton:performAction("AXPress")
-                                    if result ~= nil then
-                                        triggerError = false
-                                    end
-                                else
-                                    dialog.displayMessage(i18n("batchExportMissingFilesDetected"))
-                                    return false
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            if triggerError then
-                dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-                return false
-            end
-        end
+        exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
 
         --------------------------------------------------------------------------------
         -- Press 'Next':
@@ -592,24 +489,16 @@ function mod.batchExportBrowserClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Wait until all AXSheet's are gone:
+        -- Wait until all AXSheets are gone:
         --------------------------------------------------------------------------------
         local needDelay = false
-        just.doUntil(function()
-            local fcpUI = fcp:UI()
-            local children = fcpUI and fcpUI:attributeValue("AXChildren")
-            local windows = children and axutils.childrenWithRole(children, "AXWindow")
-            local hasSheet = false
-            if windows then
-                for _, window in pairs(windows) do
-                    local sheets = axutils.childrenWithRole(window, "AXSheet")
-                    if #sheets ~= 0 then
-                        hasSheet = true
-                    end
-                end
+        just.doWhile(function()
+            if fcp:alert():isShowing() then
+                needDelay = true
+                return true
+            else
+                return false
             end
-            if hasSheet then needDelay = true end
-            return not hasSheet
         end)
         if needDelay then
             just.wait(1)
@@ -772,95 +661,8 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
-        if not selectShare(destinationPreset) then
-            dialog.displayErrorMessage("Could not trigger Share Menu Item." .. errorFunction)
-            return false
-        end
-
-        --------------------------------------------------------------------------------
-        -- Wait for Export Dialog to open:
-        --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
-
-        --------------------------------------------------------------------------------
-        -- Handle this dialog box:
-        --
-        -- This project is currently set to use proxy media.
-        -- FFShareProxyPlaybackEnabledMessageText
-        --------------------------------------------------------------------------------
-        if not just.doUntil(function() return exportDialog:isShowing() end) then
-            local windowUIs = fcp:windowsUI()
-            if windowUIs then
-                for _, windowUI in pairs(windowUIs) do
-                    local sheets = axutils.childrenWithRole(windowUI, "AXSheet")
-                    if sheets then
-                        for _, sheet in pairs(sheets) do
-                            local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
-                                if child and child:attributeValue("AXRole") == "AXStaticText" and child:attributeValue("AXValue") == fcp:string("FFShareProxyPlaybackEnabledMessageText") then
-                                    return child
-                                end
-                            end)
-                            if matchingSheet and #matchingSheet == 1 and continueButton then
-                                if mod.ignoreProxies() then
-                                    --------------------------------------------------------------------------------
-                                    -- Press the 'Continue' button:
-                                    --------------------------------------------------------------------------------
-                                    continueButton:performAction("AXPress")
-                                else
-                                    dialog.displayMessage(i18n("batchExportProxyFilesDetected"))
-                                    return false
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-        --------------------------------------------------------------------------------
-        -- Handle this dialog box:
-        --
-        -- “%@” has missing or offline titles, effects, generators, or media.
-        -- FFMissingMediaMessageText
-        --------------------------------------------------------------------------------
-        if not just.doUntil(function() return exportDialog:isShowing() end) then
-            local triggerError = true
-            local windowUIs = fcp:windowsUI()
-            if windowUIs then
-                for _, windowUI in pairs(windowUIs) do
-                    local sheets = axutils.childrenWithRole(windowUI, "AXSheet")
-                    if sheets then
-                        for _, sheet in pairs(sheets) do
-                            local continueButton = axutils.childWith(sheet, "AXTitle", fcp:string("FFMissingMediaDefaultButtonText"))
-                            local matchingSheet = axutils.childrenMatching(sheet, function(child)
-                                if child and child:attributeValue("AXRole") == "AXStaticText" and string.find(child:attributeValue("AXValue"), string.gsub(fcp:string("FFMissingMediaMessageText"), [[“%%@” ]], "")) then
-                                    return child
-                                end
-                            end)
-                            if matchingSheet and #matchingSheet == 1 and continueButton then
-                                if mod.ignoreMissingEffects() then
-                                    --------------------------------------------------------------------------------
-                                    -- Press the 'Continue' button:
-                                    --------------------------------------------------------------------------------
-                                    result = continueButton:performAction("AXPress")
-                                    if result ~= nil then
-                                        triggerError = false
-                                    end
-                                else
-                                    dialog.displayMessage(i18n("batchExportMissingFilesDetected"))
-                                    return false
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            if triggerError then
-                dialog.displayErrorMessage("Failed to open the 'Export' window." .. errorFunction)
-                return false
-            end
-        end
+        exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
 
         --------------------------------------------------------------------------------
         -- Press 'Next':
