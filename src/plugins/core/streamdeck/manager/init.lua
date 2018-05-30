@@ -61,17 +61,27 @@ mod._streamDeck = {}
 
 --- plugins.core.streamdeck.manager.maxItems -> number
 --- Variable
---- The maximum number of Touch Bar items per group.
+--- The maximum number of Stream Deck items per group.
 mod.maxItems = 15
+
+--------------------------------------------------------------------------------
+-- Workaround for legacy (plist) Stream Deck Buttons:
+--------------------------------------------------------------------------------
+local defaultControls = {}
+local legacyControls = config.get("streamDeckButtons", nil)
+if legacyControls then
+    defaultControls = legacyControls
+    config.set("streamDeckButtons", nil)
+end
 
 --- plugins.core.streamdeck.manager.buttons <cp.prop: table>
 --- Field
---- Contains all the saved Touch Bar Buttons
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
+--- Contains all the saved Stream Deck Buttons
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
 
 --- plugins.core.streamdeck.manager.clear() -> none
 --- Function
---- Clears the Touch Bar items.
+--- Clears the Stream Deck items.
 ---
 --- Parameters:
 ---  * None
@@ -85,7 +95,7 @@ end
 
 --- plugins.core.streamdeck.manager.updateIcon(button, group, icon) -> none
 --- Function
---- Updates a Touch Bar icon.
+--- Updates a Stream Deck icon.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -113,7 +123,7 @@ end
 
 --- plugins.core.streamdeck.manager.updateAction(button, group, action) -> none
 --- Function
---- Updates a Touch Bar action.
+--- Updates a Stream Deck action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -152,7 +162,7 @@ end
 
 --- plugins.core.streamdeck.manager.updateLabel(button, group, label) -> none
 --- Function
---- Updates a Touch Bar action.
+--- Updates a Stream Deck action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -180,7 +190,7 @@ end
 
 --- plugins.core.streamdeck.manager.getIcon(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Icon.
+--- Returns a specific Stream Deck Icon.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -199,7 +209,7 @@ end
 
 --- plugins.core.streamdeck.manager.getActionTitle(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Action Title.
+--- Returns a specific Stream Deck Action Title.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -218,7 +228,7 @@ end
 
 --- plugins.core.streamdeck.manager.getActionHandlerID(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Action Handler ID.
+--- Returns a specific Stream Deck Action Handler ID.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -237,7 +247,7 @@ end
 
 --- plugins.core.streamdeck.manager.getAction(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Action.
+--- Returns a specific Stream Deck Action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -256,7 +266,7 @@ end
 
 --- plugins.core.streamdeck.manager.getLabel(button, group) -> string
 --- Function
---- Returns a specific Touch Bar Label.
+--- Returns a specific Stream Deck Label.
 ---
 --- Parameters:
 ---  * button - Button ID as string
@@ -382,7 +392,7 @@ end
 
 --- plugins.core.streamdeck.manager.update() -> none
 --- Function
---- Updates the Touch Bar.
+--- Updates the Stream Deck.
 ---
 --- Parameters:
 ---  * None
@@ -543,7 +553,7 @@ end
 
 --- plugins.core.streamdeck.manager.enabled <cp.prop: boolean>
 --- Field
---- Enable or disable Touch Bar Support.
+--- Enable or disable Stream Deck Support.
 mod.enabled = config.prop("enableStreamDesk", false):watch(function(enabled)
     if enabled then
         mod.start()

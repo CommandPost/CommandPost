@@ -597,10 +597,20 @@ mod._generalCallbacks = {}
 --- The maximum number of MIDI items per group.
 mod.maxItems = 150
 
+--------------------------------------------------------------------------------
+-- Workaround for legacy (plist) MIDI Controls:
+--------------------------------------------------------------------------------
+local defaultControls = mod.DEFAULT_MIDI_CONTROLS
+local legacyControls = config.get("midiControls", nil)
+if legacyControls then
+    defaultControls = legacyControls
+    config.set("midiControls", nil)
+end
+
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved MIDI items
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, mod.DEFAULT_MIDI_CONTROLS)
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
 
 --- plugins.core.midi.manager.clear() -> none
 --- Function
@@ -989,7 +999,7 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
     if mod._midiDevices and mod._midiDevices[deviceName] then
         device = mod._midiDevices[deviceName]
     else
-        log.ef("MIDI Device not found: %s (virtual: %s)", deviceName, virtual)
+        --log.ef("MIDI Device not found: %s (virtual: %s)", deviceName, virtual)
         return false
     end
 
