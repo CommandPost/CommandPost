@@ -326,6 +326,8 @@
         "batchExportNoClipsInTimeline"                     : "No clips selected in the timeline.\n\nPlease select at least one clip and try again.",
         "batchExportMissingFilesDetected"                  : "Missing or offline titles, effects or generators were detected, which has aborted the Batch Export.\n\nMissing & Offline Effects can be ignored via the Batch Export Preferences if required.",
         "batchExportUnexpectedAlert"                       : "Unexpected alert while opening the Export dialog.",
+        "batchExportDestinationDisabled"                   : "Target destination is disabled.",
+        "batchExportNotShowing"                            : "Unable to show the Export Dialog",
         "whatFeatures"                                     : "What feature would you like to see implemented or improved?",
         "plugin_group_plugin"                              : "Plugin",
         "finalcutpro_menu_helpandsupport_finalcutpro_label": "Menubar: Final Cut Pro Help & Support",

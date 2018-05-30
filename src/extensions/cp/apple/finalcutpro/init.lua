@@ -115,6 +115,9 @@ local v											= require("semver")
 --------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
 
+-- a Non-Breaking Space. Looks like a space, isn't a space.
+local NBSP = " "
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -501,11 +504,14 @@ function fcp:closeLibrary(title)
         if libraries:selectLibrary(title) ~= nil then
             local closeLibrary = self:string("FFCloseLibraryFormat")
             if closeLibrary then
-                closeLibrary = gsub(closeLibrary, "%%@", title)
+                -- some languages contain NBSPs instead of spaces, but these don't survive to the actual menu title. Swap them out.
+                closeLibrary = gsub(closeLibrary, "%%@", title):gsub(NBSP, " ")
             end
 
             self:selectMenu({"File", function(item)
-                return item:title() == closeLibrary
+                local itemTitle = item:title():gsub(NBSP, " ")
+                local result = itemTitle == closeLibrary
+                return result
             end})
             --------------------------------------------------------------------------------
             -- Wait until the library actually closes, up to 5 seconds:

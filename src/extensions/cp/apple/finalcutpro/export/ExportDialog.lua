@@ -211,6 +211,11 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                 end
                 counter = counter + 1
             end
+            if not self:isShowing() then
+                return self, i18n("batchExportNotShowing")
+            end
+        else
+            return self, i18n("batchExportDestinationDisabled")
         end
     end
     return self

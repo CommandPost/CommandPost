@@ -66,6 +66,7 @@ mod._versionCache = {}
 -- Method
 -- Returns the list of specific version strings files available for the specified locale.
 function mod:_versions(locale)
+    locale = localeID(locale)
     local versions = self._versionCache[locale.code]
     if not versions then
         versions = {}
@@ -98,7 +99,7 @@ end
 -- Returns:
 --  * A `semver` instance for the previous version.
 function mod:_bestVersion(locale, version)
-    version = toVersion(version or self:currentVersion())
+    version = toVersion(version or app:version())
 
     -- check if we're working with a specific version
     local versions = self:_versions(locale)

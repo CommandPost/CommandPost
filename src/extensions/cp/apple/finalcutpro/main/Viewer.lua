@@ -345,7 +345,12 @@ function Viewer.new(app, eventViewer)
                 if currentValue ~= proxies then -- got to switch
                     if self:isShowing() then
                         local itemKey = proxies and "CPViewerViewProxy" or "CPViewerViewOptimized"
-                        o._viewMenu:selectItemMatching(self:app().strings:find(itemKey))
+                        local itemValue = self:app().strings:find(itemKey)
+                        if itemValue then
+                            o._viewMenu:selectItemMatching(itemValue)
+                        else
+                            log.ef("Unable to find the '%s' string in '%s'", itemKey, self:app():currentLocale())
+                        end
                     else
                         local quality = proxies and PLAYER_QUALITY.PROXY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
                         self:app():setPreference("FFPlayerQuality", quality)
@@ -367,7 +372,12 @@ function Viewer.new(app, eventViewer)
                 if quality ~= currentQuality then
                     if self:isShowing() then
                         local itemKey = quality and "CPViewerViewBetterQuality" or "CPViewerViewBetterPerformance"
-                        o._viewMenu:selectItemMatching(self:app().strings:find(itemKey))
+                        local itemValue = self:app().strings:find(itemKey)
+                        if itemValue then
+                            o._viewMenu:selectItemMatching(itemValue)
+                        else
+                            log.ef("Unable to find '%s' string in '%s'", itemValue, self:app():currentLocale())
+                        end
                     else
                         local qualityValue = quality and PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
                         self:app():setPreference("FFPlayerQuality", qualityValue)
