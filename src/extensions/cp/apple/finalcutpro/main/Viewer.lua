@@ -25,6 +25,7 @@ local delayedTimer                      = require("hs.timer").delayed
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
 local Button                            = require("cp.ui.Button")
+local MenuButton                        = require("cp.ui.MenuButton")
 local StaticText                        = require("cp.ui.StaticText")
 
 local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -42,6 +43,17 @@ local match, sub                        = string.match, string.sub
 --
 --------------------------------------------------------------------------------
 local Viewer = {}
+
+
+-- cp.apple.finalcutpro.main.Viewer.PLAYER_QUALITY
+-- Constant
+-- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
+local PLAYER_QUALITY = {
+    ORIGINAL_BETTER_QUALITY     = 10,
+    ORIGINAL_BETTER_PERFORMANCE = 5,
+    PROXY                       = 4,
+}
+
 
 -- findViewersUI(...) -> table of hs._asm.axuielement | nil
 -- Private Function
@@ -235,6 +247,11 @@ function Viewer.new(app, eventViewer)
         return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
     end)
 
+    o._viewMenu = MenuButton.new(o, function()
+        local ui = topToolbarUI()
+        return ui and axutils.childFromRight(axutils.childrenWithRole(ui, "AXMenuButton"), 1)
+    end)
+
     prop.bind(o) {
         --- cp.apple.finalcutpro.main.Viewer.topToolbarUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
@@ -315,6 +332,59 @@ function Viewer.new(app, eventViewer)
                 end
             end
         ),
+
+        --- cp.apple.finalcutpro.main.Viewer.usingProxies <cp.prop: boolean>
+        --- Field
+        --- Indicates if the viewer is using Proxies (`true`) or Optimized/Original media (`false`).
+        usingProxies = prop(
+            function(self)
+                return self:app():getPreference("FFPlayerQuality") == PLAYER_QUALITY.PROXY
+            end,
+            function(proxies, self, theProp)
+                local currentValue = theProp()
+                if currentValue ~= proxies then -- got to switch
+                    if self:isShowing() then
+                        local itemKey = proxies and "CPViewerViewProxy" or "CPViewerViewOptimized"
+                        local itemValue = self:app().strings:find(itemKey)
+                        if itemValue then
+                            o._viewMenu:selectItemMatching(itemValue)
+                        else
+                            log.ef("Unable to find the '%s' string in '%s'", itemKey, self:app():currentLocale())
+                        end
+                    else
+                        local quality = proxies and PLAYER_QUALITY.PROXY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
+                        self:app():setPreference("FFPlayerQuality", quality)
+                    end
+                end
+            end
+        ),
+
+        --- cp.apple.finalcutpro.main.Viewer.betterQuality <cp.prop: boolean>
+        --- Field
+        --- Indicates if the viewer is using playing with better quality (`true`) or performance (`false).
+        --- If we are `usingProxies` then it will always be `false`.
+        betterQuality = prop(
+            function(self)
+                return self:app():getPreference("FFPlayerQuality") == PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY
+            end,
+            function(quality, self, theProp)
+                local currentQuality = theProp()
+                if quality ~= currentQuality then
+                    if self:isShowing() then
+                        local itemKey = quality and "CPViewerViewBetterQuality" or "CPViewerViewBetterPerformance"
+                        local itemValue = self:app().strings:find(itemKey)
+                        if itemValue then
+                            o._viewMenu:selectItemMatching(itemValue)
+                        else
+                            log.ef("Unable to find '%s' string in '%s'", itemValue, self:app():currentLocale())
+                        end
+                    else
+                        local qualityValue = quality and PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
+                        self:app():setPreference("FFPlayerQuality", qualityValue)
+                    end
+                end
+            end
+        )
     }
 
     o._isPlayingChecker = delayedTimer.new(0.1, function()

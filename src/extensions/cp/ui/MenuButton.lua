@@ -134,6 +134,7 @@ function MenuButton:selectItemMatching(pattern)
         ui:doPress()
         local items = just.doUntil(function() return ui[1] end, 5, 0.01)
         if items then
+            local found = false
             for _,item in ipairs(items) do
                 local title = item:attributeValue("AXTitle")
                 if title then
@@ -141,12 +142,17 @@ function MenuButton:selectItemMatching(pattern)
                     if s == 1 and e == title:len() then
                         -- perfect match
                         item:doPress()
-                        return true
+                        found = true
+                        break
                     end
                 end
             end
-            -- if we got this far, we couldn't find it.
-            items:performAction("AXCancel")
+            if not found then
+                -- if we got this far, we couldn't find it.
+                items:performAction("AXCancel")
+            end
+            -- wait until the menu closes.
+            just.doWhile(function() return ui[1] end, 5, 0.01)
         end
         self.value:update()
     end

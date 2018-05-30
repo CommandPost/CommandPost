@@ -30,7 +30,7 @@ local window                                    = require("hs.window")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
-local fcp                                       = require("cp.apple.finalcutpro")
+local app                                       = require("cp.app")
 
 --------------------------------------------------------------------------------
 --
@@ -54,8 +54,9 @@ local function as(appleScript)
     -- log.df("originalFocusedWindow: %s", originalFocusedWindow)
 
     local whichBundleID = hs.processInfo["bundleID"]
-    if originalFocusedWindow and originalFocusedWindow:application():bundleID() == fcp.BUNDLE_ID then
-        whichBundleID = fcp.BUNDLE_ID
+    local frontmostApp = app.frontmostApp()
+    if frontmostApp and originalFocusedWindow and originalFocusedWindow:application():bundleID() == frontmostApp:bundleID() then
+        whichBundleID = frontmostApp:bundleID()
     end
     --log.df("whichBundleID: %s", whichBundleID)
 

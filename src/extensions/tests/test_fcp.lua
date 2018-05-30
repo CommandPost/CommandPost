@@ -59,7 +59,20 @@ return test.suite("cp.apple.finalcutpro"):with(
         end
     ),
     test(
-        "Check Event Viewer",
+        "Viewer",
+        function()
+            local viewer = fcp:viewer()
+
+            ok(viewer:isShowing())
+            ok(viewer:topToolbarUI() ~= nil)
+            ok(viewer:bottomToolbarUI() ~= nil)
+            ok(viewer:formatUI() ~= nil)
+            ok(viewer:framerate() ~= nil)
+            ok(viewer:title() ~= nil)
+        end
+    ),
+    test(
+        "Event Viewer",
         function()
             -- Turn it on and off.
             ok(not fcp:eventViewer():isShowing())
@@ -69,6 +82,29 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(not fcp:eventViewer():isShowing())
         end
     ),
+    test("Viewer Quality", function()
+        local viewer = fcp:viewer()
+
+        ok(viewer:isShowing())
+        viewer:usingProxies(true)
+        ok(eq(viewer:usingProxies(), true))
+        ok(eq(viewer:betterQuality(), false))
+
+        viewer:usingProxies(false)
+        -- it can take a moment for the preference to sync.
+        ok(eq(just.doUntil(viewer.usingProxies, 2, 0.01), false))
+        ok(eq(viewer:betterQuality(), false))
+
+        viewer:betterQuality(true)
+        -- it can take a moment for the preference to sync.
+        ok(eq(just.doUntil(viewer.betterQuality, 2, 0.01), true))
+        ok(eq(viewer:usingProxies(), false))
+
+        viewer:betterQuality(false)
+        -- it can take a moment for the preference to sync.
+        ok(eq(just.doUntil(viewer.betterQuality, 2, 0.01), false))
+        ok(eq(viewer:usingProxies(), false))
+    end),
     test(
         "Command Editor",
         function()
@@ -84,30 +120,32 @@ return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Export Dialog",
         function()
-            -- Need to close and re-open the library so that all media is linked correctly.
-            -- just.wait(1)
-            -- fcp:closeLibrary(TEST_LIBRARY)
-            -- -- just.wait(5)
-            -- fcp.openLibrary(TEST_LIBRARY_PATH)
-
+            local _, err
+            local export = fcp:exportDialog()
             -- Export Dialog
-            ok(not fcp:exportDialog():isShowing())
-            fcp:exportDialog():show()
+            ok(not export:isShowing())
+            export:show(nil, true, true, true)
 
-            -- There may be a 'Missing media' alert, due to a bug(?) in FCPX where media from the library is missing the first load.
-            if fcp:alert():isShowing() then
-                local message = fcp:string("FFMissingMediaMessageText"):gsub("%%@", ".*")
-                if fcp:alert():containsText(message) then
-                    fcp:alert():default():press()
-                else
-                    ok(false, "Unexpected Alert displayed while opening the Export Dialog.")
-                    fcp:alert():hide()
-                end
-            end
+            ok(export:isShowing())
+            export:hide()
+            ok(not export:isShowing())
 
-            ok(fcp:exportDialog():isShowing())
-            fcp:exportDialog():hide()
-            ok(not fcp:exportDialog():isShowing())
+            -- switch to viewer > proxy mode, which has an additional warning message
+            fcp:viewer():usingProxies(true)
+            _, err = export:show(nil, true, true, true)
+            ok(err == nil)
+            ok(export:isShowing())
+            export:hide()
+            ok(not export:isShowing())
+
+            -- fail on proxies this time, quietly
+            _, err = export:show(nil, false, true, true)
+            ok(err ~= nil)
+            ok(eq(export:isShowing(), false))
+            ok(eq(fcp:alert():isShowing(), false))
+
+            -- reset proxies mode
+            fcp:viewer():usingProxies(false)
         end
     ),
     test(
@@ -432,19 +470,6 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             ok(toolbar:effectsGroupUI() ~= nil)
             ok(toolbar:effectsGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "EffectsGroup")
-        end
-    ),
-    test(
-        "Viewer",
-        function()
-            local viewer = fcp:viewer()
-
-            ok(viewer:isShowing())
-            ok(viewer:topToolbarUI() ~= nil)
-            ok(viewer:bottomToolbarUI() ~= nil)
-            ok(viewer:formatUI() ~= nil)
-            ok(viewer:framerate() ~= nil)
-            ok(viewer:title() ~= nil)
         end
     ),
     test(

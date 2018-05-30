@@ -115,6 +115,9 @@ local v											= require("semver")
 --------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
 
+-- a Non-Breaking Space. Looks like a space, isn't a space.
+local NBSP = " "
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -172,15 +175,6 @@ fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd"
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
 fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
-
---- cp.apple.finalcutpro.PLAYER_QUALITY
---- Constant
---- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
-fcp.PLAYER_QUALITY = {
-    ["ORIGINAL_BETTER_QUALITY"]     = 10,
-    ["ORIGINAL_BETTER_PERFORMANCE"] = 5,
-    ["PROXY"]                       = 4,
-}
 
 --- cp.apple.finalcutpro:init() -> App
 --- Function
@@ -510,11 +504,14 @@ function fcp:closeLibrary(title)
         if libraries:selectLibrary(title) ~= nil then
             local closeLibrary = self:string("FFCloseLibraryFormat")
             if closeLibrary then
-                closeLibrary = gsub(closeLibrary, "%%@", title)
+                -- some languages contain NBSPs instead of spaces, but these don't survive to the actual menu title. Swap them out.
+                closeLibrary = gsub(closeLibrary, "%%@", title):gsub(NBSP, " ")
             end
 
             self:selectMenu({"File", function(item)
-                return item:title() == closeLibrary
+                local itemTitle = item:title():gsub(NBSP, " ")
+                local result = itemTitle == closeLibrary
+                return result
             end})
             --------------------------------------------------------------------------------
             -- Wait until the library actually closes, up to 5 seconds:
@@ -972,7 +969,7 @@ end
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
 function fcp:getPreference(key, default)
-    return self.app.preferences[key] or default
+    return self.app.preferences()[key] or default
 end
 
 --- cp.apple.finalcutpro:setPreference(key, value) -> nil
@@ -986,7 +983,7 @@ end
 --- Returns:
 ---  * `nil`
 function fcp:setPreference(key, value)
-    self.app.preferences[key] = value
+    self.app.preferences()[key] = value
 end
 
 --- cp.apple.finalcutpro:importXML(path) -> boolean

@@ -48,9 +48,11 @@ local mod = {}
 --- Whether or not Waveforms are enabled.
 mod.enabled = prop.new(
     function()
+        --------------------------------------------------------------------------------
+        -- Get Preference:
+        --------------------------------------------------------------------------------
         return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE) == true or false
     end,
-
     function(value)
         --------------------------------------------------------------------------------
         -- If Final Cut Pro is running...
@@ -61,12 +63,9 @@ mod.enabled = prop.new(
         end
 
         --------------------------------------------------------------------------------
-        -- Update plist:
+        -- Set Preference:
         --------------------------------------------------------------------------------
-        if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-            dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-            return
-        end
+        fcp:setPreference(PREFERENCES_KEY, value)
 
         --------------------------------------------------------------------------------
         -- Restart Final Cut Pro:

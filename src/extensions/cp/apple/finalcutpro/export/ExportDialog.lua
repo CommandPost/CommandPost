@@ -11,7 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                           = require("hs.logger").new("PrefsDlg")
+-- local log                           = require("hs.logger").new("PrefsDlg")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -23,6 +23,7 @@
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local id                            = require("cp.apple.finalcutpro.ids") "ExportDialog"
+local dialog                        = require("cp.dialog")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
@@ -62,8 +63,36 @@ end
 --- Returns:
 ---  * A new ExportDialog object.
 function ExportDialog.new(app)
-    local o = {_app = app}
-    return prop.extend(o, ExportDialog)
+    local o = prop.extend({_app = app}, ExportDialog)
+
+    local UI = app.windowsUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            return axutils.childMatching(original(), ExportDialog.matches)
+        end,
+        ExportDialog.matches)
+    end)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.export.ExportDialog.UI <cp.prop: hs._asm.axuielement: read-only; live>
+--- Field
+--- Returns the Export Dialog `axuielement`.
+        UI = UI,
+
+--- cp.apple.finalcutpro.export.ExportDialog.isShowing <cp.prop: boolean; read-only; live>
+--- Field
+--- Is the window showing?
+        isShowing = UI:ISNOT(nil),
+
+--- cp.apple.finalcutpro.export.ExportDialog.title <cp.prop: string; read-only; live>
+--- Field
+--- The window title, or `nil` if not available.
+        title = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXTitle")
+        end),
+    }
+
+    return o
 end
 
 --- cp.apple.finalcutpro.export.ExportDialog:app() -> App
@@ -79,63 +108,96 @@ function ExportDialog:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.export.ExportDialog:UI() -> axuielementObject
---- Method
---- Returns the Export Dialog Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function ExportDialog:UI()
-    return axutils.cache(self, "_ui", function()
-        local windowsUI = self:app():windowsUI()
-        return windowsUI and self._findWindowUI(windowsUI)
-    end,
-    ExportDialog.matches)
+local function isDefaultItem(menuItem)
+    return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
 end
 
--- cp.apple.finalcutpro.export.ExportDialog:_findWindowUI(windows) -> window | nil
--- Method
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-function ExportDialog._findWindowUI(windows)
-    for _,window in ipairs(windows) do
-        if ExportDialog.matches(window) then return window end
-    end
-    return nil
-end
+local destinationFormat = "(.+)…"
 
---- cp.apple.finalcutpro.export.ExportDialog.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the window showing?
-ExportDialog.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(ExportDialog)
-
---- cp.apple.finalcutpro.export.ExportDialog:show() -> cp.apple.finalcutpro.export.ExportDialog
+--- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
 --- Method
---- Shows the Export Dialog
+--- Shows the Export Dialog with the Destination that matches the `destinationSelect`.
 ---
 --- Parameters:
----  * None
+---  * destinationSelect    - The name, number or match function of the destination to export with.
+---  * ignoreProxyWarning   - if `true`, the warning regarding exporting Proxies will be ignored.
+---  * ignoreMissingMedia   - if `true`, the warning regarding exporting with missing media will be ignored.
+---  * quiet                - if `true`, no dialogs will be shown if there is an error.
 ---
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.ExportDialog` object for method chaining.
-function ExportDialog:show()
+---  * If an error occurred, the message is returned as the second value
+---
+--- Notes:
+--- * If providing a function, it will be passed one item - the name of the destination, and should return `true` to indicate a match. The name will not contain " (default)" if present.
+function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet)
     if not self:isShowing() then
+        if destinationSelect == nil then
+            destinationSelect = isDefaultItem
+        elseif type(destinationSelect) ~= "number" then
+            local defaultFormat = self:app().strings:find("FFShareDefaultApplicationFormat")
+            defaultFormat = defaultFormat:gsub("([()])", "%%%1"):gsub("%%@", "(.+)") .. "…"
+            local dest = destinationSelect
+            -- this function will match based on the destination title, minus "(default)" and "…" if present.
+            destinationSelect = function(menuItem)
+                local title = menuItem:attributeValue("AXTitle")
+                if title == nil then
+                    return false
+                elseif isDefaultItem(menuItem) then
+                    title = title:match(defaultFormat)
+                else
+                    title = title:match(destinationFormat)
+                end
+                return type(dest) == "function" and dest(title) or title == tostring(dest)
+            end
+        end
         --------------------------------------------------------------------------------
         -- Open the window:
         --------------------------------------------------------------------------------
-        if self:app():menu():isEnabled({"File", "Share", 1}) then
-            self:app():menu():selectMenu({"File", "Share", 1})
-            just.doUntil(function() return self:UI() end)
+        local fcp = self:app()
+        local menuItem = fcp:menu():findMenuUI({"File", "Share", destinationSelect})
+        if menuItem:attributeValue("AXEnabled") then
+            menuItem:doPress()
+
+            local alert = fcp:alert()
+
+            local counter = 0
+            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+            local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
+            while not self:isShowing() and counter < 100 do
+                if alert:isShowing() then
+                    if alert:containsText(proxyPlaybackEnabled, true) then
+                        if ignoreProxyWarning then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportProxyFilesDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
+                    elseif alert:containsText(missingMedia) then
+                        if ignoreMissingMedia then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportMissingFilesDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
+                    else
+                        local msg = i18n("batchExportUnexpectedAlert")
+                        return self, msg
+                    end
+                else
+                    just.wait(0.1)
+                end
+                counter = counter + 1
+            end
+            if not self:isShowing() then
+                return self, i18n("batchExportNotShowing")
+            end
+        else
+            return self, i18n("batchExportDestinationDisabled")
         end
     end
     return self
@@ -173,20 +235,6 @@ function ExportDialog:pressCancel()
         end
     end
     return self
-end
-
---- cp.apple.finalcutpro.export.ExportDialog:getTitle() -> string | nil
---- Method
---- The title of the Export Dialog window or `nil`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The title of the Export Dialog window as a string or `nil`.
-function ExportDialog:getTitle()
-    local ui = self:UI()
-    return ui and ui:title()
 end
 
 --- cp.apple.finalcutpro.export.ExportDialog:pressNext() -> cp.apple.finalcutpro.export.ExportDialog

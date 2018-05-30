@@ -11,7 +11,5 @@
     <string>高品質</string>
     <key>CPViewerViewBetterPerformance</key>
     <string>パフォーマンス優先</string>
-    <key>CPColorBoardMidtones</key>
-    <string>中間色調</string>
 </dict>
 </plist>

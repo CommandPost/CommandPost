@@ -496,7 +496,7 @@ function menu.mt:findMenuUI(path, locale)
     --------------------------------------------------------------------------------
     -- Step through the path:
     --------------------------------------------------------------------------------
-    for _,step in ipairs(path) do
+    for i,step in ipairs(path) do
         menuItemUI = nil
         --------------------------------------------------------------------------------
         -- Check what type of step it is:
@@ -574,13 +574,8 @@ function menu.mt:findMenuUI(path, locale)
             end
             table.insert(currentPath, menuItemName)
         else
-            local stepString
-            if type(step) == "function" then
-                stepString = step()
-            else
-                stepString = step
-            end
-            log.wf("Unable to find a menu matching '%s' (%s) in %s", inspect(stepString), locale, appLocale)
+            local value = type(step) == "string" and '"' .. step .. '" (' .. locale.code .. ")" or tostring(step)
+            log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
             return nil
         end
     end
