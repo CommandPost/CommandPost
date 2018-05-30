@@ -58,9 +58,14 @@ local FCP_COLOR_BLUE        = "#5760e7"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.viewer.overlays.disabled <cp.prop: boolean>
+--- Variable
+--- Are all the Viewer Overlay's disabled?
+mod.disabled = config.prop("fcpViewerMasterDisabled", false)
+
 --- plugins.finalcutpro.viewer.overlays.gridEnabled <cp.prop: boolean>
 --- Variable
---- Is Viewer Grid Enabled
+--- Is Viewer Grid Enabled?
 mod.gridEnabled = config.prop("fcpViewerGridEnabled", false)
 
 --- plugins.finalcutpro.viewer.overlays.gridMode <cp.prop: number>
@@ -381,7 +386,7 @@ function mod.update()
         --log.df("activeMemory: %s", activeMemory)
         --log.df("gridEnabled: %s", gridEnabled)
 
-        if gridEnabled or activeMemory ~= 0 then
+        if (gridEnabled or activeMemory ~= 0) and not mod.disabled() then
             mod.show()
         else
             mod.hide()
@@ -585,6 +590,95 @@ function mod.setCustomGridColor()
     hs.focus()
 end
 
+--- contextualMenu(event) -> none
+--- Function
+--- Builds the Final Cut Pro Overlay contextual menu.
+---
+--- Parameters:
+---  * event - The `hs.eventtap` event
+---
+--- Returns:
+---  * None
+local function contextualMenu(event)
+    local ui = fcp:viewer():UI()
+    local topBar = ui and axutils.childFromTop(ui, 1)
+    if topBar then
+        local barFrame = topBar:attributeValue("AXFrame")
+        local location = event:location() and geometry.point(event:location())
+        if barFrame and location and location:inside(geometry.rect(barFrame)) then
+            if mod._menu then
+                mod._menu:setMenu({
+                    { title = i18n("disableAllOverlays"), checked = mod.disabled(), fn = function() mod.disabled:toggle(); mod.update() end },
+                    { title = "-", disabled = true },
+                    { title = string.upper(i18n("gridOverlay")) .. ":", disabled = true },
+                    { title = "  " .. i18n("basicGrid"),        checked = mod.gridEnabled() and mod.gridMode() == "Basic Grid", fn = function() mod.setGrid("Basic Grid") end },
+                    { title = "  " .. i18n("draggableGuide"),   checked = mod.gridEnabled() and mod.gridMode() == "Draggable Guide", fn = function() mod.setGrid("Draggable Guide") end },
+                    --{ title = "  Rule of Thirds", checked = false },
+                    { title = "-", disabled = true },
+                    { title = string.upper(i18n("gridStyle")) .. ":", disabled = true },
+                    { title = "  " .. i18n("color"), menu = {
+                        { title = i18n("black"),    checked = mod.gridColor() == "#000000", fn = function() mod.setGridColor("#000000") end },
+                        { title = i18n("white"),    checked = mod.gridColor() == "#FFFFFF", fn = function() mod.setGridColor("#FFFFFF") end },
+                        { title = i18n("yellow"),   checked = mod.gridColor() == "#F4D03F", fn = function() mod.setGridColor("#F4D03F") end },
+                        { title = i18n("red"),      checked = mod.gridColor() == "#FF5733", fn = function() mod.setGridColor("#FF5733") end },
+                        { title = "-", disabled = true },
+                        { title = i18n("custom"),   checked = mod.gridColor() == "CUSTOM" and mod.customGridColor(), fn = mod.setCustomGridColor },
+                    }},
+                    { title = "  " .. i18n("opacity"), menu = {
+                        { title = "10%",  checked = mod.gridAlpha() == 10,  fn = function() mod.setGridAlpha(10) end },
+                        { title = "20%",  checked = mod.gridAlpha() == 20,  fn = function() mod.setGridAlpha(20) end },
+                        { title = "30%",  checked = mod.gridAlpha() == 30,  fn = function() mod.setGridAlpha(30) end },
+                        { title = "40%",  checked = mod.gridAlpha() == 40,  fn = function() mod.setGridAlpha(40) end },
+                        { title = "50%",  checked = mod.gridAlpha() == 50,  fn = function() mod.setGridAlpha(50) end },
+                        { title = "60%",  checked = mod.gridAlpha() == 60,  fn = function() mod.setGridAlpha(60) end },
+                        { title = "70%",  checked = mod.gridAlpha() == 70,  fn = function() mod.setGridAlpha(70) end },
+                        { title = "80%",  checked = mod.gridAlpha() == 80,  fn = function() mod.setGridAlpha(80) end },
+                        { title = "90%",  checked = mod.gridAlpha() == 90,  fn = function() mod.setGridAlpha(90) end },
+                        { title = "100%", checked = mod.gridAlpha() == 100, fn = function() mod.setGridAlpha(100) end },
+                    }},
+                    { title = "  " .. i18n("spacing"), menu = {
+                        { title = "+++++++++",      checked = mod.gridSpacing() == 5,  fn = function() mod.setGridSpacing(5) end },
+                        { title = "++++++++",       checked = mod.gridSpacing() == 10, fn = function() mod.setGridSpacing(10) end },
+                        { title = "+++++++",        checked = mod.gridSpacing() == 15, fn = function() mod.setGridSpacing(15) end },
+                        { title = "++++++",         checked = mod.gridSpacing() == 20, fn = function() mod.setGridSpacing(20) end },
+                        { title = "+++++",          checked = mod.gridSpacing() == 30, fn = function() mod.setGridSpacing(30) end },
+                        { title = "++++",           checked = mod.gridSpacing() == 40, fn = function() mod.setGridSpacing(40) end },
+                        { title = "+++",            checked = mod.gridSpacing() == 50, fn = function() mod.setGridSpacing(50) end },
+                        { title = "++",             checked = mod.gridSpacing() == 60, fn = function() mod.setGridSpacing(60) end },
+                        { title = "+",              checked = mod.gridSpacing() == 70, fn = function() mod.setGridSpacing(70) end },
+                    }},
+                    { title = "-", disabled = true },
+                    { title = string.upper(i18n("stillFrames")) .. ":", disabled = true },
+                    { title = "  " .. i18n("view"), menu = {
+                        { title = i18n("memory") .. " 1", checked = mod.activeMemory() == 1, fn = function() mod.viewMemory(1) end, disabled = not mod.getMemory(1) },
+                        { title = i18n("memory") .. " 2", checked = mod.activeMemory() == 2, fn = function() mod.viewMemory(2) end, disabled = not mod.getMemory(2) },
+                        { title = i18n("memory") .. " 3", checked = mod.activeMemory() == 3, fn = function() mod.viewMemory(3) end, disabled = not mod.getMemory(3) },
+                        { title = i18n("memory") .. " 4", checked = mod.activeMemory() == 4, fn = function() mod.viewMemory(4) end, disabled = not mod.getMemory(4) },
+                        { title = i18n("memory") .. " 5", checked = mod.activeMemory() == 5, fn = function() mod.viewMemory(5) end, disabled = not mod.getMemory(5) },
+                    }},
+                    { title = "  " .. i18n("save"), menu = {
+                        { title = i18n("memory") .. " 1", fn = function() mod.saveMemory(1) end },
+                        { title = i18n("memory") .. " 2", fn = function() mod.saveMemory(2) end },
+                        { title = i18n("memory") .. " 3", fn = function() mod.saveMemory(3) end },
+                        { title = i18n("memory") .. " 4", fn = function() mod.saveMemory(4) end },
+                        { title = i18n("memory") .. " 5", fn = function() mod.saveMemory(5) end },
+                    }},
+                    { title = "  " .. i18n("layout"), menu = {
+                        { title = i18n("fullFrame"),  checked = mod.stillsLayout() == "Full Frame", fn = function() mod.stillsLayout("Full Frame"); mod.update() end },
+                        { title = "-", disabled = true },
+                        { title = i18n("leftVertical"),  checked = mod.stillsLayout() == "Left Vertical", fn = function() mod.stillsLayout("Left Vertical"); mod.update() end },
+                        { title = i18n("rightVertical"), checked = mod.stillsLayout() == "Right Vertical", fn = function() mod.stillsLayout("Right Vertical"); mod.update() end },
+                        { title = "-", disabled = true },
+                        { title = i18n("topHorizontal"), checked = mod.stillsLayout() == "Top Horizontal", fn = function() mod.stillsLayout("Top Horizontal"); mod.update() end },
+                        { title = i18n("bottomHorizontal"), checked = mod.stillsLayout() == "Bottom Horizontal", fn = function() mod.stillsLayout("Bottom Horizontal"); mod.update() end },
+                    }},
+                })
+                mod._menu:popupMenu(location)
+            end
+        end
+    end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -607,83 +701,7 @@ function plugin.init(deps)
     -- Setup contextual menu:
     --------------------------------------------------------------------------------
     mod._menu = menubar.new(false)
-    mod._eventtap = eventtap.new({eventtap.event.types.rightMouseUp}, function(event)
-        local ui = fcp:viewer():UI()
-        local topBar = ui and axutils.childFromTop(ui, 1)
-        if topBar then
-            local barFrame = topBar:attributeValue("AXFrame")
-            local location = event:location() and geometry.point(event:location())
-            if barFrame and location and location:inside(geometry.rect(barFrame)) then
-                if mod._menu then
-                    mod._menu:setMenu({
-                        { title = string.upper(i18n("gridOverlay")) .. ":", disabled = true },
-                        { title = "  " .. i18n("basicGrid"),        checked = mod.gridEnabled() and mod.gridMode() == "Basic Grid", fn = function() mod.setGrid("Basic Grid") end },
-                        { title = "  " .. i18n("draggableGuide"),   checked = mod.gridEnabled() and mod.gridMode() == "Draggable Guide", fn = function() mod.setGrid("Draggable Guide") end },
-                        --{ title = "  Rule of Thirds", checked = false },
-                        { title = "-", disabled = true },
-                        { title = string.upper(i18n("gridStyle")) .. ":", disabled = true },
-                        { title = "  " .. i18n("color"), menu = {
-                            { title = i18n("black"),    checked = mod.gridColor() == "#000000", fn = function() mod.setGridColor("#000000") end },
-                            { title = i18n("white"),    checked = mod.gridColor() == "#FFFFFF", fn = function() mod.setGridColor("#FFFFFF") end },
-                            { title = i18n("yellow"),   checked = mod.gridColor() == "#F4D03F", fn = function() mod.setGridColor("#F4D03F") end },
-                            { title = i18n("red"),      checked = mod.gridColor() == "#FF5733", fn = function() mod.setGridColor("#FF5733") end },
-                            { title = "-", disabled = true },
-                            { title = i18n("custom"),   checked = mod.gridColor() == "CUSTOM" and mod.customGridColor(), fn = mod.setCustomGridColor },
-                        }},
-                        { title = "  " .. i18n("opacity"), menu = {
-                            { title = "10%",  checked = mod.gridAlpha() == 10,  fn = function() mod.setGridAlpha(10) end },
-                            { title = "20%",  checked = mod.gridAlpha() == 20,  fn = function() mod.setGridAlpha(20) end },
-                            { title = "30%",  checked = mod.gridAlpha() == 30,  fn = function() mod.setGridAlpha(30) end },
-                            { title = "40%",  checked = mod.gridAlpha() == 40,  fn = function() mod.setGridAlpha(40) end },
-                            { title = "50%",  checked = mod.gridAlpha() == 50,  fn = function() mod.setGridAlpha(50) end },
-                            { title = "60%",  checked = mod.gridAlpha() == 60,  fn = function() mod.setGridAlpha(60) end },
-                            { title = "70%",  checked = mod.gridAlpha() == 70,  fn = function() mod.setGridAlpha(70) end },
-                            { title = "80%",  checked = mod.gridAlpha() == 80,  fn = function() mod.setGridAlpha(80) end },
-                            { title = "90%",  checked = mod.gridAlpha() == 90,  fn = function() mod.setGridAlpha(90) end },
-                            { title = "100%", checked = mod.gridAlpha() == 100, fn = function() mod.setGridAlpha(100) end },
-                        }},
-                        { title = "  " .. i18n("spacing"), menu = {
-                            { title = "+++++++++",      checked = mod.gridSpacing() == 5,  fn = function() mod.setGridSpacing(5) end },
-                            { title = "++++++++",       checked = mod.gridSpacing() == 10, fn = function() mod.setGridSpacing(10) end },
-                            { title = "+++++++",        checked = mod.gridSpacing() == 15, fn = function() mod.setGridSpacing(15) end },
-                            { title = "++++++",         checked = mod.gridSpacing() == 20, fn = function() mod.setGridSpacing(20) end },
-                            { title = "+++++",          checked = mod.gridSpacing() == 30, fn = function() mod.setGridSpacing(30) end },
-                            { title = "++++",           checked = mod.gridSpacing() == 40, fn = function() mod.setGridSpacing(40) end },
-                            { title = "+++",            checked = mod.gridSpacing() == 50, fn = function() mod.setGridSpacing(50) end },
-                            { title = "++",             checked = mod.gridSpacing() == 60, fn = function() mod.setGridSpacing(60) end },
-                            { title = "+",              checked = mod.gridSpacing() == 70, fn = function() mod.setGridSpacing(70) end },
-                        }},
-                        { title = "-", disabled = true },
-                        { title = string.upper(i18n("stillFrames")) .. ":", disabled = true },
-                        { title = "  " .. i18n("view"), menu = {
-                            { title = i18n("memory") .. " 1", checked = mod.activeMemory() == 1, fn = function() mod.viewMemory(1) end, disabled = not mod.getMemory(1) },
-                            { title = i18n("memory") .. " 2", checked = mod.activeMemory() == 2, fn = function() mod.viewMemory(2) end, disabled = not mod.getMemory(2) },
-                            { title = i18n("memory") .. " 3", checked = mod.activeMemory() == 3, fn = function() mod.viewMemory(3) end, disabled = not mod.getMemory(3) },
-                            { title = i18n("memory") .. " 4", checked = mod.activeMemory() == 4, fn = function() mod.viewMemory(4) end, disabled = not mod.getMemory(4) },
-                            { title = i18n("memory") .. " 5", checked = mod.activeMemory() == 5, fn = function() mod.viewMemory(5) end, disabled = not mod.getMemory(5) },
-                        }},
-                        { title = "  " .. i18n("save"), menu = {
-                            { title = i18n("memory") .. " 1", fn = function() mod.saveMemory(1) end },
-                            { title = i18n("memory") .. " 2", fn = function() mod.saveMemory(2) end },
-                            { title = i18n("memory") .. " 3", fn = function() mod.saveMemory(3) end },
-                            { title = i18n("memory") .. " 4", fn = function() mod.saveMemory(4) end },
-                            { title = i18n("memory") .. " 5", fn = function() mod.saveMemory(5) end },
-                        }},
-                        { title = "  " .. i18n("layout"), menu = {
-                            { title = i18n("fullFrame"),  checked = mod.stillsLayout() == "Full Frame", fn = function() mod.stillsLayout("Full Frame"); mod.update() end },
-                            { title = "-", disabled = true },
-                            { title = i18n("leftVertical"),  checked = mod.stillsLayout() == "Left Vertical", fn = function() mod.stillsLayout("Left Vertical"); mod.update() end },
-                            { title = i18n("rightVertical"), checked = mod.stillsLayout() == "Right Vertical", fn = function() mod.stillsLayout("Right Vertical"); mod.update() end },
-                            { title = "-", disabled = true },
-                            { title = i18n("topHorizontal"), checked = mod.stillsLayout() == "Top Horizontal", fn = function() mod.stillsLayout("Top Horizontal"); mod.update() end },
-                            { title = i18n("bottomHorizontal"), checked = mod.stillsLayout() == "Bottom Horizontal", fn = function() mod.stillsLayout("Bottom Horizontal"); mod.update() end },
-                        }},
-                    })
-                    mod._menu:popupMenu(location)
-                end
-            end
-        end
-    end)
+    mod._eventtap = eventtap.new({eventtap.event.types.rightMouseUp}, contextualMenu)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro is shown/hidden:
@@ -701,6 +719,10 @@ function plugin.init(deps)
         deps.fcpxCmds
             :add("cpViewerDraggableGuide")
             :whenActivated(function() mod.setGrid("Draggable Guide") end)
+
+        deps.fcpxCmds
+            :add("cpToggleAllViewerOverlays")
+            :whenActivated(function() mod.disabled:toggle(); mod.update() end)
 
         for i=1, NUMBER_OF_MEMORIES do
             deps.fcpxCmds

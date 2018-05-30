@@ -1145,5 +1145,7 @@
 		"finalcutpro_timeline_captions_label"		           : "Timeline: Captions",
 		"finalcutpro_console_font_label"					   : "Console: Font",
 		"finalcutpro_fullscreen_dockicon_label"				   : "Full Screen Dock Icon Manager",
+		"disableAllOverlays"								   : "Disable All Overlays",
+		"cpToggleAllViewerOverlays_title"					   : "Toggle All Viewer Overlays",
     }
 }
