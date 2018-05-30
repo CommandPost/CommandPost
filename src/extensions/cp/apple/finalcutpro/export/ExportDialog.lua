@@ -35,6 +35,23 @@ local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveS
 --------------------------------------------------------------------------------
 local ExportDialog = {}
 
+
+-- _findWindowUI(windows) -> window | nil
+-- Function
+-- Gets the Window UI.
+--
+-- Parameters:
+--  * windows - Table of windows.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
+local function _findWindowUI(windows)
+    for _,window in ipairs(windows) do
+        if ExportDialog.matches(window) then return window end
+    end
+    return nil
+end
+
 --- cp.apple.finalcutpro.export.ExportDialog.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
@@ -63,8 +80,37 @@ end
 --- Returns:
 ---  * A new ExportDialog object.
 function ExportDialog.new(app)
-    local o = {_app = app}
-    return prop.extend(o, ExportDialog)
+    local o = prop.extend({_app = app}, ExportDialog)
+
+    local UI = app.windowsUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            local windowsUI = original()
+            return windowsUI and _findWindowUI(windowsUI)
+        end,
+        ExportDialog.matches)
+    end)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.export.ExportDialog.UI <cp.prop: hs._asm.axuielement: read-only; live>
+--- Field
+--- Returns the Export Dialog `axuielement`.
+        UI = UI,
+
+--- cp.apple.finalcutpro.export.ExportDialog.isShowing <cp.prop: boolean; read-only; live>
+--- Field
+--- Is the window showing?
+        isShowing = UI:ISNOT(nil),
+
+--- cp.apple.finalcutpro.export.ExportDialog.title <cp.prop: string; read-only; live>
+--- Field
+--- The window title, or `nil` if not available.
+        title = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXTitle")
+        end),
+    }
+
+    return o
 end
 
 --- cp.apple.finalcutpro.export.ExportDialog:app() -> App
@@ -79,46 +125,6 @@ end
 function ExportDialog:app()
     return self._app
 end
-
---- cp.apple.finalcutpro.export.ExportDialog:UI() -> axuielementObject
---- Method
---- Returns the Export Dialog Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function ExportDialog:UI()
-    return axutils.cache(self, "_ui", function()
-        local windowsUI = self:app():windowsUI()
-        return windowsUI and self._findWindowUI(windowsUI)
-    end,
-    ExportDialog.matches)
-end
-
--- cp.apple.finalcutpro.export.ExportDialog:_findWindowUI(windows) -> window | nil
--- Method
--- Gets the Window UI.
---
--- Parameters:
---  * windows - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-function ExportDialog._findWindowUI(windows)
-    for _,window in ipairs(windows) do
-        if ExportDialog.matches(window) then return window end
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.export.ExportDialog.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the window showing?
-ExportDialog.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(ExportDialog)
 
 local function isDefaultItem(menuItem)
     return menuItem:attributeValue("AXMenuItemCmdChar") ~= nil
@@ -242,20 +248,6 @@ function ExportDialog:pressCancel()
         end
     end
     return self
-end
-
---- cp.apple.finalcutpro.export.ExportDialog:getTitle() -> string | nil
---- Method
---- The title of the Export Dialog window or `nil`.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The title of the Export Dialog window as a string or `nil`.
-function ExportDialog:getTitle()
-    local ui = self:UI()
-    return ui and ui:title()
 end
 
 --- cp.apple.finalcutpro.export.ExportDialog:pressNext() -> cp.apple.finalcutpro.export.ExportDialog
