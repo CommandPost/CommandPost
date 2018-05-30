@@ -16,6 +16,7 @@ local log                               = require("hs.logger").new("fcpPlayhead"
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 
 --------------------------------------------------------------------------------
@@ -274,8 +275,8 @@ function Playhead:setTimecode(timecode)
                                 --------------------------------------------------------------------------------
                                 -- Type in Original Timecode & Press Return Key:
                                 --------------------------------------------------------------------------------
-                                hs.eventtap.keyStrokes(timecode)
-                                hs.eventtap.keyStroke({}, 'return')
+                                eventtap.keyStrokes(timecode)
+                                eventtap.keyStroke({}, 'return')
                                 return self
                             end
                         end
