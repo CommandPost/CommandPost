@@ -48,19 +48,16 @@ local mod = {}
 --- Show Timecode Enabled?
 mod.enabled = prop.new(
     function()
+        --------------------------------------------------------------------------------
+        -- Get Preference:
+        --------------------------------------------------------------------------------
         return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
     end,
-
     function(value)
-
         --------------------------------------------------------------------------------
-        -- Update plist:
+        -- Set Preference:
         --------------------------------------------------------------------------------
-        if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-            dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-            return
-        end
-
+        fcp:setPreference(PREFERENCES_KEY, value)
     end
 )
 
