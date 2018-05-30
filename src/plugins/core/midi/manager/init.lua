@@ -999,7 +999,7 @@ function mod.sendMMC(deviceName, virtual, channelNumber, commandType, parameters
     if mod._midiDevices and mod._midiDevices[deviceName] then
         device = mod._midiDevices[deviceName]
     else
-        log.ef("MIDI Device not found: %s (virtual: %s)", deviceName, virtual)
+        --log.ef("MIDI Device not found: %s (virtual: %s)", deviceName, virtual)
         return false
     end
 
