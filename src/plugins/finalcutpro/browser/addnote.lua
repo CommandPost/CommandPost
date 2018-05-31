@@ -19,7 +19,7 @@ local log                               = require("hs.logger").new("addnote")
 local chooser                           = require("hs.chooser")
 local drawing                           = require("hs.drawing")
 local eventtap                          = require("hs.eventtap")
-local menubar                           = require("hs.menubar")
+local menubar                           = require("hs._asm.guitk.menubar.legacy")
 local mouse                             = require("hs.mouse")
 local screen                            = require("hs.screen")
 local timer                             = require("hs.timer")
@@ -239,7 +239,7 @@ function mod.addNoteToSelectedClip()
         }
         mod.rightClickMenubar = menubar.new(false)
         mod.rightClickMenubar:setMenu(rightClickMenu)
-        mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
+        mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition(), true)
     end)
 
     --------------------------------------------------------------------------------

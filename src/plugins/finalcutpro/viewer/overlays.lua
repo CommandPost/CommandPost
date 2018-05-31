@@ -30,7 +30,7 @@ local eventtap          = require("hs.eventtap")
 local fs                = require("hs.fs")
 local geometry          = require("hs.geometry")
 local image             = require("hs.image")
-local menubar           = require("hs.menubar")
+local menubar           = require("hs._asm.guitk.menubar.legacy")
 
 --------------------------------------------------------------------------------
 --
@@ -595,7 +595,8 @@ local function contextualMenu(event)
         local location = event:location() and geometry.point(event:location())
         if barFrame and location and location:inside(geometry.rect(barFrame)) then
             if mod._menu then
-                mod._menu:setMenu({
+
+                local menu = {
                     { title = i18n("disableAllOverlays"), checked = mod.disabled(), fn = function() mod.disabled:toggle(); mod.update() end },
                     { title = "-", disabled = true },
                     { title = string.upper(i18n("gridOverlay")) .. ":", disabled = true },
@@ -660,8 +661,15 @@ local function contextualMenu(event)
                         { title = i18n("topHorizontal"), checked = mod.stillsLayout() == "Top Horizontal", fn = function() mod.stillsLayout("Top Horizontal"); mod.update() end },
                         { title = i18n("bottomHorizontal"), checked = mod.stillsLayout() == "Bottom Horizontal", fn = function() mod.stillsLayout("Bottom Horizontal"); mod.update() end },
                     }},
-                })
-                mod._menu:popupMenu(location)
+                }
+
+                --------------------------------------------------------------------------------
+                -- This is a bit of a workaround to get around a bug that seems to be in
+                -- `hs._asm.guitk.menubar.legacy`:
+                --------------------------------------------------------------------------------
+                mod._menu:returnToMenuBar()
+                mod._menu:setMenu(menu):removeFromMenuBar()
+                mod._menu:popupMenu(location, true)
             end
         end
     end
@@ -688,7 +696,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup contextual menu:
     --------------------------------------------------------------------------------
-    mod._menu = menubar.new(false)
+    mod._menu = menubar.new()
+    log.df("menu: %s", mod._menu)
     mod._eventtap = eventtap.new({eventtap.event.types.rightMouseUp}, contextualMenu)
 
     --------------------------------------------------------------------------------

@@ -36,7 +36,7 @@ local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
 local inspect                   = require("hs.inspect")
-local menubar                   = require("hs.menubar")
+local menubar                   = require("hs._asm.guitk.menubar.legacy")
 local mouse                     = require("hs.mouse")
 local screen                    = require("hs.screen")
 local timer                     = require("hs.timer")
@@ -1108,7 +1108,7 @@ function activator.mt:rightClickAction(index)
     end
 
     self._rightClickMenubar:setMenu(choiceMenu):removeFromMenuBar()
-    self._rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
+    self._rightClickMenubar:popupMenu(mouse.getAbsolutePosition(), true)
 end
 
 return activator

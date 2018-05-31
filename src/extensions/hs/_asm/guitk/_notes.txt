@@ -1,0 +1,54 @@
+Things to do before migration into core
+
+    * stop adding elements (I'm looking at you slider!)
+
+    * document remaining elements (slider, button, textfield)
+
+    * add sample type to documentation/docset generators
+
+Things to do after migrated into core (in no particular order):
+
+    * mouse tracking for elements, not just manager
+
+    * rewrite canvas so it's parent window is no longer necessary -- it can use `hs._asm.guitk` with appropriate constructor wrapper
+      * add support for cX, cY, rX, and bY
+      * add fittingSize to canvas as follows (need to think how above addition extends this, since this is top/left oriented):
+        1. Iterate through elements: fW, fH = 0, 0
+          a. for items with frame, get the @"frame" element
+          b. for items with radius, { x = center.x - radius, y = center.y - radius, h, w = radius * 2 }
+          c. segments? text? need to consider for all element, but end up with rect with components as either number or as percentage string
+          d. calculate size needed tW, tH
+            i.    if x number and w number,         tW = x + w
+            ii.   if x number and w percentage,     tW = (w = 1) ? 0 : x / (1 - w)
+            iii.  if x percentage and w number,     tW = (x = 1) ? 0 : w / (1 - x)
+            iv.   if x percentage and w percentage, tW = 0
+            v.    if y number and h number,         tH = y + h
+            vi.   if y number and h percentage,     tH = (h = 1) ? 0 : y / (1 - h)
+            vii.  if y percentage and h number,     tW = (y = 1) ? 0 : h / (1 - y)
+            viii. if y percentage and h percentage, tH = 0
+          e. fH, fW = max(fH, tH), max(fW, tW)
+        2. return NSMakeSize(fH, fW) -- or swapped if I have it backwards
+
+    * rewrite webview so it's parent window is no longer necessary -- it can use `hs._asm.guitk` with appropriate constructor wrapper
+      * check fittingSize and see if WKWebView already does this correctly
+      * move toolbar to guitk
+
+    * toolbar support for top-level guitk
+
+    * menubar rewrite so it can use views for status icon and menu items
+      * status item userdata takes two userdatas: view (element) and menu
+      * menu userdata comprises actual menu and can be used in other locations (e.g. avplayer) that allow for menu assignment
+      * menu should be a list of menubaritem userdata objects
+        * allows for dynamic updates even if menu being displayed
+
+    * scrolling textview element
+      * ruler?
+      * style change toolbar?
+
+    * tabs
+
+    * add modal sheet support
+
+    * add more elements
+
+    * replace console with one built from these modules? Would allow for easy addition of tabs, direct output to specific window/tab, etc.

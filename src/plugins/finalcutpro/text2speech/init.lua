@@ -22,7 +22,7 @@ local drawing                           = require("hs.drawing")
 local eventtap                          = require("hs.eventtap")
 local fs                                = require("hs.fs")
 local http                              = require("hs.http")
-local menubar                           = require("hs.menubar")
+local menubar                           = require("hs._asm.guitk.menubar.legacy")
 local mouse                             = require("hs.mouse")
 local pasteboard                        = require("hs.pasteboard")
 local screen                            = require("hs.screen")
@@ -855,7 +855,7 @@ function mod._rightClickCallback()
     }
     mod.rightClickMenubar = menubar.new(false)
         :setMenu(rightClickMenu)
-        :popupMenu(mouse.getAbsolutePosition())
+        :popupMenu(mouse.getAbsolutePosition(), true)
 end
 
 --- plugins.finalcutpro.text2speech.show() -> none

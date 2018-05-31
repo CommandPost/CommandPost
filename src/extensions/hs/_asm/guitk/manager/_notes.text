@@ -1,0 +1,27 @@
+Manager additions/extensions under consideration:
+
+* anchors in frameDetails:
+  * anchor - table, setting this for an element resets x, y, cX, cY, rX, and bY
+    * _element - element this one is anchored to (can be specified as element userdata, id, or index but is returned as element userdata)
+    * relationship - "above", "below" (default), "leftOf", "rightOf"
+    * align        - "begin" (default), "center", "end"
+    * offset       - number = 0, offset from `align`
+    * padding      - number = 0, space between element frames
+  * check for loops and error before making changes
+  * final descendent of anchor chain must have a fixed location (i.e. anchor = nil for that element's frameDetails)
+
+* hs._asm.guitk.manager.table.new([rows = nil], [cols = nil])
+  * if row/column set by constructor or methods (see below), manager limits its fittingSize to show just that many rows/columns
+  * hs._asm.guitk.manager.table:rows([rows]) - get or set manager's visible rows; if nil, all
+  * hs._asm.guitk.manager.table:cols([cols]) - get or set manager's visible columns; if nil, all
+  * hs._asm.guitk.manager.table:resizeWindow([state]) - get or set whether window size changes to match fittingSize if manager is hs._asm.guitk contentManager
+  * cell is the size (h, w) of the element in it. row height and column width are the largest element height/width in that row/column
+  * frameDetails changes:
+    * row     - specify this element's row, default max row filled + 1
+    * col     - specify this element's col, default 1
+    * rowSpan - specify number of rows element spans, default 1
+    * colSpan - specify number of cols element spans, default 1
+    * x, y, cX, cY, rX, and bY are within the cell
+    * anchor  - clears row, col, rowSpan, and colSpan for this element and changes cell size of element this is anchored to? or don't support?
+
+Grid?  This is just coordinates with a different granularity then the coordinate plane of the screen. Maybe set a grid width and height for the container and "massage" x,y,h,w (and their variants) from grid coordinates to parent coordinates?
