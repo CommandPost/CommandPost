@@ -7,8 +7,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log                       = require("hs.logger").new("MenuButton")
-local inspect                   = require("hs.inspect")
+-- local log                       = require("hs.logger").new("MenuButton")
+-- local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
