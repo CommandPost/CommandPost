@@ -38,6 +38,30 @@ local BrowserMarkerPopover              = require("cp.apple.finalcutpro.main.Bro
 --------------------------------------------------------------------------------
 local Browser = {}
 
+
+-- _findBrowser(...) -> window | nil
+-- Function
+-- Gets the Browser UI.
+--
+-- Parameters:
+--  * ... - Table of windows.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
+local function _findBrowser(...)
+    for i = 1,select("#", ...) do
+        local window = select(i, ...)
+        if window then
+            local ui = window:browserGroupUI()
+            if ui then
+                local browser = axutils.childMatching(ui, Browser.matches)
+                if browser then return browser end
+            end
+        end
+    end
+    return nil
+end
+
 --- cp.apple.finalcutpro.main.Browser.matches(element) -> boolean
 --- Function
 --- Checks to see if an element matches what we think it should be.
@@ -64,9 +88,9 @@ end
 function Browser.new(app)
     local o = prop.extend({_app = app}, Browser)
 
-    local UI = prop(function()
+    local UI = prop(function(self)
         return axutils.cache(self, "_ui", function()
-            return Browser._findBrowser(app:secondaryWindow(), app:primaryWindow())
+            return _findBrowser(app:secondaryWindow(), app:primaryWindow())
         end,
         Browser.matches)
     end):monitor(app:toolbar().browserShowing)
@@ -151,29 +175,6 @@ end
 -- BROWSER UI:
 --
 -----------------------------------------------------------------------
-
--- _findBrowser(...) -> window | nil
--- Function
--- Gets the Browser UI.
---
--- Parameters:
---  * ... - Table of windows.
---
--- Returns:
---  * An `axuielementObject` or `nil`
-function Browser._findBrowser(...)
-    for i = 1,select("#", ...) do
-        local window = select(i, ...)
-        if window then
-            local ui = window:browserGroupUI()
-            if ui then
-                local browser = axutils.childMatching(ui, Browser.matches)
-                if browser then return browser end
-            end
-        end
-    end
-    return nil
-end
 
 --- cp.apple.finalcutpro.main.Browser:showOnPrimary() -> Browser
 --- Method

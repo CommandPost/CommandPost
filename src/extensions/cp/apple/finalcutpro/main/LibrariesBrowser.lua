@@ -68,7 +68,7 @@ function LibrariesBrowser.new(parent)
         --- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
         --- Returns the main group within the Libraries Browser, or `nil` if not available..
-        mainGroupUI = UI:mutate(function(original)
+        mainGroupUI = UI:mutate(function(original, self)
             return axutils.cache(self, "_mainGroup", function()
                 local ui = original()
                 return ui and axutils.childWithRole(ui, "AXSplitGroup")

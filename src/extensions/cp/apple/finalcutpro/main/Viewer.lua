@@ -187,7 +187,7 @@ function Viewer.new(app, eventViewer)
 
     -- The UI finder
     local UI = prop(function(self)
-        return axutils.cache(o, "_ui", function()
+        return axutils.cache(self, "_ui", function()
             if self:isMainViewer() then
                 return findViewerUI(app:secondaryWindow(), app:primaryWindow())
             else

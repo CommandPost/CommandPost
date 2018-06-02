@@ -71,7 +71,7 @@ function LibrariesList.new(parent)
         end, LibrariesList.matches)
     end)
 
-    local playerUI = UI:mutate(function(original)
+    local playerUI = UI:mutate(function(original, self)
         return axutils.cache(self, "_player", function()
             return axutils.childFromTop(original(), id "Player")
         end)

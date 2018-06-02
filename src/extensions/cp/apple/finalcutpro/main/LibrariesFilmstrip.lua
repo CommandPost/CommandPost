@@ -54,7 +54,7 @@ end
 function LibrariesFilmstrip.new(parent)
     local o = prop.extend({_parent = parent}, LibrariesFilmstrip)
 
-    local UI = parent.mainGroupUI:mutate(function(original)
+    local UI = parent.mainGroupUI:mutate(function(original, self)
         return axutils.cache(self, "_ui", function()
             local main = original()
             if main then
@@ -396,7 +396,7 @@ end
 ---
 --- Returns:
 ---  * `true` if successful otherwise `false`.
-function LibrariesFilmstrip.selectClip(clip)
+function LibrariesFilmstrip:selectClip(clip) -- luacheck:ignore
     if clip then
         local clipUI = clip:UI()
         if axutils.isValid(clipUI) then
