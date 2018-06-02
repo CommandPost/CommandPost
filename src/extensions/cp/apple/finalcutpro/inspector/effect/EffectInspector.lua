@@ -25,17 +25,16 @@ local prop                              = require("cp.prop")
 --------------------------------------------------------------------------------
 local EffectInspector = {}
 
---- cp.apple.finalcutpro.inspector.effect.EffectInspector:new(parent) -> EffectInspector object
+--- cp.apple.finalcutpro.inspector.effect.EffectInspector.new(parent) -> EffectInspector
 --- Method
---- Creates a new EffectInspector object
+--- Creates a new `EffectInspector` object
 ---
 --- Parameters:
----  * `parent`     - The parent
+---  * parent - The parent object
 ---
 --- Returns:
----  * A EffectInspector object
--- TODO: Use a function instead of a method.
-function EffectInspector:new(parent) -- luacheck: ignore
+---  * A `EffectInspector` object
+function EffectInspector.new(parent)
     local o = {
         _parent = parent,
         _child = {}

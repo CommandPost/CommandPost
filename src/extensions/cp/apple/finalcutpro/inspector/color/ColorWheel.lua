@@ -222,7 +222,7 @@ end
 --- * The saturation `ValueIndicator` instance.
 function ColorWheel:saturation()
     if not self._saturation then
-        self._saturation = ValueIndicator:new(self,
+        self._saturation = ValueIndicator.new(self,
             function()
                 return axutils.childFromLeft(self:UI(), 1)
             end,
@@ -249,7 +249,7 @@ end
 --- * The brightness `ValueIndicator` instance.
 function ColorWheel:brightness()
     if not self._brightness then
-        self._brightness = ValueIndicator:new(self,
+        self._brightness = ValueIndicator.new(self,
             function()
                 return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXValueIndicator"), 1)
             end,

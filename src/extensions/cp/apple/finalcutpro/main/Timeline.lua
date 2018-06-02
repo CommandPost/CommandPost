@@ -40,18 +40,42 @@ local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 --------------------------------------------------------------------------------
 local Timeline = {}
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`.
 function Timeline.matches(element)
     return element:attributeValue("AXRole") == "AXGroup"
        and axutils.childWith(element, "AXIdentifier", id "Contents") ~= nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline.matchesMain(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function Timeline.matchesMain(element)
     return element:attributeValue("AXIdentifier") == id "Contents"
 end
 
--- TODO: Add documentation
+-- _findTimeline(...) -> window | nil
+-- Function
+-- Gets the Timeline UI.
+--
+-- Parameters:
+--  * ... - Table of elements.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
 function Timeline._findTimeline(...)
     for i = 1,select("#", ...) do
         local window = select(i, ...)
@@ -66,13 +90,20 @@ function Timeline._findTimeline(...)
     return nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline.new(app) -> Timeline
+--- Constructor
+--- Creates a new `Timeline` instance.
+---
+--- Parameters:
+---  * app - The `cp.apple.finalcutpro` object.
+---
+--- Returns:
+---  * A new `Timeline` object.
 function Timeline.new(app)
     local o = prop.extend({
         _app = app
     },	Timeline)
 
-    -- TODO: Add documentation
     local UI = prop(function(self)
         return axutils.cache(self, "_ui", function()
             return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
@@ -81,27 +112,39 @@ function Timeline.new(app)
     end)
 
     prop.bind(o) {
+
+        --- cp.apple.finalcutpro.main.Timeline.UI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
         UI = UI,
 
-        -- TODO: Add documentation
+        --- cp.apple.finalcutpro.main.Timeline.isOnSecondary <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Timeline is on the Secondary Display.
         isOnSecondary = UI:mutate(function(original)
             local ui = original()
             return ui ~= nil and SecondaryWindow.matches(ui:window())
         end),
 
-        -- TODO: Add documentation
+        --- cp.apple.finalcutpro.main.Timeline.isOnPrimary <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Timeline is on the Primary Display.
         isOnPrimary = UI:mutate(function(original)
             local ui = original()
             return ui ~= nil and PrimaryWindow.matches(ui:window())
         end),
 
-        -- TODO: Add documentation
+        --- cp.apple.finalcutpro.main.Timeline.isShowing <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Timeline is showing on either the Primary or Secondary display.
         isShowing = UI:mutate(function(original)
             local ui = original()
             return ui ~= nil and #ui > 0
         end),
 
-        -- TODO: Add documentation
+        --- cp.apple.finalcutpro.main.Timeline.mainUI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
         mainUI = UI:mutate(function(original, self)
             return axutils.cache(self, "_main", function()
                 local ui = original()
@@ -110,13 +153,24 @@ function Timeline.new(app)
             Timeline.matchesMain)
         end),
 
+        --- cp.apple.finalcutpro.main.Timeline.isLoaded <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Timeline has finished loading.
         isLoaded = o:contents().isLoaded,
     }
 
     return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function Timeline:app()
     return self._app
 end
@@ -127,14 +181,31 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:show() -> Timeline
+--- Method
+--- Show's the Timeline on the Primary Display.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Timeline` object.
 function Timeline:show()
     if not self:isShowing() then
         self:showOnPrimary()
     end
+    return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:showOnPrimary() -> Timeline
+--- Method
+--- Show's the Timeline on the Primary Display.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Timeline` object.
 function Timeline:showOnPrimary()
     local menuBar = self:app():menu()
 
@@ -150,7 +221,15 @@ function Timeline:showOnPrimary()
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:showOnSecondary() -> Timeline
+--- Method
+--- Show's the Timeline on the Secondary Display.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Timeline` object.
 function Timeline:showOnSecondary()
     local menuBar = self:app():menu()
 
@@ -162,7 +241,15 @@ function Timeline:showOnSecondary()
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:hide() -> Timeline
+--- Method
+--- Hide's the Timeline (regardless of whether it was on the Primary or Secondary display).
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Timeline` object.
 function Timeline:hide()
     local menuBar = self:app():menu()
     -- Uncheck it from the primary workspace
@@ -183,7 +270,16 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:contents() -> TimelineContent
+--- Method
+--- Gets the Timeline Contents. The Content is the main body of the timeline,
+--- containing the Timeline Index, the Content, and the Effects/Transitions panels.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `TimelineContent` object.
 function Timeline:contents()
     if not self._content then
         self._content = TimelineContent.new(self)
@@ -198,10 +294,18 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:effects() -> EffectsBrowser
+--- Method
+--- Gets the (sometimes hidden) Effect Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `EffectsBrowser` object.
 function Timeline:effects()
     if not self._effects then
-        self._effects = EffectsBrowser:new(self, EffectsBrowser.EFFECTS)
+        self._effects = EffectsBrowser.new(self, EffectsBrowser.EFFECTS)
     end
     return self._effects
 end
@@ -213,10 +317,18 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:transitions() -> EffectsBrowser
+--- Method
+--- Gets the (sometimes hidden) Transitions Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `EffectsBrowser` object.
 function Timeline:transitions()
     if not self._transitions then
-        self._transitions = EffectsBrowser:new(self, EffectsBrowser.TRANSITIONS)
+        self._transitions = EffectsBrowser.new(self, EffectsBrowser.TRANSITIONS)
     end
     return self._transitions
 end
@@ -228,7 +340,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:playhead() -> Playhead
+--- Method
+--- Gets the Timeline Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Playhead` object.
 function Timeline:playhead()
     return self:contents():playhead()
 end
@@ -240,7 +360,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:skimmingPlayhead() -> Playhead
+--- Method
+--- Gets the Playhead that tracks under the mouse while skimming.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Playhead` object.
 function Timeline:skimmingPlayhead()
     return self:contents():skimmingPlayhead()
 end
@@ -252,7 +380,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:toolbar() -> TimelineToolbar
+--- Method
+--- Gets the bar at the top of the timeline.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `TimelineToolbar` object.
 function Timeline:toolbar()
     if not self._toolbar then
         self._toolbar = TimelineToolbar.new(self)
@@ -268,18 +404,44 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline.lockActive -> number
+--- Variable
+--- Lock active. Used by Playhead Locking.
 Timeline.lockActive = 0.01
+
+--- cp.apple.finalcutpro.main.Timeline.lockInactive -> number
+--- Variable
+--- Lock Inactive. Used by Playhead Locking.
 Timeline.lockInactive = 0.1
+
+--- cp.apple.finalcutpro.main.Timeline.stopThreshold -> number
+--- Variable
+--- Stop Threshold. Used by Playhead Locking.
 Timeline.stopThreshold = 15
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline.STOPPED -> number
+--- Constant
+--- Stopped ID.
 Timeline.STOPPED = 1
+
+--- cp.apple.finalcutpro.main.Timeline.TRACKING -> number
+--- Constant
+--- Tracking ID.
 Timeline.TRACKING = 2
+
+--- cp.apple.finalcutpro.main.Timeline.DEADZONE -> number
+--- Constant
+--- Dead Zone ID.
 Timeline.DEADZONE = 3
+
+--- cp.apple.finalcutpro.main.Timeline.INVISIBLE -> number
+--- Constant
+--- Invisible ID.
 Timeline.INVISIBLE = 4
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
+--- Variable
+--- Is Playhead Locked?
 Timeline.isLockedPlayhead = prop.new(function(self)
     return self._locked
 end):bind(Timeline)
@@ -296,7 +458,9 @@ end):bind(Timeline)
 ---  * The `Timeline` instance.
 function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     if self._locked then
-        -- already locked.
+        --------------------------------------------------------------------------------
+        -- Already locked:
+        --------------------------------------------------------------------------------
         return self
     end
 
@@ -324,10 +488,14 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
         --]]
     end
 
-    -- Setting this to false unlocks the playhead.
+    --------------------------------------------------------------------------------
+    -- Setting this to false unlocks the playhead:
+    --------------------------------------------------------------------------------
     self._locked = true
 
-    -- Calculate the original offset of the playhead
+    --------------------------------------------------------------------------------
+    -- Calculate the original offset of the playhead:
+    --------------------------------------------------------------------------------
     local viewFrame = content:viewFrame()
     if viewFrame then
         originalOffset = playhead:getPosition() - viewFrame.x
@@ -337,10 +505,14 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
         end
     end
 
-    -- Create the 'check' function that will loop to keep the playhead in position
+    --------------------------------------------------------------------------------
+    -- Create the 'check' function that will loop to keep the playhead in position:
+    --------------------------------------------------------------------------------
     check = function()
         if not self._locked then
-            -- We have stopped locking. Bail.
+            --------------------------------------------------------------------------------
+            -- We have stopped locking. Bail:
+            --------------------------------------------------------------------------------
             return
         end
 
@@ -348,7 +520,9 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
         local playheadPosition = playhead:getPosition()
 
         if contentFrame == nil or playheadPosition == nil then
-            -- The timeline and/or playhead does not exist.
+            --------------------------------------------------------------------------------
+            -- The timeline and/or playhead does not exist:
+            --------------------------------------------------------------------------------
             if status ~= Timeline.INVISIBLE then
                 status = Timeline.INVISIBLE
                 -- log.df("Timeline not visible.")
@@ -360,12 +534,16 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
                 self:unlockPlayhead()
             end
         else
+            --------------------------------------------------------------------------------
             -- The timeline is visible. Let's track it!
-            -- Reset the original offset if the viewFrame gets too narrow
+            -- Reset the original offset if the viewFrame gets too narrow:
+            --------------------------------------------------------------------------------
             if originalOffset >= contentFrame.w then originalOffset = math.floor(contentFrame.w/2) end
 
             if playheadPosition == lastPosition then
-                -- it hasn't moved since the last check
+                --------------------------------------------------------------------------------
+                -- It hasn't moved since the last check:
+                --------------------------------------------------------------------------------
                 incPlayheadStopped()
                 if playheadHasStopped() and status ~= Timeline.STOPPED then
                     status = Timeline.STOPPED
@@ -376,7 +554,9 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
                     end
                 end
             else
-                -- it's moving
+                --------------------------------------------------------------------------------
+                -- It's moving:
+                --------------------------------------------------------------------------------
                 local timelineFrame = content:timelineFrame()
                 local scrollWidth = timelineFrame.w - contentFrame.w
                 local scrollPoint = timelineFrame.x*-1 + playheadPosition - originalOffset
@@ -407,13 +587,17 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
             end
         end
 
-        -- Check how quickly we should check again.
+        --------------------------------------------------------------------------------
+        -- Check how quickly we should check again:
+        --------------------------------------------------------------------------------
         local next = Timeline.lockActive
         if playheadHasStopped() then
             next = Timeline.lockInactive
         end
 
-        -- Update last postion to the current position.
+        --------------------------------------------------------------------------------
+        -- Update last postion to the current position:
+        --------------------------------------------------------------------------------
         lastPosition = playheadPosition
 
         if next ~= nil then
@@ -428,11 +612,18 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Timeline:unlockPlayhead() -> Timeline
+--- Method
+--- Unlock Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Timeline` object.
 function Timeline:unlockPlayhead()
     -- log.df("unlockPlayhead: called")
     self._locked = false
-
     return self
 end
 

@@ -98,8 +98,7 @@ end
 ---
 --- Returns:
 ---  * A `VideoInspector` object
--- TODO: Use a function instead of a method.
-function VideoInspector.new(parent) -- luacheck: ignore
+function VideoInspector.new(parent)
     local o
     o = prop.extend({
         _parent = parent,

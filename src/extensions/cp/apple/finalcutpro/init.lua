@@ -502,6 +502,7 @@ function fcp:closeLibrary(title)
         --------------------------------------------------------------------------------
         just.wait(2.0)
         if libraries:selectLibrary(title) ~= nil then
+            just.wait(1.0)
             local closeLibrary = self:string("FFCloseLibraryFormat")
             if closeLibrary then
                 -- some languages contain NBSPs instead of spaces, but these don't survive to the actual menu title. Swap them out.
@@ -514,7 +515,7 @@ function fcp:closeLibrary(title)
                 return result
             end})
             --------------------------------------------------------------------------------
-            -- Wait until the library actually closes, up to 5 seconds:
+            -- Wait until the library actually closes, up to 10 seconds:
             --------------------------------------------------------------------------------
             return just.doUntil(function() return libraries:show():selectLibrary(title) == nil end, 10.0)
         end
@@ -814,7 +815,7 @@ end
 ---  * the Browser
 function fcp:browser()
     if not self._browser then
-        self._browser = Browser:new(self)
+        self._browser = Browser.new(self)
     end
     return self._browser
 end

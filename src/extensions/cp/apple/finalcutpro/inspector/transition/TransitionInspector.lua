@@ -25,17 +25,16 @@ local prop								= require("cp.prop")
 --------------------------------------------------------------------------------
 local TransitionInspector = {}
 
---- cp.apple.finalcutpro.inspector.transition.TransitionInspector:new(parent) -> TransitionInspector object
---- Method
---- Creates a new TransitionInspector object
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector.new(parent) -> TransitionInspector
+--- Constructor
+--- Creates a new `TransitionInspector` object.
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * parent - The parent
 ---
 --- Returns:
----  * A TransitionInspector object
--- TODO: Use a function instead of a method.
-function TransitionInspector:new(parent) -- luacheck: ignore
+---  * A `TransitionInspector` object
+function TransitionInspector.new(parent)
     local o = {
         _parent = parent,
         _child = {}
@@ -56,23 +55,17 @@ function TransitionInspector:parent()
     return self._parent
 end
 
---- cp.apple.finalcutpro.inspector.transition.TransitionInspector:app() -> table
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector:app() -> App
 --- Method
---- Returns the `cp.apple.finalcutpro` app table
+--- Returns the `cp.apple.finalcutpro` object.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * The application object as a table
+---  * The application object
 function TransitionInspector:app()
     return self:parent():app()
 end
-
---------------------------------------------------------------------------------
---
--- TRANSITION INSPECTOR:
---
---------------------------------------------------------------------------------
 
 return TransitionInspector

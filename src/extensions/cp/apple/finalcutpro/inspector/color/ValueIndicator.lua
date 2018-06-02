@@ -39,8 +39,8 @@ function ValueIndicator.matches(element)
     return element:attributeValue("AXRole") == "AXValueIndicator"
 end
 
---- cp.apple.finalcutpro.inspector.color.ValueIndicator:new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -> ValueIndicator
---- Method
+--- cp.apple.finalcutpro.inspector.color.ValueIndicator.new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -> ValueIndicator
+--- Constructor
 --- Creates a new ValueIndicator.
 ---
 --- Parameters:
@@ -53,9 +53,7 @@ end
 ---
 --- Returns:
 ---  * New `ValueIndicator` instance.
--- TODO: Use a function instead of a method.
-function ValueIndicator:new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn) -- luacheck: ignore
-
+function ValueIndicator.new(parent, finderFn, minValue, maxValue, toAXValueFn, fromAXValueFn)
     return prop.extend({
         _parent = parent,
         _finder = finderFn,

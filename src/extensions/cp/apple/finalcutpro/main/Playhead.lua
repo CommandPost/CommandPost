@@ -81,17 +81,17 @@ function Playhead.find(containerUI, skimming)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Playhead:new(parent, skimming, containerFn) -> Playhead
+--- cp.apple.finalcutpro.main.Playhead.new(parent, skimming, containerFn) -> Playhead
 --- Constructor
 --- Constructs a new Playhead
 ---
 --- Parameters:
---- * parent        - The parent object
---- * skimming      - (optional) if `true`, this links to the 'skimming' playhead created under the mouse, if present.
---- * containerFn   - (optional) a function which returns the container axuielement which contains the playheads. If not present, it will use the parent's UI element.
+---  * parent        - The parent object
+---  * skimming      - (optional) if `true`, this links to the 'skimming' playhead created under the mouse, if present.
+---  * containerFn   - (optional) a function which returns the container axuielement which contains the playheads. If not present, it will use the parent's UI element.
 ---
 --- Returns:
---- * The new `Playhead` instance.
+---  * The new `Playhead` instance.
 function Playhead.new(parent, skimming, containerFn)
     local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
     return prop.extend(o, Playhead)

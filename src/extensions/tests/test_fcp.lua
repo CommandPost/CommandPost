@@ -124,7 +124,7 @@ return test.suite("cp.apple.finalcutpro"):with(
             local export = fcp:exportDialog()
             -- Export Dialog
             ok(not export:isShowing())
-            export:show(nil, true, true, true)
+            export:show(1, true, true, true)
 
             ok(export:isShowing())
             export:hide()
@@ -132,14 +132,14 @@ return test.suite("cp.apple.finalcutpro"):with(
 
             -- switch to viewer > proxy mode, which has an additional warning message
             fcp:viewer():usingProxies(true)
-            _, err = export:show(nil, true, true, true)
+            _, err = export:show(1, true, true, true)
             ok(err == nil)
             ok(export:isShowing())
             export:hide()
             ok(not export:isShowing())
 
             -- fail on proxies this time, quietly
-            _, err = export:show(nil, false, true, true)
+            _, err = export:show(1, false, true, true)
             ok(err ~= nil)
             ok(eq(export:isShowing(), false))
             ok(eq(fcp:alert():isShowing(), false))
@@ -623,12 +623,7 @@ onRun(
         just.wait(1)
 
         fcp:launch()
-        just.doUntil(
-            function()
-                return fcp:isRunning()
-            end,
-            10
-        )
+        just.doUntil(function() return fcp:isRunning() end, 10)
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
@@ -637,21 +632,11 @@ onRun(
         end
 
         -- keep trying until the library loads successfully, waiting up to 5 seconds.
-        just.doUntil(
-            function()
-                return fcp:libraries():selectLibrary(targetLibrary) ~= nil
-            end,
-            5.0
-        )
+        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 5.0) then
+            error(format("Unable to open the '%s' Library.", targetLibrary))
+        end
 
-        if
-            not just.doUntil(
-                function()
-                    return fcp:libraries():openClipTitled("Test Project")
-                end,
-                10
-            )
-         then
+        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10) then
             error(format("Unable to open the 'Test Project' clip."))
         end
     end

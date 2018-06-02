@@ -7,6 +7,8 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+-- local log                       = require("hs.logger").new("MenuButton")
+-- local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -153,6 +155,7 @@ function MenuButton:selectItemMatching(pattern)
             end
             -- wait until the menu closes.
             just.doWhile(function() return ui[1] end, 5, 0.01)
+            return found
         end
         self.value:update()
     end

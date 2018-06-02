@@ -7,9 +7,17 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log								= require("hs.logger").new("ScrollArea")
 
-local axutils							= require("cp.ui.axutils")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils						= require("cp.ui.axutils")
+local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -24,11 +32,11 @@ function ScrollArea.matches(element)
 end
 
 -- TODO: Add documentation
-function ScrollArea:new(parent, finderFn)
-    local o = {_parent = parent, _finder = finderFn}
-    setmetatable(o, self)
-    self.__index = self
-    return o
+function ScrollArea.new(parent, finderFn)
+    return prop.extend({
+        _parent = parent,
+        _finder = finderFn
+    }, ScrollArea)
 end
 
 -- TODO: Add documentation

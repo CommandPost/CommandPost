@@ -27,10 +27,10 @@ end
 --- Creates a new PopUpButton.
 ---
 --- Parameters:
---- * parent		- The parent table. Should have a `isShowing` property.
+---  * parent		- The parent table. Should have a `isShowing` property.
 ---
 --- Returns:
---- * The new `PopUpButton` instance.
+---  * The new `PopUpButton` instance.
 function PopUpButton.new(parent, finderFn)
     local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
 
@@ -154,10 +154,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function PopUpButton:snapshot(path)
     local ui = self:UI()
     if ui then
