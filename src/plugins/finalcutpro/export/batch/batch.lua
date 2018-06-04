@@ -357,7 +357,6 @@ function mod.batchExportBrowserClips(clips)
     --------------------------------------------------------------------------------
     -- Setup:
     --------------------------------------------------------------------------------
-    local result
     local firstTime             = true
     local libraries             = fcp:browser():libraries()
     local exportPath            = mod.getDestinationFolder()
@@ -372,11 +371,7 @@ function mod.batchExportBrowserClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
-            fcp:launch()
-            return fcp:isFrontmost()
-        end, 10, 0.1)
-        if not result then
+        if not fcp:launch(10) then
             dialog.displayErrorMessage("Failed to switch back to Final Cut Pro.\n\nThis shouldn't happen.")
             return false
         end
@@ -462,7 +457,6 @@ function mod.batchExportBrowserClips(clips)
             -- Click 'Save' on the save sheet:
             --------------------------------------------------------------------------------
             saveSheet:pressSave()
-
         end
 
         --------------------------------------------------------------------------------
@@ -503,8 +497,8 @@ function mod.batchExportBrowserClips(clips)
         if needDelay then
             just.wait(1)
         end
-
     end
+    libraries:selectAll(clips)
     return true
 end
 
@@ -538,11 +532,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        result = just.doUntil(function()
-            fcp:launch()
-            return fcp:isFrontmost()
-        end, 10, 0.1)
-        if not result then
+        if not fcp:launch(10) then
             dialog.displayErrorMessage("Failed to switch back to Final Cut Pro." .. errorFunction)
             return false
         end
@@ -747,6 +737,8 @@ function mod.batchExportTimelineClips(clips)
         end
 
     end
+    -- reselect the original list of clips
+    timelineContents:selectClips(clips)
     return true
 end
 
