@@ -86,7 +86,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     deps.menu
         :addItem(PRIORITY, function()
-            return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
+            return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
         end)
 
     --------------------------------------------------------------------------------
