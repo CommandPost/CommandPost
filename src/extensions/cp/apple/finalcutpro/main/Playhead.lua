@@ -236,13 +236,14 @@ end
 --- Moves the playhead to a specific timecode value.
 ---
 --- Parameters:
----  * timecode - The timecode value you want to move to as a string in the following format: "hh:mm:ss:ff" (i.e. "01:00:00:00").
+---  * timecode - The timecode value you want to move to as a string in the following format: "hh:mm:ss:ff" or "hh:mm:ss;ff" (i.e. "01:00:00:00").
 ---
 --- Returns:
 ---  * Playhead object is successful otherwise `nil`
 function Playhead:setTimecode(timecode)
-    if timecode and string.find(timecode, "%d%d:%d%d:%d%d:%d%d") then
+    if timecode and (string.find(timecode, "%d%d:%d%d:%d%d:%d%d") or string.find(timecode, "%d%d:%d%d:%d%d;%d%d")) then
         timecode = string.gsub(timecode, ":", "")
+        timecode = string.gsub(timecode, ";", "")
         local app = self:app()
         local viewer = app:viewer()
         local bottomToolbarUI = viewer:bottomToolbarUI()
@@ -265,7 +266,7 @@ function Playhead:setTimecode(timecode)
                             --------------------------------------------------------------------------------
                             local result = just.doUntil(function()
                                 local timecodeText = axutils.childrenWithRole(bottomToolbarUI, "AXStaticText")
-                                if timecodeText and timecodeText[1] and timecodeText[1]:attributeValue("AXValue") and timecodeText[1]:attributeValue("AXValue") == "00:00:00:00" then
+                                if timecodeText and timecodeText[1] and timecodeText[1]:attributeValue("AXValue") and (timecodeText[1]:attributeValue("AXValue") == "00:00:00:00" or timecodeText[1]:attributeValue("AXValue") == "00:00:00;00") then
                                     return true
                                 else
                                     return false

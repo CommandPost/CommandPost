@@ -204,13 +204,20 @@ function mod.forBundleID(bundleID)
             return app ~= nil and app:isFrontmost()
         end)
 
-        local modalDialogOpen = UI:mutate(function(original)
+        local focusedWindowUI = UI:mutate(function(original)
             local ui = original()
-            if ui then
-                local window = ui:focusedWindow()
-                if window then
-                    return window:attributeValue("AXModal") == true
-                end
+            return ui and ui:attributeValue("AXFocusedWindow")
+        end)
+
+        local mainWindowUI = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXMainWindow")
+        end)
+
+        local modalDialogOpen = focusedWindowUI:mutate(function(original)
+            local window = original()
+            if window then
+                return window:attributeValue("AXModal") == true or window:attributeValue("AXRole") == "AXSheet"
             end
             return false
         end)
@@ -483,10 +490,20 @@ function mod.forBundleID(bundleID)
             --- Returns the application's `axuielement`, if available.
             UI = UI,
 
-            --- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only>
+            --- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
             --- Field
             --- Returns the UI containing the list of windows in the app.
             windowsUI = windowsUI,
+
+            --- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+            --- Field
+            --- Returns the UI containing the currently-focused window for the app.
+            focusedWindowUI = focusedWindowUI,
+
+            --- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+            --- Field
+            --- Returns the UI containing the currently-focused window for the app.
+            mainWindowUI = mainWindowUI,
 
             --- cp.app.baseLocale <cp.prop: cp.i18n.localeID; read-only>
             --- Field
@@ -505,26 +522,6 @@ function mod.forBundleID(bundleID)
         }
 
         apps[bundleID] = theApp
-
-        -- -- add a watcher to update 'frontmostApp'
-        -- frontmost:watch(function(isFrontmost, self)
-        --     if self:bundleID() == COMMANDPOST_BUNDLE_ID then
-        --         if isFrontmost then
-        --             commandPostFrontmost = true
-        --         elseif commandPostFrontmost then
-        --             frontmostApp = nil
-        --             commandPostFrontmost = false
-        --         end
-        --     else
-        --         if isFrontmost then
-        --             frontmostApp = self
-        --             commandPostFrontmost = false
-        --         elseif frontmostApp == self then
-        --             frontmostApp = nil
-        --         end
-        --     end
-        --     mod.frontmostApp:update()
-        -- end, true)
 
         mod._initWatchers()
     end
@@ -816,6 +813,17 @@ local function updateWindowsUI(window)
     if app then
         -- check if any windows are open
         app.windowsUI:update()
+        app.mainWindowUI:update()
+        app.focusedWindowUI:update()
+    end
+end
+
+local function updateFocusedWindowUI(window)
+    local app = findAppForWindow(window)
+    if app then
+        -- check if any windows are open
+        app.mainWindowUI:update()
+        app.focusedWindowUI:update()
     end
 end
 
@@ -896,6 +904,7 @@ function mod._initWatchers()
     appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
+    appWindowFilter:subscribe(windowfilter.windowFocused, updateFocusedWindowUI)
 
     mod._appWindowFilter = appWindowFilter
 end
