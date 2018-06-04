@@ -818,6 +818,15 @@ local function updateWindowsUI(window)
     end
 end
 
+local function updateFocusedWindowUI(window)
+    local app = findAppForWindow(window)
+    if app then
+        -- check if any windows are open
+        app.mainWindowUI:update()
+        app.focusedWindowUI:update()
+    end
+end
+
 local function updateFrontmostApp(app)
     if app then
         if app:bundleID() ~= COMMANDPOST_BUNDLE_ID then
@@ -895,6 +904,7 @@ function mod._initWatchers()
     appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
+    appWindowFilter:subscribe(windowfilter.windowFocused, updateFocusedWindowUI)
 
     mod._appWindowFilter = appWindowFilter
 end
