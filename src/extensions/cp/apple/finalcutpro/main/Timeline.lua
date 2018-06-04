@@ -153,10 +153,26 @@ function Timeline.new(app)
             Timeline.matchesMain)
         end),
 
+
+--- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
+--- Field
+--- Is Playhead Locked?
+        isLockedPlayhead = prop.new(function(self)
+            return self._locked == true
+        end)
+    }
+
+    -- These are bound separately because TimelinContents uses `UI` and `mainUI`
+    prop.bind(o) {
         --- cp.apple.finalcutpro.main.Timeline.isLoaded <cp.prop: boolean; read-only>
         --- Field
         --- Checks if the Timeline has finished loading.
         isLoaded = o:contents().isLoaded,
+
+        --- cp.apple.finalcutpro.main.Timeline.isFocused <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Timeline is the focused panel.
+        isFocused = o:contents().isFocused,
     }
 
     return o
@@ -438,13 +454,6 @@ Timeline.DEADZONE = 3
 --- Constant
 --- Invisible ID.
 Timeline.INVISIBLE = 4
-
---- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
---- Variable
---- Is Playhead Locked?
-Timeline.isLockedPlayhead = prop.new(function(self)
-    return self._locked
-end):bind(Timeline)
 
 --- cp.apple.finalcutpro.main.Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre) -> self
 --- Method
