@@ -37,22 +37,27 @@ end
 ---
 --- Parameters:
 --- * parent		- The parent object. Should have an `isShowing` property.
---- * finderFn		- A function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
+--- * finderFn		- A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
 function MenuButton.new(parent, finderFn)
     local o = prop.extend({_parent = parent, _finder = finderFn}, MenuButton)
 
     --- cp.ui.MenuButton.UI <cp.prop: hs._asm.axuielement; read-only>
     --- Field
     --- Provides the `axuielement` for the MenuButton.
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        MenuButton.matches)
-    end)
+    local UI
+    if prop.is(finderFn) then
+        UI = finderFn
+    else
+        UI = prop(function(self)
+            return axutils.cache(self, "_ui", function()
+                return self._finder()
+            end,
+            MenuButton.matches)
+        end)
 
-    if prop.is(parent.UI) then
-        UI:monitor(parent.UI)
+        if prop.is(parent.UI) then
+            UI:monitor(parent.UI)
+        end
     end
 
     prop.bind(o) {
