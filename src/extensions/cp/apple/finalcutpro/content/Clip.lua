@@ -2,23 +2,36 @@
 ---
 --- Represents a clip of media inside FCP.
 
-local axutils			= require("cp.ui.axutils")
-local Table				= require("cp.ui.Table")
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local Table             = require("cp.ui.Table")
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 local Clip = {}
 Clip.mt = {}
-
 Clip.type = {}
 
 --- cp.apple.finalcutpro.content.Clip.type.filmstrip
 --- Constant
 --- A constant for clips which are represented by a filmstrip.
-Clip.type.filmstrip	= "filmstrip"
+Clip.type.filmstrip = "filmstrip"
 
 --- cp.apple.finalcutpro.content.Clip.type.row
 --- Constant
 --- A constant for clips which are represented by a table row.
-Clip.type.row		= "row"
+Clip.type.row = "row"
 
 --- cp.apple.finalcutpro.content.Clip:UI() -> axuielement
 --- Method
@@ -30,7 +43,7 @@ Clip.type.row		= "row"
 --- Returns:
 ---  * The `axuielement` for the clip.
 function Clip.mt:UI()
-	return self._element
+    return self._element
 end
 
 --- cp.apple.finalcutpro.content.Clip:getType() -> Clip.type
@@ -43,7 +56,7 @@ end
 --- Returns:
 ---  * The `Clip.type` value (e.g. `Clip.type.row` or Clip.type.filmstrip`)
 function Clip.mt:getType()
-	return self._type
+    return self._type
 end
 
 --- cp.apple.finalcutpro.content.Clip:getTitle() -> String
@@ -56,13 +69,13 @@ end
 --- Returns:
 ---  * The clip title.
 function Clip.mt:getTitle()
-	if self:getType() == Clip.type.row then
-		local colIndex = self._options.columnIndex
-		local cell = self._element[colIndex]
-		return Table.cellTextValue(cell)
-	else
-		return self._element:attributeValue("AXDescription")
-	end
+    if self:getType() == Clip.type.row then
+        local colIndex = self._options.columnIndex
+        local cell = self._element[colIndex]
+        return Table.cellTextValue(cell)
+    else
+        return self._element:attributeValue("AXDescription")
+    end
 end
 
 --- cp.apple.finalcutpro.content.Clip.new(element[, options]) -> Clip
@@ -70,22 +83,22 @@ end
 --- Creates a new `Clip` pointing at the specified element, with the specified options.
 ---
 --- Parameters:
----  * `element`		- The `axuielement` the clip represents.
----  * `options`		- A table containing the options for the clip.
+---  * `element`        - The `axuielement` the clip represents.
+---  * `options`        - A table containing the options for the clip.
 ---
 --- Returns:
 ---  * The new `Clip`.
 ---
 --- Notes:
 ---  * The options may be:
----  ** `columnIndex`	- A number which will be used to specify the column number to find the title in, if relevant.
+---  ** `columnIndex`   - A number which will be used to specify the column number to find the title in, if relevant.
 function Clip.new(element, options)
-	local o = {
-		_element	= element,
-		_options	= options or {},
-		_type		= element:attributeValue("AXRole") == "AXRow" and Clip.type.row or Clip.type.filmstrip,
-	}
-	return setmetatable(o, {__index = Clip.mt})
+    local o = {
+        _element    = element,
+        _options    = options or {},
+        _type       = element:attributeValue("AXRole") == "AXRow" and Clip.type.row or Clip.type.filmstrip,
+    }
+    return setmetatable(o, {__index = Clip.mt})
 end
 
 --- cp.apple.finalcutpro.content.Clip.is(thing) -> boolean
@@ -93,12 +106,12 @@ end
 --- Checks if the specified `thing` is a `Clip` instance.
 ---
 --- Parameters:
----  * `thing`	- The thing to check.
+---  * `thing`  - The thing to check.
 ---
 --- Returns:
 ---  * `true` if the `thing` is a `Clip`, otherwise returns `false`.
 function Clip.is(thing)
-	return thing and getmetatable(thing) == Clip.mt
+    return thing and getmetatable(thing) == Clip.mt
 end
 
 return Clip

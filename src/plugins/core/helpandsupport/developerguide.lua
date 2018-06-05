@@ -1,26 +1,17 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                      D E V E L O P E R     G U I D E                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.helpandsupport.developerguide ===
 ---
 --- Developer Guide Menu Item.
 
 --------------------------------------------------------------------------------
 --
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local config			= require("cp.config")
-
---------------------------------------------------------------------------------
---
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 1.1
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 1.1
 
 --------------------------------------------------------------------------------
 --
@@ -39,7 +30,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	os.execute('open "http://dev.commandpost.io/"')
+    os.execute('open "http://dev.commandpost.io/"')
 end
 
 --------------------------------------------------------------------------------
@@ -48,12 +39,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.helpandsupport.developerguide",
-	group			= "core",
-	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
-		["core.commands.global"] 		= "global",
-	}
+    id              = "core.helpandsupport.developerguide",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
+        ["core.commands.global"]                    = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -61,22 +52,23 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpDeveloperGuide")
-		:whenActivated(mod.show)
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpDeveloperGuide")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
-	--------------------------------------------------------------------------------
-	-- Menubar:
-	--------------------------------------------------------------------------------
-	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("developerGuide"),	fn = mod.show }
-	end)
-	:addSeparator(PRIORITY+0.1)
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    deps.helpandsupport:addItem(PRIORITY, function()
+        return { title = i18n("developerGuide"),    fn = mod.show }
+    end)
+    :addSeparator(PRIORITY+0.1)
 
-	return mod
+    return mod
 end
 
 return plugin

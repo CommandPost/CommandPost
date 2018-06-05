@@ -1,26 +1,20 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                      K E Y W O R D S     P L U G I N                       --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.browser.keywords ===
 ---
---- Browser Keywords
+--- Browser Keywords Presets.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("addnote")
 
-local ax 								= require("hs._asm.axuielement")
-
-local dialog 							= require("cp.dialog")
-local fcp								= require("cp.apple.finalcutpro")
-local config							= require("cp.config")
-local tools 							= require("cp.tools")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog                            = require("cp.dialog")
+local fcp                               = require("cp.apple.finalcutpro")
+local config                            = require("cp.config")
+local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -29,212 +23,110 @@ local tools 							= require("cp.tools")
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.save(whichButton)
+--- plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS -> number
+--- Constant
+--- The number of presets available.
+mod.NUMBER_OF_PRESETS = 9
 
-	--------------------------------------------------------------------------------
-	-- Check to see if the Keyword Editor is already open:
-	--------------------------------------------------------------------------------
-	local fcpx = fcp:application()
-	local fcpxElements = ax.applicationElement(fcpx)
-	local whichWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then
-				whichWindow = i
-			end
-		end
-	end
-	if whichWindow == nil then
-		dialog.displayMessage(i18n("keywordEditorAlreadyOpen"))
-		return
-	end
-	fcpxElements = fcpxElements[whichWindow]
+--- plugins.finalcutpro.browser.keywords.save(preset) -> none
+--- Function
+--- Saves a Keyword preset.
+---
+--- Parameters:
+---  * preset - A preset number between 1 and the value of `plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS`.
+---
+--- Returns:
+---  * None
+function mod.save(preset)
 
-	--------------------------------------------------------------------------------
-	-- Get Starting Textfield:
-	--------------------------------------------------------------------------------
-	local startTextField = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if startTextField == nil then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:102" then
-				startTextField = i
-				goto startTextFieldDone
-			end
-		end
-	end
-	::startTextFieldDone::
-	if startTextField == nil then
-		--------------------------------------------------------------------------------
-		-- Keyword Shortcuts Buttons isn't down:
-		--------------------------------------------------------------------------------
-		fcpxElements = ax.applicationElement(fcpx)[1] -- Refresh
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:276" then
-				keywordDisclosureTriangle = i
-				goto keywordDisclosureTriangleDone
-			end
-		end
-		::keywordDisclosureTriangleDone::
-		if fcpxElements[keywordDisclosureTriangle] == nil then
-			dialog.displayMessage(i18n("keywordShortcutsVisibleError"))
-			return "Failed"
-		else
-			local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
-			if keywordDisclosureTriangleResult == nil then
-				dialog.displayMessage(i18n("keywordShortcutsVisibleError"))
-				return "Failed"
-			end
-		end
-	end
+    --------------------------------------------------------------------------------
+    -- Open the Keyword Editor:
+    --------------------------------------------------------------------------------
+    local keywordEditor = fcp:keywordEditor()
+    keywordEditor:show()
+    if not keywordEditor:isShowing() then
+        dialog.displayMessage(i18n("keywordEditorNotOpened"))
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Get Values from the Keyword Editor:
-	--------------------------------------------------------------------------------
-	local savedKeywordValues = {}
-	local favoriteCount = 1
-	local skipFirst = true
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXTextField" then
-			if skipFirst then
-				skipFirst = false
-			else
-				savedKeywordValues[favoriteCount] = fcpxElements[i]:attributeValue("AXHelp")
-				favoriteCount = favoriteCount + 1
-			end
-		end
-	end
+    --------------------------------------------------------------------------------
+    -- Open the Keyboard Shortcuts section:
+    --------------------------------------------------------------------------------
+    local keyboardShortcuts = keywordEditor:keyboardShortcuts()
+    keyboardShortcuts:show()
+    if not keyboardShortcuts:isShowing() then
+        dialog.displayMessage(i18n("keywordKeyboardShortcutsNotOpened"))
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Save Values to Settings:
-	--------------------------------------------------------------------------------
-	local savedKeywords = config.get("savedKeywords")
-	if savedKeywords == nil then savedKeywords = {} end
-	for i=1, 9 do
-		if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
-			savedKeywords['Preset ' .. tostring(whichButton)] = {}
-		end
-		savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)] = savedKeywordValues[i]
-	end
-	config.set("savedKeywords", savedKeywords)
+    --------------------------------------------------------------------------------
+    -- Save Values to Settings:
+    --------------------------------------------------------------------------------
+    local savedKeywords = {}
+    for i=1, mod.NUMBER_OF_PRESETS do
+        local keywords = keyboardShortcuts:keyword(i) or {}
+        table.insert(savedKeywords, keywords)
+    end
+    config.set("savedKeywords" .. tostring(preset), savedKeywords)
 
-	--------------------------------------------------------------------------------
-	-- Saved:
-	--------------------------------------------------------------------------------
-	dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(whichButton))
+    --------------------------------------------------------------------------------
+    -- Display Notification:
+    --------------------------------------------------------------------------------
+    dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
 
 end
 
-function mod.restore(whichButton)
+--- plugins.finalcutpro.browser.keywords.restore(preset) -> none
+--- Function
+--- Restores a Keyword preset.
+---
+--- Parameters:
+---  * preset - A preset number between 1 and the value of `plugins.finalcutpro.browser.keywords.NUMBER_OF_PRESETS`.
+---
+--- Returns:
+---  * None
+function mod.restore(preset)
 
-	--------------------------------------------------------------------------------
-	-- Get Values from Settings:
-	--------------------------------------------------------------------------------
-	local savedKeywords = config.get("savedKeywords")
-	local restoredKeywordValues = {}
+    --------------------------------------------------------------------------------
+    -- Get Values from Settings:
+    --------------------------------------------------------------------------------
+    local savedKeywords = config.get("savedKeywords" .. tostring(preset))
+    if type(savedKeywords) ~= "table" or #savedKeywords == 0 then
+        dialog.displayMessage(i18n("noKeywordPresetsError"))
+        return false
+    end
 
-	if savedKeywords == nil then
-		dialog.displayMessage(i18n("noKeywordPresetsError"))
-		return "Fail"
-	end
-	if savedKeywords['Preset ' .. tostring(whichButton)] == nil then
-		dialog.displayMessage(i18n("noKeywordPresetError"))
-		return "Fail"
-	end
-	for i=1, 9 do
-		restoredKeywordValues[i] = savedKeywords['Preset ' .. tostring(whichButton)]['Item ' .. tostring(i)]
-	end
+    --------------------------------------------------------------------------------
+    -- Open the Keyword Editor:
+    --------------------------------------------------------------------------------
+    local keywordEditor = fcp:keywordEditor()
+    keywordEditor:show()
+    if not keywordEditor:isShowing() then
+        dialog.displayMessage(i18n("keywordEditorNotOpened"))
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Check to see if the Keyword Editor is already open:
-	--------------------------------------------------------------------------------
-	local fcpx = fcp:application()
-	local fcpxElements = ax.applicationElement(fcpx)
-	local whichWindow = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXWindow" then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:264" then
-				whichWindow = i
-			end
-		end
-	end
-	if whichWindow == nil then
-		dialog.displayMessage(i18n("keywordEditorAlreadyOpen"))
-		return
-	end
-	fcpxElements = fcpxElements[whichWindow]
+    --------------------------------------------------------------------------------
+    -- Open the Keyboard Shortcuts section:
+    --------------------------------------------------------------------------------
+    local keyboardShortcuts = keywordEditor:keyboardShortcuts()
+    keyboardShortcuts:show()
+    if not keyboardShortcuts:isShowing() then
+        dialog.displayMessage(i18n("keywordKeyboardShortcutsNotOpened"))
+        return nil
+    end
 
-	--------------------------------------------------------------------------------
-	-- Get Starting Textfield:
-	--------------------------------------------------------------------------------
-	local startTextField = nil
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if startTextField == nil then
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:102" then
-				startTextField = i
-				goto startTextFieldDone
-			end
-		end
-	end
-	::startTextFieldDone::
-	if startTextField == nil then
-		--------------------------------------------------------------------------------
-		-- Keyword Shortcuts Buttons isn't down:
-		--------------------------------------------------------------------------------
-		local keywordDisclosureTriangle = nil
-		for i=1, fcpxElements:attributeValueCount("AXChildren") do
-			if fcpxElements[i]:attributeValue("AXIdentifier") == "_NS:276" then
-				keywordDisclosureTriangle = i
-				goto keywordDisclosureTriangleDone
-			end
-		end
-		::keywordDisclosureTriangleDone::
+    --------------------------------------------------------------------------------
+    -- Restore Values to Keyword Editor:
+    --------------------------------------------------------------------------------
+    for i=1, mod.NUMBER_OF_PRESETS do
+        keyboardShortcuts:keyword(i, savedKeywords[i])
+    end
 
-		if fcpxElements[keywordDisclosureTriangle] ~= nil then
-			local keywordDisclosureTriangleResult = fcpxElements[keywordDisclosureTriangle]:performAction("AXPress")
-			if keywordDisclosureTriangleResult == nil then
-				dialog.displayMessage(i18n("keywordShortcutsVisibleError"))
-				return "Failed"
-			end
-		else
-			dialog.displayErrorMessage("Could not find keyword disclosure triangle.\n\nError occurred in restoreKeywordSearches().")
-			return "Failed"
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Restore Values to Keyword Editor:
-	--------------------------------------------------------------------------------
-	local favoriteCount = 1
-	local skipFirst = true
-	for i=1, fcpxElements:attributeValueCount("AXChildren") do
-		if fcpxElements[i]:attributeValue("AXRole") == "AXTextField" then
-			if skipFirst then
-				skipFirst = false
-			else
-				currentKeywordSelection = fcpxElements[i]
-
-				setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-				keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-				eventtap.keyStroke({""}, "return")
-
-				--------------------------------------------------------------------------------
-				-- If at first you don't succeed, try, oh try, again!
-				--------------------------------------------------------------------------------
-				if fcpxElements[i][1]:attributeValue("AXValue") ~= restoredKeywordValues[favoriteCount] then
-					setKeywordResult = currentKeywordSelection:setAttributeValue("AXValue", restoredKeywordValues[favoriteCount])
-					keywordActionResult = currentKeywordSelection:setAttributeValue("AXFocused", true)
-					eventtap.keyStroke({""}, "return")
-				end
-
-				favoriteCount = favoriteCount + 1
-			end
-		end
-	end
-
-	--------------------------------------------------------------------------------
-	-- Successfully Restored:
-	--------------------------------------------------------------------------------
-	dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(whichButton))
+    --------------------------------------------------------------------------------
+    -- Display Notification:
+    --------------------------------------------------------------------------------
+    dialog.displayNotification(i18n("keywordPresetsRestored") .. " " .. tostring(preset))
 
 end
 
@@ -244,31 +136,29 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.browser.keywords",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.commands"]	= "fcpxCmds",
-	}
+    id              = "finalcutpro.browser.keywords",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.commands"]    = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+    for i=1, mod.NUMBER_OF_PRESETS do
+        deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
+            :activatedBy():ctrl():option():cmd(tostring(i))
+            :titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
+            :whenActivated(function() mod.restore(i) end)
 
-	for i=1, 9 do
-		deps.fcpxCmds:add("cpRestoreKeywordPreset" .. tools.numberToWord(i))
-			:activatedBy():ctrl():option():cmd(tostring(i))
-			:titled(i18n("cpRestoreKeywordPreset_customTitle", {count = i}))
-			:whenActivated(function() mod.restore(i) end)
-
-		deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
-			:activatedBy():ctrl():option():shift():cmd(tostring(i))
-			:titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
-			:whenActivated(function() mod.save(i) end)
-	end
-
-	return mod
+        deps.fcpxCmds:add("cpSaveKeywordPreset" .. tools.numberToWord(i))
+            :activatedBy():ctrl():option():shift():cmd(tostring(i))
+            :titled(i18n("cpSaveKeywordPreset_customTitle", {count = i}))
+            :whenActivated(function() mod.save(i) end)
+    end
+    return mod
 end
 
 return plugin

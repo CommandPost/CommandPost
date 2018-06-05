@@ -20,27 +20,27 @@
 }
 
 .rowLabel {
-	width: 50%;
+	width: 500px;
 }
 
 .rowModifier {
-	width: 20%;	
+	width: 100px;
 }
 
 .rowKeyCode {
-	width: 30%;
+	width: 100px;
 }
 
 .rowModifier select {
-	width: 100%;
+	width: 80%;
 	font-size: 12px !important;
-	text-align-last: center;
+	text-align-last: left;
 }
 
 .rowKeyCode select {
-	width: 100%;
+	width: 80%;
 	font-size: 12px !important;
-	text-align-last: center;
+	text-align-last: left;
 }
 
 .shortcuts thead {
@@ -70,10 +70,6 @@
 	overflow-y: scroll;
 }
 
-.shortcuts tbody tr:nth-child(even) {
-	background-color: #f5f5f5
-}
-
 .shortcuts tbody tr:hover {
 	background-color: #006dd4;
 	color: white;
@@ -81,7 +77,14 @@
 
 .resetShortcuts {
 	margin: 10px 0px;
-	text-align: right;
+	text-align: center !important;
+	float: left;
+}
+
+.resetShortcutsToNone {
+	margin: 10px 0px;
+	text-align: center !important;
+	float: right;
 }
 
 .buttonDisabled {

@@ -1,0 +1,78 @@
+{%
+	for i=1,maxItems,1 do
+%}
+			<tr>
+				<td class="tangentRowFavourite">
+					Tangent Favourite #{{ i }}
+				</td>
+				<td class="tangentRowAction">
+					<input type="text" id="tangent_button{{ i }}_action" class="tangentActionTextbox" value="{{ favourites[i] and favourites[i].actionTitle or none }}" disabled>
+				</td>
+				<td class="tangentRowActionButton">
+					<a id="tangent_button{{ i }}_actionButton" href="#" class="button sdActionButton">Select</a>
+					<a id="tangent_button{{ i }}_clearActionButton" href="#" class="button sdActionButton">Clear</a>
+				</td>
+				<script>
+						/*
+						--------------------------------------------------------------------------------
+						ACTION:
+						--------------------------------------------------------------------------------
+						*/
+
+						var tangent_button{{ i }}_actionButton;
+						tangent_button{{ i }}_actionButton = document.getElementById("tangent_button{{ i }}_actionButton");
+						tangent_button{{ i }}_actionButton.addEventListener("click", updateAction{{ i }}, false);
+
+						function updateAction{{ i }}(e) {
+							//
+							// Action Callback:
+							//
+							try {
+								var result = {
+									id: "tangentPanelCallback",
+									params: {
+										type: "updateAction",
+										buttonID: {{ i }},
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+
+						/*
+						--------------------------------------------------------------------------------
+						CLEAR:
+						--------------------------------------------------------------------------------
+						*/
+
+						var tangent_button{{ i }}_clearActionButton;
+						tangent_button{{ i }}_clearActionButton = document.getElementById("tangent_button{{ i }}_clearActionButton");
+						tangent_button{{ i }}_clearActionButton.addEventListener("click", clearAction{{ i }}, false);
+
+						function clearAction{{ i }}(e) {
+							//
+							// Action Callback:
+							//
+							try {
+								var result = {
+									id: "tangentPanelCallback",
+									params: {
+										type: "clearAction",
+										buttonID: "{{ i }}",
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+
+				</script>
+			</tr>
+{%
+	end
+%}

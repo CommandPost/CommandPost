@@ -1,26 +1,17 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                             C R E D I T S                                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.helpandsupport.credits ===
 ---
 --- Credits Menu Item.
 
 --------------------------------------------------------------------------------
 --
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local config			= require("cp.config")
-
---------------------------------------------------------------------------------
---
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 3
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 3
 
 --------------------------------------------------------------------------------
 --
@@ -29,9 +20,9 @@ local PRIORITY 			= 3
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.helpandsupport.credits.openCredits() -> nil
+--- plugins.core.helpandsupport.credits.show() -> nil
 --- Function
---- Opens CommandPost Credits Window
+--- Opens the CommandPost Credits in a browser
 ---
 --- Parameters:
 ---  * None
@@ -39,7 +30,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	hs.openAbout()
+    os.execute('open "http://help.commandpost.io/getting_started/credits/"')
 end
 
 --------------------------------------------------------------------------------
@@ -48,11 +39,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.helpandsupport.credits",
-	group			= "core",
-	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
-	}
+    id              = "core.helpandsupport.credits",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
+        ["core.commands.global"]                    = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -60,10 +52,18 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("credits"),	fn = mod.show }
-	end)
-	return mod
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpCredits")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
+
+    deps.helpandsupport:addItem(PRIORITY, function()
+        return { title = i18n("credits"),   fn = mod.show }
+    end)
+    return mod
 
 end
 

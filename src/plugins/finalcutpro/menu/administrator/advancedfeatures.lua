@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---               A D V A N C E D   F E A T U R E S   M E N U                  --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.menu.administrator.advancedfeatures ===
 ---
 --- Advanced Features Menu.
@@ -13,6 +7,10 @@
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
+
+-- PRIORITY
+-- Constant
+-- The menubar position priority.
 local PRIORITY = 10000
 
 --------------------------------------------------------------------------------
@@ -21,18 +19,18 @@ local PRIORITY = 10000
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.administrator.advancedfeatures",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.menu.administrator"] = "administrator",
-	}
+    id              = "finalcutpro.menu.administrator.advancedfeatures",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.menu.administrator"] = "administrator",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
-	return dependencies.administrator:addMenu(PRIORITY, function() return i18n("advancedFeatures") end)
+    return dependencies.administrator:addMenu(PRIORITY, function() return i18n("advancedFeatures") end)
 end
 
 return plugin

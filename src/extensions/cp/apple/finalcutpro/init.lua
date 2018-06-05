@@ -1,17 +1,6 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro ===
 ---
 --- Represents the Final Cut Pro application, providing functions that allow different tasks to be accomplished.
----
---- This module provides an API to work with the FCPX application. There are a couple of types of files:
----
---- * `init.lua` - the main module that gets imported.
---- * `axutils.lua` - some utility functions for working with `axuielement` objects.
 ---
 --- Generally, you will `require` the `cp.apple.finalcutpro` module to import it, like so:
 ---
@@ -21,7 +10,7 @@
 ---
 --- Then, there are the `UpperCase` files, which represent the application itself:
 ---
---- * `MenuBar` 	- The main menu bar.
+--- * `MenuBar` 	            - The main menu bar.
 --- * `prefs/PreferencesWindow` - The preferences window.
 --- * etc...
 ---
@@ -31,7 +20,7 @@
 --- fcp:preferencesWindow():show()
 --- ```
 ---
---- In general, as long as FCPX is running, actions can be performed directly, and the API will perform the required operations to achieve it. For example, to toggle the 'Create Optimized Media' checkbox in the 'Import' section of the 'Preferences' window, you can simply do this:
+--- In general, as long as Final Cut Pro is running, actions can be performed directly, and the API will perform the required operations to achieve it. For example, to toggle the 'Create Optimized Media' checkbox in the 'Import' section of the 'Preferences' window, you can simply do this:
 ---
 --- ```lua
 --- fcp:preferencesWindow():importPanel():toggleCreateOptimizedMedia()
@@ -74,113 +63,118 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local logname									= "fcp"
-local log										= require("hs.logger").new(logname)
 
-local application								= require("hs.application")
-local applicationwatcher						= require("hs.application.watcher")
-local ax 										= require("hs._asm.axuielement")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log										= require("hs.logger").new("fcp")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
-local pathwatcher								= require("hs.pathwatcher")
-local timer										= require("hs.timer")
 
-local v											= require("semver")
-local _											= require("moses")
-
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local just										= require("cp.just")
+local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
-local shortcut									= require("cp.commands.shortcut")
-local strings									= require("cp.strings")
-local tools										= require("cp.tools")
-local watcher									= require("cp.watcher")
 
-local axutils									= require("cp.ui.axutils")
+local commandeditor								= require("cp.apple.commandeditor")
+
+local app                                       = require("cp.apple.finalcutpro.app")
+local strings                                   = require("cp.apple.finalcutpro.strings")
+local menu                                      = require("cp.apple.finalcutpro.menu")
+local plugins									= require("cp.apple.finalcutpro.plugins")
+
 local Browser									= require("cp.apple.finalcutpro.main.Browser")
-local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
-local destinations								= require("cp.apple.finalcutpro.export.destinations")
-local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
 local FullScreenWindow							= require("cp.apple.finalcutpro.main.FullScreenWindow")
-local kc										= require("cp.apple.finalcutpro.keycodes")
-local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
-local MenuBar									= require("cp.apple.finalcutpro.MenuBar")
-local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
+local KeywordEditor								= require("cp.apple.finalcutpro.main.KeywordEditor")
 local PrimaryWindow								= require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow							= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local Timeline									= require("cp.apple.finalcutpro.main.Timeline")
 local Viewer									= require("cp.apple.finalcutpro.main.Viewer")
-local windowfilter								= require("cp.apple.finalcutpro.windowfilter")
 
-local plugins									= require("cp.apple.finalcutpro.plugins")
+local CommandEditor								= require("cp.apple.finalcutpro.cmd.CommandEditor")
+local ExportDialog								= require("cp.apple.finalcutpro.export.ExportDialog")
+local MediaImport								= require("cp.apple.finalcutpro.import.MediaImport")
+local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesWindow")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local v											= require("semver")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local format, gsub 						        = string.format, string.gsub
+
+-- a Non-Breaking Space. Looks like a space, isn't a space.
+local NBSP = " "
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local App = {}
+local fcp = {
+    --- cp.apple.finalcutpro.app <cp.app>
+    --- Constant
+    --- The `cp.app` for Final Cut Pro.
+    app = app,
+    strings = strings,
+}
+
+--- cp.apple.finalcutpro.BUNDLE_ID
+--- Constant
+--- Final Cut Pro's Bundle ID as a `semver`.
+fcp.BUNDLE_ID = "com.apple.FinalCut"
 
 --- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
-App.EARLIEST_SUPPORTED_VERSION = "10.3.2"
-
---------------------------------------------------------------------------------
--- TODO: The below five constants should probably just be determined from the
---       Final Cut Pro plist file?
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.BUNDLE_ID
---- Constant
---- Final Cut Pro's Bundle ID
-App.BUNDLE_ID = "com.apple.FinalCut"
+fcp.EARLIEST_SUPPORTED_VERSION = v("10.3.2")
 
 --- cp.apple.finalcutpro.PASTEBOARD_UTI
 --- Constant
 --- Final Cut Pro's Pasteboard UTI
-App.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
+fcp.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
 
-App.PREFS_PATH = "~/Library/Preferences/"
-
-App.PREFS_PLIST_FILE = "com.apple.FinalCut.plist"
-
---- cp.apple.finalcutpro.PREFS_PLIST_PATH
+--- cp.apple.finalcutpro.EVENT_DESCRIPTION_PATH
 --- Constant
---- Final Cut Pro's Preferences Path
-App.PREFS_PLIST_PATH = App.PREFS_PATH .. App.PREFS_PLIST_FILE
-
---- cp.apple.finalcutpro.SUPPORTED_LANGUAGES
---- Constant
---- Table of Final Cut Pro's supported Languages
-App.SUPPORTED_LANGUAGES = {"de", "en", "es", "fr", "ja", "zh_CN"}
+--- The Event Description Path.
+fcp.EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist"
 
 --- cp.apple.finalcutpro.FLEXO_LANGUAGES
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
-App.FLEXO_LANGUAGES	= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
+fcp.FLEXO_LANGUAGES	= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS
 --- Constant
 --- Table of video file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_VIDEO_EXTENSIONS	= {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
+fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS	= {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_AUDIO_EXTENSIONS
 --- Constant
 --- Table of audio file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
+fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 --- Constant
 --- Table of image file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
+fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
-App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(App.ALLOWED_IMPORT_AUDIO_EXTENSIONS, App.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
+fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
 
 --- cp.apple.finalcutpro:init() -> App
 --- Function
@@ -191,239 +185,217 @@ App.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(App.ALLOWED_IMPORT_VIDEO_EXTE
 ---
 --- Returns:
 ---  * The app.
-function App:init()
-	self:_initWatchers()
-	self:_initStrings()
-	self.application:watch(function() self:reset() end)
-	
-	-- set initial state
-	self.application:update()
-	return self
+function fcp:init()
+    self.app.hsApplication:watch(function() self:reset() end)
+
+    -- set initial state
+    self.app:update()
+    return self
 end
 
-function App:reset()
-	-- resets the language cache
-	self._currentLanguage = nil
-	self._activeCommandSet = nil
+--------------------------------------------------------------------------------
+-- Bind the `cp.app` props to the Final Cut Pro instance for easy
+-- access/backwards compatibility:
+--------------------------------------------------------------------------------
+prop.bind(fcp) {
+
+    --- cp.apple.finalcutpro.application <cp.prop: hs.application; read-only>
+    --- Field
+    --- Returns the running `hs.application` for Final Cut Pro, or `nil` if it's not running.
+    application = app.hsApplication,
+
+    --- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
+    --- Field
+    --- Is Final Cut Pro Running?
+    isRunning = app.running,
+
+    --- cp.apple.finalcutpro.UI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- Field
+    --- The Final Cut Pro `axuielement`, if available.
+    UI = app.UI,
+
+    --- cp.apple.finalcutpro.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+    --- Field
+    --- Returns the UI containing the list of windows in the app.
+    windowsUI = app.windowsUI,
+
+    --- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only; live>
+    --- Field
+    --- Is Final Cut visible on screen?
+    isShowing = app.showing,
+
+    --- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
+    --- Field
+    --- Is any version of Final Cut Pro Installed?
+    isInstalled = app.installed,
+
+    --- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only; live>
+    --- Field
+    --- Is Final Cut Pro Frontmost?
+    isFrontmost = app.frontmost,
+
+    --- cp.apple.finalcutpro:isModalDialogOpen <cp.prop: boolean; read-only>
+    --- Field
+    --- Is a modal dialog currently open?
+    isModalDialogOpen = app.modalDialogOpen,
+
+    --- cp.apple.finalcutpro.isSupported <cp.prop: boolean; read-only; live>
+    --- Field
+    --- Is a supported version of Final Cut Pro installed?
+    ---
+    --- Note:
+    ---  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
+    isSupported = app.version:mutate(function(original)
+        local version = original()
+        return version ~= nil and version >= fcp.EARLIEST_SUPPORTED_VERSION
+    end),
+
+    --- cp.apple.finalcutpro.supportedLocales <cp.prop: table of cp.i18n.localeID; read-only>
+    --- Field
+    --- The list of supported locales for this version of FCPX.
+    supportedLocales = app.supportedLocales,
+
+    --- cp.apple.finalcutpro.currentLocale <cp.prop: cp.i18n.localeID; live>
+    --- Field
+    --- Gets and sets the current locale for FCPX.
+    currentLocale = app.currentLocale,
+
+    --- cp.apple.finalcutpro.version <cp.prop: semver; read-only; live>
+    --- Field
+    --- The version number of the running or default installation of FCPX as a `semver`.
+    version = app.version,
+
+    --- cp.apple.finalcutpro.versionString <cp.prop: string; read-only; live>
+    --- Field
+    --- The version number of the running or default installation of FCPX as a `string`.
+    versionString = app.versionString,
+}
+
+prop.bind(fcp) {
+    --- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
+    --- Field
+    --- Is an unsupported version of Final Cut Pro installed?
+    ---
+    --- Note:
+    ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
+    isUnsupported = fcp.isInstalled:AND(fcp.isSupported:NOT())
+}
+
+--- cp.apple.finalcutpro:reset() -> none
+--- Function
+--- Resets the language cache
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function fcp:reset()
+    self._activeCommandSet = nil
 end
 
-function App:_initStrings()
-	self.isRunning:watch(function() self:_resetStrings() end, true)
-end
-
-function App:_resetStrings()
-	self._strings = strings.new()
-
-	local appPath = self:getPath()
-	if appPath then
-		self._strings:fromPlist(appPath .. "/Contents/Resources/${language}.lproj/PELocalizable.strings")
-		self._strings:fromPlist(appPath .. "/Contents/Frameworks/Flexo.framework/Resources/${language}.lproj/FFLocalizable.strings")
-		self._strings:fromPlist(appPath .. "/Contents/Frameworks/LunaKit.framework/Resources/${language}.lproj/Commands.strings")
-	end
-end
-
---- cp.apple.finalcutpro:string(key[, lang]) -> string
+--- cp.apple.finalcutpro:string(key[, locale[, quiet]]) -> string
 --- Method
 --- Looks up an application string with the specified `key`.
---- If no `lang` value is provided, the [current language](#currentLanguage) is used.
+--- If no `locale` value is provided, the [current locale](#currentLocale) is used.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
----  * `lang`	- The language code to use. Defaults to the current language.
+---  * `locale`	- The locale code to use. Defaults to the current locale.
+---  * `quiet`	- Optional boolean, defaults to `false`. If `true`, no warnings are logged for missing keys.
 ---
 --- Returns:
 ---  * The requested string or `nil` if the application is not running.
-function App:string(key, lang)
-	lang = lang or self:currentLanguage()
-	return self._strings and self._strings:find(lang, key)
+function fcp:string(key, locale, quiet)
+    return self.strings:find(key, locale, quiet)
 end
 
---- cp.apple.finalcutpro:keysWithString(string[, lang]) -> {string}
+--- cp.apple.finalcutpro:keysWithString(string[, locale]) -> {string}
 --- Method
---- Looks up an application string and returns an array of keys that match. It will take into account current language the app is running in, or use `lang` if provided.
+--- Looks up an application string and returns an array of keys that match. It will take into account current locale the app is running in, or use `locale` if provided.
 ---
 --- Parameters:
 ---  * `key`	- The key to look up.
----  * `lang`	- The language (defaults to current FCPX language).
+---  * `locale`	- The locale (defaults to current FCPX locale).
 ---
 --- Returns:
 ---  * The array of keys with a matching string.
 ---
 --- Notes:
 ---  * This method may be very inefficient, since it has to search through every possible key/value pair to find matches. It is not recommended that this is used in production.
-function App:keysWithString(string, lang)
-	local lang = lang or self:currentLanguage()
-	return self._strings and self._strings:findKeys(lang, string)
+function fcp:keysWithString(string, locale)
+    return self.strings:findKeys(string, locale)
 end
 
---- cp.apple.finalcutpro:application() -> hs.application
+--- cp.apple.finalcutpro:bundleID() -> string
 --- Method
---- Returns the running `hs.application` for Final Cut Pro.
+--- Returns the Bundle ID for the app.
 ---
 --- Parameters:
----  * None
+--- * None
 ---
 --- Returns:
----  * The hs.application, or `nil` if the application is not running.
-App.application = prop.new(function(self)
-	local app = self._application
-	if not app or app:bundleID() == nil or not app:isRunning() then
-		local result = application.applicationsForBundleID(App.BUNDLE_ID)
-		if result and #result > 0 then
-			app = result[1] -- If there is at least one copy running, return the first one
-		else
-			app = nil
-		end
-		self._application = app
-	end
-	return app
-end):bind(App)
-
---- cp.apple.finalcutpro.isRunning <cp.prop: boolean; read-only>
---- Field
---- Is Final Cut Pro Running?
-App.isRunning = prop.new(function(self)
-	local app = self:application()
-	return app ~= nil and app:bundleID() ~= nil and app:isRunning()
-end):bind(App):monitor(App.application)
-
---- cp.apple.finalcutpro:getBundleID() -> string
---- Method
---- Returns the Final Cut Pro Bundle ID
----
---- Parameters:
----  * None
----
---- Returns:
----  * A string of the Final Cut Pro Bundle ID
-function App:getBundleID()
-	return App.BUNDLE_ID
+--- * The Bundle ID
+function fcp:bundleID()
+    return self.app:bundleID()
 end
 
---- cp.apple.finalcutpro:getPasteboardUTI() -> string
+--- cp.apple.finalcutpro:notifier() -> cp.ui.notifier
 --- Method
---- Returns the Final Cut Pro Pasteboard UTI
+--- Returns a notifier that is tracking the application UI element. It has already been started.
 ---
 --- Parameters:
----  * None
+--- * None
 ---
 --- Returns:
----  * A string of the Final Cut Pro Pasteboard UTI
-function App:getPasteboardUTI()
-	return App.PASTEBOARD_UTI
+--- * The notifier.
+function fcp:notifier()
+    return self.app:notifier()
 end
 
---- cp.apple.finalcutpro:UI() -> axuielement
---- Method
---- Returns the Final Cut Pro axuielement
----
---- Parameters:
----  * None
----
---- Returns:
----  * A axuielementObject of Final Cut Pro
-function App:UI()
-	return axutils.cache(self, "_ui", function()
-		local fcp = self:application()
-		return fcp and ax.applicationElement(fcp)
-	end)
-end
-
---- cp.apple.finalcutpro:launch() -> boolean
+--- cp.apple.finalcutpro:launch([waitSeconds]) -> self
 --- Method
 --- Launches Final Cut Pro, or brings it to the front if it was already running.
 ---
 --- Parameters:
----  * None
+---  * waitSeconds  - if provided, we will wait for up to the specified seconds for the launch to complete.
 ---
 --- Returns:
----  * `true` if Final Cut Pro was either launched or focused, otherwise false (e.g. if Final Cut Pro doesn't exist)
-function App:launch()
-
-	local result = nil
-
-	local fcpx = self:application()
-	if fcpx == nil then
-		-- Final Cut Pro is Closed:
-		result = application.launchOrFocusByBundleID(App.BUNDLE_ID)
-	else
-		-- Final Cut Pro is Open:
-		if not fcpx:isFrontmost() then
-			-- Open by not Active:
-			result = application.launchOrFocusByBundleID(App.BUNDLE_ID)
-		else
-			-- Already frontmost:
-			return true
-		end
-	end
-
-	return result
+---  * The FCP instance.
+function fcp:launch(waitSeconds)
+    self.app:launch(waitSeconds)
+    return self
 end
 
---- cp.apple.finalcutpro:restart(waitUntilRestarted) -> boolean
+--- cp.apple.finalcutpro:restart([waitSeconds]) -> self
 --- Method
---- Restart Final Cut Pro
+--- Restart Final Cut Pro, if it is running. If not, nothing happens.
 ---
 --- Parameters:
----  * `waitUntilRestarted`	- If `true`, the function will not return until the app has restarted.
+---  * `waitSeconds`	- If provided, the number of seconds to wait for the restart to complete.
 ---
 --- Returns:
----  * `true` if Final Cut Pro was running and restarted successfully.
-function App:restart(waitUntilRestarted)
-	local app = self:application()
-	if app then
-		local appPath = app:path()
-		-- Kill Final Cut Pro:
-		self:quit()
-
-		-- Wait until Final Cut Pro is Closed (checking every 0.1 seconds for up to 20 seconds):
-		just.doWhile(function() return self:isRunning() end, 20, 0.1)
-
-		-- force the application to update, otherwise it isn't closed long enough to prompt an event.
-		self.application:update()
-
-		-- Launch Final Cut Pro:
-		if appPath then
-			local _, result = hs.execute([[open "]] .. tostring(appPath) .. [["]])
-			return result
-		end
-
-		if waitUntilRestarted then
-			just.doUntil(function() return self:isRunning() end, 20, 0.1)
-		end
-
-	end
-	return false
+---  * The FCP instance.
+function fcp:restart(waitSeconds)
+    self.app:restart(waitSeconds)
+    return self
 end
 
 --- cp.apple.finalcutpro:show() -> cp.apple.finalcutpro
 --- Method
---- Activate Final Cut Pro
+--- Activate Final Cut Pro, if it is running.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A cp.apple.finalcutpro otherwise nil
-function App:show()
-	local app = self:application()
-	if app then
-		if app:isHidden() then
-			app:unhide()
-		end
-		if app:isRunning() then
-			app:activate()
-		end
-	end
-	return self
+---  * The FCP instance.
+function fcp:show()
+    self.app:show()
+    return self
 end
 
---- cp.apple.finalcutpro.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is Final Cut visible on screen?
-App.isShowing = App.application:mutate(function(app) return app and not app:isHidden() end):bind(App)
-
---- cp.apple.finalcutpro:hide() -> cp.apple.finalcutpro
+--- cp.apple.finalcutpro:hide() -> self
 --- Method
 --- Hides Final Cut Pro
 ---
@@ -431,33 +403,27 @@ App.isShowing = App.application:mutate(function(app) return app and not app:isHi
 ---  * None
 ---
 --- Returns:
----  * A cp.apple.finalcutpro otherwise nil
-function App:hide()
-	local app = self:application()
-	if app then
-		app:hide()
-	end
-	return self
+---  * The FCP instance.
+function fcp:hide()
+    self.app:hide()
+    return self
 end
 
---- cp.apple.finalcutpro:quit() -> cp.apple.finalcutpro
+--- cp.apple.finalcutpro:quit([waitSeconds]) -> self
 --- Method
---- Quits Final Cut Pro
+--- Quits Final Cut Pro, if it's running.
 ---
 --- Parameters:
----  * None
+---  * waitSeconds      - The number of seconds to wait for the quit to complete.
 ---
 --- Returns:
----  * A cp.apple.finalcutpro otherwise nil
-function App:quit()
-	local app = self:application()
-	if app then
-		app:kill()
-	end
-	return self
+---  * The FCP instance.
+function fcp:quit(waitSeconds)
+    self.app:quit(waitSeconds)
+    return self
 end
 
---- cp.apple.finalcutpro:path() -> string or nil
+--- cp.apple.finalcutpro:getPath() -> string or nil
 --- Method
 --- Path to Final Cut Pro Application
 ---
@@ -466,118 +432,96 @@ end
 ---
 --- Returns:
 ---  * A string containing Final Cut Pro's filesystem path, or nil if Final Cut Pro's path could not be determined.
-function App:getPath()
-	local app = self:application()
-	if app and app:isRunning() then
-		----------------------------------------------------------------------------------------
-		-- FINAL CUT PRO IS CURRENTLY RUNNING:
-		----------------------------------------------------------------------------------------
-		local appPath = app:path()
-		if appPath then
-			return appPath
-		else
-			log.df("GET PATH: Failed to get running application path.")
-		end
-	else
-		----------------------------------------------------------------------------------------
-		-- FINAL CUT PRO IS CURRENTLY CLOSED:
-		----------------------------------------------------------------------------------------
-		local result = application.pathForBundleID(App.BUNDLE_ID)
-		if result then
-			return result
-		end
-	end
-	return nil
+function fcp:getPath()
+    return self.app:path()
 end
 
---- cp.apple.finalcutpro.getVersion <cp.prop: string; read-only>
---- Constant
---- Version of Final Cut Pro
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+--
+-- LIBRARIES
+--
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+--- cp.apple.finalcutpro:openLibrary(path) -> boolean
+--- Method
+--- Attempts to open a file at the specified absolute `path`.
 ---
 --- Parameters:
----  * None
+--- * path	- The path to the FCP Library to open.
 ---
 --- Returns:
----  * Version as string or nil if Final Cut Pro cannot be found.
+--- * `true` if successful, or `false` if not.
+function fcp.openLibrary(path)
+    assert(type(path) == "string", "Please provide a valid path to the FCP Library.")
+    if fs.attributes(path) == nil then
+        log.ef("Unable to find an FCP Library file at the provided path: %s", path)
+        return false
+    end
+
+    local output, ok = os.execute("open '".. path .. "'")
+    if not ok then
+        log.ef(format("Error while opening the FCP Library at '%s': %s", path, output))
+        return false
+    end
+
+    return true
+end
+
+--- cp.apple.finalcutpro:selectLibrary(title) -> axuielement
+--- Method
+--- Attempts to select an open library with the specified title.
 ---
---- Notes:
----  * If Final Cut Pro is running it will get the version of the active Final Cut Pro application, otherwise, it will use hs.application.infoForBundleID() to find the version.
-App.getVersion = App.application:mutate(function(app)
-	----------------------------------------------------------------------------------------
-	-- FINAL CUT PRO IS CURRENTLY RUNNING:
-	----------------------------------------------------------------------------------------
-	if app and app:isRunning() then
-		local appPath = app:path()
-		if appPath then
-			local info = application.infoForBundlePath(appPath)
-			if info then
-				return info["CFBundleShortVersionString"]
-			else
-				log.df("VERSION CHECK: Could not determine Final Cut Pro's version.")
-			end
-		else
-			log.df("VERSION CHECK: Could not determine Final Cut Pro's path.")
-		end
-	end
-
-	----------------------------------------------------------------------------------------
-	-- NO VERSION OF FINAL CUT PRO CURRENTLY RUNNING:
-	----------------------------------------------------------------------------------------
-	local info = application.infoForBundleID(App.BUNDLE_ID)
-	if info then
-		return info["CFBundleShortVersionString"]
-	else
-		log.df("VERSION CHECK: Could not determine Final Cut Pro's info from Bundle ID.")
-	end
-
-	----------------------------------------------------------------------------------------
-	-- FINAL CUT PRO COULD NOT BE DETECTED:
-	----------------------------------------------------------------------------------------
-	return nil
-
-end):bind(App)
-
---- cp.apple.finalcutpro.isSupported <cp.prop: boolean; read-only>
---- Field
---- Is a supported version of Final Cut Pro installed?
+--- Parameters:
+--- * title - The title of the library to select.
 ---
---- Note:
----  * Supported version refers to any version of Final Cut Pro equal or higher to `cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION`
-App.isSupported = App.getVersion:mutate(function(version)
-	return version ~= nil and v(tostring(version)) >= v(tostring(App.EARLIEST_SUPPORTED_VERSION))
-end):bind(App)
+--- Returns:
+--- * The library row `axuielement`.
+function fcp:selectLibrary(title)
+    return self:libraries():selectLibrary(title)
+end
 
---- cp.apple.finalcutpro.isInstalled <cp.prop: boolean; read-only>
---- Field
---- Is any version of Final Cut Pro Installed?
-App.isInstalled = App.getVersion:mutate(function(version) return version ~= nil end):bind(App)
-
---- cp.apple.finalcutpro.isUnsupported <cp.prop: boolean; read-only>
---- Field
---- Is an unsupported version of Final Cut Pro installed?
+--- cp.apple.finalcutpro:closeLibrary(title) -> boolean
+--- Method
+--- Attempts to close a library with the specified `title`.
 ---
---- Note:
----  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
-App.isUnsupported = App.isInstalled:AND(App.isSupported:NOT())
+--- Parameters:
+--- * title	- The title of the FCP Library to close.
+---
+--- Returns:
+--- * `true` if successful, or `false` if not.
+function fcp:closeLibrary(title)
+    if self:isRunning() then
+        local libraries = self:libraries()
+        libraries:show()
+        just.doUntil(function() return libraries:isShowing() end, 5.0)
+        --------------------------------------------------------------------------------
+        -- Waiting here for a couple of seconds seems to make it less likely to
+        -- crash Final Cut Pro:
+        --------------------------------------------------------------------------------
+        just.wait(2.0)
+        if libraries:selectLibrary(title) ~= nil then
+            just.wait(1.0)
+            local closeLibrary = self:string("FFCloseLibraryFormat")
+            if closeLibrary then
+                -- some languages contain NBSPs instead of spaces, but these don't survive to the actual menu title. Swap them out.
+                closeLibrary = gsub(closeLibrary, "%%@", title):gsub(NBSP, " ")
+            end
 
---- cp.apple.finalcutpro:isFrontmost <cp.prop: boolean; read-only>
---- Field
---- Is Final Cut Pro Frontmost?
-App.isFrontmost = App.application:mutate(function(app) return app and app:isFrontmost() end):bind(App)
-
---- cp.apple.finalcutpro:isModalDialogOpen <cp.prop: boolean; read-only>
---- Field
---- Is a modal dialog currently open?
-App.isModalDialogOpen = prop.new(function(self)
-	local ui = self:UI()
-	if ui then
-		local window = ui:focusedWindow()
-		if window then
-			return window:attributeValue("AXModal") == true
-		end
-	end
-	return false
-end):bind(App)
+            self:selectMenu({"File", function(item)
+                local itemTitle = item:title():gsub(NBSP, " ")
+                local result = itemTitle == closeLibrary
+                return result
+            end})
+            --------------------------------------------------------------------------------
+            -- Wait until the library actually closes, up to 10 seconds:
+            --------------------------------------------------------------------------------
+            return just.doUntil(function() return libraries:show():selectLibrary(title) == nil end, 10.0)
+        end
+    end
+    return false
+end
 
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
@@ -596,11 +540,11 @@ end):bind(App)
 ---
 --- Returns:
 ---  * The plugins manager.
-function App:plugins()
-	if not self._plugins then
-		self._plugins = plugins.new(self)
-	end
-	return self._plugins
+function fcp:plugins()
+    if not self._plugins then
+        self._plugins = plugins.new(self)
+    end
+    return self._plugins
 end
 
 --- cp.apple.finalcutpro:scanPlugins() -> table
@@ -612,8 +556,8 @@ end
 ---
 --- Returns:
 ---  * A MenuBar object
-function App:scanPlugins()
-	return self:plugins():scan()
+function fcp:scanPlugins()
+    return self:plugins():scan()
 end
 
 ----------------------------------------------------------------------------------------
@@ -624,52 +568,21 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:menuBar() -> menuBar object
+
+--- cp.apple.finalcutpro:menu() -> cp.app.menu
 --- Method
---- Returns the Final Cut Pro Menu Bar
+--- Returns the `cp.app.menu` for FCP.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * A MenuBar object
-function App:menuBar()
-	if not self._menuBar then
-		local menuBar = MenuBar:new(self)
-
-		-- Add a finder for Share Destinations
-		menuBar:addMenuFinder(function(parentItem, path, childName, language)
-			if _.isEqual(path, {"File", "Share"}) then
-				childName = childName:match("(.*)…$") or childName
-				local index = destinations.indexOf(childName)
-				if index then
-					local children = parentItem:attributeValue("AXChildren")
-					return children[index]
-				end
-			end
-			return nil
-		end)
-		-- Add a finder for missing menus
-		local missingMenuMap = {
-			{ path = {"Final Cut Pro"},					child = "Commands",		key = "CommandSubmenu" },
-			{ path = {"Final Cut Pro", "Commands"},		child = "Customize…",	key = "Customize" },
-			{ path = {"Clip"},							child = "Open Clip",	key = "FFOpenInTimeline" },
-			{ path = {"Window", "Show in Workspace"},	child = "Sidebar",		key = "PEEventsLibrary" },
-			{ path = {"Window", "Show in Workspace"},	child = "Timeline",		key = "PETimeline" },
-		}
-
-		menuBar:addMenuFinder(function(parentItem, path, childName, language)
-			for i,item in ipairs(missingMenuMap) do
-				if _.isEqual(path, item.path) and childName == item.child then
-					return axutils.childWith(parentItem, "AXTitle", self:string(item.key))
-				end
-			end
-			return nil
-		end)
-
-		self._menuBar = menuBar
-	end
-	return self._menuBar
+---  * The `cp.app.menu` for the app.
+function fcp:menu()
+    if not self._menu then
+        self._menu = menu
+    end
+    return self._menu
 end
 
 --- cp.apple.finalcutpro:selectMenu(path) -> boolean
@@ -682,8 +595,8 @@ end
 ---
 --- Returns:
 ---  * `true` if the press was successful.
-function App:selectMenu(path)
-	return self:menuBar():selectMenu(path)
+function fcp:selectMenu(path)
+    return self:menu():selectMenu(path)
 end
 
 ----------------------------------------------------------------------------------------
@@ -703,11 +616,11 @@ end
 ---
 --- Returns:
 ---  * The Preferences Window
-function App:preferencesWindow()
-	if not self._preferencesWindow then
-		self._preferencesWindow = PreferencesWindow:new(self)
-	end
-	return self._preferencesWindow
+function fcp:preferencesWindow()
+    if not self._preferencesWindow then
+        self._preferencesWindow = PreferencesWindow.new(self)
+    end
+    return self._preferencesWindow
 end
 
 --- cp.apple.finalcutpro:primaryWindow() -> primaryWindow object
@@ -719,11 +632,11 @@ end
 ---
 --- Returns:
 ---  * The Primary Window
-function App:primaryWindow()
-	if not self._primaryWindow then
-		self._primaryWindow = PrimaryWindow:new(self)
-	end
-	return self._primaryWindow
+function fcp:primaryWindow()
+    if not self._primaryWindow then
+        self._primaryWindow = PrimaryWindow.new(self)
+    end
+    return self._primaryWindow
 end
 
 --- cp.apple.finalcutpro:secondaryWindow() -> secondaryWindow object
@@ -735,11 +648,11 @@ end
 ---
 --- Returns:
 ---  * The Secondary Window
-function App:secondaryWindow()
-	if not self._secondaryWindow then
-		self._secondaryWindow = SecondaryWindow:new(self)
-	end
-	return self._secondaryWindow
+function fcp:secondaryWindow()
+    if not self._secondaryWindow then
+        self._secondaryWindow = SecondaryWindow.new(self)
+    end
+    return self._secondaryWindow
 end
 
 --- cp.apple.finalcutpro:fullScreenWindow() -> fullScreenWindow object
@@ -751,11 +664,11 @@ end
 ---
 --- Returns:
 ---  * The Full Screen Playback Window
-function App:fullScreenWindow()
-	if not self._fullScreenWindow then
-		self._fullScreenWindow = FullScreenWindow:new(self)
-	end
-	return self._fullScreenWindow
+function fcp:fullScreenWindow()
+    if not self._fullScreenWindow then
+        self._fullScreenWindow = FullScreenWindow.new(self)
+    end
+    return self._fullScreenWindow
 end
 
 --- cp.apple.finalcutpro:commandEditor() -> commandEditor object
@@ -767,11 +680,27 @@ end
 ---
 --- Returns:
 ---  * The Final Cut Pro Command Editor
-function App:commandEditor()
-	if not self._commandEditor then
-		self._commandEditor = CommandEditor:new(self)
-	end
-	return self._commandEditor
+function fcp:commandEditor()
+    if not self._commandEditor then
+        self._commandEditor = CommandEditor.new(self)
+    end
+    return self._commandEditor
+end
+
+--- cp.apple.finalcutpro:keywordEditor() -> keywordEditor object
+--- Method
+--- Returns the Final Cut Pro Keyword Editor
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Final Cut Pro Keyword Editor
+function fcp:keywordEditor()
+    if not self._keywordEditor then
+        self._keywordEditor = KeywordEditor.new(self)
+    end
+    return self._keywordEditor
 end
 
 --- cp.apple.finalcutpro:mediaImport() -> mediaImport object
@@ -783,11 +712,11 @@ end
 ---
 --- Returns:
 ---  * The Final Cut Pro Media Import Window
-function App:mediaImport()
-	if not self._mediaImport then
-		self._mediaImport = MediaImport:new(self)
-	end
-	return self._mediaImport
+function fcp:mediaImport()
+    if not self._mediaImport then
+        self._mediaImport = MediaImport.new(self)
+    end
+    return self._mediaImport
 end
 
 --- cp.apple.finalcutpro:exportDialog() -> exportDialog object
@@ -799,25 +728,11 @@ end
 ---
 --- Returns:
 ---  * The Final Cut Pro Export Dialog Box
-function App:exportDialog()
-	if not self._exportDialog then
-		self._exportDialog = ExportDialog:new(self)
-	end
-	return self._exportDialog
-end
-
---- cp.apple.finalcutpro:windowsUI() -> axuielement
---- Method
---- Returns the UI containing the list of windows in the app.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The axuielement, or nil if the application is not running.
-function App:windowsUI()
-	local ui = self:UI()
-	return ui and ui:attributeValue("AXWindows")
+function fcp:exportDialog()
+    if not self._exportDialog then
+        self._exportDialog = ExportDialog.new(self)
+    end
+    return self._exportDialog
 end
 
 ----------------------------------------------------------------------------------------
@@ -828,6 +743,19 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
+--- cp.apple.finalcutpro:toolbar() -> PrimaryToolbar
+--- Method
+--- Returns the Primary Toolbar - the toolbar at the top of the Primary Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the PrimaryToolbar
+function fcp:toolbar()
+    return self:primaryWindow():toolbar()
+end
+
 --- cp.apple.finalcutpro:timeline() -> Timeline
 --- Method
 --- Returns the Timeline instance, whether it is in the primary or secondary window.
@@ -837,11 +765,11 @@ end
 ---
 --- Returns:
 ---  * the Timeline
-function App:timeline()
-	if not self._timeline then
-		self._timeline = Timeline:new(self)
-	end
-	return self._timeline
+function fcp:timeline()
+    if not self._timeline then
+        self._timeline = Timeline.new(self)
+    end
+    return self._timeline
 end
 
 --- cp.apple.finalcutpro:viewer() -> Viewer
@@ -853,11 +781,11 @@ end
 ---
 --- Returns:
 ---  * the Viewer
-function App:viewer()
-	if not self._viewer then
-		self._viewer = Viewer:new(self, false)
-	end
-	return self._viewer
+function fcp:viewer()
+    if not self._viewer then
+        self._viewer = Viewer.new(self, false)
+    end
+    return self._viewer
 end
 
 --- cp.apple.finalcutpro:eventViewer() -> Event Viewer
@@ -869,11 +797,11 @@ end
 ---
 --- Returns:
 ---  * the Event Viewer
-function App:eventViewer()
-	if not self._eventViewer then
-		self._eventViewer = Viewer:new(self, true)
-	end
-	return self._eventViewer
+function fcp:eventViewer()
+    if not self._eventViewer then
+        self._eventViewer = Viewer.new(self, true)
+    end
+    return self._eventViewer
 end
 
 --- cp.apple.finalcutpro:browser() -> Browser
@@ -885,11 +813,11 @@ end
 ---
 --- Returns:
 ---  * the Browser
-function App:browser()
-	if not self._browser then
-		self._browser = Browser:new(self)
-	end
-	return self._browser
+function fcp:browser()
+    if not self._browser then
+        self._browser = Browser.new(self)
+    end
+    return self._browser
 end
 
 --- cp.apple.finalcutpro:libraries() -> LibrariesBrowser
@@ -901,8 +829,8 @@ end
 ---
 --- Returns:
 ---  * the LibrariesBrowser
-function App:libraries()
-	return self:browser():libraries()
+function fcp:libraries()
+    return self:browser():libraries()
 end
 
 --- cp.apple.finalcutpro:media() -> MediaBrowser
@@ -914,8 +842,8 @@ end
 ---
 --- Returns:
 ---  * the MediaBrowser
-function App:media()
-	return self:browser():media()
+function fcp:media()
+    return self:browser():media()
 end
 
 --- cp.apple.finalcutpro:generators() -> GeneratorsBrowser
@@ -927,8 +855,8 @@ end
 ---
 --- Returns:
 ---  * the GeneratorsBrowser
-function App:generators()
-	return self:browser():generators()
+function fcp:generators()
+    return self:browser():generators()
 end
 
 --- cp.apple.finalcutpro:effects() -> EffectsBrowser
@@ -940,8 +868,8 @@ end
 ---
 --- Returns:
 ---  * the EffectsBrowser
-function App:effects()
-	return self:timeline():effects()
+function fcp:effects()
+    return self:timeline():effects()
 end
 
 --- cp.apple.finalcutpro:transitions() -> TransitionsBrowser
@@ -953,8 +881,8 @@ end
 ---
 --- Returns:
 ---  * the TransitionsBrowser
-function App:transitions()
-	return self:timeline():transitions()
+function fcp:transitions()
+    return self:timeline():transitions()
 end
 
 --- cp.apple.finalcutpro:inspector() -> Inspector
@@ -966,8 +894,8 @@ end
 ---
 --- Returns:
 ---  * the Inspector
-function App:inspector()
-	return self:primaryWindow():inspector()
+function fcp:inspector()
+    return self:primaryWindow():inspector()
 end
 
 --- cp.apple.finalcutpro:colorBoard() -> ColorBoard
@@ -979,8 +907,34 @@ end
 ---
 --- Returns:
 ---  * the ColorBoard
-function App:colorBoard()
-	return self:primaryWindow():colorBoard()
+function fcp:colorBoard()
+    return self:primaryWindow():colorBoard()
+end
+
+--- cp.apple.finalcutpro:color() -> ColorInspector
+--- Method
+--- Returns the ColorInspector instance from the primary window
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the ColorInspector
+function fcp:color()
+    return self:primaryWindow():color()
+end
+
+--- cp.apple.finalcutpro:alert() -> cp.ui.Alert
+--- Method
+--- Provides basic access to any 'alert' dialog windows in the app.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the `Alert` instance
+function fcp:alert()
+    return self:primaryWindow():alert()
 end
 
 ----------------------------------------------------------------------------------------
@@ -997,50 +951,29 @@ end
 --- file has been modified and reloads when necessary.
 ---
 --- Parameters:
----  * forceReload	- (optional) if true, a reload will be forced even if the file hasn't been modified.
----  * preventMultipleReloads - (optional) if true, adds a 0.01 delay before reloading preferences (for use with the watcher)
+---  * [forceReload]	- If `true`, an optional reload will be forced even if the file hasn't been modified.
 ---
 --- Returns:
 ---  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
-function App:getPreferences(forceReload)
-	local modified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
-	if forceReload or modified ~= self._preferencesModified then
-		-- log.df("Reloading Final Cut Pro Preferences: %s; %s", self._preferencesModified, modified)
-		-- NOTE: https://macmule.com/2014/02/07/mavericks-preference-caching/
-		hs.execute([[/usr/bin/python -c 'import CoreFoundation; CoreFoundation.CFPreferencesAppSynchronize("com.apple.FinalCut")']])
-
-		self._preferences = plist.binaryFileToTable(App.PREFS_PLIST_PATH) or nil
-		self._preferencesModified = fs.attributes(App.PREFS_PLIST_PATH, "modification")
-	 end
-	return self._preferences
+function fcp:getPreferences()
+    return self.app.preferences
 end
 
---- cp.apple.finalcutpro:getPreference(value, default, forceReload) -> string or nil
+--- cp.apple.finalcutpro:getPreference(key, [default], [forceReload]) -> string or nil
 --- Method
 --- Get an individual Final Cut Pro preference
 ---
 --- Parameters:
----  * value 			- The preference you want to return
----  * default			- (optional) The default value to return if the preference is not set.
----  * forceReload		= (optional) If true, forces a reload of the app's preferences.
+---  * key 			- The preference you want to return
+---  * [default]		- The optional default value to return if the preference is not set.
 ---
 --- Returns:
 ---  * A string with the preference value, or nil if an error occurred
-function App:getPreference(value, default, forceReload)
-	local result = nil
-	local preferencesTable = self:getPreferences(forceReload)
-	if preferencesTable then
-		result = preferencesTable[value]
-	end
-
-	if result == nil then
-		result = default
-	end
-
-	return result
+function fcp:getPreference(key, default)
+    return self.app.preferences()[key] or default
 end
 
---- cp.apple.finalcutpro:setPreference(key, value) -> boolean
+--- cp.apple.finalcutpro:setPreference(key, value) -> nil
 --- Method
 --- Sets an individual Final Cut Pro preference
 ---
@@ -1049,49 +982,12 @@ end
 ---  * value - The value you want to set for that preference
 ---
 --- Returns:
----  * True if executed successfully otherwise False
-function App:setPreference(key, value)
-	local executeStatus
-	local preferenceType = nil
-
-	if value == nil then
-		local executeString = "defaults delete " .. App.PREFS_PLIST_PATH .. " '" .. key .. "'"
-		local _, executeStatus = hs.execute(executeString)
-		return executeStatus ~= nil
-	end
-
-	if type(value) == "boolean" then
-		value = tostring(value)
-		preferenceType = "bool"
-	elseif type(value) == "table" then
-		local arrayString = ""
-		for i=1, #value do
-			arrayString = arrayString .. value[i]
-			if i ~= #value then
-				arrayString = arrayString .. ","
-			end
-		end
-		value = "'" .. arrayString .. "'"
-		preferenceType = "array"
-	elseif type(value) == "string" then
-		preferenceType = "string"
-		value = "'" .. value .. "'"
-	elseif type(value) == "number" then
-		preferenceType = "int"
-		value = tostring(value)
-	else
-		return false
-	end
-
-	if preferenceType then
-		local executeString = "defaults write " .. App.PREFS_PLIST_PATH .. " '" .. key .. "' -" .. preferenceType .. " " .. value
-		local _, executeStatus = hs.execute(executeString)
-		return executeStatus ~= nil
-	end
-	return false
+---  * `nil`
+function fcp:setPreference(key, value)
+    self.app.preferences()[key] = value
 end
 
---- cp.apple.finalcutpro:importXML() -> boolean
+--- cp.apple.finalcutpro:importXML(path) -> boolean
 --- Method
 --- Imports an XML file into Final Cut Pro
 ---
@@ -1100,18 +996,18 @@ end
 ---
 --- Returns:
 ---  * A boolean value indicating whether the AppleScript succeeded or not
-function App:importXML(path)
-	if self:isRunning() then
-		local appleScript = [[
-			set whichSharedXMLPath to "]] .. path .. [["
-			tell application "Final Cut Pro"
-				activate
-				open POSIX file whichSharedXMLPath as string
-			end tell
-		]]
-		local bool, _, _ = osascript.applescript(appleScript)
-		return bool
-	end
+function fcp:importXML(path)
+    if self:isRunning() then
+        local appleScript = [[
+            set whichSharedXMLPath to "]] .. path .. [["
+            tell application "Final Cut Pro"
+                activate
+                open POSIX file whichSharedXMLPath as string
+            end tell
+        ]]
+        local bool, _, _ = osascript.applescript(appleScript)
+        return bool
+    end
 end
 
 ----------------------------------------------------------------------------------------
@@ -1122,7 +1018,20 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:getActiveCommandSetPath() -> string or nil
+--- cp.apple.finalcutpro.userCommandSetPath() -> string or nil
+--- Method
+--- Gets the path where User Command Set files are stored.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A path as a string or `nil` if the folder doesn't exist.
+function fcp.userCommandSetPath()
+    return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
+end
+
+--- cp.apple.finalcutpro:activeCommandSetPath() -> string or nil
 --- Method
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 ---
@@ -1130,67 +1039,65 @@ end
 ---  * None
 ---
 --- Returns:
----  * The 'Active Command Set' value, or the 'Default' command set if none is set.
-function App:getActiveCommandSetPath()
-	local result = self:getPreference("Active Command Set") or nil
-	if result == nil then
-		-- In the unlikely scenario that this is the first time FCPX has been run:
-		result = self:getDefaultCommandSetPath()
-	end
-	return result
+---  * The 'Active Command Set' value, or the 'Default' Command Set if this is the first time Final Cut Pro has been run.
+function fcp:activeCommandSetPath()
+    return self:getPreference("Active Command Set") or self:defaultCommandSetPath()
 end
 
---- cp.apple.finalcutpro:getDefaultCommandSetPath([langauge]) -> string
+--- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string
 --- Method
 --- Gets the path to the 'Default' Command Set.
 ---
 --- Parameters:
----  * `language`	- (optional) The language code to use. Defaults to the current FCPX language.
+---  * `locale`	- The optional locale to use. Defaults to the [current locale](#currentLocale).
 ---
 --- Returns:
 ---  * The 'Default' Command Set path, or `nil` if an error occurred
-function App:getDefaultCommandSetPath(language)
-	language = language or self:currentLanguage()
-	return self:getPath() .. "/Contents/Resources/" .. language .. ".lproj/Default.commandset"
+function fcp:defaultCommandSetPath(locale)
+    locale = localeID(locale) or self:currentLocale()
+    return self:getPath() .. "/Contents/Resources/" .. locale.code .. ".lproj/Default.commandset"
 end
 
---- cp.apple.finalcutpro:getCommandSet(path) -> string
---- Method
---- Loads the Command Set at the specified path into a table.
+--- cp.apple.finalcutpro.commandSet(path) -> string
+--- Function
+--- Gets the Command Set at the specified path as a table.
 ---
 --- Parameters:
----  * `path`	- The path to the command set.
+---  * `path`	- The path to the Command Set.
 ---
 --- Returns:
 ---  * The Command Set as a table, or `nil` if there was a problem.
-function App:getCommandSet(path)
-	if fs.attributes(path) ~= nil then
-		return plist.fileToTable(path)
-	end
+function fcp.commandSet(path)
+    if not fs.attributes(path) then
+        log.ef("Invalid Command Set Path: %s", path)
+        return nil
+    else
+        return plist.fileToTable(path)
+    end
 end
 
---- cp.apple.finalcutpro:getActiveCommandSet([forceReload]) -> table or nil
+--- cp.apple.finalcutpro:activeCommandSet([forceReload]) -> table or nil
 --- Method
 --- Returns the 'Active Command Set' as a Table. The result is cached, so pass in
 --- `true` for `forceReload` if you want to reload it.
 ---
 --- Parameters:
----  * forceReload	- (optional) If `true`, require the Command Set to be reloaded.
+---  * [forceReload]	- If `true`, require the Command Set to be reloaded.
 ---
 --- Returns:
 ---  * A table of the Active Command Set's contents, or `nil` if an error occurred
-function App:getActiveCommandSet(forceReload)
-
-	if forceReload or not self._activeCommandSet then
-		local path = self:getActiveCommandSetPath()
-		self._activeCommandSet = self:getCommandSet(path)
-		-- reset the command cache since we've loaded a new set.
-		if self._activeCommands then
-			self._activeCommands = nil
-		end
-	end
-
-	return self._activeCommandSet
+function fcp:activeCommandSet(forceReload)
+    if forceReload or not self._activeCommandSet then
+        local path = self:activeCommandSetPath()
+        self._activeCommandSet = self.commandSet(path)
+        ----------------------------------------------------------------------------------------
+        -- Reset the command cache since we've loaded a new set:
+        ----------------------------------------------------------------------------------------
+        if self._activeCommands then
+            self._activeCommands = nil
+        end
+    end
+    return self._activeCommandSet
 end
 
 --- cp.apple.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
@@ -1203,62 +1110,30 @@ end
 ---
 --- Returns:
 ---  * The array of shortcuts, or `nil` if no command exists with the specified `id`.
-function App:getCommandShortcuts(id)
-	local activeCommands = self._activeCommands
-	if not activeCommands then
-		activeCommands = {}
-		self._activeCommands = activeCommands
-	end
+function fcp:getCommandShortcuts(id)
+    local activeCommands = self._activeCommands
+    if not activeCommands then
+        activeCommands = {}
+        self._activeCommands = activeCommands
+    end
 
-	local shortcuts = activeCommands[id]
-	if not shortcuts then
-		local commandSet = self:getActiveCommandSet()
+    local shortcuts = activeCommands[id]
+    if not shortcuts then
+        local commandSet = self:activeCommandSet()
+        shortcuts = commandeditor.shortcutsFromCommandSet(id, commandSet)
+        if not shortcuts then
+            return nil
+        end
+        ----------------------------------------------------------------------------------------
+        -- Cache the value for faster access next time:
+        ----------------------------------------------------------------------------------------
+        self._activeCommands[id] = shortcuts
+    end
 
-		local fcpxCmds = commandSet[id]
-
-		if fcpxCmds == nil then
-			return nil
-		end
-
-		if #fcpxCmds == 0 then
-			fcpxCmds = { fcpxCmds }
-		end
-
-		shortcuts = {}
-
-		for _,fcpxCmd in ipairs(fcpxCmds) do
-			local modifiers = nil
-			local keyCode = nil
-			local keypadModifier = false
-
-			if fcpxCmd["modifiers"] ~= nil then
-				if string.find(fcpxCmd["modifiers"], "keypad") then keypadModifier = true end
-				modifiers = kc.fcpxModifiersToHsModifiers(fcpxCmd["modifiers"])
-			elseif fcpxCmd["modifierMask"] ~= nil then
-				modifiers = tools.modifierMaskToModifiers(fcpxCmd["modifierMask"])
-			end
-
-			if fcpxCmd["characterString"] ~= nil then
-				keyCode = kc.characterStringToKeyCode(fcpxCmd["characterString"])
-			elseif fcpxHacks["character"] ~= nil then
-				if keypadModifier then
-					keyCode = kc.keypadCharacterToKeyCode(fcpxCmd["character"])
-				else
-					keyCode = kc.characterStringToKeyCode(fcpxCmd["character"])
-				end
-			end
-
-			if keyCode ~= nil and keyCode ~= "" then
-				shortcuts[#shortcuts + 1] = shortcut:new(modifiers, keyCode)
-			end
-		end
-
-		activeCommands[id] = shortcuts
-	end
-	return shortcuts
+    return shortcuts
 end
 
---- cp.apple.finalcutpro:performShortcut() -> boolean
+--- cp.apple.finalcutpro:performShortcut(whichShortcut) -> boolean
 --- Method
 --- Performs a Final Cut Pro Shortcut
 ---
@@ -1267,17 +1142,14 @@ end
 ---
 --- Returns:
 ---  * true if successful otherwise false
-function App:performShortcut(whichShortcut)
-	self:launch()
-	local activeCommandSet = self:getActiveCommandSet()
-
-	local shortcuts = self:getCommandShortcuts(whichShortcut)
-
-	if shortcuts and #shortcuts > 0 then
-		shortcuts[1]:trigger()
-	end
-
-	return true
+function fcp:performShortcut(whichShortcut)
+    self:launch()
+    local shortcuts = self:getCommandShortcuts(whichShortcut)
+    if shortcuts and #shortcuts > 0 then
+        shortcuts[1]:trigger()
+        return true
+    end
+    return false
 end
 
 ----------------------------------------------------------------------------------------
@@ -1288,299 +1160,17 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro.currentLanguage <cp.prop:string>
---- Constant
---- The current language the FCPX is displayed in.
-App.currentLanguage = prop(
-	-- getter
-	function(self)
-		--------------------------------------------------------------------------------
-		-- Caching:
-		--------------------------------------------------------------------------------
-		if self._currentLanguage ~= nil then
-			--log.df("Using Final Cut Pro Language from Cache")
-			return self._currentLanguage
-		end
-
-		--------------------------------------------------------------------------------
-		-- If FCPX is already running, we determine the language off the menu:
-		--------------------------------------------------------------------------------
-		if self:isRunning() then
-			local menuMap = self:menuBar():getMainMenu()
-			local menuUI = self:menuBar():UI()
-			if menuMap and menuUI and #menuMap >= 2 and #menuUI >=2 then
-				local fileMap = menuMap[2]
-				local fileUI = menuUI[2]
-				local title = fileUI:attributeValue("AXTitle")
-				for lang,name in pairs(fileMap) do
-					if name == title then
-						self._currentLanguage = lang
-						return lang
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If FCPX is not running, we next try to determine the language using
-		-- the Final Cut Pro Plist File:
-		--------------------------------------------------------------------------------
-		local appLanguages = self:getPreference("AppleLanguages", nil)
-		if appLanguages and #appLanguages > 0 then
-			local lang = appLanguages[1]
-			if self:isSupportedLanguage(lang) then
-				self._currentLanguage = lang
-				return lang
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If that fails, we try and use the user locale:
-		--------------------------------------------------------------------------------
-		local success, userLocale = osascript.applescript("return user locale of (get system info)")
-		if success and userLocale then
-			userLocale = self:getSupportedLanguage(userLocale)
-			if userLocale then
-				self._currentLanguage = userLocale
-				return userLocale
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If that also fails, we try and use NSGlobalDomain AppleLanguages:
-		--------------------------------------------------------------------------------
-		local output, status, _, _ = hs.execute("defaults read NSGlobalDomain AppleLanguages")
-		if status then
-			local appleLanguages = tools.lines(output)
-			if next(appleLanguages) ~= nil then
-				if appleLanguages[1] == "(" and appleLanguages[#appleLanguages] == ")" then
-					for i=2, #appleLanguages - 1 do
-						local line = appleLanguages[i]
-						-- match the main country code
-						local lang = line:match("^%s*\"?([%w%-]+)")
-						-- switch "-" to "_"
-						lang = self:getSupportedLanguage(lang:gsub("-", "_"))
-
-						if lang then
-							self._currentLanguage = lang
-							return lang
-						end
-					end
-				end
-			end
-		end
-
-		--------------------------------------------------------------------------------
-		-- If all else fails, assume it's English:
-		--------------------------------------------------------------------------------
-		self._currentLanguage = "en"
-		return self._currentLanguage
-	end,
-
-	-- setter
-	function(value, self, prop)
-		if value == prop:get() then return end
-
-		if value == nil then
-			if self:getPreference("AppleLanguages") == nil then return end
-			self:setPreference("AppleLanguages", nil)
-		elseif self:isSupportedLanguage(value) then
-			self:setPreference("AppleLanguages", {value})
-		else
-			error("Unsupported language: "..value)
-		end
-		self._currentLanguage = nil
-		if self:isRunning() then
-			self:restart(true)
-		end
-	end
-):bind(App):monitor(App.isRunning)
-
---- cp.apple.finalcutpro:getSupportedLanguages() -> table
+--- cp.apple.finalcutpro:isSupportedLocale(locale) -> boolean
 --- Method
---- Returns a table of languages Final Cut Pro supports
+--- Checks if the provided `locale` is supported by the app.
 ---
 --- Parameters:
----  * None
+---  * `language`	- The `cp.i18n.localeID` or string code. E.g. "en" or "zh_CN"
 ---
 --- Returns:
----  * A table of languages Final Cut Pro supports
-function App:getSupportedLanguages()
-	return App.SUPPORTED_LANGUAGES
-end
-
---- cp.apple.finalcutpro:isSupportedLanguage(language) -> boolean
---- Method
---- Checks if the provided `language` is supported by the app.
----
---- Parameters:
----  * `language`	- The language code to check. E.g. "en" or "zh_CN"
----
---- Returns:
----  * `true` if the language is supported.
-function App:isSupportedLanguage(language)
-	if language then
-		local primary = language:match("(%w+)")
-		for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
-			if supported == language or supported == primary then
-				return true
-			end
-		end
-	end
-	return false
-end
-
---- cp.apple.finalcutpro:getSupportedLanguage(language) -> boolean
---- Method
---- Checks if the provided `language` is supported by the app and returns the actual support code, or `nil` if there is no supported version of the language.
----
---- For example, 'en_AU' is supported because 'en' is supported, so this returns 'en'.
---- However, while 'zh_CN' is supported, 'zh_TW' is not supported directly, so 'zh_CN' is returned for the former and `nil` for the latter.
----
---- Parameters:
----  * `language`	- The language code to check. E.g. "en" or "zh_CN"
----
---- Returns:
----  * `true` if the language is supported.
-function App:getSupportedLanguage(language)
-	if language then
-		local primary = language:match("(%w+)")
-		for _,supported in ipairs(App.SUPPORTED_LANGUAGES) do
-			if supported == language or supported == primary then
-				return supported
-			end
-		end
-	end
-	return nil
-end
-
---- cp.apple.finalcutpro:getFlexoLanguages() -> table
---- Method
---- Returns a table of languages Final Cut Pro's Flexo Framework supports
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table of languages Final Cut Pro supports
-function App:getFlexoLanguages()
-	return App.FLEXO_LANGUAGES
-end
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                               W A T C H E R S                              --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro:watch() -> string
---- Method
---- Watch for events that happen in the application.
---- The optional functions will be called when the window is shown or hidden, respectively.
----
---- Parameters:
----  * `events` - A table of functions with to watch. These may be:
---- 	* `active`		- Triggered when the application is the active application.
---- 	* `inactive`	- Triggered when the application is no longer the active application.
----     * `launched		- Triggered when the application is launched.
----     * `terminated	- Triggered when the application has been closed.
---- 	* `preferences`	- Triggered when the application preferences are updated.
----
---- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function App:watch(events)
-	return self._watchers:watch(events)
-end
-
---- cp.apple.finalcutpro:unwatch() -> boolean
---- Method
---- Stop watching for events that happen in the application for the specified ID.
----
---- Parameters:
----  * `id` 	- The ID object which was returned from the `watch(...)` function.
----
---- Returns:
----  * `true` if the ID was watching and has been removed.
-function App:unwatch(id)
-	return self._watchers:unwatch(id)
-end
-
--- cp.apple.finalcutpro:_initWatchers() -> none
--- Method
--- Initialise all the various Final Cut Pro Watchers.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-function App:_initWatchers()
-
-	if not self._watchers then
-		--log.df("Setting up Final Cut Pro Watchers...")
-		self._watchers = watcher.new("active", "inactive", "launched", "terminated", "preferences")
-	end
-
-	--------------------------------------------------------------------------------
-	-- Setup Application Watcher:
-	--------------------------------------------------------------------------------
-	--log.df("Setting up Application Watcher...")
-	self._appWatcher = applicationwatcher.new(
-		function(appName, eventType, application)
-			local bundleID = application:bundleID()
-			if (bundleID == App.BUNDLE_ID or bundleID == nil and appName == "Final Cut Pro") then
-				if eventType == applicationwatcher.activated then
-					timer.doAfter(0.01, function()
-						self.isShowing:update()
-						self.isFrontmost:update()
-					end)
-					self._watchers:notify("active")
-					return
-				elseif eventType == applicationwatcher.deactivated then
-					timer.doAfter(0.01, function()
-						self.isShowing:update()
-						self.isFrontmost:update()
-					end)
-					self._watchers:notify("inactive")
-					return
-				elseif eventType == applicationwatcher.launched then
-					timer.doAfter(0.01, function()
-						self.application:update()
-						self.isRunning:update()
-					end)
-					self._watchers:notify("launched")
-					return
-				elseif eventType == applicationwatcher.terminated then
-					timer.doAfter(0.01, function()
-						self.application:update()
-						self.isRunning:update()
-					end)
-					self._watchers:notify("terminated")
-					return
-				end
-			end
-		end
-	):start()
-
-	--------------------------------------------------------------------------------
-	-- Final Cut Pro Window becomes visible:
-	--------------------------------------------------------------------------------
-	windowfilter:subscribe("windowVisible", function()
-		App.isModalDialogOpen:update()
-	end)
-
-	--------------------------------------------------------------------------------
-	-- Setup Preferences Watcher:
-	--------------------------------------------------------------------------------
-	--log.df("Setting up Preferences Watcher...")
-	self._preferencesWatcher = pathwatcher.new(App.PREFS_PATH, function(files)
-		for _,file in pairs(files) do
-			if file:sub(string.len(App.PREFS_PLIST_FILE)*-1) == App.PREFS_PLIST_FILE then
-				self._watchers:notify("preferences")
-				return
-			end
-		end
-	end):start()
+---  * `true` if the locale is supported.
+function fcp:isSupportedLocale(locale)
+    return self.app:isSupportedLocale(locale)
 end
 
 --------------------------------------------------------------------------------
@@ -1589,24 +1179,42 @@ end
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-function App:_listWindows()
-	log.d("Listing FCPX windows:")
-	self:show()
-	local windows = self:windowsUI()
-	for i,w in ipairs(windows) do
-		log.df(string.format("%7d", i)..": "..self:_describeWindow(w))
-	end
+-- cp.apple.finalcutpro._listWindows() -> none
+-- Method
+-- List Windows to Error Log.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+function fcp:_listWindows()
+    log.d("Listing FCPX windows:")
+    self:show()
+    local windows = self:windowsUI()
+    for i,w in ipairs(windows) do
+        log.df(format("%7d", i)..": "..self:_describeWindow(w))
+    end
 
-	log.df("")
-	log.df("   Main: "..self:_describeWindow(self:UI():mainWindow()))
-	log.df("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
+    log.df("")
+    log.df("   Main: "..self:_describeWindow(self:UI():mainWindow()))
+    log.df("Focused: "..self:_describeWindow(self:UI():focusedWindow()))
 end
 
-function App:_describeWindow(w)
-	return "title: "..inspect(w:attributeValue("AXTitle"))..
-	       "; role: "..inspect(w:attributeValue("AXRole"))..
-		   "; subrole: "..inspect(w:attributeValue("AXSubrole"))..
-		   "; modal: "..inspect(w:attributeValue("AXModal"))
+-- cp.apple.finalcutpro._describeWindow(w) -> string
+-- Function
+-- Returns a string containing information about the specified window.
+--
+-- Parameters:
+--  * w - The window object.
+--
+-- Returns:
+--  * A string
+function fcp._describeWindow(w)
+    return "title: "..inspect(w:attributeValue("AXTitle"))..
+           "; role: "..inspect(w:attributeValue("AXRole"))..
+           "; subrole: "..inspect(w:attributeValue("AXSubrole"))..
+           "; modal: "..inspect(w:attributeValue("AXModal"))
 end
 
-return App:init()
+return fcp:init()

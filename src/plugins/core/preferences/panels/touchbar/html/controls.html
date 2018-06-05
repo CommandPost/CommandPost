@@ -1,0 +1,19 @@
+<div id="touchbarGroupControls" class="uiItem">
+{%	for __, groupID in pairs(groups) do %}
+	<div id="touchbarGroup_{{ groupID }}" class="touchbarGroup{{ groupID == defaultGroup and ' selected' or '' }}">
+		<table class="touchbar">
+			<thead>
+				<tr>
+					<th class="tbRowIcon">{{ i18n("icon") }}</th>
+					<th class="tbRowAction">{{ i18n("actionOrWidget") }}</th>
+					<th class="tbRowActionButton"></th>
+					<th class="tbRowLabel">{{ i18n("buttonLabel") }}</th>
+				</tr>
+			</thead>
+			<tbody>
+			{(html/rows.html, _.extend({groupID = groupID}, context))}
+			</tbody>
+		</table>
+	</div>
+{% end %}
+</div>

@@ -1,51 +1,65 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                           I D L E   Q U E U E                              --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.idle ===
 ---
 --- This library allows tasks to be queue for execution when the computer has
 --- been idle for a specified amount of time. 'Idle' is defined as no keyboard
 --- or mouse movement.
----
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log						= require("hs.logger").new("idle")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local host						= require("hs.host")
 local timer						= require("hs.timer")
 
-local insert, remove			= table.insert, table.remove
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local insert					= table.insert
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
+
 local queue = {}
 local checkTimer = nil
 
 local function checkQueue()
-	if #queue == 0 and checkTimer:running() then
-		checkTimer:stop()
-	else
-		local newQueue = {}
-		local count = #queue
-		for _,item in ipairs(queue) do
-			-- we check idle time on every queued item
-			local idleTime = host.idleTime()
-			if item.seconds < idleTime then
-				-- run the action, checking for errors
-				local ok, result = xpcall(item.action, debug.traceback)
-				if not ok then
-					log.ef("Error while processing idle queue:\n%s", result)
-					if item.retryOnError then
-						insert(newQueue, item)
-					end
-				end
-			else
-				insert(newQueue, item)
-			end
-		end
+    if #queue == 0 and checkTimer:running() then
+        checkTimer:stop()
+    else
+        local newQueue = {}
+        for _,item in ipairs(queue) do
+            -- we check idle time on every queued item
+            local idleTime = host.idleTime()
+            if item.seconds < idleTime then
+                -- run the action, checking for errors
+                local ok, result = xpcall(item.action, debug.traceback)
+                if not ok then
+                    log.ef("Error while processing idle queue:\n%s", result)
+                    if item.retryOnError then
+                        insert(newQueue, item)
+                    end
+                end
+            else
+                insert(newQueue, item)
+            end
+        end
 
-		queue = newQueue
-	end
+        queue = newQueue
+    end
 end
 
 checkTimer = timer.new(1, checkQueue, true)
@@ -64,10 +78,10 @@ checkTimer = timer.new(1, checkQueue, true)
 --- Returns:
 --- * Nothing
 function mod.queue(idleSeconds, actionFn, retryOnError)
-	insert(queue, {seconds = idleSeconds, action = actionFn, retryOnError = retryOnError})
-	if not checkTimer:running() then
-		checkTimer:start()
-	end
+    insert(queue, {seconds = idleSeconds, action = actionFn, retryOnError = retryOnError})
+    if not checkTimer:running() then
+        checkTimer:start()
+    end
 end
 
 return mod

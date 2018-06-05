@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                          J U S T     L I B R A R Y                         --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.just ===
 ---
 --- This module provides functions to help with performing tasks which may be
@@ -36,18 +30,18 @@ local just = {}
 --- Returns:
 ---  * The last return value of the action function.
 function just.doWhile(actionFn, timeout, frequency)
-	timeout = timeout or 1.0
-	frequency = frequency or 0.001
+    timeout = timeout or 1.0
+    frequency = frequency or 0.001
 
-	local period = frequency * 1000000
-	local stopTime = timer.secondsSinceEpoch() + timeout
+    local period = frequency * 1000000
+    local stopTime = timer.secondsSinceEpoch() + timeout
 
-	local result = true
-	while result and timer.secondsSinceEpoch() < stopTime do
-		result = actionFn()
-		timer.usleep(period)
-	end
-	return result
+    local result = true
+    while result and timer.secondsSinceEpoch() < stopTime do
+        result = actionFn()
+        timer.usleep(period)
+    end
+    return result
 end
 
 --- cp.just.doUntil(actionFn[, timeout[, frequency]]) -> value
@@ -63,18 +57,18 @@ end
 --- Returns:
 ---  * The last return value of the action function.
 function just.doUntil(actionFn, timeout, frequency)
-	timeout = timeout or 1.0
-	frequency = frequency or 0.001
+    timeout = timeout or 1.0
+    frequency = frequency or 0.001
 
-	local period = frequency * 1000000
-	local stopTime = timer.secondsSinceEpoch() + timeout
+    local period = frequency * 1000000
+    local stopTime = timer.secondsSinceEpoch() + timeout
 
-	local result = false
-	while not result and timer.secondsSinceEpoch() < stopTime do
-		result = actionFn()
-		timer.usleep(period)
-	end
-	return result
+    local result = false
+    while not result and timer.secondsSinceEpoch() < stopTime do
+        result = actionFn()
+        timer.usleep(period)
+    end
+    return result
 end
 
 --- cp.just.wait(integer) -> nil
@@ -87,7 +81,7 @@ end
 --- Returns:
 ---  * None
 function just.wait(periodInSeconds)
-	timer.usleep(periodInSeconds * 1000000)
+    timer.usleep(periodInSeconds * 1000000)
 end
 
 return just

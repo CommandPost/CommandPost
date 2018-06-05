@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.timeline.titles ===
 ---
 --- Controls Final Cut Pro's Titles.
@@ -13,12 +7,19 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("titles")
 
-local timer				= require("hs.timer")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local timer             = require("hs.timer")
 
-local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config            = require("cp.config")
+local dialog            = require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local just              = require("cp.just")
 
 --------------------------------------------------------------------------------
 --
@@ -27,111 +28,327 @@ local fcp				= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
-function mod.init(touchbar)
-	mod.touchbar = touchbar
-	return mod
-end
+-- plugins.finalcutpro.timeline.titles._cache <cp.prop: table>
+-- Field
+-- Titles cache.
+mod._cache = config.prop("titlesCache", {})
 
---------------------------------------------------------------------------------
--- TITLES SHORTCUT PRESSED:
--- The shortcut may be a number from 1-5, in which case the 'assigned' shortcut is applied,
--- or it may be the name of the title to apply in the current FCPX language.
---------------------------------------------------------------------------------
+--- plugins.finalcutpro.timeline.titles.apply(action) -> boolean
+--- Function
+--- Applies the specified action as a title. Expects action to be a table with the following structure:
+---
+--- ```lua
+--- { name = "XXX", category = "YYY", theme = "ZZZ" }
+--- ```
+---
+--- ...where `"XXX"`, `"YYY"` and `"ZZZ"` are in the current FCPX language. The `category` and `theme` are optional,
+--- but if they are known it's recommended to use them, or it will simply execute the first matching title with that name.
+---
+--- Alternatively, you can also supply a string with just the name.
+---
+--- Actions will be cached each session, so that if the user applies the effect multiple times, only the first time will require
+--- GUI scripting - subsequent uses will just use the Pasteboard.
+---
+--- Parameters:
+---  * `action`      - A table with the name/category/theme for the title to apply, or a string with just the name.
+---
+--- Returns:
+---  * `true` if a matching title was found and applied to the timeline.
 function mod.apply(action)
 
-	--------------------------------------------------------------------------------
-	-- Get settings:
-	--------------------------------------------------------------------------------
-	if type(action) == "string" then
-		action = { name = action }
-	end
+    --------------------------------------------------------------------------------
+    -- Get settings:
+    --------------------------------------------------------------------------------
+    if type(action) == "string" then
+        action = { name = action }
+    end
 
-	local name, category = action.name, action.category
+    local name, category, theme = action.name, action.category, action.theme
 
-	if name == nil then
-		dialog.displayMessage(i18n("noTitleShortcut"))
-		return false
-	end
+    if name == nil then
+        dialog.displayMessage(i18n("noTitleShortcut"))
+        return false
+    end
 
-	--------------------------------------------------------------------------------
-	-- Save the main Browser layout:
-	--------------------------------------------------------------------------------
-	local browser = fcp:browser()
-	local browserLayout = browser:saveLayout()
+    --------------------------------------------------------------------------------
+    -- Make sure FCPX is at the front.
+    --------------------------------------------------------------------------------
+    fcp:launch()
 
-	--------------------------------------------------------------------------------
-	-- Get Titles Browser:
-	--------------------------------------------------------------------------------
-	local generators = fcp:generators()
-	local generatorsLayout = generators:saveLayout()
+    --------------------------------------------------------------------------------
+    -- Build a Cache ID:
+    --------------------------------------------------------------------------------
+    local cacheID = name
+    if theme then cacheID = cacheID .. "-" .. theme end
+    if category then cacheID = cacheID .. "-" .. name end
 
-	--------------------------------------------------------------------------------
-	-- Make sure FCPX is at the front.
-	--------------------------------------------------------------------------------
-	fcp:launch()
+    --------------------------------------------------------------------------------
+    -- Restore from Cache:
+    --------------------------------------------------------------------------------
+    if mod._cache()[cacheID] then
 
-	--------------------------------------------------------------------------------
-	-- Make sure the panel is open:
-	--------------------------------------------------------------------------------
-	generators:show()
+        --------------------------------------------------------------------------------
+        -- Stop Watching Pasteboard:
+        --------------------------------------------------------------------------------
+        local pasteboard = mod.pasteboardManager
+        pasteboard.stopWatching()
 
-	if not generators:isShowing() then
-		dialog.displayErrorMessage("Unable to display the Titles panel.")
-		return false
-	end
+        --------------------------------------------------------------------------------
+        -- Save Current Pasteboard Contents for later:
+        --------------------------------------------------------------------------------
+        local originalPasteboard = pasteboard.readFCPXData()
 
-	--------------------------------------------------------------------------------
-	-- Make sure there's nothing in the search box:
-	--------------------------------------------------------------------------------
-	generators:search():clear()
+        --------------------------------------------------------------------------------
+        -- Add Cached Item to Pasteboard:
+        --------------------------------------------------------------------------------
+        local cachedItem = mod._cache()[cacheID]
+        local result = pasteboard.writeFCPXData(cachedItem)
+        if not result then
+            dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
+            pasteboard.startWatching()
+            return false
+        end
 
-	--------------------------------------------------------------------------------
-	-- Click 'All':
-	--------------------------------------------------------------------------------
-	if category then
-		generators:showTitlesCategory(category)
-	else
-		generators:showAllTitles()
-	end
+        --------------------------------------------------------------------------------
+        -- Make sure Timeline has focus:
+        --------------------------------------------------------------------------------
+        local timeline = fcp:timeline()
+        timeline:show()
+        if not timeline:isShowing() then
+            dialog.displayErrorMessage("Unable to display the Timeline.")
+            pasteboard.startWatching()
+            return false
+        end
 
-	--------------------------------------------------------------------------------
-	-- Make sure "Installed Titles" is selected:
-	--------------------------------------------------------------------------------
-	generators:showInstalledTitles()
+        --------------------------------------------------------------------------------
+        -- Trigger 'Paste' from Menubar:
+        --------------------------------------------------------------------------------
+        local menuBar = fcp:menu()
+        if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
+            menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
+        else
+            dialog.displayErrorMessage("Unable to paste Generator.")
+            pasteboard.startWatching()
+            return false
+        end
 
-	--------------------------------------------------------------------------------
-	-- Perform Search:
-	--------------------------------------------------------------------------------
-	generators:search():setValue(name)
+        --------------------------------------------------------------------------------
+        -- Restore Pasteboard:
+        --------------------------------------------------------------------------------
+        timer.doAfter(1, function()
 
-	--------------------------------------------------------------------------------
-	-- Get the list of matching effects
-	--------------------------------------------------------------------------------
-	local matches = generators:currentItemsUI()
-	if not matches or #matches == 0 then
-		dialog.displayErrorMessage("Unable to find a transition called '"..shortcut.."'.")
-		return false
-	end
+            --------------------------------------------------------------------------------
+            -- Restore Original Pasteboard Contents:
+            --------------------------------------------------------------------------------
+            if originalPasteboard ~= nil then
+                local v = pasteboard.writeFCPXData(originalPasteboard)
+                if not v then
+                    dialog.displayErrorMessage("Failed to restore original Pasteboard item.")
+                    pasteboard.startWatching()
+                    return false
+                end
+            end
 
-	local generator = matches[1]
+            --------------------------------------------------------------------------------
+            -- Start watching the Pasteboard again:
+            --------------------------------------------------------------------------------
+            pasteboard.startWatching()
 
-	--------------------------------------------------------------------------------
-	-- Apply the selected Transition:
-	--------------------------------------------------------------------------------
-	mod.touchbar.hide()
+        end)
 
-	generators:applyItem(generator)
+        --------------------------------------------------------------------------------
+        -- All done:
+        --------------------------------------------------------------------------------
+        return true
 
-	-- TODO: HACK: This timer exists to  work around a mouse bug in Hammerspoon Sierra
-	timer.doAfter(0.1, function()
-		mod.touchbar.show()
+    end
 
-		generators:loadLayout(generatorsLayout)
-		if browserLayout then browser:loadLayout(browserLayout) end
-	end)
+    --------------------------------------------------------------------------------
+    -- Save the main Browser layout:
+    --------------------------------------------------------------------------------
+    local browser = fcp:browser()
+    local browserLayout = browser:saveLayout()
 
-	--- Success!
-	return true
+    --------------------------------------------------------------------------------
+    -- Get Titles Browser:
+    --------------------------------------------------------------------------------
+    local generators = fcp:generators()
+    local generatorsLayout = generators:saveLayout()
+
+    --------------------------------------------------------------------------------
+    -- Make sure the panel is open:
+    --------------------------------------------------------------------------------
+    generators:show()
+    if not generators:isShowing() then
+        dialog.displayErrorMessage("Unable to display the Titles panel.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure there's nothing in the search box:
+    --------------------------------------------------------------------------------
+    generators:search():clear()
+
+    --------------------------------------------------------------------------------
+    -- Select the Category if provided otherwise just show all:
+    --------------------------------------------------------------------------------
+    if category then
+        generators:showTitlesCategory(category)
+    else
+        generators:showAllTitles()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Make sure "Installed Titles" is selected:
+    --------------------------------------------------------------------------------
+    local group = generators:group():UI()
+    local groupValue = group:attributeValue("AXValue")
+    if groupValue ~= fcp:string("PEMediaBrowserInstalledTitlesMenuItem") then
+        generators:showInstalledTitles()
+    end
+
+    --------------------------------------------------------------------------------
+    -- Find the requested Title:
+    --------------------------------------------------------------------------------
+    local currentItemsUI = generators:currentItemsUI()
+    local whichItem = nil
+    for _, v in ipairs(currentItemsUI) do
+        local title = name
+        if theme then
+            title = theme .. " - " .. name
+        end
+        if v:attributeValue("AXTitle") == title then
+            whichItem = v
+        end
+    end
+    if whichItem == nil then
+        dialog.displayErrorMessage("Failed to get whichItem in plugins.finalcutpro.timeline.titles.apply.")
+        return false
+    end
+    local grid = currentItemsUI[1]:attributeValue("AXParent")
+    if not grid then
+        dialog.displayErrorMessage("Failed to get grid in plugins.finalcutpro.timeline.titles.apply.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Select the chosen Generator:
+    --------------------------------------------------------------------------------
+    grid:setAttributeValue("AXSelectedChildren", {whichItem})
+    whichItem:setAttributeValue("AXFocused", true)
+
+    --------------------------------------------------------------------------------
+    -- Stop Watching Pasteboard:
+    --------------------------------------------------------------------------------
+    local pasteboard = mod.pasteboardManager
+    pasteboard.stopWatching()
+
+    --------------------------------------------------------------------------------
+    -- Save Current Pasteboard Contents for later:
+    --------------------------------------------------------------------------------
+    local originalPasteboard = pasteboard.readFCPXData()
+
+    --------------------------------------------------------------------------------
+    -- Trigger 'Copy' from Menubar:
+    --------------------------------------------------------------------------------
+    local menuBar = fcp:menu()
+    menuBar:selectMenu({"Edit", "Copy"})
+    local newPasteboard = nil
+    just.doUntil(function()
+
+        newPasteboard = pasteboard.readFCPXData()
+
+        if newPasteboard == nil then
+            menuBar:selectMenu({"Edit", "Copy"})
+            return false
+        end
+
+        if originalPasteboard == nil and newPasteboard ~= nil then
+            return true
+        end
+
+        if newPasteboard ~= originalPasteboard then
+            return true
+        end
+
+        --------------------------------------------------------------------------------
+        -- Let's try again:
+        --------------------------------------------------------------------------------
+        menuBar:selectMenu({"Edit", "Copy"})
+        return false
+
+    end)
+
+    if newPasteboard == nil then
+        dialog.displayErrorMessage("Failed to copy Generator.")
+        pasteboard.startWatching()
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Cache the item for faster recall next time:
+    --------------------------------------------------------------------------------
+    local cache = mod._cache()
+    cache[cacheID] = newPasteboard
+    mod._cache(cache)
+
+    --------------------------------------------------------------------------------
+    -- Make sure Timeline has focus:
+    --------------------------------------------------------------------------------
+    local timeline = fcp:timeline()
+    timeline:show()
+    if not timeline:isShowing() then
+        dialog.displayErrorMessage("Unable to display the Timeline.")
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Trigger 'Paste' from Menubar:
+    --------------------------------------------------------------------------------
+    if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
+        menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
+    else
+        dialog.displayErrorMessage("Unable to paste Generator.")
+        pasteboard.startWatching()
+        return false
+    end
+
+    --------------------------------------------------------------------------------
+    -- Restore Layout:
+    --------------------------------------------------------------------------------
+    timer.doAfter(0.1, function()
+        generators:loadLayout(generatorsLayout)
+        if browserLayout then browser:loadLayout(browserLayout) end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Restore Pasteboard:
+    --------------------------------------------------------------------------------
+    timer.doAfter(1, function()
+
+        --------------------------------------------------------------------------------
+        -- Restore Original Pasteboard Contents:
+        --------------------------------------------------------------------------------
+        if originalPasteboard ~= nil then
+            local result = pasteboard.writeFCPXData(originalPasteboard)
+            if not result then
+                dialog.displayErrorMessage("Failed to restore original Pasteboard item.")
+                pasteboard.startWatching()
+                return false
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Start watching Pasteboard again:
+        --------------------------------------------------------------------------------
+        pasteboard.startWatching()
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Success:
+    --------------------------------------------------------------------------------
+    return true
+
 end
 
 --------------------------------------------------------------------------------
@@ -140,22 +357,19 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.titles",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.os.touchbar"]						= "touchbar",
-	}
+    id = "finalcutpro.timeline.titles",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.pasteboard.manager"]               = "pasteboardManager",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod
-end
-
-function plugin.postInit(deps)
-	return mod.init(deps.touchbar)
+    mod.pasteboardManager = deps.pasteboardManager
+    return mod
 end
 
 return plugin

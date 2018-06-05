@@ -1,7 +1,7 @@
 MIT License
 
-Copyright (c) 2016-2017 LateNite Films Pty Ltd.
-Copyright (c) 2016-2017 Chris Hocking & David Peterson.
+Copyright (c) 2016-2018 LateNite Films Pty Ltd.
+Copyright (c) 2016-2018 Chris Hocking & David Peterson.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

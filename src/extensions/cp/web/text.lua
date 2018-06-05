@@ -2,17 +2,22 @@
 ---
 --- Functions for managing text on the web.
 
-local sbyte, schar = string.byte, string.char
-local sfind, ssub, gsub = string.find, string.sub, string.gsub
-
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local mod = {}
 
+local schar = string.char
+local gsub = string.gsub
+
 local function sub_hex_ent(s)
-	return schar(tonumber(s, 16))
+    return schar(tonumber(s, 16))
 end
 
 local function sub_dec_ent(s)
-	return schar(tonumber(s))
+    return schar(tonumber(s))
 end
 
 --- cp.web.text.unescapeXML(s) -> string
@@ -25,17 +30,17 @@ end
 --- Returns:
 ---  * The string, unescaped.
 function mod.unescapeXML(s)
-	if not s then
-		return nil
-	end
-	s = gsub(s, "&lt;", "<")
-	s = gsub(s, "&gt;", ">")
-	s = gsub(s, "&apos;", "'")
-	s = gsub(s, "&quot;", '"')
-	s = gsub(s, "&#x(%x+);", sub_hex_ent)
-	s = gsub(s, "&#(%d+);", sub_dec_ent)
-	s = gsub(s, "&amp;", "&")
-	return s
+    if not s then
+        return nil
+    end
+    s = gsub(s, "&lt;", "<")
+    s = gsub(s, "&gt;", ">")
+    s = gsub(s, "&apos;", "'")
+    s = gsub(s, "&quot;", '"')
+    s = gsub(s, "&#x(%x+);", sub_hex_ent)
+    s = gsub(s, "&#(%d+);", sub_dec_ent)
+    s = gsub(s, "&amp;", "&")
+    return s
 end
 
 --- cp.web.text.escapeXML(s) -> string
@@ -48,15 +53,15 @@ end
 --- Returns:
 ---  * The string, escaped for XML.
 function mod.escapeXML(s)
-	if not s then
-		return nil
-	end
-	s = gsub(s, "&", "&amp;")
-	s = gsub(s, "<", "&lt;")
-	s = gsub(s, ">", "&gt;")
-	s = gsub(s, "'", "&apos;")
-	s = gsub(s, '"', "&quot;")
-	return s
+    if not s then
+        return nil
+    end
+    s = gsub(s, "&", "&amp;")
+    s = gsub(s, "<", "&lt;")
+    s = gsub(s, ">", "&gt;")
+    s = gsub(s, "'", "&apos;")
+    s = gsub(s, '"', "&quot;")
+    return s
 end
 
 return mod

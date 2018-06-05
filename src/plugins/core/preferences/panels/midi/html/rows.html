@@ -1,0 +1,318 @@
+{%
+	for i=1,maxItems,1 do
+		local buttonID 		= tostring(i)
+		local actionTitle 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["actionTitle"] or i18nNone
+		local device 		= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["device"] or i18nNone
+		local commandType 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["commandType"] or i18nNone
+		local number 		= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["number"] or i18nNone
+		local channel	 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["channel"] or i18nNone
+		local value		 	= items[groupID] and items[groupID][buttonID] and items[groupID][buttonID]["value"] or i18nNone
+%}
+			<tr>
+				<td class="midiRowAction">
+					<input type="text" id="midi{{ groupID }}_button{{ buttonID }}_action" class="midiActionTextbox" value="{{ actionTitle }}" disabled>
+				</td>
+				<td class="midiRowActionButton">
+					<a id="midi{{ groupID }}_button{{ buttonID }}_actionButton" href="#" class="button midiActionButton">{{ i18nSelect }}</a>
+				</td>
+				<td class="midiRowDevice">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_device" style="width:110px;">
+						{%
+						local foundDevice = false
+						local selected = ""
+						if device == i18nNone then selected = [[selected=""]] end
+						%}
+						<option {{selected}} value="">{{i18nNone}}</option>
+						<option disabled="disabled" value="">--------------------------</option>
+						<option disabled="disabled" value="">{{ string.upper(i18nPhysical) }}:</option>
+						<option disabled="disabled" value="">--------------------------</option>
+						{%
+						for _, deviceName in ipairs(midiDevices) do
+							local selected = ""
+							if device == deviceName then
+								selected = [[selected=""]]
+								foundDevice = true
+							end
+						%}
+							<option {{selected}} value="{{deviceName}}">{{deviceName}}</option>
+						{%
+						end
+						if device ~= i18nNone and not foundDevice and not string.sub(device, 1, 8) == "virtual_" then
+						%}
+							<option selected="" value="{{device}}">{{device}} (Offline)</option>
+						{%
+						elseif #midiDevices == 0 then
+						%}
+							<option disabled="disabled" value="">{{i18nNoDevicesDetected}}</option>
+						{%
+						end
+						%}
+						<option disabled="disabled" value="">--------------------------</option>
+						<option disabled="disabled" value="">{{ string.upper(i18nVirtual) }}:</option>
+						<option disabled="disabled" value="">--------------------------</option>
+						{%
+						local foundVirtualDevice = false
+						for _, deviceName in ipairs(virtualMidiDevices) do
+							local selected = ""
+							if device == "virtual_" .. deviceName then
+								selected = [[selected=""]]
+								foundVirtualDevice = true
+							end
+						%}
+							<option {{selected}} value="virtual_{{deviceName}}">{{deviceName}}</option>
+						{%
+						end
+						if device ~= i18nNone and not foundVirtualDevice and string.sub(device, 1, 8) == "virtual_" then
+						%}
+							<option selected="" value="virtual_{{device}}">{{ string.sub(device, 9) }} (Offline)</option>
+						{%
+						elseif #virtualMidiDevices == 0 then
+						%}
+							<option disabled="disabled" value="">{{i18nNoDevicesDetected}}</option>
+						{%
+						end
+						%}
+					</select>
+				</td>
+				<td class="midiRowType">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_commandType" style="width:130px;">
+						{%
+						local selected = ""
+						if commandType == i18nNone then selected = [[selected=""]] end
+						%}
+						<option {{selected}} value="">{{i18nNone}}</option>
+						{%
+							local commandTypes = {
+								["noteOff"] = i18nNoteOff,
+								["noteOn"] = i18nNoteOn,
+								["polyphonicKeyPressure"] = i18nPolyphonicKeyPressure,
+								["controlChange"] = i18nControlChange,
+								["programChange"] = i18nProgramChange,
+								["channelPressure"] = i18nChannelPressure,
+								["pitchWheelChange"] = i18nPitchWheelChange,
+							}
+							for a, b in pairs(commandTypes) do
+								local selected = ""
+								if a == commandType then
+									selected = [[selected=""]]
+								end
+							%}<option {{selected}} value="{{ a }}">{{b}}</option>{%
+							end
+						%}
+					</select>
+				</td>
+				<td class="midiRowNumber">
+					<input style="width: 35px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_number" class="midiButtonLabel" value="{{ number }}">
+				</td>
+				<td class="midiRowChannel">
+					<select id="midi{{ groupID }}_button{{ buttonID }}_channel">
+						{%
+						local selected = ""
+						if channel == i18nNone then selected = [[selected=""]] end
+						%}
+						<option {{selected}} value="">{{i18nNone}}</option>
+						{% for channelValue=1, 16 do
+							local selected = ""
+							if channel ~= i18nNone then
+								if tostring(tonumber(channel) + 1) == tostring(channelValue) then selected = [[selected=""]] end
+							end
+							local channelValueString = tostring(channelValue)
+						%}
+							<option {{selected}} value="{{ channelValue }}">{{ channelValueString }}</option>
+						{% end %}
+					</select>
+				</td>
+				<td class="midiRowValue">
+					<input style="width: 40px;" type="text" id="midi{{ groupID }}_button{{ buttonID }}_value" class="midiButtonLabel" value="{{ value }}">
+				</td>
+				<td class="midiRowLearn">
+					<a id="midi{{ groupID }}_button{{ buttonID }}_clearButton" href="#" class="button midiActionButton">{{ i18nClear }}</a>
+					<a id="midi{{ groupID }}_button{{ buttonID }}_learnButton" href="#" class="button midiActionButton">{{ i18nLearn }}</a>
+				</td>
+				<script>
+						/*
+						--------------------------------------------------------------------------------
+						DEVICE DROP DOWN:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_device = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_device");
+						midi{{ groupID }}_button{{ buttonID }}_device.onchange = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateDevice",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										device: midi{{ groupID }}_button{{ buttonID }}_device.value,
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						COMMAND TYPE DROP DOWN:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_commandType = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_commandType");
+						midi{{ groupID }}_button{{ buttonID }}_commandType.onchange = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateCommandType",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										commandType: midi{{ groupID }}_button{{ buttonID }}_commandType.value,
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						NUMBER TEXT BOX:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_number = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_number");
+						midi{{ groupID }}_button{{ buttonID }}_number.onchange = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateNumber",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										number: midi{{ groupID }}_button{{ buttonID }}_number.value,
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						CHANNEL DROP DOWN:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_channel = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_channel");
+						midi{{ groupID }}_button{{ buttonID }}_channel.onchange = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateChannel",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										channel: midi{{ groupID }}_button{{ buttonID }}_channel.value,
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						VALUE TEXT BOX:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_value = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_value");
+						midi{{ groupID }}_button{{ buttonID }}_value.onchange = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateValue",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+										value: midi{{ groupID }}_button{{ buttonID }}_value.value,
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						ACTION BUTTON:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_actionButton = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_actionButton");
+						midi{{ groupID }}_button{{ buttonID }}_actionButton.onclick = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "updateAction",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						CLEAR BUTTON:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_clearButton = document.getElementById("midi{{ groupID }}_button{{ buttonID }}_clearButton");
+						midi{{ groupID }}_button{{ buttonID }}_clearButton.onclick = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "clear",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+						/*
+						--------------------------------------------------------------------------------
+						LEARN BUTTON:
+						--------------------------------------------------------------------------------
+						*/
+						var midi{{ groupID }}_button{{ buttonID }}_learnButton= document.getElementById("midi{{ groupID }}_button{{ buttonID }}_learnButton");
+						midi{{ groupID }}_button{{ buttonID }}_learnButton.onclick = function(e) {
+							try {
+								var result = {
+									id: "midiPanelCallback",
+									params: {
+										type: "learnButton",
+										groupID: "{{ groupID }}",
+										buttonID: "{{ buttonID }}",
+									},
+								}
+								webkit.messageHandlers.{{ webviewLabel }}.postMessage(result);
+							} catch(err) {
+								console.log("Error: " + err)
+								alert('An error has occurred. Does the controller exist yet?');
+							}
+						}
+				</script>
+			</tr>
+{%
+	end
+%}

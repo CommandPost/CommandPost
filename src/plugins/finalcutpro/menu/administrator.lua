@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                     A D M I N I S T R A T O R    M E N U                   --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.menu.administrator ===
 ---
 --- Administrator Menu.
@@ -13,25 +7,43 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log						= require("hs.logger").new("adminMenu")
 
-local config					= require("cp.config")
-local fcp						= require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config                    = require("cp.config")
+local fcp                       = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 					= 5000
-local PREFERENCES_PRIORITY		= 25
-local SETTING 					= "menubarAdministratorEnabled"
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 5000
+
+-- PREFERENCES_PRIORITY -> number
+-- Constant
+-- Preferences Priority
+local PREFERENCES_PRIORITY = 7
+
+-- SETTING -> string
+-- Constant
+-- Setting Name
+local SETTING = "menubarAdministratorEnabled"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
+-- sectionEnabled <cp.prop: boolean>
+-- Variable
+-- Section Enabled
 local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
@@ -40,12 +52,12 @@ local sectionEnabled = config.prop(SETTING, true)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.menu.administrator",
-	group			= "finalcutpro",
-	dependencies	= {
-		["core.menu.manager"] 				= "manager",
-		["core.preferences.panels.menubar"]	= "prefs",
-	}
+    id              = "finalcutpro.menu.administrator",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["core.menu.manager"]               = "manager",
+        ["core.preferences.panels.menubar"] = "prefs",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -53,41 +65,41 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
 
-	--------------------------------------------------------------------------------
-	-- Create the Administrator section
-	--------------------------------------------------------------------------------
-	local shortcuts = dependencies.manager.addSection(PRIORITY)
+    --------------------------------------------------------------------------------
+    -- Create the Administrator section
+    --------------------------------------------------------------------------------
+    local shortcuts = dependencies.manager.addSection(PRIORITY)
 
-	--------------------------------------------------------------------------------
-	-- Disable the section if the Administrator option is disabled
-	--------------------------------------------------------------------------------
-	shortcuts:setDisabledFn(function()
-		return not fcp:isInstalled() or not sectionEnabled()
-	end)
+    --------------------------------------------------------------------------------
+    -- Disable the section if the Administrator option is disabled
+    --------------------------------------------------------------------------------
+    shortcuts:setDisabledFn(function()
+        return not fcp:isInstalled() or not sectionEnabled()
+    end)
 
-	--------------------------------------------------------------------------------
-	-- Add the separator and title for the section.
-	--------------------------------------------------------------------------------
-	shortcuts:addSeparator(0)
-		:addItem(1, function()
-			return { title = string.upper(i18n("adminTools")) .. ":", disabled = true }
-		end)
+    --------------------------------------------------------------------------------
+    -- Add the separator and title for the section.
+    --------------------------------------------------------------------------------
+    shortcuts:addSeparator(0)
+        :addItem(1, function()
+            return { title = string.upper(i18n("adminTools")) .. ":", disabled = true }
+        end)
 
-	--------------------------------------------------------------------------------
-	-- Add to General Preferences Panel:
-	--------------------------------------------------------------------------------
-	local prefs = dependencies.prefs
-	prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
-		{
-			label = i18n("showAdminTools"),
-			onchange = function(id, params)
-				sectionEnabled(params.checked)
-			end,
-			checked = sectionEnabled,
-		}
-	)
+    --------------------------------------------------------------------------------
+    -- Add to General Preferences Panel:
+    --------------------------------------------------------------------------------
+    local prefs = dependencies.prefs
+    prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
+        {
+            label = i18n("showAdminTools"),
+            onchange = function(_, params)
+                sectionEnabled(params.checked)
+            end,
+            checked = sectionEnabled,
+        }
+    )
 
-	return shortcuts
+    return shortcuts
 end
 
 return plugin

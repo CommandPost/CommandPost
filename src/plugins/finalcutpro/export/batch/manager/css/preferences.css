@@ -1,0 +1,173 @@
+body {
+	background-color: #1f1f1f;
+	font-family: -apple-system;
+	font-size: 13px;
+	overflow:hidden;
+	color: #999999;
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+}
+
+::-webkit-scrollbar-track {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #737373;
+    border-radius: 4px;
+}
+
+checkbox {
+	background-color:#5760e7;
+}
+
+select {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAALCAAAAACW+8h0AAAAOUlEQVQI12NwdExaFOvoyOAYNG/hnABHhqB5nZ69cwIY5na5Orr2zmJwhAAMGiYPUw/T7+iYDDIPAPKdHMdxG+BNAAAAAElFTkSuQmCC) no-repeat 95% 50%;
+	-webkit-appearance: none;
+	appearance: none;
+	text-shadow:0 1px 0 rgba(0,0,0,0.4);
+	background-color: rgba(65,65,65,1);
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px 2px 5px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	border-radius: 0px;
+	cursor: default;
+	font-family: -apple-system;
+	font-size: 13px;
+}
+
+.tip {
+	color: #4a4a4a;
+	font-style: italic;
+	padding-top: 5px;
+}
+
+.button {
+	background-color: #4a4a4a;
+	color: #bfbfbc;
+	text-decoration: none;
+	padding: 2px 18px;
+	border:0.5px solid black;
+	margin: 2px 2px;
+	display: inline-block;
+	border-radius: 3px;
+	cursor: default;
+	text-align: center;
+}
+.button:active {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.button.selected {
+	color: white;
+	border-color:#1262fb;
+	background-image:-webkit-linear-gradient(#6fb4f7, #1981fb);
+}
+.button.disabled {
+	color: #999!important;
+	background-image: -webkit-linear-gradient(#fbf8f8 0%, #f0f0f0 30%, #e3e3e3 45%, #d7d7d7 60%, #cbc9c9 100%);
+}
+.textarea {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	padding: 4px 4px;
+	margin: 10px 0px;
+	background-color: #161616;
+	border:1px solid #c5c5c5;
+	width: 99%;
+	height: 200px;
+	outline: 0px solid transparent;
+	max-height: 200px;
+	overflow: auto;
+}
+.uiItem {
+	padding-left:20px;
+	padding-right:20px;
+	margin-top: 0px;
+	margin-bottom: 2px;
+	margin-right: 0px;
+	margin-left: 0px;
+}
+
+.status {
+	color: #5760e7;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.status .default {
+	color: #d1393e;
+}
+
+h3.uiItem {
+	padding-top: 12pt;
+	padding-bottom: 3pt;
+}
+
+hr {
+	clear: both;
+	display: block;
+	border: 0;
+	border-top: 1px solid #4a4a4a;
+	margin-left: 25px;
+	margin-right: 25px;
+}
+
+.api label {
+	width:200px;
+	clear:left;
+	text-align:left;
+	padding-right:10px;
+	padding-bottom:20px;
+	float: left;
+}
+
+.api input[type=text] {
+	float: left;
+	-webkit-appearance: none;
+	appearance: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	-webkit-rtl-ordering: logical;
+	-webkit-user-select: text;
+	user-select: text;
+	color: #959595;
+	background-color:#161616;
+	border-style: solid;
+	border-color: #0a0a0a;
+	border-width: 2px;
+	border-radius: 6px;
+	width: 400px;
+	text-align: center;
+	font-size: 13px;
+	height: 20px;
+}
+
+.api input[type=text]:focus {
+	float: left;
+	-webkit-appearance: none;
+	appearance: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	-webkit-rtl-ordering: logical;
+	-webkit-user-select: text;
+	user-select: text;
+	color: #959595;
+	border-style: solid;
+	border-color: #1a3868;
+	border-width: 2px;
+	border-radius: 6px;
+	width: 400px;
+	text-align: center;
+	font-size: 13px;
+	height: 20px;
+}

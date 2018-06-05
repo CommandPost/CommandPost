@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.timeline.playback ===
 ---
 --- Playback Plugin.
@@ -12,6 +6,10 @@
 --
 -- EXTENSIONS:
 --
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp							= require("cp.apple.finalcutpro")
 
@@ -22,7 +20,7 @@ local fcp							= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.playback.play() -> nil
+--- plugins.finalcutpro.timeline.playback.play() -> none
 --- Function
 --- 'Play' in Final Cut Pro
 ---
@@ -32,10 +30,10 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.play()
-	fcp:performShortcut("PlayPause")
+    fcp:performShortcut("PlayPause")
 end
 
---- plugins.finalcutpro.timeline.playback.pause() -> nil
+--- plugins.finalcutpro.timeline.playback.pause() -> none
 --- Function
 --- 'Pause' in Final Cut Pro
 ---
@@ -45,7 +43,7 @@ end
 --- Returns:
 ---  * None
 function mod.pause()
-	mod.play()
+    mod.play()
 end
 
 --------------------------------------------------------------------------------
@@ -54,11 +52,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.playback",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.commands"]	= "fcpxCmds",
-	}
+    id = "finalcutpro.timeline.playback",
+    group = "finalcutpro",
+    dependencies = {
+        ["finalcutpro.commands"]	= "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -66,15 +64,19 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	local cmds = deps.fcpxCmds
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    if deps.fcpxCmds then
+        local cmds = deps.fcpxCmds
+        cmds:add("cpPlay")
+            :whenActivated(mod.play)
 
-	cmds:add("cpPlay")
-		:whenActivated(mod.play)
+        cmds:add("cpPause")
+            :whenActivated(mod.pause)
+    end
 
-	cmds:add("cpPause")
-		:whenActivated(mod.pause)
-
-	return mod
+    return mod
 end
 
 return plugin

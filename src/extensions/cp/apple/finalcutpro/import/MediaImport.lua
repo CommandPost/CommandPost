@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   F I N A L    C U T    P R O    A P I                     --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.apple.finalcutpro.import.MediaImport ===
 ---
 --- Media Import
@@ -13,14 +7,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("PrefsDlg")
 
-local just							= require("cp.just")
-local prop							= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log                           = require("hs.logger").new("PrefsDlg")
 
-local axutils						= require("cp.ui.axutils")
-local id							= require("cp.apple.finalcutpro.ids") "MediaImporter"
-local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils                       = require("cp.ui.axutils")
+local id                            = require("cp.apple.finalcutpro.ids") "MediaImporter"
+local just                          = require("cp.just")
+local prop                          = require("cp.prop")
+local Window                        = require("cp.ui.Window")
 
 --------------------------------------------------------------------------------
 --
@@ -29,124 +29,189 @@ local WindowWatcher					= require("cp.apple.finalcutpro.WindowWatcher")
 --------------------------------------------------------------------------------
 local MediaImport = {}
 
--- TODO: Add documentation
-function MediaImport.matches(element)
-	if element then
-		return element:attributeValue("AXSubrole") == "AXDialog"
-		   and element:attributeValue("AXMain")
-		   and element:attributeValue("AXModal")
-		   and axutils.childWith(element, "AXIdentifier", id "MainPanel") ~= nil
-	end
-	return false
-end
-
--- TODO: Add documentation
-function MediaImport:new(app)
-	local o = {_app = app}
-	return prop.extend(o, MediaImport)
-end
-
--- TODO: Add documentation
-function MediaImport:app()
-	return self._app
-end
-
--- TODO: Add documentation
-function MediaImport:UI()
-	return axutils.cache(self, "_ui", function()
-		local windowsUI = self:app():windowsUI()
-		return windowsUI and self:_findWindowUI(windowsUI)
-	end,
-	MediaImport.matches)
-end
-
--- TODO: Add documentation
-function MediaImport:_findWindowUI(windows)
-	for i,window in ipairs(windows) do
-		if MediaImport.matches(window) then return window end
-	end
-	return nil
-end
-
---- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.prop: boolean; read-only>
---- Field
---- Is the Media Import window showing?
-MediaImport.isShowing = prop.new(function(self)
-	return self:UI() ~= nil
-end):bind(MediaImport)
-
--- TODO: Add documentation
--- Ensures the MediaImport is showing
-function MediaImport:show()
-	if not self:isShowing() then
-		-- open the window
-		if self:app():menuBar():isEnabled({"File", "Import", "Media…"}) then
-			self:app():menuBar():selectMenu({"File", "Import", "Media…"})
-			local ui = just.doUntil(function() return self:isShowing() end)
-		end
-	end
-	return self
-end
-
--- TODO: Add documentation
-function MediaImport:hide()
-	local ui = self:UI()
-	if ui then
-		local closeBtn = ui:closeButton()
-		if closeBtn then
-			closeBtn:doPress()
-		end
-	end
-	return self
-end
-
--- TODO: Add documentation
-function MediaImport:importAll()
-	local ui = self:UI()
-	if ui then
-		local btn = ui:defaultButton()
-		if btn and btn:enabled() then
-			btn:doPress()
-		end
-	end
-	return self
-end
-
--- TODO: Add documentation
-function MediaImport:getTitle()
-	local ui = self:UI()
-	return ui and ui:title()
-end
-
------------------------------------------------------------------------
+-- _findWindowUI(windows) -> hs._asm.axuielementObject | nil
+-- Method
+-- Finds a matching window UI.
 --
--- WATCHERS
+-- Parameters:
+--  * windows - A table of `hs.window` objects
 --
------------------------------------------------------------------------
+-- Returns:
+--  * An `axuielement` or `nil`
+local function _findWindowUI(windows)
+    for _,window in ipairs(windows) do
+        if MediaImport.matches(window) then return window end
+    end
+    return nil
+end
 
---- cp.apple.finalcutpro.import.MediaImport:watch() -> bool
---- Method
---- Watch for events that happen in the command editor. The optional functions will be called when the window is shown or hidden, respectively.
+--- cp.apple.finalcutpro.import.MediaImport.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
 ---
 --- Parameters:
----  * `events` - A table of functions with to watch. These may be:
----    * `show(CommandEditor)` - Triggered when the window is shown.
----    * `hide(CommandEditor)` - Triggered when the window is hidden.
+---  * element - An `axuielementObject` to check.
 ---
 --- Returns:
----  * An ID which can be passed to `unwatch` to stop watching.
-function MediaImport:watch(events)
-	if not self._watcher then
-		self._watcher = WindowWatcher:new(self)
-	end
-
-	self._watcher:watch(events)
+---  * `true` if matches otherwise `false`
+function MediaImport.matches(element)
+    if element then
+        return element:attributeValue("AXSubrole") == "AXDialog"
+           and element:attributeValue("AXMain")
+           and element:attributeValue("AXModal")
+           and axutils.childWith(element, "AXIdentifier", id "MainPanel") ~= nil
+    end
+    return false
 end
 
-function MediaImport:unwatch(id)
-	if self._watcher then
-		self._watcher:unwatch(id)
-	end
+--- cp.apple.finalcutpro.import.MediaImport.new(app) -> MediaImport
+--- Constructor
+--- Creates a new Media Import object.
+---
+--- Parameters:
+---  * app - The `cp.apple.finalcutpro` object.
+---
+--- Returns:
+---  * A new MediaImport object.
+function MediaImport.new(app)
+    local o = prop.extend({_app = app}, MediaImport)
+
+--- cp.apple.finalcutpro.import.MediaImport:UI() -> axuielementObject
+--- Method
+--- Returns the Media Import Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` or `nil`
+    local UI = app.windowsUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            local windowsUI = original()
+            return windowsUI and _findWindowUI(windowsUI)
+        end,
+        MediaImport.matches)
+    end)
+
+    local window = Window.new(UI)
+    o._window = window
+
+    prop.bind(o) {
+        UI = UI,
+
+--- cp.apple.finalcutpro.import.MediaImport.hsWindow <cp.prop: hs.window; read-only>
+--- Field
+--- The `hs.window` instance for the window, or `nil` if it can't be found.
+        hsWindow = window.hsWindow,
+
+--- cp.apple.finalcutpro.import.MediaImport.isShowing <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is visible.
+        isShowing = window.visible,
+
+--- cp.apple.finalcutpro.import.MediaImport.isFullScreen <cp.prop: boolean>
+--- Field
+--- Is `true` if the window is full-screen.
+        isFullScreen = window.fullScreen,
+
+--- cp.apple.finalcutpro.import.MediaImport.frame <cp.prop: frame>
+--- Field
+--- The current position (x, y, width, height) of the window.
+        frame = window.frame,
+    }
+
+    return o
+end
+
+--- cp.apple.finalcutpro.import.MediaImport:app() -> App
+--- Method
+--- Returns the App instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
+function MediaImport:app()
+    return self._app
+end
+
+function MediaImport:window()
+    return self._window
+end
+
+--- cp.apple.finalcutpro.import.MediaImport:show() -> cp.apple.finalcutpro.import.MediaImport
+--- Method
+--- Shows the Media Import window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `cp.apple.finalcutpro.import.MediaImport` object for method chaining.
+function MediaImport:show()
+    if not self:isShowing() then
+        -- open the window
+        if self:app():menu():isEnabled({"File", "Import", "Media…"}) then
+            self:app():menu():selectMenu({"File", "Import", "Media…"})
+            just.doUntil(function() return self:isShowing() end)
+        end
+    end
+    return self
+end
+
+--- cp.apple.finalcutpro.import.MediaImport:hide() -> cp.apple.finalcutpro.import.MediaImport
+--- Method
+--- Hides the Media Import window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `cp.apple.finalcutpro.import.MediaImport` object for method chaining.
+function MediaImport:hide()
+    local ui = self:UI()
+    if ui then
+        local closeBtn = ui:closeButton()
+        if closeBtn then
+            closeBtn:doPress()
+        end
+    end
+    return self
+end
+
+--- cp.apple.finalcutpro.import.MediaImport:show() -> cp.apple.finalcutpro.import.MediaImport
+--- Method
+--- Triggers the Import All button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `cp.apple.finalcutpro.import.MediaImport` object for method chaining.
+function MediaImport:importAll()
+    local ui = self:UI()
+    if ui then
+        local btn = ui:defaultButton()
+        if btn and btn:enabled() then
+            btn:doPress()
+        end
+    end
+    return self
+end
+
+--- cp.apple.finalcutpro.import.MediaImport:getTitle() -> string | nil
+--- Method
+--- The title of the Media Import window or `nil`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The title of the Media Import window as a string or `nil`.
+function MediaImport:getTitle()
+    local ui = self:UI()
+    return ui and ui:title()
 end
 
 return MediaImport

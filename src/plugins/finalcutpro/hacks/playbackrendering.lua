@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---              P L A Y B A C K    R E N D E R I N G    P L U G I N           --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.hacks.playbackrendering ===
 ---
 --- Playback Rendering Plugin.
@@ -13,25 +7,34 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("playbackrendering")
 
-local application		= require("hs.application")
-
-local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
-local config			= require("cp.config")
-local plist				= require("cp.plist")
-local tools				= require("cp.tools")
-local prop				= require("cp.prop")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local dialog            = require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 5500
-local DEFAULT_VALUE		= false
-local PREFERENCES_KEY 	= "FFSuspendBGOpsDuringPlay"
+
+-- PRIORITY
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 5500
+
+-- DEFAULT_VALUE
+-- Constant
+-- Whether or not the plugin is enabled by default.
+local DEFAULT_VALUE = false
+
+-- PREFERENCES_KEY
+-- Constant
+-- Preferences Key
+local PREFERENCES_KEY   = "FFSuspendBGOpsDuringPlay"
 
 --------------------------------------------------------------------------------
 --
@@ -40,22 +43,23 @@ local PREFERENCES_KEY 	= "FFSuspendBGOpsDuringPlay"
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.hacks.playbackrendering.enabled <cp.prop: boolean>
+--- Variable
+--- Gets whether or not Playback Rendering is enabled.
 mod.enabled = prop.new(
-	function()
-		return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-	end,
+    function()
+        --------------------------------------------------------------------------------
+        -- Get Preference:
+        --------------------------------------------------------------------------------
+        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
+    end,
 
-	function(value)
-
-		--------------------------------------------------------------------------------
-		-- Update plist:
-		--------------------------------------------------------------------------------
-		if fcp:setPreference(PREFERENCES_KEY, value) == nil then
-			dialog.displayErrorMessage(i18n("failedToWriteToPreferences"))
-			return
-		end
-
-	end
+    function(value)
+        --------------------------------------------------------------------------------
+        -- Set Preference:
+        --------------------------------------------------------------------------------
+        fcp:setPreference(PREFERENCES_KEY, value)
+    end
 )
 
 --------------------------------------------------------------------------------
@@ -64,12 +68,12 @@ mod.enabled = prop.new(
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "finalcutpro.hacks.playbackrendering",
-	group			= "finalcutpro",
-	dependencies	= {
-		["finalcutpro.menu.timeline"]	= "menu",
-		["finalcutpro.commands"] 		= "fcpxCmds",
-	}
+    id              = "finalcutpro.hacks.playbackrendering",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.menu.timeline"]   = "menu",
+        ["finalcutpro.commands"]        = "fcpxCmds",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -77,17 +81,24 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	deps.menu:addItem(PRIORITY, function()
-		return { title = i18n("enableRenderingDuringPlayback"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
-	end)
+    --------------------------------------------------------------------------------
+    -- Setup Menu:
+    --------------------------------------------------------------------------------
+    deps.menu
+        :addItem(PRIORITY, function()
+            return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
+        end)
 
-	-- Commands
-	deps.fcpxCmds:add("cpAllowTasksDuringPlayback")
-		:groupedBy("hacks")
-		:activatedBy():ctrl():option():cmd("p")
-		:whenActivated(function() mod.enabled:toggle() end)
+    --------------------------------------------------------------------------------
+    -- Setup Commands:
+    --------------------------------------------------------------------------------
+    deps.fcpxCmds
+        :add("cpAllowTasksDuringPlayback")
+        :groupedBy("hacks")
+        :activatedBy():ctrl():option():cmd("p")
+        :whenActivated(function() mod.enabled:toggle() end)
 
-	return mod
+    return mod
 
 end
 

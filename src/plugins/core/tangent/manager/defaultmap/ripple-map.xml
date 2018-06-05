@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<TangentWave fileType="PanelMap" fileVersion="3.0">
+    <Panels>
+        <Panel type="Ripple">
+            <Mode id="0x0000000A"> <!-- Global -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Ripple Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Ripple Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AA00001</Key> <!-- Volume -->
+                                <Display>Percentage</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0AD00001</Key> <!-- Brightness -->
+                                <Display>Percentage</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010003"> <!-- FCP: Board -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Ripple Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Ripple Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303102</Key> <!-- Color Board - Exposure - Master - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Ripple Dial 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010004"> <!-- FCP: Wheels -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Ripple Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Ripple Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
+                                <Display>Number</Display>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
+                                <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
+                                <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
+                                <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
+                            <Mapping mode="Std">
+                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
+                                <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="8"> <!-- Ripple Dial 3 -->
+                            <Mapping mode="Std">
+                                <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Display>Number</Display>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010010"> <!-- FCP: Video -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="0"> <!-- Ripple Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Ripple Button B -->
+                            <Mapping mode="Std">
+                                <Key>0x80000009</Key> <!-- Next Mode -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x8000000A</Key> <!-- Previous Mode -->
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+                <ControlBank id="Trackerball">
+                    <Bank>
+                        <Control type="Encoder" number="0"> <!-- Ripple Trackerball 1 X -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730001</Key> <!-- Position X -->
+                                <CustomName>POS X</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730002</Key> <!-- Position Y -->
+                                <CustomName>POS Y</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="3"> <!-- Ripple Trackerball 2 X -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730005</Key> <!-- Scale X -->
+                                <CustomName>SCALE X</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730006</Key> <!-- Scale Y -->
+                                <CustomName>SCALE Y</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730004</Key> <!-- Scale (All) -->
+                                <CustomName>SCALE ALL</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730007</Key> <!-- Anchor X -->
+                                <CustomName>ANCHOR X</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
+                            <Mapping mode="Std">
+                                <Key>0x0F730008</Key> <!-- Anchor Y -->
+                                <CustomName>ANCHOR Y</CustomName>
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+        </Panel>
+    </Panels>
+</TangentWave>

@@ -1,0 +1,23 @@
+<div id="midiGroupControls" class="uiItem">
+{%	for __, groupID in pairs(groups) do %}
+	<div id="midiGroup_{{ groupID }}" class="midiGroup{{ groupID == defaultGroup and ' selected' or '' }}">
+		<table class="midi">
+			<thead>
+				<tr>
+					<th class="midiRowAction">{{ i18nAction }}</th>
+					<th class="midiRowActionButton"></th>
+					<th class="midiRowDevice">{{ i18nDevice }}</th>
+					<th class="midiRowType">{{ i18nCommmandType }}</th>
+					<th class="midiRowNumber">{{ i18nNoteCC }}</th>
+					<th class="midiRowChannel">{{ i18nChannel }}</th>
+					<th class="midiRowValue">{{ i18nValue }}</th>
+					<th class="midiRowLearn"></th>
+				</tr>
+			</thead>
+			<tbody>
+				{(html/rows.html, _.extend({groupID = groupID}, context))}
+			</tbody>
+		</table>
+	</div>
+{% end %}
+</div>

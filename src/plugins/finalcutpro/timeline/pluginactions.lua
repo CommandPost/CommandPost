@@ -1,41 +1,39 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                   C  O  M  M  A  N  D  P  O  S  T                          --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.finalcutpro.timeline.pluginactions ===
 ---
---- Controls Final Cut Pro's Titles.
+--- Adds Final Cut Pro Plugins (i.e. Effects, Generators, Titles and Transitions) to CommandPost Actions.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("plgnactns")
 
-local chooser			= require("hs.chooser")
-local drawing			= require("hs.drawing")
-local screen			= require("hs.screen")
-local timer				= require("hs.timer")
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+-- local log               = require("hs.logger").new("plgnactns")
 
-local config			= require("cp.config")
-local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
-local plugins			= require("cp.apple.finalcutpro.plugins")
-local tools				= require("cp.tools")
-local prop				= require("cp.prop")
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local timer             = require("hs.timer")
 
-local format			= string.format
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local fcp               = require("cp.apple.finalcutpro")
+local plugins           = require("cp.apple.finalcutpro.plugins")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 3000
-local MAX_SHORTCUTS 	= 5
+
+-- GROUP -> string
+-- Constant
+-- The group.
+local GROUP = "fcpx"
 
 --------------------------------------------------------------------------------
 --
@@ -44,64 +42,82 @@ local MAX_SHORTCUTS 	= 5
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.pluginactions.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects) -> module
+--- Function
+--- Initialise the module.
+---
+--- Parameters:
+---  * `actionmanager` - Action Manager Plugin
+---  * `generators` - Generators Plugin
+---  * `titles` - Titles Plugin
+---  * `transitions` - Transitions Plugin
+---  * `audioeffects` - Audio Effects Plugin
+---  * `videoeffects` - Video Effects Plugin
+---
+--- Returns:
+---  * The module
 function mod.init(actionmanager, generators, titles, transitions, audioeffects, videoeffects)
-	mod._manager = actionmanager
-	mod._actors = {
-		[plugins.types.generator]		= generators,
-		[plugins.types.title]			= titles,
-		[plugins.types.transition]		= transitions,
-		[plugins.types.audioEffect]		= audioeffects,
-		[plugins.types.videoEffect]		= videoeffects,
-	}
+    mod._manager = actionmanager
+    mod._actors = {
+        [plugins.types.generator]       = generators,
+        [plugins.types.title]           = titles,
+        [plugins.types.transition]      = transitions,
+        [plugins.types.audioEffect]     = audioeffects,
+        [plugins.types.videoEffect]     = videoeffects,
+    }
 
-	mod._handlers = {}
+    mod._handlers = {}
 
-	for type,_ in pairs(plugins.types) do
-		local actionId = function(action)
-			return format("%s:%s:%s", type, action.name, action.category)
-		end
+    for pluginType,_ in pairs(plugins.types) do
 
-		mod._handlers[type] = actionmanager.addHandler(type)
-		:onChoices(function(choices)
-			-- get the effects of the specified type in the current language.
-			local list = fcp:plugins():ofType(type)
-			if list then
-				for i,plugin in ipairs(list) do
-					local action = { name = plugin.name, category = plugin.category }
-					local subText = i18n(type .. "_group")
-					if plugin.category then
-						subText = subText..": "..plugin.category
-					end
-					if plugin.theme then
-						subText = subText.." ("..plugin.theme..")"
-					end
-					choices:add(plugin.name)
-						:subText(subText)
-						:params(action)
-						:id(actionId(action))
-				end
-			end
-		end)
-		:onExecute(function(action)
-			local actor = mod._actors[type]
-			if actor then
-				actor.apply(action.name, action.category)
-			else
-				error(string.format("Unsupported plugin type: %s", type))
-			end
-		end)
-		:onActionId(actionId)
-	end
+        mod._handlers[pluginType] = actionmanager.addHandler(GROUP .. "_" .. pluginType, GROUP)
+        :onChoices(function(choices)
+            --------------------------------------------------------------------------------
+            -- Get the effects of the specified type in the current language:
+            --------------------------------------------------------------------------------
+            local list = fcp:plugins():ofType(pluginType)
+            if list then
+                for _,plugin in ipairs(list) do
+                    local subText = i18n(pluginType .. "_group")
+                    local category = "none"
+                    if plugin.category then
+                        subText = subText..": "..plugin.category
+                        category = plugin.category
+                    end
+                    local theme = "none"
+                    if plugin.theme then
+                        theme = plugin.theme
+                        subText = subText.." ("..plugin.theme..")"
+                    end
+                    choices:add(plugin.name)
+                        :subText(subText)
+                        :params(plugin)
+                        :id(GROUP .. "_" .. pluginType .. "_" .. plugin.name .. "_" .. category .. "_" .. theme)
+                end
+            end
+        end)
+        :onExecute(function(action)
+            local actor = mod._actors[pluginType]
+            if actor then
+                actor.apply(action)
+            else
+                error(string.format("Unsupported plugin type: %s", pluginType))
+            end
+        end)
+        :onActionId(function() return GROUP .. "_" .. pluginType end)
+    end
 
-	-- reset the handler choices when the FCPX language changes.
-	fcp.currentLanguage:watch(function(value)
-		for _,handler in pairs(mod._handlers) do
-			handler:reset()
-			timer.doAfter(0.01, function() handler.choices:update() end)
-		end
-	end)
+    --------------------------------------------------------------------------------
+    -- Reset the handler choices when the Final Cut Pro language changes:
+    --------------------------------------------------------------------------------
+    fcp.currentLocale:watch(function()
+        for _,handler in pairs(mod._handlers) do
+            handler:reset()
+            timer.doAfter(0.01, function() handler.choices:update() end)
+        end
+    end)
 
-	return mod
+    return mod
 end
 
 --------------------------------------------------------------------------------
@@ -110,23 +126,23 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id = "finalcutpro.timeline.pluginactions",
-	group = "finalcutpro",
-	dependencies = {
-		["finalcutpro.action.manager"]					= "actionmanager",
-		["finalcutpro.timeline.generators"]				= "generators",
-		["finalcutpro.timeline.titles"]					= "titles",
-		["finalcutpro.timeline.transitions"]			= "transitions",
-		["finalcutpro.timeline.audioeffects"]			= "audioeffects",
-		["finalcutpro.timeline.videoeffects"]			= "videoeffects",
-	}
+    id = "finalcutpro.timeline.pluginactions",
+    group = "finalcutpro",
+    dependencies = {
+        ["core.action.manager"]                         = "actionmanager",
+        ["finalcutpro.timeline.generators"]             = "generators",
+        ["finalcutpro.timeline.titles"]                 = "titles",
+        ["finalcutpro.timeline.transitions"]            = "transitions",
+        ["finalcutpro.timeline.audioeffects"]           = "audioeffects",
+        ["finalcutpro.timeline.videoeffects"]           = "videoeffects",
+    }
 }
 
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-	return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
+    return mod.init(deps.actionmanager, deps.generators, deps.titles, deps.transitions, deps.audioeffects, deps.videoeffects)
 end
 
 return plugin

@@ -1,9 +1,3 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---             G E N E R A L    P R E F E R E N C E S    P A N E L            --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === cp.web.generate ===
 ---
 --- Functions for Generating HTML UI Items
@@ -13,7 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
-local log										= require("hs.logger").new("prefsGenerate")
+-- local log										= require("hs.logger").new("prefsGenerate")
 local mimetypes									= require("mimetypes")
 local base64									= require("hs.base64")
 local fs										= require("hs.fs")
@@ -42,19 +36,19 @@ mod.UI_TEXT									= 5
 -- RANDOM STRING GENERATOR:
 --------------------------------------------------------------------------------
 local function randomLetter()
-	local str="abcdefghijklmnopqrstuvwxyz"
-	return string.char(str:byte(math.random(1, #str)))
+    local str="abcdefghijklmnopqrstuvwxyz"
+    return string.char(str:byte(math.random(1, #str)))
 end
 
 --------------------------------------------------------------------------------
 -- RANDOM WORD GENERATOR:
 --------------------------------------------------------------------------------
 local function randomWord(length)
-	local result = ""
-	for i=1, length do
-		result = result .. randomLetter()
-	end
-	return result
+    local result = ""
+    for _ = 1,length do
+        result = result .. randomLetter()
+    end
+    return result
 end
 
 --- cp.web.generate.setWebviewLabel() -> none
@@ -67,7 +61,7 @@ end
 --- Returns:
 ---  * None
 function mod.setWebviewLabel(value)
-	mod._webviewLabel = value
+    mod._webviewLabel = value
 end
 
 --- cp.web.generate.checkbox() -> string
@@ -83,33 +77,33 @@ end
 ---  * String containing the HTML
 function mod.checkbox(data, customTrigger, customID)
 
-	local value = customTrigger or data.title
+    local value = customTrigger or data.title
 
-	local isChecked = data.checked and "checked" or ""
+    local isChecked = data.checked and "checked" or ""
 
-	local id = "checkbox" .. randomWord(20)
-	if customID then id = customID end
+    local id = "checkbox" .. randomWord(20)
+    if customID then id = customID end
 
-	local result = html.p { class = "uiItem" } (
-		html.input { type = "checkbox", id = id, value = "", isChecked } .. data.title
-	) .. mod.javascript([[
-		var checkbox = document.getElementById("{{ id }}");
-		checkbox.onchange = function (){
-			try {
-				var checked = checkbox.checked;
-				var result = ["{{ value }}", checked];
-				webkit.messageHandlers.{{ name }}.postMessage(result);
-			} catch(err) {
-				alert('An error has occurred. Does the controller exist yet?');
-			}
-		}
-	]], { id = id, value = value, name = mod._webviewLabel })
+    local result = html.p { class = "uiItem" } (
+        html.input { type = "checkbox", id = id, value = "", isChecked } .. data.title
+    ) .. mod.javascript([[
+        var checkbox = document.getElementById("{{ id }}");
+        checkbox.onchange = function (){
+            try {
+                var checked = checkbox.checked;
+                var result = ["{{ value }}", checked];
+                webkit.messageHandlers.{{ name }}.postMessage(result);
+            } catch(err) {
+                alert('An error has occurred. Does the controller exist yet?');
+            }
+        }
+    ]], { id = id, value = value, name = mod._webviewLabel })
 
-	return result
+    return result
 
 end
 
---- cp.web.generate.javascript(script, context) -> cp.web.html.block
+--- cp.web.generate.javascript(script, context) -> cp.web.html
 --- Function
 --- Generates a HTML Heading
 ---
@@ -120,10 +114,10 @@ end
 ---  * String containing the HTML
 ---
 function mod.javascript(script, context)
-	local t = compile(script, "no-cache", true)
-	return html.script { type = "text/javascript" } (
-		"(function(){\n" .. t(context) .. "\n})();", true
-	)
+    local t = compile(script, "no-cache", true)
+    return html.script { type = "text/javascript" } (
+        "(function(){\n" .. t(context) .. "\n})();", false
+    )
 end
 
 --- cp.web.generate.heading() -> string
@@ -136,7 +130,7 @@ end
 --- Returns:
 ---  * String containing the HTML
 function mod.heading(data)
-	return html.h3 {} ( data.title )
+    return html.h3 {} ( data.title )
 end
 
 --- cp.web.generate.text() -> string
@@ -150,7 +144,7 @@ end
 ---  * String containing the HTML
 function mod.text(data)
 
-	return html(data.title) .. "\n"
+    return html(data.title) .. "\n"
 
 end
 
@@ -168,31 +162,31 @@ end
 ---  * String containing the HTML
 function mod.button(data, customTrigger, customWidth, customID)
 
-	local value = customTrigger or data.title
+    local value = customTrigger or data.title
 
-	local id = "button" .. randomWord(20)
-	if customID then id = customID end
+    local id = "button" .. randomWord(20)
+    if customID then id = customID end
 
-	local style = nil
-	if customWidth then
-		style = "width: " .. customWidth .. "px;"
-	end
+    local style = nil
+    if customWidth then
+        style = "width: " .. customWidth .. "px;"
+    end
 
-	local result = html.p { class="uiItem" } (
-		html.a { id=id, style=style, class="button", href="#" } (data.title)
-	) .. mod.javascript([[
-		var button = document.getElementById("{{ id }}");
-		button.onclick = function (){
-			try {
-				var result = ["{{ value }}"];
-				webkit.messageHandlers.{{ name }}.postMessage(result);
-			} catch(err) {
-				alert('An error has occurred. Does the controller exist yet?');
-			}
-		}
-	]], { id=id, value=value, name=mod._webviewLabel})
+    local result = html.p { class="uiItem" } (
+        html.a { id=id, style=style, class="button", href="#" } (data.title)
+    ) .. mod.javascript([[
+        var button = document.getElementById("{{ id }}");
+        button.onclick = function (){
+            try {
+                var result = ["{{ value }}"];
+                webkit.messageHandlers.{{ name }}.postMessage(result);
+            } catch(err) {
+                alert('An error has occurred. Does the controller exist yet?');
+            }
+        }
+    ]], { id=id, value=value, name=mod._webviewLabel})
 
-	return result
+    return result
 
 end
 
@@ -209,53 +203,53 @@ end
 ---  * String containing the HTML
 function mod.dropdown(title, data, customTrigger)
 
-	local value = customTrigger or title
+    local value = customTrigger or title
 
-	if title ~= "" then title = title .. ": " end
+    if title ~= "" then title = title .. ": " end
 
-	local id = "dropdown" .. randomWord(20)
+    local id = "dropdown" .. randomWord(20)
 
-	local options = ""
+    local options = ""
 
-	for i, v in ipairs(data) do
-		local selected = nil
-		if v.checked then selected = "selected" end
+    for _,v in ipairs(data) do
+        local selected = nil
+        if v.checked then selected = "selected" end
 
-		options = options .. html.option { value=v.title, selected } (v.title)
-	end
+        options = options .. html.option { value=v.title, selected } (v.title)
+    end
 
-	local result = html.p { class="uiItem" } (
-		title .. html.select { id=id } (options)
-	) .. mod.javascript([[
-		var dropdown = document.getElementById("{{ id }}");
-		dropdown.onchange = function (){
-			try {
-				var dropdownResult = document.getElementById("{{ id }}").value;
-				var result = ["{{ value }}", dropdownResult];
-				webkit.messageHandlers.{{ name }}.postMessage(result);
-			} catch(err) {
-				alert('An error has occurred. Does the controller exist yet?');
-			}
-		}
-	]], { id=id, value=value, name=mod._webviewLabel })
+    local result = html.p { class="uiItem" } (
+        title .. html.select { id=id } (options)
+    ) .. mod.javascript([[
+        var dropdown = document.getElementById("{{ id }}");
+        dropdown.onchange = function (){
+            try {
+                var dropdownResult = document.getElementById("{{ id }}").value;
+                var result = ["{{ value }}", dropdownResult];
+                webkit.messageHandlers.{{ name }}.postMessage(result);
+            } catch(err) {
+                alert('An error has occurred. Does the controller exist yet?');
+            }
+        }
+    ]], { id=id, value=value, name=mod._webviewLabel })
 
-	return result
+    return result
 
 end
 
 function mod.imageBase64(pathToImage)
-	local type = mimetypes.guess(pathToImage)
-	if type and type:sub(1,6) == "image/" then
-		local f, err = io.open(fs.pathToAbsolute(pathToImage), "rb")
-		if not f then
-		    return nil, err
-		end
-		local data = f:read("*all")
-		f:close()
+    local type = mimetypes.guess(pathToImage)
+    if type and type:sub(1,6) == "image/" then
+        local f, err = io.open(fs.pathToAbsolute(pathToImage), "rb")
+        if not f then
+            return nil, err
+        end
+        local data = f:read("*all")
+        f:close()
 
-		return "data:image/jpeg;base64, "..base64.encode(data)
-	end
-	return ""
+        return "data:image/jpeg;base64, "..base64.encode(data)
+    end
+    return ""
 end
 
 return mod

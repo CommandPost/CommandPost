@@ -1,26 +1,17 @@
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---                         U S E R     G U I D E                              --
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --- === plugins.core.helpandsupport.userguide ===
 ---
 --- User Guide Menu Item.
 
 --------------------------------------------------------------------------------
 --
--- EXTENSIONS:
---
---------------------------------------------------------------------------------
-local config			= require("cp.config")
-
---------------------------------------------------------------------------------
---
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY 			= 1
+
+-- PRIORITY -> number
+-- Constant
+-- The menubar position priority.
+local PRIORITY = 1
 
 --------------------------------------------------------------------------------
 --
@@ -39,7 +30,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-	os.execute('open "http://help.commandpost.io/"')
+    os.execute('open "http://help.commandpost.io/"')
 end
 
 --------------------------------------------------------------------------------
@@ -48,12 +39,12 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-	id				= "core.helpandsupport.userguide",
-	group			= "core",
-	dependencies	= {
-		["core.menu.helpandsupport"]	= "helpandsupport",
-		["core.commands.global"] 		= "global",
-	}
+    id              = "core.helpandsupport.userguide",
+    group           = "core",
+    dependencies    = {
+        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
+        ["core.commands.global"]                    = "global",
+    }
 }
 
 --------------------------------------------------------------------------------
@@ -61,21 +52,22 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-	--------------------------------------------------------------------------------
-	-- Commands:
-	--------------------------------------------------------------------------------
-	local global = deps.global
-	global:add("cpUserGuide")
-		:whenActivated(mod.show)
+    --------------------------------------------------------------------------------
+    -- Commands:
+    --------------------------------------------------------------------------------
+    local global = deps.global
+    global:add("cpUserGuide")
+        :whenActivated(mod.show)
+        :groupedBy("helpandsupport")
 
-	--------------------------------------------------------------------------------
-	-- Menubar:
-	--------------------------------------------------------------------------------
-	deps.helpandsupport:addItem(PRIORITY, function()
-		return { title = i18n("userGuide"),	fn = mod.show }
-	end)
+    --------------------------------------------------------------------------------
+    -- Menubar:
+    --------------------------------------------------------------------------------
+    deps.helpandsupport:addItem(PRIORITY, function()
+        return { title = i18n("userGuide"), fn = mod.show }
+    end)
 
-	return mod
+    return mod
 end
 
 return plugin
