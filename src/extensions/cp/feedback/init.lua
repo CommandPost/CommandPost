@@ -47,7 +47,7 @@ local mod = {}
 -- SETTINGS:
 --------------------------------------------------------------------------------
 mod.defaultWidth 		= 365
-mod.defaultHeight 		= 438
+mod.defaultHeight 		= 500
 mod.defaultTitle 		= config.appName .. " " .. i18n("feedback")
 mod.quitOnComplete		= false
 mod.position 			= config.prop("feedbackPosition", nil)
@@ -73,6 +73,24 @@ local function generateHTML()
     --------------------------------------------------------------------------------
     env.defaultUserFullName = i18n("fullName")
     env.defaultUserEmail = i18n("emailAddress")
+
+    --------------------------------------------------------------------------------
+    -- i18n:
+    --------------------------------------------------------------------------------
+    env.bugReport = i18n("bugReport")
+    env.featureRequest = i18n("featureRequest")
+    env.support = i18n("support")
+    env.whatWentWrong = i18n("whatWentWrong")
+    env.whatDidYouExpectToHappen = i18n("whatDidYouExpectToHappen")
+    env.whatStepsToRecreate = i18n("whatStepsToRecreate")
+    env.whatFeatures = i18n("whatFeatures")
+    env.howCanWeHelp = i18n("howCanWeHelp")
+    env.attachLog = i18n("attachLog")
+    env.attachScreenshot = i18n("attachScreenshot")
+    env.emailResponse = i18n("emailResponse")
+    env.includeContactInfo = i18n("includeContactInfo")
+    env.cancel = i18n("cancel")
+    env.send = i18n("send")
 
     --------------------------------------------------------------------------------
     -- Attempt to get Full Name & Email from the Contacts App:
