@@ -58,6 +58,7 @@ function mod.updateDeveloperGuideSummary()
     local result = ""
 
     if cpResults and pluginResults and hsResults then
+        result = result .. "\n\n"
         result = result .. "## CommandPost API" .. "\n"
         result = result .. "\n"
         result = result .. "* [cp](api/cp/cp.md)" .. "\n"
