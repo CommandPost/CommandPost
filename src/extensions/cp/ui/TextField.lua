@@ -26,7 +26,15 @@ local prop							= require("cp.prop")
 --------------------------------------------------------------------------------
 local TextField = {}
 
--- TODO: Add documentation
+--- cp.ui.TextField.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function TextField.matches(element)
     return element ~= nil and element:attributeValue("AXRole") == "AXTextField"
 end
@@ -48,12 +56,12 @@ end
 --- ```
 ---
 --- Parameters:
---- * parent	- The parent object.
---- * finderFn	- The function will return the `axuielement` for the TextField.
---- * convertFn	- (optional) If provided, will be passed the `string` value when returning.
+---  * parent	- The parent object.
+---  * finderFn	- The function will return the `axuielement` for the TextField.
+---  * convertFn	- (optional) If provided, will be passed the `string` value when returning.
 ---
 --- Returns:
---- * The new `TextField`.
+---  * The new `TextField`.
 function TextField.new(parent, finderFn, convertFn)
     return prop.extend({
         _parent = parent,
@@ -62,12 +70,28 @@ function TextField.new(parent, finderFn, convertFn)
     }, TextField)
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:parent() -> table
+--- Method
+--- The parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object.
 function TextField:parent()
     return self._parent
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:UI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the `TextField`, or `nil` if not available.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function TextField:UI()
     return axutils.cache(self, "_ui", function()
         local ui = self._finder()
@@ -76,12 +100,14 @@ function TextField:UI()
     TextField.matches)
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField.isShowing <cp.prop: boolean>
+--- Variable
+--- Is the Text Field showing?
 function TextField:isShowing()
     return self:UI() ~= nil and self:parent():isShowing()
 end
 
---- cp.ui.TextField.value <cp.prop: anything>
+--- cp.ui.TextField.value <cp.prop: string>
 --- Field
 --- The current value of the text field.
 TextField.value = prop(
@@ -107,42 +133,101 @@ TextField.value = prop(
     end
 ):bind(TextField)
 
--- TODO: Add documentation
+--- cp.ui.TextField:getValue() -> string
+--- Method
+--- Gets the value of the Text Field.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The value of the Text Field as a string.
 function TextField:getValue()
     return self:value()
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:setValue(value) -> self
+--- Method
+--- Sets the value of the Text Field.
+---
+--- Parameters:
+---  * value - The value you want to set the Text Field to as a string.
+---
+--- Returns:
+---  * Self
 function TextField:setValue(value)
     self.value:set(value)
+    return self
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:clear() -> self
+--- Method
+--- Clears the value of a Text Field.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
 function TextField:clear()
     self.value:set("")
+    return self
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:isEnabled() -> boolean
+--- Method
+--- Is the Text Field enabled?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if enabled, otherwise `false`.
 function TextField:isEnabled()
     local ui = self:UI()
     return ui and ui:enabled()
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:saveLayout() -> table
+--- Method
+--- Saves the current Text Field layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current Text Field Layout.
 function TextField:saveLayout()
     local layout = {}
     layout.value = self:getValue()
     return layout
 end
 
--- TODO: Add documentation
+--- cp.ui.TextField:loadLayout(layout) -> none
+--- Method
+--- Loads a Text Field layout.
+---
+--- Parameters:
+---  * layout - A table containing the Text Field layout settings - created using `cp.ui.TextField:saveLayout()`.
+---
+--- Returns:
+---  * None
 function TextField:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
     end
 end
 
--- TODO: Add documentation
+-- cp.ui.TextField:__call(parent, value) -> self, boolean
+-- Method
+-- Allows the Text Field instance to be called as a function/method which will get/set the value.
+--
+-- Parameters:
+--  * parent - (optional) The parent object.
+--  * value - The value you want to set the Text Field to.
+--
+-- Returns:
+--  * The value of the Static Text box.
 function TextField.__call(self, parent, value)
     if parent and parent ~= self:parent() then
         value = parent
@@ -156,10 +241,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function TextField:snapshot(path)
     local ui = self:UI()
     if ui then

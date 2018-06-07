@@ -26,12 +26,29 @@ local prop							= require("cp.prop")
 --------------------------------------------------------------------------------
 local ScrollArea = {}
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function ScrollArea.matches(element)
     return element and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea.new(parent, finderFn) -> cp.ui.ScrollArea
+--- Constructor
+--- Creates a new `ScrollArea`.
+---
+--- Parameters:
+---  * parent		- The parent object.
+---  * finderFn		- A function which will return the `hs._asm.axuielement` when available.
+---
+--- Returns:
+---  * The new `ScrollArea`.
 function ScrollArea.new(parent, finderFn)
     return prop.extend({
         _parent = parent,
@@ -39,12 +56,28 @@ function ScrollArea.new(parent, finderFn)
     }, ScrollArea)
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:parent() -> table
+--- Method
+--- The parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The parent object.
 function ScrollArea:parent()
     return self._parent
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function ScrollArea:app()
     return self:parent():app()
 end
@@ -55,7 +88,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:UI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the `ScrollArea`, or `nil` if not available.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function ScrollArea:UI()
     return axutils.cache(self, "_ui", function()
         return self._finder()
@@ -63,24 +104,56 @@ function ScrollArea:UI()
     ScrollArea.matches)
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:verticalScrollBarUI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the Vertical Scroll Bar, or `nil` if not available.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function ScrollArea:verticalScrollBarUI()
     local ui = self:UI()
     return ui and ui:attributeValue("AXVerticalScrollBar")
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:horizontalScrollBarUI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the Horizontal Scroll Bar, or `nil` if not available.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function ScrollArea:horizontalScrollBarUI()
     local ui = self:UI()
     return ui and ui:attributeValue("AXHorizontalScrollBar")
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:isShowing() -> boolean
+--- Method
+--- Is the Scroll Area showing?
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * `true` if showing otherwise `false.
 function ScrollArea:isShowing()
     return self:UI() ~= nil
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:contentsUI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function ScrollArea:contentsUI()
     local ui = self:UI()
     if ui then
@@ -97,7 +170,15 @@ function ScrollArea:contentsUI()
     end
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:childrenUI(filterFn) -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
+---
+--- Parameters:
+---  * filterFn - The function which checks if the child matches the requirements.
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function ScrollArea:childrenUI(filterFn)
     local ui = self:contentsUI()
     if ui then
@@ -135,13 +216,29 @@ function ScrollArea:childrenUI(filterFn)
     return nil
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:selectedChildrenUI() -> hs._asm.axuielement | nil
+--- Method
+--- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The `axuielement` or `nil`.
 function ScrollArea:selectedChildrenUI()
     local ui = self:contentsUI()
     return ui and ui:selectedChildren()
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:viewFrame() -> hs.geometry rect
+--- Method
+--- Returns the Scroll Area frame.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The frame in the form of a `hs.geometry` rect object.
 function ScrollArea:viewFrame()
     local ui = self:UI()
     local hScroll = self:horizontalScrollBarUI()
@@ -159,7 +256,15 @@ function ScrollArea:viewFrame()
     return frame
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:showChild(childUI) -> self
+--- Method
+--- Show's a child element in a Scroll Area.
+---
+--- Parameters:
+---  * childUI - The `hs._asm.axuielement` object of the child you want to show.
+---
+--- Return:
+---  * Self
 function ScrollArea:showChild(childUI)
     local ui = self:UI()
     if ui and childUI then
@@ -192,7 +297,15 @@ function ScrollArea:showChild(childUI)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:showChildAt(index) -> self
+--- Method
+--- Show's a child element in a Scroll Area given a specific index.
+---
+--- Parameters:
+---  * index - The index of the child you want to show.
+---
+--- Return:
+---  * Self
 function ScrollArea:showChildAt(index)
     local ui = self:childrenUI()
     if ui and #ui >= index then
@@ -201,7 +314,15 @@ function ScrollArea:showChildAt(index)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:selectChild(childUI) -> self
+--- Method
+--- Select a specific child within a Scroll Area.
+---
+--- Parameters:
+---  * childUI - The `hs._asm.axuielement` object of the child you want to select.
+---
+--- Return:
+---  * Self
 function ScrollArea:selectChild(childUI)
     if childUI then
         childUI:parent():setAttributeValue("AXSelectedChildren", { childUI } )
@@ -209,7 +330,15 @@ function ScrollArea:selectChild(childUI)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:selectChildAt(index) -> self
+--- Method
+--- Select a child element in a Scroll Area given a specific index.
+---
+--- Parameters:
+---  * index - The index of the child you want to select.
+---
+--- Return:
+---  * Self
 function ScrollArea:selectChildAt(index)
     local ui = self:childrenUI()
     if ui and #ui >= index then
@@ -218,7 +347,15 @@ function ScrollArea:selectChildAt(index)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:selectAll(childrenUI) -> self
+--- Method
+--- Select all children in a scroll area.
+---
+--- Parameters:
+---  * childrenUI - A table of `hs._asm.axuielement` objects.
+---
+--- Return:
+---  * Self
 function ScrollArea:selectAll(childrenUI)
     childrenUI = childrenUI or self:childrenUI()
     if childrenUI then
@@ -229,7 +366,15 @@ function ScrollArea:selectAll(childrenUI)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:deselectAll() -> self
+--- Method
+--- Deselect all children in a scroll area.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * Self
 function ScrollArea:deselectAll()
     local contents = self:contentsUI()
     if contents then
@@ -238,7 +383,15 @@ function ScrollArea:deselectAll()
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:saveLayout() -> table
+--- Method
+--- Saves the current Scroll Area layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current Scroll Area Layout.
 function ScrollArea:saveLayout()
     local layout = {}
     local hScroll = self:horizontalScrollBarUI()
@@ -254,7 +407,15 @@ function ScrollArea:saveLayout()
     return layout
 end
 
--- TODO: Add documentation
+--- cp.ui.ScrollArea:loadLayout(layout) -> none
+--- Method
+--- Loads a Scroll Area layout.
+---
+--- Parameters:
+---  * layout - A table containing the Browser layout settings - created using `cp.apple.finalcutpro.main.Browser:saveLayout()`.
+---
+--- Returns:
+---  * None
 function ScrollArea:loadLayout(layout)
     if layout then
         self:selectAll(layout.selectedChildren)
@@ -275,10 +436,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path - (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function ScrollArea:snapshot(path)
     local ui = self:UI()
     if ui then
