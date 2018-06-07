@@ -12,23 +12,27 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log						= require("hs.logger").new("PropertyRow")
-local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local inspect                   = require("hs.inspect")
 local geometry					= require("hs.geometry")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local is                        = require("cp.is")
 local axutils					= require("cp.ui.axutils")
 local Button					= require("cp.ui.Button")
+local is                        = require("cp.is")
 local prop						= require("cp.prop")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format                    = string.format
-local childMatching, childrenMatching           = axutils.childMatching, axutils.childrenMatching
+local childMatching             = axutils.childMatching
+local childrenMatching          = axutils.childrenMatching
 
 --------------------------------------------------------------------------------
 --
@@ -37,7 +41,14 @@ local childMatching, childrenMatching           = axutils.childMatching, axutils
 --------------------------------------------------------------------------------
 local PropertyRow = {}
 
+-- UI_FINDER -> table
+-- Constant
+-- UI Finder Table.
 local UI_FINDER = {}
+
+-- UI_FINDER_LABEL -> string
+-- Constant
+-- UI Finder Label.
 local UI_FINDER_LABEL = "PropertyRow UI Finder"
 
 --- cp.ui.PropertyRow.parentUIFinder(parent) -> cp.prop
@@ -46,26 +57,26 @@ local UI_FINDER_LABEL = "PropertyRow UI Finder"
 --- This needs to be configured first by calling the `prepareParent` function with the `parent` and finder function.
 ---
 --- Parameters:
---- * parent        - The parent which has a finder assigned.
+---  * parent        - The parent which has a finder assigned.
 ---
 --- Returns:
---- * The `cp.prop` which provides access to the finder, or `nil`.
+---  * The `cp.prop` which provides access to the finder, or `nil`.
 function PropertyRow.parentUIFinder(parent)
     return parent[UI_FINDER]
 end
 
---- cp.ui.PropertyRow.prepareParent(parent, uiFinder) -> boolean
+--- cp.ui.PropertyRow.prepareParent(parent, uiFinder) -> none
 --- Function
 --- Call this to make `parent` table ready to be a parent of `PropertyRow`s.
 --- Essentially, this lets `PropertyRow` instances ask the parent for the
 --- `hs._asm.axuielement` that contains the property row details.
 ---
 --- Parameters:
---- * parent    - The parent table.
---- * uiFinder  - The function or cp.prop which will be called to find the parent UI element. Functions will be passed the `parent` when being executed.
+---  * parent    - The parent table.
+---  * uiFinder  - The function or cp.prop which will be called to find the parent UI element. Functions will be passed the `parent` when being executed.
 ---
 --- Returns:
----
+---  * None
 function PropertyRow.prepareParent(parent, uiFinder)
     if is.nt.callable(uiFinder) then
         error(format("The `finder` must be callable: %s", type(uiFinder)))
@@ -90,10 +101,10 @@ end
 --- Checks if the `parent` has been prepared via [prepareParent](#prepareParent).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the parent is prepared.
+---  * `true` if the parent is prepared.
 function PropertyRow.isParent(parent)
     return parent[UI_FINDER] ~= nil
 end
@@ -104,10 +115,10 @@ end
 --- Note: this does not guarantee that it *is* a property row element, just that it could be.
 ---
 --- Parameters:
---- * element   - The element to check.
+---  * element   - The element to check.
 ---
 --- Returns:
---- * `true` if the element could be a property row.
+---  * `true` if the element could be a property row.
 function PropertyRow.matches(element)
     return element ~= nil
 end
@@ -120,12 +131,12 @@ end
 --- match with the second instance, for example.
 ---
 --- Parameters:
---- * parent        - The parent object.
---- * labelKey      - The key of the label that the row will map to.
---- * index         - The row number with the same label to get. Defaults to `1`.
+---  * parent        - The parent object.
+---  * labelKey      - The key of the label that the row will map to.
+---  * index         - The row number with the same label to get. Defaults to `1`.
 ---
 --- Returns:
---- * The new `PropertyRow` instance.
+---  * The new `PropertyRow` instance.
 function PropertyRow.new(parent, labelKey, index)
     local o
 
@@ -215,24 +226,55 @@ function PropertyRow.new(parent, labelKey, index)
     return o
 end
 
--- PropertyRow methods --
-
--- TODO: Add documentation
+--- cp.ui.PropertyRow:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
 function PropertyRow:parent()
     return self._parent
 end
 
--- TODO: Add documentation
+--- cp.ui.PropertyRow:app() -> App
+--- Method
+--- Returns the app instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function PropertyRow:app()
     return self:parent():app()
 end
 
--- TODO: Add documentation
+--- cp.ui.PropertyRow:show() -> self
+--- Method
+--- Shows the `PropertyRow`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
 function PropertyRow:show()
     self:parent():show()
     return self
 end
 
+--- cp.ui.PropertyRow:hide() -> self
+--- Method
+--- Hides the `PropertyRow`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
 function PropertyRow:hide()
     local parent = self:parent()
     if parent.hide then
@@ -241,12 +283,28 @@ function PropertyRow:hide()
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.PropertyRow:labelKeys() -> string
+--- Method
+--- Gets the key of the label that the row will map to.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * string
 function PropertyRow:labelKeys()
     return self._labelKeys()
 end
 
--- TODO: Add documentation
+--- cp.ui.PropertyRow:children() -> table | nil
+--- Method
+--- Gets a table of children for the Property Row.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of children or `nil`.
 function PropertyRow:children()
     local label = self:labelUI()
     if not label then

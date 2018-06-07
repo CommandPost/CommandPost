@@ -137,11 +137,11 @@ end
 --- The function will be called multiple times over the life of the notifier.
 ---
 --- Parameters:
---- * bundleID          - The application Bundle ID being observed. E.g. "com.apple.FinalCut".
---- * elementFinderFn   - The function that will return the `axuielement` to observe.
+---  * bundleID          - The application Bundle ID being observed. E.g. "com.apple.FinalCut".
+---  * elementFinderFn   - The function that will return the `axuielement` to observe.
 ---
 --- Returns:
---- * A new `cp.ui.notifier` instance.
+---  * A new `cp.ui.notifier` instance.
 function mod.new(bundleID, elementFinderFn)
     assert(type(bundleID) == "string", "Provide a string value for the `bundleID`.")
     assert(type(elementFinderFn) == "function" or prop.is(elementFinderFn), "Provide a function for the `elementFinderFn`.")
@@ -154,16 +154,15 @@ function mod.new(bundleID, elementFinderFn)
     }, mod.mt))
 end
 
-
 --- cp.ui.notifier.notifiersForBundleID(bundleID) -> table of cp.ui.notifier
 --- Function
 --- Returns the list of `cp.ui.notifier` instances that have been created for the specified `Bundle ID`.
 ---
 --- Parameters:
---- * bundleID          - The application Bundle ID being observed. E.g. "com.apple.FinalCut".
+---  * bundleID          - The application Bundle ID being observed. E.g. "com.apple.FinalCut".
 ---
 --- Returns:
---- * A table of `cp.ui.notifier` instances.
+---  * A table of `cp.ui.notifier` instances.
 function mod.notifiersForBundleID(bundleID)
     return registeredBundleIDs[bundleID]
 end
@@ -173,10 +172,10 @@ end
 --- Returns the current `axuielement` being observed.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `axuielement`, or `nil` if not available.
+---  * The `axuielement`, or `nil` if not available.
 function mod.mt:currentElement()
     return self.__finder and self.__finder() or nil
 end
@@ -187,17 +186,17 @@ end
 --- for the current `axuielement`.
 ---
 --- Parameters:
---- * notification      - The notification type to watch for (e.g. "AXValueChanged").
---- * callbackFn        - The function to call when the matching notification is happens.
+---  * notification      - The notification type to watch for (e.g. "AXValueChanged").
+---  * callbackFn        - The function to call when the matching notification is happens.
 ---
 --- Returns:
---- * The `cp.ui.notifier` instance.
+---  * The `cp.ui.notifier` instance.
 ---
 --- Notes:
---- * The callback function should expect 3 arguments and return none. The arguments passed to the callback will be as follows:
---- ** the `hs._asm.axuielement` object for the accessibility element which generated the notification.
---- ** a string with the notification type.
---- ** A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
+---  * The callback function should expect 3 arguments and return none. The arguments passed to the callback will be as follows:
+---  ** the `hs._asm.axuielement` object for the accessibility element which generated the notification.
+---  ** a string with the notification type.
+---  ** A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
 function mod.mt:addWatcher(notification, callbackFn)
     assert(type(notification) == "string", "Provide a string value for the `notification`")
     assert(type(callbackFn) == "function", "Provide a function for the `callbackFn`.")
@@ -220,10 +219,10 @@ end
 --- Returns the application 'bundle ID' that this notifier is tracking.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The application 'bundle ID' string (e.g. "com.apple.FinalCut")
+---  * The application 'bundle ID' string (e.g. "com.apple.FinalCut")
 function mod.mt:bundleID()
     return self.__bundleID
 end
@@ -234,10 +233,10 @@ end
 --- May be `nil` if the application is not running.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The running `hs.application` for the notifier's `bundleID`, or `nil`.
+---  * The running `hs.application` for the notifier's `bundleID`, or `nil`.
 function mod.mt:app()
     local app = self.__app
     if not app or app:bundleID() == nil or not app:isRunning() then
@@ -261,10 +260,10 @@ end
 --- Returns the PID for the application being observed, or `nil` if it's not running.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The PID, or `nil`.
+---  * The PID, or `nil`.
 function mod.mt:pid()
     local app = self:app()
     return app and app:pid()
@@ -355,10 +354,10 @@ end
 --- Updates any watchers to use the current `axuielement`.
 ---
 --- Parameters:
---- * force     - If `true`, the notifier will be updated even if the element has not changed since the last update. Defaults to `false`.
+---  * force     - If `true`, the notifier will be updated even if the element has not changed since the last update. Defaults to `false`.
 ---
 --- Returns:
---- * The `cp.ui.notifier` instance.
+---  * The `cp.ui.notifier` instance.
 function mod.mt:update(force)
     local element = self.__finder()
     local lastElement = self._lastElement
@@ -368,7 +367,10 @@ function mod.mt:update(force)
     local observer = self:_observer(false)
 
     if observer then
-        -- TODO: figure out if/how we can remove watches on elements that are no longer valid.
+        --------------------------------------------------------------------------------
+        -- TODO: figure out if/how we can remove watches on elements that
+        --       are no longer valid.
+        --------------------------------------------------------------------------------
         local remove = axutils.isValid(lastElement) and (force or lastElement ~= element)
         for n,_ in pairs(self.__watchers) do
             -- deregister the old element
@@ -397,10 +399,10 @@ end
 --- Starts notifying watchers when events happen.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.ui.notifier` instance.
+---  * The `cp.ui.notifier` instance.
 function mod.mt:start()
     self.__running = true
     -- start observing, if possible
@@ -413,10 +415,10 @@ end
 --- Stops notifying watchers when events happen.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.ui.notifier` instance.
+---  * The `cp.ui.notifier` instance.
 function mod.mt:stop()
     if self.__running then
         self.__running = false

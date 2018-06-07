@@ -1,18 +1,27 @@
 --- === cp.ui.axutils ===
 ---
---- Utility functions to support `hs._asm.axuielement`
+--- Utility functions to support `hs._asm.axuielement`.
 
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log						= require("hs.logger").new("axutils")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local canvas					= require("hs.canvas")
 local fnutils					= require("hs.fnutils")
 
-local canvas					= require("hs.canvas")
-
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local sort                      = table.sort
 
 --------------------------------------------------------------------------------
@@ -20,7 +29,6 @@ local sort                      = table.sort
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-
 local axutils = {}
 
 --- cp.ui.axutils.children(element) -> table | nil
@@ -30,15 +38,22 @@ local axutils = {}
 --- that will get called. Otherwise, the element is returned.
 ---
 --- Parameters:
---- * element   - The element to retrieve the children of.
+---  * element   - The element to retrieve the children of.
 ---
 --- Returns:
---- * the children table, or `nil`.
+---  * the children table, or `nil`.
 function axutils.children(element)
     local children = element
+    --------------------------------------------------------------------------------
     -- Try to get the children array directly, if present, to optimise the loop.
-    -- NOTE: There seems to be some weirdness with some elements coming from `axuielement` without the correct metatable.
-    if element.attributeValue then -- it's an AXUIElement
+    --
+    -- NOTE: There seems to be some weirdness with some elements coming from
+    --       `axuielement` without the correct metatable.
+    --------------------------------------------------------------------------------
+    if element.attributeValue then
+        --------------------------------------------------------------------------------
+        -- It's an AXUIElement:
+        --------------------------------------------------------------------------------
         children = element:attributeValue("AXChildren") or element
     elseif type(element.children) == "function" then
         children = element:children()
@@ -46,7 +61,17 @@ function axutils.children(element)
     return children
 end
 
--- TODO: Add documentation
+--- cp.ui.axutils.hasAttributeValue(element, name, value) -> boolean
+--- Function
+--- Checks to see if an element has a specific value.
+---
+--- Parameters:
+---  * element	- the `axuielement`
+---  * name		- the name of the attribute
+---  * value	- the value of the attribute
+---
+--- Returns:
+---  * `true` if the `element` has the supplied attribute value, otherwise `false`.
 function axutils.hasAttributeValue(element, name, value)
     return element and element:attributeValue(name) == value
 end
@@ -172,11 +197,11 @@ end
 --- Returns `true` if element `a` is left of element `b`. May be used with `table.sort`.
 ---
 --- Parameters
---- * a	- The first element
---- * b	- The second element
+---  * a	- The first element
+---  * b	- The second element
 ---
 --- Returns:
---- * `true` if `a` is left of `b`.
+---  * `true` if `a` is left of `b`.
 function axutils.compareLeftToRight(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return aFrame and bFrame and aFrame.x < bFrame.x or false
@@ -187,11 +212,11 @@ end
 --- Returns `true` if element `a` is right of element `b`. May be used with `table.sort`.
 ---
 --- Parameters
---- * a	- The first element
---- * b	- The second element
+---  * a	- The first element
+---  * b	- The second element
 ---
 --- Returns:
---- * `true` if `a` is right of `b`.
+---  * `true` if `a` is right of `b`.
 function axutils.compareRightToLeft(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return aFrame and bFrame and aFrame.x + aFrame.w > bFrame.x + bFrame.w or false
@@ -202,27 +227,26 @@ end
 --- Returns `true` if element `a` is above element `b`. May be used with `table.sort`.
 ---
 --- Parameters
---- * a	- The first element
---- * b	- The second element
+---  * a	- The first element
+---  * b	- The second element
 ---
 --- Returns:
---- * `true` if `a` is above `b`.
+---  * `true` if `a` is above `b`.
 function axutils.compareTopToBottom(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return aFrame and bFrame and aFrame.y < bFrame.y or false
 end
-
 
 --- cp.ui.axutils.compareBottomToTop(a, b) -> boolean
 --- Function
 --- Returns `true` if element `a` is below element `b`. May be used with `table.sort`.
 ---
 --- Parameters
---- * a	- The first element
---- * b	- The second element
+---  * a	- The first element
+---  * b	- The second element
 ---
 --- Returns:
---- * `true` if `a` is below `b`.
+---  * `true` if `a` is below `b`.
 function axutils.compareBottomToTop(a, b)
     local aFrame, bFrame = a:attributeValue("AXFrame"), b:attributeValue("AXFrame")
     return aFrame and bFrame and aFrame.y + aFrame.h > bFrame.y + bFrame.h or false
@@ -384,11 +408,11 @@ end
 --- If the `filename` is provided it also saves the file to the specified location.
 ---
 --- Parameters:
---- * element		- The `axuielement` to snap.
---- * filename		- (optional) The path to save the image as a PNG file.
+---  * element		- The `axuielement` to snap.
+---  * filename		- (optional) The path to save the image as a PNG file.
 ---
 --- Returns:
---- * An `hs.image` file, or `nil` if the element could not be snapped.
+---  * An `hs.image` file, or `nil` if the element could not be snapped.
 function axutils.snapshot(element, filename)
     if axutils.isValid(element) then
         local window = element:attributeValue("AXWindow")

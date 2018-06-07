@@ -173,13 +173,16 @@ function Table.matches(element)
     return element ~= nil
 end
 
---- cp.ui.Table.new(parent, finder) -> Table
+--- cp.ui.Table.new(parent, finder) -> self
 --- Constructor
 --- Creates a new Table.
 ---
 --- Parameters:
 ---  * `parent`		- The parent object.
 ---  * `finder`		- A function which will return the `axuielement` that this table represents.
+---
+--- Returns:
+---  * A new `Table` instance.
 function Table.new(parent, finder)
     local o = prop.extend({_parent = parent, _finder = finder}, Table.mt)
 
@@ -355,7 +358,15 @@ function Table.mt:columnsUI()
     return nil
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:findColumnIndex(id) -> number | nil
+--- Method
+--- Finds the Column Index based on an `AXIdentifier` ID.
+---
+--- Parameters:
+---  * id - The `AXIdentifier` of the column index you want to find.
+---
+--- Returns:
+---  * A column index as a number, or `nil` if no index can be found.
 function Table.mt:findColumnIndex(id)
     local cols = self:columnsUI()
     if cols then
@@ -368,7 +379,16 @@ function Table.mt:findColumnIndex(id)
     return nil
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:findCellUI(rowNumber, columnId) -> `hs._asm.axuielement` | nil
+--- Method
+--- Finds a specific Cell UI.
+---
+--- Parameters:
+---  * rowNumber - The row number.
+---  * columnId - The Column ID.
+---
+--- Returns:
+---  * A `hs._asm.axuielement` object for the cell, or `nil` if the cell cannot be found.
 function Table.mt:findCellUI(rowNumber, columnId)
     local rows = self:rowsUI()
     if rows and rowNumber >= 1 and rowNumber < #rows then
@@ -378,7 +398,15 @@ function Table.mt:findCellUI(rowNumber, columnId)
     return nil
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:selectedRowsUI() -> table of axuielements | nil
+--- Method
+--- Return a table of selected row UIs.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Table of `hs._asm.axuielement` objects, or `nil` if none could be found.
 function Table.mt:selectedRowsUI()
     local rows = self:rowsUI()
     if rows then
@@ -393,7 +421,15 @@ function Table.mt:selectedRowsUI()
     return nil
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:viewFrame() -> hs.geometry rect
+--- Method
+--- Returns the Table frame.
+---
+--- Parameters:
+---  * None
+---
+--- Return:
+---  * The frame in the form of a `hs.geometry` rect object.
 function Table.mt:viewFrame()
     local ui = self:UI()
     if ui then
@@ -416,7 +452,15 @@ function Table.mt:viewFrame()
     return nil
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:showRow(rowUI) -> boolean
+--- Method
+--- Shows a specific row.
+---
+--- Parameters:
+---  * rowUI - The `hs._asm.axuielement` object of the row you want to show.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:showRow(rowUI)
     local ui = self:UI()
     if ui and rowUI then
@@ -450,7 +494,15 @@ function Table.mt:showRow(rowUI)
     return false
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:showRowAt(index) -> boolean
+--- Method
+--- Shows a row at a specific index.
+---
+--- Parameters:
+---  * index - The index of the row you wish to show.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:showRowAt(index)
     local rows = self:rowsUI()
     if rows then
@@ -461,7 +513,15 @@ function Table.mt:showRowAt(index)
     return false
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:selectRow(rowUI) -> boolean
+--- Method
+--- Select a specific row.
+---
+--- Parameters:
+---  * rowUI - The `hs._asm.axuielement` object of the row you want to select.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:selectRow(rowUI) -- luacheck: ignore
     if rowUI then
         rowUI:setAttributeValue("AXSelected", true)
@@ -471,7 +531,15 @@ function Table.mt:selectRow(rowUI) -- luacheck: ignore
     end
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:selectRowAt(index) -> boolean
+--- Method
+--- Select a row at a specific index.
+---
+--- Parameters:
+---  * index - The index of the row you wish to select.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:selectRowAt(index)
     local ui = self:rowsUI()
     if ui and #ui >= index then
@@ -480,7 +548,15 @@ function Table.mt:selectRowAt(index)
     return false
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:deselectRow(rowUI) -> boolean
+--- Method
+--- Deselect a specific row.
+---
+--- Parameters:
+---  * rowUI - The `hs._asm.axuielement` object of the row you want to deselect.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:deselectRow(rowUI) -- luacheck: ignore
     if rowUI then
         rowUI:setAttributeValue("AXSelected", false)
@@ -490,7 +566,15 @@ function Table.mt:deselectRow(rowUI) -- luacheck: ignore
     end
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:deselectRowAt(index) -> boolean
+--- Method
+--- Deselects a row at a specific index.
+---
+--- Parameters:
+---  * index - The index of the row you wish to deselect.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:deselectRowAt(index)
     local ui = self:rowsUI()
     if ui and #ui >= index then
@@ -499,8 +583,15 @@ function Table.mt:deselectRowAt(index)
     return false
 end
 
--- TODO: Add documentation
--- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
+--- cp.ui.Table:selectAll(rowUI) -> boolean
+--- Method
+--- Selects the specified rows. If `rowsUI` is `nil`, then all rows will be selected.
+---
+--- Parameters:
+---  * rowUI - A table of `hs._asm.axuielement` objects for the rows you want to select.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:selectAll(rowsUI)
     rowsUI = rowsUI or self:rowsUI()
     local outline = self:contentUI()
@@ -511,8 +602,15 @@ function Table.mt:selectAll(rowsUI)
     return false
 end
 
--- TODO: Add documentation
--- Deselects the specified rows. If `rowsUI` is `nil`, then all rows will be deselected.
+--- cp.ui.Table:deselectAll(rowUI) -> boolean
+--- Method
+--- Deselects the specified rows. If `rowsUI` is `nil`, then all rows will be deselected.
+---
+--- Parameters:
+---  * rowUI - A table of `hs._asm.axuielement` objects for the rows you want to deselect.
+---
+--- Return:
+---  * `true` if successful, otherwise `false`.
 function Table.mt:deselectAll(rowsUI)
     rowsUI = rowsUI or self:selectedRowsUI()
     if rowsUI then
@@ -524,7 +622,15 @@ function Table.mt:deselectAll(rowsUI)
     return false
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:saveLayout() -> table
+--- Method
+--- Saves the current Table layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current Table Layout.
 function Table.mt:saveLayout()
     local layout = {}
     local hScroll = self:horizontalScrollBarUI()
@@ -540,7 +646,15 @@ function Table.mt:saveLayout()
     return layout
 end
 
--- TODO: Add documentation
+--- cp.ui.Table:loadLayout(layout) -> none
+--- Method
+--- Loads a Table layout.
+---
+--- Parameters:
+---  * layout - A table containing the Table layout settings - created using `cp.ui.Table:saveLayout()`.
+---
+--- Returns:
+---  * None
 function Table.mt:loadLayout(layout)
     if layout then
         self:selectAll(layout.selectedRows)

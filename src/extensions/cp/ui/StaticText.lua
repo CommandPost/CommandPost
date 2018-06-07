@@ -37,10 +37,10 @@ local StaticText = {}
 --- Checks if the element is a Static Text element.
 ---
 --- Parameters:
---- * element		- The `axuielement` to check.
+---  * element		- The `axuielement` to check.
 ---
 --- Returns:
---- * If `true`, the element is a Static Text element.
+---  * If `true`, the element is a Static Text element.
 function StaticText.matches(element)
     return element and element:attributeValue("AXRole") == "AXStaticText"
 end
@@ -62,12 +62,12 @@ end
 --- ```
 ---
 --- Parameters:
---- * parent	- The parent object.
---- * finderFn	- The function will return the `axuielement` for the StaticText.
---- * convertFn	- (optional) If provided, will be passed the `string` value when returning.
+---  * parent	- The parent object.
+---  * finderFn	- The function will return the `axuielement` for the StaticText.
+---  * convertFn	- (optional) If provided, will be passed the `string` value when returning.
 ---
 --- Returns:
---- * The new `StaticText`.
+---  * The new `StaticText`.
 function StaticText.new(parent, finderFn, convertFn)
     local o
 
@@ -88,9 +88,6 @@ function StaticText.new(parent, finderFn, convertFn)
         end),
     }, StaticText)
 
-    --- cp.ui.StaticText.value <cp.prop: anything>
-    --- Field
-    --- The current value of the text field.
     prop.bind(o) {
 
         --- cp.ui.StaticText:isShowing() -> boolean
@@ -98,15 +95,18 @@ function StaticText.new(parent, finderFn, convertFn)
         --- Checks if the static text is currently showing.
         ---
         --- Parameters:
-        --- * None
+        ---  * None
         ---
         --- Returns:
-        --- * `true` if it's visible.
+        ---  * `true` if it's visible.
         isShowing = o.UI:mutate(function(original, self)
             local ui = original()
             return ui ~= nil and self:parent():isShowing()
         end),
 
+        --- cp.ui.StaticText.value <cp.prop: string>
+        --- Field
+        --- The current value of the text field.
         value = o.UI:mutate(
             function(original)
                 local ui = original()
@@ -153,10 +153,10 @@ end
 --- Returns the parent object.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The parent.
+---  * The parent.
 function StaticText:parent()
     return self._parent
 end
@@ -166,50 +166,109 @@ end
 --- Returns the app object.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The app.
+---  * The app.
 function StaticText:app()
     return self:parent():app()
 end
 
--- TODO: Add documentation
+--- cp.ui.StaticText:getValue() -> string
+--- Method
+--- Gets the value of the Static Text.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The value of the Static Text as a string.
 function StaticText:getValue()
     return self:value()
 end
 
--- TODO: Add documentation
+--- cp.ui.StaticText:setValue(value) -> self
+--- Method
+--- Sets the value of the Static Text.
+---
+--- Parameters:
+---  * value - The value you want to set the Static Text to as a string.
+---
+--- Returns:
+---  * Self
 function StaticText:setValue(value)
     self.value:set(value)
+    return self
 end
 
--- TODO: Add documentation
+--- cp.ui.StaticText:clear() -> self
+--- Method
+--- Clears the value of a Static Text box.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
 function StaticText:clear()
     self.value:set("")
+    return self
 end
 
--- TODO: Add documentation
+--- cp.ui.StaticText:isEnabled() -> boolean
+--- Method
+--- Is the Static Text box enabled?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if enabled, otherwise `false`.
 function StaticText:isEnabled()
     local ui = self:UI()
     return ui and ui:enabled()
 end
 
--- TODO: Add documentation
+--- cp.ui.StaticText:saveLayout() -> table
+--- Method
+--- Saves the current Static Text layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current Static Text Layout.
 function StaticText:saveLayout()
     local layout = {}
     layout.value = self:getValue()
     return layout
 end
 
--- TODO: Add documentation
+--- cp.ui.StaticText:loadLayout(layout) -> none
+--- Method
+--- Loads a Static Text layout.
+---
+--- Parameters:
+---  * layout - A table containing the Static Text layout settings - created using `cp.ui.StaticText:saveLayout()`.
+---
+--- Returns:
+---  * None
 function StaticText:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
     end
 end
 
+-- cp.ui.xxx:__call(parent, value) -> parent, string
+-- Method
 -- Allows the StaticText instance to be called as a function/method which will get/set the value.
+--
+-- Parameters:
+--  * parent - (optional) The parent object.
+--  * value - The value you want to set the slider to.
+--
+-- Returns:
+--  * The value of the Static Text box.
 function StaticText:__call(parent, value)
     if parent and parent ~= self:parent() then
         value = parent
@@ -223,10 +282,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function StaticText:snapshot(path)
     local ui = self:UI()
     if ui then
