@@ -1031,16 +1031,21 @@ function tools.removeFromTable(table, element)
     return result
 end
 
---- cp.tools.getFilenameFromPath(input) -> string
+--- cp.tools.getFilenameFromPath(input[, removeExtension]) -> string
 --- Function
 --- Gets the filename component of a path.
 ---
 --- Parameters:
 ---  * input - The path
+---  * removeExtension - (optional) set to `true` if the file extension should be removed
 ---
 --- Returns:
 ---  * A string of the filename.
 function tools.getFilenameFromPath(input, removeExtension)
+    if not input then
+        log.ef("Input is required for cp.tools.getFilenameFromPath.")
+        return nil
+    end
     if removeExtension then
         local filename = string.match(input, "[^/]+$")
         return  filename:match("(.+)%..+")

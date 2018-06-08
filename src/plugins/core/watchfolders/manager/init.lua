@@ -404,7 +404,7 @@ function mod.injectScript(script)
         mod._webview:evaluateJavaScript(script,
         function(_, theerror)
             if theerror then
-                log.df("Javascript Error: %s", inspect(theerror))
+                --log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
             end
         end)
     end
