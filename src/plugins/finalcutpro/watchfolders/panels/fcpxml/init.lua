@@ -643,7 +643,7 @@ function mod.setupWatchers()
     -- Register any un-clicked Notifications from Previous Session:
     --------------------------------------------------------------------------------
     local deliveredNotifications = notify.deliveredNotifications()
-    for i, v in pairs(deliveredNotifications) do
+    for _, v in pairs(deliveredNotifications) do
         local tag = v:getFunctionTag()
         local file = getFileFromTag(tag)
         if file then
