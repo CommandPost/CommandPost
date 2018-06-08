@@ -444,10 +444,8 @@ function mod.insertFilesIntoFinalCutPro(files)
     --------------------------------------------------------------------------------
     -- Check if Timeline can be enabled:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
-        return fcp:selectMenu({"Window", "Go To", "Timeline"})
-    end, 5, 0.1)
-    if not result then
+    fcp:timeline():show()
+    if not fcp:timeline():isShowing() then
         dialog.displayErrorMessage("Failed to activate timeline. Error occured in Final Cut Pro Media Watch Folder.")
         return nil
     end
@@ -455,10 +453,7 @@ function mod.insertFilesIntoFinalCutPro(files)
     --------------------------------------------------------------------------------
     -- Perform Paste:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
-        return fcp:selectMenu({"Edit", "Paste as Connected Clip"})
-    end, 5, 0.1)
-    if not result then
+    if not fcp:selectMenu({"Edit", "Paste as Connected Clip"}) then
         dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut. Error occured in Final Cut Pro Media Watch Folder.")
         return nil
     end
@@ -576,7 +571,12 @@ end
 --- Returns:
 ---  * None
 function mod.createNotification(file)
-    mod.notifications[file] = notify.new(function(obj) mod.importFile(file, obj:getFunctionTag()) end)
+
+    local notificationFn = function(obj)
+        mod.importFile(file, obj:getFunctionTag())
+    end
+
+    mod.notifications[file] = notify.new(notificationFn)
         :title(i18n("newFileForFinalCutPro"))
         :subTitle(tools.getFilenameFromPath(file))
         :hasActionButton(true)
@@ -773,6 +773,25 @@ function mod.addWatchFolder()
     end
 end
 
+-- getFileFromTag(tag) -> string
+-- Function
+-- Gets the file value from a tag.
+--
+-- Parameters:
+--  * tag - The tag ID to search for as a string.
+--
+-- Returns:
+--  * The file as string.
+local function getFileFromTag(tag)
+    local savedNotifications = mod.savedNotifications()
+    for file,t in pairs(savedNotifications) do
+        if t == tag then
+            return file
+        end
+    end
+    return nil
+end
+
 --- plugins.finalcutpro.watchfolders.panels.media.setupWatchers(path) -> none
 --- Function
 --- Setup Folder Watchers
@@ -793,15 +812,17 @@ function mod.setupWatchers()
     end
 
     --------------------------------------------------------------------------------
-    -- Re-create any Un-clicked Notifications from Previous Session:
+    -- Register any un-clicked Notifications from Previous Session:
     --------------------------------------------------------------------------------
-    local savedNotifications = mod.savedNotifications()
-    for file,_ in pairs(savedNotifications) do
-        if tools.doesFileExist(file) then
-            mod.createNotification(file)
-        else
-            savedNotifications[file] = nil
-            mod.savedNotifications(savedNotifications)
+    local deliveredNotifications = notify.deliveredNotifications()
+    for i, v in pairs(deliveredNotifications) do
+        local tag = v:getFunctionTag()
+        local file = getFileFromTag(tag)
+        if file then
+            local notificationFn = function(obj)
+                mod.importFile(file, obj:getFunctionTag())
+            end
+            notify.register(tag, notificationFn)
         end
     end
 
