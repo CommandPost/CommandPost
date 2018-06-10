@@ -1,4 +1,4 @@
---- === plugins.core.watchfolders.manager ===
+--- === cp.plist.plistParser ===
 ---
 --- plistParser (https://codea.io/talk/discussion/1269/code-plist-parser)
 --- version 1.01

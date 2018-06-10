@@ -7,15 +7,28 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log                       = require("hs.logger").new("MenuButton")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 -- local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
 local just							= require("cp.just")
+local prop							= require("cp.prop")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local find                          = string.find
 
 --------------------------------------------------------------------------------
 --
@@ -24,9 +37,15 @@ local just							= require("cp.just")
 --------------------------------------------------------------------------------
 local MenuButton = {}
 
-local find = string.find
-
--- TODO: Add documentation
+--- cp.ui.MenuButton.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function MenuButton.matches(element)
     return element and element:attributeValue("AXRole") == "AXMenuButton"
 end
@@ -61,6 +80,15 @@ function MenuButton.new(parent, finderFn)
     end
 
     prop.bind(o) {
+        --- cp.ui.MenuButton:UI() -> hs._asm.axuielement | nil
+        --- Method
+        --- Returns the `axuielement` representing the MenuButton, or `nil` if not available.
+        ---
+        --- Parameters:
+        ---  * None
+        ---
+        --- Return:
+        ---  * The `axuielement` or `nil`.
         UI = UI,
 
         --- cp.ui.MenuButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
@@ -91,6 +119,9 @@ function MenuButton.new(parent, finderFn)
             end
         ),
 
+        --- cp.ui.MenuButton.title <cp.prop: string; read-only>
+        --- Field
+        --- Returns the MenuButton's title.
         title = UI:mutate(function(original)
             local ui = original()
             return ui and ui:attributeValue("AXTitle")
@@ -100,11 +131,28 @@ function MenuButton.new(parent, finderFn)
     return o
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
 function MenuButton:parent()
     return self._parent
 end
 
+--- cp.ui.MenuButton:show() -> self
+--- Method
+--- Show's the MenuButton.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
 function MenuButton:show()
     local parent = self:parent()
     if parent.show then
@@ -113,7 +161,15 @@ function MenuButton:show()
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:selectItem(index) -> boolean
+--- Method
+--- Select an item on the `MenuButton` by index.
+---
+--- Parameters:
+---  * index - The index of the item you want to select.
+---
+--- Returns:
+---  * `true` if successfully selected, otherwise `false`.
 function MenuButton:selectItem(index)
     local ui = self:UI()
     if ui then
@@ -135,6 +191,15 @@ function MenuButton:selectItem(index)
     return false
 end
 
+--- cp.ui.MenuButton:selectItemMatching(pattern) -> boolean
+--- Method
+--- Select an item on the `MenuButton` by pattern.
+---
+--- Parameters:
+---  * pattern - A pattern used to select the `MenuButton` item.
+---
+--- Returns:
+---  * `true` if successfully selected, otherwise `false`.
 function MenuButton:selectItemMatching(pattern)
     local ui = self:UI()
     if ui then
@@ -167,29 +232,70 @@ function MenuButton:selectItemMatching(pattern)
     return false
 end
 
+--- cp.ui.MenuButton:getTitle() -> string | nil
+--- Method
+--- Gets the `MenuButton` title.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `MenuButton` title as string, or `nil` if the title cannot be determined.
 function MenuButton:getTitle()
     local ui = self:UI()
     return ui and ui:attributeValue("AXTitle")
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:getValue() -> string | nil
+--- Method
+--- Gets the `MenuButton` value.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `MenuButton` value as string, or `nil` if the value cannot be determined.
 function MenuButton:getValue()
     return self:value()
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:setValue(value) -> self
+--- Method
+--- Sets the `MenuButton` value.
+---
+--- Parameters:
+---  * value - The value you want to set the `MenuButton` to.
+---
+--- Returns:
+---  * self
 function MenuButton:setValue(value)
     self.value:set(value)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:isEnabled() -> boolean
+--- Method
+--- Is the `MenuButton` enabled?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if enabled otherwise `false`.
 function MenuButton:isEnabled()
     local ui = self:UI()
     return ui and ui:enabled()
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:press() -> self
+--- Method
+--- Presses the MenuButton.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
 function MenuButton:press()
     local ui = self:UI()
     if ui then
@@ -198,21 +304,45 @@ function MenuButton:press()
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:saveLayout() -> table
+--- Method
+--- Saves the current `MenuButton` layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current `MenuButton` Layout.
 function MenuButton:saveLayout()
     local layout = {}
     layout.value = self:getValue()
     return layout
 end
 
--- TODO: Add documentation
+--- cp.ui.MenuButton:loadLayout(layout) -> none
+--- Method
+--- Loads a `MenuButton` layout.
+---
+--- Parameters:
+---  * layout - A table containing the `MenuButton` layout settings - created using `cp.ui.MenuButton:saveLayout()`.
+---
+--- Returns:
+---  * None
 function MenuButton:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
     end
 end
 
--- TODO: Add documentation
+-- cp.ui.MenuButton:__call() -> boolean
+-- Method
+-- Allows the `MenuButton` to be called as a function and will return the `checked` value.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The value of the CheckBox.
 function MenuButton:__call(parent, value)
     if parent and parent ~= self:parent() then
         value = parent

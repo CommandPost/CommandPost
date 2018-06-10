@@ -19,11 +19,14 @@
 --- myButton(false) == false	-- now false
 --- ```
 
-
 --------------------------------------------------------------------------------
 --
 -- EXTENSIONS:
 --
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
@@ -40,24 +43,24 @@ local CheckBox = {}
 --- Checks if the provided `hs._asm.axuielement` is a CheckBox.
 ---
 --- Parameters:
---- * element		- The `axuielement` to check.
+---  * element		- The `axuielement` to check.
 ---
 --- Returns:
---- * `true` if it's a match, or `false` if not.
+---  * `true` if it's a match, or `false` if not.
 function CheckBox.matches(element)
     return element ~= nil and element:attributeValue("AXRole") == "AXCheckBox"
 end
 
---- cp.ui.CheckBox.new(axuielement, function) -> cp.ui.CheckBox
+--- cp.ui.CheckBox.new(parent, finderFn) -> cp.ui.CheckBox
 --- Constructor
 --- Creates a new CheckBox.
 ---
 --- Parameters:
---- * parent		- The parent object.
---- * finderFn		- A function which will return the `hs._asm.axuielement` when available.
+---  * parent		- The parent object.
+---  * finderFn		- A function which will return the `hs._asm.axuielement` when available.
 ---
 --- Returns:
---- * The new `CheckBox`.
+---  * The new `CheckBox`.
 function CheckBox.new(parent, finderFn)
     local o = prop.extend({_parent = parent, _finder = finderFn}, CheckBox)
 
@@ -66,10 +69,10 @@ function CheckBox.new(parent, finderFn)
     --- Returns the `axuielement` representing the CheckBox, or `nil` if not available.
     ---
     --- Parameters:
-    --- * None
+    ---  * None
     ---
     --- Return:
-    --- * The `axuielement` or `nil`.
+    ---  * The `axuielement` or `nil`.
     local UI = prop(function(self)
         return axutils.cache(self, "_ui", function()
             return self._finder()
@@ -113,10 +116,10 @@ end
 --- The parent object.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The parent object.
+---  * The parent object.
 function CheckBox:parent()
     return self._parent
 end
@@ -126,10 +129,10 @@ end
 --- Toggles the `checked` status of the button.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `CheckBox` instance.
+---  * The `CheckBox` instance.
 function CheckBox:toggle()
     self.checked:toggle()
     return self
@@ -140,7 +143,7 @@ end
 --- Returns `true` if the radio button exists and is enabled.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 --- `true` or `false`.
@@ -154,7 +157,7 @@ end
 --- Attempts to press the button. May fail if the `UI` is not available.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
 --- The `CheckBox` instance.
@@ -172,10 +175,10 @@ end
 --- This table may be passed to the `loadLayout` method to restore the saved layout.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A settings table.
+---  * A settings table.
 function CheckBox:saveLayout()
     return {
         checked = self:checked()
@@ -187,17 +190,25 @@ end
 --- Applies the settings in the provided layout table.
 ---
 --- Parameters:
---- * layout		- The table containing layout settings. Usually created by the `saveLayout` method.
+---  * layout		- The table containing layout settings. Usually created by the `saveLayout` method.
 ---
 --- Returns:
---- * nil
+---  * nil
 function CheckBox:loadLayout(layout)
     if layout then
         self:checked(layout.checked)
     end
 end
 
+-- cp.ui.Button:__call() -> boolean
+-- Method
 -- Allows the CheckBox to be called as a function and will return the `checked` value.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The value of the CheckBox.
 function CheckBox:__call(parent, value)
     if parent and parent ~= self:parent() then
         value = parent
@@ -211,10 +222,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function CheckBox:snapshot(path)
     local ui = self:UI()
     if ui then
