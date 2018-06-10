@@ -68,7 +68,7 @@
 --- * 60 * 1000/1001 (~59.94) fps frame: 11771760 flicks
 --- * 120 * 1000/1001 (~119.88) fps frame: 5885880 flicks
 
-local log					= require("hs.logger").new("flicks")
+-- local log					= require("hs.logger").new("flicks")
 
 local format                = string.format
 
@@ -174,10 +174,6 @@ flicks.perFrame = {
     [59.94] = flicks.perFrame60NTSC,
     [119.88] = flicks.perFrame120NTSC,
 }
-
-local function DIV(a,b)
-    return (a - a % b) / b
-end
 
 local function _findFlicksPerFrame(framerate)
     if framerate % 1 ~= 0 then

@@ -287,15 +287,12 @@ function Viewer.new(app, eventViewer)
                     return #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
                 end, 3)
                 if ready then
-                    log.df("Found the editor.")
                     --------------------------------------------------------------------------------
                     -- Type in Original Timecode & Press Return Key:
                     --------------------------------------------------------------------------------
                     eventtap.keyStrokes(tc:toTimecode(framerate))
                     eventtap.keyStroke({}, 'return')
                     return self
-                else
-                    log.df("No editor returned.")
                 end
             else
                 log.ef("Timecode value is invalid: %s", timecodeValue)
