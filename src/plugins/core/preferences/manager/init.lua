@@ -18,6 +18,7 @@ local log                                       = require("hs.logger").new("pref
 --------------------------------------------------------------------------------
 local inspect                                   = require("hs.inspect")
 local screen                                    = require("hs.screen")
+local timer                                     = require("hs.timer")
 local toolbar                                   = require("hs.webview.toolbar")
 local webview                                   = require("hs.webview")
 
@@ -474,8 +475,18 @@ end
 --- Returns:
 ---  * None
 function mod.injectScript(script)
-    if mod._webview then
-        mod._webview:evaluateJavaScript(script)
+    if mod._webview and mod._webview:frame() then
+        --------------------------------------------------------------------------------
+        -- Wait until the Webview has loaded before executing JavaScript:
+        --------------------------------------------------------------------------------
+        timer.waitUntil(function() return not mod._webview:loading() end, function()
+            mod._webview:evaluateJavaScript(script,
+                function(_, theerror)
+                    if theerror and theerror.code ~= 0 then
+                        log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+                    end
+                end)
+        end, 0.01)
     end
 end
 

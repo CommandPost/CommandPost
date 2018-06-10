@@ -245,7 +245,7 @@ function plugin.init(deps)
                     table.insert(historyItems, { title = "-" })
                     table.insert(historyItems, { title = i18n("clearPasteboardHistory"), fn = mod.clearHistory })
                 else
-                    table.insert(historyItems, { title = i18n("emptyPasteboardHistory"), disabled = true })
+                    table.insert(historyItems, { title = i18n("empty"), disabled = true })
                 end
             end
             return historyItems
