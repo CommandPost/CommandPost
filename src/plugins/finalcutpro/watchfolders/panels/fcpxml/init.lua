@@ -69,22 +69,22 @@ mod.disableImport = false
 --- plugins.finalcutpro.watchfolders.panels.fcpxml.automaticallyImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
-mod.automaticallyImport = config.prop("fcpxmlWatchFoldersAutomaticallyImport", false)
+mod.automaticallyImport = config.prop("fcp.fcpxml.watchFolders.automaticallyImport", false)
 
 --- plugins.finalcutpro.watchfolders.panels.fcpxml.savedNotifications <cp.prop: table>
 --- Variable
 --- Table of Notifications that are saved between restarts
-mod.savedNotifications = config.prop("fcpxmlWatchFoldersSavedNotifications", {})
+mod.savedNotifications = config.prop("fcp.fcpxml.watchFolders.savedNotifications", {})
 
 --- plugins.finalcutpro.watchfolders.panels.fcpxml.deleteAfterImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
-mod.deleteAfterImport = config.prop("fcpxmlWatchFoldersDeleteAfterImport", false)
+mod.deleteAfterImport = config.prop("fcp.fcpxml.watchFolders.deleteAfterImport", false)
 
 --- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolders <cp.prop: table>
 --- Variable
 --- Table of the users watch folders.
-mod.watchFolders = config.prop("fcpxmlWatchFolders", {})
+mod.watchFolders = config.prop("fcp.fcpxml.watchFolders", {})
 
 --- plugins.finalcutpro.watchfolders.panels.fcpxml.generateTable() -> string
 --- Function
@@ -127,7 +127,7 @@ function mod.generateTable()
     if watchFoldersHTML == "" then
             watchFoldersHTML = [[
                 <tr>
-                    <td class="rowPath">Empty</td>
+                    <td class="rowPath">]] .. i18n("empty") .. [[</td>
                     <td class="rowRemove"></td>
                 </tr>
         ]]
@@ -137,7 +137,7 @@ function mod.generateTable()
         <table class="watchfolders">
             <thead>
                 <tr>
-                    <th class="rowPath">Folder</th>
+                    <th class="rowPath">]] .. i18n("folder") .. [[</th>
                 </tr>
             </thead>
             <tbody>
@@ -213,7 +213,7 @@ function mod.styleSheet()
             float: left;
             margin-left: 20px;
             table-layout: fixed;
-            width: 92%;
+            width: 95%;
             white-space: nowrap;
             border: 1px solid #cccccc;
             padding: 8px;
@@ -697,10 +697,10 @@ function mod.init(deps)
         mod.panel = mod.manager.addPanel({
                 priority        = 2020,
                 id              = "fcpxml",
-                label           = i18n("xml"),
+                label           = "FCPXML",
                 image           = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
                 tooltip         = i18n("watchFolderFCPXMLTooltip"),
-                height          = 490,
+                height          = 475,
                 loadFn          = mod.refreshTable,
             })
     end
