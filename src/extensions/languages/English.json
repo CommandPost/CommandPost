@@ -139,6 +139,10 @@
             "one"  : "Enable Background Render (%{count} sec)",
             "other": "Enable Background Render (%{count} secs)"
         },
+        "second"											: {
+        	"one":	"Second",
+        	"other": "Seconds",
+        },
         "cpZoomToSelection_title"              : "Zoom to Selection",
         "midiResetAllConfirmation"             : "This will reset all MIDI items across all applications to the default values.",
         "layoutEditor"                         : "Layout Editor",
@@ -861,7 +865,7 @@
         "shortcutCouldNotBeTriggered"                          : "This shortcut could not be triggered.\n\nPlease check that you valid shortcut keys assigned to command you've tried to trigger in the Final Cut Pro Command Editor and try again.",
         "whatWentWrong"                                        : "What went wrong?",
         "core_preferences_updates_label"                       : "Preferences: Updates",
-        "deleteAfterImport"                                    : "Delete file from Watch Folder (5 seconds after Import)",
+        "deleteAfterImport"                                    : "Delete file from Watch Folder (%{numberOfSeconds} %{seconds} after Import)",
         "enableMIDI"                                           : "Enable MIDI Controls",
         "failedToRestart"                                      : "Failed to restart Final Cut Pro. You will need to restart manually.",
         "fcpx_midicontrols_action"                             : "MIDI Controls",

@@ -36,47 +36,52 @@ local ui                = require("cp.web.ui")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolderTableID
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.SECONDS_UNTIL_DELETE -> number
+--- Constant
+--- Seconds until a file is deleted.
+mod.SECONDS_UNTIL_DELETE = 30
+
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolderTableID -> string
 --- Variable
 --- Watch Folder Table ID
 mod.watchFolderTableID = "fcpxmlWatchFoldersTable"
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.filesInTransit
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.filesInTransit -> table
 --- Variable
 --- Files currently being copied
 mod.filesInTransit = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.notifications
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.notifications -> table
 --- Variable
 --- Table of Path Watchers
 mod.pathwatchers = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.notifications
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.notifications -> table
 --- Variable
 --- Table of Notifications
 mod.notifications = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.disableImport
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.disableImport -> boolean
 --- Variable
 --- When `true` Notifications will no longer be triggered.
 mod.disableImport = false
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.automaticallyImport
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.automaticallyImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
 mod.automaticallyImport = config.prop("fcpxmlWatchFoldersAutomaticallyImport", false)
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.savedNotifications
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.savedNotifications <cp.prop: table>
 --- Variable
 --- Table of Notifications that are saved between restarts
 mod.savedNotifications = config.prop("fcpxmlWatchFoldersSavedNotifications", {})
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.deleteAfterImport
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.deleteAfterImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
 mod.deleteAfterImport = config.prop("fcpxmlWatchFoldersDeleteAfterImport", false)
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolders
+--- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolders <cp.prop: table>
 --- Variable
 --- Table of the users watch folders.
 mod.watchFolders = config.prop("fcpxmlWatchFolders", {})
@@ -323,7 +328,7 @@ function mod.insertFilesIntoFinalCutPro(files)
     --------------------------------------------------------------------------------
     if mod.deleteAfterImport() then
         for _, file in pairs(files) do
-            timer.doAfter(5, function()
+            timer.doAfter(mod.SECONDS_UNTIL_DELETE, function()
                 os.remove(file)
             end)
         end
@@ -640,9 +645,11 @@ function mod.setupWatchers()
     end
 
     --------------------------------------------------------------------------------
-    -- Register any un-clicked Notifications from Previous Session:
+    -- Register any un-clicked Notifications from Previous Session & Trash
+    -- any ones that were clicked when CommandPost was closed:
     --------------------------------------------------------------------------------
     local deliveredNotifications = notify.deliveredNotifications()
+    local newSavedNotifications = {}
     for _, v in pairs(deliveredNotifications) do
         local tag = v:getFunctionTag()
         local file = getFileFromTag(tag)
@@ -651,8 +658,10 @@ function mod.setupWatchers()
                 mod.importFile(file, obj:getFunctionTag())
             end
             notify.register(tag, notificationFn)
+            newSavedNotifications[file] = tag
         end
     end
+    mod.savedNotifications(newSavedNotifications)
 
 end
 
@@ -724,7 +733,10 @@ function mod.init(deps)
             )
             :addCheckbox(20,
                 {
-                    label       = i18n("deleteAfterImport"),
+                    label		= i18n("deleteAfterImport", {
+                        numberOfSeconds = mod.SECONDS_UNTIL_DELETE,
+                        seconds = i18n("second", {count = mod.SECONDS_UNTIL_DELETE})
+                    }),
                     checked     = mod.deleteAfterImport,
                     onchange    = function(_, params) mod.deleteAfterImport(params.checked) end,
                 }
