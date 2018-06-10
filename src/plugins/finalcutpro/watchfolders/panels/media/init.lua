@@ -453,7 +453,7 @@ function mod.insertFilesIntoFinalCutPro(files)
 
         local videoTag = videoTags[path]
         local audioTag = audioTags[path]
-        local audioTag = audioTags[path]
+        local imageTag = imageTags[path]
 
         if videoTag then
             if (fnutils.contains(videoExtensions, string.lower(file:sub(-3))) or fnutils.contains(videoExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then

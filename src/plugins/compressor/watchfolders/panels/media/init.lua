@@ -363,7 +363,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
                 elseif status and status == "Processing" then
-                    -- Do nothing
+                    log.df("Compressor is processing the following file: %s", file)
                 else
                     log.df("Unknown Status from Compressor: %s", status)
                     if mod.statusTimer[jobID] then
