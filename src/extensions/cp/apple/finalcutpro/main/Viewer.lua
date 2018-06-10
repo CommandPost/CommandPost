@@ -26,6 +26,7 @@ local delayedTimer                      = require("hs.timer").delayed
 --------------------------------------------------------------------------------
 local just                              = require("cp.just")
 local prop                              = require("cp.prop")
+local flicks                            = require("cp.time.flicks")
 local tools                             = require("cp.tools")
 local axutils                           = require("cp.ui.axutils")
 local Button                            = require("cp.ui.Button")
@@ -38,7 +39,7 @@ local SecondaryWindow                   = require("cp.apple.finalcutpro.main.Sec
 local id                                = require("cp.apple.finalcutpro.ids") "Viewer"
 
 local floor                             = math.floor
-local match, sub, find, gsub            = string.match, string.sub, string.find, string.gsub
+local match, sub, find                  = string.match, string.sub, string.find
 local childrenWithRole                  = axutils.childrenWithRole
 local childrenMatching                  = axutils.childrenMatching
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
@@ -265,14 +266,14 @@ function Viewer.new(app, eventViewer)
             return original()
         end,
         function(timecodeValue, original, self)
-            local tc = o._timecode
-            if not tc:isShowing() then
+            local tcField = o._timecode
+            if not tcField:isShowing() then
                 return
             end
-            if timecodeValue and find(timecodeValue, "%d%d:%d%d:%d%d[:;]%d%d") then
-                timecodeValue = gsub(timecodeValue, "[:;]", "")
-
-                local center = geometry(tc:frame()).center
+            local framerate = self:framerate()
+            local tc = framerate and flicks.parse(timecodeValue, framerate)
+            if tc then
+                local center = geometry(tcField:frame()).center
                 --------------------------------------------------------------------------------
                 -- Double click the timecode value in the Viewer:
                 --------------------------------------------------------------------------------
@@ -290,7 +291,7 @@ function Viewer.new(app, eventViewer)
                     --------------------------------------------------------------------------------
                     -- Type in Original Timecode & Press Return Key:
                     --------------------------------------------------------------------------------
-                    eventtap.keyStrokes(timecodeValue)
+                    eventtap.keyStrokes(tc:toTimecode(framerate))
                     eventtap.keyStroke({}, 'return')
                     return self
                 else

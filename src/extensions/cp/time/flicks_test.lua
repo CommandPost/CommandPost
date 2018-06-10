@@ -5,15 +5,41 @@ local flicks    = require("cp.time.flicks")
 return test.suite("cp.time.flicks"):with {
     test("new", function()
         ok(eq(flicks.new(1).value, 1))
-        ok(eq(flicks.new(1, flicks.perSecond).value, flicks.perSecond))
+        ok(eq(flicks.new(1 * flicks.perSecond).value, flicks.perSecond))
+    end),
+
+    test("parse", function()
+        ok(eq(flicks.parse("1:30:00", 25).value, 1 * flicks.perMinute + 30 * flicks.perSecond))
+        ok(eq(flicks.parse("1:30;00", 25).value, 1 * flicks.perMinute + 30 * flicks.perSecond))
+        ok(eq(flicks.parse("13000", 25).value, 1 * flicks.perMinute + 30 * flicks.perSecond))
+        ok(eq(flicks.parse("9000", 25).value, 90 * flicks.perSecond))
+
+        local check = spy(function() eq(flicks.parse("ABC")) end)
+        check()
+        ok(check.errors[1], "Invalid timecode value.")
     end),
 
     test("__call", function()
-        ok(eq(flicks.new(1).value, flicks(1).value))
+        ok(eq(flicks(1).value, 1))
+        ok(eq(flicks(1 * flicks.perSecond).value, 1 * flicks.perSecond))
     end),
 
     test("toSeconds", function()
         ok(eq(flicks(1):toSeconds(), 1/flicks.perSecond))
+    end),
+
+    test("toTimecode", function()
+        local f = flicks.parse("123456", 60)
+        ok(eq(f:toTimecode(60), "00123456"))
+        ok(eq(f:toTimecode(60, ":"), "00:12:34:56"))
+        ok(eq(f:toTimecode(60, ";"), "00:12:34;56"))
+    end),
+
+    test("NTSC", function()
+        local f = flicks.parse("123456", 59.94)
+        ok(eq(f:toTimecode(59.94), "00123456"))
+        ok(eq(f:toTimecode(29.97), "00123428"))
+        ok(eq(f:toTimecode(30), "00123520"))
     end),
 
     test("==", function()
