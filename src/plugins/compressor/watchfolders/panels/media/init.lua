@@ -69,40 +69,22 @@ mod.disableImport = false
 --- plugins.compressor.watchfolders.panels.media.automaticallyImport
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
-mod.automaticallyImport = config.prop("compressorWatchFoldersAutomaticallyImport", false)
+mod.automaticallyImport = config.prop("compressor.watchFolders.automaticallyImport", false)
 
 --- plugins.compressor.watchfolders.panels.media.savedNotifications
 --- Variable
 --- Table of Notifications that are saved between restarts
-mod.savedNotifications = config.prop("compressorWatchFoldersSavedNotifications", {})
+mod.savedNotifications = config.prop("compressor.watchFolders.savedNotifications", {})
 
 --- plugins.compressor.watchfolders.panels.media.deleteAfterImport
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
-mod.deleteAfterImport = config.prop("compressorWatchFoldersDeleteAfterImport", false)
+mod.deleteAfterImport = config.prop("compressor.watchFolders.deleteAfterImport", false)
 
 --- plugins.compressor.watchfolders.panels.media.watchFolders
 --- Variable
 --- Table of the users watch folders.
-mod.watchFolders = config.prop("compressorWatchFolders", {})
-
--- shortPath(input) -> string
--- Function
--- Returns a Short Path
---
--- Parameters:
---  * None
---
--- Returns:
---  * String
-local function shortPath(input)
-    local maxLength = 22
-    if input:len() <= maxLength then
-        return input
-    else
-        return "..." .. string.sub(input, input:len() - maxLength)
-    end
-end
+mod.watchFolders = config.prop("compressor.watchFolders", {})
 
 --- plugins.compressor.watchfolders.panels.media.generateTable() -> string
 --- Function
@@ -122,10 +104,10 @@ function mod.generateTable()
         local uniqueUUID = string.gsub(uuid(), "-", "")
         watchFoldersHTML = watchFoldersHTML .. [[
                 <tr>
-                    <td class="rowPath">]] .. shortPath(i) .. [[</td>
-                    <td class="rowDestination">]] .. shortPath(v.destinationPath) .. [[ </td>
-                    <td class="rowSetting">]] .. string.sub(tools.getFilenameFromPath(v.settingFile), 1, -10) .. [[</td>
-                    <td class="rowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
+                    <td class="compressorRowPath">]] .. i .. [[</td>
+                    <td class="compressorRowDestination">]] .. v.destinationPath .. [[ </td>
+                    <td class="compressorRowSetting">]] .. string.sub(tools.getFilenameFromPath(v.settingFile), 1, -10) .. [[</td>
+                    <td class="compressorRowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
                 </tr>
         ]]
         mod.manager.injectScript([[
@@ -147,22 +129,22 @@ function mod.generateTable()
     if watchFoldersHTML == "" then
         watchFoldersHTML = [[
                 <tr>
-                    <td class="rowPath">Empty</td>
-                    <td class="rowDestination"></td>
-                    <td class="rowSetting"></td>
-                    <td class="rowRemove"></td>
+                    <td class="compressorRowPath">Empty</td>
+                    <td class="compressorRowDestination"></td>
+                    <td class="compressorRowSetting"></td>
+                    <td class="compressorRowRemove"></td>
                 </tr>
         ]]
     end
 
     local result = [[
-        <table class="watchfolders">
+        <table class="compressorWatchfolders">
             <thead>
                 <tr>
-                    <th class="rowPath">Folder</th>
-                    <th class="rowDestination">Destination</th>
-                    <th class="rowSetting">Setting</th>
-                    <th class="rowRemove"></th>
+                    <th class="compressorRowPath">Folder</th>
+                    <th class="compressorRowDestination">Destination</th>
+                    <th class="compressorRowSetting">Setting</th>
+                    <th class="compressorRowRemove"></th>
                 </tr>
             </thead>
             <tbody>
@@ -212,7 +194,13 @@ end
 ---  * None
 function mod.controllerCallback(_, params)
     if params and params.action and params.action == "remove" then
-        mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
+
+        local watchFolders = mod.watchFolders()
+        if watchFolders[params.path] then
+            watchFolders[params.path] = nil
+        end
+        mod.watchFolders(watchFolders)
+
         mod.removeWatcher(params.path)
         mod.refreshTable()
     elseif params and params.action and params.action == "refresh" then
@@ -231,54 +219,54 @@ end
 ---  * Returns Style Sheet as a `cp.web.html` block.
 function mod.styleSheet()
     return ui.style [[
-        .btnAddWatchFolder {
+        .compressorBtnAddWatchFolder {
             margin-top: 10px;
         }
-        .watchfolders {
+        .compressorWatchfolders {
             float: left;
             margin-left: 20px;
             table-layout: fixed;
-            width: 92%;
+            width: 95%;
             white-space: nowrap;
             border: 1px solid #cccccc;
             padding: 8px;
-            background-color: #ffffff;
             text-align: left;
+            background-color: #161616 !important;
         }
 
-        .watchfolders td {
+        .compressorWatchfolders td {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .rowPath {
+        .compressorRowPath {
             width:35%;
-            text-align:lef;
+            text-align:left;
         }
 
-        .rowDestination {
+        .compressorRowDestination {
             width:35%;
-            text-align:lef;
+            text-align:left;
         }
 
-        .rowSetting {
+        .compressorRowSetting {
             width:15%;
-            text-align:lef;
+            text-align:left;
         }
 
-        .rowRemove {
+        .compressorRowRemove {
             width:15%;
             text-align:right;
         }
 
-        .watchfolders thead, .watchfolders tbody tr {
+        .compressorWatchfolders thead, .compressorWatchfolders tbody tr {
             display:table;
             table-layout:fixed;
-            width: calc( 100% - 1.5em );
+            width: 100%;
         }
 
-        .watchfolders tbody {
+        .compressorWatchfolders tbody {
             display:block;
             height: 80px;
             font-weight: normal;
@@ -288,48 +276,43 @@ function mod.styleSheet()
             overflow-y: auto;
         }
 
-        .watchfolders tbody tr {
+        .compressorWatchfolders tbody tr {
             display:table;
             width:100%;
             table-layout:fixed;
         }
 
-        .watchfolders thead {
+        .compressorWatchfolders thead {
             font-weight: bold;
             font-size: 12px;
         }
 
-        .watchfolders tbody {
+        .compressorWatchfolders tbody {
             font-weight: normal;
             font-size: 10px;
         }
 
-        .watchfolders tbody tr:nth-child(even) {
+        .compressorWatchfolders tbody tr:nth-child(even) {
             background-color: #f5f5f5
         }
 
-        .watchfolders tbody tr:hover {
+        .compressorWatchfolders tbody tr:hover {
             background-color: #006dd4;
             color: white;
         }
 
-        .watchFolderTextBox {
+        .compressorWatchFolderTextBox {
             vertical-align: middle;
         }
 
-        .watchFolderTextBox label {
+        .compressorWatchFolderTextBox label {
             display: inline-block;
             width: 100px;
             height: 25px;
         }
 
-        .watchFolderTextBox input {
+        .compressorWatchFolderTextBox input {
             display: inline-block;
-        }
-
-        .deleteNote {
-            font-size: 10px;
-            margin-left: 20px;
         }
     ]]
 end
@@ -350,7 +333,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
     --log.df("Lets track the status of: %s", jobID)
     mod.statusTimer[jobID] = timer.doEvery(5, function()
         local compressorPath = compressor:getPath() .. "/Contents/MacOS/Compressor"
-        local compressorStatusTask = hs.task.new(compressorPath, nil, function(_, stdOut)
+        local compressorStatusTask = task.new(compressorPath, nil, function(_, stdOut)
             if stdOut and string.match(stdOut, [[status="([^%s]+)"]]) then
                 local status = string.match(stdOut, [[status="([^%s]+)"]])
                 --log.df("Status: %s", status)
@@ -379,12 +362,14 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                         :send()
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
-                --elseif status and status == "Processing" then
-                    -- Do nothing
+                elseif status and status == "Processing" then
+                    log.df("Compressor is processing the following file: %s", file)
                 else
                     log.df("Unknown Status from Compressor: %s", status)
-                    mod.statusTimer[jobID]:stop()
-                    mod.statusTimer[jobID] = nil
+                    if mod.statusTimer[jobID] then
+                        mod.statusTimer[jobID]:stop()
+                        mod.statusTimer[jobID] = nil
+                    end
                 end
             end
             return true
@@ -762,12 +747,12 @@ function mod.init(deps)
     -- Setup Panel:
     --------------------------------------------------------------------------------
     mod.panel = deps.manager.addPanel({
-            priority        = 2020,
+            priority        = 2030,
             id              = "compressor",
             label           = i18n("compressor"),
             image           = image.imageFromPath(tools.iconFallback(compressor:getPath() .. "/Contents/Resources/compressor.icns")),
             tooltip         = i18n("watchFolderCompressorTooltip"),
-            height          = 380,
+            height          = 360,
             loadFn          = mod.refreshTable,
         })
 
@@ -785,7 +770,7 @@ function mod.init(deps)
             {
                 label       = i18n("addWatchFolder"),
                 onclick     = mod.addWatchFolder,
-                class       = "btnAddWatchFolder",
+                class       = "compressorBtnAddWatchFolder",
             })
 
     local uniqueUUID = string.gsub(uuid(), "-", "")

@@ -486,12 +486,12 @@ function mod.generateSharedPasteboardMenu()
                     table.insert(historyItems, { title = "-" })
                     table.insert(historyItems, { title = i18n("clearSharedPasteboard"), fn = function() mod.clearHistory(folder) end })
                 else
-                    table.insert(historyItems, { title = i18n("emptySharedPasteboard"), disabled = true })
+                    table.insert(historyItems, { title = i18n("empty"), disabled = true })
                 end
                 table.insert(folderItems, { title = folder, menu = historyItems })
             end
         else
-            table.insert(folderItems, { title = i18n("emptySharedPasteboard"), disabled = true })
+            table.insert(folderItems, { title = i18n("empty"), disabled = true })
         end
     end
     return folderItems

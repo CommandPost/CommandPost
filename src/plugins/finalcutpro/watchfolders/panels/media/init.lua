@@ -83,42 +83,79 @@ mod.disableImport = false
 --- plugins.finalcutpro.watchfolders.panels.media.automaticallyImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
-mod.automaticallyImport = config.prop("fcpMediaWatchFoldersAutomaticallyImport", false)
+mod.automaticallyImport = config.prop("fcp.watchFolders.automaticallyImport", false)
 
 --- plugins.finalcutpro.watchfolders.panels.media.savedNotifications <cp.prop: table>
 --- Variable
 --- Table of Notifications that are saved between restarts
-mod.savedNotifications = config.prop("fcpMediaWatchFoldersSavedNotifications", {})
+mod.savedNotifications = config.prop("fcp.watchFolders.savedNotifications", {})
 
 --- plugins.finalcutpro.watchfolders.panels.media.insertIntoTimeline <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not the files are automatically added to the timeline or not.
-mod.insertIntoTimeline = config.prop("fcpMediaWatchFoldersInsertIntoTimeline", true)
+mod.insertIntoTimeline = config.prop("fcp.watchFolders.insertIntoTimeline", true)
 
 --- plugins.finalcutpro.watchfolders.panels.media.deleteAfterImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
-mod.deleteAfterImport = config.prop("fcpMediaWatchFoldersDeleteAfterImport", false)
+mod.deleteAfterImport = config.prop("fcp.watchFolders.deleteAfterImport", false)
 
 --- plugins.finalcutpro.watchfolders.panels.media.videoTag <cp.prop: string>
 --- Variable
 --- String which contains the video tag.
-mod.videoTag = config.prop("fcpMediaWatchFoldersVideoTag", "")
+mod.videoTag = config.prop("fcp.watchFolders.videoTag", {})
 
 --- plugins.finalcutpro.watchfolders.panels.media.audioTag <cp.prop: string>
 --- Variable
 --- String which contains the audio tag.
-mod.audioTag = config.prop("fcpMediaWatchFoldersAudioTag", "")
+mod.audioTag = config.prop("fcp.watchFolders.audioTag", {})
 
 --- plugins.finalcutpro.watchfolders.panels.media.imageTag <cp.prop: string>
 --- Variable
 --- String which contains the stills tag.
-mod.imageTag = config.prop("fcpMediaWatchFoldersImageTag", "")
+mod.imageTag = config.prop("fcp.watchFolders.imageTag", {})
 
 --- plugins.finalcutpro.watchfolders.panels.media.watchFolders <cp.prop: table>
 --- Variable
 --- Table of the users watch folders.
-mod.watchFolders = config.prop("fcpMediaWatchFolders", {})
+mod.watchFolders = config.prop("fcp.watchFolders.mediaPaths", {})
+
+-- cleanupTags() -> none
+-- Function
+-- Removes any Video, Audio & Image Tags that are no longer needed.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function cleanupTags()
+    local watchFolders = mod.watchFolders()
+
+    local videoTag = mod.videoTag()
+    local audioTag = mod.audioTag()
+    local imageTag = mod.imageTag()
+
+    local newVideoTag = {}
+    local newAudioTag = {}
+    local newImageTag = {}
+
+    for _, v in pairs(watchFolders) do
+        if videoTag[v] then
+            newVideoTag[v] = videoTag[v]
+        end
+        if audioTag[v] then
+            newAudioTag[v] = audioTag[v]
+        end
+        if imageTag[v] then
+            newImageTag[v] = imageTag[v]
+        end
+    end
+
+    mod.videoTag(newVideoTag)
+    mod.audioTag(newAudioTag)
+    mod.imageTag(newImageTag)
+end
 
 --- plugins.finalcutpro.watchfolders.panels.media.removeWatcher(path) -> none
 --- Function
@@ -146,10 +183,25 @@ end
 ---  * None
 function mod.controllerCallback(_, params)
     if params and params.action and params.action == "remove" then
+        --------------------------------------------------------------------------------
+        -- Remove a Watch Folder:
+        --------------------------------------------------------------------------------
         mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
         mod.removeWatcher(params.path)
+
+        --------------------------------------------------------------------------------
+        -- Cleanup Tags:
+        --------------------------------------------------------------------------------
+        cleanupTags()
+
+        --------------------------------------------------------------------------------
+        -- Refresh Table:
+        --------------------------------------------------------------------------------
         mod.refreshTable()
     elseif params and params.action and params.action == "refresh" then
+        --------------------------------------------------------------------------------
+        -- Refresh Table:
+        --------------------------------------------------------------------------------
         mod.refreshTable()
     end
 end
@@ -168,12 +220,19 @@ function mod.generateTable()
     local watchFoldersHTML = ""
     local watchFolders =  mod.watchFolders()
 
+    local videoTag = mod.videoTag()
+    local audioTag = mod.audioTag()
+    local imageTag = mod.imageTag()
+
     for _, v in ipairs(watchFolders) do
         local uniqueUUID = string.gsub(uuid(), "-", "")
         watchFoldersHTML = watchFoldersHTML .. [[
                 <tr>
-                    <td class="rowPath">]] .. v .. [[</td>
-                    <td class="rowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
+                    <td class="mediaRowPath">]] .. v .. [[</td>
+                    <td class="mediaRowVideoTag">]] .. (videoTag[v] or i18n("none")) .. [[</td>
+                    <td class="mediaRowAudioTag">]] .. (audioTag[v] or i18n("none")) .. [[</td>
+                    <td class="mediaRowImageTag">]] .. (imageTag[v] or i18n("none")) .. [[</td>
+                    <td class="mediaRowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
                 </tr>
         ]]
         mod.manager.injectScript([[
@@ -195,17 +254,24 @@ function mod.generateTable()
     if watchFoldersHTML == "" then
             watchFoldersHTML = [[
                 <tr>
-                    <td class="rowPath">Empty</td>
-                    <td class="rowRemove"></td>
+                    <td class="mediaRowPath">]] .. i18n("empty") .. [[</td>
+                    <td class="mediaRowVideoTag"></td>
+                    <td class="mediaRowAudioTag"></td>
+                    <td class="mediaRowImageTag"></td>
+                    <td class="mediaRowRemove"></td>
                 </tr>
         ]]
     end
 
     local result = [[
-        <table class="watchfolders">
+        <table class="mediaWatchFolders">
             <thead>
                 <tr>
-                    <th class="rowPath">Folder</th>
+                    <th class="mediaRowPath">]] .. i18n("folder") .. [[</th>
+                    <th class="mediaRowVideoTag">]] .. i18n("video") .. " " .. i18n("tag") .. [[</th>
+                    <th class="mediaRowAudioTag">]] .. i18n("audio") .. " " .. i18n("tag") .. [[</th>
+                    <th class="mediaRowImageTag">]] .. i18n("stills") .. " " .. i18n("tag") .. [[</th>
+                    <th class="mediaRowRemove"></th>
                 </tr>
             </thead>
             <tbody>
@@ -235,24 +301,6 @@ function mod.refreshTable()
             {
                 document.getElementById("]] .. mod.watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
             }
-
-            var videoFiles = document.getElementById("videoFiles");
-            if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
-            {
-                document.getElementById("videoFiles").value = `]] .. mod.videoTag() .. [[`;
-            }
-
-            var audioFiles = document.getElementById("audioFiles");
-            if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
-            {
-                document.getElementById("audioFiles").value = `]] .. mod.audioTag() .. [[`;
-            }
-
-            var imageFiles = document.getElementById("imageFiles");
-            if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
-            {
-                document.getElementById("imageFiles").value = `]] .. mod.imageTag() .. [[`;
-            }
         }
         catch(err) {
             alert("Refresh Table Error");
@@ -272,43 +320,56 @@ end
 ---  * Returns Style Sheet as a string
 function mod.styleSheet()
     return ui.style [[
-        .btnAddWatchFolder {
+        .mediaAddWatchFolder {
             margin-top: 10px;
         }
-        .watchfolders {
+
+        .mediaRowPath {
+            width:40%;
+        }
+
+        .mediaRowVideoTag {
+            width:18.33%;
+        }
+
+        .mediaRowAudioTag {
+            width:18.33%;
+        }
+
+        .mediaRowImageTag {
+            width:18.33%;
+        }
+
+        .mediaRowRemove {
+            width:5%;
+            text-align:right;
+        }
+
+        .mediaWatchFolders {
             float: left;
             margin-left: 20px;
             table-layout: fixed;
-            width: 92%;
+            width: 95%;
             white-space: nowrap;
             border: 1px solid #cccccc;
             padding: 8px;
-            background-color: #ffffff;
             text-align: left;
+            background-color: #161616 !important;
         }
 
-        .watchfolders td {
+        .mediaWatchFolders td {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .rowPath {
-            width:80%;
-        }
-
-        .rowRemove {
-            width:20%;
-            text-align:right;
-        }
-
-        .watchfolders thead, .watchfolders tbody tr {
+        .mediaWatchFolders thead, .mediaWatchFolders tbody tr {
             display:table;
             table-layout:fixed;
-            width: calc( 100% - 1.5em );
+            width: 100%;
         }
 
-        .watchfolders tbody {
+        .mediaWatchFolders tbody {
             display:block;
             height: 80px;
             font-weight: normal;
@@ -318,59 +379,59 @@ function mod.styleSheet()
             overflow-y: auto;
         }
 
-        .watchfolders tbody tr {
+        .mediaWatchFolders tbody tr {
             display:table;
             width:100%;
             table-layout:fixed;
         }
 
-        .watchfolders thead {
+        .mediaWatchFolders thead {
             font-weight: bold;
             font-size: 12px;
         }
 
-        .watchfolders tbody {
+        .mediaWatchFolders tbody {
             font-weight: normal;
             font-size: 10px;
         }
 
-        .watchfolders tbody tr:nth-child(even) {
-            background-color: #f5f5f5
-        }
-
-        .watchfolders tbody tr:hover {
+        .mediaWatchFolders tbody tr:hover {
             background-color: #006dd4;
             color: white;
         }
 
-        .watchFolderTextBox {
-            vertical-align: middle;
-        }
-
-        .watchFolderTextBox label {
-            display: inline-block;
-            width: 100px;
-            height: 25px;
-        }
-
-        .watchFolderTextBox input {
-            display: inline-block;
-        }
-
-        .deleteNote {
+        .mediaDeleteNote {
             font-size: 10px;
             margin-left: 20px;
         }
     ]]
 end
 
+-- getPath(file) -> string | nil
+-- Function
+-- Checks to see whether a file path matches one of our watch folders.
+--
+-- Parameters:
+--  * file - The path to the file to check.
+--
+-- Returns:
+--  * A path as string, or `nil` if no matching path can be found.
+local function getPath(file)
+    local watchFolders = mod.watchFolders()
+    for _, path in pairs(watchFolders) do
+        if file:sub(1, path:len()) == path then
+            return path
+        end
+    end
+    return nil
+end
+
 --- plugins.finalcutpro.watchfolders.panels.media.insertFilesIntoFinalCutPro(files) -> none
 --- Function
---- Imports a file into Final Cut Pro
+--- Imports files into Final Cut Pro
 ---
 --- Parameters:
----  * file - File name
----  * tag - The notification tag
+---  * files - A table of file paths.
 ---
 --- Returns:
 ---  * None
@@ -383,24 +444,35 @@ function mod.insertFilesIntoFinalCutPro(files)
         local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
         local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
         local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
-        if mod.videoTag() ~= "" then
+
+        local path = getPath(file)
+
+        local videoTags = mod.videoTag()
+        local audioTags = mod.audioTag()
+        local imageTags = mod.imageTag()
+
+        local videoTag = videoTags[path]
+        local audioTag = audioTags[path]
+        local imageTag = imageTags[path]
+
+        if videoTag then
             if (fnutils.contains(videoExtensions, string.lower(file:sub(-3))) or fnutils.contains(videoExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
-                if not fs.tagsAdd(file, {mod.videoTag()}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
+                if not fs.tagsAdd(file, {videoTag}) then
+                    log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
                 end
             end
         end
-        if mod.audioTag() ~= "" then
+        if audioTag then
             if (fnutils.contains(audioExtensions, string.lower(file:sub(-3))) or fnutils.contains(audioExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
-                if not fs.tagsAdd(file, {mod.audioTag()}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
+                if not fs.tagsAdd(file, {audioTag}) then
+                    log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
                 end
             end
         end
-        if mod.imageTag() ~= "" then
+        if imageTag then
             if (fnutils.contains(imageExtensions, string.lower(file:sub(-3))) or fnutils.contains(imageExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
-                if not fs.tagsAdd(file, {mod.imageTag()}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", mod.videoTag(), file)
+                if not fs.tagsAdd(file, {imageTag}) then
+                    log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
                 end
             end
         end
@@ -564,6 +636,11 @@ function mod.importFile(file)
     --------------------------------------------------------------------------------
     mod.savedNotifications(savedNotifications)
 
+    --------------------------------------------------------------------------------
+    -- Cleanup Tags:
+    --------------------------------------------------------------------------------
+    cleanupTags()
+
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.createNotification(file) -> none
@@ -598,12 +675,13 @@ function mod.createNotification(file)
     mod.savedNotifications(savedNotifications)
 end
 
---- plugins.finalcutpro.watchfolders.panels.media.watchFolderTriggered(files) -> none
+--- plugins.finalcutpro.watchfolders.panels.media.watchFolderTriggered(files, eventFlags, path) -> none
 --- Function
 --- Watch Folder Triggered
 ---
 --- Parameters:
----  * files - A table of files
+---  * files - A table containing a list of file paths that have changed.
+---  * eventFlags - A table containing a list of tables denoting how each corresponding file in paths has changed, each containing boolean values indicating which types of events occurred.
 ---
 --- Returns:
 ---  * None
@@ -752,17 +830,50 @@ function mod.addWatchFolder()
     local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
     if path then
 
+        --------------------------------------------------------------------------------
+        -- Make sure the folder isn't already being watched:
+        --------------------------------------------------------------------------------
         local watchFolders = mod.watchFolders()
-
         if tools.tableContains(watchFolders, path) then
             dialog.displayMessage(i18n("alreadyWatched"))
-        else
-            watchFolders[#watchFolders + 1] = path
+            return
+        end
+
+        --------------------------------------------------------------------------------
+        -- Finder Tags:
+        --------------------------------------------------------------------------------
+        local result
+        result = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("video")}), "", "", function() return true end)
+        if result == false then
+            return
+        elseif result and tools.trim(result) ~= "" then
+            local videoTag = mod.videoTag()
+            videoTag[path] = result
+            mod.videoTag(videoTag)
+        end
+
+        result = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("audio")}), "", "", function() return true end)
+        if result == false then
+            return
+        elseif result and tools.trim(result) ~= "" then
+            local audioTag = mod.audioTag()
+            audioTag[path] = result
+            mod.audioTag(audioTag)
+        end
+
+        result = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("stills")}), "", "", function() return true end)
+        if result == false then
+            return
+        elseif result and tools.trim(result) ~= "" then
+            local imageTag = mod.imageTag()
+            imageTag[path] = result
+            mod.imageTag(imageTag)
         end
 
         --------------------------------------------------------------------------------
         -- Update Settings:
         --------------------------------------------------------------------------------
+        watchFolders[#watchFolders + 1] = path
         mod.watchFolders(watchFolders)
 
         --------------------------------------------------------------------------------
@@ -835,6 +946,10 @@ function mod.setupWatchers()
     end
     mod.savedNotifications(newSavedNotifications)
 
+    --------------------------------------------------------------------------------
+    -- Cleanup Tags:
+    --------------------------------------------------------------------------------
+    cleanupTags()
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.init(deps, env) -> table
@@ -871,7 +986,7 @@ function mod.init(deps)
             label			= i18n("media"),
             image			= image.imageFromPath(fcp:getPath() .. "/Contents/Resources/Final Cut.icns"),
             tooltip			= i18n("watchFolderFCPMediaTooltip"),
-            height			= 650,
+            height			= 500,
             loadFn			= mod.refreshTable,
         })
 
@@ -889,7 +1004,7 @@ function mod.init(deps)
             {
                 label		= i18n("addWatchFolder"),
                 onclick		= mod.addWatchFolder,
-                class		= "btnAddWatchFolder",
+                class		= "mediaAddWatchFolder",
             })
         :addParagraph(16, "")
         :addHeading(17, i18n("options"), 3)
@@ -917,67 +1032,7 @@ function mod.init(deps)
                 onchange	= function(_, params) mod.deleteAfterImport(params.checked) end,
             }
         )
-        :addParagraph(21, i18n("deleteNote"), false, "deleteNote")
-        :addParagraph(22, "")
-        :addHeading(23, i18n("addFinderTagsOnImport"), 3)
-        :addTextbox(24,
-            {
-                id			= "videoFiles",
-                label		= "Video Files:",
-                class		= "watchFolderTextBox",
-                value		= mod.videoTag(),
-                onchange	= function(_, params) mod.videoTag(params.value) end,
-                placeholder = i18n("enterVideoTag"),
-            })
-        :addTextbox(25,
-            {
-                id			= "audioFiles",
-                label		= "Audio Files:",
-                class		= "watchFolderTextBox",
-                value		= mod.audioTag(),
-                onchange	= function(_, params) mod.audioTag(params.value) end,
-                placeholder = i18n("enterAudioTag"),
-            })
-        :addTextbox(26,
-            {
-                id			= "imageFiles",
-                label		= "Image Files:",
-                class		= "watchFolderTextBox",
-                value 		= mod.imageTag(),
-                onchange	= function(_, params) mod.imageTag(params.value) end,
-                placeholder = i18n("enterImageTag"),
-            })
-        --------------------------------------------------------------------------------
-        -- TODO: Yes (David), this would be better with CSS, but "focus" doesn't seem
-        -- to work in a webview for some reason?
-        --------------------------------------------------------------------------------
-        local uniqueUUID = string.gsub(uuid(), "-", "")
-        mod.manager.addHandler(uniqueUUID, mod.controllerCallback)
-        mod.panel:addContent(27, ui.javascript ([[
-            try {
-                document.getElementById("videoFiles").onfocus = function() { document.getElementById("videoFiles").style.border = "2px solid #97c4f2"; };
-                document.getElementById("videoFiles").onblur = function() { document.getElementById("videoFiles").style.border = ""; };
-
-                document.getElementById("audioFiles").onfocus = function() { document.getElementById("audioFiles").style.border = "2px solid #97c4f2"; };
-                document.getElementById("audioFiles").onblur = function() { document.getElementById("audioFiles").style.border = ""; };
-
-                document.getElementById("imageFiles").onfocus = function() { document.getElementById("imageFiles").style.border = "2px solid #97c4f2"; };
-                document.getElementById("imageFiles").onblur = function() { document.getElementById("imageFiles").style.border = ""; };
-            }
-            catch(err) {
-                alert("Tags Highlighter Error");
-            }
-            window.onload = function() {
-                try {
-                    var p = {};
-                    p["action"] = "refresh";
-                    var result = { id: "{{ id }}", params: p };
-                    webkit.messageHandlers.watchfolders.postMessage(result);
-                } catch(err) {
-                    alert('An error has occurred. Does the controller exist yet?');
-                }
-            }
-        ]], { id = uniqueUUID }))
+        :addParagraph(21, i18n("deleteNote"), false, "mediaDeleteNote")
 
     --------------------------------------------------------------------------------
     -- Setup Watchers:
