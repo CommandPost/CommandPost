@@ -507,7 +507,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     --------------------------------------------------------------------------------
     local viewFrame = content:viewFrame()
     if viewFrame then
-        originalOffset = playhead:getPosition() - viewFrame.x
+        originalOffset = playhead:position() - viewFrame.x
         if lockInCentre or originalOffset <= 0 or originalOffset >= viewFrame.w then
             -- align the playhead to the centre of the timeline view
             originalOffset = math.floor(viewFrame.w/2)
@@ -526,7 +526,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
         end
 
         local contentFrame = content:viewFrame()
-        local playheadPosition = playhead:getPosition()
+        local playheadPosition = playhead:position()
 
         if contentFrame == nil or playheadPosition == nil then
             --------------------------------------------------------------------------------

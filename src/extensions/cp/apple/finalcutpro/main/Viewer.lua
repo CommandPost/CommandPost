@@ -280,12 +280,12 @@ function Viewer.new(app, eventViewer)
                 tools.ninjaMouseClick(center)
 
                 --------------------------------------------------------------------------------
-                -- Wait until the click has been registered (give it 3 seconds):
+                -- Wait until the click has been registered (give it 5 seconds):
                 --------------------------------------------------------------------------------
                 local toolbar = bottomToolbarUI()
                 local ready = just.doUntil(function()
                     return #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
-                end, 3)
+                end, 5)
                 if ready then
                     --------------------------------------------------------------------------------
                     -- Type in Original Timecode & Press Return Key:

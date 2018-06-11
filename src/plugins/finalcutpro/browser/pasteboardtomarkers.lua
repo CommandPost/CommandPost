@@ -185,7 +185,7 @@ function mod.process()
         --------------------------------------------------------------------------------
         -- Goto timecode:
         --------------------------------------------------------------------------------
-        result = fcp:browser():libraries():playhead():setTimecode(timecode)
+        result = fcp:viewer():timecoee(timecode)
         if not result then
             log.df("Current Line: %s", v)
             dialog.displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
@@ -241,7 +241,7 @@ function mod.process()
             --------------------------------------------------------------------------------
             -- Goto start timecode:
             --------------------------------------------------------------------------------
-            result = fcp:browser():libraries():playhead():setTimecode(favouriteStart)
+            result = fcp:viewer():timecode(favouriteStart)
             if not result then
                 log.df("favouriteStart: %s", favouriteStart)
                 dialog.displayErrorMessage(string.format("Could not go to favourite start timecode for line %s.", i))
@@ -261,7 +261,7 @@ function mod.process()
             -- Goto end timecode:
             --------------------------------------------------------------------------------
             if favouriteEnd then
-                result = fcp:browser():libraries():playhead():setTimecode(favouriteEnd)
+                result = fcp:libraries():playhead():timecode(favouriteEnd)
                 if not result then
                     log.df("favouriteEnd: %s", favouriteEnd)
                     dialog.displayErrorMessage(string.format("Could not go to favourite end timecode for line %s.", i))

@@ -186,7 +186,7 @@ function mod.sendTimelineClipsToCompressor(clips)
             dialog.displayErrorMessage("Could not trigger 'Range Start'.")
             return false
         end
-        local startTimecode = playhead:getTimecode()
+        local startTimecode = playhead:timecode()
         if not startTimecode then
             dialog.displayErrorMessage("Could not get start timecode for clip.")
             return false
@@ -208,7 +208,7 @@ function mod.sendTimelineClipsToCompressor(clips)
             dialog.displayErrorMessage("Could not trigger 'Range End'.")
             return false
         end
-        local endTimecode = playhead:getTimecode()
+        local endTimecode = playhead:timecode()
         if not endTimecode then
             dialog.displayErrorMessage("Could not get end timecode for clip.")
             return false
@@ -218,9 +218,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
         result = just.doUntil(function()
-            playhead:setTimecode(startTimecode)
-            local currentTimecode = playhead:getTimecode()
-            return startTimecode and currentTimecode and startTimecode == currentTimecode
+            return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to goto start timecode.")
@@ -235,9 +233,7 @@ function mod.sendTimelineClipsToCompressor(clips)
         -- Set End Timecode:
         --------------------------------------------------------------------------------
         result = just.doUntil(function()
-            playhead:setTimecode(endTimecode)
-            local currentTimecode = playhead:getTimecode()
-            return endTimecode and currentTimecode and endTimecode == currentTimecode
+            return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to goto end timecode.")
@@ -578,7 +574,7 @@ function mod.batchExportTimelineClips(clips)
             dialog.displayErrorMessage("Could not trigger 'Range Start'." .. errorFunction)
             return false
         end
-        local startTimecode = playhead:getTimecode()
+        local startTimecode = playhead:timecode()
         if not startTimecode then
             dialog.displayErrorMessage("Could not get start timecode for clip." .. errorFunction)
             return false
@@ -600,7 +596,7 @@ function mod.batchExportTimelineClips(clips)
             dialog.displayErrorMessage("Could not trigger 'Range End'." .. errorFunction)
             return false
         end
-        local endTimecode = playhead:getTimecode()
+        local endTimecode = playhead:timecode()
         if not endTimecode then
             dialog.displayErrorMessage("Could not get end timecode for clip." .. errorFunction)
             return false
@@ -610,9 +606,7 @@ function mod.batchExportTimelineClips(clips)
         -- Set Start Timecode:
         --------------------------------------------------------------------------------
         result = just.doUntil(function()
-            playhead:setTimecode(startTimecode)
-            local currentTimecode = playhead:getTimecode()
-            return startTimecode and currentTimecode and startTimecode == currentTimecode
+            return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to goto start timecode.")
@@ -627,9 +621,7 @@ function mod.batchExportTimelineClips(clips)
         -- Set End Timecode:
         --------------------------------------------------------------------------------
         result = just.doUntil(function()
-            playhead:setTimecode(endTimecode)
-            local currentTimecode = playhead:getTimecode()
-            return endTimecode and currentTimecode and endTimecode == currentTimecode
+            return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
             dialog.displayErrorMessage("Failed to goto end timecode.")

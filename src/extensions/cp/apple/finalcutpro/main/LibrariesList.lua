@@ -169,9 +169,7 @@ end
 ---  * `Playhead` object
 function LibrariesList:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, function()
-            return self:playerUI()
-        end)
+        self._playhead = Playhead.new(self, false, self.playerUI, true)
     end
     return self._playhead
 end
@@ -187,9 +185,7 @@ end
 ---  * `Playhead` object
 function LibrariesList:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true, function()
-            return self:playerUI()
-        end)
+        self._skimmingPlayhead = Playhead.new(self, true, self.playerUI, true)
     end
     return self._skimmingPlayhead
 end

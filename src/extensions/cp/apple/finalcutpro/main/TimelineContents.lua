@@ -200,9 +200,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, function()
-            return self:UI()
-        end)
+        self._playhead = Playhead.new(self, false, self.UI)
     end
     return self._playhead
 end
@@ -210,7 +208,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true)
+        self._skimmingPlayhead = Playhead.new(self, true, self.UI)
     end
     return self._skimmingPlayhead
 end
@@ -380,7 +378,7 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function TimelineContents:playheadClipsUI(expandGroups, filterFn)
-    local playheadPosition = self:playhead():getPosition()
+    local playheadPosition = self:playhead():position()
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip:frame()
         return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
@@ -481,7 +479,7 @@ function TimelineContents:selectClipInAngle(angleNumber)
     if clipsUI then
         local angleUI = clipsUI[angleNumber]
 
-        local playheadPosition = self:playhead():getPosition()
+        local playheadPosition = self:playhead():position()
         local clipUI = axutils.childMatching(angleUI, function(child)
             local frame = child:frame()
             return child:attributeValue("AXRole") == "AXLayoutItem"

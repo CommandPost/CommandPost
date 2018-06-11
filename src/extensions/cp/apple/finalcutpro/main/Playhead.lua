@@ -81,20 +81,115 @@ function Playhead.find(containerUI, skimming)
     return nil
 end
 
---- cp.apple.finalcutpro.main.Playhead.new(parent, skimming, containerFn) -> Playhead
+--- cp.apple.finalcutpro.main.Playhead.new(parent[, skimming[, containerFn[, useEventViewer]]]) -> Playhead
 --- Constructor
 --- Constructs a new Playhead
 ---
 --- Parameters:
 ---  * parent        - The parent object
 ---  * skimming      - (optional) if `true`, this links to the 'skimming' playhead created under the mouse, if present.
----  * containerFn   - (optional) a function which returns the container axuielement which contains the playheads. If not present, it will use the parent's UI element.
+---  * containerUI   - (optional) a `cp.prop` which returns the container axuielement which contains the playheads. If not present, it will use the parent's UI element.
+---  * useEventViewer - (optional) if `true`, this will use the Event Viewer's timecode, when available.
 ---
 --- Returns:
 ---  * The new `Playhead` instance.
-function Playhead.new(parent, skimming, containerFn)
-    local o = {_parent = parent, _skimming = skimming, containerUI = containerFn}
-    return prop.extend(o, Playhead)
+function Playhead.new(parent, skimming, containerUI, useEventViewer)
+    containerUI = containerUI or parent.UI
+
+    local o = prop.extend({
+        _parent = parent,
+        isSkimming = prop.THIS(skimming == true):IMMUTABLE(),
+        _useEventViewer = useEventViewer,
+    }, Playhead)
+
+    local UI = containerUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            return Playhead.find(original(), self:isSkimming())
+        end, Playhead.matches)
+    end)
+
+    local frame = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:frame()
+    end)
+
+    local viewer = o:app():viewer()
+    local eventViewer = o:app():eventViewer()
+
+    local currentViewer = prop.new(function()
+        if useEventViewer and eventViewer:isShowing() then
+            return eventViewer
+        else
+            return viewer
+        end
+    end)
+    if useEventViewer then
+        currentViewer:monitor(eventViewer.isShowing)
+    end
+
+    local timecode = currentViewer:mutate(
+        function(original)
+            return original():timecode()
+        end,
+        function(newTimecode, original)
+            original():timecode(newTimecode)
+        end
+    ):monitor(viewer.timecode)
+
+    if useEventViewer then
+        timecode:monitor(eventViewer.timecode)
+    end
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.main.Playhead.UI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `hs._asm.axuielement` object for the Playhead
+        UI = UI,
+
+--- cp.apple.finalcutpro.main.Playhead.isShowing <cp.prop: boolean; read-only; live?>
+--- Field
+--- Is the playhead showing?
+        isShowing = UI:ISNOT(nil),
+
+--- cp.apple.finalcutpro.main.Playhead.isPersistent <cp.prop: boolean; read-only>
+--- Field
+--- Is the playhead persistent?
+        isPersistent = o.isSkimming:NOT(),
+
+--- cp.apple.finalcutpro.main.Playhead.frame <cp.prop: hs.geometry.frame; read-only; live?>
+--- Field
+--- Gets the frame of the playhead.
+        frame = frame,
+
+--- cp.apple.finalcutpro.main.Playhead.position <cp.prop; number; read-only; live?>
+--- Field
+--- Gets the horizontal position of the playhead line, which may be different to the `x` position of the playhead.
+        position = frame:mutate(function(original)
+            local frm = original()
+            return frm and (frm.x + frm.w/2 + 1.0)
+        end),
+
+--- cp.apple.finalcutpro.main.Playhead.center <cp.prop: hs.geometry.point; read-only; live?>
+--- Field
+--- Gets the centre point (`{x, y}`) of the playhead.
+        center = frame:mutate(function(original)
+            local frm = original()
+            return frm and geometry.rect(frm).center
+        end),
+
+--- cp.apple.finalcutpro.main.Playhead.currentViewer <cp.prop: cp.apple.finalcutpro.main.Viewer; read-only; live>
+--- Field
+--- Represents the current viewer for the playhead. This may be either the primary Viewer or the Event Viewer,
+--- depending on the Playhead instance and whether the Event Viewer is enabled.
+        currentViewer = currentViewer,
+
+--- cp.apple.finalcutpro.main.Playhead.timecode <cp.prop: string; live?>
+--- Field
+--- Gets and sets the current timecode.
+        timecode = timecode,
+    }
+
+    return o
 end
 
 --- cp.apple.finalcutpro.main.Playhead:parent() -> table
@@ -129,44 +224,6 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Playhead:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Playhead
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object
-function Playhead:UI()
-    return axutils.cache(self, "_ui", function()
-        local ui = self.containerUI and self:containerUI() or self:parent():UI()
-        return Playhead.find(ui, self:isSkimming())
-    end,
-    Playhead.matches)
-end
-
---- cp.apple.finalcutpro.main.Playhead.isPersistent <cp.prop: boolean>
---- Field
---- Is the playhead persistent?
-Playhead.isPersistent = prop.new(function(self)
-    return not self._skimming
-end):bind(Playhead)
-
---- cp.apple.finalcutpro.main.Playhead.isSkimming <cp.prop: boolean>
---- Field
---- Is the playhead skimming?
-Playhead.isSkimming = prop.new(function(self)
-    return self._skimming == true
-end):bind(Playhead)
-
---- cp.apple.finalcutpro.main.Playhead.isShowing <cp.prop: boolean>
---- Field
---- Is the playhead showing?
-Playhead.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(Playhead)
-
 --- cp.apple.finalcutpro.main.Playhead:show() -> Playhead object
 --- Method
 --- Shows the Playhead
@@ -187,7 +244,7 @@ function Playhead:show()
         -----------------------------------------------------------------------
         if parent.viewFrame then
             local viewFrame = parent:viewFrame()
-            local position = self:getPosition()
+            local position = self:position()
             if position < viewFrame.x or position > (viewFrame.x + viewFrame.w) then
                 -----------------------------------------------------------------------
                 -- Need to move the scrollbar:
@@ -215,136 +272,6 @@ end
 function Playhead:hide()
     self:parent():hide()
     return self
-end
-
---- cp.apple.finalcutpro.main.Playhead:getTimecode() -> string
---- Method
---- Gets the timecode of the current playhead position.
----
---- Parameters:
----  * None
----
---- Returns:
----  * Timecode value as string.
-function Playhead:getTimecode()
-    local ui = self:UI()
-    return ui and ui:attributeValue("AXValue")
-end
-
---- cp.apple.finalcutpro.main.Playhead:setTimecode(timecode) -> Playhead object | nil
---- Method
---- Moves the playhead to a specific timecode value.
----
---- Parameters:
----  * timecode - The timecode value you want to move to as a string in the following format: "hh:mm:ss:ff" or "hh:mm:ss;ff" (i.e. "01:00:00:00").
----
---- Returns:
----  * Playhead object is successful otherwise `nil`
-function Playhead:setTimecode(timecode)
-    if timecode and (string.find(timecode, "%d%d:%d%d:%d%d:%d%d") or string.find(timecode, "%d%d:%d%d:%d%d;%d%d")) then
-        timecode = string.gsub(timecode, ":", "")
-        timecode = string.gsub(timecode, ";", "")
-        local app = self:app()
-        local viewer = app:viewer()
-        local bottomToolbarUI = viewer:bottomToolbarUI()
-        if bottomToolbarUI then
-            local buttons = axutils.childrenWithRole(bottomToolbarUI, "AXButton")
-            if buttons then
-                local movePlayheadButton = buttons[1]
-                if movePlayheadButton then
-                    local frame = movePlayheadButton:attributeValue("AXFrame")
-                    if frame then
-                        local centre = geometry(frame).center
-                        if centre then
-                            --------------------------------------------------------------------------------
-                            -- Double click the timecode value in the Viewer:
-                            --------------------------------------------------------------------------------
-                            tools.ninjaMouseClick(centre)
-
-                            --------------------------------------------------------------------------------
-                            -- Wait until the click has been registered (give it 3 seconds):
-                            --------------------------------------------------------------------------------
-                            local result = just.doUntil(function()
-                                local timecodeText = axutils.childrenWithRole(bottomToolbarUI, "AXStaticText")
-                                if timecodeText and timecodeText[1] and timecodeText[1]:attributeValue("AXValue") and (timecodeText[1]:attributeValue("AXValue") == "00:00:00:00" or timecodeText[1]:attributeValue("AXValue") == "00:00:00;00") then
-                                    return true
-                                else
-                                    return false
-                                end
-                            end, 3)
-                            if result then
-                                --------------------------------------------------------------------------------
-                                -- Type in Original Timecode & Press Return Key:
-                                --------------------------------------------------------------------------------
-                                eventtap.keyStrokes(timecode)
-                                eventtap.keyStroke({}, 'return')
-                                return self
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    else
-        log.ef("Timecode value is invalid: %s", timecode)
-    end
-    return nil
-end
-
---- cp.apple.finalcutpro.main.Playhead:getX() -> number
---- Method
---- Gets the `x` position of the playhead.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `x` position as number.
-function Playhead:getX()
-    local ui = self:UI()
-    return ui and ui:position().x
-end
-
---- cp.apple.finalcutpro.main.Playhead:getFrame() -> hs.geometry.frame
---- Method
---- Gets the frame of the playhead.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The playhead frame.
-function Playhead:getFrame()
-    local ui = self:UI()
-    return ui and ui:frame()
-end
-
---- cp.apple.finalcutpro.main.Playhead:getPosition() -> number
---- Method
---- Gets the position of the playhead.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The playhead position as a number.
-function Playhead:getPosition()
-    local frame = self:getFrame()
-    return frame and (frame.x + frame.w/2 + 1.0)
-end
-
---- cp.apple.finalcutpro.main.Playhead:getCenter() -> hs.geometry.point
---- Method
---- Gets the centre of the playhead.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The playhead centre position as a `hs.geometry.point`.
-function Playhead:getCenter()
-    local frame = self:getFrame()
-    return frame and geometry.rect(frame).center
 end
 
 return Playhead
