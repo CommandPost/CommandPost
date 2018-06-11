@@ -185,7 +185,7 @@ function mod.process()
         --------------------------------------------------------------------------------
         -- Goto timecode:
         --------------------------------------------------------------------------------
-        result = fcp:viewer():timecoee(timecode)
+        result = fcp:viewer():timecode(timecode)
         if not result then
             log.df("Current Line: %s", v)
             dialog.displayErrorMessage(string.format("Could not go to timecode for line %s.", i))
