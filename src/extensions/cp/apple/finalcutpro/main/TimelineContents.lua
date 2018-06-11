@@ -42,8 +42,125 @@ end
 
 -- TODO: Add documentation
 function TimelineContents.new(parent)
-    local o = {_parent = parent}
-    return prop.extend(o, TimelineContents)
+    local o = prop.extend({
+        _parent = parent
+    }, TimelineContents)
+
+    -- TODO: Add documentation
+    local scrollAreaUI = parent.mainUI:mutate(function(original)
+        local main = original()
+        if main then
+            return axutils.childMatching(main, function(child)
+                if child:attributeValue("AXRole") == "AXScrollArea" then
+                    local contents = child:attributeValue("AXContents")
+                    return axutils.childMatching(contents, TimelineContents.matches) ~= nil
+                end
+                return false
+            end)
+        end
+        return nil
+    end)
+
+    -- TODO: Add documentation
+    local UI = scrollAreaUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
+            local scrollArea = original()
+            if scrollArea then
+                return axutils.childMatching(scrollArea, TimelineContents.matches)
+            end
+            return nil
+        end,
+        TimelineContents.matches)
+    end)
+
+    local isFocused = UI:mutate(function(original)
+        local ui = original()
+        return ui ~= nil and ui:attributeValue("AXFocused") == true
+    end)
+
+    local horizontalScrollBarUI = scrollAreaUI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXHorizontalScrollBar")
+    end)
+
+    local verticalScrollBarUI = scrollAreaUI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXVerticalScrollBar")
+    end)
+
+    local viewFrame = scrollAreaUI:mutate(function(original)
+        local ui = original()
+
+        if not ui then return nil end
+
+        local hScroll = horizontalScrollBarUI()
+        local vScroll = verticalScrollBarUI()
+
+        local frame = ui:frame()
+
+        if hScroll then
+            frame.h = frame.h - hScroll:frame().h
+        end
+
+        if vScroll then
+            frame.w = frame.w - vScroll:frame().w
+        end
+        return frame
+    end):monitor(horizontalScrollBarUI, verticalScrollBarUI)
+
+    local timelineFrame = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:frame()
+    end)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.main.TimelineContents.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The main UI of the Timeline Contents area.
+        UI = UI,
+
+--- cp.apple.finalcutpro.main.TimelineContents.scrollAreaUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The parent `ScrollArea` UI of the Timeline Contents area.
+        scrollAreaUI = scrollAreaUI,
+
+--- cp.apple.finalcutpro.main.TimelineContents.isShowing <cp.prop: booelan; read-only; live>
+--- Field
+--- Checks if the Timeline is currently showing.
+        isShowing = UI:ISNOT(nil),
+
+--- cp.apple.finalcutpro.main.TimelineContents.isLoaded <cp.prop: booelan; read-only; live>
+--- Field
+--- Checks if the Timeline has content loaded.
+        isLoaded = scrollAreaUI:ISNOT(nil),
+
+--- cp.apple.finalcutpro.main.TimelineContents.isFocused <cp.prop: booelan; read-only>
+--- Field
+--- Checks if the Timeline is currently the focused panel.
+        isFocused = isFocused,
+
+--- cp.apple.finalcutpro.main.TimelineContents.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The `AXHorizontalScrolLbar` for the Timeline Contents area.
+        horizontalScrollBarUI = horizontalScrollBarUI,
+
+--- cp.apple.finalcutpro.main.TimelineContents.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The `AXVerticalScrollBar` for the Timeline Contents area.
+        verticalScrollBarUI = verticalScrollBarUI,
+
+--- cp.apple.finalcutpro.main.TimelineContents.viewFrame <cp.prop: table; read-only; live>
+--- Field
+--- The current 'frame' of the scroll area, inside the scroll bars (if present),  or `nil` if not available.
+        viewFrame = viewFrame,
+
+--- cp.apple.finalcutpro.main.TimelineContents.viewFrame <cp.prop: table; read-only; live>
+--- Field
+--- The current 'frame' of the internal timeline content,  or `nil` if not available.
+        timelineFrame = timelineFrame,
+    }
+
+    return o
 end
 
 -- TODO: Add documentation
@@ -61,43 +178,6 @@ end
 -- TIMELINE CONTENT UI:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-function TimelineContents:UI()
-    return axutils.cache(self, "_ui", function()
-        local scrollArea = self:scrollAreaUI()
-        if scrollArea then
-            return axutils.childMatching(scrollArea, TimelineContents.matches)
-        end
-        return nil
-    end,
-    TimelineContents.matches)
-end
-
--- TODO: Add documentation
-function TimelineContents:scrollAreaUI()
-    local main = self:parent():mainUI()
-    if main then
-        return axutils.childMatching(main, function(child)
-            if child:attributeValue("AXRole") == "AXScrollArea" then
-                local contents = child:attributeValue("AXContents")
-                return axutils.childMatching(contents, TimelineContents.matches) ~= nil
-            end
-            return false
-        end)
-    end
-    return nil
-end
-
--- TODO: Add documentation
-TimelineContents.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(TimelineContents)
-
--- TODO: Add documentation
-TimelineContents.isLoaded = prop.new(function(self)
-    return self:scrollAreaUI() ~= nil
-end):bind(TimelineContents)
 
 -- TODO: Add documentation
 function TimelineContents:show()
@@ -120,9 +200,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, function()
-            return self:UI()
-        end)
+        self._playhead = Playhead.new(self, false, self.UI)
     end
     return self._playhead
 end
@@ -130,7 +208,7 @@ end
 -- TODO: Add documentation
 function TimelineContents:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true)
+        self._skimmingPlayhead = Playhead.new(self, true, self.UI)
     end
     return self._skimmingPlayhead
 end
@@ -140,45 +218,6 @@ end
 -- VIEWING AREA:
 --
 -----------------------------------------------------------------------
-
--- TODO: Add documentation
-function TimelineContents:horizontalScrollBarUI()
-    local ui = self:scrollAreaUI()
-    return ui and ui:attributeValue("AXHorizontalScrollBar")
-end
-
--- TODO: Add documentation
-function TimelineContents:verticalScrollBarUI()
-    local ui = self:scrollAreaUI()
-    return ui and ui:attributeValue("AXVerticalScrollBar")
-end
-
--- TODO: Add documentation
-function TimelineContents:viewFrame()
-    local ui = self:scrollAreaUI()
-
-    if not ui then return nil end
-
-    local hScroll = self:horizontalScrollBarUI()
-    local vScroll = self:verticalScrollBarUI()
-
-    local frame = ui:frame()
-
-    if hScroll then
-        frame.h = frame.h - hScroll:frame().h
-    end
-
-    if vScroll then
-        frame.w = frame.w - vScroll:frame().w
-    end
-    return frame
-end
-
--- TODO: Add documentation
-function TimelineContents:timelineFrame()
-    local ui = self:UI()
-    return ui and ui:frame()
-end
 
 -- TODO: Add documentation
 function TimelineContents:scrollHorizontalBy(shift)
@@ -339,7 +378,7 @@ end
 --- Returns:
 ---  * The table of axuielements that match the conditions
 function TimelineContents:playheadClipsUI(expandGroups, filterFn)
-    local playheadPosition = self:playhead():getPosition()
+    local playheadPosition = self:playhead():position()
     local clips = self:clipsUI(expandGroups, function(clip)
         local frame = clip:frame()
         return frame and playheadPosition >= frame.x and playheadPosition <= (frame.x + frame.w)
@@ -440,7 +479,7 @@ function TimelineContents:selectClipInAngle(angleNumber)
     if clipsUI then
         local angleUI = clipsUI[angleNumber]
 
-        local playheadPosition = self:playhead():getPosition()
+        local playheadPosition = self:playhead():position()
         local clipUI = axutils.childMatching(angleUI, function(child)
             local frame = child:frame()
             return child:attributeValue("AXRole") == "AXLayoutItem"

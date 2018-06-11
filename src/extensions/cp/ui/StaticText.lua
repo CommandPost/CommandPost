@@ -69,45 +69,51 @@ end
 --- Returns:
 ---  * The new `StaticText`.
 function StaticText.new(parent, finderFn, convertFn)
-    local o
-
-    o = prop.extend({
+    local o = prop.extend({
         _parent = parent,
         _finder = finderFn,
         _convert = convertFn,
+    }, StaticText)
 
-        --- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil>
-        --- Field
-        --- The `axuielement` or `nil` if it's not available currently.
+    local UI
+    if prop.is(finderFn) then
+        UI = finderFn
+    else
         UI = prop(function()
             return axutils.cache(o, "_ui", function()
                 local ui = finderFn()
                 return StaticText.matches(ui) and ui or nil
             end,
             StaticText.matches)
-        end),
-    }, StaticText)
+        end)
+    end
 
     prop.bind(o) {
+        --- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil>
+        --- Field
+        --- The `axuielement` or `nil` if it's not available currently.
+        UI = UI,
 
-        --- cp.ui.StaticText:isShowing() -> boolean
-        --- Method
+        --- cp.ui.StaticText.isShowing <cp.prop: boolean>
+        --- Field
         --- Checks if the static text is currently showing.
-        ---
-        --- Parameters:
-        ---  * None
-        ---
-        --- Returns:
-        ---  * `true` if it's visible.
-        isShowing = o.UI:mutate(function(original, self)
+        isShowing = UI:mutate(function(original, self)
             local ui = original()
             return ui ~= nil and self:parent():isShowing()
         end),
 
-        --- cp.ui.StaticText.value <cp.prop: string>
+        --- cp.ui.StaticText.isShowing <cp.prop: table | nil>
+        --- Field
+        --- The frame table (`{x, y, w, h}`) for the UI element, or `nil` if not.
+        frame = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXFrame")
+        end),
+
+        --- cp.ui.StaticText.value <cp.prop: anything>
         --- Field
         --- The current value of the text field.
-        value = o.UI:mutate(
+        value = UI:mutate(
             function(original)
                 local ui = original()
                 local value = ui and ui:attributeValue("AXValue") or nil
@@ -123,25 +129,23 @@ function StaticText.new(parent, finderFn, convertFn)
                     local focused = ui:attributeValue("AXFocused")
                     ui:setAttributeValue("AXFocused", true)
                     ui:setAttributeValue("AXValue", value)
-                    ui:setAttributeValue("AXFocused", focused)
                     ui:performAction("AXConfirm")
+                    ui:setAttributeValue("AXFocused", focused)
                 end
             end
         ),
     }
 
-    o._notifier = notifier.new(o:app():bundleID(), function() return o:UI() end)
-
     -- wire up a notifier to watch for value changes.
     o.value:preWatch(function()
-        o._notifier:addWatcher("AXValueChanged", function() o.value:update() end):start()
+        o:notifier():addWatcher("AXValueChanged", function() o.value:update() end):start()
     end)
 
     -- watch for changes in parent visibility, and update the notifier if it changes.
     if prop.is(parent.isShowing) then
         o.isShowing:monitor(parent.isShowing)
         o.isShowing:watch(function()
-            o._notifier:update()
+            o:notifier():update()
         end)
     end
 
@@ -174,28 +178,12 @@ function StaticText:app()
     return self:parent():app()
 end
 
---- cp.ui.StaticText:getValue() -> string
---- Method
---- Gets the value of the Static Text.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The value of the Static Text as a string.
+-- Deprecated: use the `value` property directly
 function StaticText:getValue()
     return self:value()
 end
 
---- cp.ui.StaticText:setValue(value) -> self
---- Method
---- Sets the value of the Static Text.
----
---- Parameters:
----  * value - The value you want to set the Static Text to as a string.
----
---- Returns:
----  * Self
+-- Deprecated: use the `value` property directly
 function StaticText:setValue(value)
     self.value:set(value)
     return self
@@ -227,6 +215,13 @@ end
 function StaticText:isEnabled()
     local ui = self:UI()
     return ui and ui:enabled()
+end
+
+function StaticText:notifier()
+    if not self._notifier then
+        self._notifier = notifier.new(self:app():bundleID(), function() return self:UI() end)
+    end
+    return self._notifier
 end
 
 --- cp.ui.StaticText:saveLayout() -> table

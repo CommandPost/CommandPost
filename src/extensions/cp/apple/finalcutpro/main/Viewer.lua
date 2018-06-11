@@ -17,25 +17,34 @@ local log                               = require("hs.logger").new("viewer")
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local canvas                            = require("hs.canvas")
+local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 local delayedTimer                      = require("hs.timer").delayed
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local just                              = require("cp.just")
+local prop                              = require("cp.prop")
+local flicks                            = require("cp.time.flicks")
+local tools                             = require("cp.tools")
 local axutils                           = require("cp.ui.axutils")
 local Button                            = require("cp.ui.Button")
 local MenuButton                        = require("cp.ui.MenuButton")
 local StaticText                        = require("cp.ui.StaticText")
 
 local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
-local prop                              = require("cp.prop")
 local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
 
 local id                                = require("cp.apple.finalcutpro.ids") "Viewer"
 
 local floor                             = math.floor
-local match, sub                        = string.match, string.sub
+local match, sub, find                  = string.match, string.sub, string.find
+local childrenWithRole                  = axutils.childrenWithRole
+local childrenMatching                  = axutils.childrenMatching
+local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
+local cache                             = axutils.cache
 
 --------------------------------------------------------------------------------
 --
@@ -69,7 +78,7 @@ local function findViewersUI(...)
     for i = 1,select("#", ...) do
         local window = select(i, ...)
         if window then
-            local viewers = axutils.childrenMatching(window:viewerGroupUI(), Viewer.matches)
+            local viewers = childrenMatching(window:viewerGroupUI(), Viewer.matches)
             if viewers then
                 return viewers
             end
@@ -90,7 +99,7 @@ end
 local function findViewerUI(...)
     local viewers = findViewersUI(...)
     if viewers then
-        return axutils.childFromRight(viewers, 1)
+        return childFromRight(viewers, 1)
     end
     return nil
 end
@@ -108,7 +117,7 @@ local function findEventViewerUI(...)
     local viewers = findViewersUI(...)
     if viewers and #viewers == 2 then
         -- The Event Viewer is always on the left, if present.
-        return axutils.childFromLeft(viewers, 1)
+        return childFromLeft(viewers, 1)
     end
     return nil
 end
@@ -187,7 +196,7 @@ function Viewer.new(app, eventViewer)
 
     -- The UI finder
     local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
+        return cache(self, "_ui", function()
             if self:isMainViewer() then
                 return findViewerUI(app:secondaryWindow(), app:primaryWindow())
             else
@@ -228,29 +237,68 @@ function Viewer.new(app, eventViewer)
     }
 
     local topToolbarUI = UI:mutate(function(original)
-        return axutils.cache(o, "_topToolbar", function()
+        return cache(o, "_topToolbar", function()
             local ui = original()
-            return ui and axutils.childFromTop(ui, 1)
+            return ui and childFromTop(ui, 1)
         end)
     end)
 
     local bottomToolbarUI = UI:mutate(function(original)
-        return axutils.cache(o, "_bottomToolbar", function()
+        return cache(o, "_bottomToolbar", function()
             local ui = original()
-            return ui and axutils.childFromBottom(ui, 1)
+            return ui and childFromBottom(ui, 1)
         end)
     end)
 
     -- The StaticText that contains the timecode.
-    o._timecode = StaticText.new(o, function()
-        local ui = bottomToolbarUI()
-        return ui and axutils.childFromLeft(axutils.childrenWithRole(ui, "AXStaticText"), 1)
-    end)
+    o._timecode = StaticText.new(o, bottomToolbarUI:mutate(function(original)
+        local ui = original()
+        return ui and childFromLeft(childrenWithRole(ui, "AXStaticText"), 1)
+    end))
 
-    o._viewMenu = MenuButton.new(o, function()
-        local ui = topToolbarUI()
-        return ui and axutils.childFromRight(axutils.childrenWithRole(ui, "AXMenuButton"), 1)
-    end)
+    o._viewMenu = MenuButton.new(o, topToolbarUI:mutate(function(original)
+        local ui = original()
+        return ui and childFromRight(childrenWithRole(ui, "AXMenuButton"), 1)
+    end))
+
+    local timecode = o._timecode.value:mutate(
+        function(original)
+            return original()
+        end,
+        function(timecodeValue, original, self)
+            local tcField = o._timecode
+            if not tcField:isShowing() then
+                return
+            end
+            local framerate = self:framerate()
+            local tc = framerate and flicks.parse(timecodeValue, framerate)
+            if tc then
+                local center = geometry(tcField:frame()).center
+                --------------------------------------------------------------------------------
+                -- Double click the timecode value in the Viewer:
+                --------------------------------------------------------------------------------
+                tools.ninjaMouseClick(center)
+
+                --------------------------------------------------------------------------------
+                -- Wait until the click has been registered (give it 5 seconds):
+                --------------------------------------------------------------------------------
+                local toolbar = bottomToolbarUI()
+                local ready = just.doUntil(function()
+                    return #toolbar < 5 and find(original(), "00:00:00[:;]00") ~= nil
+                end, 5)
+                if ready then
+                    --------------------------------------------------------------------------------
+                    -- Type in Original Timecode & Press Return Key:
+                    --------------------------------------------------------------------------------
+                    eventtap.keyStrokes(tc:toTimecode(framerate))
+                    eventtap.keyStroke({}, 'return')
+                    return self
+                end
+            else
+                log.ef("Timecode value is invalid: %s", timecodeValue)
+            end
+        end
+    )
 
     prop.bind(o) {
         --- cp.apple.finalcutpro.main.Viewer.topToolbarUI <cp.prop: hs._asm.axuielement; read-only>
@@ -274,14 +322,15 @@ function Viewer.new(app, eventViewer)
         --- Field
         --- Provides the Title of the clip in the Viewer as a string, or `nil` if not available.
         title = topToolbarUI:mutate(function(original)
-            local titleText = axutils.childFromLeft(original(), id "Title")
+            local titleText = childFromLeft(original(), id "Title")
             return titleText and titleText:value()
         end),
 
-        --- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string>
+        --- cp.apple.finalcutpro.main.Viewer.timecode <cp.prop: string; live>
         --- Field
-        --- The current timecode value. The property can be watched to get notifications of changes.
-        timecode = o._timecode.value,
+        --- The current timecode value, with the format "hh:mm:ss:ff". Setting also supports "hh:mm:ss;ff".
+        --- The property can be watched to get notifications of changes.
+        timecode = timecode,
 
         --- cp.apple.finalcut.main.Viewer.isPlaying <cp.prop: boolean>
         --- Field
@@ -326,8 +375,8 @@ function Viewer.new(app, eventViewer)
                 return false
             end,
             function(newValue, owner, thisProp)
-                local value = thisProp:value()
-                if newValue ~= value then
+                local currentValue = thisProp:value()
+                if newValue ~= currentValue then
                     owner:playButton():press()
                 end
             end
@@ -408,9 +457,9 @@ function Viewer.new(app, eventViewer)
     --- Field
     --- Provides the `axuielement` for the Format text.
     local formatUI = topToolbarUI:mutate(function(original)
-        return axutils.cache(o, "_format", function()
+        return cache(o, "_format", function()
             local ui = original()
-            return ui and axutils.childFromLeft(ui, id "Format")
+            return ui and childFromLeft(ui, id "Format")
         end)
     end):bind(o, "formatUI")
 
@@ -547,7 +596,7 @@ end
 function Viewer:playButton()
     if not self._playButton then
         self._playButton = Button.new(self, function()
-            return axutils.childFromLeft(axutils.childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
+            return childFromLeft(childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
         end)
     end
     return self._playButton

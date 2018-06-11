@@ -153,10 +153,26 @@ function Timeline.new(app)
             Timeline.matchesMain)
         end),
 
+
+--- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
+--- Field
+--- Is Playhead Locked?
+        isLockedPlayhead = prop.new(function(self)
+            return self._locked == true
+        end)
+    }
+
+    -- These are bound separately because TimelinContents uses `UI` and `mainUI`
+    prop.bind(o) {
         --- cp.apple.finalcutpro.main.Timeline.isLoaded <cp.prop: boolean; read-only>
         --- Field
         --- Checks if the Timeline has finished loading.
         isLoaded = o:contents().isLoaded,
+
+        --- cp.apple.finalcutpro.main.Timeline.isFocused <cp.prop: boolean; read-only>
+        --- Field
+        --- Checks if the Timeline is the focused panel.
+        isFocused = o:contents().isFocused,
     }
 
     return o
@@ -439,13 +455,6 @@ Timeline.DEADZONE = 3
 --- Invisible ID.
 Timeline.INVISIBLE = 4
 
---- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
---- Variable
---- Is Playhead Locked?
-Timeline.isLockedPlayhead = prop.new(function(self)
-    return self._locked
-end):bind(Timeline)
-
 --- cp.apple.finalcutpro.main.Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre) -> self
 --- Method
 --- Locks the playhead on-screen.
@@ -498,7 +507,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
     --------------------------------------------------------------------------------
     local viewFrame = content:viewFrame()
     if viewFrame then
-        originalOffset = playhead:getPosition() - viewFrame.x
+        originalOffset = playhead:position() - viewFrame.x
         if lockInCentre or originalOffset <= 0 or originalOffset >= viewFrame.w then
             -- align the playhead to the centre of the timeline view
             originalOffset = math.floor(viewFrame.w/2)
@@ -517,7 +526,7 @@ function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
         end
 
         local contentFrame = content:viewFrame()
-        local playheadPosition = playhead:getPosition()
+        local playheadPosition = playhead:position()
 
         if contentFrame == nil or playheadPosition == nil then
             --------------------------------------------------------------------------------
