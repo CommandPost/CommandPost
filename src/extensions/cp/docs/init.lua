@@ -58,14 +58,15 @@ function mod.generate()
     local output, status = execute([[cd "]] .. path .. [["; ./scripts/build_commandpost_docs.sh]])
     if status then
         log.df("%s", output)
-        mod.updateDeveloperGuideSummary()
-        log.df("Documentation Updated Successfully!")
+        if mod.updateDeveloperGuideSummary() then
+            log.df("Documentation Updated Successfully!")
+        end
     else
         log.ef("Build Documentation Script Failed.")
     end
 end
 
---- cp.docs.updateDeveloperGuideSummary() -> none
+--- cp.docs.updateDeveloperGuideSummary() -> boolean
 --- Function
 --- Updates the Developer Guide Summary.
 ---
@@ -73,7 +74,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * None
+---  * `true` if successful otherwise `nil`
 function mod.updateDeveloperGuideSummary()
 
     local summaryPath = config.basePath .. "/../../CommandPost-DeveloperGuide/SUMMARY.md"
@@ -137,6 +138,8 @@ function mod.updateDeveloperGuideSummary()
     io.output(newFile)
     io.write(newContents)
     io.close(newFile)
+
+    return true
 
 end
 
