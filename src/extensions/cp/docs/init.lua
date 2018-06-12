@@ -6,7 +6,7 @@
 ---
 --- Example Usage:
 --- ```lua
---- require("cp.docs").updateDeveloperGuideSummary()
+--- require("cp.docs").generate()
 --- ```
 
 --------------------------------------------------------------------------------
@@ -27,13 +27,45 @@ local config        = require("cp.config")
 local tools         = require("cp.tools")
 
 --------------------------------------------------------------------------------
+-- Local Variables:
+--------------------------------------------------------------------------------
+local execute       = hs.execute
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
 local mod = {}
 
---- cp.docs.updateDeveloperGuideSummary(folder) -> none
+--- cp.docs.generate() -> none
+--- Function
+--- Generates the CommandPost Developers Guide.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.generate()
+    local path = config.basePath .. "/../../CommandPost/"
+
+    if not tools.doesFileExist(path) then
+        log.ef("The CommandPost GitHub Path could not be found: %s", path)
+        return
+    end
+
+    local output, status = execute([[cd "]] .. path .. [["; ./scripts/build_commandpost_docs.sh]])
+    if status then
+        log.df("%s", output)
+        mod.updateDeveloperGuideSummary()
+        log.df("Documentation Updated Successfully!")
+    else
+        log.ef("Build Documentation Script Failed.")
+    end
+end
+
+--- cp.docs.updateDeveloperGuideSummary() -> none
 --- Function
 --- Updates the Developer Guide Summary.
 ---
@@ -58,7 +90,7 @@ function mod.updateDeveloperGuideSummary()
     local result = ""
 
     if cpResults and pluginResults and hsResults then
-        result = result .. "\n\n"
+        result = result .. "\n"
         result = result .. "## CommandPost API" .. "\n"
         result = result .. "\n"
         result = result .. "* [cp](api/cp/cp.md)" .. "\n"
@@ -103,9 +135,7 @@ function mod.updateDeveloperGuideSummary()
     end
 
     io.output(newFile)
-
     io.write(newContents)
-
     io.close(newFile)
 
 end
@@ -161,7 +191,11 @@ function mod.generateExtensionLinks(folder)
             end
 
             local extension = string.sub(v, 4, endBracketLocation - 1)
-            result = result .. "* [" .. extension .. "](api/" .. folder .. "/" .. extension .. ".md)\n"
+            local startPosition = string.find(extension, "%.[^%.]*$")
+            local _, dotCount = string.gsub(extension, "%.", "")
+            local depthString = string.rep(" ", dotCount) or ""
+
+            result = result .. depthString .. "* [" .. string.sub(extension, startPosition + 1) .. "](api/" .. folder .. "/" .. extension .. ".md)\n"
 
         end
     end
