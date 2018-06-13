@@ -28,6 +28,11 @@ local mod = {}
 --- The number of presets available.
 mod.NUMBER_OF_PRESETS = 9
 
+--- plugins.finalcutpro.browser.keywords.NUMBER_OF_SHORTCUTS -> number
+--- Constant
+--- The number of Keyword Keyboard shortcuts available.
+mod.NUMBER_OF_SHORTCUTS = 9
+
 --- plugins.finalcutpro.browser.keywords.save(preset) -> none
 --- Function
 --- Saves a Keyword preset.
@@ -40,39 +45,23 @@ mod.NUMBER_OF_PRESETS = 9
 function mod.save(preset)
 
     --------------------------------------------------------------------------------
-    -- Open the Keyword Editor:
+    -- Get Keyword Shortcuts from Preferences & Save Them to Preset Group:
     --------------------------------------------------------------------------------
-    local keywordEditor = fcp:keywordEditor()
-    keywordEditor:show()
-    if not keywordEditor:isShowing() then
-        dialog.displayMessage(i18n("keywordEditorNotOpened"))
-        return nil
-    end
+    local keywordGroups = fcp:getPreference("FFKeywordGroups")
+    if keywordGroups and #keywordGroups == mod.NUMBER_OF_SHORTCUTS then
+        local savedKeywords = {}
+        for i=1, mod.NUMBER_OF_PRESETS do
+            table.insert(savedKeywords, keywordGroups[i])
+        end
+        config.set("savedKeywords" .. tostring(preset), savedKeywords)
 
-    --------------------------------------------------------------------------------
-    -- Open the Keyboard Shortcuts section:
-    --------------------------------------------------------------------------------
-    local keyboardShortcuts = keywordEditor:keyboardShortcuts()
-    keyboardShortcuts:show()
-    if not keyboardShortcuts:isShowing() then
-        dialog.displayMessage(i18n("keywordKeyboardShortcutsNotOpened"))
-        return nil
+        --------------------------------------------------------------------------------
+        -- Display Notification:
+        --------------------------------------------------------------------------------
+        dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
+    else
+        dialog.displayErrorMessage("There doesn't appear to be any Keyword Shortcuts allocated in the Keyword Editor.")
     end
-
-    --------------------------------------------------------------------------------
-    -- Save Values to Settings:
-    --------------------------------------------------------------------------------
-    local savedKeywords = {}
-    for i=1, mod.NUMBER_OF_PRESETS do
-        local keywords = keyboardShortcuts:keyword(i) or {}
-        table.insert(savedKeywords, keywords)
-    end
-    config.set("savedKeywords" .. tostring(preset), savedKeywords)
-
-    --------------------------------------------------------------------------------
-    -- Display Notification:
-    --------------------------------------------------------------------------------
-    dialog.displayNotification(i18n("keywordPresetsSaved") .. " " .. tostring(preset))
 
 end
 
@@ -119,7 +108,7 @@ function mod.restore(preset)
     --------------------------------------------------------------------------------
     -- Restore Values to Keyword Editor:
     --------------------------------------------------------------------------------
-    for i=1, mod.NUMBER_OF_PRESETS do
+    for i=1, mod.NUMBER_OF_SHORTCUTS do
         keyboardShortcuts:keyword(i, savedKeywords[i])
     end
 
