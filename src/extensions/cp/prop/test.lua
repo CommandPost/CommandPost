@@ -949,5 +949,18 @@ return test.suite("cp.prop"):with {
         ok(eq(b(), true))
         ok(eq(bValue, true))
         ok(eq(bCount, 2))
-    end)
+    end),
+
+    test("Rx Observe", function()
+
+        local aProp = prop.THIS("a")
+        local observed = nil
+
+        aProp:observe():subscribe(function(value) observed = value end)
+
+        ok(eq(observed, "a"))
+
+        aProp("b")
+        ok(eq(observed, "b"))
+    end),
 }

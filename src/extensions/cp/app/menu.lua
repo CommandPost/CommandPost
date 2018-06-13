@@ -12,28 +12,29 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                                           = require("hs.logger").new("menu")
+local log = require("hs.logger").new("menu")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fs                                            = require("hs.fs")
-local inspect                                       = require("hs.inspect")
+local fs = require("hs.fs")
+local inspect = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local archiver                                      = require("cp.plist.archiver")
-local axutils                                       = require("cp.ui.axutils")
-local localeID                                      = require("cp.i18n.localeID")
-local plist                                         = require("cp.plist")
-local prop                                          = require("cp.prop")
+local archiver = require("cp.plist.archiver")
+local axutils = require("cp.ui.axutils")
+local localeID = require("cp.i18n.localeID")
+local plist = require("cp.plist")
+local prop = require("cp.prop")
+local rx = require("cp.rx")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local format                                        = string.format
-local insert, remove, concat                        = table.insert, table.remove, table.concat
+local format = string.format
+local insert, remove, concat = table.insert, table.remove, table.concat
 
 --------------------------------------------------------------------------------
 --
@@ -81,17 +82,21 @@ menu.NIB_FILE = "NSMainNibFile"
 
 local function findMenuNibPath(app, localeAliases, nibName)
     local appPath = app:path()
-    for _,alias in pairs(localeAliases) do
+    for _, alias in pairs(localeAliases) do
         local path = fs.pathToAbsolute(format(MENU_FILE_PATH, appPath, alias, nibName, NIB_EXT))
-        if path then return path end
+        if path then
+            return path
+        end
     end
 end
 
 local function findMenuStringsPath(app, localeAliases, nibName)
     local appPath = app:path()
-    for _,alias in pairs(localeAliases) do
+    for _, alias in pairs(localeAliases) do
         local path = fs.pathToAbsolute(format(MENU_FILE_PATH, appPath, alias, nibName, STRINGS_EXT))
-        if path then return path end
+        if path then
+            return path
+        end
     end
 end
 
@@ -115,10 +120,10 @@ local function processMenu(menuData, localeCode, menuCache)
     --------------------------------------------------------------------------------
     menuCache = menuCache or {}
     if menuData.NSMenuItems then
-        for i,itemData in ipairs(menuData.NSMenuItems) do
+        for i, itemData in ipairs(menuData.NSMenuItems) do
             local item = menuCache[i] or {}
-            item[localeCode]  = itemData.NSTitle
-            item.separator  = itemData.NSIsSeparator
+            item[localeCode] = itemData.NSTitle
+            item.separator = itemData.NSIsSeparator
             --------------------------------------------------------------------------------
             -- Check if there is a submenu:
             --------------------------------------------------------------------------------
@@ -133,18 +138,18 @@ end
 
 local function processNib(menuNib, localeCode, menuCache)
     --------------------------------------------------------------------------------
-    -- Find the 'MainMenu' item:
+    -- Find the 'MenuTitles' item:
     --------------------------------------------------------------------------------
-    local mainMenu = nil
-    for _,item in ipairs(menuNib["IB.objectdata"].NSObjectsKeys) do
+    local menuTitles = nil
+    for _, item in ipairs(menuNib["IB.objectdata"].NSObjectsKeys) do
         if item.NSName == "_NSMainMenu" and item["$class"] and item["$class"]["$classname"] == "NSMenu" then
-            mainMenu = item
+            menuTitles = item
             break
         end
     end
-    if mainMenu then
+    if menuTitles then
         menuCache[localeCode] = true
-        return processMenu(mainMenu, localeCode, menuCache)
+        return processMenu(menuTitles, localeCode, menuCache)
     else
         log.ef("Unable to locate Main .nib file for %s.", localeCode)
         return nil
@@ -153,7 +158,7 @@ end
 
 local function processStrings(menuStrings, localeCode, theMenu)
     if not theMenu[localeCode] then
-        for _,item in ipairs(theMenu) do
+        for _, item in ipairs(theMenu) do
             local base = item[BASE_LOCALE]
             if base and base.NSKey then
                 item[localeCode] = menuStrings and menuStrings[base.NSKey] or base["NS.string"]
@@ -191,7 +196,7 @@ local function readStringsFile(app, localeAliases, nibName)
     end
 end
 
--- loadMainMenuLocale(app, locale, menuCache) -> table
+-- loadMenuTitlesLocale(app, locale, menuCache) -> table
 -- Method
 -- Loads a Main Menu locale.
 --
@@ -202,7 +207,7 @@ end
 --
 -- Returns:
 --  * The menu table.
-local function loadMainMenuLocale(app, locale, menuCache)
+local function loadMenuTitlesLocale(app, locale, menuCache)
     local theLocale = localeID(locale)
     if not locale then
         -- it's not a real locale (according to our records...)
@@ -248,6 +253,10 @@ local function loadMainMenuLocale(app, locale, menuCache)
     end
 end
 
+function menu.matches(element)
+    return element and element:attributeValue("AXRole") == menu.ROLE and #element > 0
+end
+
 --- cp.app.menu.new(app) -> menu
 --- Constructor
 --- Constructs a new menu for the specified App.
@@ -259,37 +268,33 @@ end
 ---  * a new menu instance
 function menu.new(app)
     local o = prop.extend({
-      _app          = app,
-      _mainMenu     = {},
-      _itemFinders  = {},
+        _app = app,
+        _menuTitles = {},
+        _itemFinders = {}
     }, menu.mt)
 
     local UI = app.UI:mutate(function(original, self)
         return axutils.cache(self, "_ui", function()
-            local appUI = original()
-            return appUI and axutils.childWithRole(appUI, menu.ROLE)
-        end, function(ui) return ui and ui:attributeValue("AXRole") == menu.ROLE end)
+            return axutils.childMatching(original(), menu.matches)
+        end, menu.matches)
     end)
 
-    local showing = UI:mutate(function(original)
-        return original() ~= nil
-    end)
+    local showing = UI:ISNOT(nil)
 
     prop.bind(o) {
---- cp.app.menu.UI <cp.prop:hs._asm.axuielement; read-only; live>
---- Field
---- Returns the `axuielement` representing the menu.
+        --- cp.app.menu.UI <cp.prop:hs._asm.axuielement; read-only; live>
+        --- Field
+        --- Returns the `axuielement` representing the menu.
         UI = UI,
-
---- cp.app.menu.showing <cp.prop: boolean; read-only; live>
---- Field
---- Tells you if the app's Menu Bar is visible.
+        --- cp.app.menu.showing <cp.prop: boolean; read-only; live>
+        --- Field
+        --- Tells you if the app's Menu Bar is visible.
         showing = showing,
     }
 
-    -- load default locale the menu when the local changes.
+    -- load default locale for the menu when the local changes.
     app.currentLocale:watch(function(newLocale)
-        o:getMainMenu({newLocale})
+        o:getMenuTitles({newLocale})
     end)
 
     return o
@@ -308,7 +313,7 @@ function menu.mt:app()
     return self._app
 end
 
---- cp.app.menu:getMainMenu([locales]) -> table
+--- cp.app.menu:getMenuTitles([locales]) -> table
 --- Method
 --- Returns a table with the available menus, items and sub-menu, in the specified locales (if available).
 --- If no `locales` are specified, the app's current locale is loaded.
@@ -321,16 +326,16 @@ end
 ---
 --- Returns:
 ---  * A table of Menu Bar Values
-function menu.mt:getMainMenu(locales)
+function menu.mt:getMenuTitles(locales)
     local app = self:app()
     if type(locales) ~= "table" then
         local locale = locales or app:currentLocale()
         locales = {locale}
     end
 
-    local menuCache = self._mainMenu
-    for _,locale in ipairs(locales) do
-        loadMainMenuLocale(app, locale, menuCache)
+    local menuCache = self._menuTitles
+    for _, locale in ipairs(locales) do
+        loadMenuTitlesLocale(app, locale, menuCache)
     end
 
     return menuCache
@@ -360,7 +365,7 @@ function menu.mt:selectMenu(path, locale, pressAll)
     local menuItemUI, menuPath = self:findMenuUI(path, locale)
 
     if pressAll and #menuPath > 0 then
-        for _,ui in ipairs(menuPath) do
+        for _, ui in ipairs(menuPath) do
             if not ui:performAction("AXPress") then
                 return false
             end
@@ -439,32 +444,169 @@ end
 --- Returns:
 ---  * The `AXMenuItem` found, or `nil`.
 function menu.mt:addMenuFinder(finder)
-    self._itemFinders[#self._itemFinders+1] = finder
+    self._itemFinders[#self._itemFinders + 1] = finder
 end
 
--- _translateTitle(menuMap, title, sourceLocale, targetLocale) -> string
+-- _translateTitle(menuTitles, title, sourceLocale, targetLocale) -> string
 -- Function
--- Looks through the `menuMap` to find a matching title in the source locale,
+-- Looks through the `menuTitles` to find a matching title in the source locale,
 -- and returns the equivalent in the target locale, or the original title if it can't be found.
 --
 -- Parameters:
---  * menuMap - A table containing the menu map.
+--  * menuTitles - A table containing the menu map.
 --  * title - The title
 --  * sourceLocale - Source `cp.i18n.localeID`
 --  * targetLocale - Target `cp.i18n.localeID`
 --
 -- Returns:
 --  * The translated title as a string.
-local function _translateTitle(menuMap, title, sourceLocale, targetLocale)
-    if menuMap then
+local function _translateTitle(menuTitles, title, sourceLocale, targetLocale)
+    if menuTitles then
         local sourceCode, targetCode = sourceLocale.code, targetLocale.code
-        for _ in ipairs(menuMap) do
-            if menuMap[sourceCode] == title then
-                return menuMap[targetCode]
+        for _,item in ipairs(menuTitles) do
+            if item[sourceCode] == title then
+                return item[targetCode]
             end
         end
     end
     return title
+end
+
+--- cp.app.menu:findUI([timeout]) -> cp.rx.Observable <hs._asm.axuielement>
+--- Method
+--- Returns an `Observable` that will emit the next available instance of
+--- the Menu's UI once only, then complete.
+---
+--- Parameters:
+---  * timeout - (optional) the number of seconds to wait for the UI. It not provided, defaults to forever.
+---
+--- Returns:
+---  * An `Observer` that emits the UI.
+function menu.mt:findUI(timeout)
+    local finder = self.UI:observe():find(function(value)
+        return value ~= nil and #value > 0
+    end)
+    return timeout and finder:timeout(timeout * 1000) or finder
+end
+
+--- cp.app.menu:findMenuItems(path[, pathLocale[, timeout]) -> cp.rx.Observable <hs._asm.axuielement>
+--- Method
+--- Returns an `Observable` that will emit each of the menu items along the path.
+--- E.g. `findMenuItems({"Edit", "Copy"})` emits the 'Edit' menu then the 'Copy' menu item.
+---
+--- Each step on the path can be either one of:
+---  * a string     - The exact name of the menu item.
+---  * a number     - The menu item number, starting from 1.
+---  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+---
+--- Parameters:
+---  * path         - the table of path items.
+---  * pathLocale   - (optional) the string or `localeID` with the locale the path labels are in. Defaults to "en"
+---  * timeout      - (optional) the number of seconds to allow before failing the operation. Defaults to infinity.
+---
+--- Returns:
+---  * The `Observable` instance.
+function menu.mt:findMenuItems(path, pathLocale, timeout)
+    if type(path) ~= "table" or #path == 0 then
+        return rx.Observable.throw("Please provide a table array of menu steps.")
+    end
+
+    return self:findUI(timeout):flatMap(
+        function(ui)
+            pathLocale = localeID(pathLocale) or localeID("en")
+            local appLocale = self:app():currentLocale()
+
+            local menuTitles = self:getMenuTitles({pathLocale, appLocale})
+            local currentPath = {}
+            local menuItemName
+            local menuUI = ui
+
+            return rx.Observable.fromTable(path, ipairs):flatMap(
+                function(step)
+                    local menuItemUI
+                    if type(step) == "number" then
+                        menuItemUI = menuUI[step]
+                        menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
+                    elseif type(step) == "function" then
+                        for _, child in ipairs(menuUI) do
+                            if step(child) then
+                                menuItemUI = child
+                                menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
+                                break
+                            end
+                        end
+                    else
+                        menuItemName = step
+                        --------------------------------------------------------------------------------
+                        -- Check with the finder functions:
+                        --------------------------------------------------------------------------------
+                        for _, finder in ipairs(self._itemFinders) do
+                            menuItemUI = finder(menuUI, currentPath, step, pathLocale)
+                            if menuItemUI then
+                                break
+                            end
+                        end
+
+                        if not menuItemUI and menuTitles then
+                            --------------------------------------------------------------------------------
+                            -- See if the menu is in the map:
+                            --------------------------------------------------------------------------------
+                            for _, item in ipairs(menuTitles) do
+                                local pathItemTitle = item[pathLocale.code]
+                                if pathItemTitle and pathItemTitle:match(step) then
+                                    menuItemUI = item.ui
+                                    if not axutils.isValid(menuItemUI) then
+                                        local currentTitle = item[appLocale.code]
+                                        if currentTitle then
+                                            currentTitle = currentTitle:gsub("%%@", ".*")
+                                            menuItemUI = axutils.childMatching(menuUI, function(child) return child:attributeValue("AXTitle"):match(currentTitle) end)
+                                            --------------------------------------------------------------------------------
+                                            -- Cache the menu item, since getting children can be expensive:
+                                            --------------------------------------------------------------------------------
+                                            item.ui = menuItemUI
+                                        else
+                                            return rx.Observable.throw("Unable to find '%s' in '%s' with %s.", pathItemTitle, concat(currentPath, " > ", appLocale))
+                                        end
+                                    end
+                                    menuTitles = item.submenu
+                                    break
+                                end
+                            end
+                        end
+
+                        if not menuItemUI then
+                            --------------------------------------------------------------------------------
+                            -- We don't have it in our list, so look it up manually.
+                            -- Hopefully they are in English!
+                            --------------------------------------------------------------------------------
+                            log.wf("Searching manually for '%s' in '%s' while in %s.", step, concat(currentPath, " > "), appLocale)
+                            menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
+                        end
+                    end
+
+                    if menuItemUI then
+                        if #menuItemUI == 1 then
+                            -- the item is a sub-menu. Find the next values.
+                            menuUI = menuItemUI[1]
+                            for _, item in ipairs(menuTitles) do
+                                local mapTitle = item[appLocale.code]
+                                if mapTitle and menuItemUI:attributeValue("AXTitle"):match(mapTitle:gsub("%%@", ".*")) then
+                                    menuTitles = item
+                                    break
+                                end
+                            end
+                        end
+
+                        insert(currentPath, menuItemName)
+
+                        return rx.Observable.of(menuItemUI)
+                    else
+                        return rx.Observable.throw(format("Unable to find '%s' in '%s' while in %s.", step, concat(currentPath, " > "), appLocale))
+                    end
+                end
+            )
+        end
+    )
 end
 
 --- cp.app.menu:findMenuUI(path[, locale]) -> Menu UI, table
@@ -493,7 +635,7 @@ function menu.mt:findMenuUI(path, locale)
     locale = localeID(locale) or localeID("en")
     local appLocale = self:app():currentLocale()
 
-    local menuMap = self:getMainMenu({locale, appLocale})
+    local menuTitles = self:getMenuTitles({locale, appLocale})
     local menuUI = self:UI()
     if not menuUI then
         return nil
@@ -507,7 +649,7 @@ function menu.mt:findMenuUI(path, locale)
     --------------------------------------------------------------------------------
     -- Step through the path:
     --------------------------------------------------------------------------------
-    for i,step in ipairs(path) do
+    for i, step in ipairs(path) do
         menuItemUI = nil
         --------------------------------------------------------------------------------
         -- Check what type of step it is:
@@ -517,15 +659,15 @@ function menu.mt:findMenuUI(path, locale)
             -- Access it by index:
             --------------------------------------------------------------------------------
             menuItemUI = menuUI[step]
-            menuItemName = _translateTitle(menuMap, menuItemUI, appLocale, locale)
+            menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, locale)
         elseif type(step) == "function" then
             --------------------------------------------------------------------------------
             -- Check each child against the function:
             --------------------------------------------------------------------------------
-            for _,child in ipairs(menuUI) do
+            for _, child in ipairs(menuUI) do
                 if step(child) then
                     menuItemUI = child
-                    menuItemName = _translateTitle(menuMap, menuItemUI, appLocale, locale)
+                    menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, locale)
                     break
                 end
             end
@@ -537,18 +679,18 @@ function menu.mt:findMenuUI(path, locale)
             --------------------------------------------------------------------------------
             -- Check with the finder functions:
             --------------------------------------------------------------------------------
-            for _,finder in ipairs(self._itemFinders) do
+            for _, finder in ipairs(self._itemFinders) do
                 menuItemUI = finder(menuUI, currentPath, step, locale)
                 if menuItemUI then
                     break
                 end
             end
 
-            if not menuItemUI and menuMap then
+            if not menuItemUI and menuTitles then
                 --------------------------------------------------------------------------------
                 -- See if the menu is in the map:
                 --------------------------------------------------------------------------------
-                for _,item in ipairs(menuMap) do
+                for _, item in ipairs(menuTitles) do
                     if item[locale.code] == step then
                         menuItemUI = item.ui
                         if not axutils.isValid(menuItemUI) then
@@ -559,7 +701,7 @@ function menu.mt:findMenuUI(path, locale)
                             --------------------------------------------------------------------------------
                             item.ui = menuItemUI
                         end
-                        menuMap = item.submenu
+                        menuTitles = item.submenu
                         break
                     end
                 end
@@ -587,7 +729,14 @@ function menu.mt:findMenuUI(path, locale)
             insert(currentPath, menuItemName)
         else
             local value = type(step) == "string" and '"' .. step .. '" (' .. locale.code .. ")" or tostring(step)
-            log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
+            log.wf(
+                "Unable to match step #%d in %s, a %s with a value of %s with the app in %s",
+                i,
+                inspect(path),
+                type(step),
+                value,
+                appLocale
+            )
             return nil
         end
     end
@@ -667,13 +816,14 @@ function menu.mt:_visitMenuItems(visitFn, path, locale, menuUI)
     local children = menuUI:attributeValue("AXChildren")
     if role == "AXmenu" or role == "AXMenu" then
         if children then
-            for _,item in ipairs(children) do
+            for _, item in ipairs(children) do
                 self:_visitMenuItems(visitFn, path, locale, item)
             end
         end
     elseif role == "AXmenuItem" or role == "AXMenuItem" then
         local title = menuUI:attributeValue("AXTitle")
         if #children == 1 then
+            -- log.df("_visitMenuItems: post remove: path = %s", hs.inspect(path))
             --------------------------------------------------------------------------------
             -- Add the title:
             --------------------------------------------------------------------------------
@@ -685,7 +835,6 @@ function menu.mt:_visitMenuItems(visitFn, path, locale, menuUI)
             --------------------------------------------------------------------------------
             -- log.df("_visitMenuItems: pre remove: path = %s", hs.inspect(path))
             remove(path)
-            -- log.df("_visitMenuItems: post remove: path = %s", hs.inspect(path))
         else
             if title ~= nil and title ~= "" then
                 visitFn(path, menuUI)
