@@ -452,7 +452,7 @@ function Viewer.new(app, eventViewer)
         end
         checker:start()
     end)
-    
+
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
     --- Field
     --- Provides the `axuielement` for the Format text.
