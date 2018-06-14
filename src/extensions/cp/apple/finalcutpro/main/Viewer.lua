@@ -305,18 +305,13 @@ function Viewer.new(app, eventViewer)
         isPlaying = prop(
             function(self)
                 local playButton = self:playButton()
-                local frame = playButton:frame()
-                if frame then
-                    local window = self:currentWindow()
-                    local hsWindow = window and window:hsWindow()
-                    local snapshot = hsWindow and hsWindow:snapshot()
-                    local resizedSnaptop = snapshot and snapshot:setSize({h=120,w=120})
-                    if resizedSnaptop then
-                        local a = resizedSnaptop:colorAt({x=67,y=49})
-                        local b = resizedSnaptop:colorAt({x=54,y=61})
-                        if a and b and a.blue ~= 0 and a.blue == b.blue then
-                            return true
-                        end
+                local snapshot = playButton and playButton:snapshot()
+                local resizedSnaptop = snapshot and snapshot:setSize({h=120,w=120}, true)
+                if resizedSnaptop then
+                    local a = resizedSnaptop:colorAt({x=67,y=48})
+                    local b = resizedSnaptop:colorAt({x=53,y=61})
+                    if a and b and a.blue ~= 0 and tools.round(a.blue) == tools.round(b.blue) then
+                        return true
                     end
                 end
                 return false
