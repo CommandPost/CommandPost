@@ -9,15 +9,22 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local require                                   = require
+--local log                                       = require("hs.logger").new("tangentControls")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local prop              = require("cp.prop")
+local tools             = require("cp.tools")
 local x                 = require("cp.web.xml")
 
-local group             = require("group")
 local action            = require("action")
-local parameter         = require("parameter")
+local group             = require("group")
 local menu              = require("menu")
+local parameter         = require("parameter")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -247,7 +254,7 @@ function controls.mt:xml()
             local result = x()
 
             if self._groups then
-                for _,v in ipairs(self._groups) do
+                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b].name > t[a].name end) do
                     result = result .. v:xml()
                 end
             end
