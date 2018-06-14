@@ -1197,5 +1197,6 @@
 		"clip"										           : "Clip",
 		"new" 									               : "New",
 		"compoundClip"										   : "Compound Clip",
+		"viewerOverlay"										   : "Viewer Overlay",
     }
 }
