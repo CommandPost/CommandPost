@@ -436,21 +436,21 @@ function Viewer.new(app, eventViewer)
         )
     }
 
-    o._isPlayingChecker = delayedTimer.new(0.1, function()
+    local checker
+    checker = delayedTimer.new(0.1, function()
         if o.isPlaying:update() then
             -- it hasn't actually finished yet, so keep running.
-            o._isPlayingChecker:start()
+            checker:start()
         end
     end)
 
     -- watch the `timecode` field and update `isPlaying`.
     o.timecode:watch(function(_)
-        local checker = o._isPlayingChecker
-        if o.isPlaying:update() then
-            checker:start()
-        else
-            checker:stop()
+        if not checker:running() then
+            -- update the first time.
+            o.isPlaying:update()
         end
+        checker:start()
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
