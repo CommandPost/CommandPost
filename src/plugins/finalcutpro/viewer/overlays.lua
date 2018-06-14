@@ -41,37 +41,32 @@ local menubar           = require("hs.menubar")
 -- STILLS_FOLDER -> string
 -- Constant
 -- Folder name for Stills Cache.
-local STILLS_FOLDER         = "Still Frames"
+local STILLS_FOLDER = "Still Frames"
 
 -- DEFAULT_COLOR -> string
 -- Constant
 -- Default Colour Setting.
-local DEFAULT_COLOR         = "#FFFFFF"
+local DEFAULT_COLOR = "#FFFFFF"
 
 -- DEFAULT_ALPHA -> number
 -- Constant
 -- Default Alpha Setting.
-local DEFAULT_ALPHA         = 50
+local DEFAULT_ALPHA = 50
 
 -- DEFAULT_GRID_SPACING -> number
 -- Constant
 -- Default Grid Spacing Setting.
-local DEFAULT_GRID_SPACING  = 20
+local DEFAULT_GRID_SPACING = 20
 
 -- DEFAULT_STILLS_LAYOUT -> number
 -- Constant
 -- Default Stills Layout Setting.
 local DEFAULT_STILLS_LAYOUT = "Left Vertical"
 
--- NUMBER_OF_MEMORIES -> number
--- Constant
--- Number of Stills Memories Available.
-local NUMBER_OF_MEMORIES    = 5
-
 -- FCP_COLOR_BLUE -> string
 -- Constant
 -- Apple's preferred blue colour in Final Cut Pro.
-local FCP_COLOR_BLUE        = "#5760e7"
+local FCP_COLOR_BLUE = "#5760e7"
 
 --------------------------------------------------------------------------------
 --
@@ -79,6 +74,11 @@ local FCP_COLOR_BLUE        = "#5760e7"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- plugins.finalcutpro.viewer.overlays.NUMBER_OF_MEMORIES -> number
+-- Constant
+-- Number of Stills Memories Available.
+mod.NUMBER_OF_MEMORIES = 5
 
 --- plugins.finalcutpro.viewer.overlays.disabled <cp.prop: boolean>
 --- Variable
@@ -712,7 +712,7 @@ function plugin.init(deps)
             :add("cpToggleAllViewerOverlays")
             :whenActivated(function() mod.disabled:toggle(); mod.update() end)
 
-        for i=1, NUMBER_OF_MEMORIES do
+        for i=1, mod.NUMBER_OF_MEMORIES do
             deps.fcpxCmds
                 :add("cpSaveStillsFrame" .. i)
                 :whenActivated(function() mod.saveMemory(i) end)
