@@ -1111,12 +1111,11 @@ end
 --- Returns:
 ---  * The array of shortcuts, or `nil` if no command exists with the specified `id`.
 function fcp:getCommandShortcuts(id)
-    local activeCommands = self._activeCommands
-    if not activeCommands then
-        activeCommands = {}
-        self._activeCommands = activeCommands
+    if type(id) ~= "string" then
+        log.ef("ID is required for cp.apple.finalcutpro.getCommandShortcuts.")
+        return nil
     end
-
+    local activeCommands = self._activeCommands or {}
     local shortcuts = activeCommands[id]
     if not shortcuts then
         local commandSet = self:activeCommandSet()
@@ -1127,9 +1126,11 @@ function fcp:getCommandShortcuts(id)
         ----------------------------------------------------------------------------------------
         -- Cache the value for faster access next time:
         ----------------------------------------------------------------------------------------
+        if not self._activeCommands then
+            self._activeCommands = {}
+        end
         self._activeCommands[id] = shortcuts
     end
-
     return shortcuts
 end
 

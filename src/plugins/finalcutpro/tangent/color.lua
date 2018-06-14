@@ -500,6 +500,27 @@ function mod.init(tangentManager, fcpGroup)
             cb:aspectGroup():previousOption()
         end)
 
+    cbGroup:action(wheelsBaseID+0x0129, i18n("resetAllControls"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ResetAllPucks") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0130, i18n("resetCurrentEffectPane"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ResetPucksOnCurrentBoard") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ResetSelectedPuck") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
 end
 
 --------------------------------------------------------------------------------

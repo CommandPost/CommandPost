@@ -16,6 +16,7 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
@@ -45,7 +46,7 @@ function mod.init(fcpGroup)
 
     mod.group = fcpGroup:group(i18n("playback"))
 
-    mod.group:action(baseID+1, i18n("play"))
+    mod.group:action(baseID+1, i18n("play") .. "/" .. i18n("pause"))
         :onPress(function()
             fcp:selectMenu({"View", "Playback", "Play"})
         end)
@@ -100,16 +101,52 @@ function mod.init(fcpGroup)
             fcp:selectMenu({"Mark", "Go to", "Range End"})
         end)
 
-    mod.group:action(baseID+12, i18n("goToNextFrame"))
+    mod.group:action(baseID+12, i18n("goTo") .. " " .. i18n("next") .. " " .. i18n("frame"))
         :onPress(function()
             fcp:selectMenu({"Mark", "Next", "Frame"})
         end)
 
-    mod.group:action(baseID+13, i18n("goToPreviousFrame"))
+    mod.group:action(baseID+13, i18n("goTo") .. " " .. i18n("previous") .. " " .. i18n("frame"))
         :onPress(function()
             fcp:selectMenu({"Mark", "Previous", "Frame"})
         end)
 
+    mod.group:action(baseID+14, i18n("play") .. " " .. i18n("reverse"))
+        :onPress(function()
+            if not fcp:performShortcut("PlayReverse") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    mod.group:action(baseID+15, i18n("goTo") .. " " .. i18n("next") .. " " .. i18n("edit"))
+        :onPress(function()
+            fcp:selectMenu({"Mark", "Next", "Edit"})
+        end)
+
+    mod.group:action(baseID+16, i18n("goTo") .. " " .. i18n("previous") .. " " .. i18n("edit"))
+        :onPress(function()
+            fcp:selectMenu({"Mark", "Previous", "Edit"})
+        end)
+
+    mod.group:action(baseID+17, i18n("goTo") .. " " .. i18n("next") .. " " .. i18n("marker"))
+        :onPress(function()
+            fcp:selectMenu({"Mark", "Next", "Marker"})
+        end)
+
+    mod.group:action(baseID+18, i18n("goTo") .. " " .. i18n("previous") .. " " .. i18n("marker"))
+        :onPress(function()
+            fcp:selectMenu({"Mark", "Previous", "Marker"})
+        end)
+
+    mod.group:action(baseID+19, i18n("goTo") .. " " .. i18n("next") .. " " .. i18n("keyframe"))
+        :onPress(function()
+            fcp:selectMenu({"Mark", "Next", "Keyframe"})
+        end)
+
+    mod.group:action(baseID+20, i18n("goTo") .. " " .. i18n("previous") .. " " .. i18n("keyframe"))
+        :onPress(function()
+            fcp:selectMenu({"Mark", "Previous", "Keyframe"})
+        end)
 end
 
 --------------------------------------------------------------------------------

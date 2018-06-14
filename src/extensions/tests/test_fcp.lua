@@ -69,6 +69,9 @@ return test.suite("cp.apple.finalcutpro"):with(
             ok(viewer:formatUI() ~= nil)
             ok(viewer:framerate() ~= nil)
             ok(viewer:title() ~= nil)
+
+            ok(eq(viewer:timecode("0"), "00:00:00:00"))
+            ok(eq(viewer:timecode("0:12"), "00:00:00:12"))
         end
     ),
     test(
