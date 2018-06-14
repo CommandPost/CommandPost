@@ -38,6 +38,9 @@ local SecondaryWindow                   = require("cp.apple.finalcutpro.main.Sec
 
 local id                                = require("cp.apple.finalcutpro.ids") "Viewer"
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local floor                             = math.floor
 local match, sub, find                  = string.match, string.sub, string.find
 local childrenWithRole                  = axutils.childrenWithRole
@@ -53,8 +56,7 @@ local cache                             = axutils.cache
 --------------------------------------------------------------------------------
 local Viewer = {}
 
-
--- cp.apple.finalcutpro.main.Viewer.PLAYER_QUALITY
+-- PLAYER_QUALITY -> table
 -- Constant
 -- Table of Player Quality values used by the `FFPlayerQuality` preferences value:
 local PLAYER_QUALITY = {
@@ -62,7 +64,6 @@ local PLAYER_QUALITY = {
     ORIGINAL_BETTER_PERFORMANCE = 5,
     PROXY                       = 4,
 }
-
 
 -- findViewersUI(...) -> table of hs._asm.axuielement | nil
 -- Private Function
@@ -116,66 +117,29 @@ end
 local function findEventViewerUI(...)
     local viewers = findViewersUI(...)
     if viewers and #viewers == 2 then
-        -- The Event Viewer is always on the left, if present.
+        -----------------------------------------------------------------------
+        -- The Event Viewer is always on the left, if present:
+        -----------------------------------------------------------------------
         return childFromLeft(viewers, 1)
     end
     return nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function Viewer.matches(element)
     -- Viewers have a single 'AXContents' element
     local contents = element:attributeValue("AXContents")
     return contents and #contents == 1
        and contents[1]:attributeValue("AXRole") == "AXSplitGroup"
        and #(contents[1]) > 0
-end
-
--- pixelsFromWindowCanvas(hsWindow, centerPixel) -> hs.image, hs.image
--- Function
--- Extracts two 2x2 pixel images from the screenshot of the image, centred
--- on the `centerPixel`. The first is the pixel in the centre, the second is offset by 2 pixels to the left
---
--- Parameters:
--- * hsWindow       - The `hs.window` having pixels pulled
--- * centerPixel    - The pixel to to retrieve (and offset)
---
--- Returns:
--- * Two `hs.images`, the first being the center pixel, the second being offset by 2px left.
-local function pixelsFromWindowCanvas(hsWindow, centerPixel)
-    local centerShot, offShot = nil, nil
-    local windowShot = hsWindow:snapshot()
-    if windowShot then
-        local windowFrame = hsWindow:frame()
-        local shotSize = windowShot:size()
-        local ratio = shotSize.h/windowFrame.h
-
-        local imagePixel = {
-            x = (windowFrame.x-centerPixel.x)*ratio,
-            y = (windowFrame.y-centerPixel.y)*ratio,
-            w = shotSize.w,
-            h = shotSize.h,
-        }
-
-        local c = canvas.new({w=1, h=1})
-        c[1] = {
-            type = "image",
-            image = windowShot,
-            imageScaling = "none",
-            imageAlignment = "topLeft",
-            frame = imagePixel,
-        }
-
-        centerShot = c:imageFromCanvas()
-
-        -- shift left by 2 pixels, scaled by the ratio
-        c[1].frame.x = imagePixel.x-floor(ratio*2)
-        offShot = c:imageFromCanvas()
-
-        -- delete the canvas
-        c:delete()
-    end
-    return centerShot, offShot
 end
 
 --- cp.apple.finalcutpro.main.Viewer.new(app, eventViewer) -> Viewer
@@ -250,7 +214,9 @@ function Viewer.new(app, eventViewer)
         end)
     end)
 
-    -- The StaticText that contains the timecode.
+    -----------------------------------------------------------------------
+    -- The StaticText that contains the timecode:
+    -----------------------------------------------------------------------
     o._timecode = StaticText.new(o, bottomToolbarUI:mutate(function(original)
         local ui = original()
         return ui and childFromLeft(childrenWithRole(ui, "AXStaticText"), 1)
@@ -339,38 +305,12 @@ function Viewer.new(app, eventViewer)
         isPlaying = prop(
             function(self)
                 local playButton = self:playButton()
-                local frame = playButton:frame()
-                if frame then
-                    frame = geometry.new(frame)
-                    local center = frame.center
-                    local centerPixel = {x=floor(center.x), y=floor(center.y), w=1, h=1}
-
-                    local window = self:currentWindow()
-                    local hsWindow = window:hsWindow()
-
-                    -----------------------------------------------------------------------
-                    -- Save a snapshot:
-                    -----------------------------------------------------------------------
-                    local centerShot, offShot = pixelsFromWindowCanvas(hsWindow, centerPixel)
-
-                    if centerShot then
-                        -- centerShot:saveToFile("~/Desktop/viewer_center.png")
-                        -- offShot:saveToFile("~/Desktop/viewer_off.png")
-                        -----------------------------------------------------------------------
-                        -- Get the snapshots as encoded URL strings:
-                        -----------------------------------------------------------------------
-                        local centerString = centerShot:encodeAsURLString()
-                        local offString = offShot:encodeAsURLString()
-
-                        -----------------------------------------------------------------------
-                        -- Compare to hardcoded version
-                        -----------------------------------------------------------------------
-                        if centerString ~= offString then
-                            return true
-                        end
-                    else
-                        log.ef("Unable to snapshot the play button.")
-                    end
+                local snapshot = playButton and playButton:snapshot()
+                local resizedSnaptop = snapshot and snapshot:setSize({h=120,w=120}, true)
+                local a = resizedSnaptop and resizedSnaptop:colorAt({x=67,y=48})
+                local b = resizedSnaptop and resizedSnaptop:colorAt({x=53,y=61})
+                if a and b and a.blue ~= 0 and tools.round(a.blue) == tools.round(b.blue) then
+                    return true
                 end
                 return false
             end,
@@ -439,12 +379,16 @@ function Viewer.new(app, eventViewer)
     local checker
     checker = delayedTimer.new(0.1, function()
         if o.isPlaying:update() then
-            -- it hasn't actually finished yet, so keep running.
+            -----------------------------------------------------------------------
+            -- It hasn't actually finished yet, so keep running:
+            -----------------------------------------------------------------------
             checker:start()
         end
     end)
 
-    -- watch the `timecode` field and update `isPlaying`.
+    -----------------------------------------------------------------------
+    -- Watch the `timecode` field and update `isPlaying`:
+    -----------------------------------------------------------------------
     o.timecode:watch(function(_)
         if not checker:running() then
             -- update the first time.
@@ -534,7 +478,15 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:currentWindow() -> PrimaryWindow | SecondaryWindow
+--- Method
+--- Gets the current window object.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `PrimaryWindow` or the `SecondaryWindow`.
 function Viewer:currentWindow()
     if self:isOnSecondary() then
         return self:app():secondaryWindow()
@@ -543,24 +495,45 @@ function Viewer:currentWindow()
     end
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:showOnPrimary() -> self
+--- Method
+--- Shows the Viewer on the Primary display.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Self
 function Viewer:showOnPrimary()
     local menuBar = self:app():menu()
 
-    -- if it is on the secondary, we need to turn it off before enabling in primary
+    -----------------------------------------------------------------------
+    -- If it is on the secondary, we need to turn it off before
+    -- enabling in primary:
+    -----------------------------------------------------------------------
     if self:isOnSecondary() then
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
     end
 
     if self:isEventViewer() and not self:isShowing() then
-        -- Enable the Event Viewer
+        -----------------------------------------------------------------------
+        -- Enable the Event Viewer:
+        -----------------------------------------------------------------------
         menuBar:selectMenu({"Window", "Show in Workspace", "Event Viewer"})
     end
 
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:showOnSecondary() -> self
+--- Method
+--- Shows the Viewer on the Seconary display.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Self
 function Viewer:showOnSecondary()
     local menuBar = self:app():menu()
 
@@ -569,30 +542,52 @@ function Viewer:showOnSecondary()
     end
 
     if self:isEventViewer() and not self:isShowing() then
-        -- Enable the Event Viewer
+        -----------------------------------------------------------------------
+        -- Enable the Event Viewer:
+        -----------------------------------------------------------------------
         menuBar:selectMenu({"Window", "Show in Workspace", "Event Viewer"})
     end
 
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:hide() -> self
+--- Method
+--- Hides the Viewer.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * Self
 function Viewer:hide()
     local menuBar = self:app():menu()
 
     if self:isEventViewer() then
-        -- Uncheck it from the primary workspace
+        -----------------------------------------------------------------------
+        -- Uncheck it from the primary workspace:
+        -----------------------------------------------------------------------
         if self:isShowing() then
             menuBar:selectMenu({"Window", "Show in Workspace", "Event Viewer"})
         end
     elseif self:isOnSecondary() then
-        -- The Viewer can only be hidden from the Secondary Display
+        -----------------------------------------------------------------------
+        -- The Viewer can only be hidden from the Secondary Display:
+        -----------------------------------------------------------------------
         menuBar:selectMenu({"Window", "Show in Secondary Display", "Viewers"})
     end
     return self
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Viewer:playButton() -> Button
+--- Method
+--- Gets the Play Button object.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A Button
 function Viewer:playButton()
     if not self._playButton then
         self._playButton = Button.new(self, function()
