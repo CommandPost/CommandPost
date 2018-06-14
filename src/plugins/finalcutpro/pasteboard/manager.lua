@@ -72,10 +72,10 @@ mod.excludedClassnames = {PASTEBOARD.MARKER}
 --- The Pasteboard Watcher Update frequency.
 mod.watcherFrequency = 0.5
 
---- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
---- Variable
---- Table of data we don't want to count when copying.
-mod._watchersCount                      = 0
+-- plugins.finalcutpro.pasteboard.manager._watchersCount -> number
+-- Variable
+-- Watchers Count.
+mod._watchersCount = 0
 
 --- plugins.finalcutpro.pasteboard.manager.isTimelineClip(data) -> boolean
 --- Function
@@ -290,7 +290,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    log.d("Copying Clip with custom Clip Name")
+    --log.d("Copying Clip with custom Clip Name")
     local menuBar = fcp:menu()
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
@@ -300,9 +300,9 @@ function mod.copyWithCustomClipName()
     end
 end
 
---- plugins.finalcutpro.pasteboard.manager.copyWithCustomClipName() -> data | nil
+--- plugins.finalcutpro.pasteboard.manager.readFCPXData() -> data | nil
 --- Function
---- Reads FCPX Data from the Pasteboard as a binary Plist, if present.
+--- Reads Final Cut Pro Data from the Pasteboard as a binary Property List, if present.
 ---
 --- Parameters:
 ---  * None
