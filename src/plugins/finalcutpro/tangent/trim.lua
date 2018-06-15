@@ -47,52 +47,52 @@ function mod.init(fcpGroup)
 
     mod.group:action(baseID+1, i18n("blade"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Blade"})
+            fcp:selectMenuItem({"Trim", "Blade"})
         end)
 
     mod.group:action(baseID+2, i18n("blade") .. " " .. i18n("all"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Blade All"})
+            fcp:selectMenuItem({"Trim", "Blade All"})
         end)
 
     mod.group:action(baseID+3, i18n("joinClips"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Join Clips"})
+            fcp:selectMenuItem({"Trim", "Join Clips"})
         end)
 
     mod.group:action(baseID+4, i18n("trim") .. " " .. i18n("start"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Trim Start"})
+            fcp:selectMenuItem({"Trim", "Trim Start"})
         end)
 
     mod.group:action(baseID+5, i18n("trim") .. " " .. i18n("end"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Trim End"})
+            fcp:selectMenuItem({"Trim", "Trim End"})
         end)
 
     mod.group:action(baseID+6, i18n("trimToPlayhead"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Trim To Playhead"})
+            fcp:selectMenuItem({"Trim", "Trim To Playhead"})
         end)
 
     mod.group:action(baseID+7, i18n("extendEdit"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Extend Edit"})
+            fcp:selectMenuItem({"Trim", "Extend Edit"})
         end)
 
     mod.group:action(baseID+8, i18n("alignAudioToVideo"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Align Audio to Video"})
+            fcp:selectMenuItem({"Trim", "Align Audio to Video"})
         end)
 
     mod.group:action(baseID+9, i18n("nudge") .. " " .. i18n("left"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Nudge Left"})
+            fcp:selectMenuItem({"Trim", "Nudge Left"})
         end)
 
     mod.group:action(baseID+10, i18n("nudge") .. " " .. i18n("right"))
         :onPress(function()
-            fcp:selectMenu({"Trim", "Nudge Right"})
+            fcp:selectMenuItem({"Trim", "Nudge Right"})
         end)
 end
 
