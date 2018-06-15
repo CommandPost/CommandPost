@@ -133,6 +133,11 @@ local frontmostApp = nil
 --- Returns the most recent 'registered' app that was active, other than CommandPost itself.
 mod.frontmostApp = prop(function() return frontmostApp end)
 
+--- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
+--- Field
+--- Returns the most recent 'registered' app that was active, other than CommandPost itself.
+mod.frontmostApp = prop(function() return frontmostApp end)
+
 --- cp.app.forBundleID(bundleID)
 --- Constructor
 --- Returns the `cp.app` for the specified Bundle ID. If the app has already been created,
@@ -519,6 +524,11 @@ function mod.forBundleID(bundleID)
             --- Field
             --- Gets and sets the current locale for the application.
             currentLocale = currentLocale,
+
+            --- cp.app.windowMoved <cp.prop: boolean; live>
+            --- Field
+            --- Triggers `true` when an application window is moved.
+            windowMoved = prop(function(self) return self._moved end, function(value, self) self._moved = value end),
         }
 
         apps[bundleID] = theApp
@@ -838,6 +848,14 @@ local function updateFrontmostApp(app)
     mod.frontmostApp:update()
 end
 
+local function updateWindowMoved(window)
+    local app = findAppForWindow(window)
+    if app then
+        app.windowMoved:value(false)
+        app.windowMoved:value(true)
+    end
+end
+
 -- cp.app._initWatchers() -> none
 -- Method
 -- Initialise all the various application watchers.
@@ -905,6 +923,7 @@ function mod._initWatchers()
     appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowFocused, updateFocusedWindowUI)
+    appWindowFilter:subscribe(windowfilter.windowMoved, updateWindowMoved)
 
     mod._appWindowFilter = appWindowFilter
 end

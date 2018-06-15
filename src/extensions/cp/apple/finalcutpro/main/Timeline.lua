@@ -11,7 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log								= require("hs.logger").new("timeline")
+--local log								= require("hs.logger").new("timeline")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -100,8 +100,9 @@ end
 --- Returns:
 ---  * A new `Timeline` object.
 function Timeline.new(app)
+
     local o = prop.extend({
-        _app = app
+        _app = app,
     },	Timeline)
 
     local UI = prop(function(self)
@@ -153,16 +154,29 @@ function Timeline.new(app)
             Timeline.matchesMain)
         end),
 
+        --- cp.apple.finalcutpro.main.Timeline.isPlaying <cp.prop: boolean>
+        --- Field
+        --- Is the timeline playing?
+        isPlaying = app:viewer().isPlaying:mutate(function(original)
+            return original()
+        end),
 
---- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
---- Field
---- Is Playhead Locked?
+        --- cp.apple.finalcutpro.main.Timeline.isLockedPlayhead <cp.prop: boolean>
+        --- Field
+        --- Is Playhead Locked?
         isLockedPlayhead = prop.new(function(self)
             return self._locked == true
-        end)
+        end),
+
+        --- cp.apple.finalcutpro.main.Timeline.isLockedInCentre <cp.prop: boolean>
+        --- Field
+        --- Is Playhead Locked in the centre?
+        isLockedInCentre = prop.new(function(self)
+            return self._lockInCentre == true
+        end),
     }
 
-    -- These are bound separately because TimelinContents uses `UI` and `mainUI`
+    -- These are bound separately because TimelineContents uses `UI` and `mainUI`
     prop.bind(o) {
         --- cp.apple.finalcutpro.main.Timeline.isLoaded <cp.prop: boolean; read-only>
         --- Field
@@ -174,6 +188,13 @@ function Timeline.new(app)
         --- Checks if the Timeline is the focused panel.
         isFocused = o:contents().isFocused,
     }
+
+    -----------------------------------------------------------------------
+    -- Watch for playing & stopping:
+    -----------------------------------------------------------------------
+    o.isPlaying:watch(function(isPlaying)
+        o:update(isPlaying)
+    end)
 
     return o
 end
@@ -420,208 +441,105 @@ end
 --
 -----------------------------------------------------------------------
 
---- cp.apple.finalcutpro.main.Timeline.lockActive -> number
---- Variable
---- Lock active. Used by Playhead Locking.
-Timeline.lockActive = 0.01
+function Timeline:update(isPlaying)
 
---- cp.apple.finalcutpro.main.Timeline.lockInactive -> number
---- Variable
---- Lock Inactive. Used by Playhead Locking.
-Timeline.lockInactive = 0.1
-
---- cp.apple.finalcutpro.main.Timeline.stopThreshold -> number
---- Variable
---- Stop Threshold. Used by Playhead Locking.
-Timeline.stopThreshold = 15
-
---- cp.apple.finalcutpro.main.Timeline.STOPPED -> number
---- Constant
---- Stopped ID.
-Timeline.STOPPED = 1
-
---- cp.apple.finalcutpro.main.Timeline.TRACKING -> number
---- Constant
---- Tracking ID.
-Timeline.TRACKING = 2
-
---- cp.apple.finalcutpro.main.Timeline.DEADZONE -> number
---- Constant
---- Dead Zone ID.
-Timeline.DEADZONE = 3
-
---- cp.apple.finalcutpro.main.Timeline.INVISIBLE -> number
---- Constant
---- Invisible ID.
-Timeline.INVISIBLE = 4
-
---- cp.apple.finalcutpro.main.Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre) -> self
---- Method
---- Locks the playhead on-screen.
----
---- Parameters:
----  * deactivateWhenStopped - If set to `true`, this will automatically deactivate itself when the playhead stops moving.
----  * lockInCentre - If set to `true`, the playhead will lock in the centre of the timeline. Otherwise, it will lock in it's current position.
----
---- Returns:
----  * The `Timeline` instance.
-function Timeline:lockPlayhead(deactivateWhenStopped, lockInCentre)
-    if self._locked then
-        --------------------------------------------------------------------------------
-        -- Already locked:
-        --------------------------------------------------------------------------------
-        return self
-    end
-
-    local content = self:contents()
-    local playhead = content:playhead()
-    local check = nil
-    local status = 0
-    local lastPosition = nil
-    local stopCounter = 0
-    local originalOffset = 0
-    --local viewer = self:app():viewer()
-    local threshold = Timeline.stopThreshold
-
-    local incPlayheadStopped = function()
-        stopCounter = math.min(threshold, stopCounter + 1)
-    end
-
-    local playheadHasStopped = function()
-        return stopCounter == threshold
-        --[[
-        if stopCounter ~= threshold and not viewer:isPlaying() then
-            stopCounter = threshold
+    --------------------------------------------------------------------------------
+    -- Stop the checker if the timeline isn't playing:
+    --------------------------------------------------------------------------------
+    if not isPlaying or not self._locked then
+        if self._checker then
+            self._checker:stop()
+            self._checker = nil
         end
-        return stopCounter == threshold
-        --]]
+        return
     end
 
     --------------------------------------------------------------------------------
-    -- Setting this to false unlocks the playhead:
+    -- Don't create multiple checkers:
     --------------------------------------------------------------------------------
-    self._locked = true
+    if self._checker and isPlaying then
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Lock in centre:
+    --------------------------------------------------------------------------------
+    local lockInCentre = self._lockInCentre
 
     --------------------------------------------------------------------------------
     -- Calculate the original offset of the playhead:
     --------------------------------------------------------------------------------
+    local content = self:contents()
+    local playhead = content:playhead()
     local viewFrame = content:viewFrame()
     if viewFrame then
-        originalOffset = playhead:position() - viewFrame.x
-        if lockInCentre or originalOffset <= 0 or originalOffset >= viewFrame.w then
-            -- align the playhead to the centre of the timeline view
-            originalOffset = math.floor(viewFrame.w/2)
+        self._originalOffset = playhead:position() - viewFrame.x
+        if lockInCentre or self._originalOffset <= 0 or self._originalOffset >= viewFrame.w then
+            --------------------------------------------------------------------------------
+            -- Align the playhead to the centre of the timeline view:
+            --------------------------------------------------------------------------------
+            self._originalOffset = math.floor(viewFrame.w/2)
         end
     end
 
     --------------------------------------------------------------------------------
     -- Create the 'check' function that will loop to keep the playhead in position:
     --------------------------------------------------------------------------------
-    check = function()
-        if not self._locked then
-            --------------------------------------------------------------------------------
-            -- We have stopped locking. Bail:
-            --------------------------------------------------------------------------------
+    local checkFn = function()
+
+        --------------------------------------------------------------------------------
+        -- Timeline isn't visible:
+        --------------------------------------------------------------------------------
+        local contentFrame = content:viewFrame()
+        local playheadPosition = playhead:position()
+        if contentFrame == nil or playheadPosition == nil then
             return
         end
 
-        local contentFrame = content:viewFrame()
-        local playheadPosition = playhead:position()
+        --------------------------------------------------------------------------------
+        -- Reset the original offset if the viewFrame gets too narrow:
+        --------------------------------------------------------------------------------
+        if self._originalOffset >= contentFrame.w then self._originalOffset = math.floor(contentFrame.w/2) end
 
-        if contentFrame == nil or playheadPosition == nil then
-            --------------------------------------------------------------------------------
-            -- The timeline and/or playhead does not exist:
-            --------------------------------------------------------------------------------
-            if status ~= Timeline.INVISIBLE then
-                status = Timeline.INVISIBLE
-                -- log.df("Timeline not visible.")
-            end
+        --------------------------------------------------------------------------------
+        -- Track the timeline:
+        --------------------------------------------------------------------------------
+        local timelineFrame = content:timelineFrame()
+        local scrollWidth = timelineFrame.w - contentFrame.w
+        local scrollPoint = timelineFrame.x*-1 + playheadPosition - self._originalOffset
+        local scrollTarget = scrollPoint/scrollWidth
 
-            stopCounter = threshold
-            if deactivateWhenStopped then
-                -- log.df("Deactivating lock.")
-                self:unlockPlayhead()
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- The timeline is visible. Let's track it!
-            -- Reset the original offset if the viewFrame gets too narrow:
-            --------------------------------------------------------------------------------
-            if originalOffset >= contentFrame.w then originalOffset = math.floor(contentFrame.w/2) end
-
-            if playheadPosition == lastPosition then
-                --------------------------------------------------------------------------------
-                -- It hasn't moved since the last check:
-                --------------------------------------------------------------------------------
-                incPlayheadStopped()
-                if playheadHasStopped() and status ~= Timeline.STOPPED then
-                    status = Timeline.STOPPED
-                    -- log.df("Playhead stopped.")
-                    if deactivateWhenStopped then
-                        --log.df("Deactivating lock.")
-                        self:unlockPlayhead()
-                    end
-                end
-            else
-                --------------------------------------------------------------------------------
-                -- It's moving:
-                --------------------------------------------------------------------------------
-                local timelineFrame = content:timelineFrame()
-                local scrollWidth = timelineFrame.w - contentFrame.w
-                local scrollPoint = timelineFrame.x*-1 + playheadPosition - originalOffset
-                local scrollTarget = scrollPoint/scrollWidth
-                local scrollValue = content:getScrollHorizontal()
-
-                stopCounter = 0
-
-                if scrollTarget < 0 and scrollValue == 0 or scrollTarget > 1 and scrollValue == 1 then
-                    if status ~= Timeline.DEADZONE then
-                        status = Timeline.DEADZONE
-                        -- log.df("In the deadzone.")
-                    end
-                else
-                    if status ~= Timeline.TRACKING then
-                        status = Timeline.TRACKING
-                        -- log.df("Tracking the playhead.")
-                    end
-
-                    -----------------------------------------------------------------------
-                    -- Don't change timeline position if SHIFT key is pressed:
-                    -----------------------------------------------------------------------
-                    local modifiers = eventtap.checkKeyboardModifiers()
-                    if modifiers and not modifiers["shift"] then
-                        content:scrollHorizontalTo(scrollTarget)
-                    end
-                end
-            end
+        -----------------------------------------------------------------------
+        -- Don't change timeline position if SHIFT key is pressed:
+        -----------------------------------------------------------------------
+        local modifiers = eventtap.checkKeyboardModifiers()
+        if modifiers and not modifiers["shift"] then
+            content:scrollHorizontalTo(scrollTarget)
         end
 
-        --------------------------------------------------------------------------------
-        -- Check how quickly we should check again:
-        --------------------------------------------------------------------------------
-        local next = Timeline.lockActive
-        if playheadHasStopped() then
-            next = Timeline.lockInactive
-        end
-
-        --------------------------------------------------------------------------------
-        -- Update last postion to the current position:
-        --------------------------------------------------------------------------------
-        lastPosition = playheadPosition
-
-        if next ~= nil then
-            timer.doAfter(next, check)
-        end
     end
 
-    -- Let's go!
-    --timer.doAfter(Timeline.lockActive, check)
-    check()
+    --------------------------------------------------------------------------------
+    -- Start the timer:
+    --------------------------------------------------------------------------------
+    self._checker = timer.doEvery(0.001, checkFn)
+end
 
+--- cp.apple.finalcutpro.main.Timeline:lockPlayhead() -> self
+--- Method
+--- Locks the playhead on-screen.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
+function Timeline:lockPlayhead()
+    self._locked = true
     return self
 end
 
---- cp.apple.finalcutpro.main.Timeline:unlockPlayhead() -> Timeline
+--- cp.apple.finalcutpro.main.Timeline:unlockPlayhead() -> self
 --- Method
 --- Unlock Playhead.
 ---
@@ -629,10 +547,23 @@ end
 ---  * None
 ---
 --- Returns:
----  * `Timeline` object.
+---  * Self
 function Timeline:unlockPlayhead()
-    -- log.df("unlockPlayhead: called")
     self._locked = false
+    return self
+end
+
+--- cp.apple.finalcutpro.main.Timeline:lockInCentre(value) -> self
+--- Method
+--- Sets whether or not the playhead is locked in the centre.
+---
+--- Parameters:
+---  * value - `true` if locked in the centre, otherwise `false`.
+---
+--- Returns:
+---  * Self
+function Timeline:lockInCentre(value)
+    self._lockInCentre = value == true or false
     return self
 end
 
