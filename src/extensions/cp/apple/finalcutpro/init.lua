@@ -128,6 +128,15 @@ local fcp = {
     --- Constant
     --- The `cp.app` for Final Cut Pro.
     app = app,
+
+    --- cp.apple.finalcutpro.preferences <cp.app.prefs>
+    --- Constant
+    --- The `cp.app.prefs` for Final Cut Pro.
+    preferences = app.preferences,
+
+    --- cp.apple.finalcutpro.strings <cp.strings>
+    --- Constant
+    --- The `cp.strings` providing access to common FCPX text values.
     strings = strings,
 }
 
@@ -946,48 +955,6 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:getPreferences() -> table or nil
---- Method
---- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
---- file has been modified and reloads when necessary.
----
---- Parameters:
----  * [forceReload]	- If `true`, an optional reload will be forced even if the file hasn't been modified.
----
---- Returns:
----  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
-function fcp:getPreferences()
-    return self.app.preferences
-end
-
---- cp.apple.finalcutpro:getPreference(key, [default], [forceReload]) -> string or nil
---- Method
---- Get an individual Final Cut Pro preference
----
---- Parameters:
----  * key 			- The preference you want to return
----  * [default]		- The optional default value to return if the preference is not set.
----
---- Returns:
----  * A string with the preference value, or nil if an error occurred
-function fcp:getPreference(key, default)
-    return self.app.preferences()[key] or default
-end
-
---- cp.apple.finalcutpro:setPreference(key, value) -> nil
---- Method
---- Sets an individual Final Cut Pro preference
----
---- Parameters:
----  * key - The preference you want to change
----  * value - The value you want to set for that preference
----
---- Returns:
----  * `nil`
-function fcp:setPreference(key, value)
-    self.app.preferences()[key] = value
-end
-
 --- cp.apple.finalcutpro:importXML(path) -> boolean
 --- Method
 --- Imports an XML file into Final Cut Pro
@@ -1042,7 +1009,7 @@ end
 --- Returns:
 ---  * The 'Active Command Set' value, or the 'Default' Command Set if this is the first time Final Cut Pro has been run.
 function fcp:activeCommandSetPath()
-    return self:getPreference("Active Command Set") or self:defaultCommandSetPath()
+    return self.preferences:get("Active Command Set", self:defaultCommandSetPath())
 end
 
 --- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string

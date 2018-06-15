@@ -13,7 +13,6 @@
 --------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
-local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -46,14 +45,13 @@ local mod = {}
 --- plugins.finalcutpro.timeline.disablewaveforms.enabled <cp.prop: boolean>
 --- Variable
 --- Whether or not Waveforms are enabled.
-mod.enabled = prop.new(
-    function()
-        --------------------------------------------------------------------------------
-        -- Get Preference:
-        --------------------------------------------------------------------------------
-        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE) == true or false
-    end,
-    function(value)
+mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE):mutate(
+    function(original) return original() end,
+    function(newValue, original)
+        if newValue == original() then
+            -- No change
+            return
+        end
         --------------------------------------------------------------------------------
         -- If Final Cut Pro is running...
         --------------------------------------------------------------------------------
@@ -65,7 +63,7 @@ mod.enabled = prop.new(
         --------------------------------------------------------------------------------
         -- Set Preference:
         --------------------------------------------------------------------------------
-        fcp:setPreference(PREFERENCES_KEY, value)
+        original(newValue)
 
         --------------------------------------------------------------------------------
         -- Restart Final Cut Pro:

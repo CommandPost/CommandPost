@@ -25,7 +25,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("app_prefs")
+local log               = require("hs.logger").new("app_prefs")
 -- local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
@@ -34,6 +34,8 @@
 -- local inspect           = require("hs.inspect")
 local cfprefs               = require("hs._asm.cfpreferences")
 local pathwatcher			= require("hs.pathwatcher")
+
+local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -84,6 +86,43 @@ local function prefsFilePath(self)
         end
     end
     return filePath
+end
+
+-- prefsWatchers(prefs[, create])
+-- Function
+-- Returns the watcher cache for the `prefs` instance.
+--
+-- Parameters:
+--  * prefs         - The `prefs` instance.
+--  * create        - If `true`, the cache will be created if it doesn't already exist.
+--
+-- Returns:
+--  * The watchers cache.
+local function prefsWatchers(prefs, create)
+    local data = metadata(prefs)
+    local watchers = data.watchers
+    if not watchers and create then
+        watchers = {}
+        data.watchers = watchers
+    end
+    return watchers
+end
+
+-- prefsProps(prefs[, create]) -> table
+-- Function
+-- Finds the `cp.prop` cache for the `prefs`.
+--
+-- Parameters:
+--  * prefs     - The `prefs` instance.
+--  * create    - If `true`, create the cache if it doesn't exist already.
+local function prefsProps(prefs, create)
+    local data = metadata(prefs)
+    local cache = data.prefsProps
+    if not cache and create then
+        cache = {}
+        data.prefsProps = cache
+    end
+    return cache
 end
 
 --- cp.app.prefs.new(bundleID) -> cp.app.prefs
@@ -138,6 +177,34 @@ end
 
 local PLIST_MATCH = "^.-([^/]+)%.plist*"
 
+local function watchFiles(prefs)
+    local data = metadata(prefs)
+    if not data.pathwatcher then
+        local path = prefsFilePath(prefs)
+        data.pathwatcher = pathwatcher.new(path, function(files)
+            for _,file in pairs(files) do
+                local fileName = file:match(PLIST_MATCH)
+                if fileName == data.bundleID then
+                    -- notify watchers
+                    local watchers = prefsWatchers(prefs, false)
+                        if watchers then
+                        for _,watcher in ipairs(watchers) do
+                            watcher(prefs)
+                        end
+                    end
+                    -- update cp.props
+                    local props = prefsProps(prefs, false)
+                    if props then
+                        for _,p in ipairs(props) do
+                            p:update()
+                        end
+                    end
+                end
+            end
+        end):start()
+    end
+end
+
 --- cp.app.prefs.watch(prefs, watchFn) -> nil
 --- Function
 --- Adds a watch function which will be notified when the preferences change.
@@ -154,35 +221,88 @@ function mod.watch(prefs, watchFn)
         error("The `watchFn` provided is not a function: " .. type(watchFn))
     end
 
-    local data = metadata(prefs)
-    local watchers = data.watchers
-    if watchers == nil then
-        -- first watcher. set it up!
-        watchers = {}
-        data.watchers = watchers
-
-        --log.df("Setting up Preferences Watcher...")
-        local path = prefsPath(prefs)
-
-        data.pathwatcher = pathwatcher.new(path, function(files)
-            for _,file in pairs(files) do
-                local fileName = file:match(PLIST_MATCH)
-                if fileName == data.bundleID then
-                    for _,watcher in ipairs(watchers) do
-                        watcher(prefs)
-                    end
-                end
-            end
-        end):start()
-
-    end
+    local watchers = prefsWatchers(prefs, true)
     table.insert(watchers, watchFn)
+
+    watchFiles(prefs)
+end
+
+--- cp.app.prefs.get(prefs, key[, defaultValue])
+--- Function
+--- Retrieves the specifed `key` from the provided `prefs`.
+--- If there is no current value, the `defaultValue` is returned.
+---
+--- Parameters:
+--- * prefs         - The `prefs` instance.
+--- * key           - The key to retrieve.
+--- * defaultValue  - The value to return if none is currentl set.
+---
+--- Returns:
+--- * The current value, or `defaultValue` if not set.
+function mod.get(prefs, key, defaultValue)
+    local path = prefsFilePath(prefs)
+    return path and cfprefs.getValue(key, path) or defaultValue
+end
+
+--- cp.app.prefs.set(prefs, key, value) -> nil
+--- Function
+--- Sets the key/value for the specified `prefs` instance.
+---
+--- Parameters:
+--- * prefs     - The `prefs` instance.
+--- * key       - The key to set.
+--- * value     - the new value.
+---
+--- Returns:
+--- * Nothing.
+function mod.set(prefs, key, value)
+    local path = prefsFilePath(prefs)
+
+    if path and key then
+        cfprefs.setValue(key, value, path)
+        cfprefs.synchronize(path)
+
+        -- update the cp.prop if it exists.
+        local props = prefsProps(prefs, false)
+        local keyProp = props and props[key]
+        if keyProp then
+            keyProp:update()
+        end
+    end
+end
+
+--- cp.app.prefs.prop(prefs, key[, defaultValue]) -> cp.prop
+--- Function
+--- Retrieves the `cp.prop` for the specified key. It can be `watched` for changes.
+--- Subsequent calls will return the same `cp.prop` instance.
+---
+--- Parameters:
+--- * prefs         - The `prefs` instance.
+--- * key           - The key to get/set.
+--- * defaultValue  - The value if no default values is currently set.
+---
+--- Returns:
+--- * The `cp.prop` for the key.
+function mod.prop(prefs, key, defaultValue)
+    local props = prefsProps(prefs, true)
+    local propValue = props[key]
+
+    if not propValue then
+        log.df("prop: creating new cp.prop")
+        propValue = prop.new(
+            function() return mod.get(prefs, key, defaultValue) end,
+            function(value) mod.set(prefs, key, value) end
+        ):label(key):deepTable():preWatch(function() watchFiles(prefs) end)
+        props[key] = propValue
+    end
+
+    return propValue
 end
 
 function mod.mt:__index(key)
     if key == "watch" then
         --- cp.app.prefs:watch(watchFn) -> nil
-        --- Function
+        --- Method
         --- Adds a watch function which will be notified when the preferences change.
         --- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
         ---
@@ -192,24 +312,49 @@ function mod.mt:__index(key)
         --- Returns:
         ---  * Nothing
         return mod.watch
+    elseif key == "prop" then
+        --- cp.app.prefs:prop(key, defaultValue) -> cp.prop
+        --- Method
+        --- Returns a `cp.prop` for the specified `key`. It can be watched for updates.
+        ---
+        --- Parameters:
+        ---  * key          - The key name for the prop.
+        ---  * defaultValue - The value to return if the prop is not currently set.
+        ---
+        --- Returns:
+        ---  * The `cp.prop` for the key.
+        return mod.prop
+    elseif key == "get" then
+        --- cp.app.prefs:get(key, defaultValue) -> anything
+        --- Method
+        --- Returns the current value for the specified `key`.
+        ---
+        --- Parameters:
+        ---  * key          - The key name for the value.
+        ---  * defaultValue - The value to return if not currently set.
+        ---
+        --- Returns:
+        ---  * The value.
+        return mod.get
+    elseif key == "set" then
+        --- cp.app.prefs:set(key, value) -> nil
+        --- Method
+        --- Sets the value for the specified `key`.
+        ---
+        --- Parameters:
+        ---  * key          - The key to set.
+        ---  * value        - The new value.
+        ---
+        --- Returns:
+        ---  * Nothing.
+        return mod.set
     end
 
-    local path = prefsFilePath(self)
-
-    if path then
-        return cfprefs.getValue(key, path)
-    else
-        return nil
-    end
+    return mod.get(self, key)
 end
 
 function mod.mt:__newindex(key, value)
-    local path = prefsFilePath(self)
-
-    if path and key then
-        cfprefs.setValue(key, value, path)
-        cfprefs.synchronize(path)
-    end
+    mod.set(self, key, value)
 end
 
 function mod.mt:__pairs()

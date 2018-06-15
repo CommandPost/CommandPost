@@ -51,10 +51,10 @@ local mod = {}
 --- How long before a file is deleted in seconds.
 mod.DELETE_DELAY = 30
 
---- plugins.finalcutpro.text2speech.COPY_TO_MEDIA_FOLDER
+--- plugins.finalcutpro.text2speech.copyToMediaFolder <cp.prop: boolean; live>
 --- Constant
 --- Copy to Media Folder Preferences Key.
-mod.COPY_TO_MEDIA_FOLDER = "FFImportCopyToMediaFolder"
+mod.copyToMediaFolder = fcp.preferences:prop("FFImportCopyToMediaFolder")
 
 --- plugins.finalcutpro.text2speech.recentText
 --- Variable
@@ -331,7 +331,7 @@ function mod._completeProcess()
     --------------------------------------------------------------------------------
     -- Cache Preferences:
     --------------------------------------------------------------------------------
-    local copyToMediaFolder = fcp:getPreference(mod.COPY_TO_MEDIA_FOLDER, true)
+    local copyToMediaFolder = mod.copyToMediaFolder()
 
     --------------------------------------------------------------------------------
     -- Get the last Save Path:
@@ -757,8 +757,8 @@ function mod._rightClickCallback()
         },
         { title = "-" },
         { title = i18n("deleteFileAfterImport"),
-            disabled = not fcp:getPreference(mod.COPY_TO_MEDIA_FOLDER, true),
-            checked = fcp:getPreference(mod.COPY_TO_MEDIA_FOLDER, true) and mod.deleteFileAfterImport(),
+            disabled = not mod.copyToMediaFolder(),
+            checked = mod.copyToMediaFolder() and mod.deleteFileAfterImport(),
             fn = function()
                 mod.deleteFileAfterImport:toggle()
             end,

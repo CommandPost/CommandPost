@@ -841,7 +841,7 @@ end
 ---  * The destination folder path as a string.
 function mod.getDestinationFolder()
     local batchExportDestinationFolder = config.get("batchExportDestinationFolder")
-    local NSNavLastRootDirectory = fcp:getPreference("NSNavLastRootDirectory")
+    local NSNavLastRootDirectory = fcp.preferences.NSNavLastRootDirectory
     local exportPath = os.getenv("HOME") .. "/Desktop"
     if batchExportDestinationFolder ~= nil then
          if tools.doesDirectoryExist(batchExportDestinationFolder) then

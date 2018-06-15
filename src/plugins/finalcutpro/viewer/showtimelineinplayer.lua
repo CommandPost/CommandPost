@@ -11,9 +11,7 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
-local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -43,33 +41,12 @@ local PREFERENCES_KEY 	= "FFPlayerDisplayedTimeline"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.viewer.showtimelineinplayer.enabled <cp.prop: boolean>
---- Variable
+--- plugins.finalcutpro.viewer.showtimelineinplayer.enabled <cp.prop: boolean; live>
+--- Constant
 --- Show Timeline in Player Enabled?
-mod.enabled = prop.new(
-    function()
-        --------------------------------------------------------------------------------
-        -- Get Preference:
-        --------------------------------------------------------------------------------
-        local value = fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-        if value == 1 then
-            value = true
-        else
-            value = false
-        end
-        return value
-    end,
-    function(value)
-        --------------------------------------------------------------------------------
-        -- Set Preference:
-        --------------------------------------------------------------------------------
-        if value then
-            value = 1
-        else
-            value = 0
-        end
-        fcp:setPreference(PREFERENCES_KEY, value)
-    end
+mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE):mutate(
+    function(original) return original() == 1 end,
+    function(newValue, original) original(newValue and 1 or 0) end
 )
 
 --------------------------------------------------------------------------------

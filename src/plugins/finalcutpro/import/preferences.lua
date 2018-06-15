@@ -12,7 +12,6 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp           = require("cp.apple.finalcutpro")
-local prop          = require("cp.prop")
 local dialog        = require("cp.dialog")
 
 --------------------------------------------------------------------------------
@@ -56,139 +55,169 @@ local mod = {}
 --- plugins.finalcutpro.import.preferences.createOptimizedMedia <cp.prop: boolean>
 --- Variable
 --- Create Optimised Media
-mod.createOptimizedMedia = prop.new(
+mod.createOptimizedMedia = fcp.preferences:prop(CREATE_OPTIMIZED_MEDIA, false):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-    function() return fcp:getPreference(CREATE_OPTIMIZED_MEDIA, false) end,
+    function(original) return original() end,
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
-    function()
-        --------------------------------------------------------------------------------
-        -- Make sure it's active:
-        --------------------------------------------------------------------------------
-        fcp:launch()
+    function(newValue, original)
+        local currentValue = original()
+        if currentValue ~= newValue then
+            if fcp:isRunning() then
+                --------------------------------------------------------------------------------
+                -- We have to go via the Preferences window...
+                -- Make sure it's active:
+                --------------------------------------------------------------------------------
+                fcp:launch()
 
-        --------------------------------------------------------------------------------
-        -- Toggle the checkbox:
-        --------------------------------------------------------------------------------
-        local panel = fcp:preferencesWindow():importPanel()
-        if panel:show():isShowing() then
-            panel:createOptimizedMedia():toggle()
-        else
-            dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in createOptimizedMedia().")
+                --------------------------------------------------------------------------------
+                -- Toggle the checkbox:
+                --------------------------------------------------------------------------------
+                local panel = fcp:preferencesWindow():importPanel()
+                if panel:show():isShowing() then
+                    panel:createOptimizedMedia():toggle()
+                else
+                    dialog.displayErrorMessage("Failed to toggle 'Create Optimized Media'.\n\nError occurred in createOptimizedMedia().")
+                end
+
+                --------------------------------------------------------------------------------
+                -- Close the Preferences window:
+                --------------------------------------------------------------------------------
+                panel:hide()
+            else
+                original(newValue)
+            end
         end
-
-        --------------------------------------------------------------------------------
-        -- Close the Preferences window:
-        --------------------------------------------------------------------------------
-        panel:hide()
     end
 )
 
 --- plugins.finalcutpro.import.preferences.createMulticamOptimizedMedia <cp.prop: boolean>
 --- Variable
 --- Create Multicam Optimised Media
-mod.createMulticamOptimizedMedia = prop.new(
+mod.createMulticamOptimizedMedia = fcp.preferences:prop(CREATE_MULTICAM_OPTIMIZED_MEDIA, true):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-    function() return fcp:getPreference(CREATE_MULTICAM_OPTIMIZED_MEDIA, true) end,
+    function(original) return original() end,
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
-    function()
-        --------------------------------------------------------------------------------
-        -- Make sure it's active:
-        --------------------------------------------------------------------------------
-        fcp:launch()
+    function(newValue, original)
+        local currentValue = original()
+        if newValue ~= currentValue then
+            if fcp:isRunning() then
+                --------------------------------------------------------------------------------
+                -- We have to go via the Preferences window...
+                -- Make sure it's active:
+                --------------------------------------------------------------------------------
+                fcp:launch()
 
-        --------------------------------------------------------------------------------
-        -- Toggle the checkbox:
-        --------------------------------------------------------------------------------
-        local panel = fcp:preferencesWindow():playbackPanel()
-        if panel:show() then
-            panel:createMulticamOptimizedMedia():toggle()
-        else
-            dialog.displayErrorMessage("Failed to toggle 'Create Multicam Optimized Media'.\n\nError occurred in createOptimizedMedia().")
+                --------------------------------------------------------------------------------
+                -- Toggle the checkbox:
+                --------------------------------------------------------------------------------
+                local panel = fcp:preferencesWindow():playbackPanel()
+                if panel:show() then
+                    panel:createMulticamOptimizedMedia():toggle()
+                else
+                    dialog.displayErrorMessage("Failed to toggle 'Create Multicam Optimized Media'.\n\nError occurred in createMulticamOptimizedMedia().")
+                end
+
+                --------------------------------------------------------------------------------
+                -- Close the Preferences window:
+                --------------------------------------------------------------------------------
+                panel:hide()
+            else
+                original(newValue)
+            end
         end
-
-        --------------------------------------------------------------------------------
-        -- Close the Preferences window:
-        --------------------------------------------------------------------------------
-        panel:hide()
     end
 )
 
 --- plugins.finalcutpro.import.preferences.createProxyMedia <cp.prop: boolean>
 --- Variable
 --- Create Proxy Media
-mod.createProxyMedia = prop.new(
+mod.createProxyMedia = fcp.preferences:prop(CREATE_PROXY_MEDIA, false):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-    function() return fcp:getPreference(CREATE_PROXY_MEDIA, false) end,
+    function(original) return original() end,
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
-    function()
-        --------------------------------------------------------------------------------
-        -- Make sure it's active:
-        --------------------------------------------------------------------------------
-        fcp:launch()
+    function(newValue, original)
+        local currentValue = original()
+        if currentValue ~= newValue then
+            if fcp:isRunning() then
+                --------------------------------------------------------------------------------
+                -- Make sure it's active:
+                --------------------------------------------------------------------------------
+                fcp:launch()
 
-        --------------------------------------------------------------------------------
-        -- Toggle the checkbox:
-        --------------------------------------------------------------------------------
-        local panel = fcp:preferencesWindow():importPanel()
-        if panel:show():isShowing() then
-            panel:createProxyMedia():toggle()
-        else
-            dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in createProxyMedia().")
+                --------------------------------------------------------------------------------
+                -- Toggle the checkbox:
+                --------------------------------------------------------------------------------
+                local panel = fcp:preferencesWindow():importPanel()
+                if panel:show():isShowing() then
+                    panel:createProxyMedia():toggle()
+                else
+                    dialog.displayErrorMessage("Failed to toggle 'Create Proxy Media'.\n\nError occurred in createProxyMedia().")
+                end
+
+                --------------------------------------------------------------------------------
+                -- Close the Preferences window:
+                --------------------------------------------------------------------------------
+                panel:hide()
+            else
+                original(newValue)
+            end
         end
-
-        --------------------------------------------------------------------------------
-        -- Close the Preferences window:
-        --------------------------------------------------------------------------------
-        panel:hide()
     end
 )
 
 --- plugins.finalcutpro.import.preferences.leaveInPlace <cp.prop: boolean>
 --- Variable
 --- Leave In Place.
-mod.leaveInPlace = prop.new(
+mod.leaveInPlace = fcp.preferences:prop(COPY_TO_MEDIA_FOLDER, true):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-    function() return not fcp:getPreference(COPY_TO_MEDIA_FOLDER, true) end,
+    function(original) return original() end,
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
-    function()
-        --------------------------------------------------------------------------------
-        -- Make sure it's active:
-        --------------------------------------------------------------------------------
-        fcp:launch()
+    function(newValue, original)
+        local currentValue = original()
+        if newValue ~= currentValue then
+            if fcp:isRunning() then
+                --------------------------------------------------------------------------------
+                -- Make sure it's active:
+                --------------------------------------------------------------------------------
+                fcp:launch()
 
-        --------------------------------------------------------------------------------
-        -- Define FCPX:
-        --------------------------------------------------------------------------------
-        local prefs = fcp:preferencesWindow()
+                --------------------------------------------------------------------------------
+                -- Define FCPX:
+                --------------------------------------------------------------------------------
+                local prefs = fcp:preferencesWindow()
 
-        --------------------------------------------------------------------------------
-        -- Toggle the checkbox:
-        --------------------------------------------------------------------------------
-        if not prefs:importPanel():toggleMediaLocation() then
-            dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in leaveInPlace().")
-            return "Failed"
+                --------------------------------------------------------------------------------
+                -- Toggle the checkbox:
+                --------------------------------------------------------------------------------
+                if not prefs:importPanel():toggleMediaLocation() then
+                    dialog.displayErrorMessage("Failed to toggle 'Copy To Media Folder'.\n\nError occurred in leaveInPlace().")
+                    return "Failed"
+                end
+
+                --------------------------------------------------------------------------------
+                -- Close the Preferences window:
+                --------------------------------------------------------------------------------
+                prefs:hide()
+            else
+                original(newValue)
+            end
         end
-
-        --------------------------------------------------------------------------------
-        -- Close the Preferences window:
-        --------------------------------------------------------------------------------
-        prefs:hide()
     end
 )
 

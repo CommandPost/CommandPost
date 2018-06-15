@@ -16,7 +16,6 @@ local log                               = require("hs.logger").new("viewer")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local canvas                            = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 local timer                             = require("hs.timer")
@@ -266,6 +265,8 @@ function Viewer.new(app, eventViewer)
         end
     )
 
+    local playerQuality = app.preferences:prop("FFPlayerQuality")
+
     prop.bind(o) {
         --- cp.apple.finalcutpro.main.Viewer.topToolbarUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
@@ -325,11 +326,11 @@ function Viewer.new(app, eventViewer)
         --- cp.apple.finalcutpro.main.Viewer.usingProxies <cp.prop: boolean>
         --- Field
         --- Indicates if the viewer is using Proxies (`true`) or Optimized/Original media (`false`).
-        usingProxies = prop(
-            function(self)
-                return self:app():getPreference("FFPlayerQuality") == PLAYER_QUALITY.PROXY
+        usingProxies = playerQuality:mutate(
+            function(original)
+                return original() == PLAYER_QUALITY.PROXY
             end,
-            function(proxies, self, theProp)
+            function(proxies, original, self, theProp)
                 local currentValue = theProp()
                 if currentValue ~= proxies then -- got to switch
                     if self:isShowing() then
@@ -342,7 +343,7 @@ function Viewer.new(app, eventViewer)
                         end
                     else
                         local quality = proxies and PLAYER_QUALITY.PROXY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
-                        self:app():setPreference("FFPlayerQuality", quality)
+                        original(quality)
                     end
                 end
             end
@@ -352,11 +353,11 @@ function Viewer.new(app, eventViewer)
         --- Field
         --- Indicates if the viewer is using playing with better quality (`true`) or performance (`false).
         --- If we are `usingProxies` then it will always be `false`.
-        betterQuality = prop(
-            function(self)
-                return self:app():getPreference("FFPlayerQuality") == PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY
+        betterQuality = playerQuality:mutate(
+            function(original)
+                return original() == PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY
             end,
-            function(quality, self, theProp)
+            function(quality, original, self, theProp)
                 local currentQuality = theProp()
                 if quality ~= currentQuality then
                     if self:isShowing() then
@@ -369,7 +370,7 @@ function Viewer.new(app, eventViewer)
                         end
                     else
                         local qualityValue = quality and PLAYER_QUALITY.ORIGINAL_BETTER_QUALITY or PLAYER_QUALITY.ORIGINAL_BETTER_PERFORMANCE
-                        self:app():setPreference("FFPlayerQuality", qualityValue)
+                        original(qualityValue)
                     end
                 end
             end

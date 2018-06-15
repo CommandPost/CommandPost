@@ -119,25 +119,25 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
         yShift = 0
     }, Puck)
 
-    prop.bind(o) {
-        --- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
-        --- Method
-        --- Returns the Color Puck Accessibility Object
-        ---
-        --- Parameters:
-        ---  * None
-        ---
-        --- Returns:
-        ---  * An `axuielementObject` or `nil`
-        UI = prop(function(self)
-            return axutils.cache(self, "_ui", function()
-                local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
-                return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
-            end, Puck.matches)
-        end),
-    }
+    local UI = prop(function(self)
+        return axutils.cache(self, "_ui", function()
+            local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
+            return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
+        end, Puck.matches)
+    end)
 
     prop.bind(o) {
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
+--- Method
+--- Returns the Color Puck Accessibility Object
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * An `axuielementObject` or `nil`
+        UI = UI,
+
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:contentUI() -> axuielementObject
 --- Method
 --- Returns the Content Accessibility Object
@@ -147,7 +147,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 ---
 --- Returns:
 ---  * An `axuielementObject` or `nil`
-        contentUI = o.UI,
+        contentUI = UI,
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:isShowing() -> boolean
 --- Method
@@ -158,9 +158,12 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 ---
 --- Returns:
 ---  * `true` if showing or `false` if not.
-        isShowing = o.UI:mutate(function(original)
-            return original() ~= nil
-        end)
+        isShowing = UI:ISNOT(nil),
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.skimming <cp.prop: boolean>
+--- Field
+--- The Skimming Preferences value.
+        skimming = parent:app().preferences:prop("FFDisableSkimming", false):NOT(),
     }
 
     -- prepare the parent to provide the content UI.
@@ -335,13 +338,6 @@ function Puck:reset()
     self:angle(Puck.DEFAULT_ANGLES[self:index()])
     return self
 end
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck.skimming <cp.prop: boolean>
---- Field
---- The Skimming Preferences value.
-Puck.skimming = prop(function(self)
-    return not self:app():getPreference("FFDisableSkimming", false)
-end):bind(Puck)
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:start() -> cp.apple.finalcutpro.inspector.color.ColorPuck
 --- Method
