@@ -12,7 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("viewer")
-local inspect                           = require("hs.inspect")
+-- local inspect                           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -41,7 +41,6 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local floor                             = math.floor
 local match, sub, find                  = string.match, string.sub, string.find
 local childrenWithRole                  = axutils.childrenWithRole
 local childrenMatching                  = axutils.childrenMatching
@@ -307,9 +306,7 @@ function Viewer.new(app, eventViewer)
                 local snapshot = self:playButton():snapshot()
                 if snapshot then
                     snapshot:size({h=60,w=60})
-                    -- snapshot:saveToFile("~/Desktop/isPlaying_resized.png")
                     local spot = snapshot:colorAt({x=31,y=31})
-                    log.df("spot.blue = %s", inspect(spot and spot.blue))
                     return spot and spot.blue < 0.5
                 end
                 return false
