@@ -112,6 +112,10 @@ local Observable = {}
 Observable.__index = Observable
 Observable.__tostring = util.constant('Observable')
 
+function Observable.is(thing)
+    return util.isa(thing, Observable)
+end
+
 --- Creates a new Observable.
 -- @arg {function} subscribe - The reference function that produces values.
 -- @returns {Observable}
