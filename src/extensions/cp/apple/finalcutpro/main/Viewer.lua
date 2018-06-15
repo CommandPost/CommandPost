@@ -19,7 +19,7 @@ local log                               = require("hs.logger").new("viewer")
 local canvas                            = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
-local delayedTimer                      = require("hs.timer").delayed
+local timer                             = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -41,13 +41,14 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local floor                             = math.floor
-local match, sub, find                  = string.match, string.sub, string.find
-local childrenWithRole                  = axutils.childrenWithRole
-local childrenMatching                  = axutils.childrenMatching
+local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
-local cache                             = axutils.cache
+local childrenMatching                  = axutils.childrenMatching
+local childrenWithRole                  = axutils.childrenWithRole
+local delayedTimer                      = timer.delayed
+local floor                             = math.floor
+local match, sub, find                  = string.match, string.sub, string.find
 
 --------------------------------------------------------------------------------
 --
@@ -379,7 +380,7 @@ function Viewer.new(app, eventViewer)
         --- Field
         --- Returns `true` if the Viewer has been resized, otherwise `false`.
         resized = prop(
-            function(self)
+            function()
                 local theUI = UI()
                 local currentFrame = theUI and theUI:attributeValue("AXFrame")
                 local previousFrame = o._previousFrame
@@ -426,7 +427,7 @@ function Viewer.new(app, eventViewer)
     -----------------------------------------------------------------------
     app.app.windowMoved:watch(function()
         o.resized:update()
-        o.resized:update()
+        timer.doAfter(0.01, function() o.resized:update() end)
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>

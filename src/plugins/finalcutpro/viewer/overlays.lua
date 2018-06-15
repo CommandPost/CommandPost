@@ -704,6 +704,16 @@ function plugin.init(deps)
             mod.update()
         end
     end)
+    fcp.app.windowMoved:watch(function(value)
+        if value then
+            mod.update()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Force initial update:
+    --------------------------------------------------------------------------------
+    mod.update()
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
