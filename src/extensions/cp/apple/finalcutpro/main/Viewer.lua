@@ -19,7 +19,7 @@ local log                               = require("hs.logger").new("viewer")
 --------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
-local delayedTimer                      = require("hs.timer").delayed
+local timer                             = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -44,9 +44,10 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 local match, sub, find                  = string.match, string.sub, string.find
 local childrenWithRole                  = axutils.childrenWithRole
 local childrenMatching                  = axutils.childrenMatching
+local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
-local cache                             = axutils.cache
+local delayedTimer                      = timer.delayed
 
 --------------------------------------------------------------------------------
 --
@@ -370,7 +371,29 @@ function Viewer.new(app, eventViewer)
                     end
                 end
             end
-        )
+        ),
+
+        --- cp.apple.finalcutpro.main.Viewer.resized <cp.prop: boolean; live>
+        --- Field
+        --- Returns `true` if the Viewer has been resized, otherwise `false`.
+        resized = prop(
+            function()
+                local theUI = UI()
+                local currentFrame = theUI and theUI:attributeValue("AXFrame")
+                local previousFrame = o._previousFrame
+                if currentFrame then
+                    if previousFrame then
+                        if currentFrame.h ~= previousFrame.h or currentFrame.w ~= previousFrame.w then
+                            o._previousFrame = currentFrame
+                            return true
+                        end
+                    end
+                    o._previousFrame = currentFrame
+                end
+                return false
+            end
+        ),
+
     }
 
     local checker
@@ -386,12 +409,22 @@ function Viewer.new(app, eventViewer)
     -----------------------------------------------------------------------
     -- Watch the `timecode` field and update `isPlaying`:
     -----------------------------------------------------------------------
-    o.timecode:watch(function(_)
+    o.timecode:watch(function()
         if not checker:running() then
-            -- update the first time.
+            -----------------------------------------------------------------------
+            -- Update the first time:
+            -----------------------------------------------------------------------
             o.isPlaying:update()
         end
         checker:start()
+    end)
+
+    -----------------------------------------------------------------------
+    -- Watch for the Viewer being resized:
+    -----------------------------------------------------------------------
+    app.app.windowMoved:watch(function()
+        o.resized:update()
+        timer.doAfter(0.01, function() o.resized:update() end)
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>

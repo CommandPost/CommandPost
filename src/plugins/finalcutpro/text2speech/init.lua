@@ -616,7 +616,7 @@ function mod._completeProcess()
         -- Remove from Timeline if appropriate:
         --------------------------------------------------------------------------------
         if not mod.insertIntoTimeline() then
-            if not fcp:selectMenu({"Edit", "Undo Paste"}, true) then
+            if not fcp:selectMenu({"Edit", "Undo Paste"}, {pressAll = true}) then
                 dialog.displayErrorMessage("Failed to trigger the 'Undo Paste' Shortcut in the Text to Speech Plugin.")
                 return nil
             end

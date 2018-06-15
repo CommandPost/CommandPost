@@ -585,18 +585,19 @@ function fcp:menu()
     return self._menu
 end
 
---- cp.apple.finalcutpro:selectMenu(path) -> boolean
+--- cp.apple.finalcutpro:selectMenu(path[, options]) -> boolean
 --- Method
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
 --- Parameters:
----  * `path`	- The list of menu items you'd like to activate, for example:
+---  * `path`	    - The list of menu items you'd like to activate, for example:
 ---            select("View", "Browser", "as List")
+---  * `options`    - (optional) The table of options. See `cp.app.menu:selectMenu(...)` for details.
 ---
 --- Returns:
 ---  * `true` if the press was successful.
-function fcp:selectMenu(path)
-    return self:menu():selectMenu(path)
+function fcp:selectMenu(path, options)
+    return self:menu():selectMenu(path, options)
 end
 
 ----------------------------------------------------------------------------------------
