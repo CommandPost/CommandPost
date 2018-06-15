@@ -195,7 +195,7 @@ local function watchFiles(prefs)
                     -- update cp.props
                     local props = prefsProps(prefs, false)
                     if props then
-                        for _,p in ipairs(props) do
+                        for _,p in pairs(props) do
                             p:update()
                         end
                     end
@@ -288,7 +288,6 @@ function mod.prop(prefs, key, defaultValue)
     local propValue = props[key]
 
     if not propValue then
-        log.df("prop: creating new cp.prop")
         propValue = prop.new(
             function() return mod.get(prefs, key, defaultValue) end,
             function(value) mod.set(prefs, key, value) end

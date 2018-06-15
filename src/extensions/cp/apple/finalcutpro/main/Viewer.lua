@@ -323,6 +323,11 @@ function Viewer.new(app, eventViewer)
             end
         ),
 
+        --- cp.apple.finalcutpro.main.Viewer.playerQuality <cp.prop: string>
+        --- Field
+        --- The currentplayer quality value.
+        playerQuality = playerQuality,
+
         --- cp.apple.finalcutpro.main.Viewer.usingProxies <cp.prop: boolean>
         --- Field
         --- Indicates if the viewer is using Proxies (`true`) or Optimized/Original media (`false`).

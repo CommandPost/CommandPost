@@ -8,22 +8,13 @@
 --
 --------------------------------------------------------------------------------
 
+-- local log               = require("hs.logger").new("proxyicon")
+
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
-
---------------------------------------------------------------------------------
---
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- ENABLED_DEFAULT -> boolean
--- Constant
--- Whether or not the Proxy Icon is enabled by default.
-local ENABLED_DEFAULT = false
 
 --------------------------------------------------------------------------------
 --
@@ -42,28 +33,22 @@ mod.PROXY_ICON = "🔴"
 -- Original Icon
 mod.ORIGINAL_ICON = "🔵"
 
+mod.usingProxies = fcp:viewer().usingProxies
+
+local function updateMenubarIcon()
+    mod.menuManager:updateMenubarIcon()
+end
+
 --- plugins.finalcutpro.menu.proxyicon.procyMenuIconEnabled <cp.prop: boolean>
 --- Constant
 --- Toggles the Enable Proxy Menu Icon
-mod.enabled = config.prop("enableProxyMenuIcon", ENABLED_DEFAULT):watch(function(enabled)
+mod.enabled = config.prop("enableProxyMenuIcon", false):watch(function(enabled)
     if enabled then
-        --------------------------------------------------------------------------------
-        -- Update Menubar Icon on Final Cut Pro Preferences Update:
-        --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp.app.preferences:watch(function()
-            mod.menuManager:updateMenubarIcon()
-        end)
+        mod.usingProxies:watch(updateMenubarIcon, true)
     else
-        --------------------------------------------------------------------------------
-        -- Destroy Watchers:
-        --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
-            mod._fcpWatchID = nil
-        end
+        mod.usingProxies:unwatch(updateMenubarIcon)
     end
-    mod.menuManager:updateMenubarIcon()
-end)
+end, true)
 
 --- plugins.finalcutpro.menu.proxyicon.generateProxyTitle() -> string
 --- Function
@@ -76,7 +61,7 @@ end)
 ---  * String containing the Proxy Title
 function mod.generateProxyTitle()
     if mod.enabled() then
-        return fcp:viewer():usingProxies() and " " .. mod.PROXY_ICON or " " .. mod.ORIGINAL_ICON
+        return mod.usingProxies() and " " .. mod.PROXY_ICON or " " .. mod.ORIGINAL_ICON
     end
     return ""
 end
@@ -90,8 +75,8 @@ local plugin = {
     id              = "finalcutpro.menu.proxyicon",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
-        ["core.menu.manager"]                           = "menuManager",
+        ["finalcutpro.preferences.app"]     = "prefs",
+        ["core.menu.manager"]               = "menuManager",
     }
 }
 
