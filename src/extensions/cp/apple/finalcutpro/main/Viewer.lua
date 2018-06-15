@@ -397,7 +397,7 @@ function Viewer.new(app, eventViewer)
     }
 
     local checker
-    checker = delayedTimer.new(0.1, function()
+    checker = delayedTimer.new(0.2, function()
         if o.isPlaying:update() then
             -----------------------------------------------------------------------
             -- It hasn't actually finished yet, so keep running:

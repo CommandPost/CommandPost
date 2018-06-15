@@ -11,7 +11,6 @@
         "angle": "角度",
         "finalcutpro_open_label": "Final Cut Proを開く",
         "touchBarWidget": "タッチバーウィジェット",
-        "enableTimelinePlayheadLock": "タイムライン再生ヘッドロックを有効にする",
         "feedback": "フィードバック",
         "cpTransition5_title": "移行5を適用する",
         "core_preferences_panels_general_label": "設定パネル：一般",
@@ -97,7 +96,6 @@
             "other": "分"
         },
         "enableWaveformDrawing": "波形描画を有効にする",
-        "cpLockPlayhead_title": "再生ヘッドロックの切り替え",
         "showGenerators": "ジェネレータを表示",
         "hudButtonItem": "ボタン％{count}（％{title}）",
         "customPrefixError": "この接頭辞は無効です。もう一度お試しください。",

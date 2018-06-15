@@ -58,13 +58,6 @@
 		<key>downSelector</key>
 		<string>cpToggleVoiceCommands:</string>
 	</dict>
-	<key>cpLockPlayhead</key>
-	<dict>
-		<key>downRepeats</key>
-		<integer>0</integer>
-		<key>downSelector</key>
-		<string>cpLockPlayhead:</string>
-	</dict>
 	<key>cpHUD</key>
 	<dict>
 		<key>downRepeats</key>

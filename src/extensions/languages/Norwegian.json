@@ -11,7 +11,6 @@
         "angle": "Vinkel",
         "finalcutpro_open_label": "Åpne Final Cut Pro X",
         "touchBarWidget": "Trykk på Touch Bar-Widget",
-        "enableTimelinePlayheadLock": "Aktiver lås på Playhead",
         "feedback": "Tilbakemelding",
         "cpTransition5_title": "Bruk overgang 5",
         "core_preferences_panels_general_label": "PanelInnstillinger: Generelt",
@@ -97,7 +96,6 @@
             "other": "minutter"
         },
         "enableWaveformDrawing": "Aktiver tegning av Waveform",
-        "cpLockPlayhead_title": "Playhead Lock av/på",
         "showGenerators": "Vis generatorer",
         "hudButtonItem": "Knapp%{count} (%{title})",
         "customPrefixError": "Dette prefikset virker ugyldig. Vennligst prøv et annet.",
