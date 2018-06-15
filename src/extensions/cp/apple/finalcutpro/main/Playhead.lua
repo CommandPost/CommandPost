@@ -11,21 +11,18 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("fcpPlayhead")
+-- local log                               = require("hs.logger").new("fcpPlayhead")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
-local just                              = require("cp.just")
 local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -128,8 +125,9 @@ function Playhead.new(parent, skimming, containerUI, useEventViewer)
     end
 
     local timecode = currentViewer:mutate(
-        function(original)
-            return original():timecode()
+        function()
+            local ui = UI()
+            return ui and ui:attributeValue("AXValue")
         end,
         function(newTimecode, original)
             original():timecode(newTimecode)

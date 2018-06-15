@@ -81,7 +81,6 @@
     	"angle3"                                            : "ANG",
     	"finalcutpro_open_label"                            : "Open Final Cut Pro",
     	"touchBarWidget"                                    : "Touch Bar Widget",
-    	"enableTimelinePlayheadLock"                        : "Enable Timeline Playhead Lock",
     	"feedback"                                          : "Feedback",
     	"cpTransition5_title"                               : "Apply Transition 5",
     	"core_preferences_panels_general_label"             : "Preferences Panel: General",
@@ -172,7 +171,6 @@
             "other": "mins"
         },
         "enableWaveformDrawing"                            : "Enable Waveform Drawing",
-        "cpLockPlayhead_title"                             : "Toggle Playhead Lock",
         "showGenerators"                                   : "Show Generators",
         "hudButtonItem"                                    : "Button %{count} (%{title})",
         "customPrefixError"                                : "This prefix looks invalid. Please try again.",
