@@ -48,22 +48,22 @@ function mod.init(fcpGroup)
 
     mod.group:action(baseID+1, i18n("breakApartClipItems"))
         :onPress(function()
-            fcp:selectMenu({"Clip", "Break Apart Clip Items"})
+            fcp:selectMenuItem({"Clip", "Break Apart Clip Items"})
         end)
 
     mod.group:action(baseID+2, i18n("detachAudio"))
         :onPress(function()
-            fcp:selectMenu({"Clip", "Detach Audio"})
+            fcp:selectMenuItem({"Clip", "Detach Audio"})
         end)
 
     mod.group:action(baseID+3, i18n("expandAudio") .. " " .. i18n("components"))
         :onPress(function()
-            fcp:selectMenu({"Clip", "Expand Audio Components"})
+            fcp:selectMenuItem({"Clip", "Expand Audio Components"})
         end)
 
     mod.group:action(baseID+4, i18n("expandAudio"))
         :onPress(function()
-            fcp:selectMenu({"Clip", "Expand Audio"})
+            fcp:selectMenuItem({"Clip", "Expand Audio"})
         end)
 
     mod.group:action(baseID+5, i18n("selectLeftAudioEdge"))
