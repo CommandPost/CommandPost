@@ -149,7 +149,10 @@ function Observable.never()
 end
 
 --- Returns an Observable that immediately produces an error.
-function Observable.throw(message)
+function Observable.throw(message, ...)
+  if select("#", ...) > 0 then
+    message = string.format(message, ...)
+  end
   return Observable.create(function(observer)
     observer:onError(message)
   end)

@@ -539,7 +539,7 @@ function mod.insertFilesIntoFinalCutPro(files)
     -- Remove from Timeline if appropriate:
     --------------------------------------------------------------------------------
     if not mod.insertIntoTimeline() then
-        fcp:selectMenu({"Edit", "Undo Paste"}, true)
+        fcp:selectMenu({"Edit", "Undo Paste"}, {pressAll = true})
         -- fcp:performShortcut("UndoChanges")
     end
 
