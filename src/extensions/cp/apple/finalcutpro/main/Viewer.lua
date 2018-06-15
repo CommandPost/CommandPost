@@ -12,6 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("viewer")
+-- local inspect                           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -40,13 +41,13 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
+local match, sub, find                  = string.match, string.sub, string.find
+local childrenWithRole                  = axutils.childrenWithRole
+local childrenMatching                  = axutils.childrenMatching
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
-local childrenMatching                  = axutils.childrenMatching
-local childrenWithRole                  = axutils.childrenWithRole
 local delayedTimer                      = timer.delayed
-local match, sub, find                  = string.match, string.sub, string.find
 
 --------------------------------------------------------------------------------
 --
@@ -305,13 +306,11 @@ function Viewer.new(app, eventViewer)
         --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
         isPlaying = prop(
             function(self)
-                local playButton = self:playButton()
-                local snapshot = playButton and playButton:snapshot()
-                local resizedSnaptop = snapshot and snapshot:setSize({h=120,w=120}, true)
-                local a = resizedSnaptop and resizedSnaptop:colorAt({x=67,y=48})
-                local b = resizedSnaptop and resizedSnaptop:colorAt({x=53,y=61})
-                if a and b and a.blue ~= 0 and tools.round(a.blue) == tools.round(b.blue) then
-                    return true
+                local snapshot = self:playButton():snapshot()
+                if snapshot then
+                    snapshot:size({h=60,w=60})
+                    local spot = snapshot:colorAt({x=31,y=31})
+                    return spot and spot.blue < 0.5
                 end
                 return false
             end,
@@ -405,7 +404,7 @@ function Viewer.new(app, eventViewer)
     }
 
     local checker
-    checker = delayedTimer.new(0.1, function()
+    checker = delayedTimer.new(0.2, function()
         if o.isPlaying:update() then
             -----------------------------------------------------------------------
             -- It hasn't actually finished yet, so keep running:
@@ -628,9 +627,9 @@ end
 --- * A Button
 function Viewer:playButton()
     if not self._playButton then
-        self._playButton = Button.new(self, function()
-            return childFromLeft(childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
-        end)
+        self._playButton = Button.new(self, self.bottomToolbarUI:mutate(function(original)
+            return childFromLeft(childrenWithRole(original(), "AXButton"), 1)
+        end))
     end
     return self._playButton
 end

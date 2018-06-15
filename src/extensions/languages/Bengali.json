@@ -11,7 +11,6 @@
         "angle": "কোণ",
         "finalcutpro_open_label": "ফাইনাল কাট প্রো খুলুন",
         "touchBarWidget": "টাচ বার উইজেট",
-        "enableTimelinePlayheadLock": "সময়রেখা Playhead লক সক্ষম করুন",
         "feedback": "প্রতিক্রিয়া",
         "cpTransition5_title": "পরিবর্তন 5 প্রয়োগ করুন",
         "core_preferences_panels_general_label": "পছন্দসই প্যানেল: জেনারেল",
@@ -97,7 +96,6 @@
             "other": "মিনিট"
         },
         "enableWaveformDrawing": "তরঙ্গ অঙ্কন সক্রিয় করুন",
-        "cpLockPlayhead_title": "Playhead লক টগল করুন",
         "showGenerators": "জেনারেটর দেখান",
         "hudButtonItem": "বোতাম%{গণনা} (%{শিরোনাম})",
         "customPrefixError": "এই উপসর্গটি অবৈধ বলে মনে হচ্ছে অনুগ্রহপূর্বক আবার চেষ্টা করুন.",

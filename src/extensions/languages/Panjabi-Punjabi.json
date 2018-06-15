@@ -11,7 +11,6 @@
         "angle": "ਕੋਣ",
         "finalcutpro_open_label": "ਓਪਨ ਫਾਈਨਲ ਕੱਟ ਪ੍ਰੋ",
         "touchBarWidget": "ਟੱਚ ਬਾਰ ਵਿਜੇਟ",
-        "enableTimelinePlayheadLock": "ਟਾਈਮਲਾਈਨ ਪਲੇਹੈੱਡ ਲੌਕ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
         "feedback": "ਸੁਝਾਅ",
         "cpTransition5_title": "ਤਬਦੀਲੀ 5 ਲਾਗੂ ਕਰੋ",
         "core_preferences_panels_general_label": "ਤਰਜੀਹ ਪੈਨਲ: ਜਨਰਲ",
@@ -97,7 +96,6 @@
             "other": "ਮਿੰਟ"
         },
         "enableWaveformDrawing": "ਵੇਵਫੌਰਮ ਡਰਾਇੰਗ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ",
-        "cpLockPlayhead_title": "ਪਲੇਹੈਡ ਲਾਕ ਨੂੰ ਟੌਗਲ ਕਰੋ",
         "showGenerators": "ਜਨਰੇਟਰ ਵੇਖੋ",
         "hudButtonItem": "ਬਟਨ%{count} (%{title})",
         "customPrefixError": "ਇਹ ਅਗੇਤਰ ਅਯੋਗ ਹੈ ਮੁੜ ਕੋਸ਼ਿਸ ਕਰੋ ਜੀ.",

@@ -11,7 +11,6 @@
         "angle": "Angle",
         "finalcutpro_open_label": "Ouvrez Final Cut Pro",
         "touchBarWidget": "Touch Bar Widget",
-        "enableTimelinePlayheadLock": "Activer le verrouillage de la tête de lecture de la timeline",
         "feedback": "Retour d'information",
         "cpTransition5_title": "Appliquer la transition 5",
         "core_preferences_panels_general_label": "Panneau de préférences: général",
@@ -97,7 +96,6 @@
             "other": "minutes"
         },
         "enableWaveformDrawing": "Activer le dessin de forme d'onde",
-        "cpLockPlayhead_title": "Activer le verrouillage de la tête de lecture",
         "showGenerators": "Afficher les générateurs",
         "hudButtonItem": "Bouton%{count} (%{title})",
         "customPrefixError": "Ce préfixe semble invalide. Veuillez réessayer.",

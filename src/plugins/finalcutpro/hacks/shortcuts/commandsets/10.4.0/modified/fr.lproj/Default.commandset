@@ -55,13 +55,6 @@
 		<key>modifiers</key>
 		<string></string>
 	</dict>
-	<key>cpLockPlayhead</key>
-	<dict>
-		<key>characterString</key>
-		<string></string>
-		<key>modifiers</key>
-		<string></string>
-	</dict>
 	<key>cpPuckOneMouse</key>
 	<dict>
 		<key>characterString</key>

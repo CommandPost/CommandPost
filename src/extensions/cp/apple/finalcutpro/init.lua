@@ -609,6 +609,40 @@ function fcp:selectMenu(path, options)
     return self:menu():selectMenu(path, options)
 end
 
+--- cp.apple.finalcutpro:selectMenuItem(path, options) -> cp.rx.Observable <hs._asm.axuielement>
+--- Method
+--- Selects a Menu Item based on the provided menu path.
+---
+--- Each step on the path can be either one of:
+---  * a string     - The exact name of the menu item.
+---  * a number     - The menu item number, starting from 1.
+---  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+---
+--- Options supported include:
+---  * locale - The `localeID` or `string` for the locale that the path values are in.
+---  * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
+---  * timeout - The maximum time to wait for the menu to be available before producing an error. Defaults to 10 seconds.
+---
+--- Examples:
+---
+--- ```lua
+--- local preview = require("cp.app").forBundleID("com.apple.Preview")
+--- preview:launch():menu():selectMenuItem({"File", "Take Screenshot", "From Entire Screen"})
+--- ```
+---
+--- Parameters:
+---  * path - The list of menu items you'd like to activate.
+---  * options - (optional) The table of options to apply.
+---
+--- Returns:
+---  * An `Observable` which emits the final menu item, or an error if the selection failed.
+---
+--- Notes:
+---  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
+function fcp:selectMenuItem(...)
+    self.app:menu():selectMenuItem(...)
+end
+
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 --
