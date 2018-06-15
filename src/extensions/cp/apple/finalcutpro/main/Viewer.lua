@@ -373,7 +373,29 @@ function Viewer.new(app, eventViewer)
                     end
                 end
             end
-        )
+        ),
+
+        --- cp.apple.finalcutpro.main.Viewer.resized <cp.prop: boolean; live>
+        --- Field
+        --- Returns `true` if the Viewer has been resized, otherwise `false`.
+        resized = prop(
+            function(self)
+                local theUI = UI()
+                local currentFrame = theUI and theUI:attributeValue("AXFrame")
+                local previousFrame = o._previousFrame
+                if currentFrame then
+                    if previousFrame then
+                        if currentFrame.h ~= previousFrame.h or currentFrame.w ~= previousFrame.w then
+                            o._previousFrame = currentFrame
+                            return true
+                        end
+                    end
+                    o._previousFrame = currentFrame
+                end
+                return false
+            end
+        ),
+
     }
 
     local checker
@@ -389,12 +411,22 @@ function Viewer.new(app, eventViewer)
     -----------------------------------------------------------------------
     -- Watch the `timecode` field and update `isPlaying`:
     -----------------------------------------------------------------------
-    o.timecode:watch(function(_)
+    o.timecode:watch(function()
         if not checker:running() then
-            -- update the first time.
+            -----------------------------------------------------------------------
+            -- Update the first time:
+            -----------------------------------------------------------------------
             o.isPlaying:update()
         end
         checker:start()
+    end)
+
+    -----------------------------------------------------------------------
+    -- Watch for the Viewer being resized:
+    -----------------------------------------------------------------------
+    app.app.windowMoved:watch(function()
+        o.resized:update()
+        o.resized:update()
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>

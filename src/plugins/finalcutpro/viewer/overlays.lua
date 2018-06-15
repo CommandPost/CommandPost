@@ -697,6 +697,15 @@ function plugin.init(deps)
     fcp.isFrontmost:watch(mod.update)
 
     --------------------------------------------------------------------------------
+    -- Update Canvas when Final Cut Pro's Viewer is resized or moved:
+    --------------------------------------------------------------------------------
+    fcp:viewer().resized:watch(function(value)
+        if value then
+            mod.update()
+        end
+    end)
+
+    --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
     if deps.fcpxCmds then

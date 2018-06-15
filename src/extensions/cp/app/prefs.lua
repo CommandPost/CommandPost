@@ -136,7 +136,7 @@ function mod.bundleID(prefs)
     end
 end
 
-local PLIST_MATCH = "^.-([^/]+)%.plist$"
+local PLIST_MATCH = "^.-([^/]+)%.plist*"
 
 --- cp.app.prefs.watch(prefs, watchFn) -> nil
 --- Function
