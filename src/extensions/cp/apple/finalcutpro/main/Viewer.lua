@@ -47,7 +47,6 @@ local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFro
 local childrenMatching                  = axutils.childrenMatching
 local childrenWithRole                  = axutils.childrenWithRole
 local delayedTimer                      = timer.delayed
-local floor                             = math.floor
 local match, sub, find                  = string.match, string.sub, string.find
 
 --------------------------------------------------------------------------------
