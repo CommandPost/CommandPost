@@ -35,21 +35,6 @@ mod.ORIGINAL_ICON = "🔵"
 
 mod.usingProxies = fcp:viewer().usingProxies
 
-local function updateMenubarIcon()
-    mod.menuManager:updateMenubarIcon()
-end
-
---- plugins.finalcutpro.menu.proxyicon.procyMenuIconEnabled <cp.prop: boolean>
---- Constant
---- Toggles the Enable Proxy Menu Icon
-mod.enabled = config.prop("enableProxyMenuIcon", false):watch(function(enabled)
-    if enabled then
-        mod.usingProxies:watch(updateMenubarIcon, true)
-    else
-        mod.usingProxies:unwatch(updateMenubarIcon)
-    end
-end, true)
-
 --- plugins.finalcutpro.menu.proxyicon.generateProxyTitle() -> string
 --- Function
 --- Generates the Proxy Title
@@ -64,6 +49,32 @@ function mod.generateProxyTitle()
         return mod.usingProxies() and " " .. mod.PROXY_ICON or " " .. mod.ORIGINAL_ICON
     end
     return ""
+end
+
+
+--- plugins.finalcutpro.menu.proxyicon.procyMenuIconEnabled <cp.prop: boolean>
+--- Constant
+--- Toggles the Enable Proxy Menu Icon
+mod.enabled = config.prop("enableProxyMenuIcon", false)
+
+function mod.init(menuManager)
+    --------------------------------------------------------------------------------
+    -- Add Title Suffix Function:
+    --------------------------------------------------------------------------------
+    menuManager.addTitleSuffix(mod.generateProxyTitle)
+
+    local function updateMenubarIcon()
+        menuManager:updateMenubarIcon()
+    end
+
+    mod.enabled:watch(function(enabled)
+        if enabled then
+            mod.usingProxies:watch(updateMenubarIcon, true)
+        else
+            mod.usingProxies:unwatch(updateMenubarIcon)
+        end
+    end, true)
+
 end
 
 --------------------------------------------------------------------------------
@@ -85,11 +96,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-    --------------------------------------------------------------------------------
-    -- Add Title Suffix Function:
-    --------------------------------------------------------------------------------
-    mod.menuManager = deps.menuManager
-    mod.menuManager.addTitleSuffix(mod.generateProxyTitle)
+    mod.init(deps.menuManager)
 
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
