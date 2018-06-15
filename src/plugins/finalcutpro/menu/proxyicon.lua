@@ -46,19 +46,20 @@ mod.ORIGINAL_ICON = "🔵"
 --- Constant
 --- Toggles the Enable Proxy Menu Icon
 mod.enabled = config.prop("enableProxyMenuIcon", ENABLED_DEFAULT):watch(function(enabled)
+    local update = function()
+        mod.menuManager:updateMenubarIcon()
+    end
     if enabled then
         --------------------------------------------------------------------------------
         -- Update Menubar Icon on Final Cut Pro Preferences Update:
         --------------------------------------------------------------------------------
-        mod._fcpWatchID = fcp.app.preferences:watch(function()
-            mod.menuManager:updateMenubarIcon()
-        end)
+        mod._fcpWatchID = fcp.app.preferences:watch(update)
     else
         --------------------------------------------------------------------------------
         -- Destroy Watchers:
         --------------------------------------------------------------------------------
-        if mod._fcpWatchID and mod._fcpWatchID.id then
-            fcp:unwatch(mod._fcpWatchID.id)
+        if mod._fcpWatchID then
+            fcp.app.preferences:unwatch(update)
             mod._fcpWatchID = nil
         end
     end
