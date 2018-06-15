@@ -53,29 +53,39 @@ function Button.new(parent, finderFn)
     local o = prop.extend(
         {
             _parent = parent,
-            _finder = finderFn,
-
---- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
-            UI = prop(function(self)
-                return axutils.cache(self, "_ui", finderFn, Button.matches)
-            end),
         }, Button
     )
 
+    local UI
+    if prop.is(finderFn) then
+        UI = finderFn
+    else
+        UI = prop(function()
+            return axutils.cache(o, "_ui", function()
+                local ui = finderFn()
+                return Button.matches(ui) and ui or nil
+            end,
+            Button.matches)
+        end)
+    end
+
     prop.bind(o) {
+--- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
+        UI = UI,
+
 --- cp.ui.Button.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- If `true`, the `Button` is showing on screen.
-        isShowing = o.UI:mutate(function(original, self)
+        isShowing = UI:mutate(function(original, self)
             return original() ~= nil and self:parent():isShowing()
         end),
 
 --- cp.ui.Button.title <cp.prop: string; read-only>
 --- Field
 --- The button title, if available.
-        title   = o.UI:mutate(function(original)
+        title   = UI:mutate(function(original)
             local ui = original()
             return ui and ui:attributeValue("AXTitle")
         end),
@@ -83,7 +93,7 @@ function Button.new(parent, finderFn)
 --- cp.ui.Button.frame <cp.prop: table; read-only>
 --- Field
 --- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
-        frame = o.UI:mutate(function(original)
+        frame = UI:mutate(function(original)
             local ui = original()
             return ui and ui:frame() or nil
         end),

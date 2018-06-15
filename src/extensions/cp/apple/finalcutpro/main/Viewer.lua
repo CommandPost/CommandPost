@@ -12,11 +12,11 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("viewer")
+local inspect                           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local canvas                            = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 local delayedTimer                      = require("hs.timer").delayed
@@ -304,13 +304,13 @@ function Viewer.new(app, eventViewer)
         --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
         isPlaying = prop(
             function(self)
-                local playButton = self:playButton()
-                local snapshot = playButton and playButton:snapshot()
-                local resizedSnaptop = snapshot and snapshot:setSize({h=120,w=120}, true)
-                local a = resizedSnaptop and resizedSnaptop:colorAt({x=67,y=48})
-                local b = resizedSnaptop and resizedSnaptop:colorAt({x=53,y=61})
-                if a and b and a.blue ~= 0 and tools.round(a.blue) == tools.round(b.blue) then
-                    return true
+                local snapshot = self:playButton():snapshot()
+                if snapshot then
+                    snapshot:size({h=60,w=60})
+                    -- snapshot:saveToFile("~/Desktop/isPlaying_resized.png")
+                    local spot = snapshot:colorAt({x=31,y=31})
+                    log.df("spot.blue = %s", inspect(spot and spot.blue))
+                    return spot and spot.blue < 0.5
                 end
                 return false
             end,
@@ -590,9 +590,9 @@ end
 --- * A Button
 function Viewer:playButton()
     if not self._playButton then
-        self._playButton = Button.new(self, function()
-            return childFromLeft(childrenWithRole(self:bottomToolbarUI(), "AXButton"), 1)
-        end)
+        self._playButton = Button.new(self, self.bottomToolbarUI:mutate(function(original)
+            return childFromLeft(childrenWithRole(original(), "AXButton"), 1)
+        end))
     end
     return self._playButton
 end
