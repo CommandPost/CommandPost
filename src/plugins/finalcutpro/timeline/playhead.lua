@@ -155,23 +155,6 @@ function plugin.init(deps)
     end
 
     --------------------------------------------------------------------------------
-    -- Setup Menubar Preferences Panel:
-    --------------------------------------------------------------------------------
-    if prefs.panel then
-       prefs.panel
-            --------------------------------------------------------------------------------
-            -- Add Preferences Checkbox:
-            --------------------------------------------------------------------------------
-            :addCheckbox(1.2,
-            {
-                label = i18n("enableShortcutsDuringFullscreen"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
-                checked = mod.enabled,
-            }
-        )
-    end
-
-    --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
     if cmds then
