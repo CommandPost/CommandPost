@@ -712,7 +712,7 @@ function prop.mt:hasWatchers()
     return watchers ~= nil and #watchers > 0
 end
 
---- cp.prop:preWatch(preWatchFn) -> nil
+--- cp.prop:preWatch(preWatchFn) -> cp.prop
 --- Method
 --- Adds a function which will be called once if any watchers are added to this prop.
 --- This allows configuration, typically for watching other events, but only if
@@ -734,6 +734,7 @@ function prop.mt:preWatch(preWatchFn)
         end
         self._preWatchers[#self._preWatchers+1] = preWatchFn
     end
+    return self
 end
 
 local function _unwatch(watchers, watchFn)
