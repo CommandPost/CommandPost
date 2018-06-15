@@ -90,7 +90,7 @@ mod.scrollingTimeline = config.prop("scrollingTimelineActive", false):watch(func
         -- Display Notification:
         --------------------------------------------------------------------------------
         dialog.displayNotification(i18n("scrollingTimelineActivated"))
-    elseif not mod.playheadLocked() then
+    else
         dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
     end
 end)
