@@ -1,5 +1,5 @@
--- RxLua v0.1.0
--- https://github.com/bjornbytes/rxlua
+-- cp.rx
+-- Originally forked from https://github.com/bjornbytes/rxlua
 -- MIT License
 
 local timer = require 'hs.timer'
