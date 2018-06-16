@@ -74,9 +74,9 @@ if legacyControls then
     config.set("streamDeckButtons", nil)
 end
 
---- plugins.core.streamdeck.manager.buttons <cp.prop: table>
---- Field
---- Contains all the saved Stream Deck Buttons
+-- plugins.core.streamdeck.manager._items <cp.prop: table>
+-- Field
+-- Contains all the saved Stream Deck Buttons
 mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
 
 --- plugins.core.streamdeck.manager.clear() -> none
