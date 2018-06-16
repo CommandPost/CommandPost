@@ -21,7 +21,6 @@ local fcp               = require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local PRIORITY          = 30
 local DEFAULT_VALUE     = "15"
-local PREFERENCES_KEY   = "FFPeriodicBackupInterval"
 
 --------------------------------------------------------------------------------
 --
@@ -29,6 +28,8 @@ local PREFERENCES_KEY   = "FFPeriodicBackupInterval"
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+local periodicBackupInterval = fcp.preferences:prop("FFPeriodicBackupInterval", DEFAULT_VALUE)
 
 --- plugins.finalcutpro.hacks.backupinterval.get() -> number
 --- Function
@@ -40,12 +41,7 @@ local mod = {}
 --- Returns:
 ---  * The periodic backup interval as number
 function mod.get()
-    local FFPeriodicBackupInterval = DEFAULT_VALUE
-    local preferences = fcp:getPreferences()
-    if preferences and preferences[PREFERENCES_KEY] then
-        FFPeriodicBackupInterval = preferences[PREFERENCES_KEY]
-    end
-    return FFPeriodicBackupInterval
+    return periodicBackupInterval()
 end
 
 --- plugins.finalcutpro.hacks.backupinterval.set() -> number
@@ -59,20 +55,15 @@ end
 ---  * The periodic backup interval as number
 function mod.set()
     --------------------------------------------------------------------------------
-    -- Get existing value:
-    --------------------------------------------------------------------------------
-    local FFPeriodicBackupInterval = mod.get()
-
-    --------------------------------------------------------------------------------
     -- Ask user what to set the backup interval to:
     --------------------------------------------------------------------------------
-    local userSelectedBackupInterval = dialog.displaySmallNumberTextBoxMessage(i18n("changeBackupIntervalTextbox"), i18n("changeBackupIntervalError"), FFPeriodicBackupInterval)
+    local newInterval = dialog.displaySmallNumberTextBoxMessage(i18n("changeBackupIntervalTextbox"), i18n("changeBackupIntervalError"), mod.get())
 
     --------------------------------------------------------------------------------
     -- Update plist:
     --------------------------------------------------------------------------------
-    if userSelectedBackupInterval then
-        fcp:setPreference(PREFERENCES_KEY, tostring(userSelectedBackupInterval))
+    if newInterval then
+        periodicBackupInterval(tostring(newInterval))
     end
 end
 

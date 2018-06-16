@@ -156,17 +156,8 @@ function mod.forBundleID(bundleID)
     if not theApp then
         theApp = prop.extend({
             _bundleID = bundleID,
-            _preferences = prefs.new(bundleID),
+            preferences = prefs.new(bundleID),
         }, mod.mt)
-
-        -- cp.prop wrapper for prefs, which will notify watchers when updates happen.
-        local preferences = prop(function(self)
-            return self._preferences
-        end)
-        -- watch the `prefs` for changes, updating watchers of the cp.prop.
-        preferences:preWatch(function(_, _)
-            prefs.watch(theApp._preferences, function() preferences:update() end)
-        end)
 
         local hsApplication = prop(function(self)
             local hsApp = self._hsApplication
@@ -342,7 +333,7 @@ function mod.forBundleID(bundleID)
                 -- If the app is not running, we next try to determine the language using
                 -- the 'AppleLanguages' preference...
                 --------------------------------------------------------------------------------
-                local appLanguages = self:preferences().AppleLanguages
+                local appLanguages = self.preferences.AppleLanguages
                 if appLanguages then
                     for _,lang in ipairs(appLanguages) do
                         if self:isSupportedLocale(lang) then
@@ -395,7 +386,7 @@ function mod.forBundleID(bundleID)
                 -- if the new value matches the current value, don't do anything.
                 if value == theProp:get() then return end
 
-                local thePrefs = self:preferences()
+                local thePrefs = self.preferences
                 if value == nil then
                     if thePrefs.AppleLanguages == nil then return end
                     thePrefs.AppleLanguages = nil
@@ -415,14 +406,6 @@ function mod.forBundleID(bundleID)
 
 
         prop.bind(theApp) {
-            --- cp.app.preferences <cp.prop: cp.app.prefs; read-only; live>
-            --- Field
-            --- Provides access to the application preferences data.
-            ---
-            --- Notes:
-            --- * While you can't overwrite the `preferences` property itself, you can modify individual preferences *inside* the returned table.
-            preferences = preferences,
-
             --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
             --- Field
             --- Returns the running `hs.application` for the application, or `nil` if it's not running.

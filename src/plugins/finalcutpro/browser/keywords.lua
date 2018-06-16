@@ -43,11 +43,10 @@ mod.NUMBER_OF_SHORTCUTS = 9
 --- Returns:
 ---  * None
 function mod.save(preset)
-
     --------------------------------------------------------------------------------
     -- Get Keyword Shortcuts from Preferences & Save Them to Preset Group:
     --------------------------------------------------------------------------------
-    local keywordGroups = fcp:getPreference("FFKeywordGroups")
+    local keywordGroups = fcp.preferences.FFKeywordGroups
     if keywordGroups and #keywordGroups == mod.NUMBER_OF_SHORTCUTS then
         local savedKeywords = {}
         for i=1, mod.NUMBER_OF_PRESETS do

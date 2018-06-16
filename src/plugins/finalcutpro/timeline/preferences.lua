@@ -13,7 +13,6 @@
 --------------------------------------------------------------------------------
 local dialog                = require("cp.dialog")
 local fcp                   = require("cp.apple.finalcutpro")
-local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -41,34 +40,40 @@ local mod = {}
 --- plugins.finalcutpro.timeline.preferences.backgroundRender <cp.prop: boolean>
 --- Variable
 --- Is Background Render enabled?
-mod.backgroundRender = prop.new(
-    function() return fcp:getPreference(BACKGROUND_RENDER, true) end,
-    function()
-        --------------------------------------------------------------------------------
-        -- Make sure it's active:
-        --------------------------------------------------------------------------------
-        fcp:launch()
+mod.backgroundRender = fcp.preferences:prop(BACKGROUND_RENDER, true):mutate(
+    function(original) return original() end,
+    function(newValue, original)
+        if fcp:isRunning() then
+            if newValue ~= original() then
+                --------------------------------------------------------------------------------
+                -- Make sure it's active:
+                --------------------------------------------------------------------------------
+                fcp:launch()
 
-        --------------------------------------------------------------------------------
-        -- Define FCPX:
-        --------------------------------------------------------------------------------
-        local panel = fcp:preferencesWindow():playbackPanel()
+                --------------------------------------------------------------------------------
+                -- Define FCPX:
+                --------------------------------------------------------------------------------
+                local panel = fcp:preferencesWindow():playbackPanel()
 
-        --------------------------------------------------------------------------------
-        -- Toggle the checkbox:
-        --------------------------------------------------------------------------------
-        if panel:show():isShowing() then
-            panel:backgroundRender():toggle()
+                --------------------------------------------------------------------------------
+                -- Toggle the checkbox:
+                --------------------------------------------------------------------------------
+                if panel:show():isShowing() then
+                    panel:backgroundRender():toggle()
+                else
+                    dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")
+                    return false
+                end
+
+                --------------------------------------------------------------------------------
+                -- Close the Preferences window:
+                --------------------------------------------------------------------------------
+                panel:hide()
+                return true
+            end
         else
-            dialog.displayErrorMessage("Failed to toggle 'Enable Background Render'.\n\nError occurred in backgroundRender().")
-            return false
+            original(newValue)
         end
-
-        --------------------------------------------------------------------------------
-        -- Close the Preferences window:
-        --------------------------------------------------------------------------------
-        panel:hide()
-        return true
     end
 )
 
@@ -82,7 +87,7 @@ mod.backgroundRender = prop.new(
 --- Returns:
 ---  * 'FFAutoRenderDelay' value as number.
 function mod.getAutoRenderDelay()
-    return tonumber(fcp:getPreference("FFAutoRenderDelay", "0.3"))
+    return tonumber(fcp.preferences.FFAutoRenderDelay or "0.3")
 end
 
 ---------------------------------------------------------------------------------
