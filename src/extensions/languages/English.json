@@ -1084,6 +1084,7 @@
         "suggestATranslation": "Suggest A New Language",
         "suggestFeatureToApple": "Suggest Final Cut Pro Feature to Apple",
         "support": "Support",
+        "switchBetweenInsideOutsideMarks": "Switch Between Inside/Outside Masks",
         "switchingTo": "Switching to",
         "tag": "Tag",
         "tangentFinalCutProShortcutFailed": "There is no shortcut key applied to this command, so the command cannot be triggered.\n\nPlease open up the Final Cut Pro Command Editor and assign a shortcut key to the command, then try again.",
