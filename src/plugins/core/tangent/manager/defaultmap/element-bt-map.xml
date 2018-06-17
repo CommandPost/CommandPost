@@ -9,6 +9,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Bt Button B -->
                             <Mapping mode="Std">
@@ -54,6 +57,9 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Bt Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
@@ -151,6 +157,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Bt Button B -->
                             <Mapping mode="Std">
@@ -244,6 +253,9 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Bt Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>

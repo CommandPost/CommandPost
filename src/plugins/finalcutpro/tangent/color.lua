@@ -1,6 +1,6 @@
 --- === plugins.finalcutpro.tangent.manager ===
 ---
---- Final Cut Pro Tangent Manager.
+--- Final Cut Pro Tangent Color Manager.
 
 --------------------------------------------------------------------------------
 --
@@ -278,7 +278,8 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     -- Color Wheel Temperature:
     --------------------------------------------------------------------------------
-    -- set up UI Updates...
+
+    -- Set up UI Updates:
     local tempChange, tintChange, hueChange, mixChange = 0, 0, 0, 0
     updateUI:action(function()
         if tempChange ~= 0 then
@@ -365,7 +366,9 @@ function mod.init(tangentManager, fcpGroup)
         :onReset(function() cw:show():mix(1) end)
 
     --------------------------------------------------------------------------------
-    -- Color Shortcuts:
+    --
+    -- COLOR SHORTCUTS:
+    --
     --------------------------------------------------------------------------------
     local colorShortcutGroup = fcpGroup:group(i18n("colorShortcuts"))
 
@@ -453,7 +456,18 @@ function mod.init(tangentManager, fcpGroup)
             fcp:selectMenuItem({"View", "Show in Viewer", "Color Channels", "All"})
         end)
 
-    --- Color Board Actions
+    colorShortcutGroup:action(wheelsBaseID+0x0119, i18n("switchBetweenInsideOutsideMarks"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ToggleInsideColorMask") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    --------------------------------------------------------------------------------
+    --
+    -- COLOR BOARD ACTIONS:
+    --
+    --------------------------------------------------------------------------------
 
     ciGroup:action(wheelsBaseID+0x0120, i18n("addColorBoardEffect"))
         :onPress(function()
@@ -520,7 +534,6 @@ function mod.init(tangentManager, fcpGroup)
                 dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
             end
         end)
-
 end
 
 --------------------------------------------------------------------------------

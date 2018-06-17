@@ -9,6 +9,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
                             <Mapping mode="Std">
@@ -42,6 +45,9 @@
                     <Bank>
                         <Control type="Button" number="12"> <!-- Element-Kb Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
@@ -175,6 +181,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="13"> <!-- Element-Kb Button B -->
                             <Mapping mode="Std">
@@ -216,6 +225,20 @@
                             <Mapping mode="Std">
                                 <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
                                 <Display>Number</Display>
+                            </Mapping>
+                        </Control>
+                    </Bank>
+                </ControlBank>
+            </Mode>
+            <Mode id="0x00010010"> <!-- FCP: Video -->
+                <ControlBank id="Standard">
+                    <Bank>
+                        <Control type="Button" number="12"> <!-- Element-Kb Button A -->
+                            <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
                     </Bank>

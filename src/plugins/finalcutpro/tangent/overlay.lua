@@ -80,7 +80,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id = "finalcutpro.tangent.new",
+    id = "finalcutpro.tangent.overlay",
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.tangent.group"]   = "fcpGroup",
