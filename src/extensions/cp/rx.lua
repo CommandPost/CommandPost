@@ -2,6 +2,9 @@
 -- Originally forked from https://github.com/bjornbytes/rxlua
 -- MIT License
 
+-- local log = require("hs.logger").new("rx")
+-- local inspect = require("hs.inspect")
+
 local timer = require 'hs.timer'
 local format = string.format
 
@@ -16,7 +19,10 @@ util.noop = function() end
 util.identity = function(x) return x end
 util.constant = function(x) return function() return x end end
 util.isa = function(object, class)
-  return type(object) == 'table' and getmetatable(object).__index == class
+  if type(object) == 'table' then
+    local mt = getmetatable(object)
+    return mt and mt.__index == class
+  end
 end
 util.tryWithObserver = function(observer, fn, ...)
   local success, result = pcall(fn, ...)
@@ -64,6 +70,10 @@ end
 local Observer = {}
 Observer.__index = Observer
 Observer.__tostring = util.constant('Observer')
+
+function Observer.is(thing)
+    return util.isa(thing, Observer)
+end
 
 --- Creates a new Observer.
 -- @arg {function=} onNext - Called when the Observable produces a value.

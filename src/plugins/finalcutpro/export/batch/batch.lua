@@ -33,6 +33,10 @@ local just          = require("cp.just")
 local tools         = require("cp.tools")
 local html          = require("cp.web.html")
 
+local go           = require("cp.rx.go")
+
+local Given         = go.Given
+
 local destinations  = require("cp.apple.finalcutpro.export.destinations")
 
 local insert        = table.insert
@@ -734,6 +738,8 @@ function mod.batchExportTimelineClips(clips)
     return true
 end
 
+mod.destinationPreset = config.prop("batchExportDestinationPreset")
+
 --- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> boolean
 --- Function
 --- Change Export Destination Preset.
@@ -744,7 +750,6 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.changeExportDestinationPreset()
-
     if not fcp:isRunning() then
         dialog.displayMessage(i18n("batchExportFinalCutProClosed"))
         return false
@@ -762,13 +767,10 @@ function mod.changeExportDestinationPreset()
         insert(destinationList, 1, i18n("sendToCompressor"))
     end
 
-    local batchExportDestinationPreset = config.get("batchExportDestinationPreset")
-    local defaultItems = {}
-    if batchExportDestinationPreset ~= nil then defaultItems[1] = batchExportDestinationPreset end
-
+    local defaultItems = {mod.destinationPreset()}
     local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, defaultItems)
     if result and #result > 0 then
-        config.set("batchExportDestinationPreset", result[1])
+        mod.destinationPreset(result[1])
     end
 
     --------------------------------------------------------------------------------
@@ -777,6 +779,29 @@ function mod.changeExportDestinationPreset()
     mod._bmMan.refresh()
 
     return true
+end
+
+function mod.changeExportDestinationPresetRx()
+    return Given(
+        destinations.names(),
+        mod.destinationPreset(),
+        compressor.isInstalled
+    )
+    :Then(function(destinationList, currentPreset, compressorInstalled)
+        if compressorInstalled then
+            insert(destinationList, 1, i18n("sendToCompressor"))
+        end
+
+        return Given(
+            dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, {currentPreset})
+        ):Then(function(result)
+            if result and #result > 0 then
+                mod.destinationPreset(result[1])
+            end
+
+            mod._bmMan.refresh()
+        end)
+    end)
 end
 
 --- plugins.finalcutpro.export.batch.changeExportDestinationFolder() -> boolean
