@@ -27,6 +27,9 @@ local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
 local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
+local go                                = require("cp.rx.go")
+local Given, If                         = go.Given, go.If
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -221,6 +224,11 @@ function Timeline:show()
     return self
 end
 
+function Timeline:doShow(timeout)
+    return If(self.isShowing):IsNot(true)
+    :Then(self:doShowOnPrimary(timeout))
+end
+
 --- cp.apple.finalcutpro.main.Timeline:showOnPrimary() -> Timeline
 --- Method
 --- Show's the Timeline on the Primary Display.
@@ -231,18 +239,42 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:showOnPrimary()
-    local menuBar = self:app():menu()
+    local menu = self:app():menu()
 
     -- if the timeline is on the secondary, we need to turn it off before enabling in primary
     if self:isOnSecondary() then
-        menuBar:selectkMenu({"Window", "Show in Secondary Display", "Timeline"})
+        menu:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
     end
     -- Then enable it in the primary
     if not self:isOnPrimary() then
-        menuBar:selectMenu({"Window", "Show in Workspace", "Timeline"})
+        menu:selectMenu({"Window", "Show in Workspace", "Timeline"})
     end
 
     return self
+end
+
+--- cp.apple.finalcutpro.main.Timeline:doShowOnPrimary() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will ensure the timeline is in the primary window.
+---
+--- Parameters:
+---  * timeout  - The timeout period for the operation.
+---
+--- Returns:
+---  * A `Statement` ready to run.
+function Timeline:doShowOnPrimary(timeout)
+    local menu = self:app():menu()
+
+    return Given(
+        If(self.isOnSecondary):Then(
+            menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}, {timeout = timeout})
+        )
+    )
+    :Then(
+        If(self.isOnPrimary):IsNot(true):Then(
+            menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"}, {timeout = timeout})
+        )
+    )
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnSecondary() -> Timeline
@@ -255,14 +287,21 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:showOnSecondary()
-    local menuBar = self:app():menu()
+    local menu = self:app():menu()
 
     -- if the timeline is on the secondary, we need to turn it off before enabling in primary
     if not self:isOnSecondary() then
-        menuBar:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
+        menu:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
     end
 
     return self
+end
+
+function Timeline:doShowOnSecondary(timeout)
+    local menu = self:app():menu()
+
+    return If(self.isOnSecondary):IsNot(true)
+    :Then(menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}, {timeout = timeout}))
 end
 
 --- cp.apple.finalcutpro.main.Timeline:hide() -> Timeline
@@ -275,15 +314,39 @@ end
 --- Returns:
 ---  * `Timeline` object.
 function Timeline:hide()
-    local menuBar = self:app():menu()
+    local menu = self:app():menu()
     -- Uncheck it from the primary workspace
     if self:isOnSecondary() then
-        menuBar:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
+        menu:selectMenu({"Window", "Show in Secondary Display", "Timeline"})
     end
     if self:isOnPrimary() then
-        menuBar:selectMenu({"Window", "Show in Workspace", "Timeline"})
+        menu:selectMenu({"Window", "Show in Workspace", "Timeline"})
     end
     return self
+end
+
+--- cp.apple.finalcutpro.main.Timeline:doHide() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will hide the Timeline (regardless of whether it
+--- was on the Primary or Secondary window).
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Statement` ready to run.
+function Timeline:doHide()
+    local menu = self:app():menu()
+
+    return Given(
+        If(self.isOnSecondary):Then(
+            menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+        )
+    ):Then(
+        If(self.isOnPrimary):Then(
+            menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+        )
+    )
 end
 
 -----------------------------------------------------------------------

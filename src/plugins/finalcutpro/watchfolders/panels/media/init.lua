@@ -33,10 +33,13 @@ local timer				= require("hs.timer")
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
 local fcp				= require("cp.apple.finalcutpro")
-local just              = require("cp.just")
 local tools				= require("cp.tools")
 local html				= require("cp.web.html")
 local ui				= require("cp.web.ui")
+
+local go                = require("cp.rx.go")
+local Given, WaitUntil  = go.Given, go.WaitUntil
+local Done              = go.Done
 
 --------------------------------------------------------------------------------
 --
@@ -426,7 +429,54 @@ local function getPath(file)
     return nil
 end
 
---- plugins.finalcutpro.watchfolders.panels.media.insertFilesIntoFinalCutPro(files) -> none
+function mod.tagFiles(files)
+    --------------------------------------------------------------------------------
+    -- Add Tags:
+    --------------------------------------------------------------------------------
+    local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
+    local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
+    local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
+
+    local videoTags = mod.videoTag()
+    local audioTags = mod.audioTag()
+    local imageTags = mod.imageTag()
+
+    for _, file in pairs(files) do
+
+        local path = getPath(file)
+        local ext = file:match("%.([^%.]+)$")
+
+        if ext then
+            local videoTag = videoTags[path]
+            local audioTag = audioTags[path]
+            local imageTag = imageTags[path]
+
+            if videoTag then
+                if fnutils.contains(videoExtensions, ext) and tools.doesFileExist(file) then
+                    if not fs.tagsAdd(file, {videoTag}) then
+                        log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
+                    end
+                end
+            end
+            if audioTag then
+                if fnutils.contains(audioExtensions, ext) and tools.doesFileExist(file) then
+                    if not fs.tagsAdd(file, {audioTag}) then
+                        log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
+                    end
+                end
+            end
+            if imageTag then
+                if fnutils.contains(imageExtensions, ext) and tools.doesFileExist(file) then
+                    if not fs.tagsAdd(file, {imageTag}) then
+                        log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
+                    end
+                end
+            end
+        end
+    end
+end
+
+--- plugins.finalcutpro.watchfolders.panels.media.insertFilesIntoFinalCutPro(files) -> cp.rx.go.Statement
 --- Function
 --- Imports files into Final Cut Pro
 ---
@@ -434,52 +484,14 @@ end
 ---  * files - A table of file paths.
 ---
 --- Returns:
----  * None
+---  * A `Statement` ready to be executed.
 function mod.insertFilesIntoFinalCutPro(files)
-    --------------------------------------------------------------------------------
-    -- Add Tags:
-    --------------------------------------------------------------------------------
     mod.disableImport = true
-    for _, file in pairs(files) do
-        local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
-        local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
-        local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
-
-        local path = getPath(file)
-
-        local videoTags = mod.videoTag()
-        local audioTags = mod.audioTag()
-        local imageTags = mod.imageTag()
-
-        local videoTag = videoTags[path]
-        local audioTag = audioTags[path]
-        local imageTag = imageTags[path]
-
-        if videoTag then
-            if (fnutils.contains(videoExtensions, string.lower(file:sub(-3))) or fnutils.contains(videoExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
-                if not fs.tagsAdd(file, {videoTag}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
-                end
-            end
-        end
-        if audioTag then
-            if (fnutils.contains(audioExtensions, string.lower(file:sub(-3))) or fnutils.contains(audioExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
-                if not fs.tagsAdd(file, {audioTag}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
-                end
-            end
-        end
-        if imageTag then
-            if (fnutils.contains(imageExtensions, string.lower(file:sub(-3))) or fnutils.contains(imageExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
-                if not fs.tagsAdd(file, {imageTag}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
-                end
-            end
-        end
-    end
     timer.doAfter(1, function()
         mod.disableImport = false
     end)
+
+    mod.tagFiles(files)
 
     --------------------------------------------------------------------------------
     -- Temporarily stop the Pasteboard Watcher:
@@ -506,65 +518,63 @@ function mod.insertFilesIntoFinalCutPro(files)
         return nil
     end
 
+    local timeline = fcp:timeline()
+
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    result = just.doUntil(function()
-        fcp:launch()
-        return fcp:isFrontmost()
-    end, 5, 0.1)
-    if not result then
-        dialog.displayErrorMessage("Failed to launch to Final Cut Pro. Error occured in Final Cut Pro Media Watch Folder.")
-        return false
-    end
+    return Given(fcp:doLaunch(5))
 
     --------------------------------------------------------------------------------
     -- Check if Timeline can be enabled:
     --------------------------------------------------------------------------------
-    fcp:timeline():show()
-    if not fcp:timeline():isShowing() then
-        dialog.displayErrorMessage("Failed to activate timeline. Error occured in Final Cut Pro Media Watch Folder.")
-        return nil
-    end
+    :Then(function()
+        timeline:show()
+    end)
+    :Then(
+        WaitUntil(timeline.isShowing)
+        :TimeoutAfter(1000, "Unable to show the Timeline.")
+    )
 
     --------------------------------------------------------------------------------
     -- Perform Paste:
     --------------------------------------------------------------------------------
-    if not fcp:selectMenu({"Edit", "Paste as Connected Clip"}) then
-        dialog.displayErrorMessage("Failed to trigger the 'Paste' Shortcut. Error occured in Final Cut Pro Media Watch Folder.")
-        return nil
-    end
+    :Then(fcp:doSelectMenu({"Edit", "Paste as Connected Clip"}))
 
     --------------------------------------------------------------------------------
     -- Remove from Timeline if appropriate:
     --------------------------------------------------------------------------------
-    if not mod.insertIntoTimeline() then
-        fcp:selectMenu({"Edit", "Undo Paste"}, {pressAll = true})
-        -- fcp:performShortcut("UndoChanges")
-    end
-
-    --------------------------------------------------------------------------------
-    -- Restore original Pasteboard Content:
-    --------------------------------------------------------------------------------
-    timer.doAfter(2, function()
-        pasteboard.writeAllData(originalPasteboard)
-        if mod.pasteboardManager then
-            mod.pasteboardManager.startWatching()
+    :Then(function()
+        if not mod.insertIntoTimeline() then
+            return fcp:doSelectMenu({"Edit", "Undo Paste"}, {pressAll = true})
         end
     end)
 
-    --------------------------------------------------------------------------------
-    -- Delete After Import:
-    --------------------------------------------------------------------------------
-    if mod.deleteAfterImport() then
-        for _, file in pairs(files) do
+    :Then(function()
+        --------------------------------------------------------------------------------
+        -- Restore original Pasteboard Content:
+        --------------------------------------------------------------------------------
+        timer.doAfter(2, function()
+            pasteboard.writeAllData(originalPasteboard)
+            if mod.pasteboardManager then
+                mod.pasteboardManager.startWatching()
+            end
+        end)
+        --------------------------------------------------------------------------------
+        -- Delete After Import:
+        --------------------------------------------------------------------------------
+        if mod.deleteAfterImport() then
             timer.doAfter(mod.SECONDS_UNTIL_DELETE, function()
-                os.remove(file)
+                for _, file in pairs(files) do
+                    os.remove(file)
+                end
             end)
         end
-    end
-
-    return true
+    end)
+    :Catch(function(message)
+        dialog.displayMessage(message)
+        return false
+    end)
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.importFile(file, obj) -> none
@@ -589,7 +599,7 @@ function mod.importFile(file)
         else
             mod.createNotification(file)
         end
-        return
+        return Done()
     end
 
     local importAll = false
@@ -611,35 +621,39 @@ function mod.importFile(file)
     --------------------------------------------------------------------------------
     -- Insert Files into Final Cut Pro:
     --------------------------------------------------------------------------------
-    local result = mod.insertFilesIntoFinalCutPro(files)
-    if not result then
-        return
-    end
-
-    --------------------------------------------------------------------------------
-    -- Release the notification:
-    --------------------------------------------------------------------------------
-    local savedNotifications = mod.savedNotifications()
-    if importAll then
-        for i, _ in pairs(mod.notifications) do
-            mod.notifications[i]:withdraw()
-            mod.notifications[i] = nil
-            savedNotifications[i] = nil
+    return Given(
+        mod.insertFilesIntoFinalCutPro(files)
+    )
+    :Then(function(result)
+        if not result then
+            return Done()
         end
-    else
-        mod.notifications[file] = nil
-        savedNotifications[file] = nil
-    end
 
-    --------------------------------------------------------------------------------
-    -- Save Notifications to Settings:
-    --------------------------------------------------------------------------------
-    mod.savedNotifications(savedNotifications)
+        --------------------------------------------------------------------------------
+        -- Release the notification:
+        --------------------------------------------------------------------------------
+        local savedNotifications = mod.savedNotifications()
+        if importAll then
+            for i, _ in pairs(mod.notifications) do
+                mod.notifications[i]:withdraw()
+                mod.notifications[i] = nil
+                savedNotifications[i] = nil
+            end
+        else
+            mod.notifications[file] = nil
+            savedNotifications[file] = nil
+        end
 
-    --------------------------------------------------------------------------------
-    -- Cleanup Tags:
-    --------------------------------------------------------------------------------
-    cleanupTags()
+        --------------------------------------------------------------------------------
+        -- Save Notifications to Settings:
+        --------------------------------------------------------------------------------
+        mod.savedNotifications(savedNotifications)
+
+        --------------------------------------------------------------------------------
+        -- Cleanup Tags:
+        --------------------------------------------------------------------------------
+        cleanupTags()
+    end)
 
 end
 
@@ -655,7 +669,7 @@ end
 function mod.createNotification(file)
 
     local notificationFn = function(obj)
-        mod.importFile(file, obj:getFunctionTag())
+        mod.importFile(file, obj:getFunctionTag()):Now()
     end
 
     mod.notifications[file] = notify.new(notificationFn)
@@ -673,6 +687,26 @@ function mod.createNotification(file)
     local savedNotifications = mod.savedNotifications()
     savedNotifications[file] = notificationTag
     mod.savedNotifications(savedNotifications)
+end
+
+--- plugins.finalcutpro.watchfolders.panels.media.withdrawNotification(file) -> nil
+--- Function
+--- Clears the notification for the specified file, if present.
+---
+--- Parameters:
+---  * file - The file to clear.
+---
+--- Returns:
+---  * Nothing
+function mod.withdrawNotification(file)
+    local n = mod.notifications[file]
+    if n then
+        n:withdraw()
+        mod.notifications[file] = nil
+        local savedNotifications = mod.savedNotifications()
+        savedNotifications[file] = nil
+        mod.savedNotifications(savedNotifications)
+    end
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.watchFolderTriggered(files, eventFlags, path) -> none
@@ -693,6 +727,7 @@ function mod.watchFolderTriggered(files, eventFlags)
     if not mod.disableImport then
         local autoFiles = {}
         for i,file in pairs(files) do
+            local flags = eventFlags[i]
 
             --------------------------------------------------------------------------------
             -- Detect the filesystem:
@@ -702,22 +737,16 @@ function mod.watchFolderTriggered(files, eventFlags)
             --------------------------------------------------------------------------------
             -- File deleted or removed from Watch Folder:
             --------------------------------------------------------------------------------
-            if eventFlags[i] and eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] and not tools.doesFileExist(file) then
+            if flags and flags.itemRenamed and flags.itemIsFile and not tools.doesFileExist(file) then
                 --log.df("File deleted or moved outside of watch folder!")
-                if mod.notifications[file] then
-                    mod.notifications[file]:withdraw()
-                    mod.notifications[file] = nil
-                    local savedNotifications = mod.savedNotifications()
-                    savedNotifications[file] = nil
-                    mod.savedNotifications(savedNotifications)
-                end
+                mod.withdrawNotification(file)
             else
 
                 --------------------------------------------------------------------------------
                 -- New File Added to Watch Folder:
                 --------------------------------------------------------------------------------
                 local newFile = false
-                if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemModified"] then
+                if flags.itemCreated and flags.itemIsFile and flags.itemModified then
                     --log.df("New File Added: %s", file)
                     newFile = true
                 end
@@ -725,7 +754,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- New File Added to Watch Folder, but still in transit:
                 --------------------------------------------------------------------------------
-                if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
+                if flags.itemCreated and flags.itemIsFile and not flags.itemModified then
 
                     -------------------------------------------------------------------------------
                     -- Add filename to table:
@@ -746,15 +775,9 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- New File Added to Watch Folder after copying:
                 --------------------------------------------------------------------------------
-                if eventFlags[i]["itemModified"] and eventFlags[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
+                if flags.itemModified and flags.itemIsFile and fnutils.contains(mod.filesInTransit, file) then
                     tools.removeFromTable(mod.filesInTransit, file)
-                    if mod.notifications[file] then
-                        mod.notifications[file]:withdraw()
-                        mod.notifications[file] = nil
-                        local savedNotifications = mod.savedNotifications()
-                        savedNotifications[file] = nil
-                        mod.savedNotifications(savedNotifications)
-                    end
+                    mod.withdrawNotification(file)
                     newFile = true
                 end
 
@@ -762,7 +785,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                 -- New File Moved into Watch Folder:
                 --------------------------------------------------------------------------------
                 local movedFile = false
-                if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
+                if flags.itemRenamed and flags.itemIsFile then
                     log.df("File Moved or Renamed: %s", file)
                     movedFile = true
                 end
@@ -770,15 +793,9 @@ function mod.watchFolderTriggered(files, eventFlags)
                 --------------------------------------------------------------------------------
                 -- New File Moved into Watch Folder on High Sierra:
                 --------------------------------------------------------------------------------
-                if eventFlags[i]["itemChangeOwner"] and eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and volumeFormat == "APFS" then
+                if flags.itemChangeOwner and flags.itemCreated and flags.itemIsFile and volumeFormat == "APFS" then
                     tools.removeFromTable(mod.filesInTransit, file)
-                    if mod.notifications[file] then
-                        mod.notifications[file]:withdraw()
-                        mod.notifications[file] = nil
-                        local savedNotifications = mod.savedNotifications()
-                        savedNotifications[file] = nil
-                        mod.savedNotifications(savedNotifications)
-                    end
+                    mod.withdrawNotification(file)
                     movedFile = true
                 end
 
@@ -786,7 +803,8 @@ function mod.watchFolderTriggered(files, eventFlags)
                 -- Check Extensions:
                 --------------------------------------------------------------------------------
                 local allowedExtensions = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
-                if (fnutils.contains(allowedExtensions, string.lower(file:sub(-3))) or fnutils.contains(allowedExtensions, string.lower(file:sub(-4)))) and tools.doesFileExist(file) then
+                local ext = file:match("%.([^%.]+)$")
+                if fnutils.contains(allowedExtensions, ext) and tools.doesFileExist(file) then
                     if newFile or movedFile then
                         --log.df("File finished copying: %s", file)
                         if mod.automaticallyImport() then
@@ -799,7 +817,7 @@ function mod.watchFolderTriggered(files, eventFlags)
             end
         end
         if mod.automaticallyImport() and next(autoFiles) ~= nil then
-            mod.insertFilesIntoFinalCutPro(autoFiles)
+            mod.insertFilesIntoFinalCutPro(autoFiles):Now()
         end
     end
 end
@@ -938,7 +956,7 @@ function mod.setupWatchers()
         local file = getFileFromTag(tag)
         if file then
             local notificationFn = function(obj)
-                mod.importFile(file, obj:getFunctionTag())
+                mod.importFile(file, obj:getFunctionTag()):Now()
             end
             notify.register(tag, notificationFn)
             newSavedNotifications[file] = tag

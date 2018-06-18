@@ -376,6 +376,10 @@ function fcp:launch(waitSeconds)
     return self
 end
 
+function fcp:doLaunch()
+    return self.app:doLaunch()
+end
+
 --- cp.apple.finalcutpro:restart([waitSeconds]) -> self
 --- Method
 --- Restart Final Cut Pro, if it is running. If not, nothing happens.
@@ -609,7 +613,7 @@ function fcp:selectMenu(path, options)
     return self:menu():selectMenu(path, options)
 end
 
---- cp.apple.finalcutpro:selectMenuItem(path, options) -> cp.rx.Observable <hs._asm.axuielement>
+--- cp.apple.finalcutpro:doSelectMenu(path, options) -> cp.rx.Observable <hs._asm.axuielement>
 --- Method
 --- Selects a Menu Item based on the provided menu path.
 ---
@@ -627,7 +631,7 @@ end
 ---
 --- ```lua
 --- local preview = require("cp.app").forBundleID("com.apple.Preview")
---- preview:launch():menu():selectMenuItem({"File", "Take Screenshot", "From Entire Screen"})
+--- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"})
 --- ```
 ---
 --- Parameters:
@@ -639,8 +643,8 @@ end
 ---
 --- Notes:
 ---  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
-function fcp:selectMenuItem(...)
-    self.app:menu():selectMenuItem(...)
+function fcp:doSelectMenu(...)
+    self.app:menu():doSelectMenu(...)
 end
 
 ----------------------------------------------------------------------------------------

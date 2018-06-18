@@ -70,7 +70,7 @@ local function is(thing, class)
 end
 
 local function append(tbl, ...)
-    for _,v in ipairs({...}) do
+    for _,v in ipairs(pack(...)) do
         insert(tbl, v)
     end
     return tbl
@@ -288,8 +288,8 @@ function Statement.Definition.mt:define()
     end
 
     -- allow creating of a `modifier` statement
-    function statement.modifier(name)
-        return SubStatement.Definition.new(name, statement)
+    function statement.modifier(...)
+        return SubStatement.Definition.new(statement, ...)
     end
 
     setmetatable(statement, {
@@ -419,7 +419,30 @@ function Statement.mt:toObservable(preserveTimer)
 
     local onObservable = self[METADATA].onObservable
     local o = onObservable(self:context())
+
+    -- Check if there is a 'catch'
+    if self._catcher then
+        o = o:catch(function(message)
+            return toObservable(self._catcher(message))
+        end)
+    end
+
     return o
+end
+
+--- cp.rx.go.Statement:Catch(handler) -> cp.rx.go.Statement
+--- Method
+--- Assigns a handler which will be applied at the end of the Statement.
+--- The function will receive the error signal and the returned value will be pass onwards.
+---
+--- Parameters:
+---  * handler  - The handler function
+---
+--- Returns:
+---  * The `Statement`.
+function Statement.mt:Catch(handler)
+    self._catcher = handler
+    return self
 end
 
 --- cp.rx.go.Statement:Now([observer]) -> nil
@@ -488,37 +511,37 @@ SubStatement.Definition.mt.__index = SubStatement.Definition.mt
 -- Creates a new Statement Definition.
 --
 -- Parameters:
---  * name     - The name of the statement.
+--  * parent    - The parent Statement
+--  * name      - The name of the statement.
 --
 -- Returns:
 --  * The new Statement Definition.
-function SubStatement.Definition.new(name, parent)
-    assert(type(name) == "string" and name:len() > 0, "Parameter #1 must be a non-empty string")
+function SubStatement.Definition.new(parent, ...)
+    local names = pack(...)
+    assert(#names > 0, "Parameter #2 must be a non-empty string.")
+    local firstName = names[1]
+    assert(type(firstName) == "string" and firstName:len() > 0, "Parameter #2 must be a non-empty string")
     return setmetatable({
-        name = name,
+        names = names,
         parent = parent,
     }, SubStatement.Definition.mt)
 end
 
-function SubStatement.Definition.apply(subStatement, parent)
-    assert(SubStatement.Definition.is(subStatement), "Parameter #1 must be a SubStatement")
-    return {
-        define = function()
-            local metadata = subStatement.mt[METADATA]
-            if parent[metadata.name] ~= nil then
-                error(format("There is already a '%s' SubStatement on '%s'", metadata.name, parent))
-            end
-            parent[metadata.name] = subStatement
+function SubStatement.Definition.allow(parent, subStatement)
+    assert(SubStatement.Definition.is(subStatement), "Parameter #2 must be a SubStatement")
+    local metadata = subStatement.mt[METADATA]
+    if parent[metadata.name] ~= nil then
+        error(format("There is already a '%s' SubStatement on '%s'", metadata.name, parent))
+    end
+    parent[metadata.name] = subStatement
 
-            -- assign the Statement:SubStatement(...) method
-            if parent.mt[metadata.name] ~= nil then
-                error(format("There is already a '%s' method on '%s'", metadata.name, parent))
-            end
-            parent.mt[metadata.name] = function(this, ...)
-                return subStatement(this, ...)
-            end
-        end
-    }
+    -- assign the Statement:SubStatement(...) method
+    if parent.mt[metadata.name] ~= nil then
+        error(format("There is already a '%s' method on '%s'", metadata.name, parent))
+    end
+    parent.mt[metadata.name] = function(this, ...)
+        return subStatement(this, ...)
+    end
 end
 
 function SubStatement.Definition.is(thing)
@@ -536,62 +559,75 @@ end
 ---  * The new SubStatement definition.
 function SubStatement.Definition.mt:define()
     assert(self.parent ~= nil, "The parent of the SubStatement is not available.")
-    -- details that apply to all instances of the definition.
-    local metadata = {
-        name = self.name,
-        onInit = self._onInit,
-        onObservable = self._onObservable
-    }
+    local statements = {}
 
-    -- the new statement definition
-    local statement = {}
+    for _,statementName in ipairs(self.names) do
 
-    -- the 'class' for statement instances.
-    statement.mt = setmetatable({
-        [METADATA] = metadata,
-    }, SubStatement.mt)
-    statement.mt.__index = statement.mt
-    statement.mt.__call = SubStatement.mt.__call
+        -- details that apply to all instances of the definition.
+        local metadata = {
+            name = statementName,
+            onInit = self._onInit,
+            onObservable = self._onObservable
+        }
 
-    -- provides an `is` function to test instances
-    function statement.is(thing)
-        return is(thing, statement.mt)
-    end
+        -- the new statement definition
+        local statement = {}
 
-    -- allow creating of a `modifier` statement
-    function statement.modifier(name)
-        if SubStatement.Definition.is(name) then
-            return SubStatement.Definition.apply(name, statement)
-        elseif type(name) == "string" then
-            return SubStatement.Definition.new(name, statement)
-        else
-            error(format("Parameter #1 must be either a string or a SubStatement but was: %s", inspect(name)))
+        -- the 'class' for statement instances.
+        statement.mt = setmetatable({
+            [METADATA] = metadata,
+        }, SubStatement.mt)
+        statement.mt.__index = statement.mt
+        statement.mt.__call = SubStatement.mt.__call
+
+        -- provides an `is` function to test instances
+        function statement.is(thing)
+            return is(thing, statement.mt)
         end
-    end
 
-    setmetatable(statement, {
-        -- called to execute the sub-statement.
-        __call = function(_, parent, ...)
-            return setmetatable({
-                _parent = parent,
-            }, statement.mt)(...)
-        end,
-
-        -- outputs the statement name when converted to a string.
-        __tostring = function()
-            return tostring(self.parent) .. "..." .. metadata.name
-        end,
-    })
-
-    self.parent[self.name] = statement
-    self.parent.mt[self.name] = function(this, parent, ...)
-        if self.parent ~= parent then
-            return statement(this, parent, ...)
+        -- creates a `modifier` statement
+        function statement.modifier(first, ...)
+            if type(first) == "string" then
+                return SubStatement.Definition.new(statement, first, ...)
+            else
+                error(format("Parameter #1 must be either a string but was: %s", inspect(first)))
+            end
         end
-        return statement(this, ...)
+
+        -- allows an existing modifier to be applied to this SubStatement.
+        function statement.allow(subStatement, ...)
+            if not SubStatement.Definition.is(subStatement) then
+                error(format("Parameter #1 must be a SubStatement Definition but was: %s", inspect(subStatement)))
+            end
+            return SubStatement.Definition.allow(statement, subStatement, ...)
+        end
+
+        setmetatable(statement, {
+            -- called to execute the sub-statement.
+            __call = function(_, parent, ...)
+                return setmetatable({
+                    _parent = parent,
+                }, statement.mt)(...)
+            end,
+
+            -- outputs the statement name when converted to a string.
+            __tostring = function()
+                return tostring(self.parent) .. "..." .. metadata.name
+            end,
+        })
+
+        self.parent[statementName] = statement
+        self.parent.mt[statementName] = function(this, parent, ...)
+            if self.parent ~= parent then
+                return statement(this, parent, ...)
+            end
+            return statement(this, ...)
+        end
+
+        insert(statements, statement)
     end
 
-    return statement
+    return unpack(statements)
 end
 
 function SubStatement.is(thing)
@@ -714,7 +750,7 @@ end):define()
 ---
 --- Returns:
 ---  * Another `Given.Then` instance.
-Given.Then.modifier(Given.Then):define()
+Given.Then.allow(Given.Then)
 
 local function requireAll(observable)
     return observable:all()
@@ -751,7 +787,7 @@ Require.modifier("OrThrow")
 end)
 :define()
 
-Require.modifier("Is")
+Require.modifier("Is", "Are")
 :onInit(function(context, value)
     context.filter = function(observable)
         return observable:all(function(result) return result == value end)
@@ -759,9 +795,9 @@ Require.modifier("Is")
 end)
 :define()
 
-Require.Is.modifier(Require.OrThrow)
+Require.Is.allow(Require.OrThrow)
 
-Require.modifier("IsNot")
+Require.modifier("IsNot", "AreNot")
 :onInit(function(context, value)
     context.filter = function(observable)
         return observable:all(function(result) return result ~= value end)
@@ -769,7 +805,145 @@ Require.modifier("IsNot")
 end)
 :define()
 
-Require.IsNot.modifier(Require.OrThrow)
+Require.IsNot.allow(Require.OrThrow)
+
+local function isTruthy(value)
+    return value ~= false and value ~= nil
+end
+
+local WaitUntil = Statement.named("WaitUntil")
+:onInit(function(context, requirement)
+    context.requirement = toObservable(requirement)
+end)
+:onObservable(function(context)
+    local o = context.requirement
+
+    local filter = context.filter or isTruthy
+    o = o:find(filter)
+
+    if context.timeout then
+        o = o:timeout(context.timeout, context.message or format("Timed out after %d milliseconds", context.timeout))
+    end
+
+    return o
+end)
+:define()
+
+WaitUntil.modifier("TimeoutAfter")
+:onInit(function(context, millis, message)
+    context.timeout = millis
+    context.message = message
+end)
+:define()
+
+WaitUntil.modifier("Is", "Are")
+:onInit(function(context, thisValue)
+    context.filter = function(value) return value == thisValue end
+end)
+:define()
+
+-- Allow TimeoutAfter on Is and Are
+WaitUntil.Is.allow(WaitUntil.TimeoutAfter)
+WaitUntil.Are.allow(WaitUntil.TimeoutAfter)
+
+WaitUntil.modifier("IsNot", "AreNot")
+:onInit(function(context, thisValue)
+    context.filter = function(value) return value ~= thisValue end
+end)
+:define()
+
+-- allow TimeoutAfter on IsNot and AreNot
+WaitUntil.IsNot.allow(WaitUntil.TimeoutAfter)
+WaitUntil.AreNot.allow(WaitUntil.TimeoutAfter)
+
+local First = Statement.named("First")
+:onInit(function(context, reference)
+    context.reference = toObservable(reference)
+end)
+:onObservable(function(context)
+    return context.reference:first()
+end)
+:define()
+
+local Throw = Statement.named("Throw")
+:onInit(function(context, message, ...)
+    context.message = message and format(message, ...) or nil
+end)
+:onObservable(function(context)
+    return Observable.throw(context.message)
+end)
+:define()
+
+local Done = Statement.named("Done")
+:onObservable(function()
+    return Observable.empty()
+end)
+
+local If = Statement.named("If")
+:onInit(function(context, value)
+    context.value = toObservable(value)
+    context.filter = isTruthy
+    context.thens = nil
+    context.otherwises = {}
+end)
+:onObservable(function(context)
+    assert(context.thens, "Please specify a 'Then'")
+
+    -- we only deal with the first result
+    local o = context.value:first()
+
+    o = o:flatMap(function(...)
+        if context.filter(...) then
+            return Observable.zip(unpack(toObservables(context.thens, pack(...))))
+        else
+            return Observable.zip(unpack(toObservables(context.otherwises, pack(...))))
+        end
+    end)
+
+    return o
+end)
+:define()
+
+If.modifier("Then")
+:onInit(function(context, ...)
+    context.thens = pack(...)
+end)
+:define()
+
+If.Then.modifier("Otherwise")
+:onInit(function(context, ...)
+    context.otherwises = pack(...)
+end)
+:define()
+
+If.modifier("Is", "Are")
+:onInit(function(context, value)
+    context.filter = function(theValue) return theValue == value end
+end)
+:define()
+
+If.Is.allow(If.Then)
+If.Are.allow(If.Then)
+
+If.modifier("IsNot", "AreNot")
+:onInit(function(context, value)
+    context.filter = function(theValue) return theValue ~= value end
+end)
+:define()
+
+If.IsNot.allow(If.Then)
+If.AreNot.allow(If.Then)
+
+If.modifier("Matches")
+:onInit(function(context, predicate)
+    if type(predicate) ~= "function" then
+        error(format("The 'Matches' predicate must be a function, but was: %s", inspect(predicate)))
+    end
+    context.filter = predicate
+end)
+:define()
+
+If.Matches.allow(If.Then)
 
 return {
     append = append,
@@ -780,4 +954,9 @@ return {
     SubStatement = SubStatement,
     Given = Given,
     Require = Require,
+    WaitUntil = WaitUntil,
+    First = First,
+    Throw = Throw,
+    Done = Done,
+    If = If,
 }

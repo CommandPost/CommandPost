@@ -2,7 +2,7 @@
 -- Originally forked from https://github.com/bjornbytes/rxlua
 -- MIT License
 
--- local log = require("hs.logger").new("rx")
+local log = require("hs.logger").new("rx")
 -- local inspect = require("hs.inspect")
 
 local timer = require 'hs.timer'
@@ -2007,7 +2007,8 @@ end
 -- @returns {Reference}
 function TimeoutScheduler:schedule(action, delay)
   delay = delay or 0
-  local t = timer.doAfter(delay/1000, action)
+  log.df("Scheduling timer for %d milliseconds", delay)
+  local t = timer.doAfter(delay/1000.0, action)
   self._timers[t] = true
 
   return Reference.create(function()

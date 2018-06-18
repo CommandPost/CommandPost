@@ -9,7 +9,7 @@ local rxgo = require("cp.rx.go")
 local Observable = rx.Observable
 local append, is, toObservable, toObservables = rxgo.append, rxgo.is, rxgo.toObservable, rxgo.toObservables
 local Statement, SubStatement = rxgo.Statement, rxgo.SubStatement
-local Given = rxgo.Given
+local Given, If = rxgo.Given, rxgo.If
 
 local insert = table.insert
 
@@ -131,6 +131,45 @@ return test.suite("cp.rx.go"):with {
 
         result:Now(function(value)
             ok(eq(value, 3))
+        end)
+    end),
+
+    test("If", function()
+        ok(Statement.Definition.is(If))
+
+        local thenCalled, otherwiseCalled = false, false
+        If(true):Then(function(value)
+            ok(eq(value, true))
+            thenCalled = true
+        end)
+        :Otherwise(function(_)
+            ok(false, "This should not be executed.")
+            otherwiseCalled = true
+        end)
+        :Now()
+
+        ok(eq(thenCalled, true))
+        ok(eq(otherwiseCalled, false))
+
+        thenCalled, otherwiseCalled = false, false
+
+        If("a"):Is("b")
+        :Then(function(_)
+            ok(false, "This should not be executed")
+            thenCalled = true
+        end)
+        :Otherwise(function(value)
+            ok(value, "a")
+            otherwiseCalled = true
+        end)
+        :Now()
+
+        ok(eq(thenCalled, false))
+        ok(eq(otherwiseCalled, true))
+
+        local value = require("cp.prop").TRUE()
+        If(value):Then(function(result)
+            ok(eq(result, true))
         end)
     end)
 }

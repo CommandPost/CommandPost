@@ -50,6 +50,13 @@ local prefs                     = require("cp.app.prefs")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 
+local rx                        = require("cp.rx")
+local go                        = require("cp.rx.go")
+
+local Observable                = rx.Observable
+local Given, First              = go.Given, go.First
+local WaitUntil, Throw          = go.WaitUntil, go.Throw
+
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
@@ -274,7 +281,7 @@ function mod.forBundleID(bundleID)
 
         local displayName = info:mutate(function(original)
             local theInfo = original()
-            return theInfo and theInfo["CFBundleDisplayName"]
+            return theInfo and (theInfo["CFBundleDisplayName"] or theInfo["CFBundleName"])
         end)
 
         local installed = info:mutate(function(original) return original() ~= nil end)
@@ -572,6 +579,41 @@ function mod.mt:launch(waitSeconds)
     end
 
     return self
+end
+
+--- cp.app:doLaunch() -> cp.rx.Statement <boolean>
+--- Method
+--- Returns a `Statement` that can be run to launch or focus the current app.
+--- It will resolve to `true` when the app was launched.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` that will launch the app.
+function mod.mt:doLaunch(waitSeconds)
+    if self:installed() then
+        local launch = Given(
+            First(self.hsApplication)
+        )
+        :Then(function(hsApp)
+            if hsApp == nil or not hsApp:isFrontmost() then
+                local ok = application.launchOrFocusByBundleID(self:bundleID())
+                if not ok then
+                    return Observable.throw("Unable to launch %s.", self:displayName())
+                end
+            end
+        end)
+        if waitSeconds then
+            launch = launch:Then(
+                WaitUntil(self.frontmost):Is(true)
+                :TimeoutAfter(waitSeconds * 1000, "Unable to launch %s in %d seconds.", self:displayName(), waitSeconds)
+            )
+        end
+        return launch
+    else
+        return Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())
+    end
 end
 
 --- cp.app:quit(waitSeconds) -> self

@@ -62,14 +62,14 @@ function mod.pasteTextAsCaption()
     --------------------------------------------------------------------------------
     -- Add Caption:
     --------------------------------------------------------------------------------
-    if not fcp:selectMenuItem({"Edit", "Captions", "Add Caption"}) then
+    if not fcp:doSelectMenu({"Edit", "Captions", "Add Caption"}) then
         dialog.displayErrorMessage("Could not 'Paste Text as Caption' because a new caption could not be added.")
     end
 
     --------------------------------------------------------------------------------
     -- Paste Text:
     --------------------------------------------------------------------------------
-    if not fcp:selectMenuItem({"Edit", "Paste"}) then
+    if not fcp:doSelectMenu({"Edit", "Paste"}) then
         dialog.displayErrorMessage("Could not 'Paste Text as Caption' because we could not paste text back into Final Cut Pro.")
     end
 
