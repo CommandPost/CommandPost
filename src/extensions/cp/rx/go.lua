@@ -1,7 +1,47 @@
-local log           = require("hs.logger").new("rxgo")
+--- === cp.rx.go ===
+---
+--- Adds `Statements` to make processing of `cp.rx.Observable` values
+--- in ways that are more familiar to synchronous programmers.
+---
+--- A common activity is to perform some tasks, wait for the results and
+--- do some more work with those results.
+---
+--- Lets say you want to calculate the price of an item that is in USD and
+--- output it in AUD. We have `anItem` that will return an `Observable`
+--- that fetches the item price, and an `exchangeRate` function that will
+--- fetch the current exchange rate for two currencies.
+---
+--- Using reactive operators, you could use the `zip` function to achieve this:
+---
+--- ```lua
+--- Observable.zip(
+---     anItem:priceInUSD(),
+---     exchangeRate("USD", "AUD")
+--- )
+--- :subscribe(function(price, rate)
+---     print "AUD Price: ", price * rate
+--- end)
+--- ```
+---
+--- The final subscription will only be executed once both `anObservable` and `anotherObservable` push
+--- a value. It will continue calling it while both keep producing values, but will complete if any of them
+--- complete.
+---
+--- Using the `Given` statement it would look like this:
+---
+--- ```lua
+--- Given(
+---    anItem:priceInUSD(),
+---    exchangeRate("USD", "AUD"),
+--- )
+--- :Now(function(price, rate)
+---     print "AUD Price: ", price * rate
+--- end)
+--- ```
+
+-- local log           = require("hs.logger").new("rxgo")
 local inspect       = require("hs.inspect")
 
-local timer         = require("hs.timer")
 local prop          = require("cp.prop")
 local rx            = require("cp.rx")
 
@@ -581,6 +621,14 @@ end
 -- Statement: Given...Then
 -----------------------------------------------------------
 
+--- cp.rx.go.Given <cp.rx.Statement>
+--- Constant
+--- A `Statement` that will execute the provided `resolvable` values and
+--- This will resolve the provided values into `Observable`s and pass on the
+--- first result of each to the next stage as individual parameters.
+--- This will continue until one of the `Observables` has completed, at which
+--- point other results from values are ignored.
+
 --- cp.rx.go.Given(...) -> Given
 --- Function
 --- Begins the definition of a `Given` `Statement`.
@@ -628,7 +676,7 @@ end)
 end)
 :define()
 
---- cp.rx.go.Given.Then <Statement.Config>
+--- cp.rx.go.Given.Then <cp.rx.go.SubStatement>
 --- Constant
 --- This is a configuration of `Given`, which should be created via `Given:Then(...)`.
 --- For example:
@@ -671,6 +719,10 @@ Given.Then.modifier(Given.Then):define()
 local function requireAll(observable)
     return observable:all()
 end
+
+--- cp.rx.go.Require <cp.rx.go.Statement>
+--- Constant
+---
 
 local Require = Statement.named("Require")
 :onInit(function(context, requirement)
