@@ -18,7 +18,7 @@
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local image										= require("hs.image")
-local menubar									= require("hs._asm.guitk.menubar.legacy")
+local menubar									= require("hs.menubar")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
