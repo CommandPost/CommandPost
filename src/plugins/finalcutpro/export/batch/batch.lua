@@ -740,7 +740,7 @@ end
 
 mod.destinationPreset = config.prop("batchExportDestinationPreset")
 
---- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> boolean
+--- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> cp.rx.go.Statement
 --- Function
 --- Change Export Destination Preset.
 ---
@@ -748,40 +748,8 @@ mod.destinationPreset = config.prop("batchExportDestinationPreset")
 ---  * None
 ---
 --- Returns:
----  * `true` if successful otherwise `false`
+---  * A `Statement` which is ready to be executed.
 function mod.changeExportDestinationPreset()
-    if not fcp:isRunning() then
-        dialog.displayMessage(i18n("batchExportFinalCutProClosed"))
-        return false
-    end
-
-    local shareMenuItems = fcp:menu():findMenuItemsUI({"File", "Share"})
-    if not shareMenuItems then
-        dialog.displayErrorMessage(i18n("batchExportDestinationsNotFound"))
-        return false
-    end
-
-    local destinationList = destinations.names() or {}
-
-    if compressor:isInstalled() then
-        insert(destinationList, 1, i18n("sendToCompressor"))
-    end
-
-    local defaultItems = {mod.destinationPreset()}
-    local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, defaultItems)
-    if result and #result > 0 then
-        mod.destinationPreset(result[1])
-    end
-
-    --------------------------------------------------------------------------------
-    -- Refresh the Preferences:
-    --------------------------------------------------------------------------------
-    mod._bmMan.refresh()
-
-    return true
-end
-
-function mod.changeExportDestinationPresetRx()
     return Given(
         destinations.names(),
         mod.destinationPreset(),
@@ -1229,7 +1197,10 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationPreset"),
-                onclick = mod.changeExportDestinationPreset,
+                -- onclick = mod.changeExportDestinationPreset,
+                onclick = function()
+                    mod.changeExportDestinationPresetRx():Now()
+                end
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following naming convention:")

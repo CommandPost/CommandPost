@@ -1,19 +1,28 @@
--- local log       = require("hs.logger").new("rxutils")
+-- local log       = require("hs.logger").new("rxgotils")
 local inspect   = require("hs.inspect")
 
 local test      = require("cp.test")
 
 local rx = require("cp.rx")
-local rxu = require("cp.rx.go")
+local rxgo = require("cp.rx.go")
 
 local Observable = rx.Observable
-local is, toObservable, toObservables = rxu.is, rxu.toObservable, rxu.toObservables
-local Statement, SubStatement = rxu.Statement, rxu.SubStatement
-local Given = rxu.Given
+local append, is, toObservable, toObservables = rxgo.append, rxgo.is, rxgo.toObservable, rxgo.toObservables
+local Statement, SubStatement = rxgo.Statement, rxgo.SubStatement
+local Given = rxgo.Given
 
 local insert = table.insert
 
 return test.suite("cp.rx.go"):with {
+    test("append", function()
+        local values = {}
+        ok(eq(append(values, 1, 2, 3), {1, 2, 3}))
+        ok(eq(values, {1, 2, 3}))
+
+        ok(eq(append(values, 4, 5), {1, 2, 3, 4, 5}))
+        ok(eq(values, {1, 2, 3, 4, 5}))
+    end),
+
     test("is", function()
         local thing = {}
         thing.mt = {}
@@ -41,12 +50,21 @@ return test.suite("cp.rx.go"):with {
         o:subscribe(function(x) result = x end)
         ok(Observable.is(o))
         ok(eq(result, 8))
+
+        -- more complex example
+        o = toObservable(function() return 1, function() return 2 end, Observable.of(3) end)
+        o:subscribe(function(x, y, z)
+            ok(eq(x, 1))
+            ok(eq(y, 2))
+            ok(eq(z, 3))
+        end)
     end),
 
     test("toObservables", function()
         local args = {1, 2, 3}
         local results = {}
         local o = toObservables({1, 2, 3})
+        ok(eq(#o, 3))
 
         for _,v in ipairs(o) do
             v:subscribe(function(x) insert(results, x) end)

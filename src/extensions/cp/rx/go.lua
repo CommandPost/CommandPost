@@ -1,4 +1,4 @@
--- local log           = require("hs.logger").new("rxgo")
+local log           = require("hs.logger").new("rxgo")
 local inspect       = require("hs.inspect")
 
 local timer         = require("hs.timer")
@@ -12,6 +12,7 @@ local pack, unpack  = table.pack, table.unpack
 local format        = string.format
 
 local Statement, SubStatement
+local toObservable, toObservables
 
 -----------------------------------------------------------
 -- Utility functions
@@ -28,16 +29,56 @@ local function is(thing, class)
     return false
 end
 
-local function toObservable(thing, params)
+local function append(tbl, ...)
+    for _,v in ipairs({...}) do
+        insert(tbl, v)
+    end
+    return tbl
+end
+
+--- cp.rx.go.toObservable(thing[, params]) -> cp.rx.Observable
+--- Function
+--- Converts the `thing` into an `Observable`. It converts the following:
+---
+--- * `Observable`          - Returned unchanged.
+--- * `cp.rx.go.Statement`  - Returns the result of the `toObservable()` method. Note: this will cancel any scheduled executions for the Statement.
+--- * `cp.prop`             - Returns the `cp.prop:observe()` value.
+--- * `function`            - Executes the function, passing in the `params` as a list of values, returning the results converted to an `Observable`.
+--- * Other values          - Returned via `Observable.of(thing)`.
+---
+--- Note that with `functions`, the function is not executed immediately, but it will be passed the params as
+--- a list when the resulting `Observable` is subscribed to. For example:
+---
+--- ```lua
+--- -- set up the function
+--- multiply = toObservable(function(one, two) return one * two end, {2, 3})
+--- -- nothing has happened yet
+--- multiply:subscribe(function(result) print(result) end)
+--- -- now the function has been executed
+--- ```
+--- This results in printing `6`.
+---
+--- Parameters:
+---  * thing    - The thing to convert.
+---  * params   - Optional table list to pass as parameters for the `thing` if it's a `function`.
+---
+--- Returns:
+---  * The `Observable`.
+toObservable = function(thing, params)
     if type(thing) == "function" then
-        thing = thing(unpack(params or {}))
+        local results = pack(thing(unpack(params or {})))
+        if #results > 1 then
+            return Observable.zip(unpack(toObservables(results)))
+        else
+            return toObservable(results[1])
+        end
     end
 
     local obs
     if Observable.is(thing) then
         obs = thing
     elseif Statement.is(thing) then
-        obs = thing:observable()
+        obs = thing:toObservable()
     elseif prop.is(thing) then
         obs = thing:observe()
     else
@@ -47,7 +88,34 @@ local function toObservable(thing, params)
     return obs or Observable.empty()
 end
 
-local function toObservables(things, params)
+--- cp.rx.go.toObservables(things[, params]) -> table
+--- Function
+--- Converts a list of things into a list of `Observables` of those things.
+---
+--- For example:
+--- ```lua
+--- result = toObservables({1, 2, 3})
+--- for _,o in ipairs(results) do
+---     o:subscribe(function(x) print x end)
+--- end
+---
+--- If any of the things are `function`s, then the `params` table is unpacked to a list
+--- and passed into the function when it is called. For example:
+---
+--- ```lua
+--- toObservables({function(x) return x * 2 end}, {3})
+---     :subscribe(function(x) print end) -- outputs 6
+--- ```
+---
+--- Any type supported by [toObservable](#toObservable) can be included in the `things` array.
+---
+--- Parameters:
+---  * things       - a table list of things to convert to `Observables`.
+---  * params       - an optional table list of parameters to pass to any `function` things.
+---
+--- Returns:
+---  * A table list of the things, converted to `Observable`.
+toObservables = function(things, params)
     local observables = {}
     for _,thing in ipairs(things) do
         insert(observables, toObservable(thing, params))
@@ -294,16 +362,21 @@ function Statement.mt:__call(...)
     return self
 end
 
---- cp.rx.go.Statement:toObservable() -> cp.rx.Observable
+--- cp.rx.go.Statement:toObservable([preserveTimer]) -> cp.rx.Observable
 --- Method
 --- Returns a new `Observable` instance for the `Statement`.
 ---
 --- Parameters:
----  * None
+---  * preserveTimer    - If a timer has been set via [After](#After), don't cancel it. Defaults to `false`.
 ---
 --- Returns:
 ---  * The `Observable`.
-function Statement.mt:toObservable()
+function Statement.mt:toObservable(preserveTimer)
+    if not preserveTimer and self._timer then
+        self._timer:cancel()
+        self._timer = nil
+    end
+
     local onObservable = self[METADATA].onObservable
     local o = onObservable(self:context())
     return o
@@ -334,20 +407,27 @@ function Statement.mt:Now(onNext, onError, onCompleted)
     end
 end
 
---- cp.rx.go.Statement:After(seconds) -> nil
+--- cp.rx.go.Statement:After(millis[, observer][, scheduler]) -> nil
 --- Method
 --- Requests the statement to be executed after the specified amount of time in seconds.
 ---
 --- Parameters:
----  * seconds      - The number of seconds to delay the execution.
+---  * millis      - The number of milliseconds to delay the execution.
+---  * observer     - The observer to subscribe to the final result.
+---  * scheduler    - (optional) the `cp.rx.Scheduler` to use. Uses the `cp.rx.util.defaultScheduler()` if none is provided.
 ---
 --- Returns:
 ---  * Nothing.
-function Statement.mt:After(seconds)
+function Statement.mt:After(millis, observer, scheduler)
     if not self._timer then
-        self._timer = timer.doAfter(seconds, function() self:Now() end)
-    else
-        self._timer:setNextTrigger(seconds)
+        -- shift the scheduler parameter if necessary
+        if observer ~= nil and not Observer.is(observer) then
+            scheduler = observer
+            observer = nil
+        end
+
+        scheduler = scheduler or rx.util.defaultScheduler()
+        self._timer = scheduler:schedule(function() self:Now(observer) end, millis)
     end
 end
 
@@ -629,7 +709,18 @@ end)
 
 Require.Is.modifier(Require.OrThrow)
 
+Require.modifier("IsNot")
+:onInit(function(context, value)
+    context.filter = function(observable)
+        return observable:all(function(result) return result ~= value end)
+    end
+end)
+:define()
+
+Require.IsNot.modifier(Require.OrThrow)
+
 return {
+    append = append,
     is = is,
     toObservable = toObservable,
     toObservables = toObservables,

@@ -1674,7 +1674,7 @@ end
 --- Returns an Observable that will emit an error if the specified time is exceded since the most recent `next` value.
 -- @param {number} timeInMs - The time in milliseconds to wait before an error is emitted.
 -- @param {string} errorMessage - The error message to output if the timeout is exceeded.
--- @param {Scheduler=TimeoutScheduler} scheduler - The scheduler to use.
+-- @param {Scheduler=defaultScheduler()} scheduler - The scheduler to use.
 -- @return {Observable}
 function Observable:timeout(timeInMs, errorMessage, scheduler)
     timeInMs = type(timeInMs) == "function" and timeInMs or util.constant(timeInMs)
@@ -1840,8 +1840,8 @@ function Observable.zip(...)
     end
 
     local function onNext(i)
-      return function(value)
-        table.insert(values[i], value)
+      return function(...)
+        table.insert(values[i], util.pack(...))
         values[i].n = values[i].n + 1
 
         local ready = true
@@ -1856,7 +1856,10 @@ function Observable.zip(...)
           local payload = {}
 
           for j = 1, count do
-            payload[j] = table.remove(values[j], 1)
+            local args = table.remove(values[j], 1)
+            for _,arg in ipairs(args) do
+                table.insert(payload, arg)
+            end
             values[j].n = values[j].n - 1
           end
 
