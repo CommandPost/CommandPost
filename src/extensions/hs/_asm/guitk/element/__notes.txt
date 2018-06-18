@@ -1,0 +1,88 @@
++   @interface NSControl                  : NSView
+        @interface NSBrowser          : NSControl
+    +   @interface NSButton           : NSControl
+    +   @interface NSColorWell        : NSControl
+    +   @interface NSDatePicker       : NSControl
+    +   @interface NSImageView        : NSControl
+        @interface NSLevelIndicator   : NSControl
+        @interface NSMatrix           : NSControl
+        @interface NSPathControl      : NSControl
+        @interface NSRuleEditor       : NSControl
+        @interface NSScroller         : NSControl
+        @interface NSSegmentedControl : NSControl
+    +   @interface NSSlider           : NSControl
+        @interface NSStepper          : NSControl
+        @interface NSTableView        : NSControl
+    +   @interface NSTextField        : NSControl
+            @interface NSComboBox        : NSTextField
+            @interface NSSearchField     : NSTextField
+            @interface NSSecureTextField : NSTextField
+            @interface NSTokenField      : NSTextField
+
+    @interface ABPeoplePickerView         : NSView
+    @interface ABPersonView               : NSView
+    @interface NSBox                      : NSView
+    @interface NSClipView                 : NSView
+    @interface NSCollectionView           : NSView
+    @interface NSGridView                 : NSView
+    @interface NSOpenGLView               : NSView
++   @interface NSProgressIndicator        : NSView
+    @interface NSQuickDrawView            : NSView
+    @interface NSRulerView                : NSView
+    @interface NSScrollView               : NSView
+    @interface NSScrubber                 : NSView
+    @interface NSScrubberArrangedView     : NSView
+    @interface NSSplitView                : NSView
+    @interface NSStackView                : NSView
+    @interface NSTableCellView            : NSView
+    @interface NSTableHeaderView          : NSView
+    @interface NSTableRowView             : NSView
+    @interface NSTabView                  : NSView
+    @interface NSText                     : NSView
+        @interface NSTextView : NSText
+    @interface NSVisualEffectView         : NSView
+    @interface AMWorkflowView             : NSView
+    @interface AVCaptureView              : NSView
++   @interface AVPlayerView               : NSView
+    @interface AUGenericView              : NSView
+    @interface AUPannerView               : NSView
+    @interface IOBluetoothPasskeyDisplay  : NSView
+    @interface MKAnnotationView           : NSView
+    @interface MKMapView                  : NSView
+    @interface MTKView                    : NSView
+    @interface PHLivePhotoView            : NSView
+    @interface IKCameraDeviceView         : NSView
+    @interface IKDeviceBrowserView        : NSView
+    @interface IKFilterBrowserView        : NSView
+    @interface IKFilterUIView             : NSView
+    @interface IKImageBrowserView         : NSView
+    @interface IKImageView                : NSView
+    @interface IKScannerDeviceView        : NSView
+    @interface PDFView                    : PDFKitPlatformView
+    @interface QCCompositionParameterView : NSView
+    @interface QCCompositionPickerView    : NSView
+    @interface QCView                     : NSView
+    @interface QuartzFilterView           : NSView
+    @interface QLPreviewView              : NSView
+    @interface SCNView                    : NSView
+    @interface ScreenSaverView            : NSView
+    @interface SFAuthorizationView        : NSView
+    @interface SFCertificateView          : NSView
+    @interface SKView                     : NSView
+    @interface WebFrameView               : NSView
+    @interface WebView                    : NSView
+-   @interface WKWebView                  : NSView
+
+Common properties:
+
+NSView
+    @property BOOL acceptsTouchEvents
+    @property BOOL wantsRestingTouches
+    @property CGFloat boundsRotation
+    @property CGFloat frameRotation
+    @property NSRect bounds
+    @property NSRect frame
+    @property NSRect preparedContentRect
+    @property(copy) NSArray <__kindof NSGestureRecognizer *> *gestureRecognizers
+    @property(getter=isInFullScreenMode, readonly) BOOL inFullScreenMode
+    @property(strong) NSPressureConfiguration *pressureConfiguration
