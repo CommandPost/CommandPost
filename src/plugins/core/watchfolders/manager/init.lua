@@ -27,6 +27,7 @@ local webview                                   = require("hs.webview")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
+local just                                      = require("cp.just")
 local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
@@ -55,7 +56,7 @@ mod.DEFAULT_WINDOW_STYLE = {"titled", "closable", "nonactivating"}
 --- plugins.core.watchfolders.manager.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Width of the Watch Folder Window
-mod.DEFAULT_WIDTH = 524
+mod.DEFAULT_WIDTH = 1000
 
 --- plugins.core.watchfolders.manager.DEFAULT_HEIGHT -> number
 --- Constant
@@ -211,7 +212,7 @@ end
 --
 -- Returns:
 -- * Nothing
-local function windowCallback(action, _, frame)
+local function windowCallback(action, wv, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             mod._webview = nil
@@ -221,8 +222,17 @@ local function windowCallback(action, _, frame)
             local id = mod._toolbar:selectedItem()
             for _, v in ipairs(mod._panels) do
                 if v.id == id then
+                    --------------------------------------------------------------------------------
+                    -- Wait until the Webview has loaded before triggering individual panels
+                    -- functions:
+                    --------------------------------------------------------------------------------
                     --log.df("Executing Load Function via manager.windowCallback.")
-                    v.loadFn()
+                    --timer.waitUntil(function() return not wv:loading() end, v.loadFn, 0.01)
+                    if just.doUntil(function() return not wv:loading() end) then
+                        v.loadFn()
+                    else
+                        log.ef("Failed to trigger Watch Folder Load Function via manager.windowCallback.")
+                    end
                 end
             end
         end
@@ -401,12 +411,17 @@ end
 ---  * None
 function mod.injectScript(script)
     if mod._webview and mod._webview:frame() then
-        mod._webview:evaluateJavaScript(script,
-        function(_, theerror)
-            if theerror then
-                log.df("Javascript Error: %s", inspect(theerror))
-            end
-        end)
+        --------------------------------------------------------------------------------
+        -- Wait until the Webview has loaded before executing JavaScript:
+        --------------------------------------------------------------------------------
+        timer.waitUntil(function() return not mod._webview:loading() end, function()
+            mod._webview:evaluateJavaScript(script,
+                function(_, theerror)
+                    if theerror and theerror.code ~= 0 then
+                        log.df("Javascript Error: %s\nCaused by script: %s", inspect(theerror), script)
+                    end
+                end)
+        end, 0.01)
     end
 end
 
@@ -446,7 +461,9 @@ function mod.selectPanel(id)
 
         local style = v.id == id and "block" or "none"
         js = js .. [[
-            document.getElementById(']] .. v.id .. [[').style.display = ']] .. style .. [[';
+            if (document.getElementById(']] .. v.id .. [[') !== null) {
+                document.getElementById(']] .. v.id .. [[').style.display = ']] .. style .. [[';
+            }
         ]]
     end
 

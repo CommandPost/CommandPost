@@ -7,8 +7,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log							= require("hs.logger").new("button")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
@@ -24,10 +31,10 @@ local Button = {}
 --- Checks if the `element` is a `Button`, returning `true` if so.
 ---
 --- Parameters:
---- * element		- The `hs._asm.axuielement` to check.
+---  * element		- The `hs._asm.axuielement` to check.
 ---
 --- Returns:
---- * `true` if the `element` is a `Button`, or `false` if not.
+---  * `true` if the `element` is a `Button`, or `false` if not.
 function Button.matches(element)
     return element and element:attributeValue("AXRole") == "AXButton"
 end
@@ -37,8 +44,8 @@ end
 --- Creates a new `Button` instance.
 ---
 --- Parameters:
---- * parent		- The parent object. Should have a `UI` and `isShowing` field.
---- * finderFn		- A function which will return the `hs._asm.axuielement` the button belongs to, or `nil` if not available.
+---  * parent		- The parent object. Should have a `UI` and `isShowing` field.
+---  * finderFn		- A function which will return the `hs._asm.axuielement` the button belongs to, or `nil` if not available.
 ---
 --- Returns:
 --- The new `Button` instance.
@@ -46,29 +53,39 @@ function Button.new(parent, finderFn)
     local o = prop.extend(
         {
             _parent = parent,
-            _finder = finderFn,
-
---- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
-            UI = prop(function(self)
-                return axutils.cache(self, "_ui", finderFn, Button.matches)
-            end),
         }, Button
     )
 
+    local UI
+    if prop.is(finderFn) then
+        UI = finderFn
+    else
+        UI = prop(function()
+            return axutils.cache(o, "_ui", function()
+                local ui = finderFn()
+                return Button.matches(ui) and ui or nil
+            end,
+            Button.matches)
+        end)
+    end
+
     prop.bind(o) {
+--- cp.ui.Button.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Retrieves the `axuielement` for the `Button`, or `nil` if not available..
+        UI = UI,
+
 --- cp.ui.Button.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- If `true`, the `Button` is showing on screen.
-        isShowing = o.UI:mutate(function(original, self)
+        isShowing = UI:mutate(function(original, self)
             return original() ~= nil and self:parent():isShowing()
         end),
 
 --- cp.ui.Button.title <cp.prop: string; read-only>
 --- Field
 --- The button title, if available.
-        title   = o.UI:mutate(function(original)
+        title   = UI:mutate(function(original)
             local ui = original()
             return ui and ui:attributeValue("AXTitle")
         end),
@@ -76,7 +93,7 @@ function Button.new(parent, finderFn)
 --- cp.ui.Button.frame <cp.prop: table; read-only>
 --- Field
 --- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
-        frame = o.UI:mutate(function(original)
+        frame = UI:mutate(function(original)
             local ui = original()
             return ui and ui:frame() or nil
         end),
@@ -93,11 +110,28 @@ function Button.new(parent, finderFn)
     return o
 end
 
--- TODO: Add documentation
+--- cp.ui.Button:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
 function Button:parent()
     return self._parent
 end
 
+--- cp.ui.Button:app() -> App
+--- Method
+--- Returns the app instance.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function Button:app()
     return self:parent():app()
 end
@@ -107,10 +141,10 @@ end
 --- Returns `true` if the button is visible and enabled.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * `true` if the button is visible and enabled.
+---  * `true` if the button is visible and enabled.
 function Button:isEnabled()
     local ui = self:UI()
     return ui ~= nil and ui:enabled()
@@ -121,11 +155,11 @@ end
 --- Performs a button press action, if the button is available.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `Button` instance.
---- * `true` if the button was actually pressed successfully.
+---  * The `Button` instance.
+---  * `true` if the button was actually pressed successfully.
 function Button:press()
     local success = false
     local ui = self:UI()
@@ -133,7 +167,16 @@ function Button:press()
     return self, success
 end
 
+-- cp.ui.Button:__call() -> self, boolean
+-- Method
 -- Allows the button to be called like a function which will trigger a `press`.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The `Button` instance.
+--  * `true` if the button was actually pressed successfully.
 function Button:__call()
     return self:press()
 end
@@ -144,10 +187,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created.
+---  * The `hs.image` that was created.
 function Button:snapshot(path)
     local ui = self:UI()
     if ui then

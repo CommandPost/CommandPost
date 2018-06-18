@@ -231,7 +231,7 @@ function plugin.postInit()
                     --------------------------------------------------------------------------------
                     -- Jump to the correct timecode:
                     --------------------------------------------------------------------------------
-                    fcp:timeline():playhead():setTimecode(timecode)
+                    fcp:timeline():playhead():timecode(timecode)
                 end
             elseif mmcType == "PLAY" then
                 if not fcp:viewer().isPlaying() then

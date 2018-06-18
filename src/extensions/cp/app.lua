@@ -97,10 +97,10 @@ windowfilter.setLogLevel("nothing")
 --- Returns a list of Bundle IDs which have been requested via [forBundleID](#forBundleID).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A list of Bundle IDs.
+---  * A list of Bundle IDs.
 function mod.bundleIDs()
     local ids = {}
     for id,_ in pairs(apps) do
@@ -114,10 +114,10 @@ end
 --- Returns a list of all apps that have been requested via [forBundleID](#forBundleID), in no particular order.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A list of `cp.app` instances.
+---  * A list of `cp.app` instances.
 function mod.apps()
     local result = {}
     for _,app in pairs(apps) do
@@ -133,6 +133,11 @@ local frontmostApp = nil
 --- Returns the most recent 'registered' app that was active, other than CommandPost itself.
 mod.frontmostApp = prop(function() return frontmostApp end)
 
+--- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
+--- Field
+--- Returns the most recent 'registered' app that was active, other than CommandPost itself.
+mod.frontmostApp = prop(function() return frontmostApp end)
+
 --- cp.app.forBundleID(bundleID)
 --- Constructor
 --- Returns the `cp.app` for the specified Bundle ID. If the app has already been created,
@@ -141,27 +146,18 @@ mod.frontmostApp = prop(function() return frontmostApp end)
 --- The Bundle ID
 ---
 --- Parameters:
---- * bundleID      - The application bundle ID to find the app for.
+---  * bundleID      - The application bundle ID to find the app for.
 ---
 --- Returns:
---- * The `cp.app` for the bundle.
+---  * The `cp.app` for the bundle.
 function mod.forBundleID(bundleID)
     assert(type(bundleID) == "string", "`bundleID` must be a string")
     local theApp = apps[bundleID]
     if not theApp then
         theApp = prop.extend({
             _bundleID = bundleID,
-            _preferences = prefs.new(bundleID),
+            preferences = prefs.new(bundleID),
         }, mod.mt)
-
-        -- cp.prop wrapper for prefs, which will notify watchers when updates happen.
-        local preferences = prop(function(self)
-            return self._preferences
-        end)
-        -- watch the `prefs` for changes, updating watchers of the cp.prop.
-        preferences:preWatch(function(_, _)
-            prefs.watch(theApp._preferences, function() preferences:update() end)
-        end)
 
         local hsApplication = prop(function(self)
             local hsApp = self._hsApplication
@@ -204,13 +200,20 @@ function mod.forBundleID(bundleID)
             return app ~= nil and app:isFrontmost()
         end)
 
-        local modalDialogOpen = UI:mutate(function(original)
+        local focusedWindowUI = UI:mutate(function(original)
             local ui = original()
-            if ui then
-                local window = ui:focusedWindow()
-                if window then
-                    return window:attributeValue("AXModal") == true
-                end
+            return ui and ui:attributeValue("AXFocusedWindow")
+        end)
+
+        local mainWindowUI = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXMainWindow")
+        end)
+
+        local modalDialogOpen = focusedWindowUI:mutate(function(original)
+            local window = original()
+            if window then
+                return window:attributeValue("AXModal") == true or window:attributeValue("AXRole") == "AXSheet"
             end
             return false
         end)
@@ -330,7 +333,7 @@ function mod.forBundleID(bundleID)
                 -- If the app is not running, we next try to determine the language using
                 -- the 'AppleLanguages' preference...
                 --------------------------------------------------------------------------------
-                local appLanguages = self:preferences().AppleLanguages
+                local appLanguages = self.preferences.AppleLanguages
                 if appLanguages then
                     for _,lang in ipairs(appLanguages) do
                         if self:isSupportedLocale(lang) then
@@ -383,7 +386,7 @@ function mod.forBundleID(bundleID)
                 -- if the new value matches the current value, don't do anything.
                 if value == theProp:get() then return end
 
-                local thePrefs = self:preferences()
+                local thePrefs = self.preferences
                 if value == nil then
                     if thePrefs.AppleLanguages == nil then return end
                     thePrefs.AppleLanguages = nil
@@ -403,14 +406,6 @@ function mod.forBundleID(bundleID)
 
 
         prop.bind(theApp) {
-            --- cp.app.preferences <cp.prop: cp.app.prefs; read-only; live>
-            --- Field
-            --- Provides access to the application preferences data.
-            ---
-            --- Notes:
-            --- * While you can't overwrite the `preferences` property itself, you can modify individual preferences *inside* the returned table.
-            preferences = preferences,
-
             --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
             --- Field
             --- Returns the running `hs.application` for the application, or `nil` if it's not running.
@@ -483,10 +478,20 @@ function mod.forBundleID(bundleID)
             --- Returns the application's `axuielement`, if available.
             UI = UI,
 
-            --- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only>
+            --- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
             --- Field
             --- Returns the UI containing the list of windows in the app.
             windowsUI = windowsUI,
+
+            --- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+            --- Field
+            --- Returns the UI containing the currently-focused window for the app.
+            focusedWindowUI = focusedWindowUI,
+
+            --- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+            --- Field
+            --- Returns the UI containing the currently-focused window for the app.
+            mainWindowUI = mainWindowUI,
 
             --- cp.app.baseLocale <cp.prop: cp.i18n.localeID; read-only>
             --- Field
@@ -502,29 +507,14 @@ function mod.forBundleID(bundleID)
             --- Field
             --- Gets and sets the current locale for the application.
             currentLocale = currentLocale,
+
+            --- cp.app.windowMoved <cp.prop: boolean; live>
+            --- Field
+            --- Triggers `true` when an application window is moved.
+            windowMoved = prop(function(self) return self._moved end, function(value, self) self._moved = value end),
         }
 
         apps[bundleID] = theApp
-
-        -- -- add a watcher to update 'frontmostApp'
-        -- frontmost:watch(function(isFrontmost, self)
-        --     if self:bundleID() == COMMANDPOST_BUNDLE_ID then
-        --         if isFrontmost then
-        --             commandPostFrontmost = true
-        --         elseif commandPostFrontmost then
-        --             frontmostApp = nil
-        --             commandPostFrontmost = false
-        --         end
-        --     else
-        --         if isFrontmost then
-        --             frontmostApp = self
-        --             commandPostFrontmost = false
-        --         elseif frontmostApp == self then
-        --             frontmostApp = nil
-        --         end
-        --     end
-        --     mod.frontmostApp:update()
-        -- end, true)
 
         mod._initWatchers()
     end
@@ -537,10 +527,10 @@ end
 --- Returns the Bundle ID for the app.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The Bundle ID.
+---  * The Bundle ID.
 function mod.mt:bundleID()
     return self._bundleID
 end
@@ -550,10 +540,10 @@ end
 --- Returns the main `menu` for the application.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.app.menu` for the `cp.app` instance.
+---  * The `cp.app.menu` for the `cp.app` instance.
 function mod.mt:menu()
     if not self._menu then
         self._menu = menu.new(self)
@@ -688,10 +678,10 @@ end
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The notifier.
+---  * The notifier.
 function mod.mt:notifier()
     if not self._notifier then
         self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
@@ -734,10 +724,10 @@ end
 --- `cp.i18n.localeID`.
 ---
 --- Parameters:
---- * locale    - The locale code string or `localeID` to check.
+---  * locale    - The locale code string or `localeID` to check.
 ---
 --- Returns:
---- * `true` if it is supported, otherwise `false`.
+---  * `true` if it is supported, otherwise `false`.
 function mod.mt:isSupportedLocale(locale)
     locale = localeID(locale)
 
@@ -757,10 +747,10 @@ end
 --- will be in the same language as the provided locale, and as close a match as possible with the region and script.
 ---
 --- Parameters:
---- * locale    - The local to match
+---  * locale    - The local to match
 ---
 --- Returns:
---- * The closest supported locale or `nil` if none are available in the language.
+---  * The closest supported locale or `nil` if none are available in the language.
 function mod.mt:bestSupportedLocale(locale)
     -- cast to localeID
     locale = localeID(locale)
@@ -785,10 +775,10 @@ end
 --- Updates the app, triggering any watchers if values have changed.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.app` instance.
+---  * The `cp.app` instance.
 function mod.mt:update()
     self.hsApplication:update()
     return self
@@ -816,6 +806,17 @@ local function updateWindowsUI(window)
     if app then
         -- check if any windows are open
         app.windowsUI:update()
+        app.mainWindowUI:update()
+        app.focusedWindowUI:update()
+    end
+end
+
+local function updateFocusedWindowUI(window)
+    local app = findAppForWindow(window)
+    if app then
+        -- check if any windows are open
+        app.mainWindowUI:update()
+        app.focusedWindowUI:update()
     end
 end
 
@@ -828,6 +829,14 @@ local function updateFrontmostApp(app)
         frontmostApp = nil
     end
     mod.frontmostApp:update()
+end
+
+local function updateWindowMoved(window)
+    local app = findAppForWindow(window)
+    if app then
+        app.windowMoved:value(false)
+        app.windowMoved:value(true)
+    end
 end
 
 -- cp.app._initWatchers() -> none
@@ -896,6 +905,8 @@ function mod._initWatchers()
     appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
     appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
+    appWindowFilter:subscribe(windowfilter.windowFocused, updateFocusedWindowUI)
+    appWindowFilter:subscribe(windowfilter.windowMoved, updateWindowMoved)
 
     mod._appWindowFilter = appWindowFilter
 end

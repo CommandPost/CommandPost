@@ -156,7 +156,9 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
         --------------------------------------------------------------------------------
         local fcp = self:app()
         local menuItem = fcp:menu():findMenuUI({"File", "Share", destinationSelect})
-        if menuItem:attributeValue("AXEnabled") then
+        if not menuItem then
+            return self, i18n("batchExportNoDestination")
+        elseif menuItem:attributeValue("AXEnabled") then
             menuItem:doPress()
 
             local alert = fcp:alert()

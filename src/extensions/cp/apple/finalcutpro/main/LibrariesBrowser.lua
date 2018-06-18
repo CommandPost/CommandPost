@@ -34,11 +34,19 @@ local id								= require("cp.apple.finalcutpro.ids") "LibrariesBrowser"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Libraries = {}
+local LibrariesBrowser = {}
 
--- TODO: Add documentation
-function Libraries:new(parent)
-    local o = prop.extend({_parent = parent}, Libraries)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.new(app) -> LibrariesBrowser
+--- Constructor
+--- Creates a new `LibrariesBrowser` instance.
+---
+--- Parameters:
+---  * parent - The parent object.
+---
+--- Returns:
+---  * A new `LibrariesBrowser` object.
+function LibrariesBrowser.new(parent)
+    local o = prop.extend({_parent = parent}, LibrariesBrowser)
 
     -- checks if the Libraries Browser is showing
     local isShowing = parent.isShowing:AND(parent.librariesShowing)
@@ -60,7 +68,7 @@ function Libraries:new(parent)
         --- cp.apple.finalcutpro.main.LibrariesBrowser.mainGroupUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
         --- Returns the main group within the Libraries Browser, or `nil` if not available..
-        mainGroupUI = UI:mutate(function(original)
+        mainGroupUI = UI:mutate(function(original, self)
             return axutils.cache(self, "_mainGroup", function()
                 local ui = original()
                 return ui and axutils.childWithRole(ui, "AXSplitGroup")
@@ -93,13 +101,29 @@ function Libraries:new(parent)
     return o
 end
 
--- TODO: Add documentation
-function Libraries:parent()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
+function LibrariesBrowser:parent()
     return self._parent
 end
 
--- TODO: Add documentation
-function Libraries:app()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
+function LibrariesBrowser:app()
     return self:parent():app()
 end
 
@@ -109,8 +133,16 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function Libraries:show()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:show() -> LibrariesBrowser
+--- Method
+--- Show the Libraries Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `LibrariesBrowser` object.
+function LibrariesBrowser:show()
     local browser = self:parent()
     if browser then
         if not browser:isShowing() then
@@ -121,8 +153,16 @@ function Libraries:show()
     return self
 end
 
--- TODO: Add documentation
-function Libraries:hide()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:hide() -> LibrariesBrowser
+--- Method
+--- Hide the Libraries Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `LibrariesBrowser` object.
+function LibrariesBrowser:hide()
     self:parent():hide()
     return self
 end
@@ -133,8 +173,16 @@ end
 --
 -----------------------------------------------------------------------------
 
--- TODO: Add documentation
-function Libraries:playhead()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:playhead() -> Playhead
+--- Method
+--- Gets the Libraries Browser Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Playhead` object.
+function LibrariesBrowser:playhead()
     if self:list():isShowing() then
         return self:list():playhead()
     else
@@ -142,8 +190,16 @@ function Libraries:playhead()
     end
 end
 
--- TODO: Add documentation
-function Libraries:skimmingPlayhead()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:skimmingPlayhead() -> Playhead
+--- Method
+--- Gets the Libraries Browser Skimming Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Playhead` object.
+function LibrariesBrowser:skimmingPlayhead()
     if self:list():isShowing() then
         return self:list():skimmingPlayhead()
     else
@@ -157,8 +213,16 @@ end
 --
 -----------------------------------------------------------------------------
 
--- TODO: Add documentation
-function Libraries:toggleViewMode()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:toggleViewMode() -> Button
+--- Method
+--- Get Toggle View Mode button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Button` object.
+function LibrariesBrowser:toggleViewMode()
     if not self._viewMode then
         self._viewMode = Button.new(self, function()
             return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 3)
@@ -167,8 +231,16 @@ function Libraries:toggleViewMode()
     return self._viewMode
 end
 
--- TODO: Add documentation
-function Libraries:appearanceAndFiltering()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:appearanceAndFiltering() -> Button
+--- Method
+--- Get Appearance & Filtering Button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Button` object.
+function LibrariesBrowser:appearanceAndFiltering()
     if not self._appearanceAndFiltering then
         self._appearanceAndFiltering = Button.new(self, function()
             return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 2)
@@ -177,8 +249,16 @@ function Libraries:appearanceAndFiltering()
     return self._appearanceAndFiltering
 end
 
--- TODO: Add documentation
-function Libraries:searchToggle()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:searchToggle() -> Button
+--- Method
+--- Get Search Toggle Button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Button` object.
+function LibrariesBrowser:searchToggle()
     if not self._searchToggle then
         self._searchToggle = Button.new(self, function()
             return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 1)
@@ -187,8 +267,16 @@ function Libraries:searchToggle()
     return self._searchToggle
 end
 
--- TODO: Add documentation
-function Libraries:search()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:search() -> TextField
+--- Method
+--- Get Search Text Field.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `TextField` object.
+function LibrariesBrowser:search()
     if not self._search then
         self._search = TextField.new(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Search")
@@ -197,8 +285,16 @@ function Libraries:search()
     return self._search
 end
 
--- TODO: Add documentation
-function Libraries:filterToggle()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:filterToggle() -> Button
+--- Method
+--- The Filter Toggle Button.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Button` object.
+function LibrariesBrowser:filterToggle()
     if not self._filterToggle then
         self._filterToggle = Button.new(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXButton")
@@ -207,16 +303,46 @@ function Libraries:filterToggle()
     return self._filterToggle
 end
 
--- TODO: Add documentation
-Libraries.ALL_CLIPS = 1
-Libraries.HIDE_REJECTED = 2
-Libraries.NO_RATINGS_OR_KEYWORDS = 3
-Libraries.FAVORITES = 4
-Libraries.REJECTED = 5
-Libraries.UNUSED = 6
+--- cp.apple.finalcutpro.main.LibrariesBrowser.ALL_CLIPS -> number
+--- Constant
+--- All Clips ID.
+LibrariesBrowser.ALL_CLIPS = 1
 
--- TODO: Add documentation
-function Libraries:selectClipFiltering(filterType)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.HIDE_REJECTED -> number
+--- Constant
+--- Hide Rejected ID.
+LibrariesBrowser.HIDE_REJECTED = 2
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.NO_RATINGS_OR_KEYWORDS -> number
+--- Constant
+--- No Rating or Keywords ID.
+LibrariesBrowser.NO_RATINGS_OR_KEYWORDS = 3
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.FAVORITES -> number
+--- Constant
+--- Favourites ID.
+LibrariesBrowser.FAVORITES = 4
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.REJECTED -> number
+--- Constant
+--- Rejected ID.
+LibrariesBrowser.REJECTED = 5
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser.UNUSED -> number
+--- Constant
+--- Unused ID.
+LibrariesBrowser.UNUSED = 6
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipFiltering(filterType) -> LibrariesBrowser
+--- Method
+--- Select Clip Filtering based on Filter Type.
+---
+--- Parameters:
+---  * filterType - The filter type.
+---
+--- Returns:
+---  * The `LibrariesBrowser` object.
+function LibrariesBrowser:selectClipFiltering(filterType)
     local ui = self:UI()
     if ui then
         local button = axutils.childWithID(ui, id "FilterButton")
@@ -235,50 +361,104 @@ function Libraries:selectClipFiltering(filterType)
     return self
 end
 
--- TODO: Add documentation
-function Libraries:filmstrip()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:filmstrip() -> LibrariesFilmstrip
+--- Method
+--- Get Libraries Film Strip object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `LibrariesBrowser` object.
+function LibrariesBrowser:filmstrip()
     if not self._filmstrip then
-        self._filmstrip = LibrariesFilmstrip:new(self)
+        self._filmstrip = LibrariesFilmstrip.new(self)
     end
     return self._filmstrip
 end
 
--- TODO: Add documentation
-function Libraries:list()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:filmstrip() -> LibrariesList
+--- Method
+--- Get Libraries List object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `LibrariesList` object.
+function LibrariesBrowser:list()
     if not self._list then
-        self._list = LibrariesList:new(self)
+        self._list = LibrariesList.new(self)
     end
     return self._list
 end
 
--- TODO: Add documentation
-function Libraries:sidebar()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:sidebar() -> Table
+--- Method
+--- Get Libraries sidebar object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Table` object.
+function LibrariesBrowser:sidebar()
     if not self._sidebar then
         self._sidebar = Table.new(self, function()
-            return axutils.childMatching(self:mainGroupUI(), Libraries.matchesSidebar)
+            return axutils.childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
         end):uncached()
     end
     return self._sidebar
 end
 
--- TODO: Add documentation
-function Libraries.matchesSidebar(element)
+--- cp.apple.finalcutpro.main.LibrariesBrowser.matchesSidebar(element) -> boolean
+--- Function
+--- Checks to see if an element matches the Sidebar type.
+---
+--- Parameters:
+---  * element - The element to check.
+---
+--- Returns:
+---  * `true` if there's a match, otherwise `false`.
+function LibrariesBrowser.matchesSidebar(element)
     return element and element:attributeValue("AXRole") == "AXScrollArea"
         and element:attributeValue("AXIdentifier") == id "Sidebar"
 end
 
-function Libraries:selectLibrary(...)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectLibrary(...) -> Table
+--- Function
+--- Selects a Library.
+---
+--- Parameters:
+---  * ... - Libraries as string.
+---
+--- Returns:
+---  * A `Table` object.
+function LibrariesBrowser:selectLibrary(...)
     return Table.selectRow(self:sidebar():topRowsUI(), table.pack(...))
 end
 
-function Libraries:openClipTitled(name)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:openClipTitled(name) -> boolean
+--- Function
+--- Open a clip with a specific title.
+---
+--- Parameters:
+---  * name - The name of the clip you want to open.
+---
+--- Returns:
+---  * `true` if successful, otherwise `false`.
+function LibrariesBrowser:openClipTitled(name)
     if self:selectClipTitled(name) then
         self:app():launch()
         local menuBar = self:app():menu()
 
-        -- ensure the Libraries browser is focused
+        --------------------------------------------------------------------------------
+        -- Ensure the Libraries browser is focused:
+        --------------------------------------------------------------------------------
         menuBar:selectMenu({"Window", "Go To", "Libraries"})
-        -- open the clip.
+        --------------------------------------------------------------------------------
+        -- Open the clip:
+        --------------------------------------------------------------------------------
         local openClip = menuBar:findMenuUI({"Clip", "Open Clip"})
         if openClip then
             just.doUntil(function() return openClip:enabled() end)
@@ -289,8 +469,16 @@ function Libraries:openClipTitled(name)
     return false
 end
 
--- TODO: Add documentation
-function Libraries:clipsUI(filterFn)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:clipsUI(filterFn) -> table | nil
+--- Function
+--- Gets clip UIs using a custom filter.
+---
+--- Parameters:
+---  * filterFn - A function to filter the UI results.
+---
+--- Returns:
+---  * A table of `axuielementObject` objects or `nil` if no clip UI could be found.
+function LibrariesBrowser:clipsUI(filterFn)
     if self:isListView() then
         return self:list():clipsUI(filterFn)
     elseif self:isFilmstripView() then
@@ -300,7 +488,16 @@ function Libraries:clipsUI(filterFn)
     end
 end
 
-function Libraries:clips(filterFn)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:clips(filterFn) -> table | nil
+--- Function
+--- Gets clips using a custom filter.
+---
+--- Parameters:
+---  * filterFn - A function to filter the UI results.
+---
+--- Returns:
+---  * A table of `Clip` objects or `nil` if no clip UI could be found.
+function LibrariesBrowser:clips(filterFn)
     if self:isListView() then
         return self:list():clips(filterFn)
     elseif self:isFilmstripView() then
@@ -310,8 +507,16 @@ function Libraries:clips(filterFn)
     end
 end
 
--- TODO: Add documentation
-function Libraries:selectedClipsUI()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectedClipsUI() -> table | nil
+--- Function
+--- Gets selected clips UI's.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of `axuielementObject` objects or `nil` if no clips are selected.
+function LibrariesBrowser:selectedClipsUI()
     if self:isListView() then
         return self:list():selectedClipsUI()
     elseif self:isFilmstripView() then
@@ -321,7 +526,16 @@ function Libraries:selectedClipsUI()
     end
 end
 
-function Libraries:selectedClips()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectedClips() -> table | nil
+--- Function
+--- Gets selected clips.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of `Clip` objects or `nil` if no clips are selected.
+function LibrariesBrowser:selectedClips()
     if self:isListView() then
         return self:list():selectedClips()
     elseif self:isFilmstripView() then
@@ -331,8 +545,16 @@ function Libraries:selectedClips()
     end
 end
 
--- TODO: Add documentation
-function Libraries:showClip(clip)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:showClip(clip) -> boolean
+--- Function
+--- Shows a clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to show.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesBrowser:showClip(clip)
     if self:isListView() then
         return self:list():showClip(clip)
     else
@@ -340,8 +562,16 @@ function Libraries:showClip(clip)
     end
 end
 
--- TODO: Add documentation
-function Libraries:selectClip(clip)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectClip(clip) -> boolean
+--- Function
+--- Selects a clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to select.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesBrowser:selectClip(clip)
     if self:isListView() then
         return self:list():selectClip(clip)
     elseif self:isFilmstripView() then
@@ -352,8 +582,16 @@ function Libraries:selectClip(clip)
     end
 end
 
--- TODO: Add documentation
-function Libraries:selectClipAt(index)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipAt(index) -> boolean
+--- Function
+--- Select clip at a specific index.
+---
+--- Parameters:
+---  * index - A number of where the clip appears in the list.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesBrowser:selectClipAt(index)
     if self:isListView() then
         return self:list():selectClipAt(index)
     else
@@ -361,7 +599,16 @@ function Libraries:selectClipAt(index)
     end
 end
 
-function Libraries:selectClipTitled(title)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipTitled(title) -> boolean
+--- Function
+--- Select clip with a specific title.
+---
+--- Parameters:
+---  * title - The title of a clip.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesBrowser:selectClipTitled(title)
     local clips = self:clips()
     if clips then
         for _,clip in ipairs(clips) do
@@ -374,8 +621,16 @@ function Libraries:selectClipTitled(title)
     return false
 end
 
--- TODO: Add documentation
-function Libraries:selectAll(clips)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:selectAll([clips]) -> boolean
+--- Function
+--- Select all clips.
+---
+--- Parameters:
+---  * clips - A optional table of `Clip` objects.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesBrowser:selectAll(clips)
     if self:isListView() then
         return self:list():selectAll(clips)
     else
@@ -383,8 +638,16 @@ function Libraries:selectAll(clips)
     end
 end
 
--- TODO: Add documentation
-function Libraries:deselectAll()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:deselectAll() -> boolean
+--- Function
+--- Deselect all clips.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesBrowser:deselectAll()
     if self:isListView() then
         return self:list():deselectAll()
     else
@@ -392,8 +655,16 @@ function Libraries:deselectAll()
     end
 end
 
--- TODO: Add documentation
-function Libraries:saveLayout()
+--- cp.apple.finalcutpro.main.LibrariesBrowser:saveLayout() -> table
+--- Method
+--- Saves the current Libraries Browser layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current Libraries Browser Layout.
+function LibrariesBrowser:saveLayout()
     local layout = {}
     if self:isShowing() then
         layout.showing = true
@@ -403,8 +674,16 @@ function Libraries:saveLayout()
     return layout
 end
 
--- TODO: Add documentation
-function Libraries:loadLayout(layout)
+--- cp.apple.finalcutpro.main.LibrariesBrowser:loadLayout(layout) -> none
+--- Method
+--- Loads a Libraries Browser layout.
+---
+--- Parameters:
+---  * layout - A table containing the Libraries Browser layout settings - created using `cp.apple.finalcutpro.main.LibrariesBrowser:saveLayout()`.
+---
+--- Returns:
+---  * None
+function LibrariesBrowser:loadLayout(layout)
     if layout and layout.showing then
         self:show()
         self:sidebar():loadLayout(layout.sidebar)
@@ -412,4 +691,4 @@ function Libraries:loadLayout(layout)
     end
 end
 
-return Libraries
+return LibrariesBrowser

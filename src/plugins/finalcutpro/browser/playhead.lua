@@ -192,7 +192,7 @@ function mod.highlight()
     --------------------------------------------------------------------------------
     local playhead = fcp:libraries():playhead()
     if playhead:isShowing() then
-        mod.highlightFrame(playhead:getFrame())
+        mod.highlightFrame(playhead:frame())
     end
 end
 

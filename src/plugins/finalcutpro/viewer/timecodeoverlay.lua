@@ -11,9 +11,7 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
-local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -46,20 +44,7 @@ local mod = {}
 --- plugins.finalcutpro.viewer.timecodeoverlayenabled <cp.prop: boolean>
 --- Variable
 --- Advanced Timecode Overlay Enabled?
-mod.enabled = prop.new(
-    function()
-        --------------------------------------------------------------------------------
-        -- Get Preference:
-        --------------------------------------------------------------------------------
-        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-    end,
-    function(value)
-        --------------------------------------------------------------------------------
-        -- Set Preference:
-        --------------------------------------------------------------------------------
-        fcp:setPreference(PREFERENCES_KEY, value)
-    end
-)
+mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE)
 
 --------------------------------------------------------------------------------
 --

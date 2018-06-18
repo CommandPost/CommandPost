@@ -128,6 +128,15 @@ local fcp = {
     --- Constant
     --- The `cp.app` for Final Cut Pro.
     app = app,
+
+    --- cp.apple.finalcutpro.preferences <cp.app.prefs>
+    --- Constant
+    --- The `cp.app.prefs` for Final Cut Pro.
+    preferences = app.preferences,
+
+    --- cp.apple.finalcutpro.strings <cp.strings>
+    --- Constant
+    --- The `cp.strings` providing access to common FCPX text values.
     strings = strings,
 }
 
@@ -502,6 +511,7 @@ function fcp:closeLibrary(title)
         --------------------------------------------------------------------------------
         just.wait(2.0)
         if libraries:selectLibrary(title) ~= nil then
+            just.wait(1.0)
             local closeLibrary = self:string("FFCloseLibraryFormat")
             if closeLibrary then
                 -- some languages contain NBSPs instead of spaces, but these don't survive to the actual menu title. Swap them out.
@@ -514,7 +524,7 @@ function fcp:closeLibrary(title)
                 return result
             end})
             --------------------------------------------------------------------------------
-            -- Wait until the library actually closes, up to 5 seconds:
+            -- Wait until the library actually closes, up to 10 seconds:
             --------------------------------------------------------------------------------
             return just.doUntil(function() return libraries:show():selectLibrary(title) == nil end, 10.0)
         end
@@ -584,18 +594,53 @@ function fcp:menu()
     return self._menu
 end
 
---- cp.apple.finalcutpro:selectMenu(path) -> boolean
+--- cp.apple.finalcutpro:selectMenu(path[, options]) -> boolean
 --- Method
 --- Selects a Final Cut Pro Menu Item based on the list of menu titles in English.
 ---
 --- Parameters:
----  * `path`	- The list of menu items you'd like to activate, for example:
+---  * `path`	    - The list of menu items you'd like to activate, for example:
 ---            select("View", "Browser", "as List")
+---  * `options`    - (optional) The table of options. See `cp.app.menu:selectMenu(...)` for details.
 ---
 --- Returns:
 ---  * `true` if the press was successful.
-function fcp:selectMenu(path)
-    return self:menu():selectMenu(path)
+function fcp:selectMenu(path, options)
+    return self:menu():selectMenu(path, options)
+end
+
+--- cp.apple.finalcutpro:selectMenuItem(path, options) -> cp.rx.Observable <hs._asm.axuielement>
+--- Method
+--- Selects a Menu Item based on the provided menu path.
+---
+--- Each step on the path can be either one of:
+---  * a string     - The exact name of the menu item.
+---  * a number     - The menu item number, starting from 1.
+---  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+---
+--- Options supported include:
+---  * locale - The `localeID` or `string` for the locale that the path values are in.
+---  * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
+---  * timeout - The maximum time to wait for the menu to be available before producing an error. Defaults to 10 seconds.
+---
+--- Examples:
+---
+--- ```lua
+--- local preview = require("cp.app").forBundleID("com.apple.Preview")
+--- preview:launch():menu():selectMenuItem({"File", "Take Screenshot", "From Entire Screen"})
+--- ```
+---
+--- Parameters:
+---  * path - The list of menu items you'd like to activate.
+---  * options - (optional) The table of options to apply.
+---
+--- Returns:
+---  * An `Observable` which emits the final menu item, or an error if the selection failed.
+---
+--- Notes:
+---  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
+function fcp:selectMenuItem(...)
+    self.app:menu():selectMenuItem(...)
 end
 
 ----------------------------------------------------------------------------------------
@@ -814,7 +859,7 @@ end
 ---  * the Browser
 function fcp:browser()
     if not self._browser then
-        self._browser = Browser:new(self)
+        self._browser = Browser.new(self)
     end
     return self._browser
 end
@@ -944,48 +989,6 @@ end
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 
---- cp.apple.finalcutpro:getPreferences() -> table or nil
---- Method
---- Gets Final Cut Pro's Preferences as a table. It checks if the preferences
---- file has been modified and reloads when necessary.
----
---- Parameters:
----  * [forceReload]	- If `true`, an optional reload will be forced even if the file hasn't been modified.
----
---- Returns:
----  * A table with all of Final Cut Pro's preferences, or nil if an error occurred
-function fcp:getPreferences()
-    return self.app.preferences
-end
-
---- cp.apple.finalcutpro:getPreference(key, [default], [forceReload]) -> string or nil
---- Method
---- Get an individual Final Cut Pro preference
----
---- Parameters:
----  * key 			- The preference you want to return
----  * [default]		- The optional default value to return if the preference is not set.
----
---- Returns:
----  * A string with the preference value, or nil if an error occurred
-function fcp:getPreference(key, default)
-    return self.app.preferences()[key] or default
-end
-
---- cp.apple.finalcutpro:setPreference(key, value) -> nil
---- Method
---- Sets an individual Final Cut Pro preference
----
---- Parameters:
----  * key - The preference you want to change
----  * value - The value you want to set for that preference
----
---- Returns:
----  * `nil`
-function fcp:setPreference(key, value)
-    self.app.preferences()[key] = value
-end
-
 --- cp.apple.finalcutpro:importXML(path) -> boolean
 --- Method
 --- Imports an XML file into Final Cut Pro
@@ -1040,7 +1043,7 @@ end
 --- Returns:
 ---  * The 'Active Command Set' value, or the 'Default' Command Set if this is the first time Final Cut Pro has been run.
 function fcp:activeCommandSetPath()
-    return self:getPreference("Active Command Set") or self:defaultCommandSetPath()
+    return self.preferences:get("Active Command Set", self:defaultCommandSetPath())
 end
 
 --- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string
@@ -1110,12 +1113,11 @@ end
 --- Returns:
 ---  * The array of shortcuts, or `nil` if no command exists with the specified `id`.
 function fcp:getCommandShortcuts(id)
-    local activeCommands = self._activeCommands
-    if not activeCommands then
-        activeCommands = {}
-        self._activeCommands = activeCommands
+    if type(id) ~= "string" then
+        log.ef("ID is required for cp.apple.finalcutpro.getCommandShortcuts.")
+        return nil
     end
-
+    local activeCommands = self._activeCommands or {}
     local shortcuts = activeCommands[id]
     if not shortcuts then
         local commandSet = self:activeCommandSet()
@@ -1126,9 +1128,11 @@ function fcp:getCommandShortcuts(id)
         ----------------------------------------------------------------------------------------
         -- Cache the value for faster access next time:
         ----------------------------------------------------------------------------------------
+        if not self._activeCommands then
+            self._activeCommands = {}
+        end
         self._activeCommands[id] = shortcuts
     end
-
     return shortcuts
 end
 

@@ -78,7 +78,7 @@ end
 ---  * app - The `cp.apple.finalcutpro` object.
 ---
 --- Returns:
----  * A new CommandEditor object.
+---  * A new `CommandEditor` object.
 function CommandEditor.new(app)
     local o = prop.extend({_app = app}, CommandEditor)
 

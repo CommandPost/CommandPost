@@ -7,6 +7,10 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
@@ -17,7 +21,15 @@ local prop							= require("cp.prop")
 --------------------------------------------------------------------------------
 local PopUpButton = {}
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function PopUpButton.matches(element)
     return element and element:attributeValue("AXRole") == "AXPopUpButton"
 end
@@ -27,14 +39,13 @@ end
 --- Creates a new PopUpButton.
 ---
 --- Parameters:
---- * parent		- The parent table. Should have a `isShowing` property.
+---  * parent		- The parent table. Should have a `isShowing` property.
 ---
 --- Returns:
---- * The new `PopUpButton` instance.
+---  * The new `PopUpButton` instance.
 function PopUpButton.new(parent, finderFn)
     local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
 
-    -- TODO: Add documentation
     local UI = prop(function(self)
         return axutils.cache(self, "_ui", function()
             return self._finder()
@@ -71,18 +82,45 @@ function PopUpButton.new(parent, finderFn)
     )
 
     return prop.bind(o) {
+        --- cp.ui.PopUpButton.UI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Provides the `axuielement` for the `PopUpButton`.
         UI = UI,
+
+        --- cp.ui.PopUpButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Checks if the `PopUpButton` is visible on screen.
         isShowing = isShowing,
+
+        --- cp.ui.PopUpButton.value <cp.prop: anything>
+        --- Field
+        --- Returns or sets the current `PopUpButton` value.
         value = value,
     }
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
 function PopUpButton:parent()
     return self._parent
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:selectItem(index) -> self
+--- Method
+--- Select an item on the `PopUpButton` by index.
+---
+--- Parameters:
+---  * index - The index of the item you want to select.
+---
+--- Returns:
+---  * self
 function PopUpButton:selectItem(index)
     local ui = self:UI()
     if ui then
@@ -101,24 +139,56 @@ function PopUpButton:selectItem(index)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:getValue() -> string | nil
+--- Method
+--- Gets the `PopUpButton` value.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `PopUpButton` value as string, or `nil` if the value cannot be determined.
 function PopUpButton:getValue()
     return self:value()
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:setValue(value) -> self
+--- Method
+--- Sets the `PopUpButton` value.
+---
+--- Parameters:
+---  * value - The value you want to set the `PopUpButton` to.
+---
+--- Returns:
+---  * self
 function PopUpButton:setValue(value)
     self.value:set(value)
     return self
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:isEnabled() -> boolean
+--- Method
+--- Is the `PopUpButton` enabled?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if enabled otherwise `false`.
 function PopUpButton:isEnabled()
     local ui = self:UI()
     return ui and ui:enabled()
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:press() -> self
+--- Method
+--- Presses the `PopUpButton`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
 function PopUpButton:press()
     local ui = self:UI()
     if ui then
@@ -127,6 +197,15 @@ function PopUpButton:press()
     return self
 end
 
+-- cp.ui.PopUpButton:__call() -> boolean
+-- Method
+-- Allows the `PopUpButton` to be called as a function and will return the button value.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The value of the `PopUpButton`.
 function PopUpButton:__call(parent, value)
     if parent and parent ~= self:parent() then
         value = parent
@@ -134,14 +213,30 @@ function PopUpButton:__call(parent, value)
     return self:value(value)
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:saveLayout() -> table
+--- Method
+--- Saves the current `PopUpButton` layout to a table.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table containing the current `PopUpButton` Layout.
 function PopUpButton:saveLayout()
     local layout = {}
     layout.value = self:getValue()
     return layout
 end
 
--- TODO: Add documentation
+--- cp.ui.PopUpButton:loadLayout(layout) -> none
+--- Method
+--- Loads a `PopUpButton` layout.
+---
+--- Parameters:
+---  * layout - A table containing the `PopUpButton` layout settings - created using `cp.ui.PopUpButton:saveLayout()`.
+---
+--- Returns:
+---  * None
 function PopUpButton:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
@@ -154,10 +249,10 @@ end
 --- If the `path` is provided, the image will be saved at the specified location.
 ---
 --- Parameters:
---- * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
+---  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
 ---
 --- Return:
---- * The `hs.image` that was created, or `nil` if the UI is not available.
+---  * The `hs.image` that was created, or `nil` if the UI is not available.
 function PopUpButton:snapshot(path)
     local ui = self:UI()
     if ui then

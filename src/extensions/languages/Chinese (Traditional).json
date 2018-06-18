@@ -11,7 +11,6 @@
         "angle": "角度",
         "finalcutpro_open_label": "打開Final Cut Pro",
         "touchBarWidget": "觸摸欄小部件",
-        "enableTimelinePlayheadLock": "啟用時間軸播放頭鎖定",
         "feedback": "反饋",
         "cpTransition5_title": "應用轉換5",
         "core_preferences_panels_general_label": "首選項面板：常規",
@@ -97,7 +96,6 @@
             "other": "分鐘"
         },
         "enableWaveformDrawing": "啟用波形圖",
-        "cpLockPlayhead_title": "切換播放頭鎖定",
         "showGenerators": "顯示發生器",
         "hudButtonItem": "按鈕％{count}（％{title}）",
         "customPrefixError": "這個前綴看起來無效。請再試一次。",

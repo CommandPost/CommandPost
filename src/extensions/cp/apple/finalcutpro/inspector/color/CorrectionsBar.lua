@@ -84,8 +84,8 @@ function CorrectionsBar.new(parent)
         _parent = parent,
     }, CorrectionsBar)
 
-    local UI = parent.topBarUI:mutate(function(original)
-        return axutils.cache(o, "_ui",
+    local UI = parent.topBarUI:mutate(function(original, self)
+        return axutils.cache(self, "_ui",
             function()
                 local ui = original()
                 if ui then

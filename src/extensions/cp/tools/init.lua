@@ -27,6 +27,7 @@ local json                                      = require("hs.json")
 local mouse                                     = require("hs.mouse")
 local osascript                                 = require("hs.osascript")
 local screen                                    = require("hs.screen")
+local sound                                     = require("hs.sound")
 local timer                                     = require("hs.timer")
 local window                                    = require("hs.window")
 
@@ -1031,16 +1032,21 @@ function tools.removeFromTable(table, element)
     return result
 end
 
---- cp.tools.getFilenameFromPath(input) -> string
+--- cp.tools.getFilenameFromPath(input[, removeExtension]) -> string
 --- Function
 --- Gets the filename component of a path.
 ---
 --- Parameters:
 ---  * input - The path
+---  * removeExtension - (optional) set to `true` if the file extension should be removed
 ---
 --- Returns:
 ---  * A string of the filename.
 function tools.getFilenameFromPath(input, removeExtension)
+    if not input then
+        log.ef("Input is required for cp.tools.getFilenameFromPath.")
+        return nil
+    end
     if removeExtension then
         local filename = string.match(input, "[^/]+$")
         return  filename:match("(.+)%..+")
@@ -1293,6 +1299,19 @@ function tools.ensureDirectoryExists(rootPath, ...)
         end
     end
     return fs.pathToAbsolute(fullPath)
+end
+
+--- cp.tools.playErrorSound() -> none
+--- Function
+--- Plays the "Funk" error sound.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function tools.playErrorSound()
+    sound.getByName("Funk"):play()
 end
 
 return tools

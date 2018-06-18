@@ -11,9 +11,7 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
-local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -46,21 +44,7 @@ local mod = {}
 --- plugins.finalcutpro.hacks.playbackrendering.enabled <cp.prop: boolean>
 --- Variable
 --- Gets whether or not Playback Rendering is enabled.
-mod.enabled = prop.new(
-    function()
-        --------------------------------------------------------------------------------
-        -- Get Preference:
-        --------------------------------------------------------------------------------
-        return fcp:getPreference(PREFERENCES_KEY, DEFAULT_VALUE)
-    end,
-
-    function(value)
-        --------------------------------------------------------------------------------
-        -- Set Preference:
-        --------------------------------------------------------------------------------
-        fcp:setPreference(PREFERENCES_KEY, value)
-    end
-)
+mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE)
 
 --------------------------------------------------------------------------------
 --
@@ -86,7 +70,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     deps.menu
         :addItem(PRIORITY, function()
-            return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
+            return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
         end)
 
     --------------------------------------------------------------------------------

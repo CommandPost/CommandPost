@@ -23,12 +23,17 @@ local uuid                                      = require("hs.host").uuid
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local plist                                     = require("cp.plist")
-local protect                                   = require("cp.protect")
 local archiver                                  = require("cp.plist.archiver")
-local fcp                                       = require("cp.apple.finalcutpro")
+local base64                                    = require("hs.base64")
+local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
+local fcp                                       = require("cp.apple.finalcutpro")
+local json                                      = require("cp.json")
+local just                                      = require("cp.just")
+local plist                                     = require("cp.plist")
 local prop                                      = require("cp.prop")
+local protect                                   = require("cp.protect")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -37,7 +42,7 @@ local prop                                      = require("cp.prop")
 --------------------------------------------------------------------------------
 local PASTEBOARD = protect({
     --------------------------------------------------------------------------------
-    -- FCPX Types:
+    -- Final Cut Pro Types:
     --------------------------------------------------------------------------------
     ANCHORED_COLLECTION                         = "FFAnchoredCollection",
     MARKER                                      = "FFAnchoredTimeMarker",
@@ -62,20 +67,30 @@ local PASTEBOARD = protect({
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.pasteboard.manager.WATCHER_FREQUENCY -> number
+--- Variable
+--- The Pasteboard Watcher Update frequency.
+mod.WATCHER_FREQUENCY = 0.5
+
+--- plugins.finalcutpro.pasteboard.manager.NUMBER_OF_PASTEBOARD_BUFFERS -> number
+--- Constant
+--- Number of Pasteboard Buffers.
+mod.NUMBER_OF_PASTEBOARD_BUFFERS = 9
+
+--- plugins.finalcutpro.pasteboard.manager.RESTART_DELAY -> number
+--- Constant
+--- How long to wait until we restart any Pasteboard Watchers.
+mod.RESTART_DELAY = 0.5
+
 --- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
 --- Variable
 --- Table of data we don't want to count when copying.
 mod.excludedClassnames = {PASTEBOARD.MARKER}
 
---- plugins.finalcutpro.pasteboard.manager.watcherFrequency -> number
---- Variable
---- The Pasteboard Watcher Update frequency.
-mod.watcherFrequency = 0.5
-
---- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
---- Variable
---- Table of data we don't want to count when copying.
-mod._watchersCount                      = 0
+-- plugins.finalcutpro.pasteboard.manager._watchersCount -> number
+-- Variable
+-- Watchers Count.
+mod._watchersCount = 0
 
 --- plugins.finalcutpro.pasteboard.manager.isTimelineClip(data) -> boolean
 --- Function
@@ -265,7 +280,7 @@ function mod.findClipName(fcpxData, default)
     return nil
 end
 
---- plugins.finalcutpro.pasteboard.manager.overrideNextClipName(overrideName) -> None
+--- plugins.finalcutpro.pasteboard.manager.overrideNextClipName(overrideName) -> none
 --- Function
 --- Overrides the name for the next clip which is copied from FCPX to the specified
 --- value. Once the override has been used, the standard clip name via
@@ -280,7 +295,7 @@ function mod.overrideNextClipName(overrideName)
     mod._overrideName = overrideName
 end
 
---- plugins.finalcutpro.pasteboard.manager.copyWithCustomClipName() -> None
+--- plugins.finalcutpro.pasteboard.manager.copyWithCustomClipName() -> none
 --- Function
 --- Copy with custom label.
 ---
@@ -290,7 +305,7 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    log.d("Copying Clip with custom Clip Name")
+    --log.d("Copying Clip with custom Clip Name")
     local menuBar = fcp:menu()
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
@@ -300,9 +315,9 @@ function mod.copyWithCustomClipName()
     end
 end
 
---- plugins.finalcutpro.pasteboard.manager.copyWithCustomClipName() -> data | nil
+--- plugins.finalcutpro.pasteboard.manager.readFCPXData() -> data | nil
 --- Function
---- Reads FCPX Data from the Pasteboard as a binary Plist, if present.
+--- Reads Final Cut Pro Data from the Pasteboard as a binary Property List, if present.
 ---
 --- Parameters:
 ---  * None
@@ -421,7 +436,7 @@ function mod.unwatch(id)
     return false
 end
 
---- plugins.finalcutpro.pasteboard.manager.startWatching() -> None
+--- plugins.finalcutpro.pasteboard.manager.startWatching() -> none
 --- Function
 --- Start Watching the Pasteboard.
 ---
@@ -449,7 +464,7 @@ function mod.startWatching()
     --------------------------------------------------------------------------------
     -- Watch for Pasteboard Changes:
     --------------------------------------------------------------------------------
-    mod._timer = timer.new(mod.watcherFrequency, function()
+    mod._timer = timer.new(mod.WATCHER_FREQUENCY, function()
         if not mod._watchers then
             return
         end
@@ -467,14 +482,22 @@ function mod.startWatching()
             --------------------------------------------------------------------------------
             if data then
                 local name
-                -- An override was set
+                --------------------------------------------------------------------------------
+                -- An override was set:
+                --------------------------------------------------------------------------------
                 if mod._overrideName ~= nil then
-                    -- apply it
+                    --------------------------------------------------------------------------------
+                    -- Apply it:
+                    --------------------------------------------------------------------------------
                     name = mod._overrideName
-                    -- reset it
+                    --------------------------------------------------------------------------------
+                    -- Reset it:
+                    --------------------------------------------------------------------------------
                     mod._overrideName = nil
                 else
-                    -- find the name from inside the clip data
+                    --------------------------------------------------------------------------------
+                    -- Find the name from inside the clip data:
+                    --------------------------------------------------------------------------------
                     name = mod.findClipName(data, os.date())
                 end
                 for _,events in pairs(mod._watchers) do
@@ -492,7 +515,7 @@ function mod.startWatching()
     --log.d("Started Pasteboard Watcher")
 end
 
---- plugins.finalcutpro.pasteboard.manager.stopWatching() -> None
+--- plugins.finalcutpro.pasteboard.manager.stopWatching() -> none
 --- Function
 --- Stop Watching the Pasteboard.
 ---
@@ -517,6 +540,105 @@ mod.watching = prop.new(function()
     return mod._timer ~= nil
 end)
 
+--- plugins.finalcutpro.pasteboard.manager.buffer <cp.prop: table>
+--- Field
+--- Contains the Pasteboard Buffer.
+mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer.json", {})
+
+--- plugins.finalcutpro.pasteboard.manager.saveToBuffer(id) -> none
+--- Function
+--- Save a Pasteboard item to the buffer.
+---
+--- Parameters:
+---  * id - The ID of the buffer item.
+---
+--- Returns:
+---  * None
+function mod.saveToBuffer(id)
+    local menuBar = fcp:menu()
+    if menuBar:isEnabled({"Edit", "Copy"}) then
+
+        local wasWatching = mod.watching()
+        if wasWatching then
+            mod.stopWatching()
+        end
+
+        local data
+        local originalContents = mod.readFCPXData()
+
+        local result = menuBar:selectMenu({"Edit", "Copy"})
+        if result then
+            data = just.doUntil(function()
+                local d = mod.readFCPXData()
+                return d and d ~= originalContents and d
+            end)
+        else
+            tools.playErrorSound()
+        end
+
+        if data then
+            local buffer = mod.buffer()
+            buffer[id] = base64.encode(data)
+            mod.buffer(buffer)
+            dialog.displayNotification(i18n("savedToPasteboardBuffer", {id=tostring(id)}))
+        else
+            tools.playErrorSound()
+        end
+
+        timer.doAfter(mod.RESTART_DELAY, function()
+            if originalContents then
+                mod.writeFCPXData(originalContents)
+            end
+            if wasWatching then
+                mod.startWatching()
+            end
+        end)
+
+    else
+        tools.playErrorSound()
+    end
+end
+
+--- plugins.finalcutpro.pasteboard.manager.restoreFromBuffer(id) -> none
+--- Function
+--- Restore a Pasteboard item from the buffer.
+---
+--- Parameters:
+---  * id - The ID of the buffer item.
+---
+--- Returns:
+---  * None
+function mod.restoreFromBuffer(id)
+    local buffer = mod.buffer()
+    local encodedData = buffer[id]
+    local data = encodedData and base64.decode(encodedData)
+    if data then
+        local wasWatching = mod.watching()
+        if wasWatching then
+            mod.stopWatching()
+        end
+
+        local originalContents = mod.readFCPXData()
+
+        mod.writeFCPXData(data)
+        local result = fcp:performShortcut("Paste")
+        if not result then
+            tools.playErrorSound()
+        end
+
+        timer.doAfter(mod.RESTART_DELAY, function()
+            if originalContents then
+                mod.writeFCPXData(originalContents)
+            end
+            if wasWatching then
+                mod.startWatching()
+            end
+        end)
+    else
+        tools.playErrorSound()
+    end
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -535,11 +657,30 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
     --------------------------------------------------------------------------------
-    -- COMMANDS:
+    -- SETUP COMMANDS:
     --------------------------------------------------------------------------------
-    deps.fcpxCmds:add("cpCopyWithCustomLabel")
-        :whenActivated(mod.copyWithCustomClipName)
+    if deps and deps.fcpxCmds then
 
+        --------------------------------------------------------------------------------
+        -- Copy with Custom Label:
+        --------------------------------------------------------------------------------
+        deps.fcpxCmds:add("cpCopyWithCustomLabel")
+            :whenActivated(mod.copyWithCustomClipName)
+
+        --------------------------------------------------------------------------------
+        -- Pasteboard Buffer:
+        --------------------------------------------------------------------------------
+        for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
+            deps.fcpxCmds:add("saveToPasteboardBuffer" .. tostring(id))
+                :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
+                :whenActivated(function() mod.saveToBuffer(id) end)
+
+            deps.fcpxCmds:add("restoreFromPasteboardBuffer" .. tostring(id))
+                :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
+                :whenActivated(function() mod.restoreFromBuffer(id) end)
+
+        end
+    end
     return mod
 end
 

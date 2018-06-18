@@ -27,24 +27,40 @@ local _									= require("moses")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Filmstrip = {}
+local LibrariesFilmstrip = {}
 
--- TODO: Add documentation
-function Filmstrip.matches(element)
+--- cp.apple.finalcutpro.main.CommandEditor.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
+function LibrariesFilmstrip.matches(element)
     return element and element:attributeValue("AXIdentifier") == id("Content")
 end
 
--- TODO: Add documentation
-function Filmstrip:new(parent)
-    local o = prop.extend({_parent = parent}, Filmstrip)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip.new(app) -> LibrariesFilmstrip
+--- Constructor
+--- Creates a new `LibrariesFilmstrip` instance.
+---
+--- Parameters:
+---  * parent - The parent object
+---
+--- Returns:
+---  * A new `LibrariesFilmstrip` object.
+function LibrariesFilmstrip.new(parent)
+    local o = prop.extend({_parent = parent}, LibrariesFilmstrip)
 
-    local UI = parent.mainGroupUI:mutate(function(original)
+    local UI = parent.mainGroupUI:mutate(function(original, self)
         return axutils.cache(self, "_ui", function()
             local main = original()
             if main then
                 for _,child in ipairs(main) do
                     if child:attributeValue("AXRole") == "AXGroup" and #child == 1 then
-                        if Filmstrip.matches(child[1]) then
+                        if LibrariesFilmstrip.matches(child[1]) then
                             return child[1]
                         end
                     end
@@ -52,7 +68,7 @@ function Filmstrip:new(parent)
             end
             return nil
         end,
-        Filmstrip.matches)
+        LibrariesFilmstrip.matches)
     end)
 
     prop.bind(o) {
@@ -86,13 +102,29 @@ function Filmstrip:new(parent)
     return o
 end
 
--- TODO: Add documentation
-function Filmstrip:parent()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:parent() -> parent
+--- Method
+--- Returns the parent object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * parent
+function LibrariesFilmstrip:parent()
     return self._parent
 end
 
--- TODO: Add documentation
-function Filmstrip:app()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
+function LibrariesFilmstrip:app()
     return self:parent():app()
 end
 
@@ -102,11 +134,20 @@ end
 --
 -----------------------------------------------------------------------
 
-
-function Filmstrip:show()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:show() -> LibrariesFilmstrip
+--- Method
+--- Show the Libraries Filmstrip.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `LibrariesFilmstrip` object
+function LibrariesFilmstrip:show()
     if not self:isShowing() and self:parent():show():isShowing() then
         self:parent():toggleViewMode():press()
     end
+    return self
 end
 
 -----------------------------------------------------------------------
@@ -115,22 +156,34 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function Filmstrip:playhead()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:playhead() -> Playhead
+--- Method
+--- Get the Libraries Filmstrip Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Playhead` object
+function LibrariesFilmstrip:playhead()
     if not self._playhead then
-        self._playhead = Playhead.new(self, false, function()
-            return self:contentsUI()
-        end)
+        self._playhead = Playhead.new(self, false, self.contentsUI, true)
     end
     return self._playhead
 end
 
--- TODO: Add documentation
-function Filmstrip:skimmingPlayhead()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:skimmingPlayhead() -> Playhead
+--- Method
+--- Get the Libraries Filmstrip Skimming Playhead.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `Playhead` object
+function LibrariesFilmstrip:skimmingPlayhead()
     if not self._skimmingPlayhead then
-        self._skimmingPlayhead = Playhead.new(self, true, function()
-            return self:contentsUI()
-        end)
+        self._skimmingPlayhead = Playhead.new(self, true, self.contentsUI, true)
     end
     return self._skimmingPlayhead
 end
@@ -141,8 +194,17 @@ end
 --
 -----------------------------------------------------------------------
 
--- TODO: Add documentation
-function Filmstrip.sortClips(a, b)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip.sortClips(a,b) -> boolean
+--- Function
+--- Determines if clip A is above clip B or not.
+---
+--- Parameters:
+---  * a - Clip A
+---  * b - Clip B
+---
+--- Returns:
+---  * `true` if clip A is above clip B, otherwise `false`.
+function LibrariesFilmstrip.sortClips(a, b)
     local aFrame = a:frame()
     local bFrame = b:frame()
     if aFrame.y < bFrame.y then -- a is above b
@@ -158,16 +220,42 @@ function Filmstrip.sortClips(a, b)
     return false -- b is first
 end
 
+-- _uiToClips(clipsUI) -> none
+-- Function
+-- Converts a table of `axuielementObject` objects to `Clip` objects.
+--
+-- Parameters:
+--  * clipsUI - Table of `axuielementObject` objects.
+--
+-- Returns:
+--  * A table of `Clip` objects.
 local function _uiToClips(clipsUI)
     return _.map(clipsUI, function(_,clipUI) return Clip.new(clipUI) end)
 end
 
+-- _clipsToUI(clips) -> none
+-- Function
+-- Converts a table of `Clip` objects to `axuielementObject` objects.
+--
+-- Parameters:
+--  * clips - Table of `Clip` objects
+--
+-- Returns:
+--  * A table of `axuielementObject` objects.
 local function _clipsToUI(clips)
     return _.map(clips, function(_,clip) return clip:UI() end)
 end
 
--- TODO: Add documentation
-function Filmstrip:clipsUI(filterFn)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:clipsUI(filterFn) -> table | nil
+--- Function
+--- Gets clip UIs using a custom filter.
+---
+--- Parameters:
+---  * filterFn - A function to filter the UI results.
+---
+--- Returns:
+---  * A table of `axuielementObject` objects or `nil` if no clip UI could be found.
+function LibrariesFilmstrip:clipsUI(filterFn)
     local ui = self:contentsUI()
     if ui then
         local clips = axutils.childrenMatching(ui, function(child)
@@ -175,14 +263,23 @@ function Filmstrip:clipsUI(filterFn)
                and (filterFn == nil or filterFn(child))
         end)
         if clips then
-            table.sort(clips, Filmstrip.sortClips)
+            table.sort(clips, LibrariesFilmstrip.sortClips)
             return clips
         end
     end
     return nil
 end
 
-function Filmstrip:clips(filterFn)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:clips(filterFn) -> table | nil
+--- Function
+--- Gets clips using a custom filter.
+---
+--- Parameters:
+---  * filterFn - A function to filter the UI results.
+---
+--- Returns:
+---  * A table of `Clip` objects or `nil` if no clip UI could be found.
+function LibrariesFilmstrip:clips(filterFn)
     local clips = _uiToClips(self:clipsUI())
     if filterFn then
         clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
@@ -190,8 +287,16 @@ function Filmstrip:clips(filterFn)
     return clips
 end
 
--- TODO: Add documentation
-function Filmstrip:selectedClipsUI()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectedClipsUI() -> table | nil
+--- Function
+--- Gets selected clips UI's.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of `axuielementObject` objects or `nil` if no clips are selected.
+function LibrariesFilmstrip:selectedClipsUI()
     local ui = self:contentsUI()
     if ui then
         local children = ui:selectedChildren()
@@ -199,18 +304,35 @@ function Filmstrip:selectedClipsUI()
         for i,child in ipairs(children) do
             clips[i] = child
         end
-        table.sort(clips, Filmstrip.sortClips)
+        table.sort(clips, LibrariesFilmstrip.sortClips)
         return clips
     end
     return nil
 end
 
-function Filmstrip:selectedClips()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectedClips() -> table | nil
+--- Function
+--- Gets selected clips.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A table of `Clip` objects or `nil` if no clips are selected.
+function LibrariesFilmstrip:selectedClips()
     return _uiToClips(self:selectedClipsUI())
 end
 
--- TODO: Add documentation
-function Filmstrip:showClip(clip)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:showClip(clip) -> boolean
+--- Function
+--- Shows a clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to show.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:showClip(clip)
     local clipUI = clip:UI()
     local ui = self:UI()
     if ui then
@@ -225,7 +347,9 @@ function Filmstrip:showClip(clip)
         local clipBottom = clipFrame.y + clipFrame.h
 
         if clipTop < top or clipBottom > bottom then
-            -- we need to scroll
+            --------------------------------------------------------------------------------
+            -- We need to scroll:
+            --------------------------------------------------------------------------------
             local oFrame = self:contentsUI():frame()
             local scrollHeight = oFrame.h - vFrame.h
 
@@ -242,8 +366,16 @@ function Filmstrip:showClip(clip)
     return false
 end
 
--- TODO: Add documentation
-function Filmstrip:showClipAt(index)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:showClipAt(index) -> boolean
+--- Function
+--- Shows a clip at a specific index.
+---
+--- Parameters:
+---  * index - The index of the clip you want to show.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:showClipAt(index)
     local ui = self:clips()
     if ui and #ui >= index then
         return self:showClip(ui[index])
@@ -251,8 +383,16 @@ function Filmstrip:showClipAt(index)
     return false
 end
 
--- TODO: Add documentation
-function Filmstrip:selectClip(clip) -- luacheck: ignore
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip.selectClip(clip) -> boolean
+--- Function
+--- Selects a clip.
+---
+--- Parameters:
+---  * clip - The `Clip` you want to select.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:selectClip(clip) -- luacheck:ignore
     if clip then
         local clipUI = clip:UI()
         if axutils.isValid(clipUI) then
@@ -263,8 +403,16 @@ function Filmstrip:selectClip(clip) -- luacheck: ignore
     return false
 end
 
--- TODO: Add documentation
-function Filmstrip:selectClipAt(index)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectClipAt(index) -> boolean
+--- Function
+--- Select clip at a specific index.
+---
+--- Parameters:
+---  * index - A number of where the clip appears in the list.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:selectClipAt(index)
     local ui = self:clips()
     if ui and #ui >= index then
         return self:selectClip(ui[index])
@@ -272,7 +420,16 @@ function Filmstrip:selectClipAt(index)
     return false
 end
 
-function Filmstrip:selectClipTitled(title)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectClipTitled(title) -> boolean
+--- Function
+--- Select clip with a specific title.
+---
+--- Parameters:
+---  * title - The title of a clip.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:selectClipTitled(title)
     local clips = self:clips()
     for _,clip in ipairs(clips) do
         if clip:getTitle() == title then
@@ -282,8 +439,16 @@ function Filmstrip:selectClipTitled(title)
     return false
 end
 
--- TODO: Add documentation
-function Filmstrip:selectAll(clips)
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectAll([clips]) -> boolean
+--- Function
+--- Select all clips.
+---
+--- Parameters:
+---  * clips - A optional table of `Clip` objects.
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:selectAll(clips)
     clips = clips or self:clips()
     local contents = self:contentsUI()
     if clips and contents then
@@ -294,8 +459,16 @@ function Filmstrip:selectAll(clips)
     return false
 end
 
--- TODO: Add documentation
-function Filmstrip:deselectAll()
+--- cp.apple.finalcutpro.main.LibrariesFilmstrip:deselectAll() -> boolean
+--- Function
+--- Deselect all clips.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if successful otherwise `false`.
+function LibrariesFilmstrip:deselectAll()
     local contents = self:contentsUI()
     if contents then
         contents:setSelectedChildren({})
@@ -304,4 +477,4 @@ function Filmstrip:deselectAll()
     return false
 end
 
-return Filmstrip
+return LibrariesFilmstrip

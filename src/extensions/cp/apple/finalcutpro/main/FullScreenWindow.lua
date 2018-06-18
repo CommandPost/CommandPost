@@ -22,7 +22,15 @@ local Window						= require("cp.ui.Window")
 --------------------------------------------------------------------------------
 local FullScreenWindow = {}
 
--- TODO: Add documentation
+-- _findWindowUI(windows) -> window | nil
+-- Function
+-- Gets the Window UI.
+--
+-- Parameters:
+--  * windows - Table of windows.
+--
+-- Returns:
+--  * An `axuielementObject` or `nil`
 local function _findWindowUI(windows)
     for _,w in ipairs(windows) do
         if FullScreenWindow.matches(w) then return w end
@@ -30,7 +38,15 @@ local function _findWindowUI(windows)
     return nil
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.FullScreenWindow.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function FullScreenWindow.matches(element)
     if element and element:attributeValue("AXSubrole") == "AXUnknown"
     and element:attributeValue("AXTitle") == "" then
@@ -155,7 +171,6 @@ end
 function FullScreenWindow:app()
     return self._app
 end
-
 
 --- cp.apple.finalcutpro.main.FullScreenWindow:window() -> cp.ui.Window
 --- Method

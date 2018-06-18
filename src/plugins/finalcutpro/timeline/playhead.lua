@@ -9,11 +9,11 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Hammerspoon Extensions:
+-- Logger:
 --------------------------------------------------------------------------------
-local geometry                  = require("hs.geometry")
+--local log                       = require("hs.logger").new("scrolling")
+
 local eventtap                  = require("hs.eventtap")
-local mouse                     = require("hs.mouse")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -33,11 +33,6 @@ local config                    = require("cp.config")
 -- The menubar position priority.
 local PRIORITY = 1000
 
--- SPACEBAR_KEYCODE -> number
--- Constant
--- Space Bar Keycode
-local SPACEBAR_KEYCODE = 49
-
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -45,32 +40,44 @@ local SPACEBAR_KEYCODE = 49
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.playhead.update() -> none
---- Function
---- Ensures the Scrolling Timeline/Playhead Lock are in the correct mode
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.update()
-    local scrolling = mod.scrollingTimeline()
-    local locked    = mod.playheadLocked()
+local viewer = fcp:viewer()
+local contents = fcp:timeline():contents()
+local playhead = fcp:timeline():playhead()
 
-    local watcher = mod.getScrollingTimelineWatcher()
+mod._offset = nil
 
-    if fcp.app.frontmost() and (scrolling or locked) then
-        fcp:timeline():lockPlayhead(scrolling)
-        if scrolling and not watcher:isEnabled() then
-            watcher:start()
-        end
-        if locked and watcher:isEnabled() then
-            watcher:stop()
-        end
-    else
-        watcher:stop()
-        fcp:timeline():unlockPlayhead()
+--------------------------------------------------------------------------------
+-- This will reposition the content view to lock on the playhead.
+--------------------------------------------------------------------------------
+local positionPlayhead = function()
+    --------------------------------------------------------------------------------
+    -- Timeline isn't visible:
+    --------------------------------------------------------------------------------
+    local contentFrame = contents:viewFrame()
+    local playheadPosition = playhead:position()
+    if contentFrame == nil or playheadPosition == nil then
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Reset the stored offset if the viewFrame gets too narrow:
+    --------------------------------------------------------------------------------
+    if mod._offset >= contentFrame.w then mod._offset = math.floor(contentFrame.w/2) end
+
+    --------------------------------------------------------------------------------
+    -- Track the timeline:
+    --------------------------------------------------------------------------------
+    local timelineFrame = contents:timelineFrame()
+    local scrollWidth = timelineFrame.w - contentFrame.w
+    local scrollPoint = timelineFrame.x*-1 + playheadPosition - mod._offset
+    local scrollTarget = scrollPoint/scrollWidth
+
+    -----------------------------------------------------------------------
+    -- Don't change timeline position if SHIFT key is pressed:
+    -----------------------------------------------------------------------
+    local modifiers = eventtap.checkKeyboardModifiers()
+    if modifiers and not modifiers["shift"] then
+        contents:scrollHorizontalTo(scrollTarget)
     end
 end
 
@@ -78,162 +85,41 @@ end
 --- Variable
 --- Enables or disables the scrolling timeline.
 mod.scrollingTimeline = config.prop("scrollingTimelineActive", false):watch(function(active)
-    --log.df("Updating Scrolling Timeline: %s", active)
     if active then
-        local message = ""
-
-        --------------------------------------------------------------------------------
-        -- Ensure that Playhead Lock is Off:
-        --------------------------------------------------------------------------------
-        if mod.playheadLocked() then
-            mod.playheadLocked(false)
-            message = i18n("playheadLockDeactivated") .. "\n"
-            --log.df("Message: %s", message)
-        end
-
-        --------------------------------------------------------------------------------
-        -- If activated whilst already playing, then turn on Scrolling Timeline:
-        --------------------------------------------------------------------------------
-        mod.checkScrollingTimeline()
-
         --------------------------------------------------------------------------------
         -- Display Notification:
         --------------------------------------------------------------------------------
-        dialog.displayNotification(message..i18n("scrollingTimelineActivated"))
-    elseif not mod.playheadLocked() then
+        dialog.displayNotification(i18n("scrollingTimelineActivated"))
+    else
         dialog.displayNotification(i18n("scrollingTimelineDeactivated"))
     end
-
-    mod.update()
 end)
 
-
---- plugins.finalcutpro.timeline.playhead.getScrollingTimelineWatcher() -> eventtap
---- Function
---- Gets the Scrolling Timeline Watcher.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The scrolling timeline watcher `eventtap`.
-function mod.getScrollingTimelineWatcher()
-    if not mod._scrollingTimelineWatcher then
-        mod._scrollingTimelineWatcher = eventtap.new(
-            { eventtap.event.types.keyDown },
-            function(event)
-                --------------------------------------------------------------------------------
-                -- Don't do anything if we're already locked.
-                --------------------------------------------------------------------------------
-                if event:getKeyCode() == SPACEBAR_KEYCODE
-                   and next(event:getFlags()) == nil
-                   and not fcp:timeline():isLockedPlayhead() then
-                    --------------------------------------------------------------------------------
-                    -- Spacebar Pressed:
-                    --------------------------------------------------------------------------------
-                    mod.checkScrollingTimeline()
-                end
-                return false
-            end
-        )
-    end
-    return mod._scrollingTimelineWatcher
-end
-
---- plugins.finalcutpro.timeline.playhead.checkScrollingTimeline() -> boolean
---- Function
---- Checks to see if we should actually turn on the scrolling timeline.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if we should, `false` if not.
-function mod.checkScrollingTimeline()
-
-    --------------------------------------------------------------------------------
-    -- Make sure the Command Editor is closed:
-    --------------------------------------------------------------------------------
-    if fcp:commandEditor():isShowing() then
-        --log.df("Spacebar pressed while other windows are visible.")
-        return false
-    end
-
-    --------------------------------------------------------------------------------
-    -- Don't activate scrollbar in fullscreen mode:
-    --------------------------------------------------------------------------------
-    if fcp:fullScreenWindow():isShowing() then
-        --log.df("Spacebar pressed in fullscreen mode whilst watching for scrolling timeline.")
-        return false
-    end
-
-    local timeline = fcp:timeline()
-
-    --------------------------------------------------------------------------------
-    -- Get Timeline Scroll Area:
-    --------------------------------------------------------------------------------
-    if not timeline:isShowing() then
-        --log.ef("ERROR: Could not find Timeline Scroll Area.")
-        return false
-    end
-
-    --------------------------------------------------------------------------------
-    -- Check mouse is in timeline area:
-    --------------------------------------------------------------------------------
-    local mouseLocation = geometry.point(mouse.getAbsolutePosition())
-    local viewFrame = timeline:contents():viewFrame()
-    if viewFrame then
-        if mouseLocation:inside(geometry.rect(viewFrame)) then
-
-            --------------------------------------------------------------------------------
-            -- Mouse is in the timeline area when spacebar pressed so LET'S DO IT!
-            --------------------------------------------------------------------------------
-            --log.df("Mouse inside Timeline Area.")
-            timeline:lockPlayhead(true)
-            return true
-        else
-            --log.df("Mouse outside of Timeline Area.")
-            return false
-        end
-    else
-        --log.df("No viewFrame detected in plugins.timeline.playhead.checkScrollingTimeline().")
-        return false
-    end
-
-end
-
---- plugins.finalcutpro.timeline.playhead.playheadLocked <cp.prop: boolean>
+--- plugins.finalcutpro.timeline.playhead.alwaysCentered <cp.prop: boolean>
 --- Variable
---- Playhead Locked?
-mod.playheadLocked = config.prop("lockTimelinePlayhead", false):watch(function(active)
-    --log.df("Updating Playhead Lock: %s", active)
-    if active then
-        local message = ""
-        --------------------------------------------------------------------------------
-        -- Ensure that Scrolling Timeline is off
-        --------------------------------------------------------------------------------
-        if mod.scrollingTimeline() then
-            mod.scrollingTimeline(false)
-            message = i18n("scrollingTimelineDeactivated") .. "\n"
-        end
-        -- Notify the user.
-        dialog.displayNotification(message .. i18n("playheadLockActivated"))
-    elseif not mod.scrollingTimeline() then
-        dialog.displayNotification(i18n("playheadLockDeactivated"))
-    end
-    mod.update()
-end)
+--- If `true`, the playhead will be centered in the view while scrolling.
+mod.alwaysCentered = config.prop("scrollingTimelineCentered", false)
 
---- plugins.finalcutpro.timeline.playhead.playheadTracked <cp.prop: boolean; read-only; live>
+--- plugins.finalcutpro.timeline.playhead.tracking <cp.prop: boolean; read-only; live>
 --- Variable
---- Checks if the playhead is being actively tracked, either by scrolling timeline or the playhead lock.
-mod.playheadTracked = mod.scrollingTimeline:OR(mod.playheadLocked):watch(function(tracking)
+--- If `true`, we are tracking the playhead position.
+mod.tracking = mod.scrollingTimeline:AND(viewer.isPlaying):watch(function(tracking)
     if tracking then
-        fcp.app.frontmost:watch(mod.update)
+        -- calculate the intial playhead offset
+        local viewFrame = contents:viewFrame()
+        mod._offset = playhead:position() - viewFrame.x
+        if mod.alwaysCentered() or mod._offset <= 0 or mod._offset >= viewFrame.w then
+            --------------------------------------------------------------------------------
+            -- Align the playhead to the centre of the timeline view:
+            --------------------------------------------------------------------------------
+            mod._offset = math.floor(viewFrame.w/2)
+        end
+
+        playhead.timecode:watch(positionPlayhead, true)
     else
-        fcp.app.frontmost:unwatch(mod.update)
+        playhead.timecode:unwatch(positionPlayhead)
     end
-end)
+end, true)
 
 --------------------------------------------------------------------------------
 --
@@ -244,7 +130,7 @@ local plugin = {
     id = "finalcutpro.timeline.playhead",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.timeline"]               = "options",
+        ["finalcutpro.menu.timeline"]               = "timelineMenu",
         ["finalcutpro.commands"]                    = "fcpxCmds",
         ["finalcutpro.preferences.app"]             = "prefs",
     }
@@ -254,16 +140,16 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+    local menu, cmds, prefs = deps.timelineMenu, deps.fcpxCmds, deps.prefs
 
     --------------------------------------------------------------------------------
     -- Setup Menu:
     --------------------------------------------------------------------------------
-    if deps.options then
-        local section = deps.options:addSection(PRIORITY)
+    if menu then
+        local section = menu:addSection(PRIORITY)
         section:addItems(1000, function()
             return {
                 { title = i18n("enableScrollingTimeline"),      fn = function() mod.scrollingTimeline:toggle() end,     checked = mod.scrollingTimeline() },
-                { title = i18n("enableTimelinePlayheadLock"),   fn = function() mod.playheadLocked:toggle() end,                checked = mod.playheadLocked() },
             }
         end)
     end
@@ -271,20 +157,12 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
-    if deps.fcpxCmds then
-        deps.fcpxCmds:add("cpScrollingTimeline")
+    if cmds then
+        cmds:add("cpScrollingTimeline")
             :groupedBy("timeline")
             :activatedBy():ctrl():option():cmd("w")
             :whenActivated(function() mod.scrollingTimeline:toggle() end)
-        deps.fcpxCmds:add("cpLockPlayhead")
-            :groupedBy("timeline")
-            :whenActivated(function() mod.playheadLocked:toggle() end)
     end
-
-    --------------------------------------------------------------------------------
-    -- Update Watcher:
-    --------------------------------------------------------------------------------
-    mod.playheadTracked:update()
 
     return mod
 end

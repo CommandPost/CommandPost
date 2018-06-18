@@ -9,6 +9,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
@@ -44,6 +47,9 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Element-Tk Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
@@ -145,6 +151,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Tk Button B -->
                             <Mapping mode="Std">
@@ -165,8 +174,9 @@
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
                                 <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Tk Trackerball 1 Y -->
@@ -176,19 +186,22 @@
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
                                 <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Element-Tk Ring 1 -->
                             <Mapping mode="Std">
                                 <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
+                                <Key>0x00310024</Key> <!-- Color Wheel - Shadows - Brightness -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
@@ -198,6 +211,11 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Element-Tk Trackerball 2 Y -->
                             <Mapping mode="Std">
@@ -205,11 +223,23 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Element-Tk Ring 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310034</Key> <!-- Color Wheel - Midtones - Brightness -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
@@ -219,6 +249,11 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
                             <Mapping mode="Std">
@@ -226,10 +261,23 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="8"> <!-- Element-Tk Ring 3 -->
                             <Mapping mode="Std">
                                 <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
@@ -241,6 +289,9 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Element-Tk Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>

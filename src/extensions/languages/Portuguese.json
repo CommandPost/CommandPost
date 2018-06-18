@@ -11,7 +11,6 @@
         "angle": "Ângulo",
         "finalcutpro_open_label": "Open Final Cut Pro",
         "touchBarWidget": "Widget da barra de toque",
-        "enableTimelinePlayheadLock": "Ativar Timeline Playhead Lock",
         "feedback": "Comentários",
         "cpTransition5_title": "Aplicar transição 5",
         "core_preferences_panels_general_label": "Painel Preferências: Geral",
@@ -97,7 +96,6 @@
             "other": "minutos"
         },
         "enableWaveformDrawing": "Ativar desenho de forma de onda",
-        "cpLockPlayhead_title": "Alternar o Headhead Lock",
         "showGenerators": "Mostrar Geradores",
         "hudButtonItem": "Button%{count} (%{title})",
         "customPrefixError": "Este prefixo parece inválido. Por favor, tente novamente.",

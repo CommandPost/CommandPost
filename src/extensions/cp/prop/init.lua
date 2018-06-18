@@ -32,6 +32,15 @@
 ---
 --- This will also work on [AND](#and) and [OR][#or] properties. Any changes from component properties will trigger a notification.
 ---
+--- ### 3. Observable
+--- Similarly, you can 'observe' a prop as a `cp.rx.Observer` by calling the `observe` method:
+---
+--- ```lua
+--- propValue:observe():subscribe(function(value) print(tostring(value) end))
+--- ```
+---
+--- These will never emit an `onError` or `onComplete` message, just `onNext` with either `nil` or the current value as it changes.
+---
 --- ### 4. Combinable
 --- We can combine or modify properties with AND/OR and NOT operations. The resulting values will be a live combination of the underlying `prop` values. They can also be watched, and will be notified when the underlying `prop` values change. For example:
 ---
@@ -406,15 +415,14 @@ end
 --- will be registered when setting.
 ---
 --- Parameters:
----  * `skipMetatable`  - If set to `true`, the metatable will _not_ be copied to the new table.
+---  * None
 ---
 --- Returns:
 ---  * The `cp.prop` instance.
 ---
 --- Notes:
 ---  * See [deepTable](#deepTable).
--- TODO: David - skipMetatable is currently unused?
-function prop.mt:shallowTable(skipMetatable) -- luacheck: ignore
+function prop.mt:shallowTable()
     if not self:mutable() then
         error("This property is immutable.")
     end
@@ -704,7 +712,7 @@ function prop.mt:hasWatchers()
     return watchers ~= nil and #watchers > 0
 end
 
---- cp.prop:preWatch(preWatchFn) -> nil
+--- cp.prop:preWatch(preWatchFn) -> cp.prop
 --- Method
 --- Adds a function which will be called once if any watchers are added to this prop.
 --- This allows configuration, typically for watching other events, but only if
@@ -726,6 +734,7 @@ function prop.mt:preWatch(preWatchFn)
         end
         self._preWatchers[#self._preWatchers+1] = preWatchFn
     end
+    return self
 end
 
 local function _unwatch(watchers, watchFn)
@@ -756,6 +765,33 @@ end
 ---  * `true` if the function was watching and successfully removed, otherwise `false`.
 function prop.mt:unwatch(watchFn)
     return _unwatch(self._watchers, watchFn)
+end
+
+--- cp.prop:observe() -> cp.rx.Observable
+--- Method
+--- Returns the `cp.rx.Observable` for the property. This will emit
+--- `onNext()` events with the current value whenever the `cp.prop` is updated.
+--- Any new subscriptions will receive the most recent value immediately.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Observable` instance for the property.
+---
+--- Notes:
+---  * It will only emit `onNext` events, never an `onError` or `onCompleted` event.
+function prop.mt:observe()
+    if not self._observable then
+        local rx = require("cp.rx")
+        local subject = rx.BehaviorSubject.create()
+        -- watch for changes...
+        self:watch(function(value)
+            subject:onNext(value)
+        end, true)
+        self._observable = subject
+    end
+    return self._observable
 end
 
 local function _monitorOther(thisProp, otherProp)
@@ -1381,8 +1417,7 @@ function prop.FALSE()
     return prop.THIS(false)
 end
 
--- TODO: David, deepTable is currently not being used?
-function prop.TABLE(initialValue, deepTable) -- luacheck: ignore
+function prop.TABLE(initialValue)
     local get = function(_, Prop) return Prop._value end
     local set = function(newValue, _, Prop) Prop._value = newValue end
     local clone = function(self)

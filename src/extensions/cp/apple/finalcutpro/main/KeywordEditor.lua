@@ -315,18 +315,18 @@ end
 local KeyboardShortcuts = {}
 
 function KeywordEditor:keyboardShortcuts()
-    return KeyboardShortcuts:new(self)
+    return KeyboardShortcuts.new(self)
 end
 
---- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts:new(parent) -> KeyboardShortcuts object
+--- cp.apple.finalcutpro.main.KeywordEditor.KeyboardShortcuts.new(parent) -> KeyboardShortcuts
 --- Constructor
---- Creates a new KeyboardShortcuts object
+--- Creates a new `KeyboardShortcuts` object
 ---
 --- Parameters:
----  * `parent` - The parent
+---  * parent - The parent object.
 ---
 --- Returns:
----  * A KeyboardShortcuts object
+---  * A `KeyboardShortcuts` object
 function KeyboardShortcuts.new(parent)
     local o = {
         _parent = parent,

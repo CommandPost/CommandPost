@@ -1,6 +1,6 @@
 --- === plugins.finalcutpro.tangent.manager ===
 ---
---- Final Cut Pro Tangent Manager.
+--- Final Cut Pro Tangent Color Manager.
 
 --------------------------------------------------------------------------------
 --
@@ -278,7 +278,8 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
     -- Color Wheel Temperature:
     --------------------------------------------------------------------------------
-    -- set up UI Updates...
+
+    -- Set up UI Updates:
     local tempChange, tintChange, hueChange, mixChange = 0, 0, 0, 0
     updateUI:action(function()
         if tempChange ~= 0 then
@@ -365,7 +366,9 @@ function mod.init(tangentManager, fcpGroup)
         :onReset(function() cw:show():mix(1) end)
 
     --------------------------------------------------------------------------------
-    -- Color Shortcuts:
+    --
+    -- COLOR SHORTCUTS:
+    --
     --------------------------------------------------------------------------------
     local colorShortcutGroup = fcpGroup:group(i18n("colorShortcuts"))
 
@@ -399,12 +402,12 @@ function mod.init(tangentManager, fcpGroup)
 
     colorShortcutGroup:action(wheelsBaseID+0x0109, i18n("goToColorInspector"))
         :onPress(function()
-            fcp:selectMenu({"Window", "Go To", "Color Inspector"})
+            fcp:selectMenuItem({"Window", "Go To", "Color Inspector"})
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0110, i18n("matchColor"))
         :onPress(function()
-            fcp:selectMenu({"Modify", "Match Color…"})
+            fcp:selectMenuItem({"Modify", "Match Color…"})
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0111, i18n("saveColorEffectPreset"))
@@ -430,30 +433,41 @@ function mod.init(tangentManager, fcpGroup)
 
     colorShortcutGroup:action(wheelsBaseID+0x0114, i18n("viewAlphaColorChannel"))
         :onPress(function()
-            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"})
+            fcp:selectMenuItem({"View", "Show in Viewer", "Color Channels", "Alpha"})
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0115, i18n("viewRedColorChannel"))
         :onPress(function()
-            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Red"})
+            fcp:selectMenuItem({"View", "Show in Viewer", "Color Channels", "Red"})
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0116, i18n("viewGreenColorChannel"))
         :onPress(function()
-            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Green"})
+            fcp:selectMenuItem({"View", "Show in Viewer", "Color Channels", "Green"})
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0117, i18n("viewBlueColorChannel"))
         :onPress(function()
-            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "Blue"})
+            fcp:selectMenuItem({"View", "Show in Viewer", "Color Channels", "Blue"})
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0118, i18n("viewAllColorChannels"))
         :onPress(function()
-            fcp:selectMenu({"View", "Show in Viewer", "Color Channels", "All"})
+            fcp:selectMenuItem({"View", "Show in Viewer", "Color Channels", "All"})
         end)
 
-    --- Color Board Actions
+    colorShortcutGroup:action(wheelsBaseID+0x0119, i18n("switchBetweenInsideOutsideMarks"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ToggleInsideColorMask") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    --------------------------------------------------------------------------------
+    --
+    -- COLOR BOARD ACTIONS:
+    --
+    --------------------------------------------------------------------------------
 
     ciGroup:action(wheelsBaseID+0x0120, i18n("addColorBoardEffect"))
         :onPress(function()
@@ -500,6 +514,26 @@ function mod.init(tangentManager, fcpGroup)
             cb:aspectGroup():previousOption()
         end)
 
+    cbGroup:action(wheelsBaseID+0x0129, i18n("resetAllControls"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ResetAllPucks") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0130, i18n("resetCurrentEffectPane"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ResetPucksOnCurrentBoard") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
+
+    cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
+        :onPress(function()
+            if not fcp:performShortcut("ColorBoard-ResetSelectedPuck") then
+                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+            end
+        end)
 end
 
 --------------------------------------------------------------------------------

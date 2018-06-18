@@ -151,9 +151,7 @@ end
 --- * `true` if the action was executed successfully.
 function mod.onExecute(action)
     if action and action.path then
-        fcp:launch()
-
-        fcp:menu():selectMenu(action.path)
+        fcp:launch():menu():selectMenuItem(action.path)
         return true
     end
     return false

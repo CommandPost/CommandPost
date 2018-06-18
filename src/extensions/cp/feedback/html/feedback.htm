@@ -96,31 +96,33 @@
   			<span class="loading-text">Please wait while we upload your feedback...</span>
   		</div>
   		<form id="feedback-form" class="main-form" action="https://latenitefilms.com/cp/feedback.php" method="post">
-			<div><a id="button-bug-report" class="button selected" href="#">{{ i18n("bugReport") }}</a> <a id="button-feature-request" class="button" href="#">{{ i18n("featureRequest") }}</a> <a id="button-support" class="button" href="#">{{ i18n("support") }}</a></div>
-			<div id="bugreport-comments" class="textarea" contenteditable><strong>{{ i18n("whatWentWrong") }}</strong><br />
+			<div><a id="button-bug-report" class="button selected" href="#">{{ bugReport }}</a> <a id="button-feature-request" class="button" href="#">{{ featureRequest }}</a> <a id="button-support" class="button" href="#">{{ support }}</a></div>
+			<div id="bugreport-comments" class="textarea" contenteditable><strong>{{ whatWentWrong }}</strong><br />
 				<br />
 				<br />
 				<br />
-				<strong>{{ i18n("whatDidYouExpectToHappen") }}</strong><br />
+				<strong>{{ whatDidYouExpectToHappen }}</strong><br />
 				<br />
 				<br />
 				<br />
-				<strong>{{ i18n("whatStepsToRecreate") }}</strong><br />
+				<strong>{{ whatStepsToRecreate }}</strong><br />
 				<br />
 				<br />
 			</div>
-			<div id="feature-request-comments" class="textarea" hidden contenteditable><strong>{{ i18n("whatFeatures") }}</strong><br />
+			<div id="feature-request-comments" class="textarea" hidden contenteditable><strong>{{ whatFeatures }}</strong><br />
 				<br />
 			</div>
-			<div id="support-comments" class="textarea" hidden contenteditable><strong>{{ i18n("howCanWeHelp") }}</strong><br />
+			<div id="support-comments" class="textarea" hidden contenteditable><strong>{{ howCanWeHelp }}</strong><br />
 				<br />
 			</div>
-			<div class="contact-checkbox"><input id="include-log-files" type="checkbox" checked>{{ i18n("attachLog") }}</div>
-			<div class="contact-checkbox"><input id="include-screnshots" type="checkbox" checked>{{ i18n("attachScreenshot") }}</div>
-			<div class="email-note">{{ i18n("emailResponse") }}</div>
-			<div class="contact-checkbox"><input id="include-contact-info" type="checkbox" checked>{{ i18n("includeContactInfo") }}:</div>
+			<div class="contact-checkbox" style="width: 320px;"><input id="include-log-files" type="checkbox" checked>{{ attachLog }}</div>
+			<br />
+			<div class="contact-checkbox"><input id="include-screnshots" type="checkbox" checked>{{ attachScreenshot }}</div>
+			<br />
+			<div class="email-note">{{ emailResponse }}</div>
+			<div class="contact-checkbox"><input id="include-contact-info" type="checkbox" checked>{{ includeContactInfo }}:</div>
 			<div class="user-details"><input id="fullname" type="text" name="name" value="{{ userFullName }}"> <input id="email" type="text" name="email" value="{{ userEmail }}"></div>
-			<div class="bottom-buttons"><a id="button-cancel" class="button">{{ i18n("cancel") }}</a> <a id="button-send" class="button" href="#">{{ i18n("send") }}</a></div>
+			<div class="bottom-buttons"><a id="button-cancel" class="button">{{ cancel }}</a> <a id="button-send" class="button" href="#">{{ send }}</a></div>
 			<!-- Hidden Fields: -->
 			<input type="hidden" name="script-version" value="{{ appVersion }}">
 			<textarea id="form-feedback" name="form-feedback" style="display:none"></textarea>

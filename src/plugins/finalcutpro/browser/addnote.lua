@@ -78,23 +78,7 @@ function mod.addNoteToSelectedClip()
     --------------------------------------------------------------------------------
     -- Check to see if the playhead is moving:
     --------------------------------------------------------------------------------
-    local playhead = libraries:playhead()
-    local playheadCheck1 = playhead:getPosition()
-    timer.usleep(100000)
-    local playheadCheck2 = playhead:getPosition()
-    timer.usleep(100000)
-    local playheadCheck3 = playhead:getPosition()
-    timer.usleep(100000)
-    local playheadCheck4 = playhead:getPosition()
-    timer.usleep(100000)
-    local wasPlaying
-    if playheadCheck1 == playheadCheck2 and playheadCheck2 == playheadCheck3 and playheadCheck3 == playheadCheck4 then
-        log.df("Playhead is static.")
-        wasPlaying = false
-    else
-        log.df("Playhead is moving.")
-        wasPlaying = true
-    end
+    local wasPlaying = fcp:timeline():isPlaying()
 
     --------------------------------------------------------------------------------
     -- Check to see if we're in Filmstrip or List View:

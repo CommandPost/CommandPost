@@ -27,7 +27,15 @@ local Window						= require("cp.ui.Window")
 --------------------------------------------------------------------------------
 local SecondaryWindow = {}
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.SecondaryWindow.matches(element) -> boolean
+--- Function
+--- Checks to see if an element matches what we think it should be.
+---
+--- Parameters:
+---  * element - An `axuielementObject` to check.
+---
+--- Returns:
+---  * `true` if matches otherwise `false`
 function SecondaryWindow.matches(element)
     if element and element:attributeValue("AXModal") == false then
         local children = element:attributeValue("AXChildren")
@@ -36,7 +44,15 @@ function SecondaryWindow.matches(element)
     return false
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.Browser.new(app) -> SecondaryWindow
+--- Constructor
+--- Creates a new `SecondaryWindow` instance.
+---
+--- Parameters:
+---  * app - The `cp.apple.finalcutpro` object.
+---
+--- Returns:
+---  * A new `SecondaryWindow` object.
 function SecondaryWindow.new(app)
     local o = prop.extend({
         _app = app
@@ -116,7 +132,15 @@ function SecondaryWindow.new(app)
     return o
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.SecondaryWindow:app() -> App
+--- Method
+--- Returns the app instance representing Final Cut Pro.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * App
 function SecondaryWindow:app()
     return self._app
 end
@@ -134,9 +158,20 @@ function SecondaryWindow:window()
     return self._window
 end
 
--- TODO: Add documentation
+--- cp.apple.finalcutpro.main.SecondaryWindow:show() -> SecondaryWindow
+--- Method
+--- Show the Secondary Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `SecondaryWindow` object.
 function SecondaryWindow:show()
-    -- Currently just ensures the app is running. Determine if there are any scenarios where we need to force this.
+    --------------------------------------------------------------------------------
+    -- Currently just ensures the app is running.
+    -- Determine if there are any scenarios where we need to force this.
+    --------------------------------------------------------------------------------
     self:app():show()
     return self
 end

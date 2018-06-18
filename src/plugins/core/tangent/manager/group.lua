@@ -10,11 +10,18 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local require                                   = require
+--local log                                       = require("hs.logger").new("tangentControls")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop              = require("cp.prop")
-local x                 = require("cp.web.xml")
 local is                = require("cp.is")
+local prop              = require("cp.prop")
+local tools             = require("cp.tools")
+local x                 = require("cp.web.xml")
 
 local action            = require("action")
 local parameter         = require("parameter")
@@ -275,7 +282,7 @@ end
 
 --- plugins.core.tangent.manager.group:xml() -> cp.web.xml
 --- Method
---- Returns the `xml` configuration for the Group.
+--- Returns the `xml` configuration for the Group, sorted alphabetically.
 ---
 --- Parameters:
 ---  * None
@@ -288,27 +295,27 @@ function group.mt:xml()
             local result = x()
 
             if self._groups then
-                for _,v in ipairs(self._groups) do
+                for _,v in tools.spairs(self._groups, function(t,a,b) return t[b].name > t[a].name end) do
                     result = result .. v:xml()
                 end
             end
             if self._actions then
-                for _,v in ipairs(self._actions) do
+                for _,v in tools.spairs(self._actions, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end
             if self._parameters then
-                for _,v in ipairs(self._parameters) do
+                for _,v in tools.spairs(self._parameters, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end
             if self._menus then
-                for _,v in ipairs(self._menus) do
+                for _,v in tools.spairs(self._menus, function(t,a,b) return t[b]:name() > t[a]:name() end) do
                     result = result .. v:xml()
                 end
             end
             if self._bindings then
-                for _,v in ipairs(self._bindings) do
+                for _,v in tools.spairs(self._bindings, function(t,a,b) return t[b].name > t[a].name end) do
                     result = result .. v:xml()
                 end
             end
