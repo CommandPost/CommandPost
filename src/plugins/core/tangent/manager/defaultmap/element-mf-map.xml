@@ -97,16 +97,6 @@
                 </ControlBank>
                 <ControlBank id="Trackerball">
                     <Bank>
-                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
-                            <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00040001</Key> <!-- Timeline Zoom -->
-                                <CustomName>Timeline Zoom</CustomName>
-                                <Sensitivity>3</Sensitivity>
-                            </Mapping>
-                        </Control>
                     </Bank>
                 </ControlBank>
             </Mode>
@@ -201,6 +191,36 @@
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
+                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>LOAD B1</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>SAVE B1</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>LOAD B2</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
+                                <CustomName>SAVE B2</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
+                                <CustomName>LOAD B3</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
+                                <CustomName>SAVE B3</CustomName>
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
@@ -238,11 +258,6 @@
                         <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
                             <Mapping mode="Std">
                                 <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00040001</Key> <!-- Timeline Zoom -->
-                                <CustomName>Timeline Zoom</CustomName>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -339,6 +354,36 @@
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
+                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>LOAD B1</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>SAVE B1</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130003</Key> <!-- Pasteboard Buffer 2 -->
+                                <CustomName>LOAD B2</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
+                                <CustomName>SAVE B2</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130005</Key> <!-- Pasteboard Buffer 3 -->
+                                <CustomName>LOAD B3</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
+                                <CustomName>SAVE B3</CustomName>
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
@@ -373,14 +418,42 @@
                 </ControlBank>
                 <ControlBank id="Trackerball">
                     <Bank>
-                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
+                        <Control type="Encoder" number="0"> <!-- Element-Mf Trackerball X -->
                             <Mapping mode="Std">
-                                <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00040001</Key> <!-- Timeline Zoom -->
-                                <CustomName>Timeline Zoom</CustomName>
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="1"> <!-- Element-Mf Trackerball Y -->
+                            <Mapping mode="Std">
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Display>Number</Display>
+                                <Sensitivity>5</Sensitivity>
+                            </Mapping>
+                        </Control>
+                        <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
+                            <Mapping mode="Std">
+                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310014</Key> <!-- Color Wheel - Master - Brightness -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                     </Bank>
@@ -477,6 +550,36 @@
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
+                        <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>LOAD B1</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
+                                <CustomName>SAVE B1</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130003</Key> <!-- Pasteboard Buffer 2 -->
+                                <CustomName>LOAD B2</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
+                                <CustomName>SAVE B2</CustomName>
+                            </Mapping>
+                        </Control>
+                        <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
+                            <Mapping mode="Std">
+                                <Key>0x00130005</Key> <!-- Pasteboard Buffer 3 -->
+                                <CustomName>LOAD B3</CustomName>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
+                                <CustomName>SAVE B3</CustomName>
+                            </Mapping>
+                        </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
@@ -514,11 +617,6 @@
                         <Control type="Encoder" number="2"> <!-- Element-Mf Ring -->
                             <Mapping mode="Std">
                                 <Key>0x81000001</Key> <!-- Transport (Jog/Shuttle) -->
-                            </Mapping>
-                            <Mapping mode="Alt">
-                                <Key>0x00040001</Key> <!-- Timeline Zoom -->
-                                <CustomName>Timeline Zoom</CustomName>
-                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>

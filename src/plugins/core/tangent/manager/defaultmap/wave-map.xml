@@ -567,7 +567,7 @@
                                 <Key>0x00310110</Key> <!-- Match Color -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x0ACF002C</Key> <!-- Blade All -->
+                                <Key>0x00070002</Key> <!-- Blade All -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="22"> <!-- Wave Button 9 -->
