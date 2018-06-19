@@ -223,7 +223,7 @@ function mod.addNoteToSelectedClip()
         }
         mod.rightClickMenubar = menubar.new(false)
         mod.rightClickMenubar:setMenu(rightClickMenu)
-        mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition())
+        mod.rightClickMenubar:popupMenu(mouse.getAbsolutePosition(), true)
     end)
 
     --------------------------------------------------------------------------------
