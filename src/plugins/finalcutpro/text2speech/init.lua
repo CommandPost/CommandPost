@@ -848,7 +848,7 @@ function mod._rightClickCallback()
     }
     mod.rightClickMenubar = menubar.new(false)
         :setMenu(rightClickMenu)
-        :popupMenu(mouse.getAbsolutePosition())
+        :popupMenu(mouse.getAbsolutePosition(), true)
 end
 
 --- plugins.finalcutpro.text2speech.show() -> none

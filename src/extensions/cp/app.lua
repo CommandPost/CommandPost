@@ -104,10 +104,10 @@ windowfilter.setLogLevel("nothing")
 --- Returns a list of Bundle IDs which have been requested via [forBundleID](#forBundleID).
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A list of Bundle IDs.
+---  * A list of Bundle IDs.
 function mod.bundleIDs()
     local ids = {}
     for id,_ in pairs(apps) do
@@ -121,10 +121,10 @@ end
 --- Returns a list of all apps that have been requested via [forBundleID](#forBundleID), in no particular order.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * A list of `cp.app` instances.
+---  * A list of `cp.app` instances.
 function mod.apps()
     local result = {}
     for _,app in pairs(apps) do
@@ -153,10 +153,10 @@ mod.frontmostApp = prop(function() return frontmostApp end)
 --- The Bundle ID
 ---
 --- Parameters:
---- * bundleID      - The application bundle ID to find the app for.
+---  * bundleID      - The application bundle ID to find the app for.
 ---
 --- Returns:
---- * The `cp.app` for the bundle.
+---  * The `cp.app` for the bundle.
 function mod.forBundleID(bundleID)
     assert(type(bundleID) == "string", "`bundleID` must be a string")
     local theApp = apps[bundleID]
@@ -534,10 +534,10 @@ end
 --- Returns the Bundle ID for the app.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The Bundle ID.
+---  * The Bundle ID.
 function mod.mt:bundleID()
     return self._bundleID
 end
@@ -547,10 +547,10 @@ end
 --- Returns the main `menu` for the application.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.app.menu` for the `cp.app` instance.
+---  * The `cp.app.menu` for the `cp.app` instance.
 function mod.mt:menu()
     if not self._menu then
         self._menu = menu.new(self)
@@ -821,10 +821,10 @@ end
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The notifier.
+---  * The notifier.
 function mod.mt:notifier()
     if not self._notifier then
         self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
@@ -867,10 +867,10 @@ end
 --- `cp.i18n.localeID`.
 ---
 --- Parameters:
---- * locale    - The locale code string or `localeID` to check.
+---  * locale    - The locale code string or `localeID` to check.
 ---
 --- Returns:
---- * `true` if it is supported, otherwise `false`.
+---  * `true` if it is supported, otherwise `false`.
 function mod.mt:isSupportedLocale(locale)
     locale = localeID(locale)
 
@@ -890,10 +890,10 @@ end
 --- will be in the same language as the provided locale, and as close a match as possible with the region and script.
 ---
 --- Parameters:
---- * locale    - The local to match
+---  * locale    - The local to match
 ---
 --- Returns:
---- * The closest supported locale or `nil` if none are available in the language.
+---  * The closest supported locale or `nil` if none are available in the language.
 function mod.mt:bestSupportedLocale(locale)
     -- cast to localeID
     locale = localeID(locale)
@@ -918,10 +918,10 @@ end
 --- Updates the app, triggering any watchers if values have changed.
 ---
 --- Parameters:
---- * None
+---  * None
 ---
 --- Returns:
---- * The `cp.app` instance.
+---  * The `cp.app` instance.
 function mod.mt:update()
     self.hsApplication:update()
     return self

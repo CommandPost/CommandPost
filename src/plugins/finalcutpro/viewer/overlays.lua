@@ -661,7 +661,7 @@ local function contextualMenu(event)
                         { title = i18n("bottomHorizontal"), checked = mod.stillsLayout() == "Bottom Horizontal", fn = function() mod.stillsLayout("Bottom Horizontal"); mod.update() end },
                     }},
                 })
-                mod._menu:popupMenu(location)
+                mod._menu:popupMenu(location, true)
             end
         end
     end

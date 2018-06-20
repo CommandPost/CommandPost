@@ -27,6 +27,7 @@ local json                                      = require("hs.json")
 local mouse                                     = require("hs.mouse")
 local osascript                                 = require("hs.osascript")
 local screen                                    = require("hs.screen")
+local sound                                     = require("hs.sound")
 local timer                                     = require("hs.timer")
 local window                                    = require("hs.window")
 
@@ -1298,6 +1299,19 @@ function tools.ensureDirectoryExists(rootPath, ...)
         end
     end
     return fs.pathToAbsolute(fullPath)
+end
+
+--- cp.tools.playErrorSound() -> none
+--- Function
+--- Plays the "Funk" error sound.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function tools.playErrorSound()
+    sound.getByName("Funk"):play()
 end
 
 return tools

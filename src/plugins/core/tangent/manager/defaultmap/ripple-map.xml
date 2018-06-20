@@ -9,6 +9,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
                             <Mapping mode="Std">
@@ -46,6 +49,9 @@
                             <Mapping mode="Std">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Ripple Button B -->
                             <Mapping mode="Std">
@@ -63,20 +69,24 @@
                             <Mapping mode="Std">
                                 <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00301101</Key> <!-- Color Board - Color - Master - Angle -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00301102</Key> <!-- Color Board - Color - Master - Percentage -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
@@ -95,12 +105,24 @@
                             <Mapping mode="Std">
                                 <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
                                 <Display>Number</Display>
+                                <Sensitivity>2</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301301</Key> <!-- Color Board - Color - Midtones - Angle -->
+                                <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
                                 <Display>Number</Display>
+                                <Sensitivity>2</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301302</Key> <!-- Color Board - Color - Midtones - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
@@ -109,21 +131,39 @@
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
                             </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
                             <Mapping mode="Std">
-                                <Key>0x00301201</Key> <!-- Color Board - Color - Shadows - Angle -->
-                                <Display>Number</Display>
+                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>2</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301401</Key> <!-- Color Board - Color - Highlights - Angle -->
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
                             <Mapping mode="Std">
-                                <Key>0x00301202</Key> <!-- Color Board - Color - Shadows - Percentage -->
-                                <Display>Number</Display>
+                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>2</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00301402</Key> <!-- Color Board - Color - Highlights - Percentage -->
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="8"> <!-- Ripple Dial 3 -->
                             <Mapping mode="Std">
+                                <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
                                 <Display>Number</Display>
                                 <Sensitivity>3</Sensitivity>
@@ -137,6 +177,9 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>
@@ -156,31 +199,35 @@
                             <Mapping mode="Std">
                                 <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
                                 <Display>Number</Display>
+                                <Sensitivity>2</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Key>0x00310021</Key> <!-- Color Wheel - Shadows - Horizontal -->
                                 <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Ripple Trackerball 1 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
                                 <Display>Number</Display>
+                                <Sensitivity>2</Sensitivity>
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Key>0x00310022</Key> <!-- Color Wheel - Shadows - Vertical -->
                                 <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="2"> <!-- Ripple Dial 1 -->
                             <Mapping mode="Std">
-                                <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
-                                <Display>Number</Display>
+                                <Key>0x00310024</Key> <!-- Color Wheel - Shadows - Brightness -->
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                             <Mapping mode="Alt">
-                                <Key>0x00310013</Key> <!-- Color Wheel - Master - Saturation -->
-                                <Display>Number</Display>
+                                <Key>0x00310023</Key> <!-- Color Wheel - Shadows - Saturation -->
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
@@ -188,37 +235,67 @@
                             <Mapping mode="Std">
                                 <Key>0x00310031</Key> <!-- Color Wheel - Midtones - Horizontal -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310011</Key> <!-- Color Wheel - Master - Horizontal -->
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="4"> <!-- Ripple Trackerball 2 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00310032</Key> <!-- Color Wheel - Midtones - Vertical -->
                                 <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310012</Key> <!-- Color Wheel - Master - Vertical -->
+                                <Sensitivity>3</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Ripple Dial 2 -->
                             <Mapping mode="Std">
-                                <Key>0x00310033</Key> <!-- Color Wheel - Midtones - Saturation -->
-                                <Display>Number</Display>
+                                <Key>0x00310034</Key> <!-- Color Wheel - Midtones - Brightness -->
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310014</Key> <!-- Color Wheel - Master - Brightness -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Ripple Trackerball 3 X -->
                             <Mapping mode="Std">
                                 <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
                                 <Display>Number</Display>
+                                <Sensitivity>2</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310041</Key> <!-- Color Wheel - Highlights - Horizontal -->
+                                <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Ripple Trackerball 3 Y -->
                             <Mapping mode="Std">
                                 <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
                                 <Display>Number</Display>
+                                <Sensitivity>2</Sensitivity>
+                            </Mapping>
+                            <Mapping mode="Alt">
+                                <Key>0x00310042</Key> <!-- Color Wheel - Highlights - Vertical -->
+                                <Display>Number</Display>
+                                <Sensitivity>4</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="8"> <!-- Ripple Dial 3 -->
                             <Mapping mode="Std">
+                                <Key>0x00310044</Key> <!-- Color Wheel - Highlights - Brightness -->
+                                <Sensitivity>3</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x00310043</Key> <!-- Color Wheel - Highlights - Saturation -->
-                                <Display>Number</Display>
+                                <Sensitivity>3</Sensitivity>
                                 <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
@@ -230,6 +307,9 @@
                     <Bank>
                         <Control type="Button" number="0"> <!-- Ripple Button A -->
                             <Mapping mode="Std">
+                                <Key>0x80000001</Key> <!-- Select ALTernative Function -->
+                            </Mapping>
+                            <Mapping mode="Alt">
                                 <Key>0x80000001</Key> <!-- Select ALTernative Function -->
                             </Mapping>
                         </Control>

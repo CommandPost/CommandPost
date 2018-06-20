@@ -248,6 +248,16 @@ function build_hammerspoon_dev() {
 
 ############################ POST-BUILD FUNCTIONS #############################
 
+function build_uninstall() {
+	echo "Building Uninstall Script..."
+	rm -rf ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.app
+	osacompile -x -o ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.app ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.scpt
+	cp ../CommandPost/scripts/inc/uninstall/applet.icns ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.app/Contents/Resources/applet.icns
+	xattr -cr ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.app
+	codesign --verbose --force --sign "Developer ID Application: LateNite Films Pty Ltd" ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.app
+	codesign -dv --verbose=4 ../CommandPost/scripts/inc/uninstall/Uninstall\ CommandPost.app
+}
+
 function build_dmgcanvas() {
 
   echo "Remove Old DMG..."
@@ -255,7 +265,7 @@ function build_dmgcanvas() {
 
   echo "Building DMG..."
   mkdir -p "../CommandPost-Releases/${VERSION}"
-  /Applications/DMG\ Canvas.app/Contents/Resources/dmgcanvas "../CommandPost/scripts/inc/dmgcanvas/CommandPost.dmgCanvas" "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" -setFilePath CommandPost.app "${HAMMERSPOON_HOME}/build/CommandPost.app"
+  /Applications/DMG\ Canvas.app/Contents/Resources/dmgcanvas "../CommandPost/scripts/inc/dmgcanvas/CommandPost.dmgCanvas" "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" -setFilePath CommandPost.app "${HAMMERSPOON_HOME}/build/CommandPost.app" -setFilePath "Uninstall CommandPost.app" "../CommandPost/scripts/inc/uninstall/Uninstall CommandPost.app"
 
   if [ ! -f "../CommandPost-Releases/${VERSION}/CommandPost_${VERSION}.dmg" ]; then
   	fail "DMG Creation Failed"
