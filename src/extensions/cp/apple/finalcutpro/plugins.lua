@@ -1750,8 +1750,8 @@ function mod.mt:scan(locale)
 
 end
 
---- cp.apple.finalcutpro.plugins:scanned() -> boolean
---- Method
+--- cp.apple.finalcutpro.plugins.scanned() -> boolean
+--- Function
 --- Gets if the system has been scanned.
 ---
 --- Parameters:
@@ -1759,7 +1759,7 @@ end
 ---
 --- Returns:
 ---  * `true` is scanned otherwise `false`.
-function mod.mt:scanned()
+function mod.mt.scanned()
     return mod.scanned()
 end
 
