@@ -38,7 +38,7 @@ local html				= require("cp.web.html")
 local ui				= require("cp.web.ui")
 
 local go                = require("cp.rx.go")
-local Given, WaitUntil  = go.Given, go.WaitUntil
+local Given, Do         = go.Given, go.Do
 local Done              = go.Done
 
 --------------------------------------------------------------------------------
@@ -523,17 +523,14 @@ function mod.insertFilesIntoFinalCutPro(files)
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
-    return Given(fcp:doLaunch(5))
+    return Do(fcp:doLaunch())
 
     --------------------------------------------------------------------------------
     -- Check if Timeline can be enabled:
     --------------------------------------------------------------------------------
-    :Then(function()
-        timeline:show()
-    end)
     :Then(
-        WaitUntil(timeline.isShowing)
-        :TimeoutAfter(1000, "Unable to show the Timeline.")
+        timeline:doShow()
+        :TimeoutAfter(1000, "Unable to show the Timeline")
     )
 
     --------------------------------------------------------------------------------
@@ -554,21 +551,24 @@ function mod.insertFilesIntoFinalCutPro(files)
         --------------------------------------------------------------------------------
         -- Restore original Pasteboard Content:
         --------------------------------------------------------------------------------
-        timer.doAfter(2, function()
+        Do(function()
             pasteboard.writeAllData(originalPasteboard)
             if mod.pasteboardManager then
                 mod.pasteboardManager.startWatching()
             end
         end)
+        :After(2000)
+
         --------------------------------------------------------------------------------
         -- Delete After Import:
         --------------------------------------------------------------------------------
         if mod.deleteAfterImport() then
-            timer.doAfter(mod.SECONDS_UNTIL_DELETE, function()
+            Do(function()
                 for _, file in pairs(files) do
                     os.remove(file)
                 end
             end)
+            :After(mod.SECONDS_UNTIL_DELETE * 1000)
         end
     end)
     :Catch(function(message)
