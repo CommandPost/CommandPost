@@ -46,19 +46,13 @@ function mod.init(fcpGroup)
     mod.group = fcpGroup:group(i18n("edit"))
 
     mod.group:action(baseID+1, i18n("undo"))
-        :onPress(function()
-            fcp:doSelectMenu({"Edit", "Undo"})
-        end)
+        :onPress(fcp:doSelectMenu({"Edit", "Undo.*"}))
 
     mod.group:action(baseID+2, i18n("redo"))
-        :onPress(function()
-            fcp:doSelectMenu({"Edit", "Redo"})
-        end)
+        :onPress(fcp:doSelectMenu({"Edit", "Redo.*"}))
 
     mod.group:action(baseID+3, i18n("delete"))
-        :onPress(function()
-            fcp:doSelectMenu({"Edit", "Delete"})
-        end)
+        :onPress(fcp:doSelectMenu({"Edit", "Delete"}))
 end
 
 --------------------------------------------------------------------------------

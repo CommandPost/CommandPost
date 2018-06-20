@@ -590,30 +590,27 @@ end
 ---  * None
 ---
 --- Returns:
----  * The `Statement` that will launch the app.
-function mod.mt:doLaunch(waitSeconds)
-    if self:installed() then
-        local launch = Given(
-            First(self.hsApplication)
-        )
-        :Then(function(hsApp)
-            if hsApp == nil or not hsApp:isFrontmost() then
-                local ok = application.launchOrFocusByBundleID(self:bundleID())
-                if not ok then
-                    return Observable.throw("Unable to launch %s.", self:displayName())
-                end
+---  * The `Statement`, resolving to `true` after the app is frontmost.
+---
+--- Notes:
+--- * By default the `Statement` will time out after 60 seconds, sending an error signal.
+function mod.mt:doLaunch()
+    return If(self.installed):Then(
+        If(self.hsApplication):Then(function(app)
+            app:activate()
+        end)
+        :Otherwise(function()
+            local ok = application.launchOrFocusByBundleID(self:bundleID())
+            if not ok then
+                return Throw("Unable to launch %s.", self:displayName())
             end
         end)
-        if waitSeconds then
-            launch = launch:Then(
-                WaitUntil(self.frontmost):Is(true)
-                :TimeoutAfter(waitSeconds * 1000, "Unable to launch %s in %d seconds.", self:displayName(), waitSeconds)
-            )
-        end
-        return launch
-    else
-        return Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())
-    end
+    )
+    :Then(WaitUntil(self.frontmost))
+    :Otherwise(
+        Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())
+    )
+    :TimeoutAfter(60 * 1000, format("Unable to complete launching %s within 60 seconds", self:displayName()))
 end
 
 --- cp.app:quit(waitSeconds) -> self
@@ -638,26 +635,25 @@ function mod.mt:quit(waitSeconds)
     return self
 end
 
---- cp.app:doQuit(waitSeconds) -> cp.rx.go.Statement
+--- cp.app:doQuit() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will attempt to quit the app when executed.
---- If the app never quits it may never resolve. You can provide a timeout in seconds
 ---
 --- Parameters:
----  * `timeout`    - If provided, it will wait this amount of time to successfully quit before timing out.
+---  * None.
 ---
 --- Returns:
----  * The `cp.app` instance.
-function mod.mt:doQuit(timeout)
+---  * The `Statement`, resolving to `true` if the app was running and was quit successfully, otherwise `false`.
+---
+--- Notes:
+---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
+function mod.mt:doQuit()
     return If(self.hsApplication):Then(function(app)
         app:kill()
-        local wait = WaitUntil(self.running:NOT())
-        if timeout then
-            wait = wait:TimeoutAfter(timeout * 1000, format("%s did not quit successfully after %s seconds.", self:displayName(), timeout))
-        end
-        return wait
+        return WaitUntil(self.running:NOT())
     end)
-    :Otherwise(true)
+    :Otherwise(false)
+    :TimeoutAfter(60 * 1000, format("%s did not quit successfully after 60 seconds.", self:displayName()))
 end
 
 --- cp.app:restart(waitSeconds) -> self
@@ -698,15 +694,31 @@ function mod.mt:restart(waitSeconds)
     return self
 end
 
-function mod.mt:doRestart(timeout)
+--- cp.app:doRestart() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a `Statement` which will attempt to restart the app. If the app
+--- was not running at the time, no action is taken and `false` is returned. If it was
+--- running then the app will be attempted to quit then restarted.
+---
+--- If you have multiple versions of the same app on your system, this will
+--- restart with the same version that was running when the restart was requested.
+---
+--- Parameters:
+---  * None.
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if the app was running and was quit and restarted successfully, otherwise `false`.
+---
+--- Notes:
+---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
+function mod.mt:doRestart()
     return If(self.hsApplication):Then(function(app)
         local appPath = app:path()
 
         return Given(
-            self:doQuit(timeout)
+            self:doQuit()
         )
         :Then(function(success)
-            log.df("After doQuit: %s", success)
             if success then
                 -- force the application prop to update, otherwise it isn't closed long enough to prompt an event.
                 self.hsApplication:update()
@@ -716,20 +728,14 @@ function mod.mt:doRestart(timeout)
                     return Throw("%s was unable to restart: %s", self:displayName(), output)
                 end
 
-                local wait = WaitUntil(self.frontmost):Is(true)
-                if timeout then
-                    wait = wait:TimeoutAfter(timeout * 1000, format("%s took over %d seconds to restart.", self:displayName(), timeout))
-                end
-                return wait
+                return WaitUntil(self.frontmost)
             else
                 return Throw("%s was unable to restart because it did not quit successfully.", self:displayName())
             end
         end)
-        :Catch(function(message)
-            return Throw("Caught error: %s", message)
-        end)
     end)
     :Otherwise(false)
+    :TimeoutAfter(60 * 1000, format("%s did not restart successfully after 60 seconds", self:displayName()))
 end
 
 --- cp.app:show() -> self
@@ -754,6 +760,28 @@ function mod.mt:show()
     return self
 end
 
+--- cp.app:doShow() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a `Statement` which will show the app if it's currently running.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Statement`, resolving to `true` if the app is running and was successfully shown, or `false` otherwise.
+function mod.mt:doShow()
+    return If(self.hsApplication):Then(function(app)
+        if app:isHidden() then
+            app:unhide()
+        end
+        if app:isRunning() then
+            app:activate()
+        end
+        return WaitUntil(self.frontmost)
+    end)
+    :Otherwise(false)
+end
+
 --- cp.app:hide() -> self
 --- Method
 --- Hides the application, if it's currently running.
@@ -769,6 +797,23 @@ function mod.mt:hide()
         app:hide()
     end
     return self
+end
+
+--- cp.app:doHide() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a `Statement` which will hide the app if it's currently running.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `Statement`, resolving to `true` if the app is running and was successfully hidden, or `false` otherwise.
+function mod.mt:doHide()
+    return If(self.hsApplication):Then(function(app)
+        app:hide()
+        return WaitUntil(self.frontmost:NOT())
+    end)
+    :Otherwise(false)
 end
 
 --- cp.app:notifier() -> cp.ui.notifier

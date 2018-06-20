@@ -25,7 +25,8 @@ util.isa = function(object, class)
   end
 end
 util.tryWithObserver = function(observer, fn, ...)
-  local success, result = pcall(fn, ...)
+  local args = util.pack(...)
+  local success, result = xpcall(function() fn(util.unpack(args)) end, debug.traceback)
   if not success then
     observer:onError(result)
   end
@@ -973,28 +974,69 @@ end
 -- produces their values.
 -- @returns {Observable}
 function Observable:flatten()
-  local originalCompleted = false
+  local stopped = false
+  local outerCompleted = false
+  local waiting = 0
   return Observable.create(function(observer)
     local function onError(message)
+      stopped = true
       return observer:onError(message)
     end
-
     local function onNext(observable)
-      local function innerOnNext(...)
-        observer:onNext(...)
+      if stopped then
+        return
       end
 
-      local function innerOnCompleted()
-        if originalCompleted then
-            return observer:onCompleted()
+      local ref
+      local function cancelSub()
+        if ref then
+          ref:cancel()
+          ref = nil
         end
       end
 
-      observable:subscribe(innerOnNext, onError, innerOnCompleted)
+      local function innerOnNext(...)
+        if stopped then
+            cancelSub()
+        else
+            observer:onNext(...)
+        end
+      end
+
+      local function innerOnError(message)
+        cancelSub()
+        if not stopped then
+            stopped = true
+            observer:onError(message)
+        end
+      end
+
+      local function innerOnCompleted()
+        cancelSub()
+        if not stopped then
+            -- log.df("flatten: inner completed: original completed: %s", outerCompleted)
+            waiting = waiting - 1
+            if waiting == 0 and outerCompleted then
+                -- log.df("flatten: inner completed, sending on")
+                stopped = true
+                return observer:onCompleted()
+            end
+        end
+      end
+
+      waiting = waiting + 1
+      ref = observable:subscribe(innerOnNext, innerOnError, innerOnCompleted)
     end
 
     local function onCompleted()
-      originalCompleted = true
+      -- log.df("flatten: outer completed")
+      if not stopped then
+        outerCompleted = true
+        if waiting == 0 then
+            stopped = true
+            return observer:onCompleted()
+        end
+      end
     end
 
     return self:subscribe(onNext, onError, onCompleted)
@@ -1680,10 +1722,10 @@ end
 
 --- Returns an Observable that will emit an error if the specified time is exceded since the most recent `next` value.
 -- @param {number} timeInMs - The time in milliseconds to wait before an error is emitted.
--- @param {string} errorMessage - The error message to output if the timeout is exceeded.
+-- @param {string|Observable} next - If a string, it will be sent as an error. If an Observable, it will be passed on instead of an error.
 -- @param {Scheduler=defaultScheduler()} scheduler - The scheduler to use.
 -- @return {Observable}
-function Observable:timeout(timeInMs, errorMessage, scheduler)
+function Observable:timeout(timeInMs, next, scheduler)
     timeInMs = type(timeInMs) == "function" and timeInMs or util.constant(timeInMs)
     scheduler = scheduler or util.defaultScheduler()
 
@@ -1703,7 +1745,11 @@ function Observable:timeout(timeInMs, errorMessage, scheduler)
 
         local function timedOut()
             clean()
-            observer:onError(errorMessage or format("Timeout after %d ms", timeInMs()))
+            if Observable.is(next) then
+                observer:onNext(next)
+            else
+                observer:onError(next or format("Timed out after %d ms.", timeInMs()))
+            end
             kill = nil
         end
 
@@ -1839,6 +1885,8 @@ function Observable.zip(...)
   local sources = util.pack(...)
   local count = #sources
 
+  -- log.df("zip: count = %d", count)
+
   return Observable.create(function(observer)
     local values = {}
     local active = {}
@@ -1882,8 +1930,10 @@ function Observable.zip(...)
 
     local function onCompleted(i)
       return function()
+        -- log.df("zip: completed #%d", i)
         active[i] = nil
         if not next(active) or values[i].n == 0 then
+            -- log.df("zip: sending completed...")
           return observer:onCompleted()
         end
       end

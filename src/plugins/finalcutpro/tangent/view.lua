@@ -47,24 +47,16 @@ function mod.init(fcpGroup)
     mod.group = fcpGroup:group(i18n("view"))
 
     mod.group:action(baseID+1, i18n("zoomToFit"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Zoom to Fit"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Zoom to Fit"}))
 
     mod.group:action(baseID+2, i18n("zoomToSamples"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Zoom to Samples"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Zoom to Samples"}))
 
     mod.group:action(baseID+3, i18n("timelineHistory") .. " " .. i18n("back"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Timeline History Back"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Timeline History Back"}))
 
     mod.group:action(baseID+4, i18n("timelineHistory") .. " " .. i18n("forward"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Timeline History Forward"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Timeline History Forward"}))
 
     mod.group:action(baseID+5, i18n("show") .. " " .. i18n("histogram"))
         :onPress(function()
@@ -88,14 +80,10 @@ function mod.init(fcpGroup)
         end)
 
     mod.group:action(baseID+8, i18n("toggleVideoScopesInViewer"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Viewer", "Video Scopes"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Video Scopes"}))
 
     mod.group:action(baseID+9, i18n("toggleVideoScopesInEventViewer"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Event Viewer", "Video Scopes"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Event Viewer", "Video Scopes"}))
 end
 
 --------------------------------------------------------------------------------

@@ -1,17 +1,30 @@
--- local log       = require("hs.logger").new("rxgotils")
-local inspect   = require("hs.inspect")
+-- local log           = require("hs.logger").new("rxgotils")
+local inspect       = require("hs.inspect")
 
-local test      = require("cp.test")
+local test          = require("cp.test")
 
-local rx = require("cp.rx")
-local rxgo = require("cp.rx.go")
+local prop          = require("cp.prop")
+local rx            = require("cp.rx")
+local rxgo          = require("cp.rx.go")
 
-local Observable = rx.Observable
+local Observable, Subject = rx.Observable, rx.Subject
 local append, is, toObservable, toObservables = rxgo.append, rxgo.is, rxgo.toObservable, rxgo.toObservables
 local Statement, SubStatement = rxgo.Statement, rxgo.SubStatement
-local Given, If = rxgo.Given, rxgo.If
+local Given, If, WaitUntil = rxgo.Given, rxgo.If, rxgo.WaitUntil
 
 local insert = table.insert
+
+-- local function debug(label)
+--     return function(value)
+--         print(label .. " NEXT: ", value)
+--     end,
+--     function(message)
+--         print(label .. " ERROR: ", message)
+--     end,
+--     function()
+--         print(label .. " COMPLETED")
+--     end
+-- end
 
 return test.suite("cp.rx.go"):with {
     test("append", function()
@@ -138,20 +151,32 @@ return test.suite("cp.rx.go"):with {
         ok(Statement.Definition.is(If))
 
         local thenCalled, otherwiseCalled = false, false
+        local result, completed = nil, false
         If(true):Then(function(value)
             ok(eq(value, true))
             thenCalled = true
-        end)
-        :Otherwise(function(_)
-            ok(false, "This should not be executed.")
-            otherwiseCalled = true
-        end)
-        :Now()
+            return true
+        end):Now(
+            function(value)
+                result = value
+            end,
+            function(message)
+                ok(false, message)
+            end,
+            function()
+                completed = true
+            end
+        )
 
         ok(eq(thenCalled, true))
         ok(eq(otherwiseCalled, false))
+        ok(eq(result, true))
+        ok(eq(completed, true))
+    end),
 
-        thenCalled, otherwiseCalled = false, false
+    test("If Complex", function()
+        local thenCalled, otherwiseCalled = false, false
+        local result, completed = nil, false
 
         If("a"):Is("b")
         :Then(function(_)
@@ -162,14 +187,177 @@ return test.suite("cp.rx.go"):with {
             ok(value, "a")
             otherwiseCalled = true
         end)
-        :Now()
+        :Now(
+            function(value)
+                result = value
+            end,
+            function(message)
+                ok(false, message)
+            end,
+            function()
+                completed = true
+            end
+        )
 
         ok(eq(thenCalled, false))
         ok(eq(otherwiseCalled, true))
+        ok(eq(result, nil))
+        ok(eq(completed, true))
 
-        local value = require("cp.prop").TRUE()
-        If(value):Then(function(result)
-            ok(eq(result, true))
+        local aProp = prop.TRUE()
+        If(aProp):Then(function(value)
+            ok(eq(value, true))
         end)
-    end)
+    end),
+
+    test("If:Then:Then:Otherwise", function()
+        local ifSubject = Subject.create()
+        local thenSubject = Subject.create()
+        local then1 = nil
+        local then2 = nil
+        local result = nil
+        local completed = false
+
+        If(ifSubject):Then(function(value)
+            then1 = value
+            return thenSubject
+        end)
+        :Then(function(value)
+            then2 = value
+            return "done"
+        end)
+        :Otherwise("otherwise")
+        :Now(
+            function(value)
+                result = value
+            end,
+            function(message)
+                ok(false, message)
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        -- before sending anything...
+        ok(eq(then1, nil))
+        ok(eq(then2, nil))
+        ok(eq(result, nil))
+        ok(eq(completed, false))
+
+        -- send the first value
+        ifSubject:onNext("first")
+        ok(eq(then1, "first"))
+        ok(eq(then2, nil))
+        ok(eq(result, nil))
+        ok(eq(completed, false))
+
+        -- subsequent values are ignored.
+        ifSubject:onNext("second")
+        ok(eq(then1, "first"))
+        ok(eq(then2, nil))
+        ok(eq(result, nil))
+        ok(eq(completed, false))
+
+        -- send the first 'then' value to the second 'then'
+        -- then send "done" to the end
+        thenSubject:onNext("then")
+        ok(eq(then1, "first"))
+        ok(eq(then2, "then"))
+        ok(eq(result, "done"))
+        ok(eq(completed, false))
+
+        -- only completes once the `thenSubject` completes
+        thenSubject:onCompleted()
+        ok(eq(completed, true))
+    end),
+
+    test("WaitUntil", function()
+        -- local scheduler = rx.CooperativeScheduler.create(0)
+
+        local subject = Subject.create()
+        local received = nil
+        local completed = false
+
+        local wait = WaitUntil(subject):Is("green")
+
+        wait:Now(
+            function(value)
+                ok(eq(value, "green"))
+                received = value
+            end,
+            function(message)
+                ok(false, message)
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(subject == wait:context().requirement)
+
+        ok(eq(received, nil))
+
+        subject:onNext("red")
+        ok(eq(received, nil))
+        ok(eq(completed, false))
+
+        subject:onNext("green")
+        ok(eq(received, "green"))
+        ok(eq(completed, true))
+    end),
+
+    test("If WaitUntil", function()
+        local ifSubject = Subject.create()
+        local waitSubject = Subject.create()
+        local received = nil
+        local completed = false
+
+        If(ifSubject):Then(function()
+            return WaitUntil(waitSubject)
+        end):Now(
+            function(value)
+                received = value
+            end,
+            function(message)
+                ok(false, message)
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(received, nil))
+        ok(eq(completed, false))
+
+        -- resolve the 'if'
+        ifSubject:onNext(true)
+        ok(eq(received, nil))
+        ok(eq(completed, false))
+
+        -- 'wait until' should not resolve yet
+        waitSubject:onNext(false)
+        ok(eq(received, nil))
+        ok(eq(completed, false))
+
+        -- 'wait until' now resolves
+        waitSubject:onNext(true)
+        ok(eq(received, true))
+        ok(eq(completed, true))
+    end),
+
+    test("Statement Call", function()
+        local called = false
+
+        local statement = Given(
+            function()
+                called = true
+            end
+        )
+
+        ok(eq(called, false))
+
+        statement()
+        ok(eq(called, true))
+    end),
 }

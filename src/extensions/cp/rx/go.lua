@@ -58,6 +58,20 @@ local toObservable, toObservables
 -- Utility functions
 -----------------------------------------------------------
 
+-- Note: use this by adding a `:tap(debugTap("foo"))` at any point in an Oberverable chain.
+-- local function debugTap(label)
+--     label = label or "DEBUG"
+--     return function(...)
+--         print(label .. " [NEXT]: ", ...)
+--     end,
+--     function(message)
+--         print(label .. " [ERROR]: ", message)
+--     end,
+--     function()
+--         print(label .. " [COMPLETED]")
+--     end
+-- end
+
 -- private key for storing the metadata table for instances.
 local METADATA = {}
 
@@ -106,10 +120,13 @@ end
 ---  * The `Observable`.
 toObservable = function(thing, params)
     if type(thing) == "function" then
+        -- log.df("toObservable: function")
         local results = pack(thing(unpack(params or {})))
         if #results > 1 then
+            -- log.df("toObservable: function: multiple results, zipping...")
             return Observable.zip(unpack(toObservables(results)))
         else
+            -- log.df("toObservable: function: single result: %s", type(results[1]))
             return toObservable(results[1])
         end
     end
@@ -125,7 +142,7 @@ toObservable = function(thing, params)
         obs = Observable.of(thing)
     end
 
-    return obs or Observable.empty()
+    return obs
 end
 
 --- cp.rx.go.toObservables(things[, params]) -> table
@@ -158,6 +175,7 @@ end
 toObservables = function(things, params)
     local observables = {}
     for _,thing in ipairs(things) do
+        -- log.df("toObservables: processing thing #%d: %s", i, type(thing))
         insert(observables, toObservable(thing, params))
     end
     return observables
@@ -295,7 +313,7 @@ function Statement.Definition.mt:define()
     setmetatable(statement, {
         __call = function(_, ...)
                 -- it's a top-level statement
-            return setmetatable({}, statement.mt)(...)
+            return setmetatable({}, statement.mt):__init(...)
         end,
 
         -- outputs the statement name when converted to a string.
@@ -345,24 +363,32 @@ function Statement.is(thing)
 end
 
 -- stores the default observer
-local defaultObserver = Observer.create(nil, error, nil)
+local function simpleObserverFactory()
+    return Observer.create(nil, error, nil)
+end
 
---- cp.rx.go.Statement.defaultObserver([observer]) -> cp.rx.Observer
+local defaultObserverFactory = simpleObserverFactory
+
+--- cp.rx.go.Statement.defaultObserverFactory([factoryFn]) -> nil
 --- Function
---- Gets/sets the default observer for statements which are executed without one being provided.
+--- Gets/sets the factory function which creates a new `Observer` for Statements which are executed without one being provided.
 --- By default, an `Observer` which only outputs errors via the standard `error` function is provided.
 ---
 --- Parameters:
----  * observer     - if provided, replaces the current default `Observer` with the one specified.
+---  * factoryFn     - if provided, replaces the current default factory function.
 ---
 --- Returns:
----  * The current default `Observer`.
-function Statement.defaultObserver(observer)
-    if observer then
-        assert(Observer.is(observer), "Parameter #1 must be a cp.rx.Observer")
-        defaultObserver = observer
+---  * A new `Observer`, or the previous factory function if a new one was provided.
+---
+--- Notes:
+---  * The factory function has no arguments provided and must return a new `Observer` instance.
+function Statement.defaultObserverFactory(factoryFn)
+    if factoryFn then
+        assert(type(factoryFn) == "function", "Parameter #1 must be a function.")
+        defaultObserverFactory = factoryFn
+    else
+        defaultObserverFactory = simpleObserverFactory
     end
-    return defaultObserver
 end
 
 --- cp.rx.go.Statement:name()
@@ -394,6 +420,10 @@ function Statement.mt:__tostring()
 end
 
 function Statement.mt:__call(...)
+    return self:Now(...)
+end
+
+function Statement.mt:__init(...)
     self._context = {}
     local onInit = self[METADATA].onInit
     if onInit then
@@ -402,32 +432,10 @@ function Statement.mt:__call(...)
     return self
 end
 
---- cp.rx.go.Statement:toObservable([preserveTimer]) -> cp.rx.Observable
---- Method
---- Returns a new `Observable` instance for the `Statement`.
----
---- Parameters:
----  * preserveTimer    - If a timer has been set via [After](#After), don't cancel it. Defaults to `false`.
----
---- Returns:
----  * The `Observable`.
-function Statement.mt:toObservable(preserveTimer)
-    if not preserveTimer and self._timer then
-        self._timer:cancel()
-        self._timer = nil
-    end
-
-    local onObservable = self[METADATA].onObservable
-    local o = onObservable(self:context())
-
-    -- Check if there is a 'catch'
-    if self._catcher then
-        o = o:catch(function(message)
-            return toObservable(self._catcher(message))
-        end)
-    end
-
-    return o
+function Statement.mt:Debug(label)
+    local context = self:context()
+    context._debug = label or "DEBUG"
+    return self
 end
 
 --- cp.rx.go.Statement:Catch(handler) -> cp.rx.go.Statement
@@ -441,8 +449,83 @@ end
 --- Returns:
 ---  * The `Statement`.
 function Statement.mt:Catch(handler)
-    self._catcher = handler
+    self:context()._catcher = handler
     return self
+end
+
+--- cp.rx.go.Statement:TimeoutAfter(millis[, next][, scheduler]) -> cp.rx.go.Statement
+--- Method
+--- Indicates that this statement should time out after the specified number of milliseconds.
+--- This can be called multiple times before the statement is executed, and the most recent
+--- configuration will be used at that time.
+---
+--- The `next` value may be either a string to send as the error, or a `resolvable` value to
+--- pass on instead of failing. If nothing is provided, a default error message is output.
+---
+--- Parameters:
+---  * millis       - A `number` or a `function` returning the number of milliseconds to wait before timing out.
+---  * next         - Optional string or `resolvable` value indicating how to handle it.
+---  * scheduler    - The `cp.rx.Scheduler` to use when timing out. Defaults to `cp.rx.defaultScheduler()`.
+---
+--- Returns:
+---  * The same `Statement`.
+function Statement.mt:TimeoutAfter(millis, next, scheduler)
+    self:context()._timeout = {
+        millis = millis,
+        next = next,
+        scheduler = scheduler
+    }
+    return self
+end
+
+--- cp.rx.go.Statement:toObservable([preserveTimer]) -> cp.rx.Observable
+--- Method
+--- Returns a new `Observable` instance for the `Statement`. Unless `preserveTimer` is `true`, this will
+--- cancel any scheduled execution of the statement via [After](#After)
+---
+--- Parameters:
+---  * preserveTimer    - If a timer has been set via [After](#After), don't cancel it. Defaults to `false`.
+---
+--- Returns:
+---  * The `Observable`.
+function Statement.mt:toObservable(preserveTimer)
+    if not preserveTimer and self._timer then
+        self._timer:cancel()
+        self._timer = nil
+    end
+
+    local onObservable = self[METADATA].onObservable
+    local context = self:context()
+    local o = onObservable(context)
+
+    if context._timeout then
+        local timeout = context._timeout
+        o = o:timeout(timeout.millis, timeout.next, timeout.scheduler)
+    end
+
+    if context._debug then
+        local label = context._debug
+        o = o:tap(
+            function(...)
+                print(label .." [NEXT]: ", ...)
+            end,
+            function(message)
+                print(label .. " [ERROR]: ", message)
+            end,
+            function()
+                print(label .. " [COMPLETED]")
+            end
+        )
+    end
+
+    -- Check if there is a 'catch'
+    if context._catcher then
+        o = o:catch(function(message)
+            return toObservable(context._catcher(message))
+        end)
+    end
+
+    return o
 end
 
 --- cp.rx.go.Statement:Now([observer]) -> nil
@@ -450,14 +533,14 @@ end
 --- Executes the statment immediately.
 ---
 --- Parameters:
---- * observer      - An observer to watch the resulting `Observable`. Defaults to `Statement.defaultObserver()`.
+--- * observer      - An observer to watch the resulting `Observable`. Defaults to the default observer factory.
 ---
 --- Returns:
 --- * Nothing.
 function Statement.mt:Now(onNext, onError, onCompleted)
     local obs = self:toObservable()
     if Observable.is(obs) then
-        local observer = Statement.defaultObserver()
+        local observer = defaultObserverFactory()
         if Observer.is(onNext) then
             observer = onNext
         elseif type(onNext) == "function" or type(onError) == "function" or type(onCompleted) == "function" then
@@ -466,7 +549,7 @@ function Statement.mt:Now(onNext, onError, onCompleted)
         -- TODO: add more complex options for handling 'after'
         obs:subscribe(observer)
     else
-        error(format("Expected an Observable but got %s", inspect(obs)))
+        error(format("BUG: Expected an Observable but got %s", inspect(obs)))
     end
 end
 
@@ -607,7 +690,7 @@ function SubStatement.Definition.mt:define()
             __call = function(_, parent, ...)
                 return setmetatable({
                     _parent = parent,
-                }, statement.mt)(...)
+                }, statement.mt):__init(...)
             end,
 
             -- outputs the statement name when converted to a string.
@@ -698,11 +781,11 @@ end
 ---  * A new `Given` `Statement` instance.
 local Given = Statement.named("Given")
 :onInit(function(context, ...)
-    context.requirements = toObservables(pack(...))
+    context.requirements = pack(...)
     context.thens = {}
 end)
-:onObservable(function(context)
-    local o = Observable.zip(unpack(context.requirements))
+:onObservable(function(context, ...)
+    local o = Observable.zip(unpack(toObservables(context.requirements, ...)))
     for _,t in ipairs(context.thens) do
         o = o:flatMap(function(...)
             return Observable.zip(unpack(toObservables(t, pack(...))))
@@ -752,6 +835,8 @@ end):define()
 ---  * Another `Given.Then` instance.
 Given.Then.allow(Given.Then)
 
+local Do = Given
+
 local function requireAll(observable)
     return observable:all()
 end
@@ -762,12 +847,12 @@ end
 
 local Require = Statement.named("Require")
 :onInit(function(context, requirement)
-    context.requirement = toObservable(requirement)
+    context.requirement = requirement
 end)
 :onObservable(function(context)
-    local observable = context.requirement
-    local filter = context.filter or requireAll
-    observable = filter(observable)
+    local observable = toObservable(context.requirement)
+    local predicate = context.predicate or requireAll
+    observable = predicate(observable)
 
     observable = observable:flatMap(function(success)
         if success then
@@ -789,7 +874,7 @@ end)
 
 Require.modifier("Is", "Are")
 :onInit(function(context, value)
-    context.filter = function(observable)
+    context.predicate = function(observable)
         return observable:all(function(result) return result == value end)
     end
 end)
@@ -799,7 +884,7 @@ Require.Is.allow(Require.OrThrow)
 
 Require.modifier("IsNot", "AreNot")
 :onInit(function(context, value)
-    context.filter = function(observable)
+    context.predicate = function(observable)
         return observable:all(function(result) return result ~= value end)
     end
 end)
@@ -813,55 +898,37 @@ end
 
 local WaitUntil = Statement.named("WaitUntil")
 :onInit(function(context, requirement)
-    context.requirement = toObservable(requirement)
+    assert(requirement ~= nil, "The WaitUntil requirement may not be `nil`.")
+    context.requirement = requirement
 end)
 :onObservable(function(context)
-    local o = context.requirement
+    local o = toObservable(context.requirement)
 
-    local filter = context.filter or isTruthy
-    o = o:find(filter)
-
-    if context.timeout then
-        o = o:timeout(context.timeout, context.message or format("Timed out after %d milliseconds", context.timeout))
-    end
+    local predicate = context.predicate or isTruthy
+    o = o:find(predicate)
 
     return o
 end)
 :define()
 
-WaitUntil.modifier("TimeoutAfter")
-:onInit(function(context, millis, message)
-    context.timeout = millis
-    context.message = message
-end)
-:define()
-
 WaitUntil.modifier("Is", "Are")
 :onInit(function(context, thisValue)
-    context.filter = function(value) return value == thisValue end
+    context.predicate = function(value) return value == thisValue end
 end)
 :define()
-
--- Allow TimeoutAfter on Is and Are
-WaitUntil.Is.allow(WaitUntil.TimeoutAfter)
-WaitUntil.Are.allow(WaitUntil.TimeoutAfter)
 
 WaitUntil.modifier("IsNot", "AreNot")
 :onInit(function(context, thisValue)
-    context.filter = function(value) return value ~= thisValue end
+    context.predicate = function(value) return value ~= thisValue end
 end)
 :define()
 
--- allow TimeoutAfter on IsNot and AreNot
-WaitUntil.IsNot.allow(WaitUntil.TimeoutAfter)
-WaitUntil.AreNot.allow(WaitUntil.TimeoutAfter)
-
 local First = Statement.named("First")
 :onInit(function(context, reference)
-    context.reference = toObservable(reference)
+    context.reference = reference
 end)
 :onObservable(function(context)
-    return context.reference:first()
+    return toObservable(context.reference):first()
 end)
 :define()
 
@@ -881,22 +948,42 @@ end)
 
 local If = Statement.named("If")
 :onInit(function(context, value)
-    context.value = toObservable(value)
-    context.filter = isTruthy
-    context.thens = nil
+    assert(value ~= nil, "The 'If' value may  not be `nil`.")
+    context.value = value
+    context.predicate = isTruthy
+    context.thens = {}
     context.otherwises = {}
 end)
 :onObservable(function(context)
-    assert(context.thens, "Please specify a 'Then'")
+    local thens = context.thens
+    assert(#thens > 0, "Please specify a 'Then'")
 
     -- we only deal with the first result
-    local o = context.value:first()
+    local o = toObservable(context.value):first()
 
     o = o:flatMap(function(...)
-        if context.filter(...) then
-            return Observable.zip(unpack(toObservables(context.thens, pack(...))))
+        -- log.df("If: processing result...")
+        if context.predicate(...) then
+            -- loop through the `thens`, passing the results to the next via zip/flatMap
+            -- log.df("If:Then: processing 'Then' #1")
+            local o2 = Observable.zip(unpack(toObservables(thens[1], pack(...))))
+            for i = 2, #thens do
+                -- log.df("If:Then: processing 'Then' #%d", i)
+                o2 = o2:flatMap(function(...)
+                    return Observable.zip(unpack(toObservables(thens[i], pack(...))))
+                end)
+            end
+            return o2
         else
-            return Observable.zip(unpack(toObservables(context.otherwises, pack(...))))
+            -- log.df("If: Not true")
+            local otherwises = context.otherwises
+            if otherwises and #otherwises > 0 then
+                -- log.df("If:Otherwise: processing 'Otherwise'")
+                return Observable.zip(unpack(toObservables(otherwises, pack(...))))
+            else
+                -- log.df("If:Otherwise: default to `nil`")
+                return Observable.of(nil)
+            end
         end
     end)
 
@@ -906,7 +993,7 @@ end)
 
 If.modifier("Then")
 :onInit(function(context, ...)
-    context.thens = pack(...)
+    insert(context.thens, pack(...))
 end)
 :define()
 
@@ -916,9 +1003,12 @@ If.Then.modifier("Otherwise")
 end)
 :define()
 
+-- recursive 'Then's allowed.
+If.Then.allow(If.Then)
+
 If.modifier("Is", "Are")
 :onInit(function(context, value)
-    context.filter = function(theValue) return theValue == value end
+    context.predicate = function(theValue) return theValue == value end
 end)
 :define()
 
@@ -927,7 +1017,7 @@ If.Are.allow(If.Then)
 
 If.modifier("IsNot", "AreNot")
 :onInit(function(context, value)
-    context.filter = function(theValue) return theValue ~= value end
+    context.predicate = function(theValue) return theValue ~= value end
 end)
 :define()
 
@@ -939,7 +1029,7 @@ If.modifier("Matches")
     if type(predicate) ~= "function" then
         error(format("The 'Matches' predicate must be a function, but was: %s", inspect(predicate)))
     end
-    context.filter = predicate
+    context.predicate = predicate
 end)
 :define()
 
@@ -953,6 +1043,7 @@ return {
     Statement = Statement,
     SubStatement = SubStatement,
     Given = Given,
+    Do = Do,
     Require = Require,
     WaitUntil = WaitUntil,
     First = First,

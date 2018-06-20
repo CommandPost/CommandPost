@@ -24,6 +24,9 @@ local pasteboard                        = require("hs.pasteboard")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
 
+local go                                = require("cp.rx.go")
+local Given, Require                    = go.Given, go.Require
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -45,34 +48,32 @@ function mod.pasteTextAsCaption()
     --------------------------------------------------------------------------------
     -- Check Pasteboard contents for text:
     --------------------------------------------------------------------------------
-    local contents = pasteboard.readString()
-    if not contents then
-       dialog.displayErrorMessage("Could not 'Paste Text as Caption' because no text could be found on the Pasteboard.")
-    end
-
-    --------------------------------------------------------------------------------
-    -- Check that the timeline is showing:
-    --------------------------------------------------------------------------------
-    local timeline = fcp:timeline()
-    timeline:show()
-    if not timeline:isShowing() then
-        dialog.displayErrorMessage("Could not 'Paste Text as Caption' because the timeline could not be made visible.")
-    end
-
-    --------------------------------------------------------------------------------
-    -- Add Caption:
-    --------------------------------------------------------------------------------
-    if not fcp:doSelectMenu({"Edit", "Captions", "Add Caption"}) then
-        dialog.displayErrorMessage("Could not 'Paste Text as Caption' because a new caption could not be added.")
-    end
-
-    --------------------------------------------------------------------------------
-    -- Paste Text:
-    --------------------------------------------------------------------------------
-    if not fcp:doSelectMenu({"Edit", "Paste"}) then
-        dialog.displayErrorMessage("Could not 'Paste Text as Caption' because we could not paste text back into Final Cut Pro.")
-    end
-
+    return Given(
+        Require(pasteboard.readString())
+        :OrThrow("No text could be found on the Pasteboard.")
+    ):Then(
+        --------------------------------------------------------------------------------
+        -- Check that the timeline is showing:
+        --------------------------------------------------------------------------------
+        Require(fcp:timeline():doShow())
+        :OrThrow("Unable to show the Timeline")
+    ):Then(
+        --------------------------------------------------------------------------------
+        -- Add Caption:
+        --------------------------------------------------------------------------------
+        Require(fcp:doSelectMenu({"Edit", "Captions", "Add Caption"}))
+        :OrThrow("A new caption could not be added.")
+    ):Then(
+        --------------------------------------------------------------------------------
+        -- Paste Text:
+        --------------------------------------------------------------------------------
+        Require(fcp:doSelectMenu({"Edit", "Paste"}))
+        :OrThrow("Unable to paste text back into Final Cut Pro.")
+    )
+    :Catch(function(message)
+        dialog.displayErrorMessage("Unable to 'Paste Text as Caption': "..message)
+    end)
+    :Now()
 end
 
 --------------------------------------------------------------------------------

@@ -362,7 +362,7 @@ end
 ---
 --- ```lua
 --- local preview = require("cp.app").forBundleID("com.apple.Preview")
---- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"})
+--- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()
 --- ```
 ---
 --- Parameters:
@@ -371,9 +371,6 @@ end
 ---
 --- Returns:
 ---  * An `Observable` which emits the final menu item, or an error if the selection failed.
----
---- Notes:
----  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
 function menu.mt:doSelectMenu(path, options)
     options = options or {}
     local finder = self:findMenuItems(path, options)

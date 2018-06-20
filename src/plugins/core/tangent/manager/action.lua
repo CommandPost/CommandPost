@@ -119,8 +119,8 @@ end
 --- Returns:
 --- * The `parameter` instance.
 function action.mt:onPress(pressFn)
-    if is.nt.fn(pressFn) then
-        error("Please provide a function: %s", type(pressFn))
+    if is.nt.callable(pressFn) then
+        error(format("Please provide a function: %s", type(pressFn)))
     end
     self._press = pressFn
     return self

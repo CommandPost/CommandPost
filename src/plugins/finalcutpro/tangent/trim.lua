@@ -46,54 +46,34 @@ function mod.init(fcpGroup)
     mod.group = fcpGroup:group(i18n("trim"))
 
     mod.group:action(baseID+1, i18n("blade"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Blade"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Blade"}))
 
     mod.group:action(baseID+2, i18n("blade") .. " " .. i18n("all"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Blade All"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Blade All"}))
 
     mod.group:action(baseID+3, i18n("joinClips"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Join Clips"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Join Clips"}))
 
     mod.group:action(baseID+4, i18n("trim") .. " " .. i18n("start"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Trim Start"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Trim Start"}))
 
     mod.group:action(baseID+5, i18n("trim") .. " " .. i18n("end"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Trim End"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Trim End"}))
 
     mod.group:action(baseID+6, i18n("trimToPlayhead"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Trim To Playhead"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Trim To Playhead"}))
 
     mod.group:action(baseID+7, i18n("extendEdit"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Extend Edit"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Extend Edit"}))
 
     mod.group:action(baseID+8, i18n("alignAudioToVideo"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Align Audio to Video"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Align Audio to Video"}))
 
     mod.group:action(baseID+9, i18n("nudge") .. " " .. i18n("left"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Nudge Left"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Nudge Left"}))
 
     mod.group:action(baseID+10, i18n("nudge") .. " " .. i18n("right"))
-        :onPress(function()
-            fcp:doSelectMenu({"Trim", "Nudge Right"})
-        end)
+        :onPress(fcp:doSelectMenu({"Trim", "Nudge Right"}))
 end
 
 --------------------------------------------------------------------------------

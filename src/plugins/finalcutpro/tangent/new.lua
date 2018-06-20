@@ -46,9 +46,7 @@ function mod.init(fcpGroup)
     mod.group = fcpGroup:group(i18n("new"))
 
     mod.group:action(baseID+1, i18n("compoundClip"))
-        :onPress(function()
-            fcp:doSelectMenu({"File", "New", "Compound Clip…"})
-        end)
+        :onPress(fcp:doSelectMenu({"File", "New", "Compound Clip…"}))
 
 end
 

@@ -28,7 +28,7 @@ local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents"
 local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
 local go                                = require("cp.rx.go")
-local Given, If                         = go.Given, go.If
+local Do                                = go.Do
 
 --------------------------------------------------------------------------------
 --
@@ -102,12 +102,12 @@ function Timeline.new(app)
         _app = app,
     },	Timeline)
 
-    local UI = prop(function(self)
+    local UI = app.UI:mutate(function(_, self)
         return axutils.cache(self, "_ui", function()
             return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
         end,
         Timeline.matches)
-    end)
+    end):monitor(app:primaryWindow().UI, app:secondaryWindow().UI)
 
     prop.bind(o) {
 
@@ -224,9 +224,14 @@ function Timeline:show()
     return self
 end
 
-function Timeline:doShow(timeout)
-    return If(self.isShowing):IsNot(true)
-    :Then(self:doShowOnPrimary(timeout))
+function Timeline:doShow()
+    return Do(function()
+        if not self:isShowing() then
+            return self:doShowOnPrimary()
+        else
+            return true
+        end
+    end)
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnPrimary() -> Timeline
@@ -262,19 +267,21 @@ end
 ---
 --- Returns:
 ---  * A `Statement` ready to run.
-function Timeline:doShowOnPrimary(timeout)
+function Timeline:doShowOnPrimary()
     local menu = self:app():menu()
 
-    return Given(
-        If(self.isOnSecondary):Then(
-            menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}, {timeout = timeout})
-        )
-    )
-    :Then(
-        If(self.isOnPrimary):IsNot(true):Then(
-            menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"}, {timeout = timeout})
-        )
-    )
+    return Do(function()
+        if self:isOnSecondary() then
+            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+        end
+    end)
+    :Then(function()
+        if not self:isOnPrimary() then
+            return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+        else
+            return true
+        end
+    end)
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnSecondary() -> Timeline
@@ -297,11 +304,16 @@ function Timeline:showOnSecondary()
     return self
 end
 
-function Timeline:doShowOnSecondary(timeout)
+function Timeline:doShowOnSecondary()
     local menu = self:app():menu()
 
-    return If(self.isOnSecondary):IsNot(true)
-    :Then(menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}, {timeout = timeout}))
+    return Do(function()
+        if not self:isOnSecondary() then
+            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+        else
+            return true
+        end
+    end)
 end
 
 --- cp.apple.finalcutpro.main.Timeline:hide() -> Timeline
@@ -338,15 +350,18 @@ end
 function Timeline:doHide()
     local menu = self:app():menu()
 
-    return Given(
-        If(self.isOnSecondary):Then(
-            menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        )
-    ):Then(
-        If(self.isOnPrimary):Then(
-            menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
-        )
-    )
+    return Do(function()
+        if self:isOnSecondary() then
+            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+        end
+    end)
+    :Then(function()
+        if self:isOnPrimary() then
+            return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+        else
+            return true
+        end
+    end)
 end
 
 -----------------------------------------------------------------------

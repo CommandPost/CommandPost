@@ -398,14 +398,10 @@ function mod.init(tangentManager, fcpGroup)
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0109, i18n("goToColorInspector"))
-        :onPress(function()
-            fcp:doSelectMenu({"Window", "Go To", "Color Inspector"})
-        end)
+        :onPress(fcp:doSelectMenu({"Window", "Go To", "Color Inspector"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0110, i18n("matchColor"))
-        :onPress(function()
-            fcp:doSelectMenu({"Modify", "Match Color…"})
-        end)
+        :onPress(fcp:doSelectMenu({"Modify", "Match Color…"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0111, i18n("saveColorEffectPreset"))
         :onPress(function()
@@ -429,29 +425,19 @@ function mod.init(tangentManager, fcpGroup)
         end)
 
     colorShortcutGroup:action(wheelsBaseID+0x0114, i18n("viewAlphaColorChannel"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0115, i18n("viewRedColorChannel"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Red"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Red"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0116, i18n("viewGreenColorChannel"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Green"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Green"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0117, i18n("viewBlueColorChannel"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Blue"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Blue"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0118, i18n("viewAllColorChannels"))
-        :onPress(function()
-            fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"})
-        end)
+        :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"}))
 
     --- Color Board Actions
 

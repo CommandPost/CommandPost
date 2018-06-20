@@ -394,6 +394,10 @@ function fcp:restart(waitSeconds)
     return self
 end
 
+function fcp:doRestart()
+    return self.app:doRestart()
+end
+
 --- cp.apple.finalcutpro:show() -> cp.apple.finalcutpro
 --- Method
 --- Activate Final Cut Pro, if it is running.
@@ -406,6 +410,10 @@ end
 function fcp:show()
     self.app:show()
     return self
+end
+
+function fcp:doShow()
+    return self.app:doShow()
 end
 
 --- cp.apple.finalcutpro:hide() -> self
@@ -422,6 +430,10 @@ function fcp:hide()
     return self
 end
 
+function fcp:doHide()
+    return self.app:doHide()
+end
+
 --- cp.apple.finalcutpro:quit([waitSeconds]) -> self
 --- Method
 --- Quits Final Cut Pro, if it's running.
@@ -434,6 +446,10 @@ end
 function fcp:quit(waitSeconds)
     self.app:quit(waitSeconds)
     return self
+end
+
+function fcp:doQuit()
+    return self.app:doQuit()
 end
 
 --- cp.apple.finalcutpro:getPath() -> string or nil
@@ -631,7 +647,7 @@ end
 ---
 --- ```lua
 --- local preview = require("cp.app").forBundleID("com.apple.Preview")
---- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"})
+--- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()
 --- ```
 ---
 --- Parameters:
@@ -644,7 +660,7 @@ end
 --- Notes:
 ---  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
 function fcp:doSelectMenu(...)
-    self.app:menu():doSelectMenu(...)
+    return self.app:menu():doSelectMenu(...)
 end
 
 ----------------------------------------------------------------------------------------
