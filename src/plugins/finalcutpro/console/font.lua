@@ -127,12 +127,14 @@ function mod.getRunningFonts()
                                     --------------------------------------------------------------------------------
                                     -- Add workaround:
                                     --------------------------------------------------------------------------------
-                                    local ff = styledtext.fontInfo(fontFamily)
-                                    if ff then
-                                        if ff.familyName ~= ".AppleSystemUIFont" then
-                                            if ff.displayName == fontFamily and ff.familyName ~= fontFamily then
-                                                --log.df("CHANGING FONT: %s", fontFamily)
-                                                fontFamily = ff.familyName
+                                    if styledtext.validFont(fontFamily) then
+                                        local ff = styledtext.fontInfo(fontFamily)
+                                        if ff then
+                                            if ff.familyName ~= ".AppleSystemUIFont" then
+                                                if ff.displayName == fontFamily and ff.familyName ~= fontFamily then
+                                                    --log.df("* Changing Font from %s to %s.", fontFamily, ff.familyName)
+                                                    fontFamily = ff.familyName
+                                                end
                                             end
                                         end
                                     end
@@ -411,8 +413,12 @@ function mod.onChoices(choices)
     --------------------------------------------------------------------------------
     for _, fontName in pairs(styledtext.fontNames()) do
         if string.sub(fontName, 1, 1) ~= "." then
-            table.insert(fonts, styledtext.fontInfo(fontName).familyName)
-            systemFonts[styledtext.fontInfo(fontName).familyName] = true
+            local fontInfo = styledtext.fontInfo(fontName)
+            local familyName = fontInfo and fontInfo.familyName
+            if familyName then
+                table.insert(fonts, familyName)
+                systemFonts[familyName] = true
+            end
         end
     end
 
