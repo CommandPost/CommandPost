@@ -69,6 +69,7 @@ archive
 upload
 #announce
 
+build_uninstall
 build_dmgcanvas
 generate_appcast
 
