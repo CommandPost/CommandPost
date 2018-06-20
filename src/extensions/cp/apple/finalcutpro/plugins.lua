@@ -101,6 +101,11 @@ local mod                       = {}
 mod.mt                          = {}
 mod.mt.__index                  = mod.mt
 
+--- cp.apple.finalcutpro.plugins.scanned <cp.prop: boolean>
+--- Variable
+--- Returns `true` if Final Cut Pro plugins have been scanned, otherwise `false`.
+mod.scanned = config.prop("finalCutProScanned", false)
+
 --- cp.apple.finalcutpro.plugins.outputReport <cp.prop: boolean>
 --- Variable
 --- Set this to `false` via `_fcp:plugins():outputReport(false)` to disable reporting.
@@ -817,6 +822,7 @@ end
 ---  * None
 function mod.mt:reset()
     self._plugins = {}
+    mod.scanned(false)
 end
 
 --- cp.apple.finalcutpro.plugins:effectBundleStrings() -> table
@@ -1735,8 +1741,26 @@ function mod.mt:scan(locale)
     --------------------------------------------------------------------------------
     report("---------------------------------------------------------")
 
+    --------------------------------------------------------------------------------
+    -- Scan has been completed:
+    --------------------------------------------------------------------------------
+    mod.scanned(true)
+
     return self._plugins[locale]
 
+end
+
+--- cp.apple.finalcutpro.plugins.scanned() -> boolean
+--- Function
+--- Gets if the system has been scanned.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` is scanned otherwise `false`.
+function mod.mt.scanned()
+    return mod.scanned()
 end
 
 --- cp.apple.finalcutpro.plugins:scanAll() -> nil
