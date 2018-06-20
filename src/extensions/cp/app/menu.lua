@@ -17,25 +17,27 @@ local log = require("hs.logger").new("menu")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fs = require("hs.fs")
-local inspect = require("hs.inspect")
+local fs                        = require("hs.fs")
+local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local archiver = require("cp.plist.archiver")
-local axutils = require("cp.ui.axutils")
-local localeID = require("cp.i18n.localeID")
-local plist = require("cp.plist")
-local prop = require("cp.prop")
-local rx = require("cp.rx")
+local archiver                  = require("cp.plist.archiver")
+local axutils                   = require("cp.ui.axutils")
+local localeID                  = require("cp.i18n.localeID")
+local plist                     = require("cp.plist")
+local prop                      = require("cp.prop")
+local rx                        = require("cp.rx")
+local go                        = require("cp.rx.go")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local format = string.format
-local insert, remove, concat = table.insert, table.remove, table.concat
-local Observable, AsyncSubject = rx.Observable, rx.AsyncSubject
+local format                    = string.format
+local insert, remove, concat    = table.insert, table.remove, table.concat
+local Observable                = rx.Observable
+local Given, Throw              = go.Given, go.Throw
 
 --------------------------------------------------------------------------------
 --
@@ -342,7 +344,7 @@ function menu.mt:getMenuTitles(locales)
     return menuCache
 end
 
---- cp.app.menu:doSelectMenu(path, options) -> cp.rx.Observable <hs._asm.axuielement>
+--- cp.app.menu:doSelectMenu(path, options) -> cp.rx.go.Statement
 --- Method
 --- Selects a Menu Item based on the provided menu path.
 ---
@@ -374,23 +376,20 @@ end
 ---  * The returned `Observable` will be 'hot', in that it will execute even if no subscription is made to the result. However, it will potentially be run asynchronously, so the actual execution may occur later.
 function menu.mt:doSelectMenu(path, options)
     options = options or {}
-    local subject = AsyncSubject.create()
-
     local finder = self:findMenuItems(path, options)
 
     if not options.pressAll then
         finder = finder:last()
     end
 
-    finder:flatMap(function(item)
+    return Given(finder)
+    :Then(function(item)
         if item:attributeValue("AXEnabled") then
-            return Observable.of(item:doPress())
+            return item:doPress()
         else
-            return Observable.throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
+            return Throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
         end
-    end):last():subscribe(subject)
-
-    return subject
+    end)
 end
 
 --- cp.app.menu:selectMenu(path[, options]) -> boolean

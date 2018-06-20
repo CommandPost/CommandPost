@@ -2,7 +2,7 @@
 -- Originally forked from https://github.com/bjornbytes/rxlua
 -- MIT License
 
-local log = require("hs.logger").new("rx")
+-- local log = require("hs.logger").new("rx")
 -- local inspect = require("hs.inspect")
 
 local timer = require 'hs.timer'
@@ -21,7 +21,7 @@ util.constant = function(x) return function() return x end end
 util.isa = function(object, class)
   if type(object) == 'table' then
     local mt = getmetatable(object)
-    return mt and mt.__index == class
+    return mt and mt.__index == class or util.isa(mt, class)
   end
 end
 util.tryWithObserver = function(observer, fn, ...)
@@ -973,6 +973,7 @@ end
 -- produces their values.
 -- @returns {Observable}
 function Observable:flatten()
+  local originalCompleted = false
   return Observable.create(function(observer)
     local function onError(message)
       return observer:onError(message)
@@ -983,11 +984,17 @@ function Observable:flatten()
         observer:onNext(...)
       end
 
-      observable:subscribe(innerOnNext, onError, util.noop)
+      local function innerOnCompleted()
+        if originalCompleted then
+            return observer:onCompleted()
+        end
+      end
+
+      observable:subscribe(innerOnNext, onError, innerOnCompleted)
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      originalCompleted = true
     end
 
     return self:subscribe(onNext, onError, onCompleted)
@@ -1697,6 +1704,7 @@ function Observable:timeout(timeInMs, errorMessage, scheduler)
         local function timedOut()
             clean()
             observer:onError(errorMessage or format("Timeout after %d ms", timeInMs()))
+            kill = nil
         end
 
         local function onNext(...)
@@ -2007,7 +2015,6 @@ end
 -- @returns {Reference}
 function TimeoutScheduler:schedule(action, delay)
   delay = delay or 0
-  log.df("Scheduling timer for %d milliseconds", delay)
   local t = timer.doAfter(delay/1000.0, action)
   self._timers[t] = true
 

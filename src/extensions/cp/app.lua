@@ -55,7 +55,7 @@ local go                        = require("cp.rx.go")
 
 local Observable                = rx.Observable
 local Given, First              = go.Given, go.First
-local WaitUntil, Throw          = go.WaitUntil, go.Throw
+local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -638,6 +638,28 @@ function mod.mt:quit(waitSeconds)
     return self
 end
 
+--- cp.app:doQuit(waitSeconds) -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will attempt to quit the app when executed.
+--- If the app never quits it may never resolve. You can provide a timeout in seconds
+---
+--- Parameters:
+---  * `timeout`    - If provided, it will wait this amount of time to successfully quit before timing out.
+---
+--- Returns:
+---  * The `cp.app` instance.
+function mod.mt:doQuit(timeout)
+    return If(self.hsApplication):Then(function(app)
+        app:kill()
+        local wait = WaitUntil(self.running:NOT())
+        if timeout then
+            wait = wait:TimeoutAfter(timeout * 1000, format("%s did not quit successfully after %s seconds.", self:displayName(), timeout))
+        end
+        return wait
+    end)
+    :Otherwise(true)
+end
+
 --- cp.app:restart(waitSeconds) -> self
 --- Method
 --- Restart the application, if currently running. If not, no action is taken.
@@ -674,6 +696,40 @@ function mod.mt:restart(waitSeconds)
 
     end
     return self
+end
+
+function mod.mt:doRestart(timeout)
+    return If(self.hsApplication):Then(function(app)
+        local appPath = app:path()
+
+        return Given(
+            self:doQuit(timeout)
+        )
+        :Then(function(success)
+            log.df("After doQuit: %s", success)
+            if success then
+                -- force the application prop to update, otherwise it isn't closed long enough to prompt an event.
+                self.hsApplication:update()
+
+                local output, ok = hs.execute(format('open "%s"', appPath))
+                if not ok then
+                    return Throw("%s was unable to restart: %s", self:displayName(), output)
+                end
+
+                local wait = WaitUntil(self.frontmost):Is(true)
+                if timeout then
+                    wait = wait:TimeoutAfter(timeout * 1000, format("%s took over %d seconds to restart.", self:displayName(), timeout))
+                end
+                return wait
+            else
+                return Throw("%s was unable to restart because it did not quit successfully.", self:displayName())
+            end
+        end)
+        :Catch(function(message)
+            return Throw("Caught error: %s", message)
+        end)
+    end)
+    :Otherwise(false)
 end
 
 --- cp.app:show() -> self
