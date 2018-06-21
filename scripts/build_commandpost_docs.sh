@@ -14,7 +14,7 @@ cd ../CommandPost-App/
 #  Build CommandPost-App Documentation:
 # --------------------------------------
 echo "Building CommandPost-App Documentation..."
-scripts/docs/bin/build_docs.py -o build/CommandPost-Docs/hs/ --markdown Hammerspoon/ extensions/
+scripts/docs/bin/build_docs.py -e ../CommandPost/scripts/docs/templates -o build/CommandPost-Docs/hs/ --markdown Hammerspoon/ extensions/
 echo " - Documentation Created Successfully!"
 echo " - Removing Old Files in CommandPost-DeveloperGuide"
 rm -R ../CommandPost-DeveloperGuide/api/hs/
@@ -27,7 +27,7 @@ cp build/CommandPost-Docs/hs/markdown/* ../CommandPost-DeveloperGuide/api/hs/
 #  Build CommandPost Extensions Documentation:
 # ---------------------------------------------
 echo "Building CommandPost Extensions Documentation..."
-scripts/docs/bin/build_docs.py -o build/CommandPost-Docs/cp/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/
+scripts/docs/bin/build_docs.py -e ../CommandPost/scripts/docs/templates -o build/CommandPost-Docs/cp/ --standalone --debug --markdown ../CommandPost/src/extensions/cp/
 echo " - Documentation Created Successfully!"
 echo " - Removing Old Files in CommandPost-DeveloperGuide"
 rm -R ../CommandPost-DeveloperGuide/api/cp/
@@ -40,7 +40,7 @@ cp build/CommandPost-Docs/cp/markdown/* ../CommandPost-DeveloperGuide/api/cp/
 #  Build CommandPost Plugins Documentation:
 # ------------------------------------------
 echo "Building CommandPost Plugins Documentation..."
-scripts/docs/bin/build_docs.py -o build/CommandPost-Docs/plugins/ --standalone --debug --markdown ../CommandPost/src/plugins/
+scripts/docs/bin/build_docs.py -e ../CommandPost/scripts/docs/templates -o build/CommandPost-Docs/plugins/ --standalone --debug --markdown ../CommandPost/src/plugins/
 echo " - Documentation Created Successfully!"
 echo " - Removing Old Files in CommandPost-DeveloperGuide"
 rm -R ../CommandPost-DeveloperGuide/api/plugins/
