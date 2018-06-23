@@ -24,6 +24,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                   = require("hs.logger").new("notifier")
+local inspect               = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:

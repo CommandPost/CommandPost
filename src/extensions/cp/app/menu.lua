@@ -37,7 +37,7 @@ local go                        = require("cp.rx.go")
 local format                    = string.format
 local insert, remove, concat    = table.insert, table.remove, table.concat
 local Observable                = rx.Observable
-local Given, Throw              = go.Given, go.Throw
+local Given, If, Throw, Last    = go.Given, go.If, go.Throw, go.Last
 
 --------------------------------------------------------------------------------
 --
@@ -277,9 +277,9 @@ function menu.new(app)
     }, menu.mt)
 
     local UI = app.UI:mutate(function(original, self)
-        return axutils.cache(self, "_ui", function()
+        -- return axutils.cache(self, "_ui", function()
             return axutils.childMatching(original(), menu.matches)
-        end, menu.matches)
+        -- end, menu.matches)
     end)
 
     local showing = UI:ISNOT(nil)
@@ -344,7 +344,7 @@ function menu.mt:getMenuTitles(locales)
     return menuCache
 end
 
---- cp.app.menu:doSelectMenu(path, options) -> cp.rx.go.Statement
+--- cp.app.menu:doSelectMenu(path, options) -> cp.rx.go.Statement <boolean>
 --- Method
 --- Selects a Menu Item based on the provided menu path.
 ---
@@ -356,7 +356,6 @@ end
 --- Options supported include:
 ---  * locale - The `localeID` or `string` for the locale that the path values are in.
 ---  * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
----  * timeout - The maximum time to wait for the menu to be available before producing an error. Defaults to 10 seconds.
 ---
 --- Examples:
 ---
@@ -370,19 +369,20 @@ end
 ---  * options - (optional) The table of options to apply.
 ---
 --- Returns:
----  * An `Observable` which emits the final menu item, or an error if the selection failed.
+---  * The `Statement`, ready to execute.
 function menu.mt:doSelectMenu(path, options)
     options = options or {}
-    local finder = self:findMenuItems(path, options)
+    local finder = self:doFindMenuUI(path, options)
 
     if not options.pressAll then
-        finder = finder:last()
+        finder = Last(finder)
     end
 
     return Given(finder)
     :Then(function(item)
         if item:attributeValue("AXEnabled") then
-            return item:doPress()
+            item:doPress()
+            return true
         else
             return Throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
         end
@@ -556,9 +556,9 @@ local function exactMatch(value, pattern)
     return false
 end
 
---- cp.app.menu:findMenuItems(path[, options]) -> cp.rx.Observable <hs._asm.axuielement>
+--- cp.app.menu:doFindMenuUI(path[, options]) -> cp.rx.go.Statement <hs._asm.axuielement>
 --- Method
---- Returns an `Observable` that will emit each of the menu items along the path.
+--- Returns a `Statement` that when executed will emit each of the menu items along the path.
 ---
 --- Each step on the path can be either one of:
 ---  * a string     - The exact name of the menu item.
@@ -567,16 +567,12 @@ end
 ---
 --- Options:
 ---  * locale   - The locale that any strings in the path are in. Defaults to "en".
----  * timeout  - The amount of time to wait for the menu to become available. Defaults to 10 seconds.
 ---
 --- Examples:
 ---
 --- ```lua
---- -- check if the final item is enabled
---- myApp:menu():findMenuItems({"Edit", "Copy"}):last():subscribe(function(item) print("Copy Enabled: ", item:enabled()) end)
----
 --- -- check if all items are enabled
---- myApp:menu():findMenuItems({"Edit", "Copy"}):all(function(item) return item:enabled() end):subscribe(function(enabled) print("All Enabled: ", enabled) end)
+--- myApp:menu():doFindMenuUI({"Edit", "Copy"}):Now(function(item) print(item:title() .. " enabled: ", item:enabled()) end, error)
 --- ```
 ---
 --- Parameters:
@@ -584,115 +580,109 @@ end
 ---  * options      - (optional) table of additional configuration options.
 ---
 --- Returns:
----  * The `Observable` instance.
----
---- Notes:
----  * This will not act until something `subscribes` to the returned `Observable`.
-function menu.mt:findMenuItems(path, options)
+---  * The `Statement`, ready to be executed.
+function menu.mt:doFindMenuUI(path, options)
     if type(path) ~= "table" or #path == 0 then
         return Observable.throw("Please provide a table array of menu steps.")
     end
     options = options or {}
-    local timeout = options.timeout or 10
 
-    return self:findUI(timeout):flatMap(
-        function(ui)
-            local pathLocale = localeID(options.locale) or localeID("en")
-            local appLocale = self:app():currentLocale()
+    -- make sure the app is active.
+    return If(self.UI):Then(function(ui)
+        local pathLocale = localeID(options.locale) or localeID("en")
+        local appLocale = self:app():currentLocale()
 
-            local menuTitles = self:getMenuTitles({pathLocale, appLocale})
-            local currentPath = {}
-            local menuItemName
-            local menuUI = ui
+        local menuTitles = self:getMenuTitles({pathLocale, appLocale})
+        local currentPath = {}
+        local menuItemName
+        local menuUI = ui
 
-            return Observable.fromTable(path, ipairs):flatMap(
-                function(step)
-                    local menuItemUI
-                    if type(step) == "number" then
-                        menuItemUI = menuUI[step]
-                        menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
-                    elseif type(step) == "function" then
-                        for _, child in ipairs(menuUI) do
-                            if step(child) then
-                                menuItemUI = child
-                                menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
-                                break
-                            end
+        return Given(Observable.fromTable(path, ipairs)):Then(
+            function(step)
+                local menuItemUI
+                if type(step) == "number" then
+                    menuItemUI = menuUI[step]
+                    menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
+                elseif type(step) == "function" then
+                    for _, child in ipairs(menuUI) do
+                        if step(child) then
+                            menuItemUI = child
+                            menuItemName = _translateTitle(menuTitles, menuItemUI, appLocale, pathLocale)
+                            break
                         end
-                    else
-                        menuItemName = step
-                        --------------------------------------------------------------------------------
-                        -- Check with the finder functions:
-                        --------------------------------------------------------------------------------
-                        for _, finder in ipairs(self._itemFinders) do
-                            menuItemUI = finder(menuUI, currentPath, step, pathLocale)
-                            if menuItemUI then
-                                break
-                            end
-                        end
-
-                        if not menuItemUI and menuTitles then
-                            --------------------------------------------------------------------------------
-                            -- See if the menu is in the map:
-                            --------------------------------------------------------------------------------
-                            for _, item in ipairs(menuTitles) do
-                                local pathItemTitle = item[pathLocale.code]
-                                if exactMatch(pathItemTitle, step) then
-                                    menuItemUI = item.ui
-                                    if not axutils.isValid(menuItemUI) then
-                                        local currentTitle = item[appLocale.code]
-                                        if currentTitle then
-                                            currentTitle = currentTitle:gsub("%%@", ".*")
-                                            menuItemUI = axutils.childMatching(menuUI, function(child)
-                                                return exactMatch(child:attributeValue("AXTitle"), currentTitle)
-                                            end)
-                                            --------------------------------------------------------------------------------
-                                            -- Cache the menu item, since getting children can be expensive:
-                                            --------------------------------------------------------------------------------
-                                            item.ui = menuItemUI
-                                        else
-                                            return Observable.throw("Unable to find '%s' in '%s' with %s.", pathItemTitle, concat(currentPath, " > ", appLocale))
-                                        end
-                                    end
-                                    menuTitles = item.submenu
-                                    break
-                                end
-                            end
-                        end
-
-                        if not menuItemUI then
-                            --------------------------------------------------------------------------------
-                            -- We don't have it in our list, so look it up manually.
-                            -- Hopefully they are in English!
-                            --------------------------------------------------------------------------------
-                            log.wf("Searching manually for '%s' in '%s' while in %s.", step, concat(currentPath, " > "), appLocale)
-                            menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
+                    end
+                else
+                    menuItemName = step
+                    --------------------------------------------------------------------------------
+                    -- Check with the finder functions:
+                    --------------------------------------------------------------------------------
+                    for _, finder in ipairs(self._itemFinders) do
+                        menuItemUI = finder(menuUI, currentPath, step, pathLocale)
+                        if menuItemUI then
+                            break
                         end
                     end
 
-                    if menuItemUI then
-                        if #menuItemUI == 1 then
-                            -- the item is a sub-menu. Find the next values.
-                            menuUI = menuItemUI[1]
-                            for _, item in ipairs(menuTitles) do
-                                local mapTitle = item[appLocale.code]
-                                if mapTitle and exactMatch(menuItemUI:attributeValue("AXTitle"), mapTitle:gsub("%%@", ".*")) then
-                                    menuTitles = item
-                                    break
+                    if not menuItemUI and menuTitles then
+                        --------------------------------------------------------------------------------
+                        -- See if the menu is in the map:
+                        --------------------------------------------------------------------------------
+                        for _, item in ipairs(menuTitles) do
+                            local pathItemTitle = item[pathLocale.code]
+                            if exactMatch(pathItemTitle, step) then
+                                menuItemUI = item.ui
+                                if not axutils.isValid(menuItemUI) then
+                                    local currentTitle = item[appLocale.code]
+                                    if currentTitle then
+                                        currentTitle = currentTitle:gsub("%%@", ".*")
+                                        menuItemUI = axutils.childMatching(menuUI, function(child)
+                                            return exactMatch(child:attributeValue("AXTitle"), currentTitle)
+                                        end)
+                                        --------------------------------------------------------------------------------
+                                        -- Cache the menu item, since getting children can be expensive:
+                                        --------------------------------------------------------------------------------
+                                        item.ui = menuItemUI
+                                    else
+                                        return Throw("Unable to find '%s' in '%s' with %s.", pathItemTitle, (#currentPath > 0 and concat(currentPath, " > ") or self:app():displayName()), appLocale.code)
+                                    end
                                 end
+                                menuTitles = item.submenu
+                                break
                             end
                         end
-
-                        insert(currentPath, menuItemName)
-
-                        return Observable.of(menuItemUI)
-                    else
-                        return Observable.throw("Unable to find '%s' in '%s' while in %s.", step, concat(currentPath, " > "), appLocale)
                     end
                 end
-            )
-        end
+
+                if menuItemUI then
+                    if #menuItemUI == 1 then
+                        -- the item is a sub-menu. Find the next values.
+                        menuUI = menuItemUI[1]
+                        for _, item in ipairs(menuTitles) do
+                            local mapTitle = item[appLocale.code]
+                            if mapTitle and exactMatch(menuItemUI:attributeValue("AXTitle"), mapTitle:gsub("%%@", ".*")) then
+                                menuTitles = item
+                                break
+                            end
+                        end
+                    end
+
+                    insert(currentPath, menuItemName)
+
+                    return menuItemUI
+                else
+                    return Throw("Unable to find '%s' in '%s' while in '%s'.", step, (#currentPath > 0 and concat(currentPath, " > ") or self:app():displayName()), appLocale.code)
+                end
+            end
+        )
+    end)
+    :Otherwise(
+        If(self:app().running):Then(
+            Throw("Unable to find the menu for %s.", self:app():displayName())
+        ):Otherwise(
+            Throw("%s is not curently running.", self:app():displayName())
+        )
     )
+    :TimeoutAfter(5000, "Took too long.")
 end
 
 --- cp.app.menu:findMenuUI(path[, options]) -> Menu UI, table
@@ -838,25 +828,6 @@ function menu.mt:findMenuUI(path, options)
     end
 
     return menuItemUI, menuPath
-end
-
---- cp.app.menu:findMenuItemsUI(path[, locale]) -> axuielementObject
---- Method
---- Returns the set of menu items in the provided path. If the path contains a menu, the
---- actual children of that menu are returned, otherwise the menu item itself is returned.
----
---- Parameters:
----  * path - A table containing the path to the menu.
----  * locale - The locale the path is in. Defaults to "en".
----
---- Returns:
----  * An `axuielementObject` for the menu items.
-function menu.mt:findMenuItemsUI(path, locale)
-    local menuUI = self:findMenuUI(path, locale)
-    if menuUI and #menuUI == 1 then
-        return menuUI[1]:children()
-    end
-    return menuUI
 end
 
 --- cp.app.menu:visitMenuItems(visitFn[, options]]) -> nil

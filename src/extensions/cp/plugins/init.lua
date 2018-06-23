@@ -485,53 +485,81 @@ function mod.getDependents(id)
     return thePlugin and thePlugin:getDependents()
 end
 
---- cp.plugins.disable(id) -> nothing
+--- cp.plugins.disable(...) -> boolean, string
 --- Function
---- Disabled the plugin with the specified ID and reloads the application.
+--- Disabled the plugin(s) with the specified IDs and reloads the application.
 ---
 --- Parameters:
----  * `id` - The plugin package ID.
+---  * `...` - The list of plugin package IDs.
 ---
 --- Returns:
----  * `true` if the plugin was disabled, or `false` if it could not be disabled.
-function mod.disable(id)
-    local thePlugin = mod.getPlugin(id)
-    if thePlugin and not thePlugin.required then
-        --------------------------------------------------------------------------------
-        -- First check with the plugin, if relevant:
-        --------------------------------------------------------------------------------
-        if type(thePlugin.disable) == "function" then
-            if not thePlugin.disable(thePlugin:getDependencies(), env.new(thePlugin:getRootPath())) then
-                return false
+---  * `true` if the plugin was disabled, or `false` if any of the plugins failed.
+---  * If disabling failed, the first ID that failed is returned as the second value.
+function mod.disable(...)
+    local count = select("#", ...)
+
+    if count > 0 then
+        local disabled = config.get(mod.SETTINGS_DISABLED, {})
+
+        for i = 1,count do
+            local id = select(i, ...)
+            local thePlugin = mod.getPlugin(id)
+            if thePlugin and not thePlugin.required then
+                --------------------------------------------------------------------------------
+                -- First check with the plugin, if relevant:
+                --------------------------------------------------------------------------------
+                if type(thePlugin.disable) == "function" then
+                    if thePlugin.disable(thePlugin:getDependencies(), env.new(thePlugin:getRootPath())) then
+                        disabled[id] = true
+                    else
+                        return false, id
+                    end
+                else
+                    disabled[id] = true
+                end
+            else
+                return false, id
             end
         end
-        local disabled = config.get(mod.SETTINGS_DISABLED, {})
-        disabled[id] = true
+
         config.set(mod.SETTINGS_DISABLED, disabled)
-        console.clearConsole()
         -- reload CP after returning `true`
-        timer.doAfter(0.001, function() hs.reload() end)
+        timer.doAfter(0.001, function()
+            console.clearConsole()
+            hs.reload()
+        end)
         return true
     end
-    return false
+    return false, nil
 end
 
---- cp.plugins.enable(id) -> nothing
+--- cp.plugins.enable(...) -> boolean, string
 --- Function
 --- Enables the plugin with the specified ID, and reloads the application.
 ---
 --- Parameters:
----  * `id` - The plugin package ID.
+---  * `...` - The plugin package ID.
 ---
 --- Returns:
----  * `true` if the plugin had been disabled and is now enabled.
-function mod.enable(id)
-    local disabled = config.get(mod.SETTINGS_DISABLED, {})
-    if disabled[id] then
-        disabled[id] = false
+---  * `true` if the plugins had been disabled and are now enabled.
+---  * If enabling failed, the plugin ID which could not be enabled is returned as the second value.
+function mod.enable(...)
+    local count = select("#", ...)
+    if count > 0 then
+        local disabled = config.get(mod.SETTINGS_DISABLED, {})
+        for i = 1,count do
+            local id = select(i, ...)
+            if disabled[id] then
+                disabled[id] = false
+            else
+                return false, id
+            end
+        end
         config.set(mod.SETTINGS_DISABLED, disabled)
-        console.clearConsole()
-        timer.doAfter(0.001, function() hs.reload() end)
+        timer.doAfter(0.001, function()
+            console.clearConsole()
+            hs.reload()
+        end)
         return true
     end
     return false

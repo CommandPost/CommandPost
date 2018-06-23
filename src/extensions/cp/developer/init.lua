@@ -190,7 +190,12 @@ function _highlight(e) -- luacheck: ignore
         return e
     end
 
-    local eFrame = geometry.rect(e:frame())
+    local eFrame = e:frame()
+    if eFrame then
+        eFrame = geometry.rect(eFrame)
+    else
+        return e
+    end
 
     --------------------------------------------------------------------------------
     -- Get Highlight Colour Preferences:

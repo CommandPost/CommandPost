@@ -10,7 +10,8 @@ local rxgo          = require("cp.rx.go")
 local Observable, Subject = rx.Observable, rx.Subject
 local append, is, toObservable, toObservables = rxgo.append, rxgo.is, rxgo.toObservable, rxgo.toObservables
 local Statement, SubStatement = rxgo.Statement, rxgo.SubStatement
-local Given, If, WaitUntil = rxgo.Given, rxgo.If, rxgo.WaitUntil
+local Given, If, WaitUntil, Throw = rxgo.Given, rxgo.If, rxgo.WaitUntil, rxgo.Throw
+local First, Last = rxgo.First, rxgo.Last
 
 local insert = table.insert
 
@@ -360,4 +361,119 @@ return test.suite("cp.rx.go"):with {
         statement()
         ok(eq(called, true))
     end),
+
+    test("Throw", function()
+        -- straight throw:
+        local error = false
+
+        Throw("Message %s", "Test"):Now(
+            function(_)
+                ok(false, "Should not be called.")
+            end,
+            function(message)
+                ok(message, "Message Test")
+                error = true
+            end,
+            function()
+                ok(false, "Completed should not be called.")
+            end
+        )
+
+        ok(eq(error, true))
+    end),
+
+
+    test("Given:Then:Throw", function()
+        -- straight throw:
+        local error = false
+
+        Given(true)
+        :Then(Throw("Message %s", "Test"))
+        :Now(
+            function(_)
+                ok(false, "Should not be called.")
+            end,
+            function(message)
+                ok(message, "Message Test")
+                error = true
+            end,
+            function()
+                ok(false, "Completed should not be called.")
+            end
+        )
+
+        ok(eq(error, true))
+    end),
+
+    test("If:Then:Throw", function()
+        -- straight throw:
+        local error = false
+
+        If(true)
+        :Then(Throw("Message %s", "Test"))
+        :Now(
+            function(_)
+                ok(false, "Should not be called.")
+            end,
+            function(message)
+                ok(message, "Message Test")
+                error = true
+            end,
+            function()
+                ok(false, "Completed should not be called.")
+            end
+        )
+
+        ok(eq(error, true))
+    end),
+
+    test("If:Then:Given:Then:Throw", function()
+        -- straight throw:
+        local error = false
+
+        If(true)
+        :Then(function()
+            return Given(true):Then(function()
+                return Throw("Message %s", "Test")
+            end)
+        end)
+        :Otherwise(Throw("Otherwise"))
+        :Now(
+            function(_)
+                ok(false, "Should not be called.")
+            end,
+            function(message)
+                ok(message, "Message Test")
+                error = true
+            end,
+            function()
+                ok(false, "Completed should not be called.")
+            end
+        )
+
+        ok(eq(error, true))
+    end),
+
+    test("Last", function()
+        local result = nil
+        local error = false
+        local completed = true
+
+        Last(Observable.of(1, 2, 3)):
+        Now(
+            function(value)
+                result = value
+            end,
+            function(message)
+                ok(false, message)
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(result, 3))
+        ok(eq(error, false))
+        ok(eq(completed, true))
+    end)
 }

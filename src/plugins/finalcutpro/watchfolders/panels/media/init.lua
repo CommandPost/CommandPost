@@ -12,20 +12,13 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("fcpwatch")
+local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local eventtap			= require("hs.eventtap")
-local fnutils			= require("hs.fnutils")
-local fs				= require("hs.fs")
 local host				= require("hs.host")
-local http				= require("hs.http")
 local image				= require("hs.image")
-local notify			= require("hs.notify")
-local pasteboard		= require("hs.pasteboard")
-local pathwatcher		= require("hs.pathwatcher")
-local timer				= require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -37,9 +30,9 @@ local tools				= require("cp.tools")
 local html				= require("cp.web.html")
 local ui				= require("cp.web.ui")
 
-local go                = require("cp.rx.go")
-local Given, Do         = go.Given, go.Do
-local Done              = go.Done
+local MediaFolder       = require("MediaFolder")
+
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --
@@ -47,6 +40,60 @@ local Done              = go.Done
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+-- The storage for the media folders.
+local savedMediaFolders = config.prop("fcp.watchFolders.mediaFolders", {})
+
+--- plugins.finalcutpro.watchfolders.panels.media.mediaFolders
+--- Variable
+--- The table of MediaFolders currently configured.
+
+local mediaFolders = nil
+
+function mod.addMediaFolder(path, videoTag, audioTag, imageTag)
+    insert(mediaFolders, MediaFolder.new(mod, path, videoTag, audioTag, imageTag):init())
+    mod.saveMediaFolders()
+end
+
+function mod.mediaFolders()
+    return mediaFolders
+end
+
+--- plugins.finalcutpro.watchfolders.panels.media.saveMediaFolders()
+--- Function
+--- Saves the current state of the media folders, including notifications, etc.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Nothing
+function mod.saveMediaFolders()
+    local details = {}
+    for _,folder in ipairs(mediaFolders) do
+        insert(details, folder:freeze())
+    end
+    savedMediaFolders(details)
+end
+
+--- plugins.finalcutpro.watchfolders.panels.media.loadMediaFolders()
+--- Function
+--- Loads the MediaFolder list from storage. Any existing MediaFolder instances
+--- will be destroyed before loading.
+function mod.loadMediaFolders()
+    if mediaFolders then
+        for _,folder in ipairs(mediaFolders) do
+            folder:destroy()
+        end
+    end
+
+    local details = savedMediaFolders()
+    -- delete any existing ones.
+    mediaFolders = {}
+    for _,frozen in ipairs(details) do
+        insert(mediaFolders, MediaFolder.thaw(mod, frozen):init())
+    end
+end
 
 --- plugins.finalcutpro.watchfolders.panels.media.SECONDS_UNTIL_DELETE -> number
 --- Constant
@@ -58,40 +105,15 @@ mod.SECONDS_UNTIL_DELETE = 30
 -- A unique ID.
 local uuid = host.uuid
 
---- plugins.finalcutpro.watchfolders.panels.media.filesInTransit -> table
---- Variable
---- Files currently being copied
-mod.filesInTransit = {}
-
 --- plugins.finalcutpro.watchfolders.panels.media.watchFolderTableID -> string
 --- Variable
 --- Watch Folder Table ID
 mod.watchFolderTableID = "fcpMediaWatchFoldersTable"
 
---- plugins.finalcutpro.watchfolders.panels.media.notifications -> table
---- Variable
---- Table of Path Watchers
-mod.pathwatchers = {}
-
---- plugins.finalcutpro.watchfolders.panels.media.notifications -> table
---- Variable
---- Table of Notifications
-mod.notifications = {}
-
---- plugins.finalcutpro.watchfolders.panels.media.disableImport -> boolean
---- Variable
---- When `true` Notifications will no longer be triggered.
-mod.disableImport = false
-
 --- plugins.finalcutpro.watchfolders.panels.media.automaticallyImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
 mod.automaticallyImport = config.prop("fcp.watchFolders.automaticallyImport", false)
-
---- plugins.finalcutpro.watchfolders.panels.media.savedNotifications <cp.prop: table>
---- Variable
---- Table of Notifications that are saved between restarts
-mod.savedNotifications = config.prop("fcp.watchFolders.savedNotifications", {})
 
 --- plugins.finalcutpro.watchfolders.panels.media.insertIntoTimeline <cp.prop: boolean>
 --- Variable
@@ -102,77 +124,6 @@ mod.insertIntoTimeline = config.prop("fcp.watchFolders.insertIntoTimeline", true
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
 mod.deleteAfterImport = config.prop("fcp.watchFolders.deleteAfterImport", false)
-
---- plugins.finalcutpro.watchfolders.panels.media.videoTag <cp.prop: string>
---- Variable
---- String which contains the video tag.
-mod.videoTag = config.prop("fcp.watchFolders.videoTag", {})
-
---- plugins.finalcutpro.watchfolders.panels.media.audioTag <cp.prop: string>
---- Variable
---- String which contains the audio tag.
-mod.audioTag = config.prop("fcp.watchFolders.audioTag", {})
-
---- plugins.finalcutpro.watchfolders.panels.media.imageTag <cp.prop: string>
---- Variable
---- String which contains the stills tag.
-mod.imageTag = config.prop("fcp.watchFolders.imageTag", {})
-
---- plugins.finalcutpro.watchfolders.panels.media.watchFolders <cp.prop: table>
---- Variable
---- Table of the users watch folders.
-mod.watchFolders = config.prop("fcp.watchFolders.mediaPaths", {})
-
--- cleanupTags() -> none
--- Function
--- Removes any Video, Audio & Image Tags that are no longer needed.
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function cleanupTags()
-    local watchFolders = mod.watchFolders()
-
-    local videoTag = mod.videoTag()
-    local audioTag = mod.audioTag()
-    local imageTag = mod.imageTag()
-
-    local newVideoTag = {}
-    local newAudioTag = {}
-    local newImageTag = {}
-
-    for _, v in pairs(watchFolders) do
-        if videoTag[v] then
-            newVideoTag[v] = videoTag[v]
-        end
-        if audioTag[v] then
-            newAudioTag[v] = audioTag[v]
-        end
-        if imageTag[v] then
-            newImageTag[v] = imageTag[v]
-        end
-    end
-
-    mod.videoTag(newVideoTag)
-    mod.audioTag(newAudioTag)
-    mod.imageTag(newImageTag)
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.removeWatcher(path) -> none
---- Function
---- Remove Folder Watcher
----
---- Parameters:
----  * path - Path to Watch Folder
----
---- Returns:
----  * None
-function mod.removeWatcher(path)
-    mod.pathwatchers[path]:stop()
-    mod.pathwatchers[path] = nil
-end
 
 --- plugins.finalcutpro.watchfolders.panels.media.controllerCallback(id, params) -> none
 --- Function
@@ -185,23 +136,24 @@ end
 --- Returns:
 ---  * None
 function mod.controllerCallback(_, params)
-    if params and params.action and params.action == "remove" then
+    local action = params and params.action
+    if action == "remove" then
         --------------------------------------------------------------------------------
         -- Remove a Watch Folder:
         --------------------------------------------------------------------------------
-        mod.watchFolders(tools.removeFromTable(mod.watchFolders(), params.path))
-        mod.removeWatcher(params.path)
-
-        --------------------------------------------------------------------------------
-        -- Cleanup Tags:
-        --------------------------------------------------------------------------------
-        cleanupTags()
+        for i,f in ipairs(mediaFolders) do
+            if f.path == params.path then
+                f:destroy()
+                table.remove(mediaFolders, i)
+                break
+            end
+        end
 
         --------------------------------------------------------------------------------
         -- Refresh Table:
         --------------------------------------------------------------------------------
         mod.refreshTable()
-    elseif params and params.action and params.action == "refresh" then
+    elseif action == "refresh" then
         --------------------------------------------------------------------------------
         -- Refresh Table:
         --------------------------------------------------------------------------------
@@ -221,20 +173,16 @@ end
 function mod.generateTable()
 
     local watchFoldersHTML = ""
-    local watchFolders =  mod.watchFolders()
+    local iNone = i18n("none")
 
-    local videoTag = mod.videoTag()
-    local audioTag = mod.audioTag()
-    local imageTag = mod.imageTag()
-
-    for _, v in ipairs(watchFolders) do
+    for _, folder in ipairs(mediaFolders) do
         local uniqueUUID = string.gsub(uuid(), "-", "")
         watchFoldersHTML = watchFoldersHTML .. [[
                 <tr>
-                    <td class="mediaRowPath">]] .. v .. [[</td>
-                    <td class="mediaRowVideoTag">]] .. (videoTag[v] or i18n("none")) .. [[</td>
-                    <td class="mediaRowAudioTag">]] .. (audioTag[v] or i18n("none")) .. [[</td>
-                    <td class="mediaRowImageTag">]] .. (imageTag[v] or i18n("none")) .. [[</td>
+                    <td class="mediaRowPath">]] .. folder.path .. [[</td>
+                    <td class="mediaRowVideoTag">]] .. (folder.tags.video or iNone) .. [[</td>
+                    <td class="mediaRowAudioTag">]] .. (folder.tags.audio or iNone) .. [[</td>
+                    <td class="mediaRowImageTag">]] .. (folder.tags.image or iNone) .. [[</td>
                     <td class="mediaRowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
                 </tr>
         ]]
@@ -243,7 +191,7 @@ function mod.generateTable()
                 try {
                     var p = {};
                     p["action"] = "remove";
-                    p["path"] = "]] .. v .. [[";
+                    p["path"] = "]] .. folder.path .. [[";
                     var result = { id: "]] .. uniqueUUID .. [[", params: p };
                     webkit.messageHandlers.watchfolders.postMessage(result);
                 } catch(err) {
@@ -284,7 +232,6 @@ function mod.generateTable()
     ]]
 
     return result
-
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.refreshTable() -> string
@@ -297,12 +244,13 @@ end
 --- Returns:
 ---  * None
 function mod.refreshTable()
+    local id = mod.watchFolderTableID
     local result = [[
         try {
-            var ]] .. mod.watchFolderTableID .. [[ = document.getElementById("]] .. mod.watchFolderTableID .. [[");
-            if (typeof(]] .. mod.watchFolderTableID .. [[) != 'undefined' && ]] .. mod.watchFolderTableID .. [[ != null)
+            var ]] .. id .. [[ = document.getElementById("]] .. id .. [[");
+            if (typeof(]] .. id .. [[) != 'undefined' && ]] .. id .. [[ != null)
             {
-                document.getElementById("]] .. mod.watchFolderTableID .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
+                document.getElementById("]] .. id .. [[").innerHTML = `]] .. mod.generateTable() .. [[`;
             }
         }
         catch(err) {
@@ -410,431 +358,6 @@ function mod.styleSheet()
     ]]
 end
 
--- getPath(file) -> string | nil
--- Function
--- Checks to see whether a file path matches one of our watch folders.
---
--- Parameters:
---  * file - The path to the file to check.
---
--- Returns:
---  * A path as string, or `nil` if no matching path can be found.
-local function getPath(file)
-    local watchFolders = mod.watchFolders()
-    for _, path in pairs(watchFolders) do
-        if file:sub(1, path:len()) == path then
-            return path
-        end
-    end
-    return nil
-end
-
-function mod.tagFiles(files)
-    --------------------------------------------------------------------------------
-    -- Add Tags:
-    --------------------------------------------------------------------------------
-    local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
-    local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
-    local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
-
-    local videoTags = mod.videoTag()
-    local audioTags = mod.audioTag()
-    local imageTags = mod.imageTag()
-
-    for _, file in pairs(files) do
-
-        local path = getPath(file)
-        local ext = file:match("%.([^%.]+)$")
-
-        if ext then
-            local videoTag = videoTags[path]
-            local audioTag = audioTags[path]
-            local imageTag = imageTags[path]
-
-            if videoTag then
-                if fnutils.contains(videoExtensions, ext) and tools.doesFileExist(file) then
-                    if not fs.tagsAdd(file, {videoTag}) then
-                        log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
-                    end
-                end
-            end
-            if audioTag then
-                if fnutils.contains(audioExtensions, ext) and tools.doesFileExist(file) then
-                    if not fs.tagsAdd(file, {audioTag}) then
-                        log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
-                    end
-                end
-            end
-            if imageTag then
-                if fnutils.contains(imageExtensions, ext) and tools.doesFileExist(file) then
-                    if not fs.tagsAdd(file, {imageTag}) then
-                        log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
-                    end
-                end
-            end
-        end
-    end
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.insertFilesIntoFinalCutPro(files) -> cp.rx.go.Statement
---- Function
---- Imports files into Final Cut Pro
----
---- Parameters:
----  * files - A table of file paths.
----
---- Returns:
----  * A `Statement` ready to be executed.
-function mod.insertFilesIntoFinalCutPro(files)
-    mod.disableImport = true
-    timer.doAfter(1, function()
-        mod.disableImport = false
-    end)
-
-    mod.tagFiles(files)
-
-    --------------------------------------------------------------------------------
-    -- Temporarily stop the Pasteboard Watcher:
-    --------------------------------------------------------------------------------
-    if mod.pasteboardManager then
-        mod.pasteboardManager.stopWatching()
-    end
-
-    --------------------------------------------------------------------------------
-    -- Save current Pasteboard Content:
-    --------------------------------------------------------------------------------
-    local originalPasteboard = pasteboard.readAllData()
-
-    --------------------------------------------------------------------------------
-    -- Write URL to Pasteboard:
-    --------------------------------------------------------------------------------
-    local objects = {}
-    for _, v in pairs(files) do
-        objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
-    end
-    local result = pasteboard.writeObjects(objects)
-    if not result then
-        dialog.displayErrorMessage("The URL could not be written to the Pasteboard. Error occured in Final Cut Pro Media Watch Folder.")
-        return nil
-    end
-
-    local timeline = fcp:timeline()
-
-    --------------------------------------------------------------------------------
-    -- Make sure Final Cut Pro is Active:
-    --------------------------------------------------------------------------------
-    return Do(fcp:doLaunch())
-
-    --------------------------------------------------------------------------------
-    -- Check if Timeline can be enabled:
-    --------------------------------------------------------------------------------
-    :Then(
-        timeline:doShow()
-        :TimeoutAfter(1000, "Unable to show the Timeline")
-    )
-
-    --------------------------------------------------------------------------------
-    -- Perform Paste:
-    --------------------------------------------------------------------------------
-    :Then(fcp:doSelectMenu({"Edit", "Paste as Connected Clip"}))
-
-    --------------------------------------------------------------------------------
-    -- Remove from Timeline if appropriate:
-    --------------------------------------------------------------------------------
-    :Then(function()
-        if not mod.insertIntoTimeline() then
-            return fcp:doSelectMenu({"Edit", "Undo Paste"}, {pressAll = true})
-        end
-    end)
-
-    :Then(function()
-        --------------------------------------------------------------------------------
-        -- Restore original Pasteboard Content:
-        --------------------------------------------------------------------------------
-        Do(function()
-            pasteboard.writeAllData(originalPasteboard)
-            if mod.pasteboardManager then
-                mod.pasteboardManager.startWatching()
-            end
-        end)
-        :After(2000)
-
-        --------------------------------------------------------------------------------
-        -- Delete After Import:
-        --------------------------------------------------------------------------------
-        if mod.deleteAfterImport() then
-            Do(function()
-                for _, file in pairs(files) do
-                    os.remove(file)
-                end
-            end)
-            :After(mod.SECONDS_UNTIL_DELETE * 1000)
-        end
-    end)
-    :Catch(function(message)
-        dialog.displayMessage(message)
-        return false
-    end)
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.importFile(file, obj) -> none
---- Function
---- Imports a file into Final Cut Pro
----
---- Parameters:
----  * file - File name
----  * tag - The notification tag
----
---- Returns:
----  * None
-function mod.importFile(file)
-
-    --------------------------------------------------------------------------------
-    -- Check to see if Final Cut Pro is running:
-    --------------------------------------------------------------------------------
-    if not fcp:isRunning() then
-        dialog.displayMessage(i18n("finalCutProNotRunning"))
-        if mod.notifications[file] then
-            mod.notifications[file]:send()
-        else
-            mod.createNotification(file)
-        end
-        return Done()
-    end
-
-    local importAll = false
-    local files = {}
-
-    local modifiers = eventtap.checkKeyboardModifiers()
-    if modifiers["shift"] then
-        --------------------------------------------------------------------------------
-        -- Import All:
-        --------------------------------------------------------------------------------
-        importAll = true
-        for i, _ in pairs(mod.notifications) do
-            files[#files + 1] = i
-        end
-    else
-        files = {file}
-    end
-
-    --------------------------------------------------------------------------------
-    -- Insert Files into Final Cut Pro:
-    --------------------------------------------------------------------------------
-    return Given(
-        mod.insertFilesIntoFinalCutPro(files)
-    )
-    :Then(function(result)
-        if not result then
-            return Done()
-        end
-
-        --------------------------------------------------------------------------------
-        -- Release the notification:
-        --------------------------------------------------------------------------------
-        local savedNotifications = mod.savedNotifications()
-        if importAll then
-            for i, _ in pairs(mod.notifications) do
-                mod.notifications[i]:withdraw()
-                mod.notifications[i] = nil
-                savedNotifications[i] = nil
-            end
-        else
-            mod.notifications[file] = nil
-            savedNotifications[file] = nil
-        end
-
-        --------------------------------------------------------------------------------
-        -- Save Notifications to Settings:
-        --------------------------------------------------------------------------------
-        mod.savedNotifications(savedNotifications)
-
-        --------------------------------------------------------------------------------
-        -- Cleanup Tags:
-        --------------------------------------------------------------------------------
-        cleanupTags()
-    end)
-
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.createNotification(file) -> none
---- Function
---- Creates a new notification
----
---- Parameters:
----  * file - File name
----
---- Returns:
----  * None
-function mod.createNotification(file)
-
-    local notificationFn = function(obj)
-        mod.importFile(file, obj:getFunctionTag()):Now()
-    end
-
-    mod.notifications[file] = notify.new(notificationFn)
-        :title(i18n("newFileForFinalCutPro"))
-        :subTitle(tools.getFilenameFromPath(file))
-        :hasActionButton(true)
-        :actionButtonTitle(i18n("import"))
-        :otherButtonTitle(i18n("skip"))
-        :send()
-
-    --------------------------------------------------------------------------------
-    -- Save Notifications to Settings:
-    --------------------------------------------------------------------------------
-    local notificationTag = mod.notifications[file]:getFunctionTag()
-    local savedNotifications = mod.savedNotifications()
-    savedNotifications[file] = notificationTag
-    mod.savedNotifications(savedNotifications)
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.withdrawNotification(file) -> nil
---- Function
---- Clears the notification for the specified file, if present.
----
---- Parameters:
----  * file - The file to clear.
----
---- Returns:
----  * Nothing
-function mod.withdrawNotification(file)
-    local n = mod.notifications[file]
-    if n then
-        n:withdraw()
-        mod.notifications[file] = nil
-        local savedNotifications = mod.savedNotifications()
-        savedNotifications[file] = nil
-        mod.savedNotifications(savedNotifications)
-    end
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.watchFolderTriggered(files, eventFlags, path) -> none
---- Function
---- Watch Folder Triggered
----
---- Parameters:
----  * files - A table containing a list of file paths that have changed.
----  * eventFlags - A table containing a list of tables denoting how each corresponding file in paths has changed, each containing boolean values indicating which types of events occurred.
----
---- Returns:
----  * None
-function mod.watchFolderTriggered(files, eventFlags)
-
-    --log.df("files: %s", hs.inspect(files))
-    --log.df("eventFlags: %s", hs.inspect(eventFlags))
-
-    if not mod.disableImport then
-        local autoFiles = {}
-        for i,file in pairs(files) do
-            local flags = eventFlags[i]
-
-            --------------------------------------------------------------------------------
-            -- Detect the filesystem:
-            --------------------------------------------------------------------------------
-            local volumeFormat = tools.volumeFormat(file)
-
-            --------------------------------------------------------------------------------
-            -- File deleted or removed from Watch Folder:
-            --------------------------------------------------------------------------------
-            if flags and flags.itemRenamed and flags.itemIsFile and not tools.doesFileExist(file) then
-                --log.df("File deleted or moved outside of watch folder!")
-                mod.withdrawNotification(file)
-            else
-
-                --------------------------------------------------------------------------------
-                -- New File Added to Watch Folder:
-                --------------------------------------------------------------------------------
-                local newFile = false
-                if flags.itemCreated and flags.itemIsFile and flags.itemModified then
-                    --log.df("New File Added: %s", file)
-                    newFile = true
-                end
-
-                --------------------------------------------------------------------------------
-                -- New File Added to Watch Folder, but still in transit:
-                --------------------------------------------------------------------------------
-                if flags.itemCreated and flags.itemIsFile and not flags.itemModified then
-
-                    -------------------------------------------------------------------------------
-                    -- Add filename to table:
-                    -------------------------------------------------------------------------------
-                    mod.filesInTransit[#mod.filesInTransit + 1] = file
-
-                    -------------------------------------------------------------------------------
-                    -- Show Temporary Notification:
-                    --------------------------------------------------------------------------------
-                    mod.notifications[file] = notify.new()
-                        :title(i18n("incomingFile"))
-                        :subTitle(tools.getFilenameFromPath(file))
-                        :hasActionButton(false)
-                        :send()
-
-                end
-
-                --------------------------------------------------------------------------------
-                -- New File Added to Watch Folder after copying:
-                --------------------------------------------------------------------------------
-                if flags.itemModified and flags.itemIsFile and fnutils.contains(mod.filesInTransit, file) then
-                    tools.removeFromTable(mod.filesInTransit, file)
-                    mod.withdrawNotification(file)
-                    newFile = true
-                end
-
-                --------------------------------------------------------------------------------
-                -- New File Moved into Watch Folder:
-                --------------------------------------------------------------------------------
-                local movedFile = false
-                if flags.itemRenamed and flags.itemIsFile then
-                    log.df("File Moved or Renamed: %s", file)
-                    movedFile = true
-                end
-
-                --------------------------------------------------------------------------------
-                -- New File Moved into Watch Folder on High Sierra:
-                --------------------------------------------------------------------------------
-                if flags.itemChangeOwner and flags.itemCreated and flags.itemIsFile and volumeFormat == "APFS" then
-                    tools.removeFromTable(mod.filesInTransit, file)
-                    mod.withdrawNotification(file)
-                    movedFile = true
-                end
-
-                --------------------------------------------------------------------------------
-                -- Check Extensions:
-                --------------------------------------------------------------------------------
-                local allowedExtensions = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
-                local ext = file:match("%.([^%.]+)$")
-                if fnutils.contains(allowedExtensions, ext) and tools.doesFileExist(file) then
-                    if newFile or movedFile then
-                        --log.df("File finished copying: %s", file)
-                        if mod.automaticallyImport() then
-                            autoFiles[#autoFiles + 1] = file
-                        else
-                            mod.createNotification(file)
-                        end
-                    end
-                end
-            end
-        end
-        if mod.automaticallyImport() and next(autoFiles) ~= nil then
-            mod.insertFilesIntoFinalCutPro(autoFiles):Now()
-        end
-    end
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.newWatcher(path) -> none
---- Function
---- New Folder Watcher
----
---- Parameters:
----  * path - Path to Watch Folder
----
---- Returns:
----  * None
-function mod.newWatcher(path)
-    mod.pathwatchers[path] = pathwatcher.new(path, mod.watchFolderTriggered):start()
-end
-
 --- plugins.finalcutpro.watchfolders.panels.media.addWatchFolder() -> none
 --- Function
 --- Opens the "Add Watch Folder" Dialog.
@@ -851,123 +374,44 @@ function mod.addWatchFolder()
         --------------------------------------------------------------------------------
         -- Make sure the folder isn't already being watched:
         --------------------------------------------------------------------------------
-        local watchFolders = mod.watchFolders()
-        if tools.tableContains(watchFolders, path) then
-            dialog.displayMessage(i18n("alreadyWatched"))
-            return
+        for _,folder in ipairs(mediaFolders) do
+            if folder.path == path then
+                dialog.displayMessage(i18n("alreadyWatched"))
+                return
+            end
         end
 
         --------------------------------------------------------------------------------
         -- Finder Tags:
         --------------------------------------------------------------------------------
-        local result
-        result = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("video")}), "", "", function() return true end)
-        if result == false then
+        local videoTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("video")}), "", "", function() return true end)
+        if videoTag == false then
             return
-        elseif result and tools.trim(result) ~= "" then
-            local videoTag = mod.videoTag()
-            videoTag[path] = result
-            mod.videoTag(videoTag)
+        else
+            videoTag = tools.trim(videoTag)
         end
 
-        result = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("audio")}), "", "", function() return true end)
-        if result == false then
+        local audioTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("audio")}), "", "", function() return true end)
+        if audioTag == false then
             return
-        elseif result and tools.trim(result) ~= "" then
-            local audioTag = mod.audioTag()
-            audioTag[path] = result
-            mod.audioTag(audioTag)
+        else
+            audioTag = tools.trim(audioTag)
         end
 
-        result = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("stills")}), "", "", function() return true end)
-        if result == false then
+        local imageTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("stills")}), "", "", function() return true end)
+        if imageTag == false then
             return
-        elseif result and tools.trim(result) ~= "" then
-            local imageTag = mod.imageTag()
-            imageTag[path] = result
-            mod.imageTag(imageTag)
+        else
+            imageTag = tools.trim(imageTag)
         end
 
-        --------------------------------------------------------------------------------
-        -- Update Settings:
-        --------------------------------------------------------------------------------
-        watchFolders[#watchFolders + 1] = path
-        mod.watchFolders(watchFolders)
+        mod.addMediaFolder(path, videoTag, audioTag, imageTag)
 
         --------------------------------------------------------------------------------
         -- Refresh HTML Table:
         --------------------------------------------------------------------------------
         mod.refreshTable()
-
-        --------------------------------------------------------------------------------
-        -- Setup New Watcher:
-        --------------------------------------------------------------------------------
-        mod.newWatcher(path)
-
     end
-end
-
--- getFileFromTag(tag) -> string
--- Function
--- Gets the file value from a tag.
---
--- Parameters:
---  * tag - The tag ID to search for as a string.
---
--- Returns:
---  * The file as string.
-local function getFileFromTag(tag)
-    local savedNotifications = mod.savedNotifications()
-    for file,t in pairs(savedNotifications) do
-        if t == tag then
-            return file
-        end
-    end
-    return nil
-end
-
---- plugins.finalcutpro.watchfolders.panels.media.setupWatchers(path) -> none
---- Function
---- Setup Folder Watchers
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.setupWatchers()
-
-    --------------------------------------------------------------------------------
-    -- Setup Watchers:
-    --------------------------------------------------------------------------------
-    local watchFolders = mod.watchFolders()
-    for _, v in ipairs(watchFolders) do
-        mod.newWatcher(v)
-    end
-
-    --------------------------------------------------------------------------------
-    -- Register any un-clicked Notifications from Previous Session & Trash
-    -- any ones that were clicked when CommandPost was closed:
-    --------------------------------------------------------------------------------
-    local deliveredNotifications = notify.deliveredNotifications()
-    local newSavedNotifications = {}
-    for _, v in pairs(deliveredNotifications) do
-        local tag = v:getFunctionTag()
-        local file = getFileFromTag(tag)
-        if file then
-            local notificationFn = function(obj)
-                mod.importFile(file, obj:getFunctionTag()):Now()
-            end
-            notify.register(tag, notificationFn)
-            newSavedNotifications[file] = tag
-        end
-    end
-    mod.savedNotifications(newSavedNotifications)
-
-    --------------------------------------------------------------------------------
-    -- Cleanup Tags:
-    --------------------------------------------------------------------------------
-    cleanupTags()
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.init(deps, env) -> table
@@ -994,6 +438,11 @@ function mod.init(deps)
     --------------------------------------------------------------------------------
     mod.pasteboardManager = deps.pasteboardManager
     mod.manager = deps.manager
+
+    --------------------------------------------------------------------------------
+    -- Setup Watchers:
+    --------------------------------------------------------------------------------
+    mod.loadMediaFolders()
 
     --------------------------------------------------------------------------------
     -- Setup Panel:
@@ -1051,11 +500,6 @@ function mod.init(deps)
             }
         )
         :addParagraph(21, i18n("deleteNote"), false, "mediaDeleteNote")
-
-    --------------------------------------------------------------------------------
-    -- Setup Watchers:
-    --------------------------------------------------------------------------------
-    mod.setupWatchers()
 
     return mod
 

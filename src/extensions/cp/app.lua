@@ -50,11 +50,9 @@ local prefs                     = require("cp.app.prefs")
 local prop                      = require("cp.prop")
 local tools                     = require("cp.tools")
 
-local rx                        = require("cp.rx")
 local go                        = require("cp.rx.go")
 
-local Observable                = rx.Observable
-local Given, First              = go.Given, go.First
+local Given                     = go.Given
 local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
 
 --------------------------------------------------------------------------------

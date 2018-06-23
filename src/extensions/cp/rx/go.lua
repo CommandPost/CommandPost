@@ -434,7 +434,7 @@ end
 
 function Statement.mt:Debug(label)
     local context = self:context()
-    context._debug = label or "DEBUG"
+    context._debug = label or self:fullName()
     return self
 end
 
@@ -450,6 +450,11 @@ end
 ---  * The `Statement`.
 function Statement.mt:Catch(handler)
     self:context()._catcher = handler
+    return self
+end
+
+function Statement.mt:DelayBy(millis)
+    self:context()._delayBy = millis
     return self
 end
 
@@ -507,13 +512,13 @@ function Statement.mt:toObservable(preserveTimer)
         local label = context._debug
         o = o:tap(
             function(...)
-                print(label .." [NEXT]: ", ...)
+                print("[NEXT: " .. label .."]: ", ...)
             end,
             function(message)
-                print(label .. " [ERROR]: ", message)
+                print("[ERROR: " .. label .. "]: ", message)
             end,
             function()
-                print(label .. " [COMPLETED]")
+                print("[COMPLETED: " .. label .. "]")
             end
         )
     end
@@ -523,6 +528,11 @@ function Statement.mt:toObservable(preserveTimer)
         o = o:catch(function(message)
             return toObservable(context._catcher(message))
         end)
+    end
+
+    -- only delay after everything else
+    if context._delayBy then
+        o = o:delay(context._delayBy)
     end
 
     return o
@@ -925,10 +935,21 @@ end)
 
 local First = Statement.named("First")
 :onInit(function(context, reference)
+    assert(reference ~= nil, "The First value may not be `nil`.")
     context.reference = reference
 end)
 :onObservable(function(context)
     return toObservable(context.reference):first()
+end)
+:define()
+
+local Last = Statement.named("Last")
+:onInit(function(context, reference)
+    assert(reference ~= nil, "The Last value may not be `nil`.")
+    context.reference = reference
+end)
+:onObservable(function(context)
+    return toObservable(context.reference):last()
 end)
 :define()
 
@@ -945,6 +966,7 @@ local Done = Statement.named("Done")
 :onObservable(function()
     return Observable.empty()
 end)
+:define()
 
 local If = Statement.named("If")
 :onInit(function(context, value)
@@ -1047,6 +1069,7 @@ return {
     Require = Require,
     WaitUntil = WaitUntil,
     First = First,
+    Last = Last,
     Throw = Throw,
     Done = Done,
     If = If,

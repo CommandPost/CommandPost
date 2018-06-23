@@ -56,7 +56,7 @@ local function evaluate(value)
     end
 end
 
---- cp.web.ui.javascript(script[, context]) -> cp.web.html
+--- cp.web.ui.javascript(script[, context][, naked]) -> cp.web.html
 --- Function
 --- Generates an HTML script element which will execute the provided
 --- JavaScript immediately. The script is self-contained and only has
@@ -74,13 +74,20 @@ end
 --- Parameters:
 ---  * script 	- String containing the JavaScript to execute.
 ---  * context	- (optional) Table containing any values to inject into the script.
+---  * naked    - (optional) If `true`, the javascript will be returned without a surrounding <script> block.
 ---
 --- Returns:
 ---  * a `cp.web.html` element representing the JavaScript block.
-function ui.javascript(script, context)
+function ui.javascript(script, context, naked)
+    if type(context) == "boolean" then
+        naked = context
+        context = nil
+    end
     local t = compile(script, "no-cache", true)
-    return html.script { type = "text/javascript" } (
-        "(function(){\n" .. t(context) .. "\n})();", false
+    local js = "(function(){\n" .. t(context) .. "\n})();"
+    return naked and js or
+    html.script { type = "text/javascript" } (
+        js, false
     )
 end
 
