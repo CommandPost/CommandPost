@@ -33,13 +33,13 @@
 | **Type**                                             | {{ item.type }}                                                                                         |
 | **Description**                                      | {{ item.desc }}                                                                                         |
 {% if "parameters" in item %}
-| **Parameters**                                       | <ul>{% for parameter in item.parameters %}<li>{{ parameter | replace(" * ","") }}</li>{% endfor %}</ul> |
+| **Parameters**                                       | {% for parameter in item.parameters %}{{ parameter | markdown | replace("\n","") }}{% endfor %}   |
 {% endif %}
 {% if "returns" in item %}
-| **Returns**                                          | <ul>{% for return in item.returns %}<li>{{ return | replace(" * ","") }}</li>{% endfor %}</ul>          |
+| **Returns**                                          | {% for return in item.returns %}{{ return | markdown | replace("\n","") }}{% endfor %}            |
 {% endif %}
 {% if "notes" in item %}
-| **Notes**                                            | <ul>{% for note in item.notes %}<li>{{ note | replace(" * ","") }}</li>{% endfor %}</ul>                |
+| **Notes**                                            | {% for note in item.notes %}{{ note | markdown  | replace("\n","") }}{% endfor %}                 |
 {% endif %}
 
 {% endfor %}{% endif %}{% endfor %}
