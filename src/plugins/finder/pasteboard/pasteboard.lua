@@ -20,6 +20,11 @@ local eventtap              = require("hs.eventtap")
 local pasteboard            = require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local tools                 = require("cp.tools")
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
@@ -102,6 +107,16 @@ function plugin.init(deps)
 
     global:add("cpMakeSelectedTextCamelcase")
         :whenActivated(function() mod.processText("camelcase", true) end)
+
+    global:add("cpTypeClipboardContents")
+        :whenActivated(function()
+            local pasteboardContents = pasteboard.getContents()
+            if pasteboardContents then
+                eventtap.keyStrokes(pasteboardContents)
+            else
+                tools.playErrorSound()
+            end
+        end)
 
     return mod
 end
