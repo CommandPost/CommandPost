@@ -46,7 +46,7 @@ local ax                    = require("hs._asm.axuielement")
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local insert, remove        = table.insert, table.remove
+local insert                = table.insert
 local LAUNCHED, TERMINATED  = applicationwatcher.launched, applicationwatcher.terminated
 
 --------------------------------------------------------------------------------
@@ -230,7 +230,7 @@ function mod.mt:_registerNotification(notification, callbackFn)
     end
 
     -- add it to the list of functions for the notification type
-    insert(watchers, callbackFn)
+    watchers[callbackFn] = true
 end
 
 --- cp.ui.notifier:watchAll(callbackFn) -> self
@@ -276,12 +276,7 @@ end
 function mod.mt:_unregisterNotification(notification, callbackFn)
     local watchers = self.__watchers[notification]
     if watchers then
-        local count = #watchers
-        for i = count, 1, -1 do
-            if watchers[i] == callbackFn then
-                remove(watchers, i)
-            end
-        end
+        watchers[callbackFn] = nil
     end
 end
 
@@ -361,7 +356,7 @@ function mod.mt:_observer(create)
             o:callback(function(_, element, notification, details)
                 local watchers = self.__watchers[notification]
                 if watchers then
-                    for _,fn in ipairs(watchers) do
+                    for fn,_ in pairs(watchers) do
                         local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
                         if not ok then
                             log.ef("Error processing '%s' notification from app '%sS':\n%s", notification, self:bundleID(), result)
@@ -450,7 +445,7 @@ function mod.mt:update(force)
             end
 
             -- register the current one
-            if #watchers > 0 then
+            if next(watchers) ~= nil then
                 if element then
                     observer:addWatcher(element, n)
                 end
