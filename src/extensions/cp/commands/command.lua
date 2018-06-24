@@ -40,26 +40,30 @@ command.mt.__index = command.mt
 ---  * command - The command that was created.
 ---
 function command.new(id, parent)
-    local o = {
+    local o = prop.extend({
         _id = id,
         _parent = parent,
         _shortcuts = {},
-    }
-    prop.extend(o, command.mt)
+    }, command.mt)
 
 --- cp.commands.command.isEnabled <cp.prop: boolean>
 --- Field
 --- If set to `true`, the command is enabled.
-    o.isEnabled = prop.TRUE():bind(o)
+    local isEnabled = prop.TRUE()
 
 --- cp.commands.command.isActive <cp.prop: boolean; read-only>
 --- Field
 --- Indicates if the command is active. To be active, both the command and the group it belongs to must be enabled.
-    o.isActive = o.isEnabled:AND(parent.isEnabled):bind(o):watch(function(active)
+    local isActive = isEnabled:AND(parent.isEnabled):watch(function(active)
         for _,sc in ipairs(o._shortcuts) do
             sc:isEnabled(active)
         end
     end, true)
+
+    prop.bind(o) {
+        isEnabled = isEnabled,
+        isActive = isActive,
+    }
 
     return o
 end

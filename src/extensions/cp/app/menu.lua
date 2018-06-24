@@ -276,7 +276,7 @@ function menu.new(app)
         _itemFinders = {}
     }, menu.mt)
 
-    local UI = app.UI:mutate(function(original, self)
+    local UI = app.UI:mutate(function(original)
         -- return axutils.cache(self, "_ui", function()
             return axutils.childMatching(original(), menu.matches)
         -- end, menu.matches)

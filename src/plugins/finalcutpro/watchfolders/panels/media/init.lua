@@ -11,8 +11,8 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log				= require("hs.logger").new("fcpwatch")
-local inspect           = require("hs.inspect")
+-- local log				= require("hs.logger").new("fcpwatch")
+-- local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
