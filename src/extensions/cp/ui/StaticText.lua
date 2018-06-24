@@ -138,7 +138,7 @@ function StaticText.new(parent, finderFn, convertFn)
 
     -- wire up a notifier to watch for value changes.
     o.value:preWatch(function()
-        o:notifier():addWatcher("AXValueChanged", function() o.value:update() end):start()
+        o:notifier():watchFor("AXValueChanged", function() o.value:update() end):start()
     end)
 
     -- watch for changes in parent visibility, and update the notifier if it changes.

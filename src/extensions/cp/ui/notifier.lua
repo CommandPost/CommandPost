@@ -10,7 +10,7 @@
 --- local notifier = require("cp.ui.notifier")
 --- local function finder() ... end -- returns the axuielement
 --- local o = notifier.new("com.apple.FinalCut", finder)
---- o:addWatcher("AXValueChanged", function(notifier, element, notification, details) ... end)
+--- o:watchFor("AXValueChanged", function(notifier, element, notification, details) ... end)
 --- o:start()
 --- ```
 
@@ -181,7 +181,7 @@ function mod.mt:currentElement()
     return self.__finder and self.__finder() or nil
 end
 
---- cp.ui.notifier:addWatcher(notification, callbackFn) -> self
+--- cp.ui.notifier:watchFor(notification, callbackFn) -> self
 --- Method
 --- Registers a function to get called whenever the specified notification type is triggered
 --- for the current `axuielement`.
@@ -195,10 +195,10 @@ end
 ---
 --- Notes:
 ---  * The callback function should expect 3 arguments and return none. The arguments passed to the callback will be as follows:
----  ** the `hs._asm.axuielement` object for the accessibility element which generated the notification.
----  ** a string with the notification type.
----  ** A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
-function mod.mt:addWatcher(notification, callbackFn)
+---      * the `hs._asm.axuielement` object for the accessibility element which generated the notification.
+---      * a string with the notification type.
+---      * A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
+function mod.mt:watchFor(notification, callbackFn, noUpdate)
     assert(type(notification) == "string", "Provide a string value for the `notification`")
     assert(type(callbackFn) == "function", "Provide a function for the `callbackFn`.")
 
@@ -212,6 +212,33 @@ function mod.mt:addWatcher(notification, callbackFn)
     insert(watchers, callbackFn)
 
     -- do an update
+    if not noUpdate then
+        return self:update(true)
+    end
+end
+
+--- cp.ui.notifier:watchAll(callbackFn) -> self
+--- Method
+--- Registers the callback as a watcher for all standard notifications for the current `axuielement`.
+---
+--- Parameters:
+---  * callbackFn   - the function to call when the notification happens.
+---
+--- Returns:
+---  * The `cp.ui.notifier` instance.
+---
+--- Notes:
+---  * This should generally just be used for debugging purposes. It's best to use `watchFor`[#watchFor] in most cases.
+---  * The callback function should expect 3 arguments and return none. The arguments passed to the callback will be as follows:
+---      * the `hs._asm.axuielement` object for the accessibility element which generated the notification.
+---      * a string with the notification type.
+---      * A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
+function mod.mt:watchAll(callbackFn)
+    local notifications = ax.observer.notifications
+    for _,n in ipairs(notifications) do
+        self:watchFor(n, callbackFn, true)
+    end
+
     return self:update(true)
 end
 
@@ -381,7 +408,7 @@ function mod.mt:update(force)
 
             -- register the current one
             if element then
-                observer:addWatcher(element, n)
+                observer:watchFor(element, n)
             end
         end
 

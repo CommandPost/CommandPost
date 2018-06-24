@@ -33,7 +33,7 @@ return test.suite("cp.ids"):with(
         local results = {}
         local lastResult = nil
 
-        n:addWatcher("AXMenuItemSelected", function(element, notification, details)
+        n:watchFor("AXMenuItemSelected", function(element, notification, details)
             log.f("This should output once, after the test completes: watcher called for '%s'.", notification)
             lastResult = {n = notification, e = element, d = details}
             insert(results, lastResult)

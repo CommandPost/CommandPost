@@ -86,7 +86,7 @@ function PrimaryToolbar.new(parent)
     --------------------------------------------------------------------------------
     -- Watch for AXValueChanged notifications in the app for this CheckBox:
     --------------------------------------------------------------------------------
-    o:app():notifier():addWatcher("AXValueChanged", function(element)
+    o:app():notifier():watchFor("AXValueChanged", function(element)
         if element:attributeValue("AXRole") == "AXImage" then
             local eParent = getParent(element)
             if eParent then

@@ -142,7 +142,7 @@ function Browser.new(app)
     }
 
     -- wire up the libraries/media/generators buttons up to listen for updates from the app
-    app:notifier():addWatcher("AXValueChanged", function(element)
+    app:notifier():watchFor("AXValueChanged", function(element)
         if element:attributeValue("AXRole") == "AXImage" then
             local parent = element:attributeValue("AXParent")
             local ui = o:UI()
