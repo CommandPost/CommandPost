@@ -39,14 +39,14 @@ util.defaultScheduler = function(newScheduler)
     return defaultScheduler
 end
 
---- @class Reference
+---- @class Reference
 -- @description A handle representing the link between an Observer and an Observable, as well as any
 -- work required to clean up after the Observable completes or the Observer cancels.
 local Reference = {}
 Reference.__index = Reference
 Reference.__tostring = util.constant('Reference')
 
---- Creates a new Reference.
+---- Creates a new Reference.
 -- @arg {function=} action - The action to run when the reference is canceld. It will only
 --                           be run once.
 -- @returns {Reference}
@@ -59,14 +59,14 @@ function Reference.create(action)
   return setmetatable(self, Reference)
 end
 
---- Unsubscribes the reference, performing any necessary cleanup work.
+---- Unsubscribes the reference, performing any necessary cleanup work.
 function Reference:cancel()
   if self.cancelled then return end
   self.action(self)
   self.cancelled = true
 end
 
---- @class Observer
+---- @class Observer
 -- @description Observers are simple objects that receive values from Observables.
 local Observer = {}
 Observer.__index = Observer
@@ -76,7 +76,7 @@ function Observer.is(thing)
     return util.isa(thing, Observer)
 end
 
---- Creates a new Observer.
+---- Creates a new Observer.
 -- @arg {function=} onNext - Called when the Observable produces a value.
 -- @arg {function=} onError - Called when the Observable terminates due to an error.
 -- @arg {function=} onCompleted - Called when the Observable completes normally.
@@ -92,7 +92,7 @@ function Observer.create(onNext, onError, onCompleted)
   return setmetatable(self, Observer)
 end
 
---- Pushes zero or more values to the Observer.
+---- Pushes zero or more values to the Observer.
 -- @arg {*...} values
 function Observer:onNext(...)
   if not self.stopped then
@@ -100,7 +100,7 @@ function Observer:onNext(...)
   end
 end
 
---- Notify the Observer that an error has occurred.
+---- Notify the Observer that an error has occurred.
 -- @arg {string=} message - A string describing what went wrong.
 function Observer:onError(message)
   if not self.stopped then
@@ -109,7 +109,7 @@ function Observer:onError(message)
   end
 end
 
---- Notify the Observer that the sequence has completed and will produce no more values.
+---- Notify the Observer that the sequence has completed and will produce no more values.
 function Observer:onCompleted()
   if not self.stopped then
     self.stopped = true
@@ -117,7 +117,7 @@ function Observer:onCompleted()
   end
 end
 
---- @class Observable
+---- @class Observable
 -- @description Observables push values to Observers.
 local Observable = {}
 Observable.__index = Observable
@@ -127,7 +127,7 @@ function Observable.is(thing)
     return util.isa(thing, Observable)
 end
 
---- Creates a new Observable.
+---- Creates a new Observable.
 -- @arg {function} subscribe - The reference function that produces values.
 -- @returns {Observable}
 function Observable.create(subscribe)
@@ -138,7 +138,7 @@ function Observable.create(subscribe)
   return setmetatable(self, Observable)
 end
 
---- Shorthand for creating an Observer and passing it to this Observable's subscription function.
+---- Shorthand for creating an Observer and passing it to this Observable's subscription function.
 -- @arg {function} onNext - Called when the Observable produces a value.
 -- @arg {function} onError - Called when the Observable terminates due to an error.
 -- @arg {function} onCompleted - Called when the Observable completes normally.
@@ -151,19 +151,19 @@ function Observable:subscribe(onNext, onError, onCompleted)
   end
 end
 
---- Returns an Observable that immediately completes without producing a value.
+---- Returns an Observable that immediately completes without producing a value.
 function Observable.empty()
   return Observable.create(function(observer)
     observer:onCompleted()
   end)
 end
 
---- Returns an Observable that never produces values and never completes.
+---- Returns an Observable that never produces values and never completes.
 function Observable.never()
   return Observable.create(function(_) end)
 end
 
---- Returns an Observable that immediately produces an error.
+---- Returns an Observable that immediately produces an error.
 function Observable.throw(message, ...)
   if select("#", ...) > 0 then
     message = string.format(message, ...)
@@ -173,7 +173,7 @@ function Observable.throw(message, ...)
   end)
 end
 
---- Creates an Observable that produces a set of values.
+---- Creates an Observable that produces a set of values.
 -- @arg {*...} values
 -- @returns {Observable}
 function Observable.of(...)
@@ -188,7 +188,7 @@ function Observable.of(...)
   end)
 end
 
---- Creates an Observable that produces a range of values in a manner similar to a Lua for loop.
+---- Creates an Observable that produces a range of values in a manner similar to a Lua for loop.
 -- @arg {number} initial - The first value of the range, or the upper limit if no other arguments
 --                         are specified.
 -- @arg {number=} limit - The second value of the range.
@@ -210,7 +210,7 @@ function Observable.fromRange(initial, limit, step)
   end)
 end
 
---- Creates an Observable that produces values from a table.
+---- Creates an Observable that produces values from a table.
 -- @arg {table} table - The table used to create the Observable.
 -- @arg {function=pairs} iterator - An iterator used to iterate the table, e.g. pairs or ipairs.
 -- @arg {boolean} keys - Whether or not to also emit the keys of the table.
@@ -226,7 +226,7 @@ function Observable.fromTable(t, iterator, keys)
   end)
 end
 
---- Creates an Observable that produces values when the specified coroutine yields.
+---- Creates an Observable that produces values when the specified coroutine yields.
 -- @arg {thread|function} fn - A coroutine or function to use to generate values.  Note that if a
 --                             coroutine is used, the values it yields will be shared by all
 --                             subscribed Observers (influenced by the Scheduler), whereas a new
@@ -256,7 +256,7 @@ function Observable.fromCoroutine(fn, scheduler)
   end)
 end
 
---- Creates an Observable that produces values from a file, line by line.
+---- Creates an Observable that produces values from a file, line by line.
 -- @arg {string} filename - The name of the file used to create the Observable
 -- @returns {Observable}
 function Observable.fromFileByLine(filename)
@@ -276,7 +276,7 @@ function Observable.fromFileByLine(filename)
   end)
 end
 
---- Creates an Observable that creates a new Observable for each observer using a factory function.
+---- Creates an Observable that creates a new Observable for each observer using a factory function.
 -- @arg {function} factory - A function that returns an Observable.
 -- @returns {Observable}
 function Observable.defer(fn)
@@ -288,7 +288,7 @@ function Observable.defer(fn)
   }, Observable)
 end
 
---- Returns an Observable that repeats a value a specified number of times.
+---- Returns an Observable that repeats a value a specified number of times.
 -- @arg {*} value - The value to repeat.
 -- @arg {number=} count - The number of times to repeat the value.  If left unspecified, the value
 --                        is repeated an infinite number of times.
@@ -305,7 +305,7 @@ function Observable.replicate(value, count)
   end)
 end
 
---- Subscribes to this Observable and prints values it produces.
+---- Subscribes to this Observable and prints values it produces.
 -- @arg {string=} name - Prefixes the printed messages with a name.
 -- @arg {function=tostring} formatter - A function that formats one or more values to be printed.
 function Observable:dump(name, formatter)
@@ -319,7 +319,7 @@ function Observable:dump(name, formatter)
   return self:subscribe(onNext, onError, onCompleted)
 end
 
---- Determine whether all items emitted by an Observable meet some criteria.
+---- Determine whether all items emitted by an Observable meet some criteria.
 -- @arg {function=identity} predicate - The predicate used to evaluate objects.
 function Observable:all(predicate)
   predicate = predicate or util.identity
@@ -347,7 +347,7 @@ function Observable:all(predicate)
   end)
 end
 
---- Given a set of Observables, produces values from only the first one to produce a value.
+---- Given a set of Observables, produces values from only the first one to produce a value.
 -- @arg {Observable...} observables
 -- @returns {Observable}
 function Observable.amb(a, b, ...)
@@ -396,7 +396,7 @@ function Observable.amb(a, b, ...)
   end):amb(...)
 end
 
---- Returns an Observable that produces the average of all values produced by the original.
+---- Returns an Observable that produces the average of all values produced by the original.
 -- @returns {Observable}
 function Observable:average()
   return Observable.create(function(observer)
@@ -423,7 +423,7 @@ function Observable:average()
   end)
 end
 
---- Returns an Observable that buffers values from the original and produces them as multiple
+---- Returns an Observable that buffers values from the original and produces them as multiple
 -- values.
 -- @arg {number} size - The size of the buffer.
 function Observable:buffer(size)
@@ -461,7 +461,7 @@ function Observable:buffer(size)
   end)
 end
 
---- Returns an Observable that intercepts any errors from the previous and replace them with values
+---- Returns an Observable that intercepts any errors from the previous and replace them with values
 -- produced by a new Observable.
 -- @arg {function|Observable} handler - An Observable or a function that returns an Observable to
 --                                      replace the source Observable in the event of an error.
@@ -499,7 +499,7 @@ function Observable:catch(handler)
   end)
 end
 
---- Returns a new Observable that runs a combinator function on the most recent values from a set
+---- Returns a new Observable that runs a combinator function on the most recent values from a set
 -- of Observables whenever any of them produce a new value. The results of the combinator function
 -- are produced by the new Observable.
 -- @arg {Observable...} observables - One or more Observables to combine.
@@ -560,13 +560,13 @@ function Observable:combineLatest(...)
   end)
 end
 
---- Returns a new Observable that produces the values of the first with falsy values removed.
+---- Returns a new Observable that produces the values of the first with falsy values removed.
 -- @returns {Observable}
 function Observable:compact()
   return self:filter(util.identity)
 end
 
---- Returns a new Observable that produces the values produced by all the specified Observables in
+---- Returns a new Observable that produces the values produced by all the specified Observables in
 -- the order they are specified.
 -- @arg {Observable...} sources - The Observables to concatenate.
 -- @returns {Observable}
@@ -596,7 +596,7 @@ function Observable:concat(other, ...)
   end)
 end
 
---- Returns a new Observable that produces a single boolean value representing whether or not the
+---- Returns a new Observable that produces a single boolean value representing whether or not the
 -- specified value was produced by the original.
 -- @arg {*} value - The value to search for.  == is used for equality testing.
 -- @returns {Observable}
@@ -636,7 +636,7 @@ function Observable:contains(value)
   end)
 end
 
---- Returns an Observable that produces a single value representing the number of values produced
+---- Returns an Observable that produces a single value representing the number of values produced
 -- by the source value that satisfy an optional predicate.
 -- @arg {function=} predicate - The predicate used to match values.
 function Observable:count(predicate)
@@ -698,7 +698,7 @@ function Observable:debounce(time, scheduler)
   end)
 end
 
---- Returns a new Observable that produces a default set of items if the source Observable produces
+---- Returns a new Observable that produces a default set of items if the source Observable produces
 -- no values.
 -- @arg {*...} values - Zero or more values to produce if the source completes without emitting
 --                      anything.
@@ -730,7 +730,7 @@ function Observable:defaultIfEmpty(...)
   end)
 end
 
---- Returns a new Observable that produces the values of the original delayed by a time period.
+---- Returns a new Observable that produces the values of the original delayed by a time period.
 -- @arg {number|function} time - An amount in milliseconds to delay by, or a function which returns
 --                                this value.
 -- @arg {Scheduler} scheduler - The scheduler to run the Observable on.
@@ -763,7 +763,7 @@ function Observable:delay(time, scheduler)
   end)
 end
 
---- Returns a new Observable that produces the values from the original with duplicates removed.
+---- Returns a new Observable that produces the values from the original with duplicates removed.
 -- @returns {Observable}
 function Observable:distinct()
   return Observable.create(function(observer)
@@ -789,7 +789,7 @@ function Observable:distinct()
   end)
 end
 
---- Returns an Observable that only produces values from the original if they are different from
+---- Returns an Observable that only produces values from the original if they are different from
 -- the previous value.
 -- @arg {function} comparator - A function used to compare 2 values. If unspecified, == is used.
 -- @returns {Observable}
@@ -823,7 +823,7 @@ function Observable:distinctUntilChanged(comparator)
   end)
 end
 
---- Returns an Observable that produces the nth element produced by the source Observable.
+---- Returns an Observable that produces the nth element produced by the source Observable.
 -- @arg {number} index - The index of the item, with an index of 1 representing the first.
 -- @returns {Observable}
 function Observable:elementAt(index)
@@ -856,7 +856,7 @@ function Observable:elementAt(index)
   end)
 end
 
---- Returns a new Observable that only produces values of the first that satisfy a predicate.
+---- Returns a new Observable that only produces values of the first that satisfy a predicate.
 -- @arg {function} predicate - The predicate used to filter values.
 -- @returns {Observable}
 function Observable:filter(predicate)
@@ -883,7 +883,7 @@ function Observable:filter(predicate)
   end)
 end
 
---- Returns a new Observable that produces the first value of the original that satisfies a
+---- Returns a new Observable that produces the first value of the original that satisfies a
 -- predicate.
 -- @arg {function} predicate - The predicate used to find a value.
 function Observable:find(predicate)
@@ -911,13 +911,13 @@ function Observable:find(predicate)
   end)
 end
 
---- Returns a new Observable that only produces the first result of the original.
+---- Returns a new Observable that only produces the first result of the original.
 -- @returns {Observable}
 function Observable:first()
   return self:take(1)
 end
 
---- Returns a new Observable that transform the items emitted by an Observable into Observables,
+---- Returns a new Observable that transform the items emitted by an Observable into Observables,
 -- then flatten the emissions from those into a single Observable
 -- @arg {function} callback - The function to transform values from the original Observable.
 -- @returns {Observable}
@@ -926,7 +926,7 @@ function Observable:flatMap(callback)
   return self:map(callback):flatten()
 end
 
---- Returns a new Observable that uses a callback to create Observables from the values produced by
+---- Returns a new Observable that uses a callback to create Observables from the values produced by
 -- the source, then produces values from the most recent of these Observables.
 -- @arg {function=identity} callback - The function used to convert values to Observables.
 -- @returns {Observable}
@@ -970,7 +970,7 @@ function Observable:flatMapLatest(callback)
   end)
 end
 
---- Returns a new Observable that subscribes to the Observables produced by the original and
+---- Returns a new Observable that subscribes to the Observables produced by the original and
 -- produces their values.
 -- @returns {Observable}
 function Observable:flatten()
@@ -1043,7 +1043,7 @@ function Observable:flatten()
   end)
 end
 
---- Returns an Observable that terminates when the source terminates but does not produce any
+---- Returns an Observable that terminates when the source terminates but does not produce any
 -- elements.
 -- @returns {Observable}
 function Observable:ignoreElements()
@@ -1060,7 +1060,7 @@ function Observable:ignoreElements()
   end)
 end
 
---- Returns a new Observable that only produces the last result of the original.
+---- Returns a new Observable that only produces the last result of the original.
 -- @returns {Observable}
 function Observable:last()
   return Observable.create(function(observer)
@@ -1088,7 +1088,7 @@ function Observable:last()
   end)
 end
 
---- Returns a new Observable that produces the values of the original transformed by a function.
+---- Returns a new Observable that produces the values of the original transformed by a function.
 -- @arg {function} callback - The function to transform values from the original Observable.
 -- @returns {Observable}
 function Observable:map(callback)
@@ -1113,13 +1113,13 @@ function Observable:map(callback)
   end)
 end
 
---- Returns a new Observable that produces the maximum value produced by the original.
+---- Returns a new Observable that produces the maximum value produced by the original.
 -- @returns {Observable}
 function Observable:max()
   return self:reduce(math.max)
 end
 
---- Returns a new Observable that produces the values produced by all the specified Observables in
+---- Returns a new Observable that produces the values produced by all the specified Observables in
 -- the order they are produced.
 -- @arg {Observable...} sources - One or more Observables to merge.
 -- @returns {Observable}
@@ -1152,19 +1152,19 @@ function Observable:merge(...)
   end)
 end
 
---- Returns a new Observable that produces the minimum value produced by the original.
+---- Returns a new Observable that produces the minimum value produced by the original.
 -- @returns {Observable}
 function Observable:min()
   return self:reduce(math.min)
 end
 
---- Returns an Observable that produces the values of the original inside tables.
+---- Returns an Observable that produces the values of the original inside tables.
 -- @returns {Observable}
 function Observable:pack()
   return self:map(util.pack)
 end
 
---- Returns two Observables: one that produces values for which the predicate returns truthy for,
+---- Returns two Observables: one that produces values for which the predicate returns truthy for,
 -- and another that produces values for which the predicate returns falsy.
 -- @arg {function} predicate - The predicate used to partition the values.
 -- @returns {Observable}
@@ -1173,7 +1173,7 @@ function Observable:partition(predicate)
   return self:filter(predicate), self:reject(predicate)
 end
 
---- Returns a new Observable that produces values computed by extracting the given keys from the
+---- Returns a new Observable that produces values computed by extracting the given keys from the
 -- tables produced by the original.
 -- @arg {string...} keys - The key to extract from the table. Multiple keys can be specified to
 --                         recursively pluck values from nested tables.
@@ -1202,7 +1202,7 @@ function Observable:pluck(key, ...)
   end):pluck(...)
 end
 
---- Returns a new Observable that produces a single value computed by accumulating the results of
+---- Returns a new Observable that produces a single value computed by accumulating the results of
 -- running a function on each value produced by the original Observable.
 -- @arg {function} accumulator - Accumulates the values of the original Observable. Will be passed
 --                               the return value of the last call as the first argument and the
@@ -1238,7 +1238,7 @@ function Observable:reduce(accumulator, seed)
   end)
 end
 
---- Returns a new Observable that produces values from the original which do not satisfy a
+---- Returns a new Observable that produces values from the original which do not satisfy a
 -- predicate.
 -- @arg {function} predicate - The predicate used to reject values.
 -- @returns {Observable}
@@ -1266,7 +1266,7 @@ function Observable:reject(predicate)
   end)
 end
 
---- Returns an Observable that restarts in the event of an error.
+---- Returns an Observable that restarts in the event of an error.
 -- @arg {number=} count - The maximum number of times to retry.  If left unspecified, an infinite
 --                        number of retries will be attempted.
 -- @returns {Observable}
@@ -1300,7 +1300,7 @@ function Observable:retry(count)
   end)
 end
 
---- Returns a new Observable that produces its most recent value every time the specified observable
+---- Returns a new Observable that produces its most recent value every time the specified observable
 -- produces a value.
 -- @arg {Observable} sampler - The Observable that is used to sample values from this Observable.
 -- @returns {Observable}
@@ -1338,7 +1338,7 @@ function Observable:sample(sampler)
   end)
 end
 
---- Returns a new Observable that produces values computed by accumulating the results of running a
+---- Returns a new Observable that produces values computed by accumulating the results of running a
 -- function on each value produced by the original Observable.
 -- @arg {function} accumulator - Accumulates the values of the original Observable. Will be passed
 --                               the return value of the last call as the first argument and the
@@ -1375,7 +1375,7 @@ function Observable:scan(accumulator, seed)
   end)
 end
 
---- Returns a new Observable that skips over a specified number of values produced by the original
+---- Returns a new Observable that skips over a specified number of values produced by the original
 -- and produces the rest.
 -- @arg {number=1} n - The number of values to ignore.
 -- @returns {Observable}
@@ -1405,7 +1405,7 @@ function Observable:skip(n)
   end)
 end
 
---- Returns an Observable that omits a specified number of values from the end of the original
+---- Returns an Observable that omits a specified number of values from the end of the original
 -- Observable.
 -- @arg {number} count - The number of items to omit from the end.
 -- @returns {Observable}
@@ -1437,7 +1437,7 @@ function Observable:skipLast(count)
   end)
 end
 
---- Returns a new Observable that skips over values produced by the original until the specified
+---- Returns a new Observable that skips over values produced by the original until the specified
 -- Observable produces a value.
 -- @arg {Observable} other - The Observable that triggers the production of values.
 -- @returns {Observable}
@@ -1472,7 +1472,7 @@ function Observable:skipUntil(other)
   end)
 end
 
---- Returns a new Observable that skips elements until the predicate returns falsy for one of them.
+---- Returns a new Observable that skips elements until the predicate returns falsy for one of them.
 -- @arg {function} predicate - The predicate used to continue skipping values.
 -- @returns {Observable}
 function Observable:skipWhile(predicate)
@@ -1505,7 +1505,7 @@ function Observable:skipWhile(predicate)
   end)
 end
 
---- Returns a new Observable that produces the specified values followed by all elements produced by
+---- Returns a new Observable that produces the specified values followed by all elements produced by
 -- the source Observable.
 -- @arg {*...} values - The values to produce before the Observable begins producing values
 --                      normally.
@@ -1518,14 +1518,14 @@ function Observable:startWith(...)
   end)
 end
 
---- Returns an Observable that produces a single value representing the sum of the values produced
+---- Returns an Observable that produces a single value representing the sum of the values produced
 -- by the original.
 -- @returns {Observable}
 function Observable:sum()
   return self:reduce(function(x, y) return x + y end, 0)
 end
 
---- Given an Observable that produces Observables, returns an Observable that produces the values
+---- Given an Observable that produces Observables, returns an Observable that produces the values
 -- produced by the most recently produced Observable.
 -- @returns {Observable}
 function Observable:switch()
@@ -1556,7 +1556,7 @@ function Observable:switch()
   end)
 end
 
---- Returns a new Observable that only produces the first n results of the original.
+---- Returns a new Observable that only produces the first n results of the original.
 -- @arg {number=1} n - The number of elements to produce before completing.
 -- @returns {Observable}
 function Observable:take(n)
@@ -1592,7 +1592,7 @@ function Observable:take(n)
   end)
 end
 
---- Returns an Observable that produces a specified number of elements from the end of a source
+---- Returns an Observable that produces a specified number of elements from the end of a source
 -- Observable.
 -- @arg {number} count - The number of elements to produce.
 -- @returns {Observable}
@@ -1622,7 +1622,7 @@ function Observable:takeLast(count)
   end)
 end
 
---- Returns a new Observable that completes when the specified Observable fires.
+---- Returns a new Observable that completes when the specified Observable fires.
 -- @arg {Observable} other - The Observable that triggers completion of the original.
 -- @returns {Observable}
 function Observable:takeUntil(other)
@@ -1645,7 +1645,7 @@ function Observable:takeUntil(other)
   end)
 end
 
---- Returns a new Observable that produces elements until the predicate returns falsy.
+---- Returns a new Observable that produces elements until the predicate returns falsy.
 -- @arg {function} predicate - The predicate used to continue production of values.
 -- @returns {Observable}
 function Observable:takeWhile(predicate)
@@ -1680,7 +1680,7 @@ function Observable:takeWhile(predicate)
   end)
 end
 
---- Runs a function each time this Observable has activity. Similar to subscribe but does not
+---- Runs a function each time this Observable has activity. Similar to subscribe but does not
 -- create a subscription.
 -- @arg {function=} onNext - Run when the Observable produces values.
 -- @arg {function=} onError - Run when the Observable encounters a problem.
@@ -1720,7 +1720,7 @@ function Observable:tap(_onNext, _onError, _onCompleted)
   end)
 end
 
---- Returns an Observable that will emit an error if the specified time is exceded since the most recent `next` value.
+---- Returns an Observable that will emit an error if the specified time is exceded since the most recent `next` value.
 -- @param {number} timeInMs - The time in milliseconds to wait before an error is emitted.
 -- @param {string|Observable} next - If a string, it will be sent as an error. If an Observable, it will be passed on instead of an error.
 -- @param {Scheduler=defaultScheduler()} scheduler - The scheduler to use.
@@ -1778,13 +1778,13 @@ function Observable:timeout(timeInMs, next, scheduler)
       end)
 end
 
---- Returns an Observable that unpacks the tables produced by the original.
+---- Returns an Observable that unpacks the tables produced by the original.
 -- @returns {Observable}
 function Observable:unpack()
   return self:map(util.unpack)
 end
 
---- Returns an Observable that takes any values produced by the original that consist of multiple
+---- Returns an Observable that takes any values produced by the original that consist of multiple
 -- return values and produces each value individually.
 -- @returns {Observable}
 function Observable:unwrap()
@@ -1808,7 +1808,7 @@ function Observable:unwrap()
   end)
 end
 
---- Returns an Observable that produces a sliding window of the values produced by the original.
+---- Returns an Observable that produces a sliding window of the values produced by the original.
 -- @arg {number} size - The size of the window. The returned observable will produce this number
 --                      of the most recent values as multiple arguments to onNext.
 -- @returns {Observable}
@@ -1837,7 +1837,7 @@ function Observable:window(size)
   end)
 end
 
---- Returns an Observable that produces values from the original along with the most recently
+---- Returns an Observable that produces values from the original along with the most recently
 -- produced value from all other specified Observables. Note that only the first argument from each
 -- source Observable is used.
 -- @arg {Observable...} sources - The Observables to include the most recent values from.
@@ -1874,7 +1874,7 @@ function Observable:with(...)
   end)
 end
 
---- Returns an Observable that merges the values produced by the source Observables by grouping them
+---- Returns an Observable that merges the values produced by the source Observables by grouping them
 -- by their index.  The first onNext event contains the first value of all of the sources, the
 -- second onNext event contains the second value of all of the sources, and so on.  onNext is called
 -- a number of times equal to the number of values produced by the Observable that produces the
@@ -1945,33 +1945,33 @@ function Observable.zip(...)
   end)
 end
 
---- @class ImmediateScheduler
+---- @class ImmediateScheduler
 -- @description Schedules Observables by running all operations immediately.
 local ImmediateScheduler = {}
 ImmediateScheduler.__index = ImmediateScheduler
 ImmediateScheduler.__tostring = util.constant('ImmediateScheduler')
 
---- Creates a new ImmediateScheduler.
+---- Creates a new ImmediateScheduler.
 -- @returns {ImmediateScheduler}
 function ImmediateScheduler.create()
   return setmetatable({}, ImmediateScheduler)
 end
 
---- Schedules a function to be run on the scheduler. It is executed immediately.
+---- Schedules a function to be run on the scheduler. It is executed immediately.
 -- @arg {function} action - The function to execute.
 function ImmediateScheduler:schedule(action) --luacheck: ignore
   action()
   return Reference.create()
 end
 
---- @class CooperativeScheduler
+---- @class CooperativeScheduler
 -- @description Manages Observables using coroutines and a virtual clock that must be updated
 -- manually.
 local CooperativeScheduler = {}
 CooperativeScheduler.__index = CooperativeScheduler
 CooperativeScheduler.__tostring = util.constant('CooperativeScheduler')
 
---- Creates a new CooperativeScheduler.
+---- Creates a new CooperativeScheduler.
 -- @arg {number=0} currentTime - A time to start the scheduler at.
 -- @returns {CooperativeScheduler}
 function CooperativeScheduler.create(currentTime)
@@ -1983,7 +1983,7 @@ function CooperativeScheduler.create(currentTime)
   return setmetatable(self, CooperativeScheduler)
 end
 
---- Schedules a function to be run after an optional delay.  Returns a reference that will stop
+---- Schedules a function to be run after an optional delay.  Returns a reference that will stop
 -- the action from running.
 -- @arg {function} action - The function to execute. Will be converted into a coroutine. The
 --                          coroutine may yield execution back to the scheduler with an optional
@@ -2011,7 +2011,7 @@ function CooperativeScheduler:unschedule(task)
   end
 end
 
---- Triggers an update of the CooperativeScheduler. The clock will be advanced and the scheduler
+---- Triggers an update of the CooperativeScheduler. The clock will be advanced and the scheduler
 -- will run any coroutines that are due to be run.
 -- @arg {number=0} delta - An amount of time to advance the clock by. It is common to pass in the
 --                         time in seconds or milliseconds elapsed since this function was last
@@ -2042,24 +2042,24 @@ function CooperativeScheduler:update(delta)
   end
 end
 
---- Returns whether or not the CooperativeScheduler's queue is empty.
+---- Returns whether or not the CooperativeScheduler's queue is empty.
 function CooperativeScheduler:isEmpty()
   return not next(self.tasks)
 end
 
---- @class TimeoutScheduler
+---- @class TimeoutScheduler
 -- @description A scheduler that uses the `hs.timer` library to schedule events on an event loop.
 local TimeoutScheduler = {}
 TimeoutScheduler.__index = TimeoutScheduler
 TimeoutScheduler.__tostring = util.constant('TimeoutScheduler')
 
---- Creates a new TimeoutScheduler.
+---- Creates a new TimeoutScheduler.
 -- @returns {TimeoutScheduler}
 function TimeoutScheduler.create()
   return setmetatable({_timers = {}}, TimeoutScheduler)
 end
 
---- Schedules an action to run at a future point in time.
+---- Schedules an action to run at a future point in time.
 -- @arg {function} action - The action to run.
 -- @arg {number=0} delay - The delay, in milliseconds.
 -- @returns {Reference}
@@ -2074,7 +2074,7 @@ function TimeoutScheduler:schedule(action, delay)
   end)
 end
 
---- Stops all future timers from running and clears them.
+---- Stops all future timers from running and clears them.
 function TimeoutScheduler:stopAll()
     for t,_ in pairs(self._timers) do
         t:stop()
@@ -2085,7 +2085,7 @@ end
 -- default to using the TimeoutScheduler
 util.defaultScheduler(TimeoutScheduler.create())
 
---- @class Subject
+---- @class Subject
 -- @description Subjects function both as an Observer and as an Observable. Subjects inherit all
 -- Observable functions, including subscribe. Values can also be pushed to the Subject, which will
 -- be broadcasted to any subscribed Observers.
@@ -2093,7 +2093,7 @@ local Subject = setmetatable({}, Observable)
 Subject.__index = Subject
 Subject.__tostring = util.constant('Subject')
 
---- Creates a new Subject.
+---- Creates a new Subject.
 -- @returns {Subject}
 function Subject.create()
   local self = {
@@ -2104,7 +2104,7 @@ function Subject.create()
   return setmetatable(self, Subject)
 end
 
---- Creates a new Observer and attaches it to the Subject.
+---- Creates a new Observer and attaches it to the Subject.
 -- @arg {function|table} onNext|observer - A function called when the Subject produces a value or
 --                                         an existing Observer to attach to the Subject.
 -- @arg {function} onError - Called when the Subject terminates due to an error.
@@ -2130,7 +2130,7 @@ function Subject:subscribe(onNext, onError, onCompleted)
   end)
 end
 
---- Pushes zero or more values to the Subject. They will be broadcasted to all Observers.
+---- Pushes zero or more values to the Subject. They will be broadcasted to all Observers.
 -- @arg {*...} values
 function Subject:onNext(...)
   if not self.stopped then
@@ -2140,7 +2140,7 @@ function Subject:onNext(...)
   end
 end
 
---- Signal to all Observers that an error has occurred.
+---- Signal to all Observers that an error has occurred.
 -- @arg {string=} message - A string describing what went wrong.
 function Subject:onError(message)
   if not self.stopped then
@@ -2152,7 +2152,7 @@ function Subject:onError(message)
   end
 end
 
---- Signal to all Observers that the Subject will not produce any more values.
+---- Signal to all Observers that the Subject will not produce any more values.
 function Subject:onCompleted()
   if not self.stopped then
     for i = 1, #self.observers do
@@ -2165,7 +2165,7 @@ end
 
 Subject.__call = Subject.onNext
 
---- @class AsyncSubject
+---- @class AsyncSubject
 -- @description AsyncSubjects are subjects that produce either no values or a single value.  If
 -- multiple values are produced via onNext, only the last one is used.  If onError is called, then
 -- no value is produced and onError is called on any subscribed Observers.  If an Observer
@@ -2175,7 +2175,7 @@ local AsyncSubject = setmetatable({}, Observable)
 AsyncSubject.__index = AsyncSubject
 AsyncSubject.__tostring = util.constant('AsyncSubject')
 
---- Creates a new AsyncSubject.
+---- Creates a new AsyncSubject.
 -- @returns {AsyncSubject}
 function AsyncSubject.create()
   local self = {
@@ -2188,7 +2188,7 @@ function AsyncSubject.create()
   return setmetatable(self, AsyncSubject)
 end
 
---- Creates a new Observer and attaches it to the AsyncSubject.
+---- Creates a new Observer and attaches it to the AsyncSubject.
 -- @arg {function|table} onNext|observer - A function called when the AsyncSubject produces a value
 --                                         or an existing Observer to attach to the AsyncSubject.
 -- @arg {function} onError - Called when the AsyncSubject terminates due to an error.
@@ -2223,7 +2223,7 @@ function AsyncSubject:subscribe(onNext, onError, onCompleted)
   end)
 end
 
---- Pushes zero or more values to the AsyncSubject.
+---- Pushes zero or more values to the AsyncSubject.
 -- @arg {*...} values
 function AsyncSubject:onNext(...)
   if not self.stopped then
@@ -2231,7 +2231,7 @@ function AsyncSubject:onNext(...)
   end
 end
 
---- Signal to all Observers that an error has occurred.
+---- Signal to all Observers that an error has occurred.
 -- @arg {string=} message - A string describing what went wrong.
 function AsyncSubject:onError(message)
   if not self.stopped then
@@ -2245,7 +2245,7 @@ function AsyncSubject:onError(message)
   end
 end
 
---- Signal to all Observers that the AsyncSubject will not produce any more values.
+---- Signal to all Observers that the AsyncSubject will not produce any more values.
 function AsyncSubject:onCompleted()
   if not self.stopped then
     for i = 1, #self.observers do
@@ -2262,14 +2262,14 @@ end
 
 AsyncSubject.__call = AsyncSubject.onNext
 
---- @class BehaviorSubject
+---- @class BehaviorSubject
 -- @description A Subject that tracks its current value. Provides an accessor to retrieve the most
 -- recent pushed value, and all subscribers immediately receive the latest value.
 local BehaviorSubject = setmetatable({}, Subject)
 BehaviorSubject.__index = BehaviorSubject
 BehaviorSubject.__tostring = util.constant('BehaviorSubject')
 
---- Creates a new BehaviorSubject.
+---- Creates a new BehaviorSubject.
 -- @arg {*...} value - The initial values.
 -- @returns {BehaviorSubject}
 function BehaviorSubject.create(...)
@@ -2285,7 +2285,7 @@ function BehaviorSubject.create(...)
   return setmetatable(self, BehaviorSubject)
 end
 
---- Creates a new Observer and attaches it to the BehaviorSubject. Immediately broadcasts the most
+---- Creates a new Observer and attaches it to the BehaviorSubject. Immediately broadcasts the most
 -- recent value to the Observer.
 -- @arg {function} onNext - Called when the BehaviorSubject produces a value.
 -- @arg {function} onError - Called when the BehaviorSubject terminates due to an error.
@@ -2308,14 +2308,14 @@ function BehaviorSubject:subscribe(onNext, onError, onCompleted)
   return reference
 end
 
---- Pushes zero or more values to the BehaviorSubject. They will be broadcasted to all Observers.
+---- Pushes zero or more values to the BehaviorSubject. They will be broadcasted to all Observers.
 -- @arg {*...} values
 function BehaviorSubject:onNext(...)
   self.value = util.pack(...)
   return Subject.onNext(self, ...)
 end
 
---- Returns the last value emitted by the BehaviorSubject, or the initial value passed to the
+---- Returns the last value emitted by the BehaviorSubject, or the initial value passed to the
 -- constructor if nothing has been emitted yet.
 -- @returns {*...}
 function BehaviorSubject:getValue()
@@ -2326,14 +2326,14 @@ end
 
 BehaviorSubject.__call = BehaviorSubject.onNext
 
---- @class ReplaySubject
+---- @class ReplaySubject
 -- @description A Subject that provides new Subscribers with some or all of the most recently
 -- produced values upon reference.
 local ReplaySubject = setmetatable({}, Subject)
 ReplaySubject.__index = ReplaySubject
 ReplaySubject.__tostring = util.constant('ReplaySubject')
 
---- Creates a new ReplaySubject.
+---- Creates a new ReplaySubject.
 -- @arg {number=} bufferSize - The number of values to send to new subscribers. If nil, an infinite
 --                             buffer is used (note that this could lead to memory issues).
 -- @returns {ReplaySubject}
@@ -2348,7 +2348,7 @@ function ReplaySubject.create(n)
   return setmetatable(self, ReplaySubject)
 end
 
---- Creates a new Observer and attaches it to the ReplaySubject. Immediately broadcasts the most
+---- Creates a new Observer and attaches it to the ReplaySubject. Immediately broadcasts the most
 -- contents of the buffer to the Observer.
 -- @arg {function} onNext - Called when the ReplaySubject produces a value.
 -- @arg {function} onError - Called when the ReplaySubject terminates due to an error.
@@ -2371,7 +2371,7 @@ function ReplaySubject:subscribe(onNext, onError, onCompleted)
   return reference
 end
 
---- Pushes zero or more values to the ReplaySubject. They will be broadcasted to all Observers.
+---- Pushes zero or more values to the ReplaySubject. They will be broadcasted to all Observers.
 -- @arg {*...} values
 function ReplaySubject:onNext(...)
   table.insert(self.buffer, util.pack(...))

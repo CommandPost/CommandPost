@@ -1306,10 +1306,10 @@ end
 ---
 --- Notes:
 ---  * `getFn` signature: `function([owner]) -> anything`
----  ** `owner`     - If this is attached as a method, the owner table is passed in.
+---     * `owner`     - If this is attached as a method, the owner table is passed in.
 ---  * `setFn` signature: `function(newValue[, owner])`
----  ** `newValue`  - The new value to store.
----  ** `owner`     - If this is attached as a method, the owner table is passed in.
+---     * `newValue`  - The new value to store.
+---     * `owner`     - If this is attached as a method, the owner table is passed in.
 ---  * `cloneFn` signature: `function(prop) -> new cp.prop`
 ---  * This can also be executed by calling the module directly. E.g. `require('cp.prop')(myGetFunction)`
 function prop.new(getFn, setFn, cloneFn)
@@ -1508,8 +1508,8 @@ end
 ---  * The instance is **immutable**.
 ---  * Once you have created an 'AND', you cannot 'OR' as a method. Eg, this will fail: `prop.TRUE():AND(prop:FALSE()):OR(prop.TRUE())`. This is to avoid ambiguity as to whether the 'AND' or 'OR' takes precedence. Is it `(true and false) or true` or `true and (false or true)`?.
 ---  * To combine 'AND' and 'OR' values, group them together when combining. Eg:
----  ** `(true and false) or true`: `prop.OR( prop.TRUE():AND(prop.FALSE()), prop.TRUE() )`
----  ** `true and (false or true)`: `prop.TRUE():AND( prop.FALSE():OR(prop.TRUE()) )`
+---     * `(true and false) or true`: `prop.OR( prop.TRUE():AND(prop.FALSE()), prop.TRUE() )`
+---     * `true and (false or true)`: `prop.TRUE():AND( prop.FALSE():OR(prop.TRUE()) )`
 function prop.AND(...)
     local props = table.pack(...)
     local andProp = prop.new(
@@ -1563,8 +1563,8 @@ prop.mt.AND = prop.AND
 ---  * The instance is immutable, since there is no realy way to flip the component values of an 'OR' in a way that makes sense.
 ---  * Once you have created an 'OR', you cannot 'AND' as a method. Eg, this will fail: `prop.TRUE():OR(prop:FALSE()):AND(prop.TRUE())`. This is to avoid ambiguity as to whether the 'OR' or 'AND' takes precedence. Is it `(true or false) and true` or `true or (false and true)`?.
 ---  * To combine 'AND' and 'OR' values, group them together when combining. Eg:
----  ** `(true or false) and true`: `prop.AND( prop.TRUE():OR(prop.FALSE()), prop.TRUE() )`
----  ** `true or (false and true)`: `prop.TRUE():OR( prop.FALSE():AND(prop.TRUE()) )`
+---     * `(true or false) and true`: `prop.AND( prop.TRUE():OR(prop.FALSE()), prop.TRUE() )`
+---     * `true or (false and true)`: `prop.TRUE():OR( prop.FALSE():AND(prop.TRUE()) )`
 function prop.OR(...)
     local props = table.pack(...)
     local orProp = prop.new(

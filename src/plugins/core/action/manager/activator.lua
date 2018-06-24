@@ -308,6 +308,7 @@ function activator.mt:disableHandler(id)
     local dh = self:_disabledHandlers()
     dh[id] = true
     self:_disabledHandlers(dh)
+    self:refreshChooser()
     return true
 end
 
@@ -327,6 +328,7 @@ function activator.mt:enableHandler(id)
     local dh = self:_disabledHandlers()
     dh[id] = nil
     self:_disabledHandlers(dh)
+    self:refreshChooser()
     return true
 end
 
@@ -341,6 +343,7 @@ end
 ---  * Nothing
 function activator.mt:enableAllHandlers()
     self._disabledHandlers:set(nil)
+    self:refreshChooser()
 end
 
 --- plugins.core.action.activator:disableAllHandlers() -> nothing
@@ -358,6 +361,7 @@ function activator.mt:disableAllHandlers()
         dh[id] = true
     end
     self:_disabledHandlers(dh)
+    self:refreshChooser()
 end
 
 --- plugins.core.action.activator:isDisabledHandler(id) -> boolean
@@ -518,7 +522,6 @@ function activator.mt:unfavoriteChoice(id)
         local choice = self:findChoice(id)
         if choice then choice.favorite = nil end
         --------------------------------------------------------------------------------
-
         -- Update the chooser list:
         --------------------------------------------------------------------------------
         self:refreshChooser()
@@ -800,15 +803,8 @@ end
 ---  * None
 function activator.mt:refreshChooser()
     local theChooser = self:chooser()
-    theChooser:refreshChoicesCallback()
-
-    --------------------------------------------------------------------------------
-    -- This is a workaround for when we need to update the Chooser based on a
-    -- right click option (i.e. changing sections):
-    --------------------------------------------------------------------------------
-    if theChooser:isVisible() then
-        theChooser:hide()
-        theChooser:show()
+    if theChooser then
+        theChooser:refreshChoicesCallback()
     end
 end
 
@@ -827,8 +823,6 @@ function activator.mt:show()
     if theChooser and theChooser:isVisible() then
         return
     end
-
-    self._frontApp = application.frontmostApplication()
 
     --------------------------------------------------------------------------------
     -- Refresh Chooser:
@@ -868,20 +862,17 @@ function activator.mt:hide()
     if theChooser then
 
         --------------------------------------------------------------------------------
-        -- Hide Chooser:
-        --------------------------------------------------------------------------------
-        theChooser:hide()
-
-        --------------------------------------------------------------------------------
         -- Save Last Query to Settings:
         --------------------------------------------------------------------------------
         if self:lastQueryRemembered() then
             self.lastQueryValue:set(theChooser:query())
         end
 
-        if self._frontApp then
-            self._frontApp:activate()
-        end
+        --------------------------------------------------------------------------------
+        -- Hide Chooser:
+        --------------------------------------------------------------------------------
+        theChooser:hide()
+
     end
 end
 
@@ -1003,11 +994,7 @@ function activator.mt:rightClickAction(index)
                 choiceMenu,
                 {
                     title = i18n("activatorUnfavoriteAction"),
-                    fn = function()
-                        self:unfavoriteChoice(choice.id)
-                        self:refreshChooser()
-                        theChooser:show()
-                    end
+                    fn = function() self:unfavoriteChoice(choice.id) end,
                 }
             )
         else
@@ -1015,11 +1002,7 @@ function activator.mt:rightClickAction(index)
                 choiceMenu,
                 {
                     title = i18n("activatorFavoriteAction"),
-                    fn = function()
-                        self:favoriteChoice(choice.id)
-                        self:refreshChooser()
-                        theChooser:show()
-                    end
+                    fn = function() self:favoriteChoice(choice.id) end,
                 }
             )
         end
@@ -1030,11 +1013,7 @@ function activator.mt:rightClickAction(index)
                 choiceMenu,
                 {
                     title = i18n("activatorUnhideAction"),
-                    fn = function()
-                        self:unhideChoice(choice.id)
-                        self:refreshChooser()
-                        theChooser:show()
-                    end
+                    fn = function() self:unhideChoice(choice.id) end,
                 }
             )
         else
@@ -1042,11 +1021,7 @@ function activator.mt:rightClickAction(index)
                 choiceMenu,
                 {
                     title = i18n("activatorHideAction"),
-                    fn = function()
-                        self:hideChoice(choice.id)
-                        self:refreshChooser()
-                        theChooser:show()
-                    end
+                    fn = function() self:hideChoice(choice.id) end
                 }
             )
         end
@@ -1081,7 +1056,6 @@ function activator.mt:rightClickAction(index)
                     else
                         self:enableHandler(id)
                     end
-                    self:refreshChooser()
                 end,
                 checked = enabled,
             }
@@ -1092,11 +1066,9 @@ function activator.mt:rightClickAction(index)
         local allItems = {
             { title = i18n("consoleSectionsShowAll"), fn = function()
                 self:enableAllHandlers()
-                self:refreshChooser()
             end, disabled = allEnabled },
             { title = i18n("consoleSectionsHideAll"), fn = function()
                 self:disableAllHandlers()
-                self:refreshChooser()
             end, disabled = allDisabled },
             { title = "-" }
         }
