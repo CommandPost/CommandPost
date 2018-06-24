@@ -25,7 +25,6 @@ local keycodes                          = require("hs.keycodes")
 local app                               = require("cp.app")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
-local prop                              = require("cp.prop")
 local tools                             = require("cp.tools")
 
 --------------------------------------------------------------------------------
