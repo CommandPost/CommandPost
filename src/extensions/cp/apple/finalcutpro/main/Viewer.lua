@@ -29,6 +29,7 @@ local prop                              = require("cp.prop")
 local flicks                            = require("cp.time.flicks")
 local tools                             = require("cp.tools")
 local axutils                           = require("cp.ui.axutils")
+local notifier                          = require("cp.ui.notifier")
 local Button                            = require("cp.ui.Button")
 local MenuButton                        = require("cp.ui.MenuButton")
 local StaticText                        = require("cp.ui.StaticText")
@@ -625,6 +626,25 @@ function Viewer:playButton()
         end))
     end
     return self._playButton
+end
+
+
+--- cp.apple.finalcutpro.main.Viewer:notifier() -> cp.ui.notifier
+--- Method
+--- Returns a `notifier` that is tracking the application UI element. It has already been started.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The notifier.
+function Viewer:notifier()
+    if not self._notifier then
+        local theApp = self:app()
+        local bundleID = theApp:bundleID()
+        self._notifier = notifier.new(bundleID, function() return self:UI() end):start()
+    end
+    return self._notifier
 end
 
 return Viewer

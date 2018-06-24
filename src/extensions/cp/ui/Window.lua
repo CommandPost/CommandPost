@@ -235,7 +235,7 @@ function Window:focus()
     return hsWindow ~= nil and hsWindow:focus()
 end
 
---- cp.app:notifier() -> cp.ui.notifier
+--- cp.ui.Window:notifier() -> cp.ui.notifier
 --- Method
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
 ---
