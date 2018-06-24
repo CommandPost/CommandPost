@@ -41,6 +41,17 @@ function Window.matches(element)
     return element and element:attributeValue("AXRole") == "AXWindow"
 end
 
+
+-- utility function to help set up watchers
+local function notifyWatch(cpProp, notifications)
+    cpProp:preWatch(function(self)
+        self:notifier():watchFor(
+            notifications,
+            function() cpProp:update() end
+        )
+    end)
+end
+
 --- cp.ui.Window.new(cpApp, uiProp) -> Window
 --- Constructor
 --- Creates a new Window
@@ -72,12 +83,6 @@ function Window.new(cpApp, uiProp)
             return ui and ui:asHSWindow()
         end
     )
-    :preWatch(function(_, theProp)
-        o:notifier():watchFor(
-            {"AXWindowCreated", "AXUIElementDestroyed"},
-            function() theProp:update() end
-        )
-    end)
 
 --- cp.ui.Window.id <cp.prop: number; read-only>
 --- Field
@@ -97,15 +102,7 @@ function Window.new(cpApp, uiProp)
             local window = original()
             return window ~= nil and window:isVisible()
         end
-    ):bind(Window)
-    :preWatch(function(_, theProp)
-        o:notifier():watchFor(
-            {"AXWindowMiniaturized", "AXWindowDeminiaturized",
-            "AXApplicationHidden", "AXApplicationShown"},
-            function() theProp:update() end
-        )
-    end)
-
+    )
 
 --- cp.ui.Window.focused <cp.prop: boolean>
 --- Field
@@ -123,13 +120,6 @@ function Window.new(cpApp, uiProp)
         end
     )
     :monitor(visible)
-    :preWatch(function(_, theProp)
-        o:notifier():watchFor(
-            {"AXFocusedWindowChanged", "AXApplicationActivated", "AXApplicationDeactivated"},
-            function() theProp:update() end
-        )
-    end)
-
 
 --- cp.ui.Window.exists <cp.prop: boolean; read-only>
 --- Field
@@ -155,12 +145,6 @@ function Window.new(cpApp, uiProp)
             end
         end
     )
-    :preWatch(function(_, theProp)
-        o:notifier():watchFor(
-            {"AXWindowMiniaturized", "AXWindowDeminiaturized"},
-            function() theProp:update() end
-        )
-    end)
 
 --- cp.ui.Window.frame <cp.prop: hs.geometry rect>
 --- Field
@@ -179,13 +163,6 @@ function Window.new(cpApp, uiProp)
         end
     )
     :monitor(visible)
-    :preWatch(function(_, theProp)
-        o:notifier():watchFor(
-            {"AXWindowResized", "AXWindowMoved"},
-            function() theProp:update() end
-        )
-    end)
-
 
 --- cp.ui.Window.fullScreen <cp.prop: boolean>
 --- Field
@@ -203,12 +180,6 @@ function Window.new(cpApp, uiProp)
         end
     )
     :monitor(visible)
-    :preWatch(function(_, theProp)
-        o:notifier():watchFor(
-            {"AXWindowResized", "AXWindowMoved"},
-            function() theProp:update() end
-        )
-    end)
 
     prop.bind(o) {
         UI = UI,
@@ -221,6 +192,13 @@ function Window.new(cpApp, uiProp)
         frame = frame,
         fullScreen = fullScreen,
     }
+
+    notifyWatch(hsWindow, {"AXWindowCreated", "AXUIElementDestroyed"})
+    notifyWatch(visible, {"AXWindowMiniaturized", "AXWindowDeminiaturized",  "AXApplicationHidden", "AXApplicationShown"})
+    notifyWatch(focused, {"AXFocusedWindowChanged", "AXApplicationActivated", "AXApplicationDeactivated"})
+    notifyWatch(minimized, {"AXWindowMiniaturized", "AXWindowDeminiaturized"})
+    notifyWatch(frame, {"AXWindowResized", "AXWindowMoved"})
+    notifyWatch(fullScreen, {"AXWindowResized", "AXWindowMoved"})
 
     return o
 end
