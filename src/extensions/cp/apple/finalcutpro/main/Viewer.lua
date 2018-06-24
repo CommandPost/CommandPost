@@ -198,6 +198,14 @@ function Viewer.new(app, eventViewer)
             local ui = original()
             return ui and PrimaryWindow.matches(ui:window())
         end),
+
+        --- cp.apple.finalcutpro.main.Viewer.frame <cp.prop: table; read-only>
+        --- Field
+        --- Returns the current frame for the viewer, or `nil` if it is not available.
+        frame = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXFrame")
+        end),
     }
 
     local topToolbarUI = UI:mutate(function(original)
@@ -379,28 +387,6 @@ function Viewer.new(app, eventViewer)
                 end
             end
         ),
-
-        --- cp.apple.finalcutpro.main.Viewer.resized <cp.prop: boolean; live>
-        --- Field
-        --- Returns `true` if the Viewer has been resized, otherwise `false`.
-        resized = prop(
-            function()
-                local theUI = UI()
-                local currentFrame = theUI and theUI:attributeValue("AXFrame")
-                local previousFrame = o._previousFrame
-                if currentFrame then
-                    if previousFrame then
-                        if currentFrame.h ~= previousFrame.h or currentFrame.w ~= previousFrame.w then
-                            o._previousFrame = currentFrame
-                            return true
-                        end
-                    end
-                    o._previousFrame = currentFrame
-                end
-                return false
-            end
-        ),
-
     }
 
     local checker
@@ -429,9 +415,16 @@ function Viewer.new(app, eventViewer)
     -----------------------------------------------------------------------
     -- Watch for the Viewer being resized:
     -----------------------------------------------------------------------
-    app.app.windowMoved:watch(function()
-        o.resized:update()
-        timer.doAfter(0.01, function() o.resized:update() end)
+    app:primaryWindow().frame:watch(function()
+        if o:isOnPrimary() then
+            o.frame:update()
+        end
+    end)
+
+    app:secondaryWindow().frame:watch(function()
+        if o:isOnSecondary() then
+            o.frame:update()
+        end
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>

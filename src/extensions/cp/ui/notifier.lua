@@ -24,7 +24,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                   = require("hs.logger").new("notifier")
--- local inspect               = require("hs.inspect")
+local inspect               = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -46,7 +46,7 @@ local ax                    = require("hs._asm.axuielement")
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local insert                = table.insert
+local insert, remove        = table.insert, table.remove
 local LAUNCHED, TERMINATED  = applicationwatcher.launched, applicationwatcher.terminated
 
 --------------------------------------------------------------------------------
@@ -147,12 +147,19 @@ function mod.new(bundleID, elementFinderFn)
     assert(type(bundleID) == "string", "Provide a string value for the `bundleID`.")
     assert(type(elementFinderFn) == "function" or prop.is(elementFinderFn), "Provide a function for the `elementFinderFn`.")
 
-    return registerNotifier(prop.extend({
+    local o = registerNotifier(prop.extend({
         __bundleID = bundleID,
         __finder = elementFinderFn,
-        __running = false,
         __watchers = {},
+
+        --- cp.ui.notifier.running <cp.prop: boolean; read-only>
+        --- Field
+        --- Indicates if the notifier is currently running.
+        running = prop.FALSE(),
+
     }, mod.mt))
+
+    return o
 end
 
 --- cp.ui.notifier.notifiersForBundleID(bundleID) -> table of cp.ui.notifier
@@ -187,7 +194,7 @@ end
 --- for the current `axuielement`.
 ---
 --- Parameters:
----  * notification      - The notification type to watch for (e.g. "AXValueChanged").
+---  * notifications     - The `string` or `table of strings` with the notification type(s) to watch for (e.g. "AXValueChanged").
 ---  * callbackFn        - The function to call when the matching notification is happens.
 ---
 --- Returns:
@@ -198,10 +205,24 @@ end
 ---      * the `hs._asm.axuielement` object for the accessibility element which generated the notification.
 ---      * a string with the notification type.
 ---      * A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
-function mod.mt:watchFor(notification, callbackFn, noUpdate)
-    assert(type(notification) == "string", "Provide a string value for the `notification`")
+function mod.mt:watchFor(notifications, callbackFn)
+    local nType = type(notifications)
+    assert(nType == "string" or nType == "table", "Provide a string or table value for the `notifications`")
     assert(type(callbackFn) == "function", "Provide a function for the `callbackFn`.")
 
+    if nType == "string" then
+        self:_registerNotification(notifications, callbackFn)
+    else
+        for _,notification in ipairs(notifications) do
+            self:_registerNotification(notification, callbackFn)
+        end
+    end
+
+    return self:update(true)
+end
+
+-- does the actual notification registration
+function mod.mt:_registerNotification(notification, callbackFn)
     local watchers = self.__watchers[notification]
     if not watchers then
         watchers = {}
@@ -210,11 +231,6 @@ function mod.mt:watchFor(notification, callbackFn, noUpdate)
 
     -- add it to the list of functions for the notification type
     insert(watchers, callbackFn)
-
-    -- do an update
-    if not noUpdate then
-        return self:update(true)
-    end
 end
 
 --- cp.ui.notifier:watchAll(callbackFn) -> self
@@ -234,12 +250,39 @@ end
 ---      * a string with the notification type.
 ---      * A table containing key-value pairs with more information about the notification, if provided. Commonly this will be an empty table.
 function mod.mt:watchAll(callbackFn)
-    local notifications = ax.observer.notifications
-    for _,n in ipairs(notifications) do
-        self:watchFor(n, callbackFn, true)
+    return self:watchFor(ax.observer.notifications, callbackFn)
+end
+
+function mod.mt:unwatchFor(notifications, callbackFn)
+    local nType = type(notifications)
+    assert(nType == "string" or nType == "table", "Provide a string or table value for the `notifications`")
+    assert(type(callbackFn) == "function", "Provide a function for the `callbackFn`.")
+
+    if nType == "string" then
+        self:_unregisterNotification(notifications, callbackFn)
+    else
+        for _,notification in ipairs(notifications) do
+            self:_unregisterNotification(notification, callbackFn)
+        end
     end
 
     return self:update(true)
+end
+
+function mod.mt:unwatchAll(callbackFn)
+    return self:unwatchAll(ax.observer.notifications, callbackFn)
+end
+
+function mod.mt:_unregisterNotification(notification, callbackFn)
+    local watchers = self.__watchers[notification]
+    if watchers then
+        local count = #watchers
+        for i = count, 1, -1 do
+            if watchers[i] == callbackFn then
+                remove(watchers, i)
+            end
+        end
+    end
 end
 
 --- cp.ui.notifier:bundleID()
@@ -331,7 +374,7 @@ function mod.mt:_observer(create)
             self:update(true)
 
             -- match the running state
-            if self.__running then
+            if self:running() then
                 o:start()
             end
         end
@@ -349,7 +392,7 @@ end
 -- Returns:
 -- * `true` if the the element is found and is being observed.
 function mod.mt:_startObserving()
-    if self:isRunning() then
+    if self:running() then
         local observer = self:_observer(true)
         if observer and not observer:isRunning() then
             observer:start()
@@ -399,20 +442,25 @@ function mod.mt:update(force)
         -- TODO: figure out if/how we can remove watches on elements that
         --       are no longer valid.
         --------------------------------------------------------------------------------
-        local remove = axutils.isValid(lastElement) and (force or lastElement ~= element)
-        for n,_ in pairs(self.__watchers) do
+        local doRemove = axutils.isValid(lastElement) and (force or lastElement ~= element)
+        for n,watchers in pairs(self.__watchers) do
             -- deregister the old element
-            if remove then
+            if doRemove then
                 observer:removeWatcher(lastElement, n)
             end
 
             -- register the current one
-            if element then
-                observer:watchFor(element, n)
+            if #watchers > 0 then
+                if element then
+                    observer:addWatcher(element, n)
+                end
+            else
+                -- no more watchers registered, remove it.
+                self.__watchers[n] = nil
             end
         end
 
-        if self:isRunning() then
+        if self:running() then
             observer:start()
         else
             observer:stop()
@@ -432,7 +480,7 @@ end
 --- Returns:
 ---  * The `cp.ui.notifier` instance.
 function mod.mt:start()
-    self.__running = true
+    self:running(true)
     -- start observing, if possible
     self:_startObserving()
     return self
@@ -448,19 +496,12 @@ end
 --- Returns:
 ---  * The `cp.ui.notifier` instance.
 function mod.mt:stop()
-    if self.__running then
-        self.__running = false
+    if self:running() then
+        self:running(false)
         self:reset()
     end
     return self
 end
-
---- cp.ui.notifier.isRunning <cp.prop: boolean; read-only>
---- Field
---- Indicates if the notifier is currently running.
-mod.mt.isRunning = prop(function(self)
-    return self.__running
-end):bind(mod.mt)
 
 --- cp.ui.notifier:reset() -> self
 --- Method
@@ -473,6 +514,36 @@ function mod.mt:reset()
     self.__app = nil
 
     return self
+end
+
+-- the debug printing function
+local function printDebug(ui, notification, details)
+    log.df("notification: %s; ui: %s; details: %s", notification, ui, inspect(details))
+end
+
+--- cp.ui.notifier:debugging([enabled]) -> boolean
+--- Method
+--- Enables/disables and reports current debugging status.
+--- When enabled, a message will be output for each known notification received.
+---
+--- Parameters:
+---  * enabled  - If `true`, debugging notifications will be emitted. If `false`, it will be disabled. If not provided, no change is made.
+---
+--- Returns:
+---  * `true` if currently debugging, `false` otherwise.
+function mod.mt:debugging(enabled)
+    if enabled == true then
+        if not self._debugging then
+            self:watchAll(printDebug)
+            self._debugging = true
+        end
+    elseif enabled == false then
+        if self._debugging then
+            self:unwatchAll(printDebug)
+            self._debugging = false
+        end
+    end
+    return self._debugging == true
 end
 
 return mod

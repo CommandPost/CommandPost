@@ -35,7 +35,6 @@ local ax                        = require("hs._asm.axuielement")
 local fs                        = require("hs.fs")
 local inspect                   = require("hs.inspect")
 local timer                     = require("hs.timer")
-local windowfilter              = require("hs.window.filter")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -87,15 +86,23 @@ local BASE_LOCALE = "Base"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local mod = {}
-mod.mt = {}
+local app = {}
+app.mt = {}
 
 local apps = {}
 
---------------------------------------------------------------------------------
--- Disable Window Filter Errors (the wfilter errors are too annoying):
---------------------------------------------------------------------------------
-windowfilter.setLogLevel("nothing")
+--- cp.app.is(thing) -> boolean
+--- Function
+--- Checks if the provided `thing` is a `cp.app` instance.
+---
+--- Parameters:
+---  * thing        - The thing to check.
+---
+--- Returns:
+---  * `true` if it is a `cp.app` instance, otherwise `false`.
+function app.is(thing)
+    return type(thing) == "table" and thing == app.mt or app.is(getmetatable(thing))
+end
 
 --- cp.app.bundleIDs() -> table
 --- Function
@@ -106,7 +113,7 @@ windowfilter.setLogLevel("nothing")
 ---
 --- Returns:
 ---  * A list of Bundle IDs.
-function mod.bundleIDs()
+function app.bundleIDs()
     local ids = {}
     for id,_ in pairs(apps) do
         insert(ids, id)
@@ -123,10 +130,10 @@ end
 ---
 --- Returns:
 ---  * A list of `cp.app` instances.
-function mod.apps()
+function app.apps()
     local result = {}
-    for _,app in pairs(apps) do
-        insert(result, app)
+    for _,a in pairs(apps) do
+        insert(result, a)
     end
     return result
 end
@@ -136,12 +143,17 @@ local frontmostApp = nil
 --- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
 --- Field
 --- Returns the most recent 'registered' app that was active, other than CommandPost itself.
-mod.frontmostApp = prop(function() return frontmostApp end)
+app.frontmostApp = prop(function() return frontmostApp end)
 
---- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
---- Field
---- Returns the most recent 'registered' app that was active, other than CommandPost itself.
-mod.frontmostApp = prop(function() return frontmostApp end)
+-- utility function to help set up watchers
+local function notifyWatch(cpProp, notifications)
+    cpProp:preWatch(function(self)
+        self:notifier():watchFor(
+            notifications,
+            function() cpProp:update() end
+        )
+    end)
+end
 
 --- cp.app.forBundleID(bundleID)
 --- Constructor
@@ -155,14 +167,14 @@ mod.frontmostApp = prop(function() return frontmostApp end)
 ---
 --- Returns:
 ---  * The `cp.app` for the bundle.
-function mod.forBundleID(bundleID)
+function app.forBundleID(bundleID)
     assert(type(bundleID) == "string", "`bundleID` must be a string")
     local theApp = apps[bundleID]
     if not theApp then
         theApp = prop.extend({
             _bundleID = bundleID,
             preferences = prefs.new(bundleID),
-        }, mod.mt)
+        }, app.mt)
 
         local hsApplication = prop(function(self)
             local hsApp = self._hsApplication
@@ -184,8 +196,8 @@ function mod.forBundleID(bundleID)
         end)
 
         local running = hsApplication:mutate(function(original)
-            local app = original()
-            return app ~= nil and app:bundleID() ~= nil and app:isRunning()
+            local hsApp = original()
+            return hsApp ~= nil and hsApp:bundleID() ~= nil and hsApp:isRunning()
         end)
 
         local UI = hsApplication:mutate(function(original, self)
@@ -196,13 +208,13 @@ function mod.forBundleID(bundleID)
         end)
 
         local showing = hsApplication:mutate(function(original)
-            local app = original()
-            return app and not app:isHidden()
+            local hsApp = original()
+            return hsApp and not hsApp:isHidden()
         end)
 
         local frontmost = hsApplication:mutate(function(original)
-            local app = original()
-            return app ~= nil and app:isFrontmost()
+            local hsApp = original()
+            return hsApp ~= nil and hsApp:isFrontmost()
         end)
 
         local focusedWindowUI = UI:mutate(function(original)
@@ -224,12 +236,12 @@ function mod.forBundleID(bundleID)
         end)
 
         local path = hsApplication:mutate(function(original, self)
-            local app = original()
-            if app and app:isRunning() then
+            local hsApp = original()
+            if hsApp and hsApp:isRunning() then
                 ----------------------------------------------------------------------------------------
                 -- The app is running
                 ----------------------------------------------------------------------------------------
-                local appPath = app:path()
+                local appPath = hsApp:path()
                 if appPath then
                     return appPath
                 else
@@ -251,9 +263,9 @@ function mod.forBundleID(bundleID)
             ----------------------------------------------------------------------------------------
             -- Check if the app is running already...
             ----------------------------------------------------------------------------------------
-            local app = original()
-            if app and app:isRunning() then
-                local appPath = app:path()
+            local hsApp = original()
+            if hsApp and hsApp:isRunning() then
+                local appPath = hsApp:path()
                 if appPath then
                     return application.infoForBundlePath(appPath)
                 else
@@ -512,16 +524,18 @@ function mod.forBundleID(bundleID)
             --- Field
             --- Gets and sets the current locale for the application.
             currentLocale = currentLocale,
-
-            --- cp.app.windowMoved <cp.prop: boolean; live>
-            --- Field
-            --- Triggers `true` when an application window is moved.
-            windowMoved = prop(function(self) return self._moved end, function(value, self) self._moved = value end),
         }
+
+        notifyWatch(hsApplication, {"AXApplicationActivated", "AXApplicationDeactivated"})
+        notifyWatch(showing, {"AXApplicationHidden", "AXApplicationShown"})
+        notifyWatch(frontmost, {"AXApplicationActivated", "AXApplicationDeactivated"})
+        notifyWatch(focusedWindowUI, {"AXFocusedWindowChanged"})
+        notifyWatch(mainWindowUI, {"AXMainWindowChanged"})
+        notifyWatch(windowsUI, {"AXWindowCreated", "AXDrawerCreated", "AXSheetCreated", "AXUIElementDestroyed"})
 
         apps[bundleID] = theApp
 
-        mod._initWatchers()
+        app._initWatchers()
     end
 
     return theApp
@@ -536,7 +550,7 @@ end
 ---
 --- Returns:
 ---  * The Bundle ID.
-function mod.mt:bundleID()
+function app.mt:bundleID()
     return self._bundleID
 end
 
@@ -549,7 +563,7 @@ end
 ---
 --- Returns:
 ---  * The `cp.app.menu` for the `cp.app` instance.
-function mod.mt:menu()
+function app.mt:menu()
     if not self._menu then
         self._menu = menu.new(self)
     end
@@ -565,7 +579,7 @@ end
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function mod.mt:launch(waitSeconds)
+function app.mt:launch(waitSeconds)
 
     local hsApp = self:hsApplication()
     if hsApp == nil or not hsApp:isFrontmost() then
@@ -592,10 +606,10 @@ end
 ---
 --- Notes:
 --- * By default the `Statement` will time out after 60 seconds, sending an error signal.
-function mod.mt:doLaunch()
+function app.mt:doLaunch()
     return If(self.installed):Then(
-        If(self.hsApplication):Then(function(app)
-            app:activate()
+        If(self.hsApplication):Then(function(hsApp)
+            hsApp:activate()
         end)
         :Otherwise(function()
             local ok = application.launchOrFocusByBundleID(self:bundleID())
@@ -622,10 +636,10 @@ end
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function mod.mt:quit(waitSeconds)
-    local app = self:hsApplication()
-    if app then
-        app:kill()
+function app.mt:quit(waitSeconds)
+    local hsApp = self:hsApplication()
+    if hsApp then
+        hsApp:kill()
         if waitSeconds then
             just.doWhile(function() return self:running() end, waitSeconds, 0.1)
         end
@@ -645,9 +659,9 @@ end
 ---
 --- Notes:
 ---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
-function mod.mt:doQuit()
-    return If(self.hsApplication):Then(function(app)
-        app:kill()
+function app.mt:doQuit()
+    return If(self.hsApplication):Then(function(hsApp)
+        hsApp:kill()
         return WaitUntil(self.running:NOT())
     end)
     :Otherwise(false)
@@ -663,10 +677,10 @@ end
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function mod.mt:restart(waitSeconds)
-    local app = self:hsApplication()
-    if app then
-        local appPath = app:path()
+function app.mt:restart(waitSeconds)
+    local hsApp = self:hsApplication()
+    if hsApp then
+        local appPath = hsApp:path()
         -- Kill it.
         self:quit()
 
@@ -709,9 +723,9 @@ end
 ---
 --- Notes:
 ---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
-function mod.mt:doRestart()
-    return If(self.hsApplication):Then(function(app)
-        local appPath = app:path()
+function app.mt:doRestart()
+    return If(self.hsApplication):Then(function(hsApp)
+        local appPath = hsApp:path()
 
         return Given(
             self:doQuit()
@@ -745,14 +759,14 @@ end
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function mod.mt:show()
-    local app = self:hsApplication()
-    if app then
-        if app:isHidden() then
-            app:unhide()
+function app.mt:show()
+    local hsApp = self:hsApplication()
+    if hsApp then
+        if hsApp:isHidden() then
+            hsApp:unhide()
         end
-        if app:isRunning() then
-            app:activate()
+        if hsApp:isRunning() then
+            hsApp:activate()
         end
     end
     return self
@@ -767,13 +781,13 @@ end
 ---
 --- Returns:
 ---  * A `Statement`, resolving to `true` if the app is running and was successfully shown, or `false` otherwise.
-function mod.mt:doShow()
-    return If(self.hsApplication):Then(function(app)
-        if app:isHidden() then
-            app:unhide()
+function app.mt:doShow()
+    return If(self.hsApplication):Then(function(hsApp)
+        if hsApp:isHidden() then
+            hsApp:unhide()
         end
-        if app:isRunning() then
-            app:activate()
+        if hsApp:isRunning() then
+            hsApp:activate()
         end
         return WaitUntil(self.frontmost)
     end)
@@ -789,10 +803,10 @@ end
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function mod.mt:hide()
-    local app = self:application()
-    if app then
-        app:hide()
+function app.mt:hide()
+    local hsApp = self:application()
+    if hsApp then
+        hsApp:hide()
     end
     return self
 end
@@ -806,9 +820,9 @@ end
 ---
 --- Returns:
 ---  * A `Statement`, resolving to `true` if the app is running and was successfully hidden, or `false` otherwise.
-function mod.mt:doHide()
-    return If(self.hsApplication):Then(function(app)
-        app:hide()
+function app.mt:doHide()
+    return If(self.hsApplication):Then(function(hsApp)
+        hsApp:hide()
         return WaitUntil(self.frontmost:NOT())
     end)
     :Otherwise(false)
@@ -823,14 +837,14 @@ end
 ---
 --- Returns:
 ---  * The notifier.
-function mod.mt:notifier()
+function app.mt:notifier()
     if not self._notifier then
         self._notifier = notifier.new(self:bundleID(), function() return self:UI() end):start()
     end
     return self._notifier
 end
 
-function mod.mt:__tostring()
+function app.mt:__tostring()
     return format("cp.app: %s", self:bundleID())
 end
 
@@ -845,9 +859,9 @@ end
 --
 -- Returns:
 -- * The `cp.app` matching the details, or `nil` if not found.
-function mod._findApp(bundleID, appName)
-    local app = apps[bundleID]
-    if app == nil and bundleID == nil and appName ~= nil then
+function app._findApp(bundleID, appName)
+    local cpApp = apps[bundleID]
+    if cpApp == nil and bundleID == nil and appName ~= nil then
         -- look harder...
         for _,a in pairs(apps) do
             if a:displayName() == appName then
@@ -855,7 +869,7 @@ function mod._findApp(bundleID, appName)
             end
         end
     end
-    return app
+    return cpApp
 end
 
 --- cp.app:isSupportedLocale(locale) -> boolean
@@ -869,7 +883,7 @@ end
 ---
 --- Returns:
 ---  * `true` if it is supported, otherwise `false`.
-function mod.mt:isSupportedLocale(locale)
+function app.mt:isSupportedLocale(locale)
     locale = localeID(locale)
 
     if localeID.is(locale) then
@@ -892,7 +906,7 @@ end
 ---
 --- Returns:
 ---  * The closest supported locale or `nil` if none are available in the language.
-function mod.mt:bestSupportedLocale(locale)
+function app.mt:bestSupportedLocale(locale)
     -- cast to localeID
     locale = localeID(locale)
 
@@ -920,7 +934,7 @@ end
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function mod.mt:update()
+function app.mt:update()
     self.hsApplication:update()
     return self
 end
@@ -930,54 +944,15 @@ end
 ----------------------------------------------------------------------------
 
 -- Watchers to keep the contents up-to-date.
-
--- LOG_NAME -> string
--- Constant
--- The name of the `hs.logger` instance.
-local LOG_NAME = "appWinFilter"
-
-local function findAppForWindow(w)
-    if w then
-        return apps[w:application():bundleID()]
-    end
-end
-
-local function updateWindowsUI(window)
-    local app = findAppForWindow(window)
-    if app then
-        -- check if any windows are open
-        app.windowsUI:update()
-        app.mainWindowUI:update()
-        app.focusedWindowUI:update()
-    end
-end
-
-local function updateFocusedWindowUI(window)
-    local app = findAppForWindow(window)
-    if app then
-        -- check if any windows are open
-        app.mainWindowUI:update()
-        app.focusedWindowUI:update()
-    end
-end
-
-local function updateFrontmostApp(app)
-    if app then
-        if app:bundleID() ~= COMMANDPOST_BUNDLE_ID then
-            frontmostApp = app
+local function updateFrontmostApp(cpApp)
+    if cpApp then
+        if cpApp:bundleID() ~= COMMANDPOST_BUNDLE_ID then
+            frontmostApp = cpApp
         end
     else
         frontmostApp = nil
     end
-    mod.frontmostApp:update()
-end
-
-local function updateWindowMoved(window)
-    local app = findAppForWindow(window)
-    if app then
-        app.windowMoved:value(false)
-        app.windowMoved:value(true)
-    end
+    app.frontmostApp:update()
 end
 
 -- cp.app._initWatchers() -> none
@@ -989,8 +964,8 @@ end
 --
 -- Returns:
 --  * None
-function mod._initWatchers()
-    if mod._appWatcher then
+function app._initWatchers()
+    if app._appWatcher then
         return
     end
 
@@ -998,38 +973,38 @@ function mod._initWatchers()
     -- Setup Application Watcher:
     --------------------------------------------------------------------------------
     --log.df("Setting up Application Watcher...")
-    mod._appWatcher = applicationwatcher.new(
+    app._appWatcher = applicationwatcher.new(
         function(appName, eventType, hsApp)
-            local app = mod._findApp(hsApp:bundleID(), appName)
+            local cpApp = app._findApp(hsApp:bundleID(), appName)
 
             -- log.df("Application event: bundleID: %s; appName: '%s'; type: %s", bundleID, appName, eventType)
-            if app then
+            if cpApp then
                 if eventType == applicationwatcher.activated then
                     timer.doAfter(0.01, function()
-                        app.showing:update()
-                        app.frontmost:update()
-                        updateFrontmostApp(app)
+                        cpApp.showing:update()
+                        cpApp.frontmost:update()
+                        updateFrontmostApp(cpApp)
                     end)
                     return
                 elseif eventType == applicationwatcher.deactivated then
                     timer.doAfter(0.01, function()
-                        app.showing:update()
-                        app.frontmost:update()
+                        cpApp.showing:update()
+                        cpApp.frontmost:update()
                     end)
                     return
                 elseif eventType == applicationwatcher.launched then
                     timer.doAfter(0.01, function()
-                        app.hsApplication:update()
-                        app.running:update()
-                        app.frontmost:update()
-                        -- updateFrontmostApp(app)
+                        cpApp.hsApplication:update()
+                        cpApp.running:update()
+                        cpApp.frontmost:update()
+                        -- updateFrontmostApp(cpApp)
                     end)
                     return
                 elseif eventType == applicationwatcher.terminated then
                     timer.doAfter(0.01, function()
-                        app.hsApplication:update()
-                        app.running:update()
-                        app.frontmost:update()
+                        cpApp.hsApplication:update()
+                        cpApp.running:update()
+                        cpApp.frontmost:update()
                     end)
                     return
                 end
@@ -1038,27 +1013,15 @@ function mod._initWatchers()
             end
         end
     ):start()
-
-    local appWindowFilter = windowfilter.new(function(window)
-        return findAppForWindow(window) ~= nil
-    end, LOG_NAME)
-
-    appWindowFilter:subscribe(windowfilter.windowVisible, updateWindowsUI)
-    appWindowFilter:subscribe(windowfilter.windowCreated, updateWindowsUI)
-    appWindowFilter:subscribe(windowfilter.windowDestroyed, updateWindowsUI)
-    appWindowFilter:subscribe(windowfilter.windowFocused, updateFocusedWindowUI)
-    appWindowFilter:subscribe(windowfilter.windowMoved, updateWindowMoved)
-
-    mod._appWindowFilter = appWindowFilter
 end
 
-setmetatable(mod, {
+setmetatable(app, {
     __call = function(_, key)
-        return mod.forBundleID(key)
+        return app.forBundleID(key)
     end,
 })
 
 -- register CommandPost as an app
-mod.forBundleID(COMMANDPOST_BUNDLE_ID)
+app.forBundleID(COMMANDPOST_BUNDLE_ID)
 
-return mod
+return app

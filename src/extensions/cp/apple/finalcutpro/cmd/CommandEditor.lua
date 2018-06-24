@@ -91,7 +91,7 @@ function CommandEditor.new(app)
     end)
 
     -- provides access to common AXWindow properties.
-    local window = Window.new(UI)
+    local window = Window.new(app.app, UI)
     o._window = window
 
     prop.bind(o) {

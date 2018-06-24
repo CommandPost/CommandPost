@@ -699,12 +699,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro's Viewer is resized or moved:
     --------------------------------------------------------------------------------
-    fcp:viewer().resized:watch(function(value)
-        if value then
-            mod.update()
-        end
-    end)
-    fcp.app.windowMoved:watch(function(value)
+    fcp:viewer().frame:watch(function(value)
         if value then
             mod.update()
         end

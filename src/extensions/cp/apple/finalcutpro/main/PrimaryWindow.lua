@@ -61,7 +61,7 @@ function PrimaryWindow.new(app)
     }, PrimaryWindow)
 
     -- provides access to common AXWindow properties.
-    local window = Window.new(app.windowsUI:mutate(function(original)
+    local window = Window.new(app.app, app.windowsUI:mutate(function(original)
         return axutils.cache(o, "_ui", function()
             return axutils.childMatching(original(), PrimaryWindow.matches)
         end,
