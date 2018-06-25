@@ -1,5 +1,5 @@
 local log				= require("hs.logger").new("MediaFolder")
-local inspect           = require("hs.inspect")
+-- local inspect           = require("hs.inspect")
 
 local fnutils			= require("hs.fnutils")
 local fs				= require("hs.fs")
