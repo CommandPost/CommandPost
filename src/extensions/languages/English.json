@@ -1224,9 +1224,12 @@
             "one"  : "'%{file}' and one other are ready to import.",
             "other": "'%{file}' and %{count} others are ready to import."
         },
-        "fcpMediaFolderSkip"              : "Skip",
+        "fcpMediaFolderReadyOneSubTitle"  : "'%{file} is ready to import.",
+        "fcpMediaFolderSkip"              : "Cancel",
         "fcpMediaFolderImport"            : "Import",
         "fcpMediaFolderImportAll"         : "Import All",
-        "fcpMediaFolderImportIndividually": "Import Individually"
+        "fcpMediaFolderSkipAll"           : "Skip All",
+        "fcpMediaFolderImportOne"         : "Import '%{file}'",
+        "fcpMediaFolderSkipOne"           : "Skip '%{file}"
     }
 }

@@ -1,4 +1,5 @@
 local log				= require("hs.logger").new("MediaFolder")
+local inspect           = require("hs.inspect")
 
 local fnutils			= require("hs.fnutils")
 local fs				= require("hs.fs")
@@ -100,12 +101,20 @@ function MediaFolder.mt:init()
         end
 
         -- register the import notification handler
-        notify.register("import:" .. path, function(notification)
+        notify.register(self:importTag(), function(notification)
             self:handleImport(notification)
         end)
 
+        -- re-link live notifications
+        for _,n in ipairs(notify.deliveredNotifications()) do
+            local tag = n:getFunctionTag()
+            if tag == self:importTag() then
+                self.importNotification = n
+            end
+        end
+
         self:updateIncomingNotification()
-        self:updateReadyNotification()
+        self:updateImportNotification()
 
         self:doImportNext():Now()
     end
@@ -198,7 +207,7 @@ function MediaFolder.mt:removeFile(file)
         self:updateIncomingNotification()
     end
     if self.ready:removeItem(file) then
-        self:updateReadyNotification()
+        self:updateImportNotification()
     end
     self.importing:removeItem(file)
 
@@ -217,8 +226,8 @@ end
 --  * nil
 function MediaFolder.mt:addIncoming(file)
     self.incoming:pushRight(file)
-    self:updateIncomingNotification()
     self:save()
+    self:updateIncomingNotification()
 end
 
 -- MediaFolder:addReady(file) -> nil
@@ -235,8 +244,8 @@ function MediaFolder.mt:addReady(file)
         self:updateIncomingNotification()
     end
     self.ready:pushRight(file)
-    self:updateReadyNotification()
     self:save()
+    self:updateImportNotification()
 end
 
 -- MediaFolder:updateIncomingNotification() -> nil
@@ -248,7 +257,7 @@ function MediaFolder.mt:updateIncomingNotification()
         self.incomingNotification = nil
     end
     -------------------------------------------------------------------------------
-    -- Show Temporary Notification:
+    -- Show Notification:
     -------------------------------------------------------------------------------
     if #self.incoming > 0 then
         local subTitle = i18n("fcpMediaFolderIncomingSubTitle", {
@@ -264,47 +273,84 @@ function MediaFolder.mt:updateIncomingNotification()
     end
 end
 
--- MediaFolder:updateReadyNotification() -> nil
+function MediaFolder.mt:importTag()
+    return "import:"..self.path
+end
+
+-- MediaFolder:updateImportNotification() -> nil
 -- Method
 -- Updates the 'ready' notification based on the current set of files in the `ready` queue.
-function MediaFolder.mt:updateReadyNotification()
-    if self.readyNotification then
-        self.readyNotification:withdraw()
-        self.readyNotification = nil
+function MediaFolder.mt:updateImportNotification()
+    if self.importNotification then
+        self.importNotification:withdraw()
+        self.importNotification = nil
     end
 
-    if #self.ready > 0 then
-        local subTitle = i18n("fcpMediaFolderReadySubTitle", {
-            file=tools.getFilenameFromPath(self.ready:peekLeft()),
-            count=#self.ready - 1,
-        })
+    local count = #self.ready
+    if count > 0 then
+        local subTitle
+        local firstFile = tools.getFilenameFromPath(self.ready:peekLeft())
+        local actions
+        if count > 1 then
+            subTitle = i18n("fcpMediaFolderReadySubTitle", {
+                file=firstFile,
+                count=count - 1,
+            })
+            actions = {
+                i18n("fcpMediaFolderImportOne", {file = firstFile}),
+                i18n("fcpMediaFolderImportAll", {count = count}),
+                i18n("fcpMediaFolderSkipOne", {file = firstFile}),
+                i18n("fcpMediaFolderSkipAll", {count = count}),
+            }
+        else
+            subTitle = i18n("fcpMediaFolderReadyOneSubTitle", {
+                file = firstFile,
+            })
+            actions = {
+                i18n("fcpMediaFolderImportOne", {file = firstFile}),
+                i18n("fcpMediaFolderSkipOne", {file = firstFile})
+            }
+        end
 
-        self.readyNotification = notify.new("import:"..self.path)
+        self.importNotification = notify.new(self:importTag())
             :title(i18n("fcpMediaWatchFolderTitle"))
             :subTitle(subTitle)
             :hasActionButton(true)
             :otherButtonTitle(i18n("fcpMediaFolderSkip"))
-            :actionButtonTitle(i18n("fcpMediaFolderImportAll"))
-            :additionalActions({
-                i18n("fcpMediaFolderImportAll"),
-                i18n("fcpMediaFolderImportIndividually")
-            })
+            :actionButtonTitle(i18n("fcpMediaFolderImport"))
+            :additionalActions(actions)
             :alwaysShowAdditionalActions(true)
-            :send()
+
+        self.importNotification:send()
     end
 end
 
 function MediaFolder.mt:handleImport(notification)
-    local activation = notification:activationType()
-    if activation == notify.activationTypes.actionButtonClicked then
-        self:importAll()
-    elseif activation == notify.activationTypes.additionalActionClicked then
-        local action = notification:additionalActivationAction()
-        if action == i18n("fcpMediaFolderImportAll") then
-            self:importAll()
-        elseif action == i18n("fcpMediaFolderImportIndividually") then
-            self:importIndividually()
+    local count = #self.ready
+    if count > 0 then
+        local firstFile = tools.getFilenameFromPath(self.ready:peekLeft())
+
+        local activation = notification:activationType()
+        if activation == notify.activationTypes.actionButtonClicked then
+            self:importFirst()
+        elseif activation == notify.activationTypes.additionalActionClicked then
+            local action = notification:additionalActivationAction()
+            if action == i18n("fcpMediaFolderImportAll", {count = count}) then
+                self:importAll()
+            elseif action == i18n("fcpMediaFolderImportOne", {file = firstFile}) then
+                self:importFirst()
+            elseif action == i18n("fcpMediaFolderSkipAll", {count = count}) then
+                self:skipAll()
+            elseif action == i18n("fcpMediaFolderSkipOne", {file = firstFile}) then
+                self:skipOne()
+            else
+                log.ef("%s: unrecognised notification action: %s", self, action)
+            end
+        else
+            log.ef("%s: unexpected notification activation type: %s", self, activation)
         end
+    else
+        log.ef("%s: import requested when no files are ready to be imported. ", self)
     end
 end
 
@@ -315,8 +361,9 @@ function MediaFolder.mt:importAll()
     if #self.ready > 0 then
         self:importFiles({unpack(self.ready)})
         self.ready = Queue()
+        self:save()
     end
-    self:updateReadyNotification()
+    self:updateImportNotification()
 end
 
 -- MediaFolder:importFirst() -> nil
@@ -325,8 +372,23 @@ end
 function MediaFolder.mt:importFirst()
     if #self.ready > 0 then
         self:importFiles({self.ready:popLeft()})
+        self:save()
     end
-    self:updateReadyNotification()
+    self:updateImportNotification()
+end
+
+function MediaFolder.mt:skipAll()
+    self.ready = Queue()
+    self:save()
+    self:updateImportNotification()
+end
+
+function MediaFolder.mt:skipOne()
+    if #self.ready > 0 then
+        self.ready:popLeft()
+        self:save()
+        self:updateImportNotification()
+    end
 end
 
 -- MediaFolder:importFiles(files) -> nil
@@ -342,7 +404,7 @@ function MediaFolder.mt:importFiles(files)
     self.importing:pushRight(files)
     -- we save before importing so that we can pick up again later if CP restarts.
     self:save()
-    self:doImportNext():TimeoutAfter(30000, "Import Next took too long"):Debug("doImportNext"):Now()
+    self:doImportNext():TimeoutAfter(30000, "Import Next took too long"):Now()
 end
 
 function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
@@ -423,28 +485,31 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(fcp:doLaunch():Debug("doLaunch"))
+        :Then(fcp:doLaunch())
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(self:doWriteFilesToPasteboard(files, context):Debug("files to Pasteboard"))
+        :Then(self:doWriteFilesToPasteboard(files, context))
 
         --------------------------------------------------------------------------------
         -- Check if Timeline can be enabled:
         --------------------------------------------------------------------------------
         :Then(
             timeline:doShow()
-            :TimeoutAfter(1000, "Unable to show the Timeline"):Debug("doShow")
+            :TimeoutAfter(1000, "Unable to show the Timeline")
         )
 
         --------------------------------------------------------------------------------
         -- Perform Paste:
         --------------------------------------------------------------------------------
-        :Then(
-            fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
-            :TimeoutAfter(10000, "Timed out while pasting."):Debug("Paste")
-        )
+        -- :Then(
+        --     fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
+        --     :TimeoutAfter(10000, "Timed out while pasting."):Debug("Paste")
+        -- )
+        :Then(function()
+            fcp:performShortcut("PasteAsConnected")
+        end)
 
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
@@ -505,6 +570,10 @@ function MediaFolder.mt:destroy()
     self.incoming = nil
     self.ready = nil
     self.importing = nil
+end
+
+function MediaFolder.mt:__tostring()
+    return "MediaFolder: "..self.path
 end
 
 return MediaFolder
