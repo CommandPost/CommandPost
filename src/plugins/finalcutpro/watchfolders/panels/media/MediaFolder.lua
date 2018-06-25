@@ -1,7 +1,6 @@
 local log				= require("hs.logger").new("MediaFolder")
--- local inspect           = require("hs.inspect")
+local inspect           = require("hs.inspect")
 
-local fnutils			= require("hs.fnutils")
 local fs				= require("hs.fs")
 local http				= require("hs.http")
 local notify			= require("hs.notify")
@@ -20,6 +19,7 @@ local Throw             = go.Throw
 local unpack            = table.unpack
 
 local fileExists        = tools.doesFileExist
+local insert            = table.insert
 
 local MediaFolder = {}
 MediaFolder.mt = {}
@@ -138,17 +138,17 @@ function MediaFolder.mt:doTagFiles(files)
             local ext = file:match("%.([^%.]+)$")
 
             if ext then
-                if videoTag and fnutils.contains(videoExtensions, ext) and fileExists(file) then
+                if videoTag and videoExtensions:has(ext) and fileExists(file) then
                     if not fs.tagsAdd(file, {videoTag}) then
                         log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
                     end
                 end
-                if audioTag and fnutils.contains(audioExtensions, ext) and fileExists(file) then
+                if audioTag and audioExtensions:has(ext) and fileExists(file) then
                     if not fs.tagsAdd(file, {audioTag}) then
                         log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
                     end
                 end
-                if imageTag and fnutils.contains(imageExtensions, ext) and fileExists(file) then
+                if imageTag and imageExtensions:has(ext) and fileExists(file) then
                     if not fs.tagsAdd(file, {imageTag}) then
                         log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
                     end
@@ -160,6 +160,15 @@ end
 
 local function isFile(flags)
     return flags and flags.itemIsFile
+end
+
+local function isSupported(file, flags)
+    if isFile(flags) then
+        local supported = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
+        local ext = file:match("%.([^%.]+)$")
+        return supported:has(ext)
+    end
+    return false
 end
 
 local function isRemoved(file, flags)
@@ -178,17 +187,40 @@ local function isCopied(file, flags)
     return isFile(flags) and flags.itemCreated and flags.itemChangeOwner and fileExists(file)
 end
 
+local function notificationDelivered(notification)
+    if notification then
+        for _,delivered in ipairs(notify.deliveredNotifications()) do
+            if delivered == notification then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+function MediaFolder.mt:checkNotifications()
+    if self.importNotification and not notificationDelivered(self.importNotification) then
+        -- it's been closed
+        self.ready = Queue()
+        self:save()
+    end
+end
+
 function MediaFolder.mt:processFiles(files, fileFlags)
+    self:checkNotifications()
     for i = 1, #files do
         local file = files[i]
         local flags = fileFlags[i]
 
-        if isRemoved(file, flags) then
-            self:removeFile(file)
-        elseif isCopying(file, flags) then
-            self:addIncoming(file)
-        elseif isCopied(file, flags) or isRenamed(file, flags) then
-            self:addReady(file)
+        if isSupported(file, flags) then
+            -- log.df("processFiles: file: %s; flags: %s", file, inspect(flags))
+            if isRemoved(file, flags) then
+                self:removeFile(file)
+            elseif isCopying(file, flags) then
+                self:addIncoming(file)
+            elseif isCopied(file, flags) or isRenamed(file, flags) then
+                self:addReady(file)
+            end
         end
     end
 end
@@ -288,35 +320,31 @@ function MediaFolder.mt:updateImportNotification()
 
     local count = #self.ready
     if count > 0 then
-        local subTitle
-        local firstFile = tools.getFilenameFromPath(self.ready:peekLeft())
         local actions
+        local subTitle = i18n("fcpMediaFolderReadySubTitle", {
+            count=count,
+        })
         if count > 1 then
-            subTitle = i18n("fcpMediaFolderReadySubTitle", {
-                file=firstFile,
-                count=count - 1,
-            })
             actions = {
-                i18n("fcpMediaFolderImportOne", {file = firstFile}),
+                i18n("fcpMediaFolderRevealInFinder"),
                 i18n("fcpMediaFolderImportAll", {count = count}),
-                i18n("fcpMediaFolderSkipOne", {file = firstFile}),
-                i18n("fcpMediaFolderSkipAll", {count = count}),
             }
+
+            for _,file in ipairs(self.ready) do
+                insert(actions, tools.getFilenameFromPath(file))
+            end
         else
-            subTitle = i18n("fcpMediaFolderReadyOneSubTitle", {
-                file = firstFile,
-            })
             actions = {
-                i18n("fcpMediaFolderImportOne", {file = firstFile}),
-                i18n("fcpMediaFolderSkipOne", {file = firstFile})
+                i18n("fcpMediaFolderRevealInFinder"),
+                tools.getFilenameFromPath(self.ready:peekLeft()),
             }
         end
 
         self.importNotification = notify.new(self:importTag())
-            :title(i18n("fcpMediaWatchFolderTitle"))
+            :title(i18n("appName"))
             :subTitle(subTitle)
             :hasActionButton(true)
-            :otherButtonTitle(i18n("fcpMediaFolderSkip"))
+            :otherButtonTitle(i18n("fcpMediaFolderCancel"))
             :actionButtonTitle(i18n("fcpMediaFolderImport"))
             :additionalActions(actions)
             :alwaysShowAdditionalActions(true)
@@ -328,8 +356,6 @@ end
 function MediaFolder.mt:handleImport(notification)
     local count = #self.ready
     if count > 0 then
-        local firstFile = tools.getFilenameFromPath(self.ready:peekLeft())
-
         local activation = notification:activationType()
         if activation == notify.activationTypes.actionButtonClicked then
             self:importFirst()
@@ -337,13 +363,18 @@ function MediaFolder.mt:handleImport(notification)
             local action = notification:additionalActivationAction()
             if action == i18n("fcpMediaFolderImportAll", {count = count}) then
                 self:importAll()
-            elseif action == i18n("fcpMediaFolderImportOne", {file = firstFile}) then
-                self:importFirst()
-            elseif action == i18n("fcpMediaFolderSkipAll", {count = count}) then
-                self:skipAll()
-            elseif action == i18n("fcpMediaFolderSkipOne", {file = firstFile}) then
-                self:skipOne()
+            elseif action == i18n("fcpMediaFolderRevealInFinder") then
+                self:revealInFinder()
             else
+                for _,filePath in ipairs(self.ready) do
+                    local fileName = tools.getFilenameFromPath(filePath)
+                    if action == fileName then
+                        self.ready:removeItem(fileName)
+                        self:save()
+                        self:importFiles({fileName})
+                        return
+                    end
+                end
                 log.ef("%s: unrecognised notification action: %s", self, action)
             end
         else
@@ -570,6 +601,10 @@ function MediaFolder.mt:destroy()
     self.incoming = nil
     self.ready = nil
     self.importing = nil
+end
+
+function MediaFolder.mt:revealInFinder()
+    os.execute("open "..self.path)
 end
 
 function MediaFolder.mt:__tostring()

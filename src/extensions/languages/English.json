@@ -1215,21 +1215,16 @@
         "zoomToSamples"                   : "Zoom to Samples",
         "fcpMediaWatchFolderTitle"        : "FCP Media Watch Folder",
         "fcpMediaFolderIncomingSubTitle"  : {
-            "zero" : "'%{file}' is incoming...",
             "one"  : "'%{file}' and one other are incoming...",
             "other": "'%{file}' and %{count} others are incoming..."
         },
         "fcpMediaFolderReadySubTitle" : {
-            "zero" : "'%{file}' is ready to import.",
-            "one"  : "'%{file}' and one other are ready to import.",
-            "other": "'%{file}' and %{count} others are ready to import."
+            "one"  : "One file is ready to import.",
+            "other": "%{count} files are ready to import."
         },
-        "fcpMediaFolderReadyOneSubTitle"  : "'%{file} is ready to import.",
-        "fcpMediaFolderSkip"              : "Cancel",
+        "fcpMediaFolderCancel"            : "Cancel",
         "fcpMediaFolderImport"            : "Import",
-        "fcpMediaFolderImportAll"         : "Import All",
-        "fcpMediaFolderSkipAll"           : "Skip All",
-        "fcpMediaFolderImportOne"         : "Import '%{file}'",
-        "fcpMediaFolderSkipOne"           : "Skip '%{file}"
+        "fcpMediaFolderRevealInFinder"    : "Reveal in Finder",
+        "fcpMediaFolderImportAll"         : "All Files"
     }
 }

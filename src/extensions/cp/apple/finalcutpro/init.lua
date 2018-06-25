@@ -80,6 +80,7 @@ local osascript 								= require("hs.osascript")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local Set                                       = require("cp.collect.Set")
 local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
@@ -163,27 +164,28 @@ fcp.EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Re
 --- cp.apple.finalcutpro.FLEXO_LANGUAGES
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
-fcp.FLEXO_LANGUAGES	= {"de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN"}
+fcp.FLEXO_LANGUAGES	= Set("de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN")
+
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS
 --- Constant
 --- Table of video file extensions Final Cut Pro can import.
-fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS	= {"3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d"}
+fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS	= Set("3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d")
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_AUDIO_EXTENSIONS
 --- Constant
 --- Table of audio file extensions Final Cut Pro can import.
-fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= {"aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav"}
+fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= Set("aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav")
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 --- Constant
 --- Table of image file extensions Final Cut Pro can import.
-fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= {"bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif"}
+fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= Set("bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif")
 
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
-fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = fnutils.concat(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fnutils.concat(fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS))
+fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = Set.union(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS)
 
 --- cp.apple.finalcutpro:init() -> App
 --- Function
