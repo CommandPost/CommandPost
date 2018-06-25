@@ -247,7 +247,7 @@ function mod.prop(key, defaultValue)
         propValue = prop.new(
             function() return mod.get(key, defaultValue) end,
             function(value) mod.set(key, value) end
-        ):deepTable()
+        ):deepTable():label("config: "..key)
         mod._propCache[key] = propValue
     end
 

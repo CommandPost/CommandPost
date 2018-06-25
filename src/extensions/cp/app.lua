@@ -185,7 +185,7 @@ function app.forBundleID(bundleID)
                 else
                     hsApp = nil
                 end
-                self._application = hsApp
+                self._hsApplication = hsApp
             end
             return hsApp
         end)
@@ -203,6 +203,7 @@ function app.forBundleID(bundleID)
         local UI = hsApplication:mutate(function(original, self)
             return axutils.cache(self, "_ui", function()
                 local hsApp = original()
+                log.df("app:UI: finding new UI element")
                 return hsApp and ax.applicationElement(hsApp)
             end)
         end)

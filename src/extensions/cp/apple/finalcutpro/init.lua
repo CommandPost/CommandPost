@@ -1196,6 +1196,10 @@ function fcp:isSupportedLocale(locale)
     return self.app:isSupportedLocale(locale)
 end
 
+function fcp.__tostring()
+    return "cp.apple.finalcutpro"
+end
+
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --                   D E V E L O P M E N T      T O O L S                     --

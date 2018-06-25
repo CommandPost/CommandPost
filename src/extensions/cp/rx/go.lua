@@ -447,14 +447,25 @@ end
 ---  * handler  - The handler function
 ---
 --- Returns:
----  * The `Statement`.
+---  * The same `Statement`.
 function Statement.mt:Catch(handler)
     self:context()._catcher = handler
     return self
 end
 
-function Statement.mt:DelayBy(millis)
-    self:context()._delayBy = millis
+--- cp.rx.go.Statement:ThenDelay(millis) -> cp.rx.go.Statement
+--- Method
+--- Indicates that there will be a delay after this statement by the
+--- specified number of `millis`. This will happen after any `TimeoutAfter`/`Catch`/`Debug`
+--- actions.
+---
+--- Parameters:
+---  * millis   - the amount of time to delay, in millisecods.
+---
+--- Returns:
+---  * The same `Statement`.
+function Statement.mt:ThenDelay(millis)
+    self:context()._delay = millis
     return self
 end
 
@@ -531,8 +542,8 @@ function Statement.mt:toObservable(preserveTimer)
     end
 
     -- only delay after everything else
-    if context._delayBy then
-        o = o:delay(context._delayBy)
+    if context._delay then
+        o = o:delay(context._delay)
     end
 
     return o

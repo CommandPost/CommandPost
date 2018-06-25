@@ -14,7 +14,7 @@ local dialog			= require("cp.dialog")
 local go                = require("cp.rx.go")
 local tools             = require("cp.tools")
 
-local Do, Done          = go.Do, go.Done
+local Do, Done, If      = go.Do, go.Done, go.If
 local Throw             = go.Throw
 local unpack            = table.unpack
 
@@ -107,44 +107,46 @@ function MediaFolder.mt:init()
         self:updateIncomingNotification()
         self:updateReadyNotification()
 
-        self:importNext():Now()
+        self:doImportNext():Now()
     end
     return self
 end
 
-function MediaFolder.mt:tagFiles(files)
-    --------------------------------------------------------------------------------
-    -- Add Tags:
-    --------------------------------------------------------------------------------
-    local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
-    local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
-    local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
+function MediaFolder.mt:doTagFiles(files)
+    return Do(function()
+        --------------------------------------------------------------------------------
+        -- Add Tags:
+        --------------------------------------------------------------------------------
+        local videoExtensions = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS
+        local audioExtensions = fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS
+        local imageExtensions = fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 
-    local videoTag = self.tags.video
-    local audioTag = self.tags.audio
-    local imageTag = self.tags.image
+        local videoTag = self.tags.video
+        local audioTag = self.tags.audio
+        local imageTag = self.tags.image
 
-    for _, file in pairs(files) do
-        local ext = file:match("%.([^%.]+)$")
+        for _, file in pairs(files) do
+            local ext = file:match("%.([^%.]+)$")
 
-        if ext then
-            if videoTag and fnutils.contains(videoExtensions, ext) and fileExists(file) then
-                if not fs.tagsAdd(file, {videoTag}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
+            if ext then
+                if videoTag and fnutils.contains(videoExtensions, ext) and fileExists(file) then
+                    if not fs.tagsAdd(file, {videoTag}) then
+                        log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
+                    end
                 end
-            end
-            if audioTag and fnutils.contains(audioExtensions, ext) and fileExists(file) then
-                if not fs.tagsAdd(file, {audioTag}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
+                if audioTag and fnutils.contains(audioExtensions, ext) and fileExists(file) then
+                    if not fs.tagsAdd(file, {audioTag}) then
+                        log.ef("Failed to add Finder Tag (%s) to: %s", audioTag, file)
+                    end
                 end
-            end
-            if imageTag and fnutils.contains(imageExtensions, ext) and fileExists(file) then
-                if not fs.tagsAdd(file, {imageTag}) then
-                    log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
+                if imageTag and fnutils.contains(imageExtensions, ext) and fileExists(file) then
+                    if not fs.tagsAdd(file, {imageTag}) then
+                        log.ef("Failed to add Finder Tag (%s) to: %s", imageTag, file)
+                    end
                 end
             end
         end
-    end
+    end)
 end
 
 local function isFile(flags)
@@ -340,113 +342,144 @@ function MediaFolder.mt:importFiles(files)
     self.importing:pushRight(files)
     -- we save before importing so that we can pick up again later if CP restarts.
     self:save()
-    self:importNext():TimeoutAfter(30000, "Import Next took too long"):Debug("importNext"):Now()
+    self:doImportNext():TimeoutAfter(30000, "Import Next took too long"):Debug("doImportNext"):Now()
 end
 
-function MediaFolder.mt:importNext()
-    if not self.importingNow and #self.importing > 0 then
+function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
+    return Do(function()
+                --------------------------------------------------------------------------------
+        -- Temporarily stop the Pasteboard Watcher:
+        --------------------------------------------------------------------------------
+        if self.mod.pasteboardManager then
+            self.mod.pasteboardManager.stopWatching()
+        end
+
+        --------------------------------------------------------------------------------
+        -- Save current Pasteboard Content:
+        --------------------------------------------------------------------------------
+        context.originalPasteboard = pasteboard.readAllData()
+
+        --------------------------------------------------------------------------------
+        -- Write URL to Pasteboard:
+        --------------------------------------------------------------------------------
+        local objects = {}
+        for _, v in pairs(files) do
+            objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
+        end
+        local result = pasteboard.writeObjects(objects)
+        if not result then
+            return Throw("The URL could not be written to the Pasteboard.")
+        end
+    end)
+end
+
+function MediaFolder.mt:doRestoreOriginalPasteboard(context)
+    return Do(function()
+        Do(function()
+            if context.originalPasteboard then
+                pasteboard.writeAllData(context.originalPasteboard)
+                if self.mod.pasteboardManager then
+                    self.mod.pasteboardManager.startWatching()
+                end
+                context.originalPasteboard = nil
+            end
+        end)
+        :After(2000)
+    end)
+end
+
+-- Checks if we are deleting after import, and if so schedules them to be deleted.
+function MediaFolder.mt:doDeleteImportedFiles(files)
+    return Do(function()
+        --------------------------------------------------------------------------------
+        -- Delete After Import:
+        --------------------------------------------------------------------------------
+        if self.mod.deleteAfterImport() then
+            Do(function()
+                for _, file in pairs(files) do
+                    os.remove(file)
+                end
+            end)
+            :After(self.mod.SECONDS_UNTIL_DELETE * 1000)
+        end
+        return true
+    end)
+end
+
+function MediaFolder.mt:doImportNext()
+    local timeline = fcp:timeline()
+    local context = {}
+
+    return If(function() return not self.importingNow and #self.importing > 0 end):Then(function()
         self.importingNow = true
         local files = self.importing:popLeft()
         self:save()
 
-        return Do(function()
-            self:tagFiles(files)
+        --------------------------------------------------------------------------------
+        -- Tag the files:
+        --------------------------------------------------------------------------------
+        return Do(self:doTagFiles(files))
 
-            --------------------------------------------------------------------------------
-            -- Temporarily stop the Pasteboard Watcher:
-            --------------------------------------------------------------------------------
-            if self.mod.pasteboardManager then
-                self.mod.pasteboardManager.stopWatching()
+        --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro is Active:
+        --------------------------------------------------------------------------------
+        :Then(fcp:doLaunch():Debug("doLaunch"))
+
+        --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro is Active:
+        --------------------------------------------------------------------------------
+        :Then(self:doWriteFilesToPasteboard(files, context):Debug("files to Pasteboard"))
+
+        --------------------------------------------------------------------------------
+        -- Check if Timeline can be enabled:
+        --------------------------------------------------------------------------------
+        :Then(
+            timeline:doShow()
+            :TimeoutAfter(1000, "Unable to show the Timeline"):Debug("doShow")
+        )
+
+        --------------------------------------------------------------------------------
+        -- Perform Paste:
+        --------------------------------------------------------------------------------
+        :Then(
+            fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
+            :TimeoutAfter(10000, "Timed out while pasting."):Debug("Paste")
+        )
+
+        --------------------------------------------------------------------------------
+        -- Remove from Timeline if appropriate:
+        --------------------------------------------------------------------------------
+        :Then(function()
+            if not self.mod.insertIntoTimeline() then
+                return fcp:doSelectMenu({"Edit", "Undo Paste"}, {pressAll = true})
             end
-
-            --------------------------------------------------------------------------------
-            -- Save current Pasteboard Content:
-            --------------------------------------------------------------------------------
-            local originalPasteboard = pasteboard.readAllData()
-
-            --------------------------------------------------------------------------------
-            -- Write URL to Pasteboard:
-            --------------------------------------------------------------------------------
-            local objects = {}
-            for _, v in pairs(files) do
-                objects[#objects + 1] = { url = "file://" .. http.encodeForQuery(v) }
-            end
-            local result = pasteboard.writeObjects(objects)
-            if not result then
-                return Throw("The URL could not be written to the Pasteboard.")
-            end
-
-            local timeline = fcp:timeline()
-
-            --------------------------------------------------------------------------------
-            -- Make sure Final Cut Pro is Active:
-            --------------------------------------------------------------------------------
-            return Do(fcp:doLaunch())
-
-            --------------------------------------------------------------------------------
-            -- Check if Timeline can be enabled:
-            --------------------------------------------------------------------------------
-            :Then(
-                timeline:doShow()
-                :TimeoutAfter(1000, "Unable to show the Timeline")
-            )
-
-            --------------------------------------------------------------------------------
-            -- Perform Paste:
-            --------------------------------------------------------------------------------
-            :Then(
-                fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
-                :TimeoutAfter(10000, "Timed out while pasting.")
-            )
-
-            --------------------------------------------------------------------------------
-            -- Remove from Timeline if appropriate:
-            --------------------------------------------------------------------------------
-            :Then(function()
-                if not self.mod.insertIntoTimeline() then
-                    return fcp:doSelectMenu({"Edit", "Undo Paste"}, {pressAll = true}):Debug("Undo Paste")
-                end
-            end)
-
-            :Then(function()
-                --------------------------------------------------------------------------------
-                -- Restore original Pasteboard Content:
-                --------------------------------------------------------------------------------
-                Do(function()
-                    pasteboard.writeAllData(originalPasteboard)
-                    if self.mod.pasteboardManager then
-                        self.mod.pasteboardManager.startWatching()
-                    end
-                end)
-                :After(2000)
-
-                --------------------------------------------------------------------------------
-                -- Delete After Import:
-                --------------------------------------------------------------------------------
-                if self.mod.deleteAfterImport() then
-                    Do(function()
-                        for _, file in pairs(files) do
-                            os.remove(file)
-                        end
-                    end)
-                    :After(self.mod.SECONDS_UNTIL_DELETE * 1000)
-                end
-                return true
-            end)
         end)
+
+        --------------------------------------------------------------------------------
+        -- Restore original Pasteboard Content:
+        --------------------------------------------------------------------------------
+        :Then(self:doRestoreOriginalPasteboard(context))
+
+        --------------------------------------------------------------------------------
+        -- Delete the imported files (if configured):
+        --------------------------------------------------------------------------------
+        :Then(self:doDeleteImportedFiles(files))
+
+        --------------------------------------------------------------------------------
+        -- Try importing the next set of files in the queue:
+        --------------------------------------------------------------------------------
         :Then(function()
             self.importingNow = false
-            return self:importNext()
+            -- return self:doImportNext()
         end)
         :Catch(function(message)
             self.importingNow = false
-            log.ef("Error during `importNext`: %s", message)
+            log.ef("Error during `doImportNext`: %s", message)
             dialog.displayMessage(message)
-            return self:importNext()
+            return self:doImportNext()
         end)
-    else
-        return Done()
-    end
+    end)
+    :Otherwise(Done())
 end
 
 

@@ -199,4 +199,8 @@ function Button:snapshot(path)
     return nil
 end
 
+function Button:__tostring()
+    return string.format("cp.ui.button: %s (%s)", self:title(), self:parent())
+end
+
 return Button

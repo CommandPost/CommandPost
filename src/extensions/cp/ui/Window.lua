@@ -27,6 +27,8 @@ local axutils                       = require("cp.ui.axutils")
 local notifier                      = require("cp.ui.notifier")
 local prop                          = require("cp.prop")
 
+local format                        = string.format
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -269,6 +271,10 @@ function Window:snapshot(path)
         return axutils.snapshot(ui, path)
     end
     return nil
+end
+
+function Window:__tostring()
+    return format("cp.ui.Window: %s", self:app())
 end
 
 return Window

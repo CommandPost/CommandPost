@@ -276,10 +276,10 @@ function menu.new(app)
         _itemFinders = {}
     }, menu.mt)
 
-    local UI = app.UI:mutate(function(original)
-        -- return axutils.cache(self, "_ui", function()
+    local UI = app.UI:mutate(function(original, self)
+        return axutils.cache(self, "_ui", function()
             return axutils.childMatching(original(), menu.matches)
-        -- end, menu.matches)
+        end, menu.matches)
     end)
 
     local showing = UI:ISNOT(nil)
@@ -531,23 +531,6 @@ local function _translateTitle(menuTitles, title, sourceLocale, targetLocale)
     return title
 end
 
---- cp.app.menu:findUI([timeout]) -> cp.rx.Observable <hs._asm.axuielement>
---- Method
---- Returns an `Observable` that will emit the next available instance of
---- the Menu's UI once only, then complete.
----
---- Parameters:
----  * timeout - (optional) the number of seconds to wait for the UI. It not provided, defaults to forever.
----
---- Returns:
----  * An `Observer` that emits the UI.
-function menu.mt:findUI(timeout)
-    local finder = self.UI:observe():find(function(value)
-        return value ~= nil and #value > 0
-    end)
-    return timeout and finder:timeout(timeout * 1000) or finder
-end
-
 local function exactMatch(value, pattern)
     if value and pattern then
         local s,e = value:find(pattern)
@@ -636,7 +619,11 @@ function menu.mt:doFindMenuUI(path, options)
                                     if currentTitle then
                                         currentTitle = currentTitle:gsub("%%@", ".*")
                                         menuItemUI = axutils.childMatching(menuUI, function(child)
-                                            return exactMatch(child:attributeValue("AXTitle"), currentTitle)
+                                            local title = child:attributeValue("AXTitle")
+                                            if title == nil then
+                                                error(format("Unexpected `nil` menu item title while searching for '%s'", currentTitle))
+                                            end
+                                            return exactMatch(title, currentTitle)
                                         end)
                                         --------------------------------------------------------------------------------
                                         -- Cache the menu item, since getting children can be expensive:
@@ -778,7 +765,12 @@ function menu.mt:findMenuUI(path, options)
                             if currentTitle then
                                 currentTitle = currentTitle:gsub("%%@", ".*")
                                 menuItemUI = axutils.childMatching(menuUI, function(child)
-                                    return exactMatch(child:attributeValue("AXTitle"), currentTitle)
+                                    local title = child:attributeValue("AXTitle")
+                                    if title == nil then
+                                        error(format("Unexpected `nil` menu item title while searching for '%s'", currentTitle))
+                                    end
+                                    log.df("checking menu item: %s", title)
+                                    return exactMatch(title, currentTitle)
                                 end)
                                 --------------------------------------------------------------------------------
                                 -- Cache the menu item, since getting children can be expensive:
@@ -787,26 +779,11 @@ function menu.mt:findMenuUI(path, options)
                             else
                                 error(format("Unable to find '%s' in '%s' with %s.", pathItemTitle, concat(currentPath, " > ", appLocale)))
                             end
-
-                            menuItemUI = axutils.childWith(menuUI, "AXTitle", currentTitle)
-                            --------------------------------------------------------------------------------
-                            -- Cache the menu item, since getting children can be expensive:
-                            --------------------------------------------------------------------------------
-                            item.ui = menuItemUI
                         end
                         menuTitles = item.submenu
                         break
                     end
                 end
-            end
-
-            if not menuItemUI then
-                --------------------------------------------------------------------------------
-                -- We don't have it in our list, so look it up manually.
-                -- Hopefully they are in English!
-                --------------------------------------------------------------------------------
-                log.wf("Searching manually for '%s' in '%s' while in %s.", step, concat(currentPath, ", "), appLocale)
-                menuItemUI = axutils.childWith(menuUI, "AXTitle", step)
             end
         end
 

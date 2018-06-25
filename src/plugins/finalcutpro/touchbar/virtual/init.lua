@@ -119,7 +119,8 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Disable/Enable the Touchbar when the Command Editor/etc is open:
         --------------------------------------------------------------------------------
-        mod._fcpCommandEditorWatcher = fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(mod._checkVisibility)
+        mod.isActive = fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(mod._checkVisibility)
+        :bind(mod, "isActive")
 
         --------------------------------------------------------------------------------
         -- Update the Virtual Touch Bar position if either of the main windows move:
@@ -152,9 +153,9 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         fcp.app.frontmost:unwatch(updateStatus)
         fcp.app.showing:unwatch(updateStatus)
 
-        if mod._fcpCommandEditorWatcher then
-            mod._fcpCommandEditorWatcher:unwatch(mod._checkVisibility)
-            mod._fcpCommandEditorWatcher = nil
+        if mod.isActive then
+            mod.isActive:unwatch(mod._checkVisibility)
+            mod.isActive = nil
         end
         if mod._fcpPrimaryWindowWatcher then
             mod._fcpPrimaryWindowWatcher:unwatch(mod._manager.virtual.updateLocation)
@@ -175,6 +176,10 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         mod._manager.virtual.stop()
     end
 end)
+
+setmetatable(mod, {
+    __tostring = function() return "plugin: finalcutpro.touchbar.virtual" end,
+})
 
 --------------------------------------------------------------------------------
 --
