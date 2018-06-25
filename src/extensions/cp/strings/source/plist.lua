@@ -117,10 +117,12 @@ function mod.mt:pathToAbsolute(context)
         inPaths = outPaths
     end
     -- now, go through the options and return the first match.
-    for _,path in ipairs(outPaths) do
-        local outPath = fs.pathToAbsolute(path)
-        if outPath then
-            return outPath
+    if outPaths then
+        for _,path in ipairs(outPaths) do
+            local outPath = fs.pathToAbsolute(path)
+            if outPath then
+                return outPath
+            end
         end
     end
     return nil
