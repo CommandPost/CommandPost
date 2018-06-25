@@ -97,10 +97,7 @@ function mod.init(tangentManager)
     return mod
 end
 
---- plugins.colorfinale.tangent.colorFinaleWindowUI <cp.prop: hs._asm.axuielement; read-only>
---- Variable
---- Returns the `axuielement` for the ColorFinale window, if present.
-mod.colorFinaleWindowUI = fcp.windowsUI:mutate(function(original)
+local colorFinaleWindowUI = fcp.windowsUI:mutate(function(original)
     local windows = original()
     if windows then
         for _,w in ipairs(fcp:windowsUI()) do
@@ -112,33 +109,44 @@ mod.colorFinaleWindowUI = fcp.windowsUI:mutate(function(original)
     return nil
 end)
 
+
+prop.bind(mod) {
+--- plugins.colorfinale.tangent.colorFinaleWindowUI <cp.prop: hs._asm.axuielement; read-only>
+--- Variable
+--- Returns the `axuielement` for the ColorFinale window, if present.
+    colorFinaleWindowUI = colorFinaleWindowUI,
+
+
 --- plugins.colorfinale.tangent.colorFinaleVisible <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if an object is a Color Finale window.
-mod.colorFinaleVisible = mod.colorFinaleWindowUI:mutate(function(original)
-    local windows = original()
-    if windows then
-        for _,w in ipairs(windows) do
-            if startsWith(w:attributeValue("AXTitle"), WINDOW_TITLE) then
-                return true
+    colorFinaleVisible = colorFinaleWindowUI:mutate(function(original)
+        local windows = original()
+        if windows then
+            for _,w in ipairs(windows) do
+                if startsWith(w:attributeValue("AXTitle"), WINDOW_TITLE) then
+                    return true
+                end
             end
         end
-    end
-    return false
-end)
+        return false
+    end),
 
 --- plugins.colorfinale.tangent.colorFinaleInstalled <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if ColorFinale is installed.
-mod.colorFinaleInstalled = prop(function()
-    local info = application.infoForBundleID(APP_BUNDLE_ID)
-    return info ~= nil
-end)
+    colorFinaleInstalled = prop(function()
+        local info = application.infoForBundleID(APP_BUNDLE_ID)
+        return info ~= nil
+    end),
+}
 
+prop.bind(mod) {
 --- plugins.colorfinale.tangent.colorFinaleActive <cp.prop: boolean; read-only; live>
 --- Variable
 --- Checks to see if ColorFinale is active.
-mod.colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleVisible)
+    colorFinaleActive = mod.colorFinaleInstalled:AND(mod.colorFinaleVisible),
+}
 
 --------------------------------------------------------------------------------
 --

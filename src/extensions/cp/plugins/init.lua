@@ -398,6 +398,10 @@ function mod.initPlugin(id)
     --------------------------------------------------------------------------------
     if module == nil then
         module = true
+    elseif type(module) == "table" and getmetatable(module) == nil then
+        setmetatable(module, {
+            __tostring = function() return "plugin: " .. id end
+        })
     end
 
     --------------------------------------------------------------------------------

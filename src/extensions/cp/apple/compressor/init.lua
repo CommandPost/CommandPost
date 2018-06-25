@@ -23,7 +23,6 @@ local fnutils									= require("hs.fnutils")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local app                                       = require("cp.apple.compressor.app")
-local just										= require("cp.just")
 local prop										= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -256,26 +255,8 @@ function compressor:getPath()
     return self.app:path()
 end
 
---- cp.apple.compressor:getVersion() -> string | nil
---- Method
---- Version of Compressor
----
---- Parameters:
----  * None
----
---- Returns:
----  * Version as string or nil if an error occurred
----
---- Notes:
----  * If Compressor is running it will get the version of the active Compressor application, otherwise, it will use hs.application.infoForBundleID() to find the version.
-function compressor:getVersion()
-    local app = self:application()
-    if app then
-        return app and app["CFBundleShortVersionString"] or nil
-    else
-        local info = application.infoForBundleID(compressor.BUNDLE_ID)
-        return info and info["CFBundleShortVersionString"] or nil
-    end
-end
+setmetatable(compressor, {
+    __tostring = function() return "cp.apple.compressor" end
+})
 
 return compressor

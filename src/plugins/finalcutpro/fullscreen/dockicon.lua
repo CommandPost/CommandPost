@@ -69,6 +69,7 @@ mod.dockIconEnabled = prop(
 --- Variable
 --- If `true` FCP is full-screen and the frontmost app.
 mod.fcpActiveFullScreen = fcp:primaryWindow().isFullScreen:AND(app.frontmostApp:IS(fcp.app))
+:bind(mod, "fcpActiveFullScreen")
 :watch(function(fullScreen)
     mod.dockIconEnabled(not fullScreen)
 end)

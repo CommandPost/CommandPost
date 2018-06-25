@@ -56,7 +56,7 @@ function plugin.init()
     --------------------------------------------------------------------------------
     mod.isEnabled = fcp.isFrontmost:AND(fcp.isModalDialogOpen:NOT()):watch(function(enabled)
         mod.cmds:isEnabled(enabled)
-    end)
+    end):label("fcpxCommandsIsEnabled")
 
     return mod.cmds
 end

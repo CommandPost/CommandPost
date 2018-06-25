@@ -143,7 +143,7 @@ local frontmostApp = nil
 --- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
 --- Field
 --- Returns the most recent 'registered' app that was active, other than CommandPost itself.
-app.frontmostApp = prop(function() return frontmostApp end)
+app.frontmostApp = prop(function() return frontmostApp end):label("frontmostApp")
 
 -- utility function to help set up watchers
 local function notifyWatch(cpProp, notifications)
@@ -200,22 +200,22 @@ function app.forBundleID(bundleID)
             return hsApp ~= nil and hsApp:bundleID() ~= nil and hsApp:isRunning()
         end)
 
-        local UI = hsApplication:mutate(function(original, self)
+        local UI = pid:mutate(function(original, self)
             return axutils.cache(self, "_ui", function()
-                local hsApp = original()
-                log.df("app:UI: finding new UI element")
-                return hsApp and ax.applicationElement(hsApp)
+                local thePid = original()
+                log.df("app:UI: finding new UI element for '%s'", bundleID)
+                return thePid and ax.applicationElementForPID(thePid)
             end)
         end)
 
-        local showing = hsApplication:mutate(function(original)
-            local hsApp = original()
-            return hsApp and not hsApp:isHidden()
+        local showing = UI:mutate(function(original)
+            local ui = original()
+            return ui ~= nil and not ui:attributeValue("AXHidden")
         end)
 
-        local frontmost = hsApplication:mutate(function(original)
-            local hsApp = original()
-            return hsApp ~= nil and hsApp:isFrontmost()
+        local frontmost = UI:mutate(function(original)
+            local ui = original()
+            return ui ~= nil and ui:attributeValue("AXFrontmost")
         end)
 
         local focusedWindowUI = UI:mutate(function(original)

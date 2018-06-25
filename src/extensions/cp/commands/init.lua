@@ -42,6 +42,10 @@ local commands = {}
 commands.mt = {}
 commands.mt.__index = commands.mt
 
+function commands.mt:__tostring()
+    return "cp.commands: "..self:id()
+end
+
 --- cp.commands.DEFAULT_EXTENSION -> string
 --- Constant
 --- The menubar position priority.
@@ -105,12 +109,30 @@ function commands.new(id)
     if commands.group(id) ~= nil then
         error("Duplicate command group ID: "..id)
     end
-    local o = {
+    local o = prop.extend({
         _id = id,
         _commands = {},
         _enabled = false,
+    }, commands.mt)
+
+    prop.bind(o) {
+--- cp.commands.enabled <cp.prop: boolean>
+--- Field
+--- If enabled, the commands in the group will be active as well.
+        isEnabled = prop.TRUE():watch(function(enabled, self)
+            --log.df("%s.isEnabled: %s", self:id(), enabled)
+            if enabled then
+                self:_notify('enable')
+            else
+                self:_notify('disable')
+            end
+        end),
+
+--- cp.commands.isEditable <cp.prop: boolean>
+--- Field
+--- If set to `false`, the command group is not user-editable.
+        isEditable = prop.TRUE(),
     }
-    prop.extend(o, commands.mt)
 
     commands._groups[id] = o
     return o
@@ -207,23 +229,6 @@ function commands.mt:deleteShortcuts()
     end
     return self
 end
-
---- cp.commands.enabled <cp.prop: boolean>
---- Field
---- If enabled, the commands in the group will be active as well.
-commands.mt.isEnabled = prop.TRUE():watch(function(enabled, self)
-    --log.df("%s.isEnabled: %s", self:id(), enabled)
-    if enabled then
-        self:_notify('enable')
-    else
-        self:_notify('disable')
-    end
-end):bind(commands.mt)
-
---- cp.commands.isEditable <cp.prop: boolean>
---- Field
---- If set to `false`, the command group is not user-editable.
-commands.isEditable = prop.TRUE():bind(commands.mt)
 
 --- cp.commands:enable() -> cp.commands
 --- Method

@@ -1196,9 +1196,9 @@ function fcp:isSupportedLocale(locale)
     return self.app:isSupportedLocale(locale)
 end
 
-function fcp.__tostring()
-    return "cp.apple.finalcutpro"
-end
+setmetatable(fcp, {
+    __tostring = function() return "cp.apple.finalcutpro" end
+})
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
