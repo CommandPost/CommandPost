@@ -30,16 +30,16 @@
 #### [{{ item.name }}](#{% filter lower %}{{ item.name }}{% endfilter %})
 | <span style="float: left;">**Signature**</span> | <span style="float: left;">`{{ item.def }}` </span>                                                          |
 | -----------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| **Type**                                             | {{ item.type }}                                                                                         |
-| **Description**                                      | {{ item.desc }}                                                                                         |
+| **Type**                                             | {{ item.type }} |
+| **Description**                                      | {{ item.desc }} |
 {% if "parameters" in item %}
-| **Parameters**                                       | {% for parameter in item.parameters %}{{ parameter | markdown | replace("\n","") }}{% endfor %}   |
+| **Parameters**                                       | {{ item.parameters | join | markdown | replace("\n","") }} |
 {% endif %}
 {% if "returns" in item %}
-| **Returns**                                          | {% for return in item.returns %}{{ return | markdown | replace("\n","") }}{% endfor %}            |
+| **Returns**                                          | {{ item.returns | join | markdown | replace("\n","") }} |
 {% endif %}
 {% if "notes" in item %}
-| **Notes**                                            | {% for note in item.notes %}{{ note | markdown  | replace("\n","") }}{% endfor %}                 |
+| **Notes**                                            | {{ item.notes | join | markdown | replace("\n","") }} |
 {% endif %}
 
 {% endfor %}{% endif %}{% endfor %}
