@@ -699,11 +699,11 @@ end
 -- It will not create a new `cp.app` instance for the Bundle ID if it does not exist.
 --
 -- Parameters:
--- * bundleID       - The app Bundle ID
--- * appName        - The app display name
+--  * bundleID       - The app Bundle ID
+--  * appName        - The app display name
 --
 -- Returns:
--- * The `cp.app` matching the details, or `nil` if not found.
+--  * The `cp.app` matching the details, or `nil` if not found.
 function mod._findApp(bundleID, appName)
     local app = apps[bundleID]
     if app == nil and bundleID == nil and appName ~= nil then
