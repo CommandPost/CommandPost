@@ -205,7 +205,7 @@ function Viewer.new(app, eventViewer)
         --- Returns the current frame for the viewer, or `nil` if it is not available.
         frame = UI:mutate(function(original)
             local ui = original()
-            return ui and ui:attributeValue("AXFrame")
+            return ui and geometry.rect(ui:attributeValue("AXFrame"))
         end),
     }
 
@@ -416,16 +416,8 @@ function Viewer.new(app, eventViewer)
     -----------------------------------------------------------------------
     -- Watch for the Viewer being resized:
     -----------------------------------------------------------------------
-    app:primaryWindow().frame:watch(function()
-        if o:isOnPrimary() then
-            o.frame:update()
-        end
-    end)
-
-    app:secondaryWindow().frame:watch(function()
-        if o:isOnSecondary() then
-            o.frame:update()
-        end
+    app:notifier():watchFor({"AXWindowResized", "AXWindowMoved", "AXValueChanged"}, function()
+        o.frame:update()
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
