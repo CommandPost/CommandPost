@@ -72,7 +72,6 @@ local log										= require("hs.logger").new("fcp")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fnutils									= require("hs.fnutils")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")

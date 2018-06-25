@@ -516,19 +516,19 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(fcp:doLaunch())
+        :Then(fcp:doLaunch():ThenDelay(100):Debug("fcp launch"))
 
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(self:doWriteFilesToPasteboard(files, context))
+        :Then(self:doWriteFilesToPasteboard(files, context):ThenDelay(100):Debug("pasteboard"))
 
         --------------------------------------------------------------------------------
         -- Check if Timeline can be enabled:
         --------------------------------------------------------------------------------
         :Then(
             timeline:doShow()
-            :TimeoutAfter(1000, "Unable to show the Timeline")
+            :TimeoutAfter(1000, "Unable to show the Timeline"):Debug("timeline show")
         )
 
         --------------------------------------------------------------------------------
