@@ -16,8 +16,9 @@ local log                                   = require("hs.logger").new("pasteboa
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp                                   = require("cp.apple.finalcutpro")
 local config                                = require("cp.config")
+local fcp                                   = require("cp.apple.finalcutpro")
+local json                                  = require("cp.json")
 
 --------------------------------------------------------------------------------
 --
@@ -35,15 +36,30 @@ local OPTIONS_PRIORITY                      = 1000
 --------------------------------------------------------------------------------
 local mod = {}
 
--- plugins.finalcutpro.pasteboard.history._historyMaximumSize -> number
--- Variable
--- Maximum Size of Pasteboard History
-mod._historyMaximumSize = 5
+--- plugins.finalcutpro.pasteboard.history.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "Pasteboard History.json"
+
+--- plugins.finalcutpro.pasteboard.history.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "Pasteboard History"
+
+--- plugins.finalcutpro.pasteboard.history.HISTORY_MAXIMUM_SIZE -> number
+--- Constant
+--- Maximum Size of Pasteboard History
+mod.HISTORY_MAXIMUM_SIZE = 5
 
 --- plugins.finalcutpro.pasteboard.history.enabled <cp.prop: boolean>
 --- Field
 --- Enable or disable the Pasteboard History.
 mod.enabled = config.prop("enablePasteboardHistory", DEFAULT_VALUE)
+
+--- plugins.finalcutpro.pasteboard.history._history <cp.prop: table>
+--- Field
+--- Contains all the saved Touch Bar Buttons
+mod.history = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.finalcutpro.pasteboard.history.getHistory() -> table
 --- Function
@@ -55,10 +71,7 @@ mod.enabled = config.prop("enablePasteboardHistory", DEFAULT_VALUE)
 --- Returns:
 ---  * A table of the Pasteboard history.
 function mod.getHistory()
-    if not mod._history then
-        mod._history = config.get("pasteboardHistory", {})
-    end
-    return mod._history
+    return mod.history()
 end
 
 --- plugins.finalcutpro.pasteboard.history.setHistory(history) -> none
@@ -71,8 +84,7 @@ end
 --- Returns:
 ---  * None
 function mod.setHistory(history)
-    mod._history = history
-    config.set("pasteboardHistory", history)
+    mod.history(history)
 end
 
 --- plugins.finalcutpro.pasteboard.history.clearHistory() -> none
@@ -103,7 +115,7 @@ function mod.addHistoryItem(data, label)
     --------------------------------------------------------------------------------
     -- Drop old history items:
     --------------------------------------------------------------------------------
-    while (#(history) >= mod._historyMaximumSize) do
+    while (#(history) >= mod.HISTORY_MAXIMUM_SIZE) do
         table.remove(history,1)
     end
     table.insert(history, item)
