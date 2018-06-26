@@ -19,6 +19,7 @@ local log                                       = require("hs.logger").new("mana
 --------------------------------------------------------------------------------
 local canvas                                    = require("hs.canvas")
 local eventtap                                  = require("hs.eventtap")
+local fnutils                                   = require("hs.fnutils")
 local image                                     = require("hs.image")
 
 --------------------------------------------------------------------------------
@@ -224,20 +225,10 @@ mod.enabled = config.prop("enableTouchBar", false):watch(function(enabled)
     end
 end)
 
---------------------------------------------------------------------------------
--- Workaround for legacy (plist) Touch Bar Buttons:
---------------------------------------------------------------------------------
-local defaultControls = {}
-local legacyControls = config.get("touchBarButtons", nil)
-if legacyControls then
-    defaultControls = legacyControls
-    config.set("touchBarButtons", nil)
-end
-
 --- plugins.core.touchbar.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved Touch Bar Buttons
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.core.touchbar.manager.supported <cp.prop: boolean; read-only>
 --- Field
@@ -1200,6 +1191,16 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
+
+    --------------------------------------------------------------------------------
+    -- Migrate Legacy Property List Touch Bar Buttons to JSON:
+    --------------------------------------------------------------------------------
+    local legacyControls = config.get("touchBarButtons", nil)
+    if legacyControls then
+        mod._items(fnutils.copy(legacyControls))
+        config.set("touchBarButtons", nil)
+        log.df("Migrated Touch Bar Buttons from Plist to JSON.")
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Actions:

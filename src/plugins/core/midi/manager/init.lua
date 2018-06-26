@@ -597,20 +597,10 @@ mod._generalCallbacks = {}
 --- The maximum number of MIDI items per group.
 mod.maxItems = 150
 
---------------------------------------------------------------------------------
--- Workaround for legacy (plist) MIDI Controls:
---------------------------------------------------------------------------------
-local defaultControls = mod.DEFAULT_MIDI_CONTROLS
-local legacyControls = config.get("midiControls", nil)
-if legacyControls then
-    defaultControls = legacyControls
-    config.set("midiControls", nil)
-end
-
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field
 --- Contains all the saved MIDI items
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, mod.DEFAULT_MIDI_CONTROLS)
 
 --- plugins.core.midi.manager.clear() -> none
 --- Function
@@ -1964,6 +1954,16 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit(deps)
+
+    --------------------------------------------------------------------------------
+    -- Migrate Legacy Property List MIDI Controls to JSON:
+    --------------------------------------------------------------------------------
+    local legacyControls = config.get("midiControls", nil)
+    if legacyControls then
+        mod._items(fnutils.copy(legacyControls))
+        config.set("midiControls", nil)
+        log.df("Migrated Legacy MIDI Controls from Plist to JSON.")
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Actions:
