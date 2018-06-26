@@ -25,10 +25,13 @@ local styledtext        = require("hs.styledtext")
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
-local font              = require("cp.font")
-local json              = require("cp.json")
 local just              = require("cp.just")
 local tools             = require("cp.tools")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local execute           = hs.execute
 
 --------------------------------------------------------------------------------
 --
@@ -36,16 +39,6 @@ local tools             = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- plugins.finalcutpro.console.font.FILE_NAME -> string
---- Constant
---- File name of settings file.
-mod.FILE_NAME = "Fonts.json"
-
---- plugins.finalcutpro.console.font.FOLDER_NAME -> string
---- Constant
---- Folder Name where settings file is contained.
-mod.FOLDER_NAME = "Final Cut Pro"
 
 --- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
 --- Constant
@@ -56,63 +49,38 @@ mod.FONT_EXTENSIONS = {
     "ttc",
 }
 
---- plugins.finalcutpro.console.font.RENAME_FONTS -> table
---- Constant
---- Special Fonts that appear to have a different name in Final Cut Pro than they do in Font Book.
-mod.RENAME_FONTS = {
-    [".AppleSystemUIFont"] = "BlueGlyph",                   -- Developers font - not widely used.
-    ["Sketch Block Light"] = "Sketch Block",                -- System font not available in Final Cut Pro Inspector.
-}
-
 --- plugins.finalcutpro.console.font.IGNORE_FONTS -> table
 --- Constant
 --- Fonts to ignore as they're used internally by Final Cut Pro or macOS.
 mod.IGNORE_FONTS = {
-    ["FCMetro34"] = "FCMetro34",                            -- Final Cut Pro Internal Font not available in Final Cut Pro Inspector.
-    ["Avenir Black Oblique"] = "Avenir Black Oblique",      -- Final Cut Pro Internal Font not available in Final Cut Pro Inspector.
-    ["Garamond Rough Medium"] = "Garamond Rough Medium",    -- Final Cut Pro Internal Font not available in Final Cut Pro Inspector.
-    ["Avenir Book"] = "Avenir Book",                        -- System font not available in Final Cut Pro Inspector.
-    ["Myriad Pro Light"] = "Myriad Pro Light",              -- System font not available in Final Cut Pro Inspector.
-    ["Myriad Pro"] = "Myriad Pro",                          -- System font not available in Final Cut Pro Inspector.
-    ["Refrigerator Deluxe Heavy"] = "Refrigerator Deluxe"   -- Obscure
+    ["FCMetro34"] = true -- Final Cut Pro Internal Font not available in Final Cut Pro Inspector.
 }
 
---- plugins.finalcutpro.console.font.cachedFonts <cp.prop: table | nil>
---- Field
---- Table of cached fonts.
-mod.cachedFonts = json.prop(config.cachePath, mod.FOLDER_NAME, mod.FILE_NAME, nil)
+--- plugins.finalcutpro.console.font.fontLookup -> table
+--- Variable
+--- Provides a lookup between Font Names and their position in the Final Cut Pro dropdown menu.
+mod.fontLookup = {}
 
---- plugins.finalcutpro.console.font.deleteCache() -> none
---- Function
---- Deletes the cache file.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.deleteCache()
-    local path = config.cachePath .. "/" .. mod.FOLDER_NAME .. "/" .. mod.FILE_NAME
-    if tools.doesFileExist(path) then
-        os.remove(path)
-    end
-end
+--- plugins.finalcutpro.console.font.fontCount -> number
+--- Variable
+--- The number of fonts available.
+mod.fontCount = 0
 
---- plugins.finalcutpro.console.font.getRunningFonts() -> none
---- Function
---- Shows the Final Cut Pro Console.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.getRunningFonts()
+-- getFinalCutProFontPaths() -> none
+-- Function
+-- Gets a table of all the fonts currently used by Final Cut Pro.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
+local function getFinalCutProFontPaths()
     local result = {}
     local fcpApp = fcp:application()
     local processID = fcpApp and fcpApp:pid()
     if processID then
-        local o, s, t, r = hs.execute("lsof -p " .. processID)
+        local o, s, t, r = execute("lsof -p " .. processID)
         if o and s and t == "exit" and r == 0 then
             local lines = tools.lines(o)
             for _, line in pairs(lines) do
@@ -122,24 +90,7 @@ function mod.getRunningFonts()
                         if position then
                             local path = string.sub(line, position)
                             if path then
-                                local fontFamily = font.getFontFamilyFromFile(path)
-                                if fontFamily and string.sub(fontFamily, 1, 1) ~= "." then
-                                    --------------------------------------------------------------------------------
-                                    -- Add workaround:
-                                    --------------------------------------------------------------------------------
-                                    if styledtext.validFont(fontFamily) then
-                                        local ff = styledtext.fontInfo(fontFamily)
-                                        if ff then
-                                            if ff.familyName ~= ".AppleSystemUIFont" then
-                                                if ff.displayName == fontFamily and ff.familyName ~= fontFamily then
-                                                    --log.df("* Changing Font from %s to %s.", fontFamily, ff.familyName)
-                                                    fontFamily = ff.familyName
-                                                end
-                                            end
-                                        end
-                                    end
-                                    table.insert(result, fontFamily)
-                                end
+                                table.insert(result, path)
                             end
                         end
                     end
@@ -150,6 +101,24 @@ function mod.getRunningFonts()
         end
     end
     return result
+end
+
+-- loadFinalCutProFonts() -> none
+-- Function
+-- Loads all of Final Cut Pro's Fonts into CommandPost.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
+function loadFinalCutProFonts()
+    local fontPaths = getFinalCutProFontPaths()
+    for _, file in pairs(fontPaths) do
+        if tools.doesFileExist(file) then
+            local result = styledtext.loadFont(file)
+        end
+    end
 end
 
 --- plugins.finalcutpro.console.font.onActivate() -> none
@@ -167,6 +136,13 @@ function mod.onActivate(_, action)
     if action and action.fontName then
 
         --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro has been scanned for Fonts:
+        --------------------------------------------------------------------------------
+        if not mod._scannedFinalCutPro then
+            mod._handler:reset(true)
+        end
+
+        --------------------------------------------------------------------------------
         -- Get Font Name from action:
         --------------------------------------------------------------------------------
         local fontName = action.fontName
@@ -174,26 +150,7 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         -- Get font ID from lookup table:
         --------------------------------------------------------------------------------
-        local id = mod._fontLookup[fontName]
-
-        --------------------------------------------------------------------------------
-        -- If we need to rebuild the Font Database:
-        --------------------------------------------------------------------------------
-        if not id or not mod.cachedFonts() then
-
-            dialog.displayMessage("The selected font could not be found in the cache. Your system will now be re-scanned for fonts. This can take several minutes.")
-
-            --------------------------------------------------------------------------------
-            -- Trash Cache:
-            --------------------------------------------------------------------------------
-            mod._fontLookup = nil
-            mod._firstTime = true
-            mod.deleteCache()
-            mod._fontConsoleTriggeredScan = true
-            mod.reset()
-            mod._fontConsoleTriggeredScan = false
-            id = mod._fontLookup[fontName]
-        end
+        local id = mod.fontLookup[fontName]
 
         --------------------------------------------------------------------------------
         -- Make sure Inspector is open:
@@ -257,13 +214,14 @@ function mod.onActivate(_, action)
         --------------------------------------------------------------------------------
         -- Compare the number of items in the drop down to what we've cached:
         --------------------------------------------------------------------------------
-        local difference = #kids - mod._consoleFontCount
+        local fontCount = mod.fontCount or 0
+        local kidsCount = #kids or 0
+        local difference = kidsCount - fontCount
         if difference == 0 then
             if menu[id] then
                 --------------------------------------------------------------------------------
                 -- Click on chosen font:
                 --------------------------------------------------------------------------------
-                --log.df("Selecting item: %s (%s)", fontName, id)
                 local result = menu[id]:performAction("AXPress")
                 if result then
                     return
@@ -273,27 +231,7 @@ function mod.onActivate(_, action)
             --------------------------------------------------------------------------------
             -- Wrong number of fonts comparing Console with Popup:
             --------------------------------------------------------------------------------
-            local cachedFonts = mod.cachedFonts()
-            log.df("--------------------------------------------------------------------------------")
-            log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
-            log.df("NUMBER OF FONTS IN POPUP: %s", #kids)
-            log.df("--------------------------------------------------------------------------------")
-            log.df("DIFFERENCE: %s", #kids - mod._consoleFontCount)
-            log.df("--------------------------------------------------------------------------------")
-            log.df("Cached Fonts: %s", inspect(cachedFonts))
-            log.df("--------------------------------------------------------------------------------")
-            log.df("Fonts: %s", inspect(mod._debugFontList))
-            log.df("--------------------------------------------------------------------------------")
-
-            dialog.displayErrorMessage(string.format("An error has occured where the number of fonts in the CommandPost Console (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThe font cache will be trashed. Please try again.", mod._consoleFontCount, #kids))
-
-            --------------------------------------------------------------------------------
-            -- Trash Cache:
-            --------------------------------------------------------------------------------
-            mod.deleteCache()
-            if mod.activator then
-                mod.activator:refresh()
-            end
+            dialog.displayErrorMessage(string.format("An error has occured where the number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nPlease try restarting Final Cut Pro & CommandPost and try again.", fontCount, kidsCount))
         end
     else
         --------------------------------------------------------------------------------
@@ -314,52 +252,38 @@ end
 ---  * None
 function mod.show()
 
-    local hasCache = mod.cachedFonts() ~= nil
+    --------------------------------------------------------------------------------
+    -- Show the Inspector:
+    --------------------------------------------------------------------------------
     local inspector = fcp:inspector()
     inspector:show()
     if not just.doUntil(function() return inspector:isShowing() end) then
         dialog.displayErrorMessage("Failed to open the Inspector.")
         return
     end
+
+    --------------------------------------------------------------------------------
+    -- Make sure there's a "Text" tab:
+    --------------------------------------------------------------------------------
     if not inspector:tabAvailable("Text") then
         dialog.displayMessage(i18n("pleaseSelectATitle"))
         return
     end
 
-    mod._fontConsoleTriggeredScan = true
-
+    --------------------------------------------------------------------------------
+    -- Setup Activator:
+    --------------------------------------------------------------------------------
     if not mod.activator then
-        --------------------------------------------------------------------------------
-        -- Display initialisation message:
-        --------------------------------------------------------------------------------
-        if not mod.cachedFonts() then
-            mod._firstTime = true
-            mod._warningDisplayed = true
-            dialog.displayMessage(i18n("fontScanInitalisationMessage"))
-        end
-
-        --------------------------------------------------------------------------------
-        -- Setup Activator:
-        --------------------------------------------------------------------------------
         mod.activator = mod.actionmanager.getActivator("finalcutpro.font")
         mod.activator:preloadChoices()
         mod.activator:allowHandlers("fcpx_fonts")
         mod.activator:onActivate(mod.onActivate)
-
-        --------------------------------------------------------------------------------
-        -- Show the Console if we restored values from the cache:
-        --------------------------------------------------------------------------------
-        if hasCache then
-            mod.activator:show()
-        end
-    else
-        --------------------------------------------------------------------------------
-        -- Show Font Console:
-        --------------------------------------------------------------------------------
-        mod.activator:show()
     end
 
-    mod._fontConsoleTriggeredScan = false
+    --------------------------------------------------------------------------------
+    -- Show the Activator:
+    --------------------------------------------------------------------------------
+    mod.activator:show()
 
 end
 
@@ -375,130 +299,71 @@ end
 function mod.onChoices(choices)
 
     --------------------------------------------------------------------------------
-    -- Get cached fonts:
+    -- Load Final Cut Pro Fonts:
     --------------------------------------------------------------------------------
-    local cachedFonts = mod.cachedFonts()
-
-    --------------------------------------------------------------------------------
-    -- Display warning if this is the first time we've loaded fonts:
-    --------------------------------------------------------------------------------
-    if not mod._warningDisplayed and not cachedFonts and mod._fontConsoleTriggeredScan then
-        dialog.displayMessage(i18n("fontScanConsoleInitalisationMessage"))
-        mod._warningDisplayed = true
+    if fcp:isRunning() then
+        mod._scannedFinalCutPro = true
+        loadFinalCutProFonts()
     end
 
+    --------------------------------------------------------------------------------
+    -- Add Fonts to Table:
+    --------------------------------------------------------------------------------
     local fonts = {}
     local newFonts = {}
-    local systemFonts = {}
-
-    if cachedFonts then
-        --------------------------------------------------------------------------------
-        -- Restoring fonts from cache:
-        --------------------------------------------------------------------------------
-        --log.df("Restoring Fonts from Cache.")
-        fonts = cachedFonts
-    else
-        --------------------------------------------------------------------------------
-        -- Get a list of fonts currently being used by Final Cut Pro & Cache:
-        --------------------------------------------------------------------------------
-        --log.df("Gathering list of fonts in active use by Final Cut Pro.")
-        if mod._fontConsoleTriggeredScan or mod._forceScan then
-            fonts = mod.getRunningFonts()
-            mod.cachedFonts(fonts)
-        end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Add System Fonts (found in Font Book):
-    --------------------------------------------------------------------------------
     for _, fontName in pairs(styledtext.fontNames()) do
         if string.sub(fontName, 1, 1) ~= "." then
             local fontInfo = styledtext.fontInfo(fontName)
             local familyName = fontInfo and fontInfo.familyName
             if familyName then
                 table.insert(fonts, familyName)
-                systemFonts[familyName] = true
             end
         end
     end
 
     --------------------------------------------------------------------------------
-    -- Remove duplicate fonts, remove hidden fonts and rename fonts as required:
+    -- Remove Duplicate, Ignored & Hidden Fonts:
     --------------------------------------------------------------------------------
     local hash = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) == "." or mod.IGNORE_FONTS[fontName] then -- luacheck: ignore
-                --log.df("Skipping Hidden/Ignored Font: %s", fontName)
-            else
-                if mod.RENAME_FONTS[fontName] then
-                    --log.df("Renaming Font: %s = %s", fontName, mod.RENAME_FONTS[fontName])
-                    fontName = mod.RENAME_FONTS[fontName]
-                end
+            if string.sub(fontName, 1, 1) ~= "." and mod.IGNORE_FONTS[fontName] == nil then
                 newFonts[#newFonts+1] = fontName
                 hash[fontName] = true
             end
-        --else
-            --log.df("Skipping Duplicate: %s", fontName)
         end
     end
 
     --------------------------------------------------------------------------------
     -- Sort and add to table:
     --------------------------------------------------------------------------------
-    mod._fontLookup = {}
+    mod.fontLookup = {}
     table.sort(newFonts, function(a, b) return string.lower(a) < string.lower(b) end)
     for id,fontName in pairs(newFonts) do
-            local name
-            if systemFonts[fontName] then
-                name = styledtext.new(fontName, {
-                    font = { name = fontName, size = 18 },
-                })
-            else
-                name = styledtext.new(fontName, {
-                    font = { size = 18 },
-                })
-            end
             --------------------------------------------------------------------------------
             -- Add ID to Font Lookup Table:
             --------------------------------------------------------------------------------
-            mod._fontLookup[fontName] = id
+            mod.fontLookup[fontName] = id
 
+            --------------------------------------------------------------------------------
+            -- Add choice to Activator:
+            --------------------------------------------------------------------------------
             if choices then
+                local name = styledtext.new(fontName, {font = { name = fontName, size = 18 } })
                 choices
                     :add(name)
-                    :subText("")
                     :id(fontName)
                     :params({
                         fontName = fontName,
                     })
             end
-            --log.df("%s: %s", id, fontName)
+            print(fontName)
     end
 
     --------------------------------------------------------------------------------
-    -- Get a list of fonts for debugging purposes:
+    -- Store the font count:
     --------------------------------------------------------------------------------
-    mod._debugFontList = newFonts
-
-    --------------------------------------------------------------------------------
-    -- Display initialisation message:
-    --------------------------------------------------------------------------------
-    if mod._firstTime then
-        dialog.displayMessage(i18n("fontScanComplete"))
-        mod._firstTime = false
-    end
-
-    --------------------------------------------------------------------------------
-    -- Font Count:
-    --------------------------------------------------------------------------------
-    mod._consoleFontCount = newFonts and #newFonts or 0
-    --log.df("NUMBER OF FONTS IN CONSOLE: %s", mod._consoleFontCount)
-
-    --------------------------------------------------------------------------------
-    -- Fuck things up (for science):
-    --------------------------------------------------------------------------------
-    --mod._consoleFontCount = mod._consoleFontCount + 1
+    mod.fontCount = newFonts and #newFonts or 0
 
 end
 
@@ -527,21 +392,6 @@ end
 function mod.onExecute(action)
     if not mod._consoleFontCount then mod.onChoices() end
     mod.onActivate(nil, action)
-end
-
---- plugins.finalcutpro.commands.actions.reset() -> none
---- Function
---- Reset the Font Handler Cache.
----
---- Parameters:
---- * None
----
---- Returns:
---- * None
-function mod.reset()
-    mod._forceScan = true
-    mod._handler:reset(true)
-    mod._forceScan = false
 end
 
 --------------------------------------------------------------------------------

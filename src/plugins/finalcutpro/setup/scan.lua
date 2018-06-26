@@ -48,7 +48,6 @@ function mod.init(deps)
                         label		= i18n("startScan"),
                         onclick		= function()
                             fcp:scanPlugins()
-                            deps.font.reset()
                             setup.nextPanel()
                         end
                     })
@@ -75,7 +74,6 @@ local plugin = {
     group			= "finalcutpro",
     dependencies	= {
         ["core.setup"]			        = "setup",
-        ["finalcutpro.console.font"]    = "font",
     }
 }
 
