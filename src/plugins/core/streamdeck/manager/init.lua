@@ -18,6 +18,7 @@ local log                                       = require("hs.logger").new("stre
 --------------------------------------------------------------------------------
 local application                               = require("hs.application")
 local canvas                                    = require("hs.canvas")
+local fnutils                                   = require("hs.fnutils")
 local image                                     = require("hs.image")
 local streamdeck                                = require("hs.streamdeck")
 
@@ -64,20 +65,10 @@ mod._streamDeck = {}
 --- The maximum number of Stream Deck items per group.
 mod.maxItems = 15
 
---------------------------------------------------------------------------------
--- Workaround for legacy (plist) Stream Deck Buttons:
---------------------------------------------------------------------------------
-local defaultControls = {}
-local legacyControls = config.get("streamDeckButtons", nil)
-if legacyControls then
-    defaultControls = legacyControls
-    config.set("streamDeckButtons", nil)
-end
-
 -- plugins.core.streamdeck.manager._items <cp.prop: table>
 -- Field
 -- Contains all the saved Stream Deck Buttons
-mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, defaultControls)
+mod._items = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.core.streamdeck.manager.clear() -> none
 --- Function
@@ -614,6 +605,17 @@ end
 -- POST INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.postInit()
+
+    --------------------------------------------------------------------------------
+    -- Migrate Legacy Property List Stream Deck Buttons to JSON:
+    --------------------------------------------------------------------------------
+    local legacyControls = config.get("streamDeckButtons", nil)
+    if legacyControls then
+        mod._items(fnutils.copy(legacyControls))
+        config.set("streamDeckButtons", nil)
+        log.df("Migrated Legacy Stream Deck Buttons from Plist to JSON.")
+    end
+
     if mod.enabled() then
         mod.start()
     end
