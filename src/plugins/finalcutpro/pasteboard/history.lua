@@ -18,6 +18,7 @@ local log                                   = require("hs.logger").new("pasteboa
 --------------------------------------------------------------------------------
 local config                                = require("cp.config")
 local fcp                                   = require("cp.apple.finalcutpro")
+local fnutils                               = require("hs.fnutils")
 local json                                  = require("cp.json")
 
 --------------------------------------------------------------------------------
@@ -264,6 +265,23 @@ function plugin.init(deps)
         end)
 
     return mod
+end
+
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit()
+
+    --------------------------------------------------------------------------------
+    -- Migrate Legacy Property Pasteboard History to JSON:
+    --------------------------------------------------------------------------------
+    local legacy = config.get("pasteboardHistory", nil)
+    if legacy then
+        mod.history(fnutils.copy(legacy))
+        config.set("pasteboardHistory", nil)
+        log.df("Migrated Pasteboard History from Plist to JSON.")
+    end
+
 end
 
 return plugin
