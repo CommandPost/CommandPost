@@ -16,13 +16,11 @@ local log				= require("hs.logger").new("fontConsole")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local inspect           = require("hs.inspect")
 local styledtext        = require("hs.styledtext")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local just              = require("cp.just")
@@ -76,6 +74,9 @@ mod.fontCount = 0
 -- Returns:
 --  * Table
 local function getFinalCutProFontPaths()
+    --------------------------------------------------------------------------------
+    -- TODO: David should eventually rewrite this to make it faster:
+    --------------------------------------------------------------------------------
     local result = {}
     local fcpApp = fcp:application()
     local processID = fcpApp and fcpApp:pid()
@@ -112,11 +113,11 @@ end
 --
 -- Returns:
 --  * Table
-function loadFinalCutProFonts()
+local function loadFinalCutProFonts()
     local fontPaths = getFinalCutProFontPaths()
     for _, file in pairs(fontPaths) do
         if tools.doesFileExist(file) then
-            local result = styledtext.loadFont(file)
+            styledtext.loadFont(file)
         end
     end
 end
