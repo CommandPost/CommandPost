@@ -424,7 +424,9 @@ end
 --- Returns:
 ---  * None
 function mod.focus()
-    mod.webview:bringToFront()
+    if mod.webview then
+        mod.webview:bringToFront()
+    end
     --[[
     mod.visible:update()
     if mod.webview then

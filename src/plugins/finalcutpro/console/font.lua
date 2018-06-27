@@ -38,6 +38,13 @@ local execute           = hs.execute
 --------------------------------------------------------------------------------
 local mod = {}
 
+--------------------------------------------------------------------------------
+-- POTENTIAL PROBLEM FONTS:
+-- * Myriad Pro
+-- * Museo Sans
+-- * PortagoITC TT
+--------------------------------------------------------------------------------
+
 --- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
 --- Constant
 --- Table of support font file extensions.
@@ -63,6 +70,11 @@ mod.fontLookup = {}
 --- Variable
 --- The number of fonts available.
 mod.fontCount = 0
+
+--- plugins.finalcutpro.console.font.processedFonts -> table
+--- Variable
+--- Table of font paths which have already been loaded or skipped.
+mod.processedFonts = {}
 
 -- getFinalCutProFontPaths() -> none
 -- Function
@@ -116,9 +128,16 @@ end
 local function loadFinalCutProFonts()
     local fontPaths = getFinalCutProFontPaths()
     for _, file in pairs(fontPaths) do
-        if tools.doesFileExist(file) then
-            styledtext.loadFont(file)
+        if not mod.processedFonts[file] and tools.doesFileExist(file) then
+            local userPath = os.getenv("HOME")
+            if file:sub(1, 15) ~= "/Library/Fonts/" and
+            file:sub(1, userPath:len() + 15) ~= userPath .. "/Library/Fonts/" and
+            file:sub(1, 22) ~= "/System/Library/Fonts/" and
+            file:sub(1, 47) ~= "/Library/Application Support/Apple/Fonts/iWork/" then
+                styledtext.loadFont(file)
+            end
         end
+        mod.processedFonts[file] = true
     end
 end
 
@@ -137,21 +156,9 @@ function mod.onActivate(_, action)
     if action and action.fontName then
 
         --------------------------------------------------------------------------------
-        -- Make sure Final Cut Pro has been scanned for Fonts:
-        --------------------------------------------------------------------------------
-        if not mod._scannedFinalCutPro then
-            mod._handler:reset(true)
-        end
-
-        --------------------------------------------------------------------------------
         -- Get Font Name from action:
         --------------------------------------------------------------------------------
         local fontName = action.fontName
-
-        --------------------------------------------------------------------------------
-        -- Get font ID from lookup table:
-        --------------------------------------------------------------------------------
-        local id = mod.fontLookup[fontName]
 
         --------------------------------------------------------------------------------
         -- Make sure Inspector is open:
@@ -218,22 +225,32 @@ function mod.onActivate(_, action)
         local fontCount = mod.fontCount or 0
         local kidsCount = #kids or 0
         local difference = kidsCount - fontCount
-        if difference == 0 then
-            if menu[id] then
-                --------------------------------------------------------------------------------
-                -- Click on chosen font:
-                --------------------------------------------------------------------------------
-                local result = menu[id]:performAction("AXPress")
-                if result then
-                    return
-                end
+        if difference ~= 0 then
+            --------------------------------------------------------------------------------
+            -- Take Two:
+            --------------------------------------------------------------------------------
+            mod._handler:reset(true)
+            fontCount = mod.fontCount or 0
+            difference = kidsCount - fontCount
+            if difference ~= 0 then
+                dialog.displayErrorMessage(string.format("The number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThis can be caused by TypeKit fonts that haven't properly synced yet or corrupt fonts in your Font Book.\n\nPlease try deactivating and reactivating any TypeKit Fonts, validate your Font Book fonts, then restart Final Cut Pro and try again.", fontCount, kidsCount))
+                return
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Click on chosen font:
+        --------------------------------------------------------------------------------
+        local id = mod.fontLookup[fontName]
+        if menu[id] then
+            local result = menu[id]:performAction("AXPress")
+            if result then
+                return
             end
         else
-            --------------------------------------------------------------------------------
-            -- Wrong number of fonts comparing Console with Popup:
-            --------------------------------------------------------------------------------
-            dialog.displayErrorMessage(string.format("An error has occured where the number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nPlease try restarting Final Cut Pro & CommandPost and try again.", fontCount, kidsCount))
+            dialog.displayErrorMessage("The selected font could not be found.\n\nPlease try again.")
         end
+
     else
         --------------------------------------------------------------------------------
         -- Bad Action:
@@ -303,7 +320,6 @@ function mod.onChoices(choices)
     -- Load Final Cut Pro Fonts:
     --------------------------------------------------------------------------------
     if fcp:isRunning() then
-        mod._scannedFinalCutPro = true
         loadFinalCutProFonts()
     end
 
@@ -358,7 +374,6 @@ function mod.onChoices(choices)
                         fontName = fontName,
                     })
             end
-            print(fontName)
     end
 
     --------------------------------------------------------------------------------
