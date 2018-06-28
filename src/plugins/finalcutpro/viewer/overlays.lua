@@ -31,6 +31,12 @@ local fs                = require("hs.fs")
 local geometry          = require("hs.geometry")
 local image             = require("hs.image")
 local menubar           = require("hs.menubar")
+local mouse             = require("hs.mouse")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local events            = eventtap.event.types
 
 --------------------------------------------------------------------------------
 --
@@ -321,16 +327,32 @@ function mod.show()
                 })
                 mod._canvas:clickActivating(false)
                 mod._canvas:canvasMouseEvents(true, true, true, true)
+
+                local canvasTopLeft = mod._canvas:topLeft()
                 mod._canvas:mouseCallback(function(_, event, id, x, y)
                     if id == "dragCentre" and event == "mouseDown" then
-                        mod._dragging = not mod._dragging
-                    end
-                    if mod._dragging then
-                        mod._canvas["dragCentre"].center = {x = x, y = y }
-                        mod._canvas["dragCentreKill"].center = {x = x, y = y }
-                        mod._canvas["dragVertical"].coordinates = { { x = x, y = 0 }, { x = x, y = frame.h } }
-                        mod._canvas["dragHorizontal"].coordinates = { { x = 0, y = y }, { x = frame.w, y = y } }
-                        mod.guidePosition({x=x, y=y})
+                        mod._lastKnownPosition = {x=x, y=y}
+                        mod._mouseMoveTracker = eventtap.new({ events.leftMouseDragged, events.leftMouseUp }, function(e)
+                            if e:getType() == events.leftMouseUp then
+                                mod._mouseMoveTracker:stop()
+                                mod._mouseMoveTracker = nil
+                            else
+                                local mousePosition = mouse.getAbsolutePosition()
+
+                                local newX = mousePosition.x - canvasTopLeft.x
+                                local newY = mousePosition.y - canvasTopLeft.y
+
+                                local viewerFrame = geometry.new(frame)
+                                if geometry.new(mousePosition):inside(viewerFrame) then
+                                    mod._canvas["dragCentre"].center = { x = newX, y = newY}
+                                    mod._canvas["dragCentreKill"].center = {x = newX, y = newY }
+                                    mod._canvas["dragVertical"].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
+                                    mod._canvas["dragHorizontal"].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
+
+                                    mod.guidePosition({x=newX, y=newY})
+                                end
+                            end
+                        end, false):start()
                     end
                 end)
             end
@@ -625,15 +647,15 @@ local function contextualMenu(event)
                         { title = "100%", checked = mod.gridAlpha() == 100, fn = function() mod.setGridAlpha(100) end },
                     }},
                     { title = "  " .. i18n("spacing"), menu = {
-                        { title = "+++++++++",      checked = mod.gridSpacing() == 5,  fn = function() mod.setGridSpacing(5) end },
-                        { title = "++++++++",       checked = mod.gridSpacing() == 10, fn = function() mod.setGridSpacing(10) end },
-                        { title = "+++++++",        checked = mod.gridSpacing() == 15, fn = function() mod.setGridSpacing(15) end },
-                        { title = "++++++",         checked = mod.gridSpacing() == 20, fn = function() mod.setGridSpacing(20) end },
-                        { title = "+++++",          checked = mod.gridSpacing() == 30, fn = function() mod.setGridSpacing(30) end },
-                        { title = "++++",           checked = mod.gridSpacing() == 40, fn = function() mod.setGridSpacing(40) end },
-                        { title = "+++",            checked = mod.gridSpacing() == 50, fn = function() mod.setGridSpacing(50) end },
-                        { title = "++",             checked = mod.gridSpacing() == 60, fn = function() mod.setGridSpacing(60) end },
-                        { title = "+",              checked = mod.gridSpacing() == 70, fn = function() mod.setGridSpacing(70) end },
+                        { title = "5%",      checked = mod.gridSpacing() == 5,  fn = function() mod.setGridSpacing(5) end },
+                        { title = "10%",       checked = mod.gridSpacing() == 10, fn = function() mod.setGridSpacing(10) end },
+                        { title = "15%",        checked = mod.gridSpacing() == 15, fn = function() mod.setGridSpacing(15) end },
+                        { title = "20%",         checked = mod.gridSpacing() == 20, fn = function() mod.setGridSpacing(20) end },
+                        { title = "30%",          checked = mod.gridSpacing() == 30, fn = function() mod.setGridSpacing(30) end },
+                        { title = "40%",           checked = mod.gridSpacing() == 40, fn = function() mod.setGridSpacing(40) end },
+                        { title = "50%",            checked = mod.gridSpacing() == 50, fn = function() mod.setGridSpacing(50) end },
+                        { title = "60%",             checked = mod.gridSpacing() == 60, fn = function() mod.setGridSpacing(60) end },
+                        { title = "70%",              checked = mod.gridSpacing() == 70, fn = function() mod.setGridSpacing(70) end },
                     }},
                     { title = "-", disabled = true },
                     { title = string.upper(i18n("stillFrames")) .. ":", disabled = true },

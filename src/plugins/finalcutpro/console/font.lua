@@ -54,13 +54,6 @@ mod.FONT_EXTENSIONS = {
     "ttc",
 }
 
---- plugins.finalcutpro.console.font.IGNORE_FONTS -> table
---- Constant
---- Fonts to ignore as they're used internally by Final Cut Pro or macOS.
-mod.IGNORE_FONTS = {
-    ["FCMetro34"] = true -- Final Cut Pro Internal Font not available in Final Cut Pro Inspector.
-}
-
 --- plugins.finalcutpro.console.font.fontLookup -> table
 --- Variable
 --- Provides a lookup between Font Names and their position in the Final Cut Pro dropdown menu.
@@ -133,7 +126,8 @@ local function loadFinalCutProFonts()
             if file:sub(1, 15) ~= "/Library/Fonts/" and
             file:sub(1, userPath:len() + 15) ~= userPath .. "/Library/Fonts/" and
             file:sub(1, 22) ~= "/System/Library/Fonts/" and
-            file:sub(1, 47) ~= "/Library/Application Support/Apple/Fonts/iWork/" then
+            file:sub(1, 47) ~= "/Library/Application Support/Apple/Fonts/iWork/" and
+            file:sub(-13) ~= "FCMetro34.ttf" then
                 styledtext.loadFont(file)
             end
         end
@@ -329,7 +323,7 @@ function mod.onChoices(choices)
     local fonts = {}
     local newFonts = {}
     for _, fontName in pairs(styledtext.fontNames()) do
-        if string.sub(fontName, 1, 1) ~= "." then
+        if string.sub(fontName, 1, 1) ~= "." and string.sub(fontName, -9) ~= "-Semibold" then
             local fontInfo = styledtext.fontInfo(fontName)
             local familyName = fontInfo and fontInfo.familyName
             if familyName then
@@ -344,7 +338,7 @@ function mod.onChoices(choices)
     local hash = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
-            if string.sub(fontName, 1, 1) ~= "." and mod.IGNORE_FONTS[fontName] == nil then
+            if string.sub(fontName, 1, 1) ~= "." then
                 newFonts[#newFonts+1] = fontName
                 hash[fontName] = true
             end
