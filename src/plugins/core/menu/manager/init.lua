@@ -24,6 +24,7 @@ local menubar									= require("hs.menubar")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config									= require("cp.config")
+local i18n                    = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Module Extensions:

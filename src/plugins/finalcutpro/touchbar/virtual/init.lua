@@ -14,6 +14,7 @@
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

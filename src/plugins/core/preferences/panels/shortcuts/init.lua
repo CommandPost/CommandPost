@@ -29,6 +29,7 @@ local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local tools                                     = require("cp.tools")
 local ui                                        = require("cp.web.ui")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -546,6 +547,8 @@ local function generateContent()
         groupEditor             = mod.getGroupEditor,
         modifierOptions         = modifierOptions,
         keyCodeOptions          = keyCodeOptions,
+
+        i18n                    = i18n,
 
         webviewLabel            = mod._manager.getLabel(),
     }

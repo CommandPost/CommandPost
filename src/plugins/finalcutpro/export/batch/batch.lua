@@ -32,14 +32,15 @@ local fcp           = require("cp.apple.finalcutpro")
 local just          = require("cp.just")
 local tools         = require("cp.tools")
 local html          = require("cp.web.html")
-
-local go           = require("cp.rx.go")
-
-local Given         = go.Given
-
+local i18n          = require("cp.i18n")
+local go            = require("cp.rx.go")
 local destinations  = require("cp.apple.finalcutpro.export.destinations")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert        = table.insert
+local Given         = go.Given
 
 --------------------------------------------------------------------------------
 --

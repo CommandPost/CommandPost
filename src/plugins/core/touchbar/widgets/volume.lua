@@ -12,7 +12,7 @@
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local audiodevice		= require("hs.audiodevice")
-local image				= require("hs.image")
+local image				  = require("hs.image")
 local touchbar 			= require("hs._asm.undocumented.touchbar")
 
 --------------------------------------------------------------------------------

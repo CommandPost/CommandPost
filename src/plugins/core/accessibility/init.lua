@@ -19,6 +19,7 @@ local application           = require("hs.application")
 local config                = require("cp.config")
 local prop                  = require("cp.prop")
 local tools                 = require("cp.tools")
+local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

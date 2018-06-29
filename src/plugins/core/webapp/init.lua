@@ -25,6 +25,7 @@ local timer             = require("hs.timer")
 --------------------------------------------------------------------------------
 local config            = require("cp.config")
 local tools             = require("cp.tools")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

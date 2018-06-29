@@ -31,6 +31,7 @@ local window                                    = require("hs.window")
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
 local app                                       = require("cp.app")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

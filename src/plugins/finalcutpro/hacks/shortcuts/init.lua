@@ -27,6 +27,7 @@ local commands      = require("cp.commands")
 local fcp           = require("cp.apple.finalcutpro")
 local prop          = require("cp.prop")
 local tools         = require("cp.tools")
+local i18n          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

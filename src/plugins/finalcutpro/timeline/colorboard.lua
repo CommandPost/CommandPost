@@ -22,10 +22,11 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local ColorBoardAspect					= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
+local ColorBoardAspect					        = require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
 local tools                             = require("cp.tools")
+local i18n                              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

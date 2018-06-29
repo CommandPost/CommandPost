@@ -11,8 +11,9 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp			= require("cp.apple.finalcutpro")
+local fcp			  = require("cp.apple.finalcutpro")
 local config		= require("cp.config")
+local i18n      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

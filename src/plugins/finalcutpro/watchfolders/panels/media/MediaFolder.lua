@@ -1,18 +1,40 @@
+--- === plugins.finalcutpro.watchfolders.panels.media.MediaFolder ===
+---
+--- Final Cut Pro Media Watch Folder Plugin.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 local log				= require("hs.logger").new("MediaFolder")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local fs				= require("hs.fs")
 local http				= require("hs.http")
 local notify			= require("hs.notify")
 local pasteboard		= require("hs.pasteboard")
 local pathwatcher		= require("hs.pathwatcher")
 
-
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local fcp				= require("cp.apple.finalcutpro")
 local Queue             = require("cp.collect.Queue")
 local dialog			= require("cp.dialog")
 local go                = require("cp.rx.go")
 local tools             = require("cp.tools")
+local i18n              = require("cp.i18n")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local Do, Done, If      = go.Do, go.Done, go.If
 local Throw             = go.Throw
 local unpack            = table.unpack
@@ -20,10 +42,28 @@ local unpack            = table.unpack
 local fileExists        = tools.doesFileExist
 local insert            = table.insert
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local MediaFolder = {}
 MediaFolder.mt = {}
 MediaFolder.mt.__index = MediaFolder.mt
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder.new() -> MediaFolder
+--- Constructor
+--- Creates a new Media Folder.
+---
+--- Parameters:
+---  * mod - The module.
+---  * path - Path to the Media Folder.
+---  * videoTag - Video Tag as String
+---  * audioTag - Audio Tag as String
+---  * imageTag - Image Tag as String
+---
+--- Returns:
+---  * A new MediaFolder object.
 function MediaFolder.new(mod, path, videoTag, audioTag, imageTag)
     return setmetatable({
         mod = mod,
@@ -39,16 +79,16 @@ function MediaFolder.new(mod, path, videoTag, audioTag, imageTag)
     }, MediaFolder.mt)
 end
 
--- MediaFolder.thaw(details) -> MediaFolder
--- Constructor
--- Creates a new MediaFolder based on the details provided.
--- The details have typically come from a call to `MediaFolder.freeze(...)`
---
--- Parameters:
---  * details   - The table with details of the media folder when it was frozen.
---
--- Returns:
---  * A new MediaFolder instance with the specified details.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder.thaw(details) -> MediaFolder
+--- Constructor
+--- Creates a new MediaFolder based on the details provided.
+--- The details have typically come from a call to `MediaFolder.freeze(...)`
+---
+--- Parameters:
+---  * details   - The table with details of the media folder when it was frozen.
+---
+--- Returns:
+---  * A new MediaFolder instance with the specified details.
 function MediaFolder.thaw(mod, details)
     local mf = MediaFolder.new(mod, details.path)
     mf.tags = details.tags
@@ -58,16 +98,16 @@ function MediaFolder.thaw(mod, details)
     return mf
 end
 
--- MediaFolder.freeze(mediaFolder) -> table
--- Function
--- Returns a table with the details of the `MediaFolder`, ready to be stored.
--- It can be brought back via the `MediaFolder.thaw(...)` function.
---
--- Parameters:
---  * mediaFolder   - The `MediaFolder` to freeze.
---
--- Returns:
---  * A table of details.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder.freeze(mediaFolder) -> table
+--- Function
+--- Returns a table with the details of the `MediaFolder`, ready to be stored.
+--- It can be brought back via the `MediaFolder.thaw(...)` function.
+---
+--- Parameters:
+---  * mediaFolder   - The `MediaFolder` to freeze.
+---
+--- Returns:
+---  * A table of details.
 function MediaFolder.freeze(mediaFolder)
     return {
         path = mediaFolder.path,
@@ -77,18 +117,17 @@ function MediaFolder.freeze(mediaFolder)
         importing = {unpack(mediaFolder.importing)},
     }
 end
-
 MediaFolder.mt.freeze = MediaFolder.freeze
 
--- MediaFolder:init() -> nil
--- Method
--- Initialises the folder, getting any watchers, notifications, etc. running.
---
---- Parameters:
---  * None
---
--- Returns:
---  * Nothing
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:init() -> nil
+--- Method
+--- Initialises the folder, getting any watchers, notifications, etc. running.
+---
+---- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:init()
     local path = self.path
     if path then
@@ -120,6 +159,15 @@ function MediaFolder.mt:init()
     return self
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doTagFiles(files) -> nil
+--- Method
+--- Tags a table of files.
+---
+---- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:doTagFiles(files)
     return Do(function()
         --------------------------------------------------------------------------------
@@ -197,6 +245,15 @@ local function notificationDelivered(notification)
     return false
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:checkNotifications() -> none
+--- Method
+--- Checks Notifications.
+---
+---- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:checkNotifications()
     if self.importNotification and not notificationDelivered(self.importNotification) then
         -- it's been closed
@@ -205,6 +262,16 @@ function MediaFolder.mt:checkNotifications()
     end
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:processFiles() -> none
+--- Method
+--- Process files.
+---
+--- Parameters:
+---  * files - A table of files to process.
+---  * fileFlags - A table of file flags.
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:processFiles(files, fileFlags)
     self:checkNotifications()
     for i = 1, #files do
@@ -224,15 +291,15 @@ function MediaFolder.mt:processFiles(files, fileFlags)
     end
 end
 
--- MediaFolder:removeFile(file) -> MediaFolder
--- Method
--- Removes the file from any queues it might be in, updating relevant notifications.
---
--- Parameters:
---  * file  - the full path to the file.
---
--- Returns:
---  * The MediaFolder instance
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:removeFile(file) -> MediaFolder
+--- Method
+--- Removes the file from any queues it might be in, updating relevant notifications.
+---
+--- Parameters:
+---  * file  - the full path to the file.
+---
+--- Returns:
+---  * The MediaFolder instance
 function MediaFolder.mt:removeFile(file)
     if self.incoming:removeItem(file) then
         self:updateIncomingNotification()
@@ -246,30 +313,30 @@ function MediaFolder.mt:removeFile(file)
     return self
 end
 
--- MediaFolder:addIncoming(file) -> nil
--- Method
--- Adds the file to the 'incoming' list and updates the notification.
---
--- Parameters:
---  * file      - The file to add.
---
--- Returns:
---  * nil
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:addIncoming(file) -> nil
+--- Method
+--- Adds the file to the 'incoming' list and updates the notification.
+---
+--- Parameters:
+---  * file - The file to add.
+---
+--- Returns:
+---  * nil
 function MediaFolder.mt:addIncoming(file)
     self.incoming:pushRight(file)
     self:save()
     self:updateIncomingNotification()
 end
 
--- MediaFolder:addReady(file) -> nil
--- Method
--- Adds the file to the 'ready' list and updates the notifications.
---
--- Parameters:
---  * file      - The file to add.
---
--- Returns:
---  * nil
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:addReady(file) -> nil
+--- Method
+--- Adds the file to the 'ready' list and updates the notifications.
+---
+--- Parameters:
+---  * file      - The file to add.
+---
+--- Returns:
+---  * nil
 function MediaFolder.mt:addReady(file)
     if self.incoming:removeItem(file) then
         self:updateIncomingNotification()
@@ -279,9 +346,15 @@ function MediaFolder.mt:addReady(file)
     self:updateImportNotification()
 end
 
--- MediaFolder:updateIncomingNotification() -> nil
--- Method
--- Updates the 'incoming' notification based on the current set of files in the `incoming` queue.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:updateIncomingNotification() -> nil
+--- Method
+--- Updates the 'incoming' notification based on the current set of files in the `incoming` queue.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:updateIncomingNotification()
     if self.incomingNotification then
         self.incomingNotification:withdraw()
@@ -304,13 +377,28 @@ function MediaFolder.mt:updateIncomingNotification()
     end
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:importTag() -> string
+--- Method
+--- Returns the import tag.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The import tag as a string.
 function MediaFolder.mt:importTag()
     return "import:"..self.path
 end
 
--- MediaFolder:updateImportNotification() -> nil
--- Method
--- Updates the 'ready' notification based on the current set of files in the `ready` queue.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:updateImportNotification() -> nil
+--- Method
+--- Updates the 'ready' notification based on the current set of files in the `ready` queue.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:updateImportNotification()
     if self.importNotification then
         self.importNotification:withdraw()
@@ -352,6 +440,15 @@ function MediaFolder.mt:updateImportNotification()
     end
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:handleImport(notification) -> nil
+--- Method
+--- Handles the importing of a file.
+---
+--- Parameters:
+---  * notification - The notification object.
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:handleImport(notification)
     local count = #self.ready
     if count > 0 then
@@ -384,9 +481,15 @@ function MediaFolder.mt:handleImport(notification)
     end
 end
 
--- MediaFolder:importAll() -> nil
--- Method
--- Begins importing all `ready` files, removing them from the `ready` queue.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:importAll() -> nil
+--- Method
+--- Begins importing all `ready` files, removing them from the `ready` queue.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:importAll()
     if #self.ready > 0 then
         self:importFiles({unpack(self.ready)})
@@ -396,9 +499,15 @@ function MediaFolder.mt:importAll()
     self:updateImportNotification()
 end
 
--- MediaFolder:importFirst() -> nil
--- Method
--- Begins importing the first `ready` file, removing it from the `ready` queue.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:importFirst() -> nil
+--- Method
+--- Begins importing the first `ready` file, removing it from the `ready` queue.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:importFirst()
     if #self.ready > 0 then
         self:importFiles({self.ready:popLeft()})
@@ -407,12 +516,30 @@ function MediaFolder.mt:importFirst()
     self:updateImportNotification()
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:skipAll() -> nil
+--- Method
+--- Skip all files in the Media Folder.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:skipAll()
     self.ready = Queue()
     self:save()
     self:updateImportNotification()
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:skipOne() -> nil
+--- Method
+--- Skip one file in the Media Folder.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:skipOne()
     if #self.ready > 0 then
         self.ready:popLeft()
@@ -421,15 +548,15 @@ function MediaFolder.mt:skipOne()
     end
 end
 
--- MediaFolder:importFiles(files) -> nil
--- Method
--- Requests for the files to be imported.
---
--- Parameters:
---  * files     - a table/list of files to be imported.
---
--- Returns:
---  * Nothing
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:importFiles(files) -> nil
+--- Method
+--- Requests for the files to be imported.
+---
+--- Parameters:
+---  * files - a table/list of files to be imported.
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:importFiles(files)
     self.importing:pushRight(files)
     -- we save before importing so that we can pick up again later if CP restarts.
@@ -437,9 +564,19 @@ function MediaFolder.mt:importFiles(files)
     self:doImportNext():TimeoutAfter(30000, "Import Next took too long"):Now()
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doWriteFilesToPasteboard(files, context) -> nil
+--- Method
+--- Write files to the Pasteboard.
+---
+--- Parameters:
+---  * files - a table/list of files to be imported.
+---  * context - The context.
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
     return Do(function()
-                --------------------------------------------------------------------------------
+        --------------------------------------------------------------------------------
         -- Temporarily stop the Pasteboard Watcher:
         --------------------------------------------------------------------------------
         if self.mod.pasteboardManager then
@@ -465,6 +602,15 @@ function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
     end)
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doRestoreOriginalPasteboard(context) -> nil
+--- Method
+--- Restore original Pasteboard contents.
+---
+--- Parameters:
+---  * context - The context.
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:doRestoreOriginalPasteboard(context)
     return Do(function()
         Do(function()
@@ -480,7 +626,15 @@ function MediaFolder.mt:doRestoreOriginalPasteboard(context)
     end)
 end
 
--- Checks if we are deleting after import, and if so schedules them to be deleted.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doDeleteImportedFiles(context) -> nil
+--- Method
+--- Checks if we are deleting after import, and if so schedules them to be deleted.
+---
+--- Parameters:
+---  * files - a table of file paths.
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:doDeleteImportedFiles(files)
     return Do(function()
         --------------------------------------------------------------------------------
@@ -498,6 +652,15 @@ function MediaFolder.mt:doDeleteImportedFiles(files)
     end)
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doImportNext() -> nil
+--- Method
+--- Imports the next file in the Media Folder.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:doImportNext()
     local timeline = fcp:timeline()
     local context = {}
@@ -577,17 +740,28 @@ function MediaFolder.mt:doImportNext()
     :Otherwise(Done())
 end
 
-
--- MediaFolder:save()
--- Method
--- Ensures the MediaFolder is saved.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:save()
+--- Method
+--- Ensures the MediaFolder is saved.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:save()
     self.mod.saveMediaFolders()
 end
 
--- MediaFolder:destroy()
--- Method
--- Destroys the MediaFolder. It should not be used after this is called.
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:destroy()
+--- Method
+--- Destroys the MediaFolder. It should not be used after this is called.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:destroy()
     if self.pathWatcher then
         self.pathWatcher:stop()
@@ -602,6 +776,15 @@ function MediaFolder.mt:destroy()
     self.importing = nil
 end
 
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:revealInFinder()
+--- Method
+--- Reveal in Finder.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function MediaFolder.mt:revealInFinder()
     os.execute("open "..self.path)
 end

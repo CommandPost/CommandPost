@@ -20,6 +20,7 @@ local config                                = require("cp.config")
 local fcp                                   = require("cp.apple.finalcutpro")
 local fnutils                               = require("hs.fnutils")
 local json                                  = require("cp.json")
+local i18n                                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

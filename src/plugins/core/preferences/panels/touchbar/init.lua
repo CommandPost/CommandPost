@@ -29,6 +29,7 @@ local fcp                                       = require("cp.apple.finalcutpro"
 local tools                                     = require("cp.tools")
 local html                                      = require("cp.web.html")
 local ui                                        = require("cp.web.ui")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -183,6 +184,8 @@ local function generateContent()
         groupEditor             = mod.getGroupEditor,
 
         webviewLabel            = mod._manager.getLabel(),
+
+        i18n                    = i18n,
 
         maxItems                = mod._tb.maxItems,
         tb                      = mod._tb,

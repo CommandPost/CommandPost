@@ -27,6 +27,7 @@ local inspect                                   = require("hs.inspect")
 local config                                    = require("cp.config")
 local plugins                                   = require("cp.plugins")
 local tools                                     = require("cp.tools")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -244,6 +245,7 @@ local function generateContent()
     mod.panel:addHandler("onclick", "openPluginsFolder", openPluginsFolder)
 
     local env = {
+        i18n        = i18n,
         plugins     = pluginInfo,
     }
 

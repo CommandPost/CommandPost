@@ -19,6 +19,7 @@ local log                                       = require("hs.logger").new("push
 local http                                      = require("hs.http")
 local json                                      = require("hs.json")
 local dialog                                    = require("hs.dialog")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:

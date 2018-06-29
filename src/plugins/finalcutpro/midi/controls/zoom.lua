@@ -17,6 +17,7 @@ local log               = require("hs.logger").new("zoomMIDI")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

@@ -28,6 +28,7 @@ local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local html              = require("cp.web.html")
 local ui                = require("cp.web.ui")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

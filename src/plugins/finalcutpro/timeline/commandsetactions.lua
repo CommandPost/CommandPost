@@ -22,8 +22,9 @@ local timer				= require("hs.timer")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
+local fcp				  = require("cp.apple.finalcutpro")
 local plist				= require("cp.plist")
+local i18n        = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

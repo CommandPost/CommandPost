@@ -39,12 +39,51 @@
 --- end)
 --- ```
 
+--- === cp.rx.go.Statement ===
+---
+--- TODO: Write something here.
+
+--- === cp.rx.go.Statement.Definition ===
+---
+--- TODO: Write something here.
+
+--- === cp.rx.go.SubStatement.Definition ===
+---
+--- TODO: Write something here.
+
+--- === cp.rx.go.Given ===
+---
+--- TODO: Write something here.
+
+--- === cp.rx.go.Given.Then ===
+---
+--- TODO: Write something here.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log           = require("hs.logger").new("rxgo")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local inspect       = require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local prop          = require("cp.prop")
 local rx            = require("cp.rx")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local Observable    = rx.Observable
 local Observer      = rx.Observer
 local insert        = table.insert
@@ -193,15 +232,15 @@ Statement.Definition = {}
 Statement.Definition.mt = {}
 Statement.Definition.mt.__index = Statement.Definition.mt
 
--- cp.rx.go.Statement.Definition.new(name) -> Statement.Definition
--- Constructor
--- Creates a new Statement Definition.
---
--- Parameters:
---  * name     - The name of the statement.
---
--- Returns:
---  * The new Statement Definition.
+--- cp.rx.go.Statement.Definition.new(name) -> Statement.Definition
+--- Constructor
+--- Creates a new Statement Definition.
+---
+--- Parameters:
+---  * name     - The name of the statement.
+---
+--- Returns:
+---  * The new Statement Definition.
 function Statement.Definition.new(name)
     assert(type(name) == "string" and name:len() > 0, "Parameter #1 must be a non-empty string")
     return setmetatable({

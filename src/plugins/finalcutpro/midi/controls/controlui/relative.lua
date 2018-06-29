@@ -25,6 +25,7 @@ local mouse			    = require("hs.mouse")
 --------------------------------------------------------------------------------
 local deferred          = require("cp.deferred")
 local dialog            = require("cp.dialog")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

@@ -95,7 +95,7 @@ return {
                 hs.openConsole()
                 hs._TERMINATED = true
             else
-                if not cpLoaded then
+                if not hs._cpLoaded then
                     --------------------------------------------------------------------------------
                     -- NOT DEBUG MODE - CRASH HAPPENED DURING BOOT - FATAL ERROR:
                     --------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ return {
                         "Send Bug Report",
                         "Quit"
                     )
-                    if result == i18n("sendBugReport") then
+                    if result == "Send Bug Report" then
                         local feedback = require("cp.feedback")
                         feedback.showFeedback(true)
                     else
@@ -125,7 +125,7 @@ return {
                         "Continue",
                         "Send Bug Report"
                     )
-                    if result == i18n("sendBugReport") then
+                    if result == "Send Bug Report" then
                         local feedback = require("cp.feedback")
                         feedback.showFeedback()
                     end

@@ -14,14 +14,6 @@
 local log               = require("hs.logger").new("overlays")
 
 --------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local axutils           = require("cp.ui.axutils")
-local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
-
---------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local canvas            = require("hs.canvas")
@@ -32,6 +24,15 @@ local geometry          = require("hs.geometry")
 local image             = require("hs.image")
 local menubar           = require("hs.menubar")
 local mouse             = require("hs.mouse")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local axutils           = require("cp.ui.axutils")
+local config            = require("cp.config")
+local fcp               = require("cp.apple.finalcutpro")
+local tools             = require("cp.tools")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
