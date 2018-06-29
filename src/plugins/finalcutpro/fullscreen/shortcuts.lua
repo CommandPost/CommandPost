@@ -24,8 +24,9 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
-local commandeditor						= require("cp.apple.commandeditor")
+local commandeditor						          = require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
+local i18n                              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

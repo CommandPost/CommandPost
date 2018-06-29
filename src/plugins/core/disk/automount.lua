@@ -20,6 +20,7 @@ local config                = require("cp.config")
 local dialog                = require("cp.dialog")
 local battery               = require("cp.battery")
 local disk                  = require("cp.disk")
+local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

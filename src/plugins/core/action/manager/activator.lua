@@ -31,7 +31,6 @@ local log                       = require("hs.logger").new("activator")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local application               = require("hs.application")
 local chooser                   = require("hs.chooser")
 local drawing                   = require("hs.drawing")
 local fnutils                   = require("hs.fnutils")
@@ -47,6 +46,7 @@ local timer                     = require("hs.timer")
 local config                    = require("cp.config")
 local idle                      = require("cp.idle")
 local prop                      = require("cp.prop")
+local i18n                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:

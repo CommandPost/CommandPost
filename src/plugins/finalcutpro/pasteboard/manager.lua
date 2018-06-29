@@ -34,6 +34,7 @@ local plist                                     = require("cp.plist")
 local prop                                      = require("cp.prop")
 local protect                                   = require("cp.protect")
 local tools                                     = require("cp.tools")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

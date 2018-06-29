@@ -44,6 +44,7 @@ local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
 local just                      = require("cp.just")
 local tools                     = require("cp.tools")
+local i18n                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

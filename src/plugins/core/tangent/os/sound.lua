@@ -18,6 +18,7 @@ local audiowatcher          = require("hs.audiodevice.watcher")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local prop                  = require("cp.prop")
+local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

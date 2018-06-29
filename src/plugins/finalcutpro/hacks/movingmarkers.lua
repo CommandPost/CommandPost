@@ -21,6 +21,7 @@ local dialog                    = require("cp.dialog")
 local plist                     = require("cp.plist")
 local tools                     = require("cp.tools")
 local prop                      = require("cp.prop")
+local i18n                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

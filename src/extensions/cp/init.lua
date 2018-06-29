@@ -11,97 +11,29 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local logger                    = require("hs.logger"); logger.defaultLogLevel = 'debug'
-local log                       = logger.new("cp")
-
---------------------------------------------------------------------------------
--- Save Error Log History across sessions:
---------------------------------------------------------------------------------
-history                         = require("cp.console.history")
-
---------------------------------------------------------------------------------
--- Show Dock Icon:
---------------------------------------------------------------------------------
-hs.dockIcon(true)
-
---------------------------------------------------------------------------------
--- Display startup screen:
---------------------------------------------------------------------------------
-local alert                     = require("hs.alert")
-local config                    = require("cp.config")
-local alertUUID
-if not config.get("hasRunOnce", false) then
-    alertUUID = alert.show("Please wait while CommandPost scans your system for plugins...")
-end
+local logger = require("hs.logger")
+logger.defaultLogLevel = 'debug'
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local application               = require("hs.application")
 local console                   = require("hs.console")
-local fs                        = require("hs.fs")
-local host                      = require("hs.host")
+local crash                     = require("hs.crash")
 local image                     = require("hs.image")
-local json                      = require("hs.json")
 local keycodes                  = require("hs.keycodes")
-local notify                    = require("hs.notify")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
 
 --------------------------------------------------------------------------------
--- Not used in `init.lua`, but is required to "jump start" the CLI support:
---------------------------------------------------------------------------------
-require("hs.ipc")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local plugins                   = require("cp.plugins")
-local tools                     = require("cp.tools")
-
---------------------------------------------------------------------------------
---
--- SETUP I18N LANGUAGES:
---
---------------------------------------------------------------------------------
-i18n = require("i18n")
-local languagePath = config.languagePath
-local allLanguages = {}
-for file in fs.dir(languagePath) do
-    if file:sub(-5) == ".json" then
-        local path = languagePath .. "/" .. file
-        local data = io.open(path, "r")
-        local content, decoded
-        if data then
-            content = data:read("*all")
-            data:close()
-        end
-        if content then
-            decoded = json.decode(content)
-            if decoded and type(decoded) == "table" then
-                allLanguages = tools.mergeTable(allLanguages, decoded)
-            end
-        end
-    end
-end
-if next(allLanguages) ~= nil then
-    i18n.load(allLanguages)
-end
-local userLocale
-if config.get("language") == nil then
-    userLocale = host.locale.current()
-else
-    userLocale = config.get("language")
-end
-i18n.setLocale(userLocale)
-
---------------------------------------------------------------------------------
---
--- EXTENSIONS (THAT REQUIRE i18N):
---
---------------------------------------------------------------------------------
+local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local feedback                  = require("cp.feedback")
+local i18n                      = require("cp.i18n")
+local plugins                   = require("cp.plugins")
+local tools                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -120,6 +52,26 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.init()
+
+    --------------------------------------------------------------------------------
+    -- Setup Logger:
+    --------------------------------------------------------------------------------
+    local log = logger.new("cp")
+
+    --------------------------------------------------------------------------------
+    -- Show Dock Icon:
+    --------------------------------------------------------------------------------
+    hs.dockIcon(true)
+
+    --------------------------------------------------------------------------------
+    -- Not used in `init.lua`, but is required to "jump start" the CLI support:
+    --------------------------------------------------------------------------------
+    require("hs.ipc")
+
+    --------------------------------------------------------------------------------
+    -- Save Error Log History across sessions:
+    --------------------------------------------------------------------------------
+    hs._consoleHistory = require("cp.console.history")
 
     --------------------------------------------------------------------------------
     -- Disable Spotlight for Name Searches:
@@ -291,16 +243,6 @@ function mod.init()
     --------------------------------------------------------------------------------
     if not config.get("hasRunOnce", false) then
         --------------------------------------------------------------------------------
-        -- Disabled plugins by default:
-        --------------------------------------------------------------------------------
-        --[[
-        config.set("plugins.disabled", {
-            ["core.webapp"] = true,
-            ["core.preferences.panels.webapp"] = true,
-        })
-        --]]
-
-        --------------------------------------------------------------------------------
         -- Enable Automatic Launch by default:
         --------------------------------------------------------------------------------
         hs.autoLaunch(true)
@@ -371,7 +313,7 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Global Variable to confirm CommandPost has successfully loaded:
     --------------------------------------------------------------------------------
-    cpLoaded = true
+    hs._cpLoaded = true
 
     --------------------------------------------------------------------------------
     -- Load Plugins:
@@ -381,16 +323,20 @@ function mod.init()
     log.df("Plugins Loaded.")
 
     --------------------------------------------------------------------------------
-    -- Close Welcome Alert:
-    --------------------------------------------------------------------------------
-    if alertUUID then
-        alert.closeSpecific(alertUUID)
-    end
-
-    --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
+    local floor = math.floor
+    local beforeRS = crash.residentSize()
+    local beforeGC = floor(collectgarbage("count")*1024)
     collectgarbage()
+    collectgarbage()
+    local afterRS = beforeRS - crash.residentSize()
+    local afterGC = beforeGC - floor(collectgarbage("count")*1024)
+    log.df("---------------------------------------------------------")
+    log.df("AFTER GARBAGE COLLECTION:")
+    log.df("Process resident size reduction: %s", afterRS)
+    log.df("Lua state size reduction: %s", afterGC)
+    log.df("---------------------------------------------------------")
 
     --------------------------------------------------------------------------------
     -- Return the module:

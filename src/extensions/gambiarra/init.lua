@@ -1,5 +1,7 @@
 local inspect		= require("hs.inspect")
 
+local unpack = table.unpack
+
 local function TERMINAL_HANDLER(e, test, msg)
 	if e == 'pass' then
 		print("[32m✔[0m "..test..': '..msg)
@@ -42,16 +44,16 @@ end
 
 local function spy(f)
 	local s = {}
-	setmetatable(s, {__call = function(s, ...)
-		s.called = s.called or {}
+	setmetatable(s, {__call = function(ss, ...)
+		ss.called = ss.called or {}
 		local a = args(...)
-		table.insert(s.called, {...})
+		table.insert(ss.called, {...})
 		if f then
 			local r
 			r = args(xpcall(function() f((unpack or table.unpack)(a, 1, a.n)) end, debug.traceback))
 			if not r[1] then
-				s.errors = s.errors or {}
-				s.errors[#s.called] = r[2]
+				ss.errors = ss.errors or {}
+				ss.errors[#ss.called] = r[2]
 			else
 				return (unpack or table.unpack)(r, 2, r.n)
 			end
@@ -103,7 +105,7 @@ return function(name, f, async)
 				if m then
 					msg = msg .. (msg:len() > 0 and " " or "") .. tostring(m)
 				end
-		  	end
+        end
 			msg = "["..debug.getinfo(2, 'S').short_src..":"..debug.getinfo(2, 'l').currentline.."] " .. msg
 			if cond then
 				handler('pass', name, msg)

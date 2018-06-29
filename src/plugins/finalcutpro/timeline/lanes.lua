@@ -17,7 +17,8 @@ local log								= require("hs.logger").new("lanes")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp								= require("cp.apple.finalcutpro")
-local tools								= require("cp.tools")
+local tools							= require("cp.tools")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

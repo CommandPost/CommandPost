@@ -1,8 +1,17 @@
+--- === cp.collect.Set ===
+---
+--- TODO: Write something here.
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local Set = {}
 
 local DATA = {}
 
+-- TODO: Write Documentation
 local function getdata(set)
     local data = set[DATA]
     if not data then
@@ -11,10 +20,12 @@ local function getdata(set)
     return data
 end
 
+-- TODO: Write Documentation
 function Set.is(thing)
     return type(thing) == "table" and thing == Set.mt or Set.is(getmetatable(thing))
 end
 
+-- TODO: Write Documentation
 function Set.new(...)
     local data = {}
     local count = select("#", ...)
@@ -29,11 +40,12 @@ function Set.new(...)
     }, Set.mt)
 end
 
---- cp.collect.Set.contains
+-- cp.collect.Set.contains
 function Set.has(set, value)
     return getdata(set)[value] == true
 end
 
+-- TODO: Write Documentation
 function Set.union(...)
     local count = select("#", ...)
 

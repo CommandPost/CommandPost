@@ -22,7 +22,6 @@ local eventtap                          = require("hs.eventtap")
 local menubar                           = require("hs.menubar")
 local mouse                             = require("hs.mouse")
 local screen                            = require("hs.screen")
-local timer                             = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -31,6 +30,7 @@ local axutils                           = require("cp.ui.axutils")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local dialog                            = require("cp.dialog")
+local i18n                              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

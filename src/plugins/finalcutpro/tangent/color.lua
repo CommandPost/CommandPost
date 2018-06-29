@@ -24,6 +24,7 @@ local deferred                                  = require("cp.deferred")
 local ColorWell                                 = require("cp.apple.finalcutpro.inspector.color.ColorWell")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:

@@ -20,6 +20,7 @@ local timer                     = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
+local i18n                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

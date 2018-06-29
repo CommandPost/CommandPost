@@ -11,7 +11,8 @@ local Observable, Subject = rx.Observable, rx.Subject
 local append, is, toObservable, toObservables = rxgo.append, rxgo.is, rxgo.toObservable, rxgo.toObservables
 local Statement, SubStatement = rxgo.Statement, rxgo.SubStatement
 local Given, If, WaitUntil, Throw = rxgo.Given, rxgo.If, rxgo.WaitUntil, rxgo.Throw
-local First, Last = rxgo.First, rxgo.Last
+--local First = rxgo.First
+local Last = rxgo.Last
 
 local insert = table.insert
 

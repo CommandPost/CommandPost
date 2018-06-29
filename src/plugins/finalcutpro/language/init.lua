@@ -14,7 +14,11 @@
 local dialog        = require("cp.dialog")
 local fcp           = require("cp.apple.finalcutpro")
 local localeID      = require("cp.i18n.localeID")
+local i18n          = require("cp.i18n")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local insert        = table.insert
 
 --------------------------------------------------------------------------------

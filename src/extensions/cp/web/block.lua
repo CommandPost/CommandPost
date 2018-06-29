@@ -9,6 +9,11 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log               = require("hs.logger").new("block")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local is				= require "cp.is"
@@ -136,7 +141,16 @@ function block:__tostring()
     end
     if content then
         for _,v in ipairs(content) do
-            r[#r + 1] = v()
+
+            local ok, result = xpcall(function()
+                return v()
+            end, debug.traceback)
+
+            if ok then
+                r[#r + 1] = v()
+            else
+                log.ef("Error while processing cp.web.block: %s", result)
+            end
         end
 
         if metadata.close then

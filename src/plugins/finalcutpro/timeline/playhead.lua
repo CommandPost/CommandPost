@@ -13,14 +13,18 @@
 --------------------------------------------------------------------------------
 --local log                       = require("hs.logger").new("scrolling")
 
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local eventtap                  = require("hs.eventtap")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local config                    = require("cp.config")
 local dialog                    = require("cp.dialog")
 local fcp                       = require("cp.apple.finalcutpro")
-local config                    = require("cp.config")
+local i18n                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -140,7 +144,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    local menu, cmds, prefs = deps.timelineMenu, deps.fcpxCmds, deps.prefs
+    local menu, cmds = deps.timelineMenu, deps.fcpxCmds
 
     --------------------------------------------------------------------------------
     -- Setup Menu:

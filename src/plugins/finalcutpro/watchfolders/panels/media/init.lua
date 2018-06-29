@@ -25,14 +25,21 @@ local image				= require("hs.image")
 --------------------------------------------------------------------------------
 local config			= require("cp.config")
 local dialog			= require("cp.dialog")
-local fcp				= require("cp.apple.finalcutpro")
+local fcp				  = require("cp.apple.finalcutpro")
 local tools				= require("cp.tools")
 local html				= require("cp.web.html")
-local ui				= require("cp.web.ui")
+local ui				  = require("cp.web.ui")
+local i18n        = require("cp.i18n")
 
-local MediaFolder       = require("MediaFolder")
+--------------------------------------------------------------------------------
+-- Local Extensions:
+--------------------------------------------------------------------------------
+local MediaFolder = require("MediaFolder")
 
-local insert            = table.insert
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local insert      = table.insert
 
 --------------------------------------------------------------------------------
 --

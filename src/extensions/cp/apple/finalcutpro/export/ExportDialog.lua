@@ -27,6 +27,7 @@ local dialog                        = require("cp.dialog")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
+local i18n                          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

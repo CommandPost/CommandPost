@@ -23,6 +23,7 @@ local delayed                                   = require("hs.timer").delayed
 --------------------------------------------------------------------------------
 local deferred                                  = require("cp.deferred")
 local fcp                                       = require("cp.apple.finalcutpro")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --

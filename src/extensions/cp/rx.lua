@@ -1,13 +1,43 @@
--- cp.rx
--- Originally forked from https://github.com/bjornbytes/rxlua
--- MIT License
+--- === cp.rx ===
+---
+--- Reactive Extensions for Lua.
+---
+--- RxLua gives Lua the power of Observables, which are data structures that represent a stream of values that arrive over time. They're very handy when dealing with events, streams of data, asynchronous requests, and concurrency.
+---
+--- Originally forked from: https://github.com/bjornbytes/rxlua
+--- MIT License: https://github.com/bjornbytes/RxLua/blob/master/LICENSE
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
 -- local log = require("hs.logger").new("rx")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 -- local inspect = require("hs.inspect")
 
-local timer = require 'hs.timer'
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local timer = require("hs.timer")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local format = string.format
 
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 local util = {}
 
 local defaultScheduler = nil

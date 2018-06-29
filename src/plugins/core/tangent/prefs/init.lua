@@ -23,6 +23,7 @@ local image                                     = require("hs.image")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local html                                      = require("cp.web.html")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -83,6 +84,7 @@ local function generateContent()
         maxItems                = mod._favourites.MAX_ITEMS,
         favourites              = mod._favourites.favourites(),
         none                    = i18n("none"),
+        i18n                    = i18n,
     }
     return renderPanel(context)
 end

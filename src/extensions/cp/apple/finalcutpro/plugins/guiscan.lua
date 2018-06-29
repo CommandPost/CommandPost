@@ -17,15 +17,16 @@
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local dialog				= require("cp.dialog")
-local fcp					= require("cp.apple.finalcutpro")
+local fcp					  = require("cp.apple.finalcutpro")
 local plugins				= require("cp.apple.finalcutpro.plugins")
 local just					= require("cp.just")
+local i18n          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local insert, remove		= table.insert, table.remove
-local format				= string.format
+local format				    = string.format
 
 --------------------------------------------------------------------------------
 --

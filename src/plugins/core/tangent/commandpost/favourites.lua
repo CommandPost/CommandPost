@@ -24,6 +24,7 @@ local json                                      = require("hs.json")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local tools                                     = require("cp.tools")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:

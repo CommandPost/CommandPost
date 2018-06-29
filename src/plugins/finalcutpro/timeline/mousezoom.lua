@@ -29,11 +29,16 @@ local pathwatcher                       = require("hs.pathwatcher")
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
 local tools                             = require("cp.tools")
+local i18n                              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
 local semver                            = require("semver")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local touchdevice
 
 --------------------------------------------------------------------------------

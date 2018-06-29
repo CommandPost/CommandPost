@@ -25,6 +25,7 @@ local webview                                   = require("hs.webview")
 local config                                    = require("cp.config")
 local prop                                      = require("cp.prop")
 local tools                                     = require("cp.tools")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:

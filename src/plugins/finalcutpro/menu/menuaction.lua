@@ -21,6 +21,7 @@ local config            = require("cp.config")
 local fcp               = require("cp.apple.finalcutpro")
 local fnutils           = require("hs.fnutils")
 local idle              = require("cp.idle")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
