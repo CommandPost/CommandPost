@@ -11,31 +11,31 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local dialog						= require("hs.dialog")
-local drawing						= require("hs.drawing")
-local geometry					= require("hs.geometry")
-local timer							= require("hs.timer")
+local dialog                        = require("hs.dialog")
+local drawing                       = require("hs.drawing")
+local geometry                      = require("hs.geometry")
+local timer                         = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config						= require("cp.config")
-local fcp							  = require("cp.apple.finalcutpro")
-local tools							= require("cp.tools")
-local ui						  	= require("cp.web.ui")
-local i18n              = require("cp.i18n")
+local config                        = require("cp.config")
+local fcp                           = require("cp.apple.finalcutpro")
+local i18n                          = require("cp.i18n")
+local tools                         = require("cp.tools")
+local ui                            = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local DEFAULT_TIME 					= 3
-local DEFAULT_COLOR 				= "Red"
+local DEFAULT_TIME                  = 3
+local DEFAULT_COLOR                 = "Red"
 
-local SHAPE_RECTANGLE 			= "Rectangle"
-local SHAPE_CIRCLE					= "Circle"
-local SHAPE_DIAMOND					= "Diamond"
+local SHAPE_RECTANGLE               = "Rectangle"
+local SHAPE_CIRCLE                  = "Circle"
+local SHAPE_DIAMOND                 = "Diamond"
 
 --------------------------------------------------------------------------------
 --
@@ -224,10 +224,10 @@ function mod.highlightFrame(frame)
     -- Get Highlight Colour Preferences:
     --------------------------------------------------------------------------------
     local displayHighlightColour = config.get("displayHighlightColour", "Red")
-    if displayHighlightColour == "Red" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1} 	end
-    if displayHighlightColour == "Blue" then 	displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}		end
-    if displayHighlightColour == "Green" then 	displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}		end
-    if displayHighlightColour == "Yellow" then 	displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}		end
+    if displayHighlightColour == "Red" then     displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=0,["alpha"]=1}     end
+    if displayHighlightColour == "Blue" then    displayHighlightColour = {["red"]=0,["blue"]=1,["green"]=0,["alpha"]=1}     end
+    if displayHighlightColour == "Green" then   displayHighlightColour = {["red"]=0,["blue"]=0,["green"]=1,["alpha"]=1}     end
+    if displayHighlightColour == "Yellow" then  displayHighlightColour = {["red"]=1,["blue"]=0,["green"]=1,["alpha"]=1}     end
     if displayHighlightColour == "Custom" then
         local displayHighlightCustomColour = config.get("displayHighlightCustomColour")
         displayHighlightColour = {red=displayHighlightCustomColour["red"],blue=displayHighlightCustomColour["blue"],green=displayHighlightCustomColour["green"],alpha=1}
@@ -304,11 +304,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id				= "finalcutpro.browser.playhead",
-    group			= "finalcutpro",
-    dependencies	= {
-        ["finalcutpro.commands"] 		= "fcpxCmds",
-        ["finalcutpro.preferences.app"]	= "prefs",
+    id              = "finalcutpro.browser.playhead",
+    group           = "finalcutpro",
+    dependencies    = {
+        ["finalcutpro.commands"]        = "fcpxCmds",
+        ["finalcutpro.preferences.app"] = "prefs",
     }
 }
 
@@ -349,9 +349,9 @@ function plugin.init(deps)
             :addHeading(2000, i18n("highlightPlayhead"))
             :addSelect(2001,
             {
-                label		= i18n("highlightPlayheadColour"),
-                value		= mod.getHighlightColor,
-                options		= {
+                label       = i18n("highlightPlayheadColour"),
+                value       = mod.getHighlightColor,
+                options     = {
                     {
                         label = i18n("red"),
                         value = "Red",
@@ -373,15 +373,15 @@ function plugin.init(deps)
                         value = "Custom",
                     },
                 },
-                required	= true,
-                onchange	= function(_, params) mod.changeHighlightColor(params.value) end,
-                class		= "highLightPlayheadSelect",
+                required    = true,
+                onchange    = function(_, params) mod.changeHighlightColor(params.value) end,
+                class       = "highLightPlayheadSelect",
             })
             :addSelect(2002,
             {
-                label		= i18n("highlightPlayheadShape"),
-                value		= mod.getHighlightShape,
-                options		= {
+                label       = i18n("highlightPlayheadShape"),
+                value       = mod.getHighlightShape,
+                options     = {
                     {
                         label = i18n("rectangle"),
                         value = SHAPE_RECTANGLE,
@@ -395,18 +395,18 @@ function plugin.init(deps)
                         value = SHAPE_DIAMOND,
                     },
                 },
-                required	= true,
-                onchange	= function(_, params) mod.setHighlightShape(params.value) end,
-                class		= "highLightPlayheadSelect",
+                required    = true,
+                onchange    = function(_, params) mod.setHighlightShape(params.value) end,
+                class       = "highLightPlayheadSelect",
             })
             :addSelect(2003,
             {
-                label		= i18n("highlightPlayheadTime"),
-                value		= mod.getHighlightTime,
-                options		= timeOptions(),
-                required	= true,
-                onchange	= function(_, params) mod.setHighlightTime(params.value) end,
-                class		= "highLightPlayheadSelect",
+                label       = i18n("highlightPlayheadTime"),
+                value       = mod.getHighlightTime,
+                options     = timeOptions(),
+                required    = true,
+                onchange    = function(_, params) mod.setHighlightTime(params.value) end,
+                class       = "highLightPlayheadSelect",
             })
     end
 

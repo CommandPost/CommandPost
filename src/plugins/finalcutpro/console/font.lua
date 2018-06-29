@@ -16,6 +16,7 @@ local log				= require("hs.logger").new("fontConsole")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local fnutils           = require("hs.fnutils")
 local styledtext        = require("hs.styledtext")
 
 --------------------------------------------------------------------------------
@@ -228,7 +229,7 @@ function mod.onActivate(_, action)
             fontCount = mod.fontCount or 0
             difference = kidsCount - fontCount
             if difference ~= 0 then
-                dialog.displayErrorMessage(string.format("The number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThis can be caused by TypeKit fonts that haven't properly synced yet or corrupt fonts in your Font Book.\n\nPlease try deactivating and reactivating any TypeKit Fonts, validate your Font Book fonts, then restart Final Cut Pro and try again.", fontCount, kidsCount))
+                dialog.displayErrorMessage(string.format("The number of fonts in the CommandPost (%s) is different to the number of fonts in Final Cut Pro (%s).\n\nThis can be caused by TypeKit fonts that haven't properly synced yet, corrupt fonts in your Font Book or a corrupt macOS Font Cache.\n\nPlease try deactivating and reactivating any TypeKit Fonts, validate your Font Book fonts, and failing that, clear your macOS Font Cache & Database.", fontCount, kidsCount))
                 return
             end
         end
@@ -322,21 +323,15 @@ function mod.onChoices(choices)
     -- Add Fonts to Table:
     --------------------------------------------------------------------------------
     local fonts = {}
-    local newFonts = {}
-    for _, fontName in pairs(styledtext.fontNames()) do
-        if string.sub(fontName, 1, 1) ~= "." and string.sub(fontName, -9) ~= "-Semibold" then
-            local fontInfo = styledtext.fontInfo(fontName)
-            local familyName = fontInfo and fontInfo.familyName
-            if familyName then
-                table.insert(fonts, familyName)
-            end
-        end
+    for _, familyName in pairs(styledtext.fontFamilies()) do
+        table.insert(fonts, familyName)
     end
 
     --------------------------------------------------------------------------------
     -- Remove Duplicate, Ignored & Hidden Fonts:
     --------------------------------------------------------------------------------
     local hash = {}
+    local newFonts = {}
     for _,fontName in ipairs(fonts) do
         if (not hash[fontName]) then
             if string.sub(fontName, 1, 1) ~= "." then

@@ -45,7 +45,7 @@ local SETTING = "menubarMediaImportEnabled"
 -- sectionEnabled <cp.prop: boolean>
 -- Variable
 -- Section Enabled
-local sectionEnabled = config.prop(SETTING, false) -- Chris deliberately changed the default to false, as very few people actually use these buttons.
+local sectionEnabled = config.prop(SETTING, true)
 
 --------------------------------------------------------------------------------
 --
