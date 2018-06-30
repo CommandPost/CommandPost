@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local base64            = require("hs.base64")
 local timer             = require("hs.timer")
 
 --------------------------------------------------------------------------------
@@ -113,7 +114,7 @@ function mod.apply(action)
         --------------------------------------------------------------------------------
         -- Add Cached Item to Pasteboard:
         --------------------------------------------------------------------------------
-        local cachedItem = mod._cache()[cacheID]
+        local cachedItem = base64.decode(mod._cache()[cacheID])
         local result = pasteboard.writeFCPXData(cachedItem)
         if not result then
             dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
@@ -301,7 +302,7 @@ function mod.apply(action)
     -- Cache the item for faster recall next time:
     --------------------------------------------------------------------------------
     local cache = mod._cache()
-    cache[cacheID] = newPasteboard
+    cache[cacheID] = base64.encode(newPasteboard)
     mod._cache(cache)
 
     --------------------------------------------------------------------------------
