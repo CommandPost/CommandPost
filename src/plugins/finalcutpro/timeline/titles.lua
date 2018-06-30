@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local base64            = require("hs.base64")
 local timer             = require("hs.timer")
 
 --------------------------------------------------------------------------------
@@ -19,8 +20,9 @@ local timer             = require("hs.timer")
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
-local just              = require("cp.just")
 local i18n              = require("cp.i18n")
+local json              = require("cp.json")
+local just              = require("cp.just")
 
 --------------------------------------------------------------------------------
 --
@@ -29,10 +31,20 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.titles.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "Titles.cpCache"
+
+--- plugins.finalcutpro.timeline.titles.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "Final Cut Pro"
+
 -- plugins.finalcutpro.timeline.titles._cache <cp.prop: table>
 -- Field
 -- Titles cache.
-mod._cache = config.prop("titlesCache", {})
+mod._cache = json.prop(config.cachePath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.finalcutpro.timeline.titles.apply(action) -> boolean
 --- Function
@@ -102,7 +114,7 @@ function mod.apply(action)
         --------------------------------------------------------------------------------
         -- Add Cached Item to Pasteboard:
         --------------------------------------------------------------------------------
-        local cachedItem = mod._cache()[cacheID]
+        local cachedItem = base64.decode(mod._cache()[cacheID])
         local result = pasteboard.writeFCPXData(cachedItem)
         if not result then
             dialog.displayErrorMessage("Failed to add the cached item to Pasteboard.")
@@ -128,7 +140,7 @@ function mod.apply(action)
         if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
             menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
         else
-            dialog.displayErrorMessage("Unable to paste Generator.")
+            dialog.displayErrorMessage("Unable to paste Title.")
             pasteboard.startWatching()
             return false
         end
@@ -281,7 +293,7 @@ function mod.apply(action)
     end)
 
     if newPasteboard == nil then
-        dialog.displayErrorMessage("Failed to copy Generator.")
+        dialog.displayErrorMessage("Failed to copy Title.")
         pasteboard.startWatching()
         return false
     end
@@ -290,7 +302,7 @@ function mod.apply(action)
     -- Cache the item for faster recall next time:
     --------------------------------------------------------------------------------
     local cache = mod._cache()
-    cache[cacheID] = newPasteboard
+    cache[cacheID] = base64.encode(newPasteboard)
     mod._cache(cache)
 
     --------------------------------------------------------------------------------
@@ -309,7 +321,7 @@ function mod.apply(action)
     if menuBar:isEnabled({"Edit", "Paste as Connected Clip"}) then
         menuBar:selectMenu({"Edit", "Paste as Connected Clip"})
     else
-        dialog.displayErrorMessage("Unable to paste Generator.")
+        dialog.displayErrorMessage("Unable to paste Title.")
         pasteboard.startWatching()
         return false
     end

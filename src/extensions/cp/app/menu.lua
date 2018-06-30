@@ -769,7 +769,7 @@ function menu.mt:findMenuUI(path, options)
                                     if title == nil then
                                         error(format("Unexpected `nil` menu item title while searching for '%s'", currentTitle))
                                     end
-                                    log.df("checking menu item: %s", title)
+                                    --log.df("checking menu item: %s", title)
                                     return exactMatch(title, currentTitle)
                                 end)
                                 --------------------------------------------------------------------------------

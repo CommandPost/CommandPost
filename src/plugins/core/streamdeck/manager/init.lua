@@ -43,7 +43,7 @@ mod.DEFAULT_GROUP = "global"
 --- plugins.core.streamdeck.manager.FILE_NAME -> string
 --- Constant
 --- File name of settings file.
-mod.FILE_NAME = "Stream Deck.json"
+mod.FILE_NAME = "Default.cpStreamDeck"
 
 --- plugins.core.streamdeck.manager.FOLDER_NAME -> string
 --- Constant

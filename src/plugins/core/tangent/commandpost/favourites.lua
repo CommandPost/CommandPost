@@ -40,7 +40,7 @@ local _                                         = require("moses")
 -- FAVOURITES_FILE -> number
 -- Constant
 -- Favourites File Name.
-local FAVOURITES_FILE = "favourites.json"
+local FAVOURITES_FILE = "Default.cpTangent"
 
 --------------------------------------------------------------------------------
 --

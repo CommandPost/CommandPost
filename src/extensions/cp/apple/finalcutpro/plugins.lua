@@ -296,7 +296,7 @@ function mod.mt:scanSystemAudioUnits(locale)
 
     local currentModification = fs.attributes(cacheFile) and fs.attributes(cacheFile).modification
     local lastModification = config.get("audioUnitsCacheModification", nil)
-    local audioUnitsCache = json.read(CP_FCP_CACHE_PATH .. "/Audio Units.json")
+    local audioUnitsCache = json.read(CP_FCP_CACHE_PATH .. "/Audio Units.cpCache")
 
     if currentModification and lastModification and audioUnitsCache and currentModification == lastModification then
         report("  * Using Audio Units Cache (" .. tostring(#audioUnitsCache) .. " items)")
@@ -370,7 +370,7 @@ function mod.mt:scanSystemAudioUnits(locale)
         --------------------------------------------------------------------------------
         if currentModification and #cache ~= 0 then
             if doesCacheDirectoryExist() then
-                if json.write(CP_FCP_CACHE_PATH .. "/Audio Units.json", cache) then
+                if json.write(CP_FCP_CACHE_PATH .. "/Audio Units.cpCache", cache) then
                     config.set("audioUnitsCacheModification", currentModification)
                     report("  * Saved " .. #cache .. " Audio Units to Cache.")
                 else
@@ -410,7 +410,7 @@ function mod.mt:scanUserEffectsPresets(locale)
 
     local currentSize = fs.attributes(path) and fs.attributes(path).size
     local lastSize = config.get("userEffectsPresetsCacheModification", nil)
-    local userEffectsPresetsCache = json.read(CP_FCP_CACHE_PATH .. "/User Effects Presets.json")
+    local userEffectsPresetsCache = json.read(CP_FCP_CACHE_PATH .. "/User Effects Presets.cpCache")
 
     if currentSize and lastSize and userEffectsPresetsCache and currentSize == lastSize then
         report("  * Using User Effects Presets Cache (" .. tostring(#userEffectsPresetsCache) .. " items).")
@@ -460,7 +460,7 @@ function mod.mt:scanUserEffectsPresets(locale)
         --------------------------------------------------------------------------------
         if currentSize and #cache ~= 0 then
             if doesCacheDirectoryExist() then
-                if json.write(CP_FCP_CACHE_PATH .. "/User Effects Presets.json", cache) then
+                if json.write(CP_FCP_CACHE_PATH .. "/User Effects Presets.cpCache", cache) then
                     config.set("userEffectsPresetsCacheModification", currentSize)
                     report("  * Saved " .. #cache .. " User Effects Presets to Cache.")
                 else
@@ -936,7 +936,7 @@ function mod.mt:scanUserMotionTemplates(locale)
     --------------------------------------------------------------------------------
     local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
     local lastSize = config.get("userMotionTemplatesCacheSize", nil)
-    local userMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/User Motion Templates.json")
+    local userMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/User Motion Templates.cpCache")
     if currentSize and lastSize and currentSize == lastSize then
         if userMotionTemplatesCache and userMotionTemplatesCache[locale.code] and #userMotionTemplatesCache[locale.code] > 0 then
             --------------------------------------------------------------------------------
@@ -963,7 +963,7 @@ function mod.mt:scanUserMotionTemplates(locale)
         -- Save to cache:
         --------------------------------------------------------------------------------
         local cache = { [locale.code] = mod._motionTemplatesToCache }
-        if json.write(CP_FCP_CACHE_PATH .. "/User Motion Templates.json", cache) then
+        if json.write(CP_FCP_CACHE_PATH .. "/User Motion Templates.cpCache", cache) then
             config.set("userMotionTemplatesCacheSize", currentSize)
             report("  * Saving User Motion Tempaltes to Cache (%s items)", #mod._motionTemplatesToCache)
         else
@@ -1001,7 +1001,7 @@ function mod.mt:scanSystemMotionTemplates(locale)
     --------------------------------------------------------------------------------
     local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
     local lastSize = config.get("systemMotionTemplatesCacheSize", nil)
-    local systemMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/System Motion Templates.json")
+    local systemMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/System Motion Templates.cpCache")
 
     if currentSize and lastSize and currentSize == lastSize then
         if systemMotionTemplatesCache and systemMotionTemplatesCache[locale.code] and #systemMotionTemplatesCache[locale.code] > 0 then
@@ -1034,7 +1034,7 @@ function mod.mt:scanSystemMotionTemplates(locale)
         -- Save to cache:
         --------------------------------------------------------------------------------
         local cache = { [locale.code] = mod._motionTemplatesToCache }
-        if json.write(CP_FCP_CACHE_PATH .. "/System Motion Templates.json", cache) then
+        if json.write(CP_FCP_CACHE_PATH .. "/System Motion Templates.cpCache", cache) then
             config.set("systemMotionTemplatesCacheSize", currentSize)
             report("  * Saving System Motion Templates to Cache (%s items)", #mod._motionTemplatesToCache)
         else
@@ -1457,7 +1457,7 @@ end
 function mod.mt:_loadPluginVersionCache(rootPath, version, locale, searchHistory)
     locale = localeID(locale)
     version = type(version) == "string" and v(version) or version
-    local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.json", rootPath, version, locale.code))
+    local filePath = fs.pathToAbsolute(string.format("%s/%s/plugins.%s.cpCache", rootPath, version, locale.code))
     if filePath then
         local file = io.open(filePath, "r")
         if file then
@@ -1549,7 +1549,7 @@ function mod.mt:_saveAppPluginCache(locale)
     if not path then
         return false
     end
-    local cachePath = path .. "/plugins."..locale.code..".json"
+    local cachePath = path .. "/plugins."..locale.code..".cpCache"
     local plugins = self._plugins[locale.code]
     if plugins then
         local file = io.open(cachePath, "w")

@@ -162,7 +162,7 @@ mod.DEFAULT_GROUP = "global"
 --- plugins.core.midi.manager.FILE_NAME -> string
 --- Constant
 --- File name of settings file.
-mod.FILE_NAME = "MIDI Controls.json"
+mod.FILE_NAME = "Default.cpMIDI"
 
 --- plugins.core.midi.manager.FOLDER_NAME -> string
 --- Constant

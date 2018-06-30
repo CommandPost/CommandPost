@@ -36,7 +36,7 @@ local i18n                                      = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 local TOOLS_PRIORITY        = 2000
-local HISTORY_EXTENSION     = ".sharedPasteboard"
+local HISTORY_EXTENSION     = ".cpSharedPasteboard"
 
 --------------------------------------------------------------------------------
 --
