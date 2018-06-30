@@ -19,8 +19,9 @@ local timer             = require("hs.timer")
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
-local just              = require("cp.just")
 local i18n              = require("cp.i18n")
+local json              = require("cp.json")
+local just              = require("cp.just")
 
 --------------------------------------------------------------------------------
 --
@@ -29,10 +30,20 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
+--- plugins.finalcutpro.timeline.generators.FILE_NAME -> string
+--- Constant
+--- File name of settings file.
+mod.FILE_NAME = "Generators.cpCache"
+
+--- plugins.finalcutpro.timeline.generators.FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+mod.FOLDER_NAME = "Final Cut Pro"
+
 -- plugins.finalcutpro.timeline.generators._cache <cp.prop: table>
 -- Field
 -- Titles cache.
-mod._cache = config.prop("generatorCache", {})
+mod._cache = json.prop(config.cachePath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
 --- plugins.finalcutpro.timeline.generators.apply(action) -> boolean
 --- Function

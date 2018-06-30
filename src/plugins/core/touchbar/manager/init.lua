@@ -171,7 +171,7 @@ mod.DEFAULT_GROUP = "global"
 --- plugins.core.touchbar.manager.FILE_NAME -> string
 --- Constant
 --- File name of settings file.
-mod.FILE_NAME = "Touch Bar.json"
+mod.FILE_NAME = "Default.cpTouchBar"
 
 --- plugins.core.touchbar.manager.FOLDER_NAME -> string
 --- Constant

@@ -544,7 +544,7 @@ end)
 --- plugins.finalcutpro.pasteboard.manager.buffer <cp.prop: table>
 --- Field
 --- Contains the Pasteboard Buffer.
-mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer.json", {})
+mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer.cpPasteboard", {})
 
 --- plugins.finalcutpro.pasteboard.manager.saveToBuffer(id) -> none
 --- Function
