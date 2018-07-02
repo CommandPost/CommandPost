@@ -2,7 +2,7 @@
 ---
 --- Console History Manager.
 ---
---- Originally created by @asmagill
+--- Based on code by @asmagill
 --- https://github.com/asmagill/hammerspoon-config-take2/blob/master/utils/_actions/consoleHistory.lua
 
 --------------------------------------------------------------------------------
@@ -11,26 +11,82 @@
 --
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log      = require("hs.logger").new("history")
+
+--------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local console  = require("hs.console")
-local hashFN   = require("hs.hash").MD5 -- Can use other hash fn if this proves insufficient
-local settings = require("hs.settings")
+local hash     = require("hs.hash")
 local timer    = require("hs.timer")
+
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config   = require("cp.config")
+local json     = require("cp.json")
+
+--------------------------------------------------------------------------------
+--
+-- CONSTANTS:
+--
+--------------------------------------------------------------------------------
+
+-- FILE_NAME -> string
+-- Constant
+-- File name of settings file.
+local FILE_NAME = "History.cpCache"
+
+--- FOLDER_NAME -> string
+--- Constant
+--- Folder Name where settings file is contained.
+local FOLDER_NAME = "Error Log"
+
+-- CHECK_INTERVAL -> number
+-- Constant
+-- How often to check for changes.
+local CHECK_INTERVAL = 1
+
+-- MAXIMUM -> number
+-- Constant
+-- Maximum history to save
+local MAXIMUM = 100
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local module   = {}
+local mod = {}
 
-local saveLabel     = "consoleHistory" -- label for saved history
-local checkInterval = settings.get(saveLabel.."consoleHistoryInterval") or 1 -- how often to check for changes
-local maxLength     = settings.get(saveLabel.."consoleHistoryMaximum") or 100    -- maximum history to save
+--- hashFN -> function
+--- Variable
+--- The has function. Can use other hash function if this proves insufficient.
+local hashFN = hash.MD5
 
-local uniqueHistory = function(raw)
+--- currentHistoryCount -> number
+--- Variable
+--- Current History Count
+local currentHistoryCount = #console.getHistory()
+
+--- cp.console.history.cache <cp.prop: table>
+--- Field
+--- Console History Cache
+mod.cache = json.prop(config.cachePath, FOLDER_NAME, FILE_NAME, nil)
+
+--- uniqueHistory(raw) -> table
+--- Function
+--- Takes the raw history and returns only the unique history.
+---
+--- Parameters:
+---  * raw - The raw history as a table
+---
+--- Returns:
+---  * A table
+local function uniqueHistory(raw)
     local hashed, history = {}, {}
     for i = #raw, 1, -1 do
         local key = hashFN(raw[i])
@@ -51,7 +107,9 @@ end
 ---
 --- Returns:
 ---  * None
-module.clearHistory = function() return console.setHistory({}) end
+function mod.clearHistory()
+    return console.setHistory({})
+end
 
 --- cp.console.history.saveHistory() -> none
 --- Function
@@ -62,17 +120,17 @@ module.clearHistory = function() return console.setHistory({}) end
 ---
 --- Returns:
 ---  * None
-module.saveHistory = function()
+function mod.saveHistory()
     local hist, save = console.getHistory(), {}
-    if #hist > maxLength then
-        table.move(hist, #hist - maxLength, #hist, 1, save)
+    if #hist > MAXIMUM then
+        table.move(hist, #hist - MAXIMUM, #hist, 1, save)
     else
         save = hist
     end
     --------------------------------------------------------------------------------
     -- Save only the unique lines:
     --------------------------------------------------------------------------------
-    settings.set(saveLabel, uniqueHistory(save))
+    mod.cache(uniqueHistory(save))
 end
 
 --- cp.console.history.retrieveHistory() -> none
@@ -84,26 +142,12 @@ end
 ---
 --- Returns:
 ---  * None
-module.retrieveHistory = function()
-    local history = settings.get(saveLabel)
+function mod.retrieveHistory()
+    local history = mod.cache()
     if (history) then
         console.setHistory(history)
     end
 end
-
-module.retrieveHistory()
-local currentHistoryCount = #console.getHistory()
-
---- cp.console.history.autosaveHistory -> timer
---- Variable
---- Auto Save History Timer.
-module.autosaveHistory = timer.new(checkInterval, function()
-    local historyNow = console.getHistory()
-    if #historyNow ~= currentHistoryCount then
-        currentHistoryCount = #historyNow
-        module.saveHistory()
-    end
-end):start()
 
 --- cp.console.history.pruneHistory() -> number
 --- Function
@@ -114,16 +158,11 @@ end):start()
 ---
 --- Returns:
 ---  * Current History Count
-module.pruneHistory = function()
+function mod.pruneHistory()
     console.setHistory(uniqueHistory(console.getHistory()))
     currentHistoryCount = #console.getHistory()
     return currentHistoryCount
 end
-
-module = setmetatable(module, { __gc =  function(_)
-                                    _.saveHistory()
-                                end,
-})
 
 --- cp.console.history.history(toFind) -> none
 --- Function
@@ -134,7 +173,7 @@ module = setmetatable(module, { __gc =  function(_)
 ---
 --- Returns:
 ---  * None
-module.history = function(toFind)
+function mod.history(toFind)
     if type(toFind) == "number" then
         local history = console.getHistory()
         if toFind < 0 then toFind = #history - (toFind + 1) end
@@ -161,4 +200,39 @@ module.history = function(toFind)
     end
 end
 
-return module
+--- cp.console.history.init() -> self
+--- Function
+--- Initialise the module.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * Self
+function mod.init()
+
+    --------------------------------------------------------------------------------
+    -- Setup Autosave Timer:
+    --------------------------------------------------------------------------------
+    mod.autosaveHistory = timer.new(CHECK_INTERVAL, function()
+        local historyNow = console.getHistory()
+        if #historyNow ~= currentHistoryCount then
+            currentHistoryCount = #historyNow
+            mod.saveHistory()
+        end
+    end):start()
+
+    --------------------------------------------------------------------------------
+    -- Retrieve History on Boot:
+    --------------------------------------------------------------------------------
+    mod.retrieveHistory()
+
+    return mod
+end
+
+--------------------------------------------------------------------------------
+-- Setup Garbage Collection:
+--------------------------------------------------------------------------------
+mod = setmetatable(mod, {__gc = function(_) _.saveHistory() end})
+
+return mod.init()

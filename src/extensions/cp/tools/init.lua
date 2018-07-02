@@ -1313,4 +1313,45 @@ function tools.playErrorSound()
     sound.getByName("Funk"):play()
 end
 
+--- cp.tools.tableMatch(t1, t2[, ignoreMetatable]) -> boolean
+--- Function
+--- Compares two tables.
+---
+--- Parameters:
+---  * t1 - The first table.
+---  * t2 - The second table.
+---  * ignoreMetatable - A boolean that determines whether or not we should ignore the metatable.
+---
+--- Returns:
+---  * `true` if `t1` and `t2` are identical, otherwise `false`.
+function tools.tableMatch(t1,t2,ignoreMetatable)
+    --------------------------------------------------------------------------------
+    -- Compare types:
+    --------------------------------------------------------------------------------
+    local ty1 = type(t1)
+    local ty2 = type(t2)
+    if ty1 ~= ty2 then return false end
+
+    --------------------------------------------------------------------------------
+    -- Non-table types can be directly compared:
+    --------------------------------------------------------------------------------
+    if ty1 ~= 'table' and ty2 ~= 'table' then return t1 == t2 end
+
+    --------------------------------------------------------------------------------
+    -- As well as tables which have the metamethod __eq:
+    --------------------------------------------------------------------------------
+    local mt = getmetatable(t1)
+    if not ignoreMetatable and mt and mt.__eq then return t1 == t2 end
+    for k1,v1 in pairs(t1) do
+        local v2 = t2[k1]
+        if v2 == nil or not tools.tableMatch(v1,v2) then return false end
+    end
+    for k2,v2 in pairs(t2) do
+        local v1 = t1[k2]
+        if v1 == nil or not tools.tableMatch(v1,v2) then return false end
+    end
+    return true
+end
+
+
 return tools
