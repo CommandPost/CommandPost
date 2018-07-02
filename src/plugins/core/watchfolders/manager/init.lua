@@ -82,12 +82,12 @@ mod._handlers           = {}
 --- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
 --- Returns the last frame saved in settings.
-mod.position = config.prop("watchFoldersPosition", nil)
+mod.position = config.prop("watchFolders.position", nil)
 
 --- plugins.core.watchfolders.manager.position <cp.prop: table>
 --- Constant
 --- Returns the last frame saved in settings.
-mod.lastTab = config.prop("watchFoldersLastTab", nil)
+mod.lastTab = config.prop("watchFolders.lastTab", nil)
 
 --- plugins.core.watchfolders.manager.getLabel() -> string
 --- Function
@@ -239,7 +239,10 @@ local function windowCallback(action, wv, frame)
         end
     elseif action == "frameChange" then
         if frame then
-            mod.position(frame)
+            mod.position({
+                x = frame.x,
+                y = frame.y,
+            })
         end
     end
 end
@@ -289,9 +292,13 @@ function mod.new()
     --------------------------------------------------------------------------------
     -- Use last Position or Centre on Screen:
     --------------------------------------------------------------------------------
-    local defaultRect = mod.position()
-    if tools.isOffScreen(defaultRect) then
-        defaultRect = centredPosition()
+    local defaultRect = centredPosition()
+    local p = mod.position()
+    if p then
+        local savedPosition = {x = p.x, y = p.y, w = mod.DEFAULT_WIDTH, h = mod.DEFAULT_HEIGHT}
+        if not tools.isOffScreen(defaultRect) then
+            defaultRect = savedPosition
+        end
     end
 
     --------------------------------------------------------------------------------

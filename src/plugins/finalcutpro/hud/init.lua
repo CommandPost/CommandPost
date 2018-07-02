@@ -20,19 +20,18 @@ local log                                       = require("hs.logger").new(logNa
 local drawing                                   = require("hs.drawing")
 local geometry                                  = require("hs.geometry")
 local screen                                    = require("hs.screen")
-local timer                                     = require("hs.timer")
 local webview                                   = require("hs.webview")
-local window                                    = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local app                                       = require("cp.app")
 local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
-local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -40,25 +39,20 @@ local i18n                                      = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 
--- PRIORITY
+-- PRIORITY -> number
 -- Constant
 -- The menubar position priority.
 local PRIORITY = 10000
 
--- PREFERENCES_KEY
--- Constant
--- The Preferences key used by the HUD.
-local PREFERENCES_KEY = "enableHUD"
-
--- PREFERENCES_KEY_POSITION
--- Constant
--- Preferences Key Position
-local PREFERENCES_KEY_POSITION = "hudPosition"
-
--- GROUP
+-- GROUP -> string
 -- Constant
 -- The Group used by the HUD
 local GROUP = "fcpx"
+
+-- DEFAULT_WIDTH -> number
+-- Constant
+-- The default HUD Width
+local DEFAULT_WIDTH = 350
 
 --------------------------------------------------------------------------------
 --
@@ -67,47 +61,44 @@ local GROUP = "fcpx"
 --------------------------------------------------------------------------------
 local hud = {}
 
--- plugins.finalcutpro.hud.TITLE
+local cpApp = app.forBundleID(hs.processInfo.bundleID)
+
+-- plugins.finalcutpro.hud.TITLE -> string
 -- Constant
 -- The default HUD Title
-hud.TITLE = ""
+hud.TITLE = "CommandPost"
 
--- plugins.finalcutpro.hud.WIDTH
--- Constant
--- The default HUD Width
-hud.WIDTH = 350
-
--- plugins.finalcutpro.hud.HEIGHT_INSPECTOR
+-- plugins.finalcutpro.hud.HEIGHT_INSPECTOR -> number
 -- Constant
 -- The default HUD Height of the Inspector
 hud.HEIGHT_INSPECTOR = 90
 
--- plugins.finalcutpro.hud.HEIGHT_DROP_TARGETS
+-- plugins.finalcutpro.hud.HEIGHT_DROP_TARGETS -> number
 -- Constant
 -- The default HUD Height of the Drop Targets
 hud.HEIGHT_DROP_TARGETS = 85
 
--- plugins.finalcutpro.hud.HEIGHT_BUTTONS
+-- plugins.finalcutpro.hud.HEIGHT_BUTTONS -> number
 -- Constant
 -- The default HUD Height of the Buttons
 hud.HEIGHT_BUTTONS = 85
 
--- plugins.finalcutpro.hud.GREEN_COLOR
+-- plugins.finalcutpro.hud.GREEN_COLOR -> string
 -- Constant
 -- The Green Color used by Final Cut Pro.
 hud.GREEN_COLOR = "#3f9253"
 
--- plugins.finalcutpro.hud.RED_COLOR
+-- plugins.finalcutpro.hud.RED_COLOR -> string
 -- Constant
 -- The Red Color used by Final Cut Pro.
 hud.RED_COLOR = "#d1393e"
 
--- plugins.finalcutpro.hud.NUMBER_OF_BUTTONS
+-- plugins.finalcutpro.hud.NUMBER_OF_BUTTONS -> number
 -- Constant
 -- Number of buttons in the HUD
 hud.NUMBER_OF_BUTTONS = 4
 
--- plugins.finalcutpro.hud.MAXIMUM_TEXT_LENGTH
+-- plugins.finalcutpro.hud.MAXIMUM_TEXT_LENGTH -> number
 -- Constant
 -- Maximum Text Length
 hud.MAXIMUM_TEXT_LENGTH = 25
@@ -115,7 +106,7 @@ hud.MAXIMUM_TEXT_LENGTH = 25
 --- plugins.finalcutpro.hud.position <cp.prop: table>
 --- Constant
 --- Returns the last HUD frame saved in settings.
-hud.position = config.prop(PREFERENCES_KEY_POSITION, {})
+hud.position = config.prop("hud.position", nil)
 
 -- getHUDHeight() -> number
 -- Function
@@ -145,33 +136,6 @@ local function getHUDHeight()
 
 end
 
--- getHUDRect() -> table
--- Function
--- Gets the HUD rect.
---
--- Parameters:
---  * None
---
--- Returns:
---  * The HUD frame
-local function getHUDRect()
-
-    local hudHeight = getHUDHeight()
-
-    --------------------------------------------------------------------------------
-    -- Get last HUD position from settings otherwise default to centre screen:
-    --------------------------------------------------------------------------------
-    local screenFrame = screen.mainScreen():frame()
-    local defaultHUDRect = {x = (screenFrame['w']/2) - (hud.WIDTH/2), y = (screenFrame['h']/2) - (hudHeight/2), w = hud.WIDTH, h = hudHeight}
-    local hudPosition = hud.position()
-    if next(hudPosition) ~= nil then
-        defaultHUDRect = {x = hudPosition["x"], y = hudPosition["y"], w = hud.WIDTH, h = hudHeight}
-    end
-
-    return defaultHUDRect
-
-end
-
 -- windowCallback() -> none
 -- Function
 -- x
@@ -191,9 +155,27 @@ local function windowCallback(action, _, frame)
         end
     elseif action == "frameChange" then
         if frame then
-            hud.position(frame)
+            hud.position({
+                x = frame.x,
+                y = frame.y,
+            })
         end
     end
+end
+
+-- centredPosition() -> none
+-- Function
+-- Gets the Centred Position.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * Table
+local function centredPosition()
+    local sf = screen.mainScreen():frame()
+    local height = getHUDHeight()
+    return {x = sf.x + (sf.w/2) - (DEFAULT_WIDTH/2), y = sf.y + (sf.h/2) - (height/2), w = DEFAULT_WIDTH, h = height}
 end
 
 --- plugins.finalcutpro.hud.new()
@@ -206,6 +188,19 @@ end
 --- Returns:
 ---  * None
 function hud.new()
+
+    --------------------------------------------------------------------------------
+    -- Use last Position or Centre on Screen:
+    --------------------------------------------------------------------------------
+    local defaultRect = centredPosition()
+    local p = hud.position()
+    if p then
+        local height = getHUDHeight()
+        local savedPosition = {x = p.x, y = p.y, w = DEFAULT_WIDTH, h = height}
+        if not tools.isOffScreen(defaultRect) then
+            defaultRect = savedPosition
+        end
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Web View Controller:
@@ -221,7 +216,7 @@ function hud.new()
     if not hud.webview then
         local options = {}
         if config.developerMode() then options.developerExtrasEnabled = true end
-        hud.webview = webview.new(getHUDRect(), options, hud.webviewController)
+        hud.webview = webview.new(defaultRect, options, hud.webviewController)
             :windowStyle({"titled", "nonactivating", "closable"})
             :shadow(true)
             :closeOnEscape(true)
@@ -304,9 +299,9 @@ local function getEnv()
         end
     end
 
-    local backgroundRender  = fcp.preferences.FFAutoStartBGRender or true
+    local backgroundRender = fcp.preferences:prop("FFAutoStartBGRender", true)
 
-    if backgroundRender then
+    if backgroundRender() then
         local autoRenderDelay   = tonumber(fcp.preferences.FFAutoRenderDelay or "0.3")
         env.backgroundRender    = {
             text    = string.format("%s (%s %s)", i18n("enabled"), tostring(autoRenderDelay), i18n("secs", {count=autoRenderDelay})),
@@ -338,46 +333,50 @@ end
 --- Returns:
 ---  * None
 function hud.refresh()
+    --------------------------------------------------------------------------------
+    -- Ignore is the HUD doesn't exist:
+    --------------------------------------------------------------------------------
+    if not hud.webview then
+        return
+    end
 
     --------------------------------------------------------------------------------
     -- Update HUD Content:
     --------------------------------------------------------------------------------
-    if hud.webview then
-        local env = getEnv()
-        local javascriptToInject = [[
-            document.getElementById('media').innerHTML = "]] .. env.media.text .. [[";
-            document.getElementById('media').className = "]] .. env.media.class .. [[";
+    local env = getEnv()
+    local javascriptToInject = [[
+        document.getElementById('media').innerHTML = "]] .. env.media.text .. [[";
+        document.getElementById('media').className = "]] .. env.media.class .. [[";
 
-            document.getElementById('quality').innerHTML = "]] .. env.quality.text .. [[";
-            document.getElementById('quality').className = "]] .. env.quality.class .. [[";
+        document.getElementById('quality').innerHTML = "]] .. env.quality.text .. [[";
+        document.getElementById('quality').className = "]] .. env.quality.class .. [[";
 
-            document.getElementById('backgroundRender').innerHTML = "]] .. env.backgroundRender.text .. [[";
-            document.getElementById('backgroundRender').className = "]] .. env.backgroundRender.class .. [[";
+        document.getElementById('backgroundRender').innerHTML = "]] .. env.backgroundRender.text .. [[";
+        document.getElementById('backgroundRender').className = "]] .. env.backgroundRender.class .. [[";
 
-            document.getElementById('button1').innerHTML = "]] .. hud.getButtonText(1) .. [[";
-            document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
-            document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
-            document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
+        document.getElementById('button1').innerHTML = "]] .. hud.getButtonText(1) .. [[";
+        document.getElementById('button2').innerHTML = "]] .. hud.getButtonText(2) .. [[";
+        document.getElementById('button3').innerHTML = "]] .. hud.getButtonText(3) .. [[";
+        document.getElementById('button4').innerHTML = "]] .. hud.getButtonText(4) .. [[";
 
-            document.getElementById('button1').setAttribute('href', ']] .. hud.getButtonURL(1) .. [[');
-            document.getElementById('button2').setAttribute('href', ']] .. hud.getButtonURL(2) .. [[');
-            document.getElementById('button3').setAttribute('href', ']] .. hud.getButtonURL(3) .. [[');
-            document.getElementById('button4').setAttribute('href', ']] .. hud.getButtonURL(4) .. [[');
+        document.getElementById('button1').setAttribute('href', ']] .. hud.getButtonURL(1) .. [[');
+        document.getElementById('button2').setAttribute('href', ']] .. hud.getButtonURL(2) .. [[');
+        document.getElementById('button3').setAttribute('href', ']] .. hud.getButtonURL(3) .. [[');
+        document.getElementById('button4').setAttribute('href', ']] .. hud.getButtonURL(4) .. [[');
 
-            document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
-            document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
-            document.getElementById('hudDropTargets').style.display = ']] .. env.hudDropTargets .. [[';
-            document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
-            document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
-        ]]
-        hud.webview:evaluateJavaScript(javascriptToInject)
-    end
+        document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
+        document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
+        document.getElementById('hudDropTargets').style.display = ']] .. env.hudDropTargets .. [[';
+        document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
+        document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
+    ]]
+    hud.webview:evaluateJavaScript(javascriptToInject)
 
     --------------------------------------------------------------------------------
     -- Resize the HUD:
     --------------------------------------------------------------------------------
     if hud.visible() then
-        hud.webview:hswindow():setSize(geometry.size(hud.WIDTH, getHUDHeight()))
+        hud.webview:hswindow():setSize(geometry.size(DEFAULT_WIDTH, getHUDHeight()))
     end
 
 end
@@ -401,22 +400,22 @@ end
 --- plugins.finalcutpro.hud.enabled <cp.prop: boolean>
 --- Field
 --- Is the HUD enabled in the settings?
-hud.enabled = config.prop(PREFERENCES_KEY, false)
+hud.enabled = config.prop("hub.enabled", false)
 
 --- plugins.finalcutpro.hud.inspectorShown <cp.prop: boolean>
 --- Field
 --- Should the Inspector in the HUD be shown?
-hud.inspectorShown = config.prop("hudShowInspector", true):watch(hud.refresh)
+hud.inspectorShown = config.prop("hud.showInspector", true):watch(hud.refresh)
 
 --- plugins.finalcutpro.hud.dropTargetsShown <cp.prop: boolean>
 --- Field
 --- Should Drop Targets in the HUD be enabled?
-hud.dropTargetsShown = config.prop("hudShowDropTargets", true):watch(hud.refresh)
+hud.dropTargetsShown = config.prop("hud.showDropTargets", true):watch(hud.refresh)
 
 --- plugins.finalcutpro.hud.buttonsShown <cp.prop: boolean>
 --- Field
 --- Should Buttons in the HUD be shown?
-hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
+hud.buttonsShown = config.prop("hud.showButtons", true):watch(hud.refresh)
 
 --- plugins.finalcutpro.hud.getButton() -> table
 --- Function
@@ -430,7 +429,7 @@ hud.buttonsShown = config.prop("hudShowButtons", true):watch(hud.refresh)
 ---  * Button value
 function hud.getButton(index, defaultValue)
     local currentLocale = fcp:currentLocale()
-    return config.get(string.format("%s.hudButton.%d", currentLocale.code, index), defaultValue)
+    return config.get(string.format("hud.button.%s.%d", currentLocale.code, index), defaultValue)
 end
 
 --- plugins.finalcutpro.hud.getButtonCommand() -> string
@@ -516,59 +515,32 @@ end
 --- Returns:
 ---  * None
 function hud.updateVisibility()
-    if hud.enabled() then
+    local frontmostWindow = hs.window.frontmostWindow()
+    local frontmostFrame = frontmostWindow and frontmostWindow:frame()
 
-        --------------------------------------------------------------------------------
-        -- Only show if Final Cut Pro is running...
-        --------------------------------------------------------------------------------
-        if not fcp:isRunning() then
-            --log.df("Final Cut Pro is not running.")
-            hud.hide()
-            return
-        end
+    local hudWindow = hud.webview:hswindow()
+    local hudFrame = hudWindow and hudWindow:frame()
 
-        --------------------------------------------------------------------------------
-        -- Only show if Final Cut Pro or HUD is Frontmost.
-        --------------------------------------------------------------------------------
-        if not fcp:isFrontmost() then
-            local focusedWindow = window.focusedWindow()
-            if focusedWindow and focusedWindow:application() and focusedWindow:application():pid() == config.processID then
-                --log.df("CommandPost is frontmost")
-                hud.show()
-                return
-            else
-                --log.df("Final Cut Pro is not frontmost.")
-                hud.hide()
-                return
-            end
-        end
+    local hudActive = false
+    if frontmostFrame and hudFrame and tools.tableMatch(frontmostFrame, hudFrame) then
+        hudActive = true
+    end
 
-        --------------------------------------------------------------------------------
-        -- Don't show the HUD when in fullscreen mode or Command Editor is visible:
-        --------------------------------------------------------------------------------
-        if fcp:fullScreenWindow():isShowing() or fcp:commandEditor():isShowing() then
-            --log.df("Final Cut Pro Command Editor or Full Screen Playback is visible.")
-            hud.hide()
-            return
-        end
-
+    if hud.enabled() and fcp:isRunning() and
+    (fcp:isFrontmost() or hudActive) and
+    not fcp:fullScreenWindow():isShowing() and
+    not fcp:commandEditor():isShowing() and
+    not fcp:preferencesWindow():isShowing() then
         --------------------------------------------------------------------------------
         -- Show the HUD:
         --------------------------------------------------------------------------------
-        --log.df("Let's show the HUD")
         hud.show()
-
     else
         --------------------------------------------------------------------------------
         -- Hide the HUD:
         --------------------------------------------------------------------------------
         hud.hide()
     end
-
-    --------------------------------------------------------------------------------
-    -- Just to be safe...
-    --------------------------------------------------------------------------------
-    timer.doAfter(0.5, hud.updateVisibility)
 end
 
 --- plugins.finalcutpro.hud.show() -> none
@@ -584,22 +556,10 @@ function hud.show()
     if not hud.webview then
         hud.new()
     end
-
-    --------------------------------------------------------------------------------
-    -- CommandPost Window Watcher:
-    --------------------------------------------------------------------------------
-    if not hud._cpWatcher then
-        hud._cpWatcher = window.filter.new(function(w)
-                return w and w:application():bundleID() == hs.processInfo.bundleID
-        end, logName)
-            :subscribe(window.filter.windowUnfocused, function()
-                --log.df("CommandPost Lost Focus!")
-                hud.updateVisibility()
-            end)
+    if hud.webview then
+        hud.webview:show()
+        hud.refresh()
     end
-
-    hud.webview:show()
-    hud.refresh()
 end
 
 --- plugins.finalcutpro.hud.hide() -> none
@@ -614,10 +574,6 @@ end
 function hud.hide()
     if hud.webview then
         hud.webview:hide()
-    end
-    if hud._cpWatcher then
-        --log.df("CommandPost Watcher Destroyed")
-        hud._cpWatcher = nil
     end
 end
 
@@ -771,9 +727,14 @@ function hud.update()
 
         fcp:fullScreenWindow().isShowing:watch(hud.updateVisibility)
         fcp:commandEditor().isShowing:watch(hud.updateVisibility)
+        fcp:preferencesWindow().isShowing:watch(hud.updateVisibility)
 
-        -- refresh when the preferences change.
-        fcp.app.preferences:watch(hud.refresh)
+        cpApp.frontmost:watch(hud.updateVisibility)
+        cpApp.showing:watch(hud.updateVisibility)
+
+        fcp.app.preferences:prop("FFAutoStartBGRender"):watch(hud.refresh)
+        fcp.app.preferences:prop("FFAutoRenderDelay"):watch(hud.refresh)
+        fcp.app.preferences:prop("FFPlayerQuality"):watch(hud.refresh)
 
         --------------------------------------------------------------------------------
         -- Create new HUD:
@@ -789,6 +750,14 @@ function hud.update()
 
         fcp:fullScreenWindow().isShowing:unwatch(hud.updateVisibility)
         fcp:commandEditor().isShowing:unwatch(hud.updateVisibility)
+        fcp:preferencesWindow().isShowing:unwatch(hud.updateVisibility)
+
+        cpApp.frontmost:unwatch(hud.updateVisibility)
+        cpApp.showing:unwatch(hud.updateVisibility)
+
+        fcp.app.preferences:prop("FFAutoStartBGRender"):unwatch(hud.refresh)
+        fcp.app.preferences:prop("FFAutoRenderDelay"):unwatch(hud.refresh)
+        fcp.app.preferences:prop("FFPlayerQuality"):unwatch(hud.refresh)
 
         --------------------------------------------------------------------------------
         -- Delete the HUD:
@@ -830,9 +799,9 @@ local plugin = {
     id              = "finalcutpro.hud",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.sharing.xml"]         = "xmlSharing",
-        ["finalcutpro.menu.tools"]          = "menu",
-        ["finalcutpro.commands"]            = "fcpxCmds",
+        ["finalcutpro.sharing.xml"] = "xmlSharing",
+        ["finalcutpro.menu.tools"]  = "menu",
+        ["finalcutpro.commands"]    = "fcpxCmds",
         ["core.action.manager"]     = "actionmanager",
     }
 }
