@@ -225,12 +225,26 @@
 				}
 			}
 
+			/* EMAIL VALIDATION: */
+			function isEmail(email) {
+			  const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+			  return re.test(email);
+			};
+
 			/* SEND BUTTON PRESSED: */
 			document.getElementById("button-send").onclick = function() {
+
+				// Reset Errors:
+				document.getElementById("fullname").className = "";
+				document.getElementById("email").className = "";
 
 				var includeContactInfo = document.getElementById("include-contact-info").checked;
 				var fullnameValid = !(document.getElementById("fullname").value == "{{ defaultUserFullName }}");
 				var emailValid = !(document.getElementById("email").value == "{{ defaultUserEmail }}");
+
+				if (!isEmail(document.getElementById("email").value)) {
+					emailValid = false;
+				};
 
 				var newBugReportValue = document.getElementById("bugreport-comments").innerHTML;
 				var newFeatureRequestValue = document.getElementById("feature-request-comments").innerHTML;
@@ -252,33 +266,23 @@
 						document.getElementById("feature-request-comments").className = "textarea";
 					}
 				} else if (!document.getElementById("support-comments").hidden) {
-
 					if ( defaultSupportValue == newSupportValue ) {
 						document.getElementById("support-comments").className = "textarea error";
 						userCommentsValid = false;
 					} else {
 						document.getElementById("support-comments").className = "textarea";
 					}
-
 				};
 
 				if (includeContactInfo) {
 					if (fullnameValid && emailValid && userCommentsValid) {
 						submitForm();
-					} else if (!fullnameValid && !emailValid ) {
-						document.getElementById("fullname").className = "error";
-						document.getElementById("email").className = "error";
-					} else if (!fullnameValid) {
-						document.getElementById("fullname").className = "error";
-						document.getElementById("email").className = "";
-					} else if (!emailValid) {
-						document.getElementById("fullname").className = "";
-						document.getElementById("email").className = "error";
-					};
-				} else {
-					if (userCommentsValid) {
-						submitForm();
+					} else {
+						if (!fullnameValid) { document.getElementById("fullname").className = "error" };
+						if (!emailValid) { document.getElementById("email").className = "error" };
 					}
+				} else {
+					if (userCommentsValid) { submitForm() };
 				};
 
 			};

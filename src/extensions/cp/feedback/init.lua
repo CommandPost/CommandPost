@@ -29,8 +29,8 @@ local webview									= require("hs.webview")
 --------------------------------------------------------------------------------
 local config									= require("cp.config")
 local dialog									= require("cp.dialog")
+local i18n                                      = require("cp.i18n")
 local tools										= require("cp.tools")
-local i18n                    = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -264,9 +264,7 @@ function mod.showFeedback(quitOnComplete)
             local errorMessage = "Unknown"
             if params["message"] then errorMessage = params["message"] end
 
-            log.df("Server Side Error Message: %s", tools.urlQueryStringDecode(errorMessage))
-
-            dialog.displayMessage(i18n("feedbackError"))
+            dialog.displayMessage(i18n("feedbackError", {message=tools.urlQueryStringDecode(errorMessage)}))
         end
     end)
 

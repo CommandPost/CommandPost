@@ -528,7 +528,7 @@
         "fcpx_widgets_action": "Touch Bar Widgets",
         "featureRequest": "Feature Request",
         "feedback": "Feedback",
-        "feedbackError": "An error occurred trying to communicate with the CommandPost servers.\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
+        "feedbackError": "The following error occurred trying to communicate with the CommandPost servers:\n\n%{message}\n\nUnfortunately your feedback was not submitted.\n\nPlease try again.",
         "feedbackSuccess": "Your feedback was submitted successfully.\n\nThank you!",
         "fileCouldNotBeRead": "The selected file could not be read.",
         "finalCutPro": "Final Cut Pro",
