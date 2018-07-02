@@ -25,7 +25,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("app_prefs")
+local log               = require("hs.logger").new("app_prefs")
 -- local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
@@ -235,13 +235,17 @@ end
 --- Parameters:
 --- * prefs         - The `prefs` instance.
 --- * key           - The key to retrieve.
---- * defaultValue  - The value to return if none is currentl set.
+--- * defaultValue  - The value to return if none is currently set.
 ---
 --- Returns:
 --- * The current value, or `defaultValue` if not set.
 function mod.get(prefs, key, defaultValue)
-    local path = prefsFilePath(prefs)
-    return path and cfprefs.getValue(key, path) or defaultValue
+    local data = metadata(prefs)
+    local bundleID = data and data.bundleID
+    if bundleID then
+        cfprefs.synchronize(bundleID)
+    end
+    return bundleID and cfprefs.getValue(key, bundleID) or defaultValue
 end
 
 --- cp.app.prefs.set(prefs, key, value) -> nil
@@ -256,11 +260,11 @@ end
 --- Returns:
 --- * Nothing.
 function mod.set(prefs, key, value)
-    local path = prefsFilePath(prefs)
-
-    if path and key then
-        cfprefs.setValue(key, value, path)
-        cfprefs.synchronize(path)
+    local data = metadata(prefs)
+    local bundleID = data and data.bundleID
+    if bundleID and key then
+        cfprefs.setValue(key, value, bundleID)
+        cfprefs.synchronize(bundleID)
 
         -- update the cp.prop if it exists.
         local props = prefsProps(prefs, false)
@@ -359,8 +363,10 @@ end
 function mod.mt:__pairs()
     local keys
 
-    local path = prefsFilePath(self)
-    keys = path and cfprefs.keyList(path) or nil
+    local data = metadata(self)
+    local bundleID = data and data.bundleID
+
+    keys = bundleID and cfprefs.keyList(bundleID) or nil
     local i = 0
 
     local function stateless_iter(_, k)
@@ -382,7 +388,7 @@ function mod.mt:__pairs()
             i = i + 1
             k = keys[i]
             if k then
-                v = cfprefs.getValue(k, path)
+                v = cfprefs.getValue(k, bundleID)
             end
         end
         if v then
