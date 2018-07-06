@@ -21,6 +21,7 @@ local drawing                                   = require("hs.drawing")
 local geometry                                  = require("hs.geometry")
 local screen                                    = require("hs.screen")
 local webview                                   = require("hs.webview")
+local window                                    = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -217,7 +218,7 @@ function hud.new()
         local options = {}
         if config.developerMode() then options.developerExtrasEnabled = true end
         hud.webview = webview.new(defaultRect, options, hud.webviewController)
-            :windowStyle({"titled", "nonactivating", "closable"})
+            :windowStyle({"titled", "nonactivating", "closable", "HUD", "utility"})
             :shadow(true)
             :closeOnEscape(true)
             :html(hud.generateHTML())
@@ -375,10 +376,13 @@ function hud.refresh()
     --------------------------------------------------------------------------------
     -- Resize the HUD:
     --------------------------------------------------------------------------------
-    if hud.visible() then
-        hud.webview:hswindow():setSize(geometry.size(DEFAULT_WIDTH, getHUDHeight()))
+    if hud.webview then
+        local frame = hud.webview:frame()
+        if frame then
+            frame.h = getHUDHeight()
+            hud.webview:frame(frame)
+        end
     end
-
 end
 
 --- plugins.finalcutpro.hud.delete()
@@ -515,7 +519,7 @@ end
 --- Returns:
 ---  * None
 function hud.updateVisibility()
-    local frontmostWindow = hs.window.frontmostWindow()
+    local frontmostWindow = window.frontmostWindow()
     local frontmostFrame = frontmostWindow and frontmostWindow:frame()
 
     local hudWindow = hud.webview:hswindow()
