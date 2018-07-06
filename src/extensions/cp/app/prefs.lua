@@ -25,16 +25,14 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("app_prefs")
--- local inspect           = require("hs.inspect")
+--local log               = require("hs.logger").new("app_prefs")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
--- local inspect           = require("hs.inspect")
 local cfprefs               = require("hs._asm.cfpreferences")
+--local inspect               = require("hs.inspect")
 local pathwatcher			= require("hs.pathwatcher")
-
 local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
