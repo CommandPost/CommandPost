@@ -140,48 +140,47 @@ local fcp = {
     strings = strings,
 }
 
---- cp.apple.finalcutpro.BUNDLE_ID
+--- cp.apple.finalcutpro.BUNDLE_ID -> string
 --- Constant
 --- Final Cut Pro's Bundle ID as a `semver`.
 fcp.BUNDLE_ID = "com.apple.FinalCut"
 
---- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
+--- cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION -> string
 --- Constant
 --- The earliest version of Final Cut Pro supported by this module.
 fcp.EARLIEST_SUPPORTED_VERSION = v("10.3.2")
 
---- cp.apple.finalcutpro.PASTEBOARD_UTI
+--- cp.apple.finalcutpro.PASTEBOARD_UTI -> string
 --- Constant
 --- Final Cut Pro's Pasteboard UTI
 fcp.PASTEBOARD_UTI = "com.apple.flexo.proFFPasteboardUTI"
 
---- cp.apple.finalcutpro.EVENT_DESCRIPTION_PATH
+--- cp.apple.finalcutpro.EVENT_DESCRIPTION_PATH -> string
 --- Constant
 --- The Event Description Path.
 fcp.EVENT_DESCRIPTION_PATH = "/Contents/Frameworks/TLKit.framework/Versions/A/Resources/EventDescriptions.plist"
 
---- cp.apple.finalcutpro.FLEXO_LANGUAGES
+--- cp.apple.finalcutpro.FLEXO_LANGUAGES -> table
 --- Constant
 --- Table of Final Cut Pro's supported Languages for the Flexo Framework
 fcp.FLEXO_LANGUAGES	= Set("de", "en", "es_419", "es", "fr", "id", "ja", "ms", "vi", "zh_CN")
 
-
---- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_VIDEO_EXTENSIONS -> table
 --- Constant
 --- Table of video file extensions Final Cut Pro can import.
 fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS	= Set("3gp", "avi", "mov", "mp4", "mts", "m2ts", "mxf", "m4v", "r3d")
 
---- cp.apple.finalcutpro.ALLOWED_IMPORT_AUDIO_EXTENSIONS
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_AUDIO_EXTENSIONS -> table
 --- Constant
 --- Table of audio file extensions Final Cut Pro can import.
 fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS	= Set("aac", "aiff", "aif", "bwf", "caf", "mp3", "mp4", "wav")
 
---- cp.apple.finalcutpro.ALLOWED_IMPORT_IMAGE_EXTENSIONS
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_IMAGE_EXTENSIONS -> table
 --- Constant
 --- Table of image file extensions Final Cut Pro can import.
 fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= Set("bmp", "gif", "jpeg", "jpg", "png", "psd", "raw", "tga", "tiff", "tif")
 
---- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS
+--- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS -> table
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
 fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = Set.union(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS)

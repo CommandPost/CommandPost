@@ -9,6 +9,11 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log				= require("hs.logger").new("smartCollections")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
@@ -62,7 +67,7 @@ function mod.change()
     --------------------------------------------------------------------------------
     local restartStatus = false
     if fcp:isRunning() then
-        if dialog.displayYesNoQuestion(i18n("change"), i18n("doYouWantToContinue")) then
+        if dialog.displayYesNoQuestion(i18n("changeSmartCollectionsLabel"), i18n("doYouWantToContinue")) then
             restartStatus = true
         else
             return true
@@ -81,9 +86,17 @@ function mod.change()
     -- Update plist for every Flexo language:
     --------------------------------------------------------------------------------
     local executeCommands = {}
+    local fcpPath = fcp:getPath()
     for k, _ in pairs(fcp.FLEXO_LANGUAGES) do
-        local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. fcp:getPath() .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. fcp.FLEXO_LANGUAGES[k] .. ".lproj/FFLocalizable.strings'"
-        executeCommands[#executeCommands + 1] = executeCommand
+        if type(k) == "string" then
+            local path = fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/" .. k .. ".lproj/FFLocalizable.strings"
+            if tools.doesFileExist(path) then
+                local executeCommand = "/usr/libexec/PlistBuddy -c \"Set :FFOrganizerSmartCollections " .. tools.trim(userSelectedSmartCollectionsLabel) .. "\" '" .. path .. "'"
+                executeCommands[#executeCommands + 1] = executeCommand
+            else
+                log.df("File not found: %s", path)
+            end
+        end
     end
     local result = tools.executeWithAdministratorPrivileges(executeCommands)
     if type(result) == "string" then
@@ -127,17 +140,21 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menu:
     --------------------------------------------------------------------------------
-    deps.advancedfeatures
-        :addItem(PRIORITY, function()
-            return { title = i18n("changeSmartCollectionLabel"),    fn = mod.change }
-        end)
+    if deps and deps.advancedfeatures then
+        deps.advancedfeatures
+            :addItem(PRIORITY, function()
+                return { title = i18n("changeSmartCollectionLabel"),    fn = mod.change }
+            end)
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Command:
     --------------------------------------------------------------------------------
-    deps.fcpxCmds
-        :add("cpChangeSmartCollectionsLabel")
-        :whenActivated(mod.change)
+    if deps and deps.fcpxCmds then
+        deps.fcpxCmds
+            :add("cpChangeSmartCollectionsLabel")
+            :whenActivated(mod.change)
+    end
 
     --------------------------------------------------------------------------------
     -- Return Module:
