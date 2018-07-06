@@ -25,16 +25,14 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log               = require("hs.logger").new("app_prefs")
--- local inspect           = require("hs.inspect")
+--local log               = require("hs.logger").new("app_prefs")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
--- local inspect           = require("hs.inspect")
 local cfprefs               = require("hs._asm.cfpreferences")
+--local inspect               = require("hs.inspect")
 local pathwatcher			= require("hs.pathwatcher")
-
 local prop                  = require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -115,6 +113,9 @@ end
 -- Parameters:
 --  * prefs     - The `prefs` instance.
 --  * create    - If `true`, create the cache if it doesn't exist already.
+--
+-- Returns:
+--  * A table
 local function prefsProps(prefs, create)
     local data = metadata(prefs)
     local cache = data.prefsProps
@@ -185,14 +186,18 @@ local function watchFiles(prefs)
             for _,file in pairs(files) do
                 local fileName = file:match(PLIST_MATCH)
                 if fileName == data.bundleID then
-                    -- notify watchers
+                    --------------------------------------------------------------------------------
+                    -- Notify Watchers:
+                    --------------------------------------------------------------------------------
                     local watchers = prefsWatchers(prefs, false)
                         if watchers then
                         for _,watcher in ipairs(watchers) do
                             watcher(prefs)
                         end
                     end
-                    -- update cp.props
+                    --------------------------------------------------------------------------------
+                    -- Update cp.props:
+                    --------------------------------------------------------------------------------
                     local props = prefsProps(prefs, false)
                     if props then
                         for _,p in pairs(props) do
@@ -227,40 +232,48 @@ function mod.watch(prefs, watchFn)
     watchFiles(prefs)
 end
 
---- cp.app.prefs.get(prefs, key[, defaultValue])
+--- cp.app.prefs.get(prefs, key[, defaultValue]) -> value
 --- Function
 --- Retrieves the specifed `key` from the provided `prefs`.
 --- If there is no current value, the `defaultValue` is returned.
 ---
 --- Parameters:
---- * prefs         - The `prefs` instance.
---- * key           - The key to retrieve.
---- * defaultValue  - The value to return if none is currentl set.
+---  * prefs         - The `prefs` instance.
+---  * key           - The key to retrieve.
+---  * defaultValue  - The value to return if none is currently set.
 ---
 --- Returns:
---- * The current value, or `defaultValue` if not set.
+---  * The current value, or `defaultValue` if not set.
 function mod.get(prefs, key, defaultValue)
-    local path = prefsFilePath(prefs)
-    return path and cfprefs.getValue(key, path) or defaultValue
+    local data = metadata(prefs)
+    local bundleID = data and data.bundleID
+    if bundleID then
+        cfprefs.synchronize(bundleID)
+        local result = cfprefs.getValue(key, bundleID)
+        if type(result) ~= "nil" then
+            return result
+        end
+    end
+    return defaultValue
 end
 
---- cp.app.prefs.set(prefs, key, value) -> nil
+--- cp.app.prefs.set(prefs, key, value) -> none
 --- Function
 --- Sets the key/value for the specified `prefs` instance.
 ---
 --- Parameters:
---- * prefs     - The `prefs` instance.
---- * key       - The key to set.
---- * value     - the new value.
+---  * prefs     - The `prefs` instance.
+---  * key       - The key to set.
+---  * value     - the new value.
 ---
 --- Returns:
---- * Nothing.
+---  * Nothing.
 function mod.set(prefs, key, value)
-    local path = prefsFilePath(prefs)
-
-    if path and key then
-        cfprefs.setValue(key, value, path)
-        cfprefs.synchronize(path)
+    local data = metadata(prefs)
+    local bundleID = data and data.bundleID
+    if bundleID and key then
+        cfprefs.setValue(key, value, bundleID)
+        cfprefs.synchronize(bundleID)
 
         -- update the cp.prop if it exists.
         local props = prefsProps(prefs, false)
@@ -277,12 +290,12 @@ end
 --- Subsequent calls will return the same `cp.prop` instance.
 ---
 --- Parameters:
---- * prefs         - The `prefs` instance.
---- * key           - The key to get/set.
---- * defaultValue  - The value if no default values is currently set.
+---  * prefs         - The `prefs` instance.
+---  * key           - The key to get/set.
+---  * defaultValue  - The value if no default values is currently set.
 ---
 --- Returns:
---- * The `cp.prop` for the key.
+---  * The `cp.prop` for the key.
 function mod.prop(prefs, key, defaultValue)
     local props = prefsProps(prefs, true)
     local propValue = props[key]
@@ -359,8 +372,10 @@ end
 function mod.mt:__pairs()
     local keys
 
-    local path = prefsFilePath(self)
-    keys = path and cfprefs.keyList(path) or nil
+    local data = metadata(self)
+    local bundleID = data and data.bundleID
+
+    keys = bundleID and cfprefs.keyList(bundleID) or nil
     local i = 0
 
     local function stateless_iter(_, k)
@@ -382,7 +397,7 @@ function mod.mt:__pairs()
             i = i + 1
             k = keys[i]
             if k then
-                v = cfprefs.getValue(k, path)
+                v = cfprefs.getValue(k, bundleID)
             end
         end
         if v then
