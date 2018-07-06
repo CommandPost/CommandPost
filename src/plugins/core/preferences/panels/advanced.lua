@@ -41,7 +41,7 @@ function plugin.init(deps)
         label       = i18n("advancedPanelLabel"),
         image       = image.imageFromName("NSAdvanced"),
         tooltip     = i18n("advancedPanelTooltip"),
-        height      = 450,
+        height      = 300,
     })
 end
 

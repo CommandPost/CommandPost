@@ -17,14 +17,14 @@
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local dialog			= require("hs.dialog")
-local ipc				  = require("hs.ipc")
+local ipc				= require("hs.ipc")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config			= require("cp.config")
 local html				= require("cp.web.html")
-local i18n        = require("cp.i18n")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -32,23 +32,6 @@ local i18n        = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- plugins.core.preferences.advanced.trashPreferences() -> none
---- Function
---- Resets all of the CommandPost Preferences to their default values.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.trashPreferences()
-    dialog.webviewAlert(mod.manager.getWebview(), function(result)
-        if result == i18n("yes") then
-            config.reset()
-        end
-    end, i18n("trashPreferencesConfirmation"), "", i18n("yes"), i18n("no"), "informational")
-end
 
 --- plugins.core.preferences.advanced.toggleEnableAutomaticScriptReloading() -> none
 --- Function
@@ -174,13 +157,15 @@ function plugin.init(deps)
     -- Commands:
     --------------------------------------------------------------------------------
     local global = deps.global
-    global:add("cpOpenErrorLog")
-        :whenActivated(mod.openErrorLog)
-        :groupedBy("commandPost")
+    if global then
+        global:add("cpOpenErrorLog")
+            :whenActivated(mod.openErrorLog)
+            :groupedBy("commandPost")
 
-    global:add("cpTrashPreferences")
-        :whenActivated(mod.trashPreferences)
-        :groupedBy("commandPost")
+        global:add("cpTrashPreferences")
+            :whenActivated(mod.trashPreferences)
+            :groupedBy("commandPost")
+    end
 
     --------------------------------------------------------------------------------
     -- Create Dock Icon Click Callback:
@@ -192,69 +177,46 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup General Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.advanced
+    local advanced = deps.advanced
+    if advanced then
+        advanced:addHeading(60, i18n("developer"))
+                :addCheckbox(61,
+                    {
+                        label = i18n("enableDeveloperMode"),
+                        onchange = mod.toggleDeveloperMode,
+                        checked = mod.developerMode,
+                    }
+                )
 
-        :addHeading(60, i18n("developer"))
+                :addCheckbox(62,
+                    {
+                        label = i18n("enableAutomaticScriptReloading"),
+                        onchange = mod.toggleEnableAutomaticScriptReloading,
+                        checked = config.automaticScriptReloading(),
+                    }
+                )
 
-        :addCheckbox(61,
-            {
-                label = i18n("enableDeveloperMode"),
-                onchange = mod.toggleDeveloperMode,
-                checked = mod.developerMode,
-            }
-        )
+                :addCheckbox(63,
+                    {
+                        label = i18n("openErrorLogOnDockClick"),
+                        onchange = function() mod.openErrorLogOnDockClick:toggle() end,
+                        checked = mod.openErrorLogOnDockClick
+                    }
+                )
 
-        :addCheckbox(61.1,
-            {
-                label = i18n("enableAutomaticScriptReloading"),
-                onchange = mod.toggleEnableAutomaticScriptReloading,
-                checked = config.automaticScriptReloading(),
-            }
-        )
-
-        :addHeading(62, i18n("errorLog"))
-
-        :addCheckbox(63,
-            {
-                label = i18n("openErrorLogOnDockClick"),
-                onchange = function() mod.openErrorLogOnDockClick:toggle() end,
-                checked = mod.openErrorLogOnDockClick
-            }
-        )
-
-        :addButton(64,
-            {
-                label = i18n("openErrorLog"),
-                width = 200,
-                onclick = mod.openErrorLog,
-            }
-        )
-
-        :addHeading(70, i18n("commandLineTool"))
-        :addButton(75,
-            {
-                label	= getCommandLineToolTitle(),
-                width	= 200,
-                onclick	= mod.toggleCommandLineTool,
-                id		= "commandLineTool",
-            }
-        )
-        :addParagraph(76, html.span {class="tip"} (
-            html.strong(string.upper(i18n("tip") .. ": ")) .. html(i18n("commandLineToolDescription"), false)
-        ))
-
-        :addHeading(80, i18n("advanced"))
-        :addButton(85,
-            {
-                label	= i18n("trashPreferences"),
-                width	= 200,
-                onclick	= mod.trashPreferences,
-            }
-        )
-        :addParagraph(85.1, html.span {class="tip"} (
-            html.strong(string.upper(i18n("tip")) .. ": ") .. html(i18n("trashPreferencesDescription"), false)
-        ))
-
+                :addHeading(70, i18n("commandLineTool"))
+                :addButton(75,
+                    {
+                        label	= getCommandLineToolTitle(),
+                        width	= 200,
+                        onclick	= mod.toggleCommandLineTool,
+                        id		= "commandLineTool",
+                    }
+                )
+                :addParagraph(76, html.span {class="tip"} (
+                    html(i18n("commandLineToolDescription"), false)
+                ))
+    end
 end
 
 return plugin
