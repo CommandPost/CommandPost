@@ -16,7 +16,6 @@ local log				= require("hs.logger").new("fontConsole")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local fnutils           = require("hs.fnutils")
 local styledtext        = require("hs.styledtext")
 
 --------------------------------------------------------------------------------
@@ -39,22 +38,6 @@ local execute           = hs.execute
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---------------------------------------------------------------------------------
--- POTENTIAL PROBLEM FONTS:
--- * Myriad Pro
--- * Museo Sans
--- * PortagoITC TT
---------------------------------------------------------------------------------
-
---- plugins.finalcutpro.console.font.FONT_EXTENSIONS -> table
---- Constant
---- Table of support font file extensions.
-mod.FONT_EXTENSIONS = {
-    "ttf",
-    "otf",
-    "ttc",
-}
 
 --- plugins.finalcutpro.console.font.fontLookup -> table
 --- Variable
@@ -81,26 +64,19 @@ mod.processedFonts = {}
 -- Returns:
 --  * Table
 local function getFinalCutProFontPaths()
-    --------------------------------------------------------------------------------
-    -- TODO: David should eventually rewrite this to make it faster:
-    --------------------------------------------------------------------------------
     local result = {}
     local fcpApp = fcp:application()
     local processID = fcpApp and fcpApp:pid()
     if processID then
-        local o, s, t, r = execute("lsof -p " .. processID)
+        local o, s, t, r = execute([[lsof -n -p ]] .. processID .. [[ | grep -E '\.ttf$|\.otf$|\.ttc$']])
         if o and s and t == "exit" and r == 0 then
             local lines = tools.lines(o)
             for _, line in pairs(lines) do
-                for _, ext in pairs(mod.FONT_EXTENSIONS) do
-                    if string.find("." .. string.lower(line), "." .. ext) then
-                        local _, position = string.find(line, " /")
-                        if position then
-                            local path = string.sub(line, position)
-                            if path then
-                                table.insert(result, path)
-                            end
-                        end
+                local _, position = string.find(line, " /")
+                if position then
+                    local path = string.sub(line, position)
+                    if path then
+                        table.insert(result, path)
                     end
                 end
             end
@@ -122,9 +98,9 @@ end
 --  * Table
 local function loadFinalCutProFonts()
     local fontPaths = getFinalCutProFontPaths()
+    local userPath = os.getenv("HOME")
     for _, file in pairs(fontPaths) do
         if not mod.processedFonts[file] and tools.doesFileExist(file) then
-            local userPath = os.getenv("HOME")
             if file:sub(1, 15) ~= "/Library/Fonts/" and
             file:sub(1, userPath:len() + 15) ~= userPath .. "/Library/Fonts/" and
             file:sub(1, 22) ~= "/System/Library/Fonts/" and
