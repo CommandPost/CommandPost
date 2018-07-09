@@ -465,7 +465,7 @@
         "enableHUD": "Enable HUD",
         "enableiMessageNotifications": "Enable iMessage Notifications",
         "enableMIDI": "Enable MIDI Controls",
-        "enableMovingMarkers": "Enable Moving Markers",
+        "enableMovingMarkers": "Enable Moveable Markers",
         "enablePasteboardHistory": "Enable Pasteboard History",
         "enableProwlNotifications": "Enable Prowl Notifications",
         "enablePushoverNotifications": "Enable Pushover Notifications",
