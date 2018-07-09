@@ -65,19 +65,6 @@ function mod.toggleDeveloperMode()
     mod.manager.refresh()
 end
 
---- plugins.core.preferences.advanced.openErrorLog() -> none
---- Function
---- Opens the Error Log
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.openErrorLog()
-    hs.openConsole()
-end
-
 --
 -- Get Command Line Tool Title:
 --
@@ -158,10 +145,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local global = deps.global
     if global then
-        global:add("cpOpenErrorLog")
-            :whenActivated(mod.openErrorLog)
-            :groupedBy("commandPost")
-
         global:add("cpTrashPreferences")
             :whenActivated(mod.trashPreferences)
             :groupedBy("commandPost")
