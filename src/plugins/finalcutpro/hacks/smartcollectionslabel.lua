@@ -127,8 +127,8 @@ local plugin = {
     id              = "finalcutpro.hacks.smartcollectionslabel",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.administrator.advancedfeatures"] = "advancedfeatures",
         ["finalcutpro.commands"]                            = "fcpxCmds",
+        ["finalcutpro.preferences.app"]                     = "prefs",
     }
 }
 
@@ -138,13 +138,17 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Setup Menu:
+    -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps and deps.advancedfeatures then
-        deps.advancedfeatures
-            :addItem(PRIORITY, function()
-                return { title = i18n("changeSmartCollectionLabel"),    fn = mod.change }
-            end)
+    if deps.prefs.panel then
+        deps.prefs.panel
+            :addButton(2203,
+                {
+                    width       = 200,
+                    label       = i18n("changeSmartCollectionLabel"),
+                    onclick     = mod.change,
+                }
+            )
     end
 
     --------------------------------------------------------------------------------

@@ -51,7 +51,7 @@ function plugin.init(deps)
         label       = i18n("menubarPanelLabel"),
         image       = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/DesktopScreenEffectsPref.prefPane/Contents/Resources/DesktopScreenEffectsPref.icns", "/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")),
         tooltip     = i18n("menubarPanelTooltip"),
-        height      = 370,
+        height      = 350,
     })
 
     --------------------------------------------------------------------------------

@@ -428,7 +428,7 @@ function mod.init(deps, env)
                 end,
             }
         )
-        :addParagraph(8, html.span {class="tip"} ( html.strong (string.upper(i18n("tip")) .. ": ") .. html(i18n("streamDeckAppTip"), false) ) .. "\n\n")
+        :addParagraph(8, html.span {class="tip"} (html(i18n("streamDeckAppTip"), false) ) .. "\n\n")
         :addContent(10, generateContent, false)
 
     mod._panel:addButton(20,
