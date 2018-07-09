@@ -77,8 +77,9 @@ local plugin = {
     id              = "finalcutpro.hacks.backupinterval",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.administrator.advancedfeatures"] = "menu",
+        ["finalcutpro.preferences.app"]                     = "prefs",
         ["finalcutpro.commands"]                            = "fcpxCmds",
+        ["core.preferences.manager"]                        = "preferencesManager",
     }
 }
 
@@ -88,11 +89,21 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Setup Menu Item:
+    -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.menu:addItem(PRIORITY, function()
-        return { title = i18n("changeBackupInterval") .. " (" .. tostring(mod.get()) .. " " .. i18n("mins") .. ")",   fn = mod.set }
-    end)
+    if deps.prefs.panel then
+        deps.prefs.panel
+            :addButton(2204,
+                {
+                    width       = 200,
+                    label       = i18n("changeBackupInterval") .. " (" .. tostring(mod.get()) .. " " .. i18n("mins") .. ")",
+                    onclick     = function()
+                        mod.set()
+                        deps.preferencesManager.refresh()
+                    end
+                }
+            )
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Command:

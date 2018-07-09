@@ -567,7 +567,7 @@ function mod.init(deps, env)
             }
         )
         :addParagraph(5, html.span {style="display: clear;", class="tbTip"} (
-            html.strong (string.upper(i18n("tip")) .. ": ") .. i18n("touchBarDragTip") ) ..
+            i18n("touchBarDragTip") ) ..
             "\n\n"
         )
 
@@ -583,7 +583,7 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod.enabled(params.checked) end,
             }
         )
-        :addParagraph(8, html.span { class="tbTip" } ( html.strong (string.upper(i18n("tip")) .. ": ") .. i18n("touchBarSetupTip") ).. "\n\n")
+        :addParagraph(8, html.span { class="tbTip" } ( i18n("touchBarSetupTip"), false ).. "\n\n")
         :addContent(10, generateContent, false)
 
     mod._panel:addButton(20,
