@@ -1,0 +1,8 @@
+TODO: * Notifications/Observers?
+        test setAttributeValue more thoroughly
+        test getParameterizedAttributeValue more thoroughly
+        write corresponding setParameterizedAttributeValue
+
+      * revisit hs.uielement merger -- not happening in near term; uielement is being cleaned up and provides a simpler, safer interface to the basics; this module is for those who need/want more.
+
+        retest examples given

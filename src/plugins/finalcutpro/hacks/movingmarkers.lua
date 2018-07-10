@@ -16,12 +16,13 @@ local fs                        = require("hs.fs")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp                       = require("cp.apple.finalcutpro")
 local dialog                    = require("cp.dialog")
-local plist                     = require("cp.plist")
-local tools                     = require("cp.tools")
-local prop                      = require("cp.prop")
+local fcp                       = require("cp.apple.finalcutpro")
+local html                      = require("cp.web.html")
 local i18n                      = require("cp.i18n")
+local plist                     = require("cp.plist")
+local prop                      = require("cp.prop")
+local tools                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -149,8 +150,9 @@ local plugin = {
     id              = "finalcutpro.hacks.movingmarkers",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.administrator.advancedfeatures"] = "menu",
         ["finalcutpro.commands"]                            = "fcpxCmds",
+        ["finalcutpro.preferences.app"]                     = "prefs",
+        ["core.preferences.manager"]                        = "preferencesManager",
     }
 }
 
@@ -165,13 +167,22 @@ function plugin.init(deps)
     mod.enabled:update()
 
     --------------------------------------------------------------------------------
-    -- Setup Menu:
+    -- Setup Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.menu
-        :addItem(PRIORITY, function()
-            return { title = i18n("enableMovingMarkers"),   fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
-        end)
-        :addSeparator(PRIORITY + 1)
+    if deps.prefs.panel then
+        deps.prefs.panel
+            :addCheckbox(2202,
+                {
+                    label = i18n("enableMovingMarkers"),
+                    onchange = function(_, params)
+                        mod.enabled(params.checked)
+                        deps.preferencesManager.refresh()
+                    end,
+                    checked = mod.enabled,
+                }
+            )
+            :addParagraph(2202.1, html.br())
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:

@@ -430,6 +430,7 @@ function mod.createNotification(file)
         :hasActionButton(true)
         :actionButtonTitle(i18n("import"))
         :otherButtonTitle(i18n("skip"))
+        :withdrawAfter(0)
         :send()
 
     --------------------------------------------------------------------------------
@@ -496,6 +497,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                         :title(i18n("incomingFile"))
                         :subTitle(tools.getFilenameFromPath(file))
                         :hasActionButton(false)
+                        :withdrawAfter(0)
                         :send()
 
                 end

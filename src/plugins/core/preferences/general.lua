@@ -86,33 +86,62 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup General Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.general:addHeading(1, i18n("general"))
+    local general =  deps.general
+    if general then
+        general
+            :addContent(0.1, [[
+                <style>
+                    .generalPrefsRow {
+                        display: flex;
+                    }
 
-    :addCheckbox(3,
-        {
-            label		= i18n("launchAtStartup"),
-            checked		= mod.autoLaunch,
-            onchange	= function(_, params) mod.autoLaunch(params.checked) end,
-        }
-    )
+                    .generalPrefsColumn {
+                        flex: 50%;
+                    }
+                </style>
+                <div class="generalPrefsRow">
+                    <div class="generalPrefsColumn">
+            ]], false)
 
-    :addHeading(50, i18n("privacy"))
+            :addHeading(1, i18n("general"))
 
-    :addCheckbox(51,
-        {
-            label		= i18n("sendCrashData"),
-            checked		= mod.uploadCrashData,
-            onchange	= function(_, params) mod.uploadCrashData(params.checked) end,
-        }
-    )
+            :addCheckbox(3,
+                {
+                    label		= i18n("launchAtStartup"),
+                    checked		= mod.autoLaunch,
+                    onchange	= function(_, params) mod.autoLaunch(params.checked) end,
+                }
+            )
 
-    :addButton(52,
-        {
-            label 		= i18n("openPrivacyPolicy"),
-            width		= 200,
-            onclick		= mod.openPrivacyPolicy,
-        }
-    )
+            :addHeading(10, i18n("privacy"))
+
+            :addCheckbox(11,
+                {
+                    label		= i18n("sendCrashData"),
+                    checked		= mod.uploadCrashData,
+                    onchange	= function(_, params) mod.uploadCrashData(params.checked) end,
+                }
+            )
+
+            :addButton(12,
+                {
+                    label 		= i18n("openPrivacyPolicy"),
+                    width		= 200,
+                    onclick		= mod.openPrivacyPolicy,
+                }
+            )
+
+            :addContent(30, [[
+                    </div>
+                    <div class="generalPrefsColumn">
+            ]], false)
+
+            :addContent(100, [[
+                    </div>
+                </div>
+            ]], false)
+
+    end
 
     return mod
 

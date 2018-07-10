@@ -196,6 +196,7 @@ local function sharedXMLFileWatcher(files)
                         --:informativeText(config.appName .. " has received a new XML file.")
                         :hasActionButton(true)
                         :actionButtonTitle("Import XML")
+                        :withdrawAfter(0)
                         :send()
                 end
 
