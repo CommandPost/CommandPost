@@ -373,6 +373,7 @@ function MediaFolder.mt:updateIncomingNotification()
             :title(i18n("fcpMediaWatchFolderTitle"))
             :subTitle(subTitle)
             :hasActionButton(false)
+            :withdrawAfter(0)
             :send()
     end
 end
@@ -435,6 +436,7 @@ function MediaFolder.mt:updateImportNotification()
             :actionButtonTitle(i18n("fcpMediaFolderImport"))
             :additionalActions(actions)
             :alwaysShowAdditionalActions(true)
+            :withdrawAfter(0)
 
         self.importNotification:send()
     end

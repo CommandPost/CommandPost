@@ -360,6 +360,7 @@ function mod.watchCompressorStatus(jobID, file, destinationPath)
                         :subTitle(tools.getFilenameFromPath(file))
                         :hasActionButton(true)
                         :actionButtonTitle(i18n("show"))
+                        :withdrawAfter(0)
                         :send()
                     mod.statusTimer[jobID]:stop()
                     mod.statusTimer[jobID] = nil
@@ -476,6 +477,7 @@ function mod.addFilesToCompressor(files)
             :subTitle(tools.getFilenameFromPath(file))
             :hasActionButton(true)
             :actionButtonTitle(i18n("monitor"))
+            :withdrawAfter(0)
             :send()
 
         local selectedFile = nil
@@ -577,6 +579,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                         :title(i18n("incomingFile"))
                         :subTitle(tools.getFilenameFromPath(file))
                         :hasActionButton(false)
+                        :withdrawAfter(0)
                         :send()
 
                 end
