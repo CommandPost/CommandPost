@@ -226,7 +226,7 @@ local function generateContent()
     end
 
     table.sort(pluginInfo, function(a, b)
-        return a.category < b.category or a.category == b.category and a.shortName < b.shortName
+        return string.lower(a.category) < string.lower(b.category) or string.lower(a.category) == string.lower(b.category) and string.lower(a.shortName) < string.lower(b.shortName)
     end)
 
     --------------------------------------------------------------------------------
