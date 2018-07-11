@@ -41,6 +41,9 @@ mod.PREFERENCES_PATH    = "~/Library/Preferences"
 --- The Destinations File.
 mod.DESTINATIONS_FILE   = "com.apple.FinalCut.UserDestinations"
 
+--- cp.apple.finalcutpro.export.destinations.DESTINATIONS_PATTERN -> string
+--- Constant
+--- Destinations File Pattern.
 mod.DESTINATIONS_PATTERN = ".*" .. mod.DESTINATIONS_FILE .. "[1-9]%.plist"
 
 --- cp.apple.finalcutpro.export.destinations.DESTINATIONS_PATH -> string
@@ -48,16 +51,24 @@ mod.DESTINATIONS_PATTERN = ".*" .. mod.DESTINATIONS_FILE .. "[1-9]%.plist"
 --- The Destinations Path.
 mod.DESTINATIONS_PATH   = mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. ".plist"
 
+-- findDestinationsPath() -> string | nil
+-- Function
+-- Gets the Final Cut Pro Destination Property List Path.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The Final Cut Pro Destination Property List Path as a string or `nil` if the file cannot be found.
 local function findDestinationsPath()
-    -- in some situations, you can end up with "com.apple.FinalCut.UserDestinations2.plist", and, one assumes 3, 4, etc.
-    local path = fs.pathToAbsolute(mod.DESTINATIONS_PATH)
-    if not path then -- try with numbers 1-9
-        for i=1,9 do
-            path = fs.pathToAbsolute(mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. tostring(i) .. ".plist")
-            if path then
-                return path
-            end
-        end
+    --------------------------------------------------------------------------------
+    -- For some strange reason Final Cut Pro creates a file called
+    -- `com.apple.FinalCut.UserDestinations2.plist` on most/all machines which is
+    -- where the actual User Destinations are stored.
+    --------------------------------------------------------------------------------
+    local path = fs.pathToAbsolute(mod.PREFERENCES_PATH .. "/" .. mod.DESTINATIONS_FILE .. "2.plist")
+    if not path then
+        path = fs.pathToAbsolute(mod.DESTINATIONS_PATH)
     end
     return path
 end
@@ -140,7 +151,13 @@ end
 function mod.names()
     local list, err = mod.details()
     if list then
-        return _.map(list, function(_, e) return e.name end)
+        local result = {}
+        for _, v in pairs(list) do
+            if v.name and v.name ~= "" then
+                table.insert(result, v.name)
+            end
+        end
+        return result
     else
         return nil, err
     end

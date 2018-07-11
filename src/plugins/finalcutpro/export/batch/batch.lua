@@ -753,14 +753,12 @@ mod.destinationPreset = config.prop("batchExportDestinationPreset")
 function mod.changeExportDestinationPreset()
     return Given(
         destinations.names(),
-        mod.destinationPreset(),
-        compressor.isInstalled
+        mod.destinationPreset()
     )
-    :Then(function(destinationList, currentPreset, compressorInstalled)
-        if compressorInstalled then
+    :Then(function(destinationList, currentPreset)
+        if compressor.isInstalled() then
             insert(destinationList, 1, i18n("sendToCompressor"))
         end
-
         return Given(
             dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, {currentPreset})
         ):Then(function(result)
@@ -1198,9 +1196,8 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationPreset"),
-                -- onclick = mod.changeExportDestinationPreset,
                 onclick = function()
-                    mod.changeExportDestinationPresetRx():Now()
+                    mod.changeExportDestinationPreset():Now()
                 end
             })
         :addParagraph(nextID(), html.br())
@@ -1325,7 +1322,9 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationPreset"),
-                onclick = mod.changeExportDestinationPreset,
+                onclick = function()
+                    mod.changeExportDestinationPreset():Now()
+                end,
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following naming convention:")
