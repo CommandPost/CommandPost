@@ -152,7 +152,7 @@ function mod.names()
     local list, err = mod.details()
     if list then
         local result = {}
-        for i, v in pairs(list) do
+        for _, v in pairs(list) do
             if v.name and v.name ~= "" then
                 table.insert(result, v.name)
             end
