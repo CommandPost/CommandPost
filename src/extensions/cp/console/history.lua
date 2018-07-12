@@ -48,7 +48,7 @@ local FOLDER_NAME = "Error Log"
 -- CHECK_INTERVAL -> number
 -- Constant
 -- How often to check for changes.
-local CHECK_INTERVAL = 1
+--local CHECK_INTERVAL = 1
 
 -- MAXIMUM -> number
 -- Constant
@@ -214,6 +214,14 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Setup Autosave Timer:
     --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- NOTE: Chris has disabled this, because he THINKS it's the source of a
+    --       memory leak. However, the Console history SHOULD still work
+    --       as it's called as part of garbage collection.
+    --------------------------------------------------------------------------------
+
+    --[[
     mod.autosaveHistory = timer.new(CHECK_INTERVAL, function()
         local historyNow = console.getHistory()
         if #historyNow ~= currentHistoryCount then
@@ -221,6 +229,7 @@ function mod.init()
             mod.saveHistory()
         end
     end):start()
+    --]]
 
     --------------------------------------------------------------------------------
     -- Retrieve History on Boot:

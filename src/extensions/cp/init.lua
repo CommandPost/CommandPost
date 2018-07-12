@@ -12,7 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local logger = require("hs.logger")
-logger.defaultLogLevel = 'debug'
+logger.defaultLogLevel = "verbose"
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -22,8 +22,10 @@ local console                   = require("hs.console")
 local crash                     = require("hs.crash")
 local image                     = require("hs.image")
 local keycodes                  = require("hs.keycodes")
+local settings                  = require("hs.settings")
 local styledtext                = require("hs.styledtext")
 local toolbar                   = require("hs.webview.toolbar")
+local window                    = require("hs.window")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -77,6 +79,11 @@ function mod.init()
     -- Disable Spotlight for Name Searches:
     --------------------------------------------------------------------------------
     application.enableSpotlightForNameSearches(false)
+
+    --------------------------------------------------------------------------------
+    -- Disable Window Animations:
+    --------------------------------------------------------------------------------
+    window.animationDuration = 0
 
     --------------------------------------------------------------------------------
     -- Console Colour Scheme:
@@ -246,6 +253,11 @@ function mod.init()
         -- Enable Automatic Launch by default:
         --------------------------------------------------------------------------------
         hs.autoLaunch(true)
+
+        --------------------------------------------------------------------------------
+        -- Set Log Level to Verbose for Debugging:
+        --------------------------------------------------------------------------------
+        settings.set("hs._asm.axuielement.logLevel", "verbose")
 
         --------------------------------------------------------------------------------
         -- Don't do this again unless you trash preferences:
