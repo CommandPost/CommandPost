@@ -148,10 +148,8 @@ function MediaFolder.mt:init()
 
         -- re-link live notifications
         local importTag = self:importTag()
-        log.df("importTag: %s", importTag)
         for _,n in ipairs(notify.deliveredNotifications()) do
             local tag = n:getFunctionTag()
-            log.df("checking notification tag: %s", tag)
             if tag == importTag then
                 self.importNotification = n
                 break
@@ -409,7 +407,6 @@ end
 ---  * None
 function MediaFolder.mt:updateImportNotification()
     if self.importNotification then
-        log.df("Withdrawing import notification...")
         self.importNotification:withdraw()
         self.importNotification = nil
     end
