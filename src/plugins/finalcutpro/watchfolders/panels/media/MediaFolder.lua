@@ -42,6 +42,9 @@ local unpack            = table.unpack
 local fileExists        = tools.doesFileExist
 local insert            = table.insert
 
+-- the FCP copy/leave in place preference
+local copyMedia = fcp.app.preferences:prop("FFImportCopyToMediaFolder", true)
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -144,17 +147,19 @@ function MediaFolder.mt:init()
         end)
 
         -- re-link live notifications
+        local importTag = self:importTag()
         for _,n in ipairs(notify.deliveredNotifications()) do
             local tag = n:getFunctionTag()
-            if tag == self:importTag() then
+            if tag == importTag then
                 self.importNotification = n
+                break
             end
         end
 
         self:updateIncomingNotification()
         self:updateImportNotification()
 
-        self:doImportNext():Now()
+        self:doImportNext():After(0)
     end
     return self
 end
@@ -467,9 +472,9 @@ function MediaFolder.mt:handleImport(notification)
                 for _,filePath in ipairs(self.ready) do
                     local fileName = tools.getFilenameFromPath(filePath)
                     if action == fileName then
-                        self.ready:removeItem(fileName)
+                        self.ready:removeItem(filePath)
                         self:save()
-                        self:importFiles({fileName})
+                        self:importFiles({filePath})
                         return
                     end
                 end
@@ -575,7 +580,7 @@ end
 ---  * context - The context.
 ---
 --- Returns:
----  * None
+---  * A `Statement` to execute.
 function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
     return Do(function()
         --------------------------------------------------------------------------------
@@ -606,7 +611,7 @@ end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doRestoreOriginalPasteboard(context) -> nil
 --- Method
---- Restore original Pasteboard contents.
+--- Restore original Pasteboard contents after 2 seconds.
 ---
 --- Parameters:
 ---  * context - The context.
@@ -643,14 +648,19 @@ function MediaFolder.mt:doDeleteImportedFiles(files)
         -- Delete After Import:
         --------------------------------------------------------------------------------
         if self.mod.deleteAfterImport() then
-            Do(function()
-                for _, file in pairs(files) do
-                    os.remove(file)
-                end
-            end)
-            :After(self.mod.SECONDS_UNTIL_DELETE * 1000)
+            if copyMedia() then
+                Do(function()
+                    for _, file in pairs(files) do
+                        os.remove(file)
+                    end
+                end)
+                :After(self.mod.SECONDS_UNTIL_DELETE * 1000)
+                return true
+            else
+                log.wf("Not automatically deleting imported files because FCP is set to 'Leave files in place' .")
+            end
         end
-        return true
+        return false
     end)
 end
 
@@ -680,38 +690,37 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(fcp:doLaunch():ThenDelay(100):Debug("fcp launch"))
-
-        --------------------------------------------------------------------------------
-        -- Make sure Final Cut Pro is Active:
-        --------------------------------------------------------------------------------
-        :Then(self:doWriteFilesToPasteboard(files, context):ThenDelay(100):Debug("pasteboard"))
+        :Then(fcp:doLaunch())
 
         --------------------------------------------------------------------------------
         -- Check if Timeline can be enabled:
         --------------------------------------------------------------------------------
         :Then(
             timeline:doShow()
-            :TimeoutAfter(1000, "Unable to show the Timeline"):Debug("timeline show")
+            :TimeoutAfter(1000, "Unable to show the Timeline")
         )
+
+        --------------------------------------------------------------------------------
+        -- Put the media onto the pasteboard:
+        --------------------------------------------------------------------------------
+        :Then(self:doWriteFilesToPasteboard(files, context))
 
         --------------------------------------------------------------------------------
         -- Perform Paste:
         --------------------------------------------------------------------------------
+        -- TODO: Figure out bug where FCP menus are not working correctly after writing to the pasteboard
         -- :Then(
         --     fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
-        --     :TimeoutAfter(10000, "Timed out while pasting."):Debug("Paste")
+        --     :TimeoutAfter(10000, "Timed out while pasting.")
         -- )
-        :Then(function()
-            fcp:performShortcut("PasteAsConnected")
-        end)
+        :Then(fcp:doShortcut("PasteAsConnected"))
 
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
         --------------------------------------------------------------------------------
         :Then(function()
             if not self.mod.insertIntoTimeline() then
-                return fcp:doSelectMenu({"Edit", "Undo Paste"}, {pressAll = true})
+                return fcp:doShortcut("UndoChanges")
             end
         end)
 

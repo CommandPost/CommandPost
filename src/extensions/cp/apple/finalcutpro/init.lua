@@ -84,6 +84,7 @@ local just										= require("cp.just")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
+local go                                        = require("cp.rx.go")
 
 local commandeditor								= require("cp.apple.commandeditor")
 
@@ -114,6 +115,7 @@ local v											= require("semver")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
+local Do                                        = go.Do
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -1173,6 +1175,31 @@ function fcp:performShortcut(whichShortcut)
         return true
     end
     return false
+end
+
+--- cp.apple.finalcutpro:doShortcut(whichShortcut) -> Statement
+--- Method
+--- Perform a Final Cut Pro Keyboard Shortcut
+---
+--- Parameters:
+---  * whichShortcut - As per the Command Set name
+---
+--- Returns:
+---  * A `Statement` that will perform the shortcut when executed.
+function fcp:doShortcut(whichShortcut)
+    return Do(self:doLaunch():Debug("launch"))
+    :Then(function()
+        log.df("doShortcut: getting shortcuts for %s...", whichShortcut)
+        local shortcuts = self:getCommandShortcuts(whichShortcut)
+        log.df("doShortcut: shortcuts returned...")
+        if shortcuts and #shortcuts > 0 then
+            log.df("doShortcut: about to trigger...")
+            shortcuts[1]:trigger()
+            log.df("doShortcut: triggered...")
+            return true
+        end
+        return false
+    end):Debug("doing shortcut")
 end
 
 ----------------------------------------------------------------------------------------

@@ -600,11 +600,13 @@ end
 function Statement.mt:Now(onNext, onError, onCompleted)
     local obs = self:toObservable()
     if Observable.is(obs) then
-        local observer = defaultObserverFactory()
+        local observer
         if Observer.is(onNext) then
             observer = onNext
         elseif type(onNext) == "function" or type(onError) == "function" or type(onCompleted) == "function" then
             observer = Observer.create(onNext, onError, onCompleted)
+        else
+            observer = defaultObserverFactory()
         end
         -- TODO: add more complex options for handling 'after'
         obs:subscribe(observer)

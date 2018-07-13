@@ -11,35 +11,35 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log				= require("hs.logger").new("fcpwatch")
+-- local log               = require("hs.logger").new("fcpwatch")
 -- local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local host				= require("hs.host")
-local image				= require("hs.image")
+local host              = require("hs.host")
+local image             = require("hs.image")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config			= require("cp.config")
-local dialog			= require("cp.dialog")
-local fcp				  = require("cp.apple.finalcutpro")
-local tools				= require("cp.tools")
+local config            = require("cp.config")
+local dialog            = require("cp.dialog")
+local fcp               = require("cp.apple.finalcutpro")
+local tools             = require("cp.tools")
 local html				= require("cp.web.html")
-local ui				  = require("cp.web.ui")
-local i18n        = require("cp.i18n")
+local ui                = require("cp.web.ui")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Local Extensions:
 --------------------------------------------------------------------------------
-local MediaFolder = require("MediaFolder")
+local MediaFolder       = require("MediaFolder")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local insert      = table.insert
+local insert            = table.insert
 
 --------------------------------------------------------------------------------
 --

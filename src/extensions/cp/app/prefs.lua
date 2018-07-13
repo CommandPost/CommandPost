@@ -25,13 +25,13 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log               = require("hs.logger").new("app_prefs")
+-- local log                   = require("hs.logger").new("app_prefs")
+-- local inspect               = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local cfprefs               = require("hs._asm.cfpreferences")
---local inspect               = require("hs.inspect")
 local pathwatcher			= require("hs.pathwatcher")
 local prop                  = require("cp.prop")
 
@@ -400,7 +400,7 @@ function mod.mt:__pairs()
                 v = cfprefs.getValue(k, bundleID)
             end
         end
-        if v then
+        if k then
             return k, v
         end
     end

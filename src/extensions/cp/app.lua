@@ -608,17 +608,19 @@ end
 --- * By default the `Statement` will time out after 60 seconds, sending an error signal.
 function app.mt:doLaunch()
     return If(self.installed):Then(
-        If(self.hsApplication):Then(function(hsApp)
-            hsApp:activate()
-        end)
-        :Otherwise(function()
-            local ok = application.launchOrFocusByBundleID(self:bundleID())
-            if not ok then
-                return Throw("Unable to launch %s.", self:displayName())
-            end
-        end)
+        If(self.frontmost):Is(false):Then(
+            If(self.hsApplication):Then(function(hsApp)
+                hsApp:activate()
+            end)
+            :Otherwise(function()
+                local ok = application.launchOrFocusByBundleID(self:bundleID())
+                if not ok then
+                    return Throw("Unable to launch %s.", self:displayName())
+                end
+            end)
+        )
+        :Then(WaitUntil(self.frontmost))
     )
-    :Then(WaitUntil(self.frontmost))
     :Otherwise(
         Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())
     )

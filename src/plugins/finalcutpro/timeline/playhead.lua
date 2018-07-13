@@ -107,7 +107,7 @@ mod.alwaysCentered = config.prop("scrollingTimelineCentered", false)
 --- plugins.finalcutpro.timeline.playhead.tracking <cp.prop: boolean; read-only; live>
 --- Variable
 --- If `true`, we are tracking the playhead position.
-mod.tracking = mod.scrollingTimeline:AND(viewer.isPlaying):watch(function(tracking)
+mod.tracking = mod.scrollingTimeline:AND(viewer.isPlaying):AND(contents.isShowing):watch(function(tracking)
     if tracking then
         -- calculate the intial playhead offset
         local viewFrame = contents:viewFrame()
