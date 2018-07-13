@@ -42,6 +42,9 @@ local unpack            = table.unpack
 local fileExists        = tools.doesFileExist
 local insert            = table.insert
 
+-- the FCP copy/leave in place preference
+local copyMedia = fcp.app.preferences:prop("FFImportCopyToMediaFolder", true)
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -144,17 +147,21 @@ function MediaFolder.mt:init()
         end)
 
         -- re-link live notifications
+        local importTag = self:importTag()
+        log.df("importTag: %s", importTag)
         for _,n in ipairs(notify.deliveredNotifications()) do
             local tag = n:getFunctionTag()
-            if tag == self:importTag() then
+            log.df("checking notification tag: %s", tag)
+            if tag == importTag then
                 self.importNotification = n
+                break
             end
         end
 
         self:updateIncomingNotification()
         self:updateImportNotification()
 
-        self:doImportNext():Now()
+        self:doImportNext():After(0)
     end
     return self
 end
@@ -402,6 +409,7 @@ end
 ---  * None
 function MediaFolder.mt:updateImportNotification()
     if self.importNotification then
+        log.df("Withdrawing import notification...")
         self.importNotification:withdraw()
         self.importNotification = nil
     end
@@ -606,7 +614,7 @@ end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doRestoreOriginalPasteboard(context) -> nil
 --- Method
---- Restore original Pasteboard contents.
+--- Restore original Pasteboard contents after 2 seconds.
 ---
 --- Parameters:
 ---  * context - The context.
@@ -643,14 +651,19 @@ function MediaFolder.mt:doDeleteImportedFiles(files)
         -- Delete After Import:
         --------------------------------------------------------------------------------
         if self.mod.deleteAfterImport() then
-            Do(function()
-                for _, file in pairs(files) do
-                    os.remove(file)
-                end
-            end)
-            :After(self.mod.SECONDS_UNTIL_DELETE * 1000)
+            if copyMedia() then
+                Do(function()
+                    for _, file in pairs(files) do
+                        os.remove(file)
+                    end
+                end)
+                :After(self.mod.SECONDS_UNTIL_DELETE * 1000)
+                return true
+            else
+                log.wf("Not automatically deleting imported files because FCP is set to 'Leave files in place' .")
+            end
         end
-        return true
+        return false
     end)
 end
 
@@ -680,7 +693,7 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(fcp:doLaunch():ThenDelay(100))
+        :Then(fcp:doLaunch())
 
         --------------------------------------------------------------------------------
         -- Check if Timeline can be enabled:
@@ -691,7 +704,7 @@ function MediaFolder.mt:doImportNext()
         )
 
         --------------------------------------------------------------------------------
-        -- Make sure Final Cut Pro is Active:
+        -- Put the media onto the pasteboard:
         --------------------------------------------------------------------------------
         :Then(self:doWriteFilesToPasteboard(files, context))
 
@@ -703,16 +716,14 @@ function MediaFolder.mt:doImportNext()
         --     fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
         --     :TimeoutAfter(10000, "Timed out while pasting.")
         -- )
-        :Then(function()
-            fcp:performShortcut("PasteAsConnected")
-        end)
+        :Then(fcp:doShortcut("PasteAsConnected"))
 
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
         --------------------------------------------------------------------------------
         :Then(function()
             if not self.mod.insertIntoTimeline() then
-                fcp:performShortcut("UndoChanges")
+                return fcp:doShortcut("UndoChanges")
             end
         end)
 
