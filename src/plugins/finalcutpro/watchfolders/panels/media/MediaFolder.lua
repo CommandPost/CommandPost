@@ -467,9 +467,9 @@ function MediaFolder.mt:handleImport(notification)
                 for _,filePath in ipairs(self.ready) do
                     local fileName = tools.getFilenameFromPath(filePath)
                     if action == fileName then
-                        self.ready:removeItem(fileName)
+                        self.ready:removeItem(filePath)
                         self:save()
-                        self:importFiles({fileName})
+                        self:importFiles({filePath})
                         return
                     end
                 end
@@ -575,7 +575,7 @@ end
 ---  * context - The context.
 ---
 --- Returns:
----  * None
+---  * A `Statement` to execute.
 function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
     return Do(function()
         --------------------------------------------------------------------------------
@@ -680,27 +680,28 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         -- Make sure Final Cut Pro is Active:
         --------------------------------------------------------------------------------
-        :Then(fcp:doLaunch():ThenDelay(100):Debug("fcp launch"))
-
-        --------------------------------------------------------------------------------
-        -- Make sure Final Cut Pro is Active:
-        --------------------------------------------------------------------------------
-        :Then(self:doWriteFilesToPasteboard(files, context):ThenDelay(100):Debug("pasteboard"))
+        :Then(fcp:doLaunch():ThenDelay(100))
 
         --------------------------------------------------------------------------------
         -- Check if Timeline can be enabled:
         --------------------------------------------------------------------------------
         :Then(
             timeline:doShow()
-            :TimeoutAfter(1000, "Unable to show the Timeline"):Debug("timeline show")
+            :TimeoutAfter(1000, "Unable to show the Timeline")
         )
+
+        --------------------------------------------------------------------------------
+        -- Make sure Final Cut Pro is Active:
+        --------------------------------------------------------------------------------
+        :Then(self:doWriteFilesToPasteboard(files, context))
 
         --------------------------------------------------------------------------------
         -- Perform Paste:
         --------------------------------------------------------------------------------
+        -- TODO: Figure out bug where FCP menus are not working correctly after writing to the pasteboard
         -- :Then(
         --     fcp:doSelectMenu({"Edit", "Paste as Connected Clip"})
-        --     :TimeoutAfter(10000, "Timed out while pasting."):Debug("Paste")
+        --     :TimeoutAfter(10000, "Timed out while pasting.")
         -- )
         :Then(function()
             fcp:performShortcut("PasteAsConnected")
@@ -711,7 +712,7 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         :Then(function()
             if not self.mod.insertIntoTimeline() then
-                return fcp:doSelectMenu({"Edit", "Undo Paste"}, {pressAll = true})
+                fcp:performShortcut("UndoChanges")
             end
         end)
 
