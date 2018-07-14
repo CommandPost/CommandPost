@@ -18,6 +18,9 @@
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
+local go                            = require("cp.rx.go")
+
+local Do, Throw                     = go.Do, go.Throw
 
 --------------------------------------------------------------------------------
 --
@@ -167,6 +170,27 @@ function Button:press()
     return self, success
 end
 
+--- cp.ui.Button:doPress() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will press the button when executed, if available at the time.
+--- If not an `error` is sent.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will press the button when executed.
+function Button:doPress()
+    return Do(function()
+        local ui = self:UI()
+        if ui then
+            ui:doPress()
+        else
+            return Throw("Button not found.")
+        end
+    end)
+end
+
 -- cp.ui.Button:__call() -> self, boolean
 -- Method
 -- Allows the button to be called like a function which will trigger a `press`.
@@ -200,7 +224,7 @@ function Button:snapshot(path)
 end
 
 function Button:__tostring()
-    return string.format("cp.ui.button: %s (%s)", self:title(), self:parent())
+    return string.format("cp.ui.Button: %s (%s)", self:title(), self:parent())
 end
 
 return Button

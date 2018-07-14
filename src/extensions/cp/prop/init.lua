@@ -781,7 +781,9 @@ end
 ---
 --- Notes:
 ---  * It will only emit `onNext` events, never an `onError` or `onCompleted` event.
+---  * This will trigger an `update` each time it is called.
 function prop.mt:observe()
+    self:update()
     if not self._observable then
         local rx = require("cp.rx")
         local subject = rx.BehaviorSubject.create()

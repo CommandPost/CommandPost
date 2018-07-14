@@ -1187,19 +1187,15 @@ end
 --- Returns:
 ---  * A `Statement` that will perform the shortcut when executed.
 function fcp:doShortcut(whichShortcut)
-    return Do(self:doLaunch():Debug("launch"))
+    return Do(self:doLaunch())
     :Then(function()
-        log.df("doShortcut: getting shortcuts for %s...", whichShortcut)
         local shortcuts = self:getCommandShortcuts(whichShortcut)
-        log.df("doShortcut: shortcuts returned...")
         if shortcuts and #shortcuts > 0 then
-            log.df("doShortcut: about to trigger...")
             shortcuts[1]:trigger()
-            log.df("doShortcut: triggered...")
             return true
         end
         return false
-    end):Debug("doing shortcut")
+    end)
 end
 
 ----------------------------------------------------------------------------------------
