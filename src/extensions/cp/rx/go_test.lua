@@ -132,6 +132,10 @@ return test.suite("cp.rx.go"):with {
     test("Given.Then.Then", function()
         ok(SubStatement.Definition.is(Given.Then.Then), inspect(Given.Then.Then))
 
+        local results = {}
+        local message = nil
+        local completed = false
+
         local result = Given(1)
         :Then(function(one)
             ok(eq(one, 1))
@@ -144,9 +148,21 @@ return test.suite("cp.rx.go"):with {
 
         ok(SubStatement.is(result))
 
-        result:Now(function(value)
-            ok(eq(value, 3))
-        end)
+        result:Now(
+            function(value)
+                insert(results, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(results, {3}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
     end),
 
     test("If", function()
@@ -217,7 +233,7 @@ return test.suite("cp.rx.go"):with {
         local thenSubject = Subject.create()
         local then1 = nil
         local then2 = nil
-        local result = nil
+        local results = {}
         local completed = false
 
         If(ifSubject):Then(function(value)
@@ -231,7 +247,7 @@ return test.suite("cp.rx.go"):with {
         :Otherwise("otherwise")
         :Now(
             function(value)
-                result = value
+                insert(results, value)
             end,
             function(message)
                 ok(false, message)
@@ -244,21 +260,21 @@ return test.suite("cp.rx.go"):with {
         -- before sending anything...
         ok(eq(then1, nil))
         ok(eq(then2, nil))
-        ok(eq(result, nil))
+        ok(eq(results, {}))
         ok(eq(completed, false))
 
         -- send the first value
         ifSubject:onNext("first")
         ok(eq(then1, "first"))
         ok(eq(then2, nil))
-        ok(eq(result, nil))
+        ok(eq(results, {}))
         ok(eq(completed, false))
 
         -- subsequent values are ignored.
         ifSubject:onNext("second")
         ok(eq(then1, "first"))
         ok(eq(then2, nil))
-        ok(eq(result, nil))
+        ok(eq(results, {}))
         ok(eq(completed, false))
 
         -- send the first 'then' value to the second 'then'
@@ -266,12 +282,71 @@ return test.suite("cp.rx.go"):with {
         thenSubject:onNext("then")
         ok(eq(then1, "first"))
         ok(eq(then2, "then"))
-        ok(eq(result, "done"))
+        ok(eq(results, {"done"}))
         ok(eq(completed, false))
 
         -- only completes once the `thenSubject` completes
         thenSubject:onCompleted()
         ok(eq(completed, true))
+    end),
+
+    test("If:Then:Then:Error", function()
+        local ifSubject = Subject.create()
+        local thenSubject = Subject.create()
+        local then1 = nil
+        local then2 = nil
+        local results = {}
+        local message = nil
+        local completed = false
+
+        If(ifSubject)
+        :Then(function(value)
+            then1 = value
+            return thenSubject
+        end)
+        :Then(function(value)
+            then2 = value
+            return "done"
+        end)
+        :Otherwise("otherwise")
+        :Now(
+            function(value)
+                insert(results, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        -- before sending anything...
+        ok(eq(then1, nil))
+        ok(eq(then2, nil))
+        ok(eq(results, {}))
+        ok(eq(completed, false))
+
+        -- send the first value
+        ifSubject:onNext("first")
+        ok(eq(then1, "first"))
+        ok(eq(then2, nil))
+        ok(eq(results, {}))
+        ok(eq(message, nil))
+        ok(eq(completed, false))
+
+        -- send the first 'then' value to the second 'then'
+        -- then send "done" to the end
+        thenSubject:onError("error")
+        ok(eq(then1, "first"))
+        ok(eq(then2, nil))
+        ok(eq(results, {}))
+        ok(eq(message, "error"))
+        ok(eq(completed, false))
+
+        -- completion is ignored after an error
+        thenSubject:onCompleted()
+        ok(eq(completed, false))
     end),
 
     test("WaitUntil", function()

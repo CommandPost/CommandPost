@@ -28,7 +28,7 @@ local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents"
 local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
 local go                                = require("cp.rx.go")
-local Do                                = go.Do
+local Do, If, First                     = go.Do, go.If, go.First
 
 --------------------------------------------------------------------------------
 --
@@ -225,13 +225,10 @@ function Timeline:show()
 end
 
 function Timeline:doShow()
-    return Do(function()
-        if not self:isShowing() then
-            return self:doShowOnPrimary()
-        else
-            return true
-        end
-    end)
+    return If(self.isShowing):Is(false)
+    :Then(self:doShowOnPrimary())
+    :Otherwise(false)
+    :Label("Timeline:doShow")
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnPrimary() -> Timeline
@@ -258,7 +255,7 @@ function Timeline:showOnPrimary()
     return self
 end
 
---- cp.apple.finalcutpro.main.Timeline:doShowOnPrimary() -> cp.rx.go.Statement
+--- cp.apple.finalcutpro.main.Timeline:doShowOnPrimary() -> cp.rx.go.Statement <boolean>
 --- Method
 --- Returns a `Statement` that will ensure the timeline is in the primary window.
 ---
@@ -266,22 +263,23 @@ end
 ---  * timeout  - The timeout period for the operation.
 ---
 --- Returns:
----  * A `Statement` ready to run.
+---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline:doShowOnPrimary()
     local menu = self:app():menu()
 
-    return Do(function()
-        if self:isOnSecondary() then
-            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        end
-    end)
-    :Then(function()
-        if not self:isOnPrimary() then
-            return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
-        else
-            return true
-        end
-    end)
+    return If(self:app().isRunning):Then(
+        Do(
+            If(self.isOnSecondary):Then(
+                menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+            )
+        )
+        :Then(
+            If(self.isOnPrimary):Is(false):Then(
+                menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+            ):Otherwise(true)
+        )
+    ):Otherwise(false)
+    :Label("Timeline:doShowOnPrimary")
 end
 
 --- cp.apple.finalcutpro.main.Timeline:showOnSecondary() -> Timeline
@@ -304,16 +302,26 @@ function Timeline:showOnSecondary()
     return self
 end
 
+
+--- cp.apple.finalcutpro.main.Timeline:doShowOnSecondary() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a `Statement` that will ensure the timeline is in the secondary window.
+---
+--- Parameters:
+---  * timeout  - The timeout period for the operation.
+---
+--- Returns:
+---  * A `Statement` which will send `true` if it successful, or `false` otherwise.
 function Timeline:doShowOnSecondary()
     local menu = self:app():menu()
 
-    return Do(function()
-        if not self:isOnSecondary() then
-            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        else
-            return true
-        end
-    end)
+    return If(self:app().isRunning):Then(
+        If(self.isOnSecondary):Is(false)
+        :Then(menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}):Debug())
+        :Then(First(self.isOnSecondary):Debug())
+        :Otherwise(true)
+    ):Otherwise(false)
+    :Label("Timeline:doShowOnSecondary")
 end
 
 --- cp.apple.finalcutpro.main.Timeline:hide() -> Timeline
@@ -350,18 +358,21 @@ end
 function Timeline:doHide()
     local menu = self:app():menu()
 
-    return Do(function()
-        if self:isOnSecondary() then
-            return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-        end
-    end)
-    :Then(function()
-        if self:isOnPrimary() then
-            return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
-        else
-            return true
-        end
-    end)
+    return If(self:app().isRunning):Then(
+        Do(function()
+            if self:isOnSecondary() then
+                return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+            end
+        end)
+        :Then(function()
+            if self:isOnPrimary() then
+                return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+            else
+                return true
+            end
+        end)
+    ):Otherwise(false)
+    :Label("Timeline:doHide")
 end
 
 -----------------------------------------------------------------------

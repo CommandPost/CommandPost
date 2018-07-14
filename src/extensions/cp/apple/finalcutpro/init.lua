@@ -1196,6 +1196,7 @@ function fcp:doShortcut(whichShortcut)
         end
         return false
     end)
+    :Label("fcp:doShortcut:"..whichShortcut)
 end
 
 ----------------------------------------------------------------------------------------

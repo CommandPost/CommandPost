@@ -605,7 +605,7 @@ end
 ---  * The `Statement`, resolving to `true` after the app is frontmost.
 ---
 --- Notes:
---- * By default the `Statement` will time out after 60 seconds, sending an error signal.
+--- * By default the `Statement` will time out after 30 seconds, sending an error signal.
 function app.mt:doLaunch()
     return If(self.installed):Then(
         If(self.frontmost):Is(false):Then(
@@ -624,7 +624,8 @@ function app.mt:doLaunch()
     :Otherwise(
         Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())
     )
-    :TimeoutAfter(60 * 1000, format("Unable to complete launching %s within 60 seconds", self:displayName()))
+    :TimeoutAfter(30 * 1000, format("Unable to complete launching %s within 30 seconds", self:displayName()))
+    :Label(self:bundleID()..":doLaunch")
 end
 
 --- cp.app:quit(waitSeconds) -> self
@@ -668,6 +669,7 @@ function app.mt:doQuit()
     end)
     :Otherwise(false)
     :TimeoutAfter(60 * 1000, format("%s did not quit successfully after 60 seconds.", self:displayName()))
+    :Label(self:bundleID()..":doQuit")
 end
 
 --- cp.app:restart(waitSeconds) -> self
@@ -750,6 +752,7 @@ function app.mt:doRestart()
     end)
     :Otherwise(false)
     :TimeoutAfter(60 * 1000, format("%s did not restart successfully after 60 seconds", self:displayName()))
+    :Label(self:bundleID()..":doRestart")
 end
 
 --- cp.app:show() -> self
@@ -794,6 +797,7 @@ function app.mt:doShow()
         return WaitUntil(self.frontmost)
     end)
     :Otherwise(false)
+    :Label(self:bundleID()..":doShow")
 end
 
 --- cp.app:hide() -> self
@@ -828,6 +832,7 @@ function app.mt:doHide()
         return WaitUntil(self.frontmost:NOT())
     end)
     :Otherwise(false)
+    :Label(self:bundleID()..":doHide")
 end
 
 --- cp.app:notifier() -> cp.ui.notifier
@@ -974,12 +979,10 @@ function app._initWatchers()
     --------------------------------------------------------------------------------
     -- Setup Application Watcher:
     --------------------------------------------------------------------------------
-    --log.df("Setting up Application Watcher...")
     app._appWatcher = applicationwatcher.new(
         function(appName, eventType, hsApp)
             local cpApp = app._findApp(hsApp:bundleID(), appName)
 
-            -- log.df("Application event: bundleID: %s; appName: '%s'; type: %s", bundleID, appName, eventType)
             if cpApp then
                 if eventType == applicationwatcher.activated then
                     timer.doAfter(0.01, function()
@@ -999,7 +1002,7 @@ function app._initWatchers()
                         cpApp.hsApplication:update()
                         cpApp.running:update()
                         cpApp.frontmost:update()
-                        -- updateFrontmostApp(cpApp)
+                        updateFrontmostApp(cpApp)
                     end)
                     return
                 elseif eventType == applicationwatcher.terminated then

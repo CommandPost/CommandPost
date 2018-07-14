@@ -387,6 +387,7 @@ function menu.mt:doSelectMenu(path, options)
             return Throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
         end
     end)
+    :Label("menu:doSelectMenu")
 end
 
 --- cp.app.menu:selectMenu(path[, options]) -> boolean
@@ -670,6 +671,7 @@ function menu.mt:doFindMenuUI(path, options)
         )
     )
     :TimeoutAfter(5000, "Took too long.")
+    :Label("menu:doFindMenuUI")
 end
 
 --- cp.app.menu:findMenuUI(path[, options]) -> Menu UI, table

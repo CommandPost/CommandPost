@@ -338,6 +338,9 @@ function Statement.Definition.mt:define()
     }, Statement.mt)
     statement.mt.__index = statement.mt
     statement.mt.__call = Statement.mt.__call
+    statement.mt.__tostring = function(s)
+        return s:context()._label or Statement.mt.__tostring(s)
+    end
 
     -- provides an `is` function to test instances
     function statement.is(thing)
@@ -471,9 +474,25 @@ function Statement.mt:__init(...)
     return self
 end
 
+--- cp.rx.go.Statement:Label([newLabel]) -> string | Statement
+--- Method
+--- Gets or sets the custom `label` for the Statement. This will
+--- be used instead of the `name` when outputting it as a `string`
+--- if set. Defaults to `nil`.
+---
+--- Parameters:
+---  * newLabel - Optional new value for the label. If provided, the `Statement` is returned.
+---
+--- Returns:
+---  * The `Statement` if a new lable is specified, otherwise the current label value.
+function Statement.mt:Label(newLabel)
+    self:context()._label = newLabel
+    return self
+end
+
 function Statement.mt:Debug(label)
     local context = self:context()
-    context._debug = label or self:fullName()
+    context._debug = label or context._label or self:fullName()
     return self
 end
 
@@ -608,7 +627,6 @@ function Statement.mt:Now(onNext, onError, onCompleted)
         else
             observer = defaultObserverFactory()
         end
-        -- TODO: add more complex options for handling 'after'
         obs:subscribe(observer)
     else
         error(format("BUG: Expected an Observable but got %s", inspect(obs)))
@@ -724,6 +742,9 @@ function SubStatement.Definition.mt:define()
         }, SubStatement.mt)
         statement.mt.__index = statement.mt
         statement.mt.__call = SubStatement.mt.__call
+        statement.mt.__tostring = function(s)
+            return s:context()._label or SubStatement.mt.__tostring(s)
+        end
 
         -- provides an `is` function to test instances
         function statement.is(thing)
