@@ -6,23 +6,6 @@
 --- first result of each to the next stage as individual parameters.
 --- This will continue until one of the `Observables` has completed, at which
 --- point other results from values are ignored.
-
-local rx                = require("cp.rx")
-local Statement         = require("cp.rx.go.Statement")
-
-local Observable        = rx.Observable
-local insert            = table.insert
-local pack, unpack      = table.pack, table.unpack
-local toObservables     = Statement.toObservables
-
---- cp.rx.go.Do(...) -> Do
---- Constructor
---- Begins the definition of a `Do` `Statement`.
----
---- This will resolve the provided values into `Observable`s and pass on the
---- first result of each to the next stage as individual parameters.
---- This will continue until one of the `Observables` has completed, at which
---- point other results from values are ignored.
 ---
 --- For example:
 ---
@@ -38,8 +21,19 @@ local toObservables     = Statement.toObservables
 --- 2b
 --- ```
 ---
---- For more power, you can add a `Then` to futher modify the results, or chain other operations.
---- See the `Do.Then` documentation for details.
+--- For more power, you can add a [Then](#Then) to futher modify the results, or chain other operations.
+
+local rx                = require("cp.rx")
+local Statement         = require("cp.rx.go.Statement")
+
+local Observable        = rx.Observable
+local insert            = table.insert
+local pack, unpack      = table.pack, table.unpack
+local toObservables     = Statement.toObservables
+
+--- cp.rx.go.Do(...) -> Do
+--- Constructor
+--- Begins the definition of a `Do` `Statement`.
 ---
 --- Parameters:
 ---  * ...      - the list of `resolvable` values to evaluate.
@@ -70,13 +64,8 @@ end)
 --- For example:
 ---
 --- ```lua
---- Do(anObservable):Then(function(value) return value:doSomething() end)
+--- Do(anObservable):Then(Observable.of(1, 2, 3))
 --- ```
-
---- cp.rx.go.Do:Then(...) -> Do.Then
---- Method
---- Call this to define what will happen once the `Do` values resolve successfully.
---- The parameters can be any 'resolvable' type.
 ---
 --- If a parameter is a `function`, it will be passed the results of the previous `Do` or `Then` parameters.
 ---
@@ -88,6 +77,11 @@ end)
 ---     return true
 --- end)
 --- ```
+
+--- cp.rx.go.Do:Then(...) -> Do.Then
+--- Method
+--- Call this to define what will happen once the `Do` values resolve successfully.
+--- The parameters can be any 'resolvable' type.
 ---
 --- Parameters:
 ---  * ...  - The list of `resolveable` values to process for each `Do` result.

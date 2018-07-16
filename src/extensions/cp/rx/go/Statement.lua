@@ -12,6 +12,9 @@
 --- This gives us a [Statement.Definition](cp.rx.go.Statement.Definition.md) which allows
 --- us to set the rules for the statement before finally "defining" it.
 ---
+--- Statements *may* have an `onInit`, and *must* have an `onObservable` provided,
+--- and then the `define` method must be called.
+---
 --- For example, the [First](cp.rx.go.First.md) statement is defined like so:
 ---
 --- ```lua
@@ -55,6 +58,7 @@
 --- > It is recommended that any conversion of input parameters are converted to `Observable`s as
 --- > late as possible, typically in the `onObservable` function handler. Otherwise, input values
 --- > may get resolved before the user intends.
+
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -156,7 +160,7 @@ function Statement.toObservable(thing, params)
     return obs
 end
 
---- cp.rx.go.toObservables(things[, params]) -> table
+--- cp.rx.go.Statement.toObservables(things[, params]) -> table
 --- Function
 --- Converts a list of things into a list of `Observables` of those things.
 ---
@@ -199,6 +203,7 @@ Statement.Definition.mt.__index = Statement.Definition.mt
 --- === cp.rx.go.Statement.Definition ===
 ---
 --- A [Statement](cp.rx.go.Statement.md) is defined before being executable.
+--- A definition is initiated with the [Statement:modifier(...)](cp.rx.go.Statement.md#modifer) method.
 
 -- cp.rx.go.Statement.Definition.new(name) -> Statement.Definition
 -- Constructor
@@ -243,16 +248,6 @@ end
 --- The function will be passed the `context` table as the first parameter,
 --- and any other parameters passed to the statement follow.
 ---
---- For example:
---- ```lua
---- local DoSomething = Statement.named("DoSomething")
---- :onInit(function(context, one, two)
----     context.one, context.two = one, two
---- end):onObservable(...):define()
----
---- DoSomething(1, 2):Now()
---- ```
----
 --- Parameters:
 ---  * initFn       - The init function.
 ---
@@ -284,14 +279,6 @@ end
 --- cp.rx.go.Statement.Definition:define() -> Statement
 --- Method
 --- Completes the definition of the [Statement](cp.rx.go.Statement.md).
----
---- For example:
---- ```lua
---- local DoSomething = Statement.named("DoSomething")
---- :onInit(function(context, param) context.param = param)
---- :onOnObservable(function(context) return Observable.of(context.param) end)
---- :define()
---- ```
 ---
 --- Parameters:
 ---  * None
@@ -351,17 +338,6 @@ end
 --- cp.rx.go.Statement.named(name) -> Statement.Definition
 --- Constructor
 --- Starts the definition of a new `Statement` with the specified names.
----
---- Statements may have an `onInit`, and must have an `onObservable` provided,
---- and then the `define` method must be called.
----
---- For example:
---- ```lua
---- local DoSomething = Statement.named("DoSomething")
---- :onInit(function(context, param1, param2) ... end)
---- :onObserver(function(context) return Observer.of(context.param1, context.param2) end)
---- :define()
---- ```
 ---
 --- Parameters:
 ---  * name     - The name of the `Statement`.
@@ -524,7 +500,6 @@ end
 --- Indicates that this statement should time out after the specified number of milliseconds.
 --- This can be called multiple times before the statement is executed, and the most recent
 --- configuration will be used at that time.
----
 --- The `next` value may be either a string to send as the error, or a `resolvable` value to
 --- pass on instead of failing. If nothing is provided, a default error message is output.
 ---
@@ -656,8 +631,10 @@ end
 
 --- === cp.rx.go.Statement.Modifier ===
 ---
---- A `Statement.Modifier` is an extension to a `Statement` that provides additional configuration details.
---- They are initiated via the [modifier](#modifier) method of a defined `Statement`.
+--- A `Statement.Modifier` is an extension to a [Statement](cp.rx.go.Statement.md) that provides additional configuration details.
+--- They are initiated via the [modifier](#modifier) method of a defined [Statement](cp.rx.go.Statement.md).
+---
+--- All `Statement.Modifier` instances will also have the methods defined by [Statement](cp.rx.go.Statement.md).
 
 Statement.Modifier = {}
 Statement.Modifier.mt = setmetatable({}, Statement.mt)
@@ -671,6 +648,8 @@ Statement.Modifier.Definition.mt.__index = Statement.Modifier.Definition.mt
 --- === cp.rx.go.Statement.Modifier.Definition ===
 ---
 --- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) is defined before being executable.
+--- It is an extension of [Statement.Definition](cp.rx.go.Statement.Definition.md) and inherits
+--- all of it's methods also.
 
 -- cp.rx.go.Statement.Modifier.Definition.new(name) -> Statement.Definition
 -- Constructor
