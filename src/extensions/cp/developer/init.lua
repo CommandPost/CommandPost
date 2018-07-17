@@ -28,7 +28,6 @@ local log           = require("hs.logger").new("develop")
 --------------------------------------------------------------------------------
 local ax            = require("hs._asm.axuielement")
 local drawing       = require("hs.drawing")
-local fs            = require("hs.fs")
 local geometry      = require("hs.geometry")
 local inspect       = require("hs.inspect")
 local mouse         = require("hs.mouse")

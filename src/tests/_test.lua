@@ -1,5 +1,7 @@
 local test 		= require("cp.test")
 
+local _test = _test -- luacheck: ignore
+
 return test.suite("*"):with {
     _test "cp.app",
     -- _test "cp.apple.finalcutpro",
