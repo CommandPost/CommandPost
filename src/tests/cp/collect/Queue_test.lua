@@ -65,6 +65,19 @@ return test.suite("cp.collect.Queue"):with {
         ok(eq(q[1], nil))
     end),
 
+    test("contains", function()
+        local q = Queue(1, 2, 3)
+
+        ok(eq(q:contains(1), true))
+        ok(eq(q:contains(2), true))
+        ok(eq(q:contains(3), true))
+        ok(eq(q:contains(0), false))
+        ok(eq(q:contains(4), false))
+
+        q:popLeft()
+        ok(eq(q:contains(1), false))
+    end),
+
     test("removeItem", function()
         local q = Queue(1, 2, 3)
 

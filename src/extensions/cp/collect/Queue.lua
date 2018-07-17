@@ -173,6 +173,26 @@ function Queue.peekRight(queue)
     return data[data.right]
 end
 
+--- cp.collect.Queue.contains(queue, item) -> boolean
+--- Function
+--- Checks if the `queue` contains the specified `item`.
+---
+--- Parameters:
+---  * queue    - The queue to check.
+---  * item     - The item to check for.
+---
+--- Returns:
+---  * `true` if the item is in the queue.
+function Queue.contains(queue, item)
+    local data = getdata(queue)
+    for i = data.left,data.right do
+        if data[i] == item then
+            return true
+        end
+    end
+    return false
+end
+
 --- cp.collect.Queue.removeItem(queue, item) -> number
 --- Function
 --- Attempts to remove the specified item from the queue.
@@ -301,6 +321,17 @@ Queue.mt = {
 --- Returns:
 ---  * The right-most value of the `Queue`.
     peekRight = Queue.peekRight,
+
+--- cp.collect.Queue:contains(item) -> boolean
+--- Method
+--- Checks if the `queue` contains the specified `item`.
+---
+--- Parameters:
+---  * item     - The item to check for.
+---
+--- Returns:
+---  * `true` if the item is in the queue.
+    contains = Queue.contains,
 
 --- cp.collect.Queue:removeItem(item) -> number
 --- Function
