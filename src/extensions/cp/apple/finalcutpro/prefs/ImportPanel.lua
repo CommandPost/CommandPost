@@ -20,13 +20,16 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local just								= require("cp.just")
+local go                                = require("cp.rx.go")
 local axutils							= require("cp.ui.axutils")
 local CheckBox							= require("cp.ui.CheckBox")
-local just								= require("cp.just")
-local prop								= require("cp.prop")
 local RadioButton						= require("cp.ui.RadioButton")
 
 local id								= require("cp.apple.finalcutpro.ids") "ImportPanel"
+
+local Panel                             = require("cp.apple.finalcutpro.prefs.Panel")
+local Do, If                            = go.Do, go.If
 
 --------------------------------------------------------------------------------
 --
@@ -34,44 +37,23 @@ local id								= require("cp.apple.finalcutpro.ids") "ImportPanel"
 --
 --------------------------------------------------------------------------------
 local ImportPanel = {}
+ImportPanel.mt = setmetatable({}, Panel.mt)
+ImportPanel.mt.__index = ImportPanel.mt
 
 -- TODO: Add documentation
 function ImportPanel.new(preferencesDialog)
-    local o = prop.extend({_parent = preferencesDialog}, ImportPanel)
-
-    -- TODO: Add documentation
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            return axutils.childFromLeft(self:parent():toolbarUI(), id "ID")
-        end)
-    end)
-
-    -- TODO: Add documentation
-    local isShowing = prop.new(function(self)
-        local toolbar = self:parent():toolbarUI()
-        if toolbar then
-            local selected = toolbar:selectedChildren()
-            return #selected == 1 and selected[1] == self:UI()
-        end
-        return false
-    end)
-
-    prop.bind(o) {
-        UI = UI, isShowing = isShowing,
-
-        contentsUI = prop.OR(isShowing:AND(preferencesDialog.groupUI), prop.NIL),
-    }
+    local o = Panel.new(preferencesDialog, "PEImportPreferenceName", ImportPanel.mt)
 
     return o
 end
 
 -- TODO: Add documentation
-function ImportPanel:parent()
+function ImportPanel.mt:parent()
     return self._parent
 end
 
 -- TODO: Add documentation
-function ImportPanel:show()
+function ImportPanel.mt:show()
     local parent = self:parent()
     -- show the parent.
     if parent:show():isShowing() then
@@ -85,11 +67,11 @@ function ImportPanel:show()
     return self
 end
 
-function ImportPanel:hide()
+function ImportPanel.mt:hide()
     return self:parent():hide()
 end
 
-function ImportPanel:createProxyMedia()
+function ImportPanel.mt:createProxyMedia()
     if not self._createProxyMedia then
         self._createProxyMedia = CheckBox.new(self, function()
             return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateProxyMedia")
@@ -98,7 +80,7 @@ function ImportPanel:createProxyMedia()
     return self._createProxyMedia
 end
 
-function ImportPanel:createOptimizedMedia()
+function ImportPanel.mt:createOptimizedMedia()
     if not self._createOptimizedMedia then
         self._createOptimizedMedia = CheckBox.new(self, function()
             return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateOptimizedMedia")
@@ -107,13 +89,13 @@ function ImportPanel:createOptimizedMedia()
     return self._createOptimizedMedia
 end
 
-function ImportPanel:mediaLocationGroupUI()
+function ImportPanel.mt:mediaLocationGroupUI()
     return axutils.cache(self, "_mediaLocationGroup", function()
         return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXRadioGroup"), id "MediaLocationGroup")
     end)
 end
 
-function ImportPanel:copyToMediaFolder()
+function ImportPanel.mt:copyToMediaFolder()
     if not self._copyToMediaFolder then
         self._copyToMediaFolder = RadioButton.new(self, function()
             local groupUI = self:mediaLocationGroupUI()
@@ -123,7 +105,7 @@ function ImportPanel:copyToMediaFolder()
     return self._copyToMediaFolder
 end
 
-function ImportPanel:leaveInPlace()
+function ImportPanel.mt:leaveInPlace()
     if not self._leaveInPlace then
         self._leaveInPlace = RadioButton.new(self, function()
             local groupUI = self:mediaLocationGroupUI()
@@ -134,7 +116,7 @@ function ImportPanel:leaveInPlace()
 end
 
 -- TODO: Add documentation
-function ImportPanel:toggleMediaLocation()
+function ImportPanel.mt:toggleMediaLocation()
     if self:show():isShowing() then
         if self:copyToMediaFolder():checked() then
             self:leaveInPlace():checked(true)
@@ -144,6 +126,19 @@ function ImportPanel:toggleMediaLocation()
         return true
     end
     return false
+end
+
+function ImportPanel.mt:doToggleMediaLocation()
+    return Do(self:doShow())
+    :Then(
+        If(self:copyToMediaFolder().checked)
+        :Then(function()
+            self:leaveInPlace():checked(true)
+        end)
+        :Otherwise(function()
+            self:copyToMediaFolder():checked(true)
+        end)
+    )
 end
 
 return ImportPanel
