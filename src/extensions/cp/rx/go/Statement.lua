@@ -479,6 +479,21 @@ function Statement.mt:Catch(handler)
     return self
 end
 
+--- cp.rx.go.Statement:ThenYield() -> cp.rx.go.Statement
+--- Method
+--- Indicates that the `Statement` will "yield" to allow other pending operations to happen,
+--- then pick up as soon as possible afterwards. This will happen after any `TimeoutAfter`/`Catch`/`Debug`
+--- actions.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The same `Statement`.
+function Statement.mt:ThenYield()
+    return self:ThenDelay(0)
+end
+
 --- cp.rx.go.Statement:ThenDelay(millis) -> cp.rx.go.Statement
 --- Method
 --- Indicates that there will be a delay after this statement by the
