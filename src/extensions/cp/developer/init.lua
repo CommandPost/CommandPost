@@ -253,23 +253,55 @@ function _G._inspectElementAtMousePath()
     return inspect(_G._elementAtMouse():path())
 end
 
---------------------------------------------------------------------------------
--- RUN TESTS:
--- Pass in the "id" of the tests you want to run
---------------------------------------------------------------------------------
+-- _test(id) -> cp.test
+-- Function
+-- This function will return a [cp.test](cp.test.md) with either the
+-- name `<id>_test` or `<id>._test` if the `<id>` is pointing at a folder.
+--
+-- For example, you have an extensions called
+-- `foo.bar`, and you want to create a test for it.
+--
+-- Option 1: `<id>_test`
+-- * File: `/src/tests/foo/bar_test.lua`
+--
+-- Option 2: `<id>._test`
+-- * File: `/src/tests/foo/bar/_test.lua`
+--
+-- You could then run all the contained tests like so:
+-- ```lua
+-- _test("foo.bar")()
+-- ```
+--
+-- Parameters:
+-- * id     - the `id` to test.
+--
+-- Returns:
+-- * A [cp.test] to execute.
 function _G._test(id)
+    id = id or ""
     local testsRoot = config.testsPath
     if not testsRoot then
         error "Unable to locate the test scripts."
     end
+
     local testPath = testsRoot .. "/?.lua;" .. testsRoot .. "/?/init.lua"
 
+    local testId = id .. "_test"
+
+    if not package.searchpath(testId, testPath) then
+        if package.searchpath(id .. "._test", testPath) then
+            testId = id .. "._test"
+        else
+            error(string.format("Unable to find tests for '%s'", id))
+        end
+    end
+
     local originalPath = package.path
-    local tempPath = originalPath .. ";" .. testPath
+    local tempPath = testPath .. ";" .. originalPath
 
     package.path = tempPath
 
-    local ok, result = xpcall(function() return require(id .. "_test") end, debug.traceback)
+    local ok, result = xpcall(function() return require(testId) end, debug.traceback)
 
     package.path = originalPath
 

@@ -42,9 +42,9 @@ end)
 end)
 :define()
 
---- cp.rx.go.WaitUntil.Is <cp.rx.go.SubStatement>
+--- cp.rx.go.WaitUntil.Is <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a specific value to wait for.
+--- A `Statement.Modifier` that sets a specific value to wait for.
 
 --- cp.rx.go.WaitUntil:Is(value) -> WaitUntil.Is
 --- Method
@@ -54,11 +54,11 @@ end)
 ---  * value  - The value to wait for.
 ---
 --- Returns:
----  * The `Is` `SubStatement`.
+---  * The `Is` `Statement.Modifier`.
 
---- cp.rx.go.WaitUntil.Are <cp.rx.go.SubStatement>
+--- cp.rx.go.WaitUntil.Are <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets the values to match.
+--- A `Statement.Modifier` that sets the values to match.
 
 --- cp.rx.go.WaitUntil:Are(value) -> WaitUntil.Are
 --- Method
@@ -68,16 +68,16 @@ end)
 ---  * value  - The value to wait for.
 ---
 --- Returns:
----  * The `Are` `SubStatement`.
+---  * The `Are` `Statement.Modifier`.
 WaitUntil.modifier("Is", "Are")
 :onInit(function(context, thisValue)
     context.predicate = function(value) return value == thisValue end
 end)
 :define()
 
---- cp.rx.go.WaitUntil.IsNot <cp.rx.go.SubStatement>
+--- cp.rx.go.WaitUntil.IsNot <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a value that is skipped over.
+--- A `Statement.Modifier` that sets a value that is skipped over.
 
 --- cp.rx.go.WaitUntil:IsNot(value) -> WaitUntil.IsNot
 --- Method
@@ -87,11 +87,11 @@ end)
 ---  * value  - The value to skip over.
 ---
 --- Returns:
----  * The `IsNot` `SubStatement`.
+---  * The `IsNot` `Statement.Modifier`.
 
---- cp.rx.go.WaitUntil.AreNot <cp.rx.go.SubStatement>
+--- cp.rx.go.WaitUntil.AreNot <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a value to skip over.
+--- A `Statement.Modifier` that sets a value to skip over.
 
 --- cp.rx.go.WaitUntil:AreNot(value) -> WaitUntil.AreNot
 --- Method
@@ -101,16 +101,16 @@ end)
 ---  * value  - The value to skip over.
 ---
 --- Returns:
----  * The `AreNot` `SubStatement`.
+---  * The `AreNot` `Statement.Modifier`.
 WaitUntil.modifier("IsNot", "AreNot")
 :onInit(function(context, thisValue)
     context.predicate = function(value) return value ~= thisValue end
 end)
 :define()
 
---- cp.rx.go.WaitUntil.Matches <cp.rx.go.SubStatement>
+--- cp.rx.go.WaitUntil.Matches <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a predicate check values against.
+--- A `Statement.Modifier` that sets a predicate check values against.
 
 --- cp.rx.go.WaitUntil:Matches(predicate) -> WaitUntil.Matches
 --- Method
@@ -125,7 +125,7 @@ end)
 ---  * predicate  - The function that will get called to determine if it has been found.
 ---
 --- Returns:
----  * The `Matches` `SubStatement`.
+---  * The `Matches` `Statement.Modifier`.
 WaitUntil.modifier("Matches")
 :onInit(function(context, predicate)
     context.predicate = predicate

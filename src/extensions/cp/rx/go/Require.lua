@@ -56,9 +56,9 @@ end)
 end)
 :define()
 
---- cp.rx.go.Require.OrThrow <cp.rx.go.SubStatement>
+--- cp.rx.go.Require.OrThrow <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets the message to throw if the requirement is not met.
+--- A `Statement.Modifier` that sets the message to throw if the requirement is not met.
 
 --- cp.rx.go.Require:OrThrow(message) -> Require.OrThrow
 --- Method
@@ -68,7 +68,7 @@ end)
 ---  * message  - The string to throw when there is an error.
 ---
 --- Returns:
----  * The `OrThrow` `SubStatement`.
+---  * The `OrThrow` `Statement.Modifier`.
 Require.modifier("OrThrow")
 :onInit(function(context, message)
     context.errorMessage = message
@@ -79,9 +79,9 @@ end)
 ---
 --- Specifies that the `Require`d value `Is` a specific value.
 
---- cp.rx.go.Require.Is <cp.rx.go.SubStatement>
+--- cp.rx.go.Require.Is <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a specific value all values from the `requirement` must match.
+--- A `Statement.Modifier` that sets a specific value all values from the `requirement` must match.
 
 --- cp.rx.go.Require:Is(value) -> Require.Is
 --- Method
@@ -91,15 +91,15 @@ end)
 ---  * value  - The value that all results from the `requirement` must match.
 ---
 --- Returns:
----  * The `Is` `SubStatement`.
+---  * The `Is` `Statement.Modifier`.
 
 --- === cp.rx.go.Require.Are ===
 ---
 --- Specifies that the `Require`d values `Are` a specific value.
 
---- cp.rx.go.Require.Are <cp.rx.go.SubStatement>
+--- cp.rx.go.Require.Are <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a specific value all values from the `requirement` must match.
+--- A `Statement.Modifier` that sets a specific value all values from the `requirement` must match.
 
 --- cp.rx.go.Require:Are(value) -> Require.Are
 --- Method
@@ -109,7 +109,7 @@ end)
 ---  * value  - The value that all results from the `requirement` must match.
 ---
 --- Returns:
----  * The `Are` `SubStatement`.
+---  * The `Are` `Statement.Modifier`.
 Require.modifier("Is", "Are")
 :onInit(function(context, value)
     context.predicate = function(observable)
@@ -144,9 +144,9 @@ Require.Are.allow(Require.OrThrow)
 ---
 --- Specifies that the `Require`d value `IsNot` a specific value.
 
---- cp.rx.go.Require.IsNot <cp.rx.go.SubStatement>
+--- cp.rx.go.Require.IsNot <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a specific value all values from the `requirement` must not match.
+--- A `Statement.Modifier` that sets a specific value all values from the `requirement` must not match.
 
 --- cp.rx.go.Require:IsNot(value) -> Require.IsNot
 --- Method
@@ -156,15 +156,15 @@ Require.Are.allow(Require.OrThrow)
 ---  * value  - The value that all results from the `requirement` must not match.
 ---
 --- Returns:
----  * The `IsNot` `SubStatement`.
+---  * The `IsNot` `Statement.Modifier`.
 
 --- === cp.rx.go.Require.AreNot ===
 ---
 --- Specifies that the `Require`d values `AreNot` a specific value.
 
---- cp.rx.go.Require.AreNot <cp.rx.go.SubStatement>
+--- cp.rx.go.Require.AreNot <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a specific value all values from the `requirement` must not match.
+--- A `Statement.Modifier` that sets a specific value all values from the `requirement` must not match.
 
 --- cp.rx.go.Require:AreNot(value) -> Require.AreNot
 --- Method
@@ -174,7 +174,7 @@ Require.Are.allow(Require.OrThrow)
 ---  * value  - The value that all results from the `requirement` must match.
 ---
 --- Returns:
----  * The `AreNot` `SubStatement`.
+---  * The `AreNot` `Statement.Modifier`.
 Require.modifier("IsNot", "AreNot")
 :onInit(function(context, value)
     context.predicate = function(observable)
@@ -209,9 +209,9 @@ Require.AreNot.allow(Require.OrThrow)
 ---
 --- Specifies that the `Require`d value `Matches` a function predicate.
 
---- cp.rx.go.Require.Matches <cp.rx.go.SubStatement>
+--- cp.rx.go.Require.Matches <cp.rx.go.Statement.Modifier>
 --- Constant
---- A `SubStatement` that sets a predicate function that checks values from the `requirement`.
+--- A `Statement.Modifier` that sets a predicate function that checks values from the `requirement`.
 
 --- cp.rx.go.Require:Matches(predicate) -> Require.Matches
 --- Method
@@ -225,7 +225,7 @@ Require.AreNot.allow(Require.OrThrow)
 ---  * value  - The value that all results from the `requirement` must not match.
 ---
 --- Returns:
----  * The `Matches` `SubStatement`.
+---  * The `Matches` `Statement.Modifier`.
 Require.modifier("Matches")
 :onInit(function(context, predicate)
     context.predicate = function(observable)

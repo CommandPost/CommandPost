@@ -73,7 +73,7 @@ if fs.pathToAbsolute(hs.configdir .. "/cp/init.lua") then
     --- cp.config.testsPath -> string
     --- Constant
     --- Path to where the Test scripts are stored. Only available in developer environments.
-    mod.testsPath           = fs.pathToAbsolute(mod.scriptPath .. "/../tests/")
+    mod.testsPath           = fs.pathToAbsolute(mod.scriptPath .. "/../tests")
 else
     -------------------------------------------------------------------------------
     -- Use assets within the Application Bundle:

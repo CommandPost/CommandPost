@@ -98,9 +98,9 @@ end)
 
 --- === cp.rx.go.If.Then ===
 ---
---- A `SubStatement` that defines what happens when an `If` matches.
+--- A `Statement.Modifier` that defines what happens when an `If` matches.
 
---- cp.rx.go.If.Then <cp.rx.go.SubStatement>
+--- cp.rx.go.If.Then <cp.rx.go.Statement.Modifier>
 --- Constant
 --- This is a configuration of `If`, which should be created via `If:Then(...)`.
 
@@ -122,7 +122,7 @@ end)
 ---  * ...  - The list of `resolveable` values to process for the successful `If` result.
 ---
 --- Returns:
----  * The `Then` `SubStatement`.
+---  * The `Then` `Statement.Modifier`.
 If.modifier("Then")
 :onInit(function(context, ...)
     insert(context.thens, pack(...))
@@ -142,7 +142,7 @@ If.Then.allow(If.Then)
 
 --- === cp.rx.go.If.Then.Otherwise ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) of [If](cp.rx.go.If.md), which should be created via `If:Then(...):Otherwise(...)`.
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) of [If](cp.rx.go.If.md), which should be created via `If:Then(...):Otherwise(...)`.
 
 --- cp.rx.go.If.Then:Otherwise(...) -> If.Then.Otherwise
 --- Method
@@ -163,7 +163,7 @@ If.Then.allow(If.Then)
 ---  * ...  - The list of `resolveable` values to process for the unsuccessful `If` result.
 ---
 --- Returns:
----  * The `Then` `SubStatement`.
+---  * The `Then` `Statement.Modifier`.
 If.Then.modifier("Otherwise")
 :onInit(function(context, ...)
     insert(context.otherwises, pack(...))
@@ -193,7 +193,7 @@ If.Then.Otherwise.Then.allow(If.Then.Otherwise.Then)
 
 --- === cp.rx.go.If.Is ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) for [If](cp.rx.go.If.md) that sets a specific value to match.
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) for [If](cp.rx.go.If.md) that sets a specific value to match.
 
 --- cp.rx.go.If:Is(value) -> If.Is
 --- Method
@@ -203,12 +203,12 @@ If.Then.Otherwise.Then.allow(If.Then.Otherwise.Then)
 ---  * value  - The value to check for.
 ---
 --- Returns:
----  * The [Is](cp.rx.go.If.Is.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [Is](cp.rx.go.If.Is.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 
 
 --- === cp.rx.go.If.Are ===
 ---
---- A [SubStatement] of [If](cp.rx.go.If.md) that sets the values to match.
+--- A [Statement.Modifier] of [If](cp.rx.go.If.md) that sets the values to match.
 
 --- cp.rx.go.If:Are(value) -> If.Are
 --- Method
@@ -218,7 +218,7 @@ If.Then.Otherwise.Then.allow(If.Then.Otherwise.Then)
 ---  * value  - The value to wait for.
 ---
 --- Returns:
----  * The [Are](cp.rx.go.If.Are.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [Are](cp.rx.go.If.Are.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 If.modifier("Is", "Are")
 :onInit(function(context, value)
     context.predicate = function(theValue) return theValue == value end
@@ -249,7 +249,7 @@ If.Are.allow(If.Then)
 
 --- === cp.rx.go.If.IsNot ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) for [If](cp.rx.go.If.md) that sets a specific value to *not* match.
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) for [If](cp.rx.go.If.md) that sets a specific value to *not* match.
 
 --- cp.rx.go.If:IsNot(value) -> If.IsNot
 --- Method
@@ -259,11 +259,11 @@ If.Are.allow(If.Then)
 ---  * value  - The value to check for.
 ---
 --- Returns:
----  * The [IsNot](cp.rx.go.If.IsNot.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [IsNot](cp.rx.go.If.IsNot.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 
 --- === cp.rx.go.If.AreNot ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) for [If](cp.rx.go.If.md) that sets the values to *not* match.
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) for [If](cp.rx.go.If.md) that sets the values to *not* match.
 
 --- cp.rx.go.If:AreNot(value) -> If.AreNot
 --- Method
@@ -273,7 +273,7 @@ If.Are.allow(If.Then)
 ---  * value  - The value to not match.
 ---
 --- Returns:
----  * The [AreNot](cp.rx.go.If.AreNot.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [AreNot](cp.rx.go.If.AreNot.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 If.modifier("IsNot", "AreNot")
 :onInit(function(context, value)
     context.predicate = function(theValue) return theValue ~= value end
@@ -304,7 +304,7 @@ If.AreNot.allow(If.Then)
 
 --- === cp.rx.go.If.Matches ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) for [If](cp.rx.go.If.md) that sets a predicate check values against.
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) for [If](cp.rx.go.If.md) that sets a predicate check values against.
 
 --- cp.rx.go.If:Matches(predicate) -> If.Matches
 --- Method
@@ -319,7 +319,7 @@ If.AreNot.allow(If.Then)
 ---  * predicate  - The function that will get called to determine if it has been found.
 ---
 --- Returns:
----  * The [Matches](cp.rx.go.If.Matches.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [Matches](cp.rx.go.If.Matches.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 If.modifier("Matches")
 :onInit(function(context, predicate)
     if type(predicate) ~= "function" then

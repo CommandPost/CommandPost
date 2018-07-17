@@ -58,7 +58,7 @@ end)
 
 --- === cp.rx.go.Do.Then ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) of [Do](cp.rx.go.Do.md)
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) of [Do](cp.rx.go.Do.md)
 --- that defines what happens after the `Do` values resolve.
 ---
 --- For example:
@@ -87,7 +87,7 @@ end)
 ---  * ...  - The list of `resolveable` values to process for each `Do` result.
 ---
 --- Returns:
----  * The [Then](cp.rx.go.Do.Then.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [Then](cp.rx.go.Do.Then.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 Do.modifier("Then")
 :onInit(function(context, ...)
     insert(context.thens, pack(...))

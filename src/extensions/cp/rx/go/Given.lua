@@ -64,7 +64,7 @@ end)
 
 --- === cp.rx.go.Given.Then ===
 ---
---- A [SubStatement](cp.rx.go.SubStatement.md) of [Given](cp.rx.go.Given.md)
+--- A [Statement.Modifier](cp.rx.go.Statement.Modifier.md) of [Given](cp.rx.go.Given.md)
 --- that defines what happens after the `Given` values resolve.
 ---
 --- For example:
@@ -93,7 +93,7 @@ end)
 ---  * ...  - The list of `resolveable` values to process for each `Given` result.
 ---
 --- Returns:
----  * The [Then](cp.rx.go.Given.Then.md) [SubStatement](cp.rx.go.SubStatement.md).
+---  * The [Then](cp.rx.go.Given.Then.md) [Statement.Modifier](cp.rx.go.Statement.Modifier.md).
 Given.modifier("Then")
 :onInit(function(context, ...)
     insert(context.thens, pack(...))
