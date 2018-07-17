@@ -208,6 +208,7 @@ function MediaFolder.mt:doTagFiles(files)
             end
         end
     end)
+    :Label("MediaFolder:doTagFiles")
 end
 
 local function isFile(flags)
@@ -413,37 +414,41 @@ function MediaFolder.mt:updateImportNotification()
 
     local count = #self.ready
     if count > 0 then
-        local actions
-        local subTitle = i18n("fcpMediaFolderReadySubTitle", {
-            count=count,
-        })
-        if count > 1 then
-            actions = {
-                i18n("fcpMediaFolderRevealInFinder"),
-                i18n("fcpMediaFolderImportAll", {count = count}),
-            }
-
-            for _,file in ipairs(self.ready) do
-                insert(actions, tools.getFilenameFromPath(file))
-            end
+        if self.mod.automaticallyImport() then
+            self:importAll()
         else
-            actions = {
-                i18n("fcpMediaFolderRevealInFinder"),
-                tools.getFilenameFromPath(self.ready:peekLeft()),
-            }
+            local actions
+            local subTitle = i18n("fcpMediaFolderReadySubTitle", {
+                count=count,
+            })
+            if count > 1 then
+                actions = {
+                    i18n("fcpMediaFolderRevealInFinder"),
+                    i18n("fcpMediaFolderImportAll", {count = count}),
+                }
+
+                for _,file in ipairs(self.ready) do
+                    insert(actions, tools.getFilenameFromPath(file))
+                end
+            else
+                actions = {
+                    i18n("fcpMediaFolderRevealInFinder"),
+                    tools.getFilenameFromPath(self.ready:peekLeft()),
+                }
+            end
+
+            self.importNotification = notify.new(self:importTag())
+                :title(i18n("appName"))
+                :subTitle(subTitle)
+                :hasActionButton(true)
+                :otherButtonTitle(i18n("fcpMediaFolderCancel"))
+                :actionButtonTitle(i18n("fcpMediaFolderImport"))
+                :additionalActions(actions)
+                :alwaysShowAdditionalActions(true)
+                :withdrawAfter(0)
+
+            self.importNotification:send()
         end
-
-        self.importNotification = notify.new(self:importTag())
-            :title(i18n("appName"))
-            :subTitle(subTitle)
-            :hasActionButton(true)
-            :otherButtonTitle(i18n("fcpMediaFolderCancel"))
-            :actionButtonTitle(i18n("fcpMediaFolderImport"))
-            :additionalActions(actions)
-            :alwaysShowAdditionalActions(true)
-            :withdrawAfter(0)
-
-        self.importNotification:send()
     end
 end
 
@@ -517,7 +522,8 @@ end
 ---  * None
 function MediaFolder.mt:importFirst()
     if #self.ready > 0 then
-        self:importFiles({self.ready:popLeft()})
+        self:importFiles({self.ready:peekLeft()})
+        self.ready:popLeft()
         self:save()
     end
     self:updateImportNotification()
@@ -607,6 +613,8 @@ function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
             return Throw("The URL could not be written to the Pasteboard.")
         end
     end)
+    :ThenYield()
+    :Label("MediaFolder:doWriteFilesToPasteboard")
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doRestoreOriginalPasteboard(context) -> nil
@@ -620,17 +628,16 @@ end
 ---  * None
 function MediaFolder.mt:doRestoreOriginalPasteboard(context)
     return Do(function()
-        Do(function()
-            if context.originalPasteboard then
-                pasteboard.writeAllData(context.originalPasteboard)
-                if self.mod.pasteboardManager then
-                    self.mod.pasteboardManager.startWatching()
-                end
-                context.originalPasteboard = nil
+        if context.originalPasteboard then
+            pasteboard.writeAllData(context.originalPasteboard)
+            if self.mod.pasteboardManager then
+                self.mod.pasteboardManager.startWatching()
             end
-        end)
-        :After(2000)
+            context.originalPasteboard = nil
+        end
     end)
+    :ThenYield()
+    :Label("MediaFolder:doRestoreOriginalPasteboard")
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doDeleteImportedFiles(context) -> nil
@@ -662,6 +669,7 @@ function MediaFolder.mt:doDeleteImportedFiles(files)
         end
         return false
     end)
+    :Label("MediaFolder:doDeleteImportedFiles")
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doImportNext() -> nil
@@ -739,7 +747,7 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         :Then(function()
             self.importingNow = false
-            -- return self:doImportNext()
+            return self:doImportNext()
         end)
         :Catch(function(message)
             self.importingNow = false
@@ -749,6 +757,7 @@ function MediaFolder.mt:doImportNext()
         end)
     end)
     :Otherwise(Done())
+    :Label("MediaFolder:doImportNext")
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:save()
