@@ -184,12 +184,21 @@ function mod.generateTable()
 
     for _, folder in ipairs(mediaFolders) do
         local uniqueUUID = string.gsub(uuid(), "-", "")
+
+        local videoTag = folder.tags.video
+        local audioTag = folder.tags.audio
+        local imageTag = folder.tags.image
+
+        if videoTag == "" then videoTag = iNone end
+        if audioTag == "" then audioTag = iNone end
+        if imageTag == "" then imageTag = iNone end
+
         watchFoldersHTML = watchFoldersHTML .. [[
                 <tr>
                     <td class="mediaRowPath">]] .. folder.path .. [[</td>
-                    <td class="mediaRowVideoTag">]] .. (folder.tags.video or iNone) .. [[</td>
-                    <td class="mediaRowAudioTag">]] .. (folder.tags.audio or iNone) .. [[</td>
-                    <td class="mediaRowImageTag">]] .. (folder.tags.image or iNone) .. [[</td>
+                    <td class="mediaRowVideoTag">]] .. videoTag .. [[</td>
+                    <td class="mediaRowAudioTag">]] .. audioTag .. [[</td>
+                    <td class="mediaRowImageTag">]] .. imageTag .. [[</td>
                     <td class="mediaRowRemove"><a onclick="remove]] .. uniqueUUID .. [[()" href="#">Remove</a></td>
                 </tr>
         ]]

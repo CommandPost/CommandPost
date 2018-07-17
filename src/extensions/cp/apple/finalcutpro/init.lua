@@ -1196,6 +1196,8 @@ function fcp:doShortcut(whichShortcut)
         end
         return false
     end)
+    :ThenYield()
+    :Label("fcp:doShortcut:"..whichShortcut)
 end
 
 ----------------------------------------------------------------------------------------

@@ -124,9 +124,7 @@ function VideoInspector.new(parent)
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.isShowing <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the VideoInspector is currently showing.
-        isShowing = o.UI:mutate(function(original)
-            return original() ~= nil
-        end),
+        isShowing = o.UI:ISNOT(nil),
 
 --- cp.apple.finalcutpro.inspector.color.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field

@@ -40,9 +40,9 @@ local json     = require("cp.json")
 -- File name of settings file.
 local FILE_NAME = "History.cpCache"
 
---- FOLDER_NAME -> string
---- Constant
---- Folder Name where settings file is contained.
+-- FOLDER_NAME -> string
+-- Constant
+-- Folder Name where settings file is contained.
 local FOLDER_NAME = "Error Log"
 
 -- CHECK_INTERVAL -> number
@@ -62,14 +62,14 @@ local MAXIMUM = 100
 --------------------------------------------------------------------------------
 local mod = {}
 
---- hashFN -> function
---- Variable
---- The has function. Can use other hash function if this proves insufficient.
+-- hashFN -> function
+-- Variable
+-- The has function. Can use other hash function if this proves insufficient.
 local hashFN = hash.MD5
 
---- currentHistoryCount -> number
---- Variable
---- Current History Count
+-- currentHistoryCount -> number
+-- Variable
+-- Current History Count
 local currentHistoryCount = #console.getHistory()
 
 --- cp.console.history.cache <cp.prop: table>
@@ -77,15 +77,15 @@ local currentHistoryCount = #console.getHistory()
 --- Console History Cache
 mod.cache = json.prop(config.cachePath, FOLDER_NAME, FILE_NAME, nil)
 
---- uniqueHistory(raw) -> table
---- Function
---- Takes the raw history and returns only the unique history.
----
---- Parameters:
----  * raw - The raw history as a table
----
---- Returns:
----  * A table
+-- uniqueHistory(raw) -> table
+-- Function
+-- Takes the raw history and returns only the unique history.
+--
+-- Parameters:
+--  * raw - The raw history as a table
+--
+-- Returns:
+--  * A table
 local function uniqueHistory(raw)
     local hashed, history = {}, {}
     for i = #raw, 1, -1 do

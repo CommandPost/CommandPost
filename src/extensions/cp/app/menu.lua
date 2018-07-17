@@ -321,14 +321,14 @@ end
 --- Returns a table with the available menus, items and sub-menu, in the specified locales (if available).
 --- If no `locales` are specified, the app's current locale is loaded.
 ---
---- This menu may get added to over time if additional locales are loaded - previously loaded locales
---- are not removed from the cache.
----
 --- Parameters:
 ---  * locales       - An optional single `localeID` or a list of `localeID`s to ensure are loaded.
 ---
 --- Returns:
 ---  * A table of Menu Bar Values
+---
+--- Notes:
+--- * This menu may get added to over time if additional locales are loaded - previously loaded locales are not removed from the cache.
 function menu.mt:getMenuTitles(locales)
     local app = self:app()
     if type(locales) ~= "table" then
@@ -348,28 +348,23 @@ end
 --- Method
 --- Selects a Menu Item based on the provided menu path.
 ---
---- Each step on the path can be either one of:
----  * a string     - The exact name of the menu item.
----  * a number     - The menu item number, starting from 1.
----  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
----
---- Options supported include:
----  * locale - The `localeID` or `string` for the locale that the path values are in.
----  * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
----
---- Examples:
----
---- ```lua
---- local preview = require("cp.app").forBundleID("com.apple.Preview")
---- preview:launch():menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()
---- ```
----
 --- Parameters:
 ---  * path - The list of menu items you'd like to activate.
 ---  * options - (optional) The table of options to apply.
 ---
 --- Returns:
 ---  * The `Statement`, ready to execute.
+---
+--- Notes:
+--- * Each step on the path can be either one of:
+---   * a string     - The exact name of the menu item.
+---   * a number     - The menu item number, starting from 1.
+---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+--- * The `options` may include:
+---   * locale - The `localeID` or `string` for the locale that the path values are in.
+---   * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
+--- * Examples:
+---   * `previewApp:menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()`
 function menu.mt:doSelectMenu(path, options)
     options = options or {}
     local finder = self:doFindMenuUI(path, options)
@@ -387,20 +382,12 @@ function menu.mt:doSelectMenu(path, options)
             return Throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
         end
     end)
+    :Label("menu:doSelectMenu")
 end
 
 --- cp.app.menu:selectMenu(path[, options]) -> boolean
 --- Method
 --- Selects a Menu Item based on the list of menu titles in English.
----
---- Each step on the path can be either one of:
----  * a string     - The exact name of the menu item.
----  * a number     - The menu item number, starting from 1.
----  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
----
---- Options supported include:
----  * locale - The `localeID` or `string` for the locale that the path values are in.
----  * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
 ---
 --- Parameters:
 ---  * path - The list of menu items you'd like to activate.
@@ -410,8 +397,15 @@ end
 ---  * `true` if the press was successful.
 ---
 --- Notes:
----  * Example usage:
----    `require("cp.app").forBundleID("com.apple.FinalCut"):menu():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
+--- * Each step on the path can be either one of:
+---   * a string     - The exact name of the menu item.
+---   * a number     - The menu item number, starting from 1.
+---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+--- * The `options` may include:
+---   * locale - The `localeID` or `string` for the locale that the path values are in.
+---   * pressAll - If `true`, all menu items will be pressed on the way to the final destination.
+--- * Example usage:
+---   * `require("cp.app").forBundleID("com.apple.FinalCut"):menu():selectMenu({"View", "Browser", "Toggle Filmstrip/List View"})`
 function menu.mt:selectMenu(path, options)
     options = options or {}
 
@@ -450,15 +444,16 @@ end
 --- Method
 --- Is a menu item checked?
 ---
---- Options:
----  * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
----
 --- Parameters:
 ---  * path - At table containing the path to the menu bar item.
 ---  * options - The locale the path is in. Defaults to "en".
 ---
 --- Returns:
 ---  * `true` if checked otherwise `false`.
+---
+--- Notes:
+--- * The `options` may include:
+---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 function menu.mt:isChecked(path, options)
     local menuItemUI = self:findMenuUI(path, options)
     return menuItemUI and _isMenuChecked(menuItemUI)
@@ -468,15 +463,16 @@ end
 --- Method
 --- Is a menu item enabled?
 ---
---- Options:
----  * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
----
 --- Parameters:
 ---  * path - At table containing the path to the menu bar item.
 ---  * options - The optional table of options.
 ---
 --- Returns:
 ---  * `true` if enabled otherwise `false`.
+---
+--- Notes:
+--- * The `options` may include:
+---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 function menu.mt:isEnabled(path, options)
     local menuItemUI = self:findMenuUI(path, options)
     return menuItemUI and menuItemUI:attributeValue("AXEnabled")
@@ -484,24 +480,26 @@ end
 
 --- cp.app.menu:addMenuFinder(finder) -> nothing
 --- Method
---- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find' step and return either the matching child, or nil if it can't be found. It is used by the [addMenuFinder](#addMenuFinder) function. The `finder` should have the following signature:
----
---- ```lua
---- function(parentItem, path, childName, locale) -> childItem
---- ```
----
---- The elements are:
---- * parentItem    - The `AXMenuItem` containing the children. E.g. the `Go To` menu under `Window`.
---- * path          - An array of strings in the specified locale leading to the parent item. E.g. `{"Window", "Go To"}`.
---- * childName     - The name of the next child to find, in the specified locale. E.g. `"Libraries"`.
---- * locale        - The `cp.i18n.localeID` that the menu titles are in.
---- * childItem     - The `AXMenuItem` that was found, or `nil` if not found.
+--- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find'
+--- step and return either the matching child, or `nil` if it can't be found.
+--- It is used by the [addMenuFinder](#addMenuFinder) function.
 ---
 --- Parameters:
 ---  * `finder`     - The finder function
 ---
 --- Returns:
 ---  * The `AXMenuItem` found, or `nil`.
+---
+--- Notes:
+--- * The `finder` should have the following signature:
+---   * `function(parentItem, path, childName, locale) -> childItem`
+--- * The elements are:
+---   * parentItem    - The `AXMenuItem` containing the children. E.g. the `Go To` menu under `Window`.
+---   * path          - An array of strings in the specified locale leading to the parent item. E.g. `{"Window", "Go To"}`.
+---   * childName     - The name of the next child to find, in the specified locale. E.g. `"Libraries"`.
+---   * locale        - The `cp.i18n.localeID` that the menu titles are in.
+---   * childItem     - The `AXMenuItem` that was found, or `nil` if not found.
+
 function menu.mt:addMenuFinder(finder)
     self._itemFinders[#self._itemFinders + 1] = finder
 end
@@ -543,27 +541,22 @@ end
 --- Method
 --- Returns a `Statement` that when executed will emit each of the menu items along the path.
 ---
---- Each step on the path can be either one of:
----  * a string     - The exact name of the menu item.
----  * a number     - The menu item number, starting from 1.
----  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
----
---- Options:
----  * locale   - The locale that any strings in the path are in. Defaults to "en".
----
---- Examples:
----
---- ```lua
---- -- check if all items are enabled
---- myApp:menu():doFindMenuUI({"Edit", "Copy"}):Now(function(item) print(item:title() .. " enabled: ", item:enabled()) end, error)
---- ```
----
 --- Parameters:
 ---  * path         - the table of path items.
 ---  * options      - (optional) table of additional configuration options.
 ---
 --- Returns:
 ---  * The `Statement`, ready to be executed.
+---
+--- Notes:
+--- * Each step on the path can be either one of:
+---   * a string     - The exact name of the menu item.
+---   * a number     - The menu item number, starting from 1.
+---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+--- * The `options` may contain:
+---   * locale   - The locale that any strings in the path are in. Defaults to "en".
+--- * Examples:
+---   * `myApp:menu():doFindMenuUI({"Edit", "Copy"}):Now(function(item) print(item:title() .. " enabled: ", item:enabled()) end, error)`
 function menu.mt:doFindMenuUI(path, options)
     if type(path) ~= "table" or #path == 0 then
         return Observable.throw("Please provide a table array of menu steps.")
@@ -670,20 +663,13 @@ function menu.mt:doFindMenuUI(path, options)
         )
     )
     :TimeoutAfter(5000, "Took too long.")
+    :Label("menu:doFindMenuUI")
 end
 
 --- cp.app.menu:findMenuUI(path[, options]) -> Menu UI, table
 --- Method
 --- Finds a specific Menu UI element for the provided path.
 --- E.g. `findMenuUI({"Edit", "Copy"})` returns the 'Copy' menu item in the 'Edit' menu.
----
---- Each step on the path can be either one of:
----  * a string     - The exact name of the menu item.
----  * a number     - The menu item number, starting from 1.
----  * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
----
---- Options:
----  * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 ---
 --- Parameters:
 ---  * path         - The path list to search for.
@@ -692,6 +678,14 @@ end
 --- Returns:
 ---  * The Menu UI, or `nil` if it could not be found.
 ---  * The full list of Menu UIs for the path in a table.
+---
+--- Notes:
+--- * Each step on the path can be either one of:
+---   * a string     - The exact name of the menu item.
+---   * a number     - The menu item number, starting from 1.
+---   * a function   - Passed one argument - the Menu UI to check - returning `true` if it matches.
+--- * The `options` can contain:
+---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
 function menu.mt:findMenuUI(path, options)
     assert(type(path) == "table" and #path > 0, "Please provide a table array of menu steps.")
 
@@ -812,26 +806,20 @@ end
 --- Walks the menu tree, calling the `visitFn` on all the 'item' values - that is,
 --- `AXMenuItem`s that don't have any sub-menus.
 ---
---- The `visitFn` will be called on each menu item with the following parameters:
----
---- ```
---- function(path, menuItem)
---- ```
----
---- The `menuItem` is the AXMenuItem object, and the `path` is an array with the path to that
---- menu item. For example, if it is the "Copy" item in the "Edit" menu, the path will be
---- `{ "Edit" }`.
----
---- Options:
----  * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
----  * startPath - The path to the menu item to start at.
----
 --- Parameters:
 ---  * visitFn - The function called for each menu item.
 ---  * options - (optional) The table of options.
 ---
 --- Returns:
 ---  * Nothing
+---
+--- Notes:
+--- * The `options` may include:
+---   * locale   - The `localeID` or `string` with the locale code. Defaults to "en".
+---   * startPath - The path to the menu item to start at.
+--- * The `visitFn` will be called on each menu item with the following parameters:
+---   * `function(path, menuItem)`
+--- * The `menuItem` is the AXMenuItem object, and the `path` is an array with the path to that menu item. For example, if it is the "Copy" item in the "Edit" menu, the path will be `{ "Edit" }`.
 function menu.mt:visitMenuItems(visitFn, options)
     local menuUI
     local path = options and options.startPath or {}
