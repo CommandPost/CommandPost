@@ -570,7 +570,7 @@ function app.mt:menu()
     return self._menu
 end
 
---- cp.app:launch(waitSeconds) -> self
+--- cp.app:launch([waitSeconds]) -> self
 --- Method
 --- Launches the application, or brings it to the front if it was already running.
 ---
@@ -580,7 +580,6 @@ end
 --- Returns:
 ---  * The `cp.app` instance.
 function app.mt:launch(waitSeconds)
-
     local hsApp = self:hsApplication()
     if hsApp == nil or not hsApp:isFrontmost() then
         -- Closed:
