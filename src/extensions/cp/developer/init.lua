@@ -28,15 +28,13 @@ local log           = require("hs.logger").new("develop")
 --------------------------------------------------------------------------------
 local ax            = require("hs._asm.axuielement")
 local drawing       = require("hs.drawing")
+local fs            = require("hs.fs")
 local geometry      = require("hs.geometry")
 local inspect       = require("hs.inspect")
 local mouse         = require("hs.mouse")
 local timer         = require("hs.timer")
 
---------------------------------------------------------------------------------
--- CommandPost Extensions:
---------------------------------------------------------------------------------
-local fcp           = require("cp.apple.finalcutpro")
+local config        = require("cp.config")
 
 --------------------------------------------------------------------------------
 --
@@ -47,13 +45,13 @@ local fcp           = require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 -- DEVELOPER SHORTCUTS FOR USE IN ERROR LOG:
 --------------------------------------------------------------------------------
-_plugins            = require("cp.plugins")                 -- luacheck: ignore
-_fcp                = require("cp.apple.finalcutpro")       -- luacheck: ignore
+_G._plugins            = require("cp.plugins")
+_G._fcp                = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 -- FIND UNUSED LANGUAGES STRINGS:
 --------------------------------------------------------------------------------
-function _findUnusedLanguageStrings() -- luacheck: ignore
+function _G._findUnusedLanguageStrings()
     local translations = require("cp.resources.languages.en")["en"]
     local result = "\nUNUSED STRINGS IN EN.LUA:\n"
     local stringCount = 0
@@ -89,8 +87,8 @@ end
 --------------------------------------------------------------------------------
 -- FIND TEXT:
 --------------------------------------------------------------------------------
-function _findString(string) -- luacheck: ignore
-    local output, status = hs.execute([[grep -r ']] .. string .. [[' ']] .. fcp:getPath() .. [[/']])
+function _G._findString(string)
+    local output, status = hs.execute([[grep -r ']] .. string .. [[' ']] .. _G._fcp:getPath() .. [[/']])
     if status then
         log.df("Output: %s", output)
     else
@@ -101,16 +99,16 @@ end
 --------------------------------------------------------------------------------
 -- ELEMENT AT MOUSE:
 --------------------------------------------------------------------------------
-function _elementAtMouse() -- luacheck: ignore
+function _G._elementAtMouse()
     return ax.systemElementAtPosition(mouse.getAbsolutePosition())
 end
 
 --------------------------------------------------------------------------------
 -- INSPECT ELEMENT AT MOUSE:
 --------------------------------------------------------------------------------
-function _inspectAtMouse(options) -- luacheck: ignore
+function _G._inspectAtMouse(options)
     options = options or {}
-    local element = _elementAtMouse() -- luacheck: ignore
+    local element = _G._elementAtMouse()
     if options.parents then
         for _=1,options.parents do
             element = element ~= nil and element:parent()
@@ -122,7 +120,7 @@ function _inspectAtMouse(options) -- luacheck: ignore
         if options.type == "path" then
             local path = element:path()
             for i,e in ipairs(path) do
-                result = result .._inspectElement(e, options, i) -- luacheck: ignore
+                result = result .. _G._inspectElement(e, options, i)
             end
             return result
         else
@@ -136,7 +134,7 @@ end
 --------------------------------------------------------------------------------
 -- INSPECT:
 --------------------------------------------------------------------------------
-function _inspect(e, options) -- luacheck: ignore
+function _G._inspect(e, options)
     if e == nil then
         return "<nil>"
     elseif type(e) ~= "userdata" or not e.attributeValue then
@@ -148,7 +146,7 @@ function _inspect(e, options) -- luacheck: ignore
                 result = result ..
                          "\n= " .. string.format("%3d", i) ..
                          " ========================================" ..
-                         _inspect(item, options) -- luacheck: ignore
+                         _G._inspect(item, options)
             end
             return result
         else
@@ -156,15 +154,15 @@ function _inspect(e, options) -- luacheck: ignore
         end
     else
         return "\n==============================================" ..
-               _inspectElement(e, options) -- luacheck: ignore
+               _G._inspectElement(e, options)
     end
 end
 
 --------------------------------------------------------------------------------
 -- INSPECT ELEMENT:
 --------------------------------------------------------------------------------
-function _inspectElement(e, options) -- luacheck: ignore
-    _highlight(e) -- luacheck: ignore
+function _G._inspectElement(e, options)
+    _G._highlight(e)
 
     local depth = options and options.depth or 1
     local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
@@ -185,7 +183,7 @@ end
 --------------------------------------------------------------------------------
 -- HIGHLIGHT ELEMENT:
 --------------------------------------------------------------------------------
-function _highlight(e) -- luacheck: ignore
+function _G._highlight(e)
     if not e or not e.frame then
         return e
     end
@@ -219,7 +217,7 @@ function _highlight(e) -- luacheck: ignore
 end
 
 local SIZE = 100
-function _highlightPoint(point) -- luacheck: ignore
+function _G._highlightPoint(point)
     --------------------------------------------------------------------------------
     -- Get Highlight Colour Preferences:
     --------------------------------------------------------------------------------
@@ -251,6 +249,33 @@ end
 --------------------------------------------------------------------------------
 -- INSPECT ELEMENT AT MOUSE PATH:
 --------------------------------------------------------------------------------
-function _inspectElementAtMousePath() -- luacheck: ignore
-    return inspect(_elementAtMouse():path()) -- luacheck: ignore
+function _G._inspectElementAtMousePath()
+    return inspect(_G._elementAtMouse():path())
+end
+
+--------------------------------------------------------------------------------
+-- RUN TESTS:
+-- Pass in the "id" of the tests you want to run
+--------------------------------------------------------------------------------
+function _G._test(id)
+    local testsRoot = config.testsPath
+    if not testsRoot then
+        error "Unable to locate the test scripts."
+    end
+    local testPath = testsRoot .. "/?.lua;" .. testsRoot .. "/?/init.lua"
+
+    local originalPath = package.path
+    local tempPath = originalPath .. ";" .. testPath
+
+    package.path = tempPath
+
+    local ok, result = xpcall(function() return require(id .. "_test") end, debug.traceback)
+
+    package.path = originalPath
+
+    if not ok then
+        error(result)
+    else
+        return result
+    end
 end
