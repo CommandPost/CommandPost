@@ -1,6 +1,6 @@
 local test 		= require("cp.test")
 
-local _test = _test -- luacheck: ignore
+local _test = _G._test
 
 return test.suite("*"):with {
     _test "cp.app",
