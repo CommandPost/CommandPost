@@ -6,7 +6,7 @@ local config			= require("cp.config")
 local text				= require("cp.text")
 local matcher			= require("cp.text.matcher")
 
-local TEXT_PATH = config.scriptPath .. "/cp/text/_resources/"
+local TEXT_PATH = config.testsPath .. "/cp/text/_resources/"
 
 local function expectError(fn, ...)
     local success, result = pcall(fn, ...)

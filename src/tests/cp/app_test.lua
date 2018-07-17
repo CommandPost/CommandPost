@@ -14,25 +14,25 @@ return test.suite("cp.app"):with {
 
     test("launch and quit", function()
         local preview = app.forBundleID("com.apple.Preview")
-        ok(eq(preview:launch(10), true))
+        preview:launch(10)
+        ok(eq(preview:running(), true))
 
         local hsApp = preview:hsApplication()
         ok(hsApp ~= nil)
         ok(eq(preview:running(), true))
 
-        ok(eq(preview:quit(5), true))
+        preview:quit(5)
         ok(eq(preview:running(), false))
     end),
 
     test("UI", function()
         local preview = app.forBundleID("com.apple.Preview")
-        ok(eq(preview:launch(10), true))
+        ok(eq(preview:launch(10):running(), true))
 
         local ui = just.doUntil(function() return preview:UI() end, 10)
         ok(ui ~= nil)
 
-        ok(eq(preview:quit(5), true))
-        ok(eq(preview:running(), false))
+        ok(eq(preview:quit(5):running(), false))
     end),
 
     test("path", function()
