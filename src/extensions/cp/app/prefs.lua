@@ -247,7 +247,7 @@ end
 function mod.get(prefs, key, defaultValue)
     local data = metadata(prefs)
     local bundleID = data and data.bundleID
-    if bundleID then
+    if bundleID and type(key) == "string" then
         cfprefs.synchronize(bundleID)
         local result = cfprefs.getValue(key, bundleID)
         if type(result) ~= "nil" then
