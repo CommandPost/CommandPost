@@ -160,7 +160,7 @@ function MediaFolder.mt:init()
         end
 
         self:updateIncomingNotification()
-        self:updateImportNotification()
+        self:updateReadyNotification()
 
         self:doImportNext():After(0)
     end
@@ -264,7 +264,7 @@ end
 --- Returns:
 ---  * None
 function MediaFolder.mt:checkNotifications()
-    if self.importNotification and not notificationDelivered(self.importNotification) then
+    if self.readyNotification and not notificationDelivered(self.readyNotification) then
         -- it's been closed
         self.ready = Queue()
         self:save()
@@ -313,7 +313,7 @@ function MediaFolder.mt:removeFile(file)
         self:updateIncomingNotification()
     end
     if self.ready:removeItem(file) then
-        self:updateImportNotification()
+        self:updateReadyNotification()
     end
     self.importing:removeItem(file)
 
@@ -352,7 +352,7 @@ function MediaFolder.mt:addReady(file)
     if not self.ready:contains(file) then
         self.ready:pushRight(file)
         self:save()
-        self:updateImportNotification()
+        self:updateReadyNotification()
     end
 end
 
@@ -401,7 +401,7 @@ function MediaFolder.mt:importTag()
     return "import:"..self.path
 end
 
---- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:updateImportNotification() -> nil
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:updateReadyNotification() -> nil
 --- Method
 --- Updates the 'ready' notification based on the current set of files in the `ready` queue.
 ---
@@ -410,10 +410,10 @@ end
 ---
 --- Returns:
 ---  * None
-function MediaFolder.mt:updateImportNotification()
-    if self.importNotification then
-        self.importNotification:withdraw()
-        self.importNotification = nil
+function MediaFolder.mt:updateReadyNotification()
+    if self.readyNotification then
+        self.readyNotification:withdraw()
+        self.readyNotification = nil
     end
 
     local count = #self.ready
@@ -441,7 +441,7 @@ function MediaFolder.mt:updateImportNotification()
                 }
             end
 
-            self.importNotification = notify.new(self:importTag())
+            self.readyNotification = notify.new(self:importTag())
                 :title(i18n("appName"))
                 :subTitle(subTitle)
                 :hasActionButton(true)
@@ -451,7 +451,7 @@ function MediaFolder.mt:updateImportNotification()
                 :alwaysShowAdditionalActions(true)
                 :withdrawAfter(0)
 
-            self.importNotification:send()
+            self.readyNotification:send()
         end
     end
 end
@@ -467,8 +467,8 @@ end
 ---  * None
 function MediaFolder.mt:handleImport(notification)
     -- notification cleared
-    if self.importNotification and not notificationDelivered(self.importNotification) then
-        self.importNotification = nil
+    if self.readyNotification and not notificationDelivered(self.readyNotification) then
+        self.readyNotification = nil
     end
 
     -- process it.
@@ -518,7 +518,7 @@ function MediaFolder.mt:importAll()
         self.ready = Queue()
         self:save()
     end
-    self:updateImportNotification()
+    self:updateReadyNotification()
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:importFirst() -> nil
@@ -536,7 +536,7 @@ function MediaFolder.mt:importFirst()
         self.ready:popLeft()
         self:save()
     end
-    self:updateImportNotification()
+    self:updateReadyNotification()
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:skipAll() -> nil
@@ -551,7 +551,7 @@ end
 function MediaFolder.mt:skipAll()
     self.ready = Queue()
     self:save()
-    self:updateImportNotification()
+    self:updateReadyNotification()
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:skipOne() -> nil
@@ -567,7 +567,7 @@ function MediaFolder.mt:skipOne()
     if #self.ready > 0 then
         self.ready:popLeft()
         self:save()
-        self:updateImportNotification()
+        self:updateReadyNotification()
     end
 end
 
@@ -768,7 +768,7 @@ function MediaFolder.mt:doImportNext()
     end)
     :Otherwise(function()
         self.importingNow = false
-        self:updateImportNotification()
+        self:updateReadyNotification()
     end)
     :Label("MediaFolder:doImportNext")
 end
@@ -801,9 +801,9 @@ function MediaFolder.mt:destroy()
         self.pathWatcher = nil
     end
 
-    if self.importNotification then
-        self.importNotification:withdraw()
-        self.importNotification = nil
+    if self.readyNotification then
+        self.readyNotification:withdraw()
+        self.readyNotification = nil
     end
     if self.incomingNotification then
         self.incomingNotification:withdraw()
