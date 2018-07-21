@@ -12,6 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("MediaFolder")
+local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -35,7 +36,7 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local Do, Done, If      = go.Do, go.Done, go.If
+local Do, If            = go.Do, go.If
 local Throw             = go.Throw
 local unpack            = table.unpack
 
@@ -148,11 +149,13 @@ function MediaFolder.mt:init()
 
         -- re-link live notifications
         local importTag = self:importTag()
-        for _,n in ipairs(notify.deliveredNotifications()) do
+        log.df("init: import tag: %s", importTag)
+        for i,n in ipairs(notify.deliveredNotifications()) do
             local tag = n:getFunctionTag()
+            log.df("init: delivered notification #%d: %s", i, tag)
             if tag == importTag then
-                self.importNotification = n
-                break
+                log.df("init: withdrawing notification...")
+                n:withdraw()
             end
         end
 
@@ -229,7 +232,7 @@ local function isRemoved(file, flags)
 end
 
 local function isRenamed(file, flags)
-    return isFile(flags) and flags.itemRenamed and fileExists(file)
+    return isFile(flags) and not flags.itemXattrMod and flags.itemRenamed and fileExists(file)
 end
 
 local function isCopying(file, flags)
@@ -237,7 +240,7 @@ local function isCopying(file, flags)
 end
 
 local function isCopied(file, flags)
-    return isFile(flags) and flags.itemCreated and flags.itemChangeOwner and fileExists(file)
+    return isFile(flags) and not flags.itemXattrMod and flags.itemCreated and flags.itemChangeOwner and fileExists(file)
 end
 
 local function notificationDelivered(notification)
@@ -285,7 +288,6 @@ function MediaFolder.mt:processFiles(files, fileFlags)
         local flags = fileFlags[i]
 
         if isSupported(file, flags) then
-            -- log.df("processFiles: file: %s; flags: %s", file, inspect(flags))
             if isRemoved(file, flags) then
                 self:removeFile(file)
             elseif isCopying(file, flags) then
@@ -347,9 +349,11 @@ function MediaFolder.mt:addReady(file)
     if self.incoming:removeItem(file) then
         self:updateIncomingNotification()
     end
-    self.ready:pushRight(file)
-    self:save()
-    self:updateImportNotification()
+    if not self.ready:contains(file) then
+        self.ready:pushRight(file)
+        self:save()
+        self:updateImportNotification()
+    end
 end
 
 --- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:updateIncomingNotification() -> nil
@@ -462,6 +466,12 @@ end
 --- Returns:
 ---  * None
 function MediaFolder.mt:handleImport(notification)
+    -- notification cleared
+    if self.importNotification and not notificationDelivered(self.importNotification) then
+        self.importNotification = nil
+    end
+
+    -- process it.
     local count = #self.ready
     if count > 0 then
         local activation = notification:activationType()
@@ -477,9 +487,9 @@ function MediaFolder.mt:handleImport(notification)
                 for _,filePath in ipairs(self.ready) do
                     local fileName = tools.getFilenameFromPath(filePath)
                     if action == fileName then
+                        self:importFiles({filePath})
                         self.ready:removeItem(filePath)
                         self:save()
-                        self:importFiles({filePath})
                         return
                     end
                 end
@@ -685,7 +695,7 @@ function MediaFolder.mt:doImportNext()
     local timeline = fcp:timeline()
     local context = {}
 
-    return If(function() return not self.importingNow and #self.importing > 0 end):Then(function()
+    return If(function() return self.importingNow ~= true and #self.importing > 0 end):Then(function()
         self.importingNow = true
         local files = self.importing:popLeft()
         self:save()
@@ -726,11 +736,11 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         -- Remove from Timeline if appropriate:
         --------------------------------------------------------------------------------
-        :Then(function()
-            if not self.mod.insertIntoTimeline() then
-                return fcp:doShortcut("UndoChanges")
-            end
-        end)
+        :Then(
+            If(self.mod.insertIntoTimeline):Is(false):Then(
+                fcp:doShortcut("UndoChanges")
+            )
+        )
 
         --------------------------------------------------------------------------------
         -- Restore original Pasteboard Content:
@@ -756,7 +766,10 @@ function MediaFolder.mt:doImportNext()
             return self:doImportNext()
         end)
     end)
-    :Otherwise(Done())
+    :Otherwise(function()
+        self.importingNow = false
+        self:updateImportNotification()
+    end)
     :Label("MediaFolder:doImportNext")
 end
 
@@ -788,6 +801,15 @@ function MediaFolder.mt:destroy()
         self.pathWatcher = nil
     end
 
+    if self.importNotification then
+        self.importNotification:withdraw()
+        self.importNotification = nil
+    end
+    if self.incomingNotification then
+        self.incomingNotification:withdraw()
+        self.incomingNotification = nil
+    end
+
     self.mod = nil
     self.path = nil
     self.tags = nil
@@ -811,6 +833,10 @@ end
 
 function MediaFolder.mt:__tostring()
     return "MediaFolder: "..self.path
+end
+
+function MediaFolder.mt:__gc()
+    self:destroy()
 end
 
 return MediaFolder

@@ -216,6 +216,13 @@ function Viewer.new(app, eventViewer)
         end)
     end)
 
+    local contentsUI = UI:mutate(function(original)
+        return cache(o, "_contents", function()
+            local ui = original()
+            return ui and childFromTop(ui, 2)
+        end)
+    end)
+
     local bottomToolbarUI = UI:mutate(function(original)
         return cache(o, "_bottomToolbar", function()
             local ui = original()
@@ -282,6 +289,11 @@ function Viewer.new(app, eventViewer)
         --- Field
         --- Provides the `axuielement` for the top toolbar of the Viewer, or `nil` if not available.
         topToolbarUI = topToolbarUI,
+
+        --- cp.apple.finalcutpro.main.Viewer.contentsUI <cp.prop: hs._asm.axuielement; read-only>
+        --- Field
+        --- Provides the `axuielement` for the media contents of the Viewer, or `nil` if not available.
+        contentsUI = contentsUI,
 
         --- cp.apple.finalcutpro.main.Viewer.bottomToolbarUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
