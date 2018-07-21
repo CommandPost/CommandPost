@@ -12,7 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log				= require("hs.logger").new("MediaFolder")
-local inspect           = require("hs.inspect")
+-- local inspect           = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -147,20 +147,16 @@ function MediaFolder.mt:init()
             self:handleImport(notification)
         end)
 
-        -- re-link live notifications
+        -- clear old notifications
         local importTag = self:importTag()
-        log.df("init: import tag: %s", importTag)
-        for i,n in ipairs(notify.deliveredNotifications()) do
+        for _,n in ipairs(notify.deliveredNotifications()) do
             local tag = n:getFunctionTag()
-            log.df("init: delivered notification #%d: %s", i, tag)
             if tag == importTag then
-                log.df("init: withdrawing notification...")
                 n:withdraw()
             end
         end
 
         self:updateIncomingNotification()
-        self:updateReadyNotification()
 
         self:doImportNext():After(0)
     end
@@ -482,7 +478,7 @@ function MediaFolder.mt:handleImport(notification)
             if action == i18n("fcpMediaFolderImportAll", {count = count}) then
                 self:importAll()
             elseif action == i18n("fcpMediaFolderRevealInFinder") then
-                self:revealInFinder()
+                self:doRevealInFinder():After(0)
             else
                 for _,filePath in ipairs(self.ready) do
                     local fileName = tools.getFilenameFromPath(filePath)
@@ -818,17 +814,23 @@ function MediaFolder.mt:destroy()
     self.importing = nil
 end
 
---- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:revealInFinder()
+--- plugins.finalcutpro.watchfolders.panels.media.MediaFolder:doRevealInFinder() -> cp.rx.go.Statement
 --- Method
---- Reveal in Finder.
+--- Returns a `Statement` that will reveal the MediaFolder path in the Finder.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * None
-function MediaFolder.mt:revealInFinder()
-    os.execute("open "..self.path)
+---  * Statement
+function MediaFolder.mt:doRevealInFinder()
+    return Do(
+        self:doImportNext(),
+        function()
+            local path = self.ready:peekLeft() or self.path
+            os.execute(string.format('open -R %q', path))
+        end
+    )
 end
 
 function MediaFolder.mt:__tostring()
