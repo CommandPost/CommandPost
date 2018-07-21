@@ -619,6 +619,7 @@ function app.mt:doLaunch()
             end)
         )
         :Then(WaitUntil(self.frontmost))
+        :Otherwise(true)
     )
     :Otherwise(
         Throw("No app with a bundle ID of '%s' is installed.", self:bundleID())

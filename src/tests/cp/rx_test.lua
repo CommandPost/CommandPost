@@ -1,6 +1,7 @@
 local test          = require("cp.test")
 local rx            = require("cp.rx")
 
+local insert        = table.insert
 local Observable, Subject = rx.Observable, rx.Subject
 
 return test.suite("cp.rx"):with {
@@ -247,6 +248,82 @@ return test.suite("cp.rx"):with {
         -- ignore further values.
         innerSubject:onNext(3)
         ok(eq(results, 2))
+        ok(eq(completed, true))
+    end),
+
+    test("take", function()
+        local results = {}
+        local message = nil
+        local completed = false
+
+        local s = Subject.create()
+
+        s:take(1)
+        :subscribe(
+            function(value)
+                insert(results, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(results, {}))
+        ok(eq(message, nil))
+        ok(eq(completed, false))
+
+        s:onNext(1)
+
+        ok(eq(results, {1}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
+
+        s:onNext(2)
+
+        ok(eq(results, {1}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
+    end),
+
+    test("take recursive", function()
+        local results = {}
+        local message = nil
+        local completed = false
+
+        local s = Subject.create()
+
+        s:take(1)
+        :subscribe(
+            function(value)
+                -- send another value to the original subject
+                s:onNext(value * 10)
+                insert(results, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(results, {}))
+        ok(eq(message, nil))
+        ok(eq(completed, false))
+
+        s:onNext(1)
+
+        ok(eq(results, {1}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
+
+        s:onNext(2)
+
+        ok(eq(results, {1}))
+        ok(eq(message, nil))
         ok(eq(completed, true))
     end),
 }
