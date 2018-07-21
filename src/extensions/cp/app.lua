@@ -34,7 +34,10 @@ local applicationwatcher		= require("hs.application.watcher")
 local ax                        = require("hs._asm.axuielement")
 local fs                        = require("hs.fs")
 local inspect                   = require("hs.inspect")
+local task                      = require("hs.task")
 local timer                     = require("hs.timer")
+
+local printf                    = hs.printf
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -944,6 +947,64 @@ end
 function app.mt:update()
     self.hsApplication:update()
     return self
+end
+
+local whiches = {}
+local function which(cmd)
+    local path = whiches[cmd]
+    if not path then
+        local output, ok = hs.execute(string.format("which %q", cmd))
+        if ok then
+            path = output:match("([^\r\n]*)")
+            whiches[cmd] = path
+        else
+            return nil, output
+        end
+    end
+    return path
+end
+
+--- cp.app:searchResources(value) -> hs.task
+--- Method
+--- Creates a `hs.task` which will search for the specified string value in the resources
+--- of the current app.
+---
+--- Parameters:
+--- * value     - The string value to search for.
+---
+--- Returns:
+--- * `hs.task` which is already running, searching for the `value`. Results will be output in the Error Log.
+---
+--- Notes:
+--- * This may take some time to complete, depending on how many resources the app contains.
+function app.mt:searchResources(value)
+    local grep = which("grep")
+    if grep and value then
+        value = tostring(value)
+        local finder = task.new(grep,
+            function(status, stdOut, stdErr)
+                printf("%s: Completed search for resources containing %q.", self:displayName(), value)
+                if stdOut then
+                    print(stdOut)
+                end
+                if status ~= 0 then
+                    printf("%s: ERROR #%d: %s", self:displayName(), status, stdErr)
+                end
+            end,
+            function(_, stdOut, strErr)
+                printf("%s: Found resources containing %q:\n%s", self:displayName(), value, stdOut)
+                if strErr and #strErr > 0 then
+                    printf("%s: ERROR:\n%s", self:displayName(), strErr)
+                end
+                return true
+            end,
+            { "-r", value, self:path() }
+        )
+        printf("%s: Searching resources for %q...", self:displayName(), value)
+        finder:start()
+        return finder
+    end
+    return nil
 end
 
 ----------------------------------------------------------------------------

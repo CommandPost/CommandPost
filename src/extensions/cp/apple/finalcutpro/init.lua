@@ -1231,6 +1231,19 @@ setmetatable(fcp, {
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+-- cp.apple.finalcutpro:searchResources(value) -> hs.task
+-- Method
+-- Searches the resources inside the FCP app for the specified value.
+--
+-- Parameters:
+-- * value      - The value to search for.
+--
+-- Returns:
+-- * The `hs.task` that is running the search.
+function fcp:searchResources(value)
+    return self.app:searchResources(value)
+end
+
 -- cp.apple.finalcutpro._listWindows() -> none
 -- Method
 -- List Windows to Error Log.

@@ -31,9 +31,12 @@ local drawing       = require("hs.drawing")
 local geometry      = require("hs.geometry")
 local inspect       = require("hs.inspect")
 local mouse         = require("hs.mouse")
+local task          = require("hs.task")
 local timer         = require("hs.timer")
 
 local config        = require("cp.config")
+
+local printf        = hs.printf
 
 --------------------------------------------------------------------------------
 --
@@ -86,13 +89,19 @@ end
 --------------------------------------------------------------------------------
 -- FIND TEXT:
 --------------------------------------------------------------------------------
-function _G._findString(string)
-    local output, status = hs.execute([[grep -r ']] .. string .. [[' ']] .. _G._fcp:getPath() .. [[/']])
-    if status then
-        log.df("Output: %s", output)
-    else
-        log.ef("An error occurred in _findString")
+local whiches = {}
+function _G._which(cmd)
+    local path = whiches[cmd]
+    if not path then
+        local output, ok = hs.execute(string.format("which %q", cmd))
+        if ok then
+            path = output:match("([^\r\n]*)")
+            whiches[cmd] = path
+        else
+            return nil, output
+        end
     end
+    return path
 end
 
 --------------------------------------------------------------------------------
