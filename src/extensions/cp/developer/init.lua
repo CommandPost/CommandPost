@@ -31,12 +31,9 @@ local drawing       = require("hs.drawing")
 local geometry      = require("hs.geometry")
 local inspect       = require("hs.inspect")
 local mouse         = require("hs.mouse")
-local task          = require("hs.task")
 local timer         = require("hs.timer")
 
 local config        = require("cp.config")
-
-local printf        = hs.printf
 
 --------------------------------------------------------------------------------
 --
