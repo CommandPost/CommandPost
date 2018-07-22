@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
+local require = require
 -- local log								= require("hs.logger").new("mediaBrowser")
 
 --------------------------------------------------------------------------------
@@ -21,10 +22,10 @@ local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
 local Table								= require("cp.ui.Table")
-local PopUpButton						= require("cp.ui.PopUpButton")
-local TextField							= require("cp.ui.TextField")
+local PopUpButton				  = require("cp.ui.PopUpButton")
+local TextField						= require("cp.ui.TextField")
 
-local id								= require("cp.apple.finalcutpro.ids") "MediaBrowser"
+local id								  = require("cp.apple.finalcutpro.ids") "MediaBrowser"
 
 --------------------------------------------------------------------------------
 --

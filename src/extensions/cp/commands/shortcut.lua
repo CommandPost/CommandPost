@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 local log										= require("hs.logger").new("shortcut")
 
 local eventtap									= require("hs.eventtap")

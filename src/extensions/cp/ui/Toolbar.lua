@@ -2,6 +2,7 @@
 ---
 --- Toolbar Module.
 
+local require = require
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 

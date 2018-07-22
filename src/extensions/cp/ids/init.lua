@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 -- local log				= require("hs.logger").new("ids")
 
 local fs				= require("hs.fs")

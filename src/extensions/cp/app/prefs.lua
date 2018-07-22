@@ -25,6 +25,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
+local require                   = require
 -- local log                   = require("hs.logger").new("app_prefs")
 -- local inspect               = require("hs.inspect")
 

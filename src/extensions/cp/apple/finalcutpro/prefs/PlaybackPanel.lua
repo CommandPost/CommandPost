@@ -21,6 +21,7 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local require = require
 local axutils							= require("cp.ui.axutils")
 local just								= require("cp.just")
 local CheckBox							= require("cp.ui.CheckBox")

@@ -1,3 +1,4 @@
+local require = require
 local prop              = require("cp.prop")
 local axutils           = require("cp.ui.axutils")
 local strings           = require("cp.apple.finalcutpro.strings")

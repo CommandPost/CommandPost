@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
+local require           = require
 -- local log				= require("hs.logger").new("prefadv")
 
 --------------------------------------------------------------------------------
@@ -63,6 +64,13 @@ mod.developerMode = config.developerMode
 function mod.toggleDeveloperMode()
     mod.developerMode:toggle()
     mod.manager.refresh()
+    if mod.developerMode() then
+        require("cp.developer")
+    else
+        if package.loaded["cp.developer"] then
+            _G.destroyDeveloperMode()
+        end
+    end
 end
 
 --

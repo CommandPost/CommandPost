@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 -- local log										= require("hs.logger").new("prefsGenerate")
 local mimetypes									= require("mimetypes")
 local base64									= require("hs.base64")
