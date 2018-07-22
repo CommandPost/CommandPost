@@ -851,13 +851,13 @@ end
 function menu.mt:_visitMenuItems(visitFn, path, menuUI, options)
     local role = menuUI:attributeValue("AXRole")
     local children = menuUI:attributeValue("AXChildren")
-    if role == "AXmenu" or role == "AXMenu" then
+    if role == "AXMenuBar" or role == "AXMenu" then
         if children then
             for _, item in ipairs(children) do
                 self:_visitMenuItems(visitFn, path, item, options)
             end
         end
-    elseif role == "AXmenuItem" or role == "AXMenuItem" then
+    elseif role == "AXMenuBarItem" or role == "AXMenuItem" then
         local title = menuUI:attributeValue("AXTitle")
         if #children == 1 then
             --------------------------------------------------------------------------------
