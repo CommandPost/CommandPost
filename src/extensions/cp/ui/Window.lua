@@ -249,9 +249,7 @@ end
 ---  * The notifier.
 function Window:notifier()
     if not self._notifier then
-        local theApp = self:app()
-        local bundleID = theApp:bundleID()
-        self._notifier = notifier.new(bundleID, function() return self:UI() end):start()
+        self._notifier = notifier.new(self:app():bundleID(), self.UI):start()
     end
     return self._notifier
 end

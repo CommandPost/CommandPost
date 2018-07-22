@@ -271,7 +271,7 @@ function mod.mt:unwatchFor(notifications, callbackFn)
 end
 
 function mod.mt:unwatchAll(callbackFn)
-    return self:unwatchAll(ax.observer.notifications, callbackFn)
+    return self:unwatchFor(ax.observer.notifications, callbackFn)
 end
 
 function mod.mt:_unregisterNotification(notification, callbackFn)
