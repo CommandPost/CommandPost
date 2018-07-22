@@ -38,6 +38,7 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local Do, If            = go.Do, go.If
 local Throw             = go.Throw
+local Require           = go.Require
 local unpack            = table.unpack
 
 local fileExists        = tools.doesFileExist
@@ -616,7 +617,7 @@ function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
         end
         local result = pasteboard.writeObjects(objects)
         if not result then
-            return Throw("The URL could not be written to the Pasteboard.")
+            return Throw(i18n("fcpMediaFolder_Error_UnableToPaste", {file = v}))
         end
     end)
     :ThenYield()
@@ -711,7 +712,11 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         :Then(
             timeline:doShow()
-            :TimeoutAfter(1000, "Unable to show the Timeline")
+            :TimeoutAfter(1000, i18n("fcpMediaFolder_Error_ShowTimeline"))
+        )
+
+        :Then(
+            Require(timeline.isLoaded):OrThrow(i18n("fcpMediaFolder_Error_ProjectRequired"))
         )
 
         --------------------------------------------------------------------------------
