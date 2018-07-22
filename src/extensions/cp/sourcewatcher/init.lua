@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local require = require
 local console                       = require("hs.console")
 local pathwatcher                   = require("hs.pathwatcher")
 

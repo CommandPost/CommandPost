@@ -11,14 +11,15 @@
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local require = require
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
-local CheckBox							= require("cp.ui.CheckBox")
+local CheckBox					  = require("cp.ui.CheckBox")
 local Slider							= require("cp.ui.Slider")
 
-local id								= require("cp.apple.finalcutpro.ids") "TimelineAppearance"
+local id								  = require("cp.apple.finalcutpro.ids") "TimelineAppearance"
 
 --------------------------------------------------------------------------------
 --

@@ -33,6 +33,9 @@ local inspect       = require("hs.inspect")
 local mouse         = require("hs.mouse")
 local timer         = require("hs.timer")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local config        = require("cp.config")
 
 --------------------------------------------------------------------------------
@@ -40,6 +43,26 @@ local config        = require("cp.config")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- DESTROY DEVELOPER MODE:
+--------------------------------------------------------------------------------
+function _G.destroyDeveloperMode()
+    _G._plugins = nil
+    _G._fcp = nil
+    _G._findUnusedLanguageStrings = nil
+    _G._which = nil
+    _G._elementAtMouse = nil
+    _G._inspectAtMouse = nil
+    _G._inspect = nil
+    _G._inspectElement = nil
+    _G._highlight = nil
+    _G._highlightPoint = nil
+    _G._inspectElementAtMousePath = nil
+    _G._test = nil
+    _G.destroyDeveloper = nil
+    package.loaded["cp.developer"] = nil
+end
 
 --------------------------------------------------------------------------------
 -- DEVELOPER SHORTCUTS FOR USE IN ERROR LOG:

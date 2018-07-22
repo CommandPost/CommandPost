@@ -26,6 +26,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 local log = require("hs.logger").new("bench")
 local clock = require("hs.timer").secondsSinceEpoch
 
