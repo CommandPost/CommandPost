@@ -1,21 +1,45 @@
-
 --- === cp.rx.go.If ===
 ---
 --- A `Statement` that will check if a `resolvable` matches a predicate, then executes other `resolvables`.
 
-local log                   = require("hs.logger").new("go_If")
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local require = require
+--local log                   = require("hs.logger").new("go_If")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local inspect               = require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local Observable            = require("cp.rx").Observable
 local Statement             = require("cp.rx.go.Statement")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local toObservable          = Statement.toObservable
 local toObservables         = Statement.toObservables
 
 local insert                = table.insert
 local pack, unpack          = table.pack, table.unpack
 local format                = string.format
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 -- checks that the value is not false and not nil.
 local function isTruthy(value)
