@@ -370,7 +370,7 @@ end
 --- Returns:
 ---  * `true` if the element is valid.
 function axutils.isValid(element)
-    return element ~= nil and element.role
+    return element ~= nil and element:isValid()
 end
 
 --- cp.ui.axutils.cache(source, key, finderFn, [verifyFn]) -> axuielement
