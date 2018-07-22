@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                           = require("hs.logger").new("alert")
+local log                           = require("hs.logger").new("alert")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -20,6 +20,9 @@ local require = require
 local axutils                       = require("cp.ui.axutils")
 local Button                        = require("cp.ui.Button")
 local prop                          = require("cp.prop")
+
+local If                            = require("cp.rx.go.If")
+local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
 --------------------------------------------------------------------------------
 --
@@ -54,7 +57,51 @@ end
 --- Returns:
 ---  * A new `Browser` object.
 function Alert.new(parent)
-    return prop.extend({_parent = parent}, Alert)
+    local UI = parent.UI:mutate(function(original)
+        return axutils.childMatching(original(), Alert.matches)
+    end)
+
+    local o = prop.extend({
+        _parent = parent,
+
+--- cp.ui.Alert.UI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- The `axuielement` for the Alert, or `nil` if not available.
+        UI = UI,
+
+
+--- cp.ui.Alert.isShowing <cp.prop: boolean; read-only; live>
+--- Field
+--- Is the alert showing?
+        isShowing = UI:ISNOT(nil),
+
+--- cp.ui.Alert.title <cp.prop: string>
+--- Field
+--- Gets the title of the alert.
+        title = UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXTitle")
+        end),
+
+    }, Alert)
+
+--- cp.ui.Alert.default <cp.ui.Button>
+--- Field
+--- The default [Button](cp.ui.Button.md) for the `Alert`.
+    o.default = Button.new(o, UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXDefaultButton")
+    end))
+
+--- cp.ui.Alert.cancel <cp.ui.Button>
+--- Field
+--- The cancel [Button](cp.ui.Button.md) for the `Alert`.
+    o.cancel = Button.new(o, UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXDefaultButton")
+    end))
+
+    return o
 end
 
 --- cp.ui.Alert:parent() -> parent
@@ -83,31 +130,6 @@ function Alert:app()
     return self:parent():app()
 end
 
---- cp.ui.Alert:UI() -> axuielementObject
---- Method
---- Returns the UI object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * An axuielementObject object.
-function Alert:UI()
-    return axutils.cache(self, "_ui", function()
-        return axutils.childMatching(self:parent():UI(), Alert.matches)
-    end,
-    Alert.matches)
-end
-
---- cp.ui.Alert.isShowing <cp.prop: boolean>
---- Variable
---- Is the alert showing?
-Alert.isShowing = prop(
-    function(self)
-        return self:UI() ~= nil
-    end
-):bind(Alert)
-
 --- cp.ui.Alert:hide() -> none
 --- Method
 --- Hides the alert by pressing the "Cancel" button.
@@ -121,42 +143,69 @@ function Alert:hide()
     self:pressCancel()
 end
 
---- cp.ui.Alert:cancel() -> Button
+--- cp.ui.Alert:doHide() -> cp.rx.go.Statement <boolean>
 --- Method
---- Gets the Cancel button object.
+--- Attempts to hide the Alert (if visible) by pressing the [Cancel](#cancel) button.
 ---
 --- Parameters:
----  * None
+--- * None
 ---
 --- Returns:
----  * A `Button` object.
-function Alert:cancel()
-    if not self._cancel then
-        self._cancel = Button.new(self, function()
-            local ui = self:UI()
-            return ui and ui:cancelButton()
-        end)
-    end
-    return self._cancel
+--- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
+function Alert:doHide()
+    return If(self.isShowing):Then(
+        self:doCancel()
+    ):Then(WaitUntil(self.isShowing():NOT()))
+    :Otherwise(true)
+    :TimeoutAfter(10000)
+    :Label("Alert:doHide")
 end
 
---- cp.ui.Alert:default() -> Button
+--- cp.ui.Alert:doCancel() -> cp.rx.go.Statement <boolean>
 --- Method
---- Gets the default button object.
+--- Attempts to hide the Alert (if visible) by pressing the [Cancel](#cancel) button.
 ---
 --- Parameters:
----  * None
+--- * None
 ---
 --- Returns:
----  * A `Button` object.
-function Alert:default()
-    if not self._default then
-        self._default = Button.new(self, function()
-            local ui = self:UI()
-            return ui and ui:defaultButton()
-        end)
-    end
-    return self._default
+--- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
+function Alert:doCancel()
+    return self.cancel:doPress()
+end
+
+--- cp.ui.Alert:doDefault() -> cp.rx.go.Statement <boolean>
+--- Method
+--- Attempts to press the `default` [Button](cp.ui.Button.md).
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
+function Alert:doDefault()
+    return self.default:doPress()
+end
+
+--- cp.ui.Alert:doPress(buttonFromLeft) -> cp.rx.go.Statement <boolean>
+--- Method
+--- Attempts to press the indicated button from left-to-right, if it can be found.
+---
+--- Parameters:
+--- * buttonFromLeft    - The number of the button from left-to-right.
+---
+--- Returns:
+--- * a [Statement](cp.rx.go.Statement.md) to execute, resolving in `true` if the button was found and pressed, otherwise `false`.
+function Alert:doPress(buttonFromLeft)
+    return If(self.UI):Then(function(ui)
+        local button = axutils.childFromLeft(ui, 1, Button.matches)
+        if button then
+            button:doPress()
+        end
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("Alert:doPress("..tostring(buttonFromLeft)..")")
 end
 
 --- cp.ui.Alert:pressCancel() -> self, boolean
@@ -207,6 +256,7 @@ function Alert:containsText(value, plain)
                 return eValue == value
             else
                 local s,e = eValue:find(value)
+                log.df("Found: start: %s, end: %s, len: %s", s, e, eValue:len())
                 return s == 1 and e == eValue:len()
             end
         end
@@ -214,15 +264,5 @@ function Alert:containsText(value, plain)
     end)
     return textUI ~= nil
 end
-
---- cp.ui.Alert.title <cp.prop: string>
---- Variable
---- Gets the title of the alert.
-Alert.title = prop(
-    function(self)
-        local ui = self:UI()
-        return ui and ui:attributeValue("AXTitle")
-    end
-):bind(Alert)
 
 return Alert
