@@ -502,13 +502,19 @@
         "failedToWriteToPreferences": "Failed to write to the Final Cut Pro Preferences file.",
         "favourite": "Favourite",
         "favourites": "Favourites",
+        "fcpMediaFolder_Error_NoFiles": "No files were provided to import.",
         "fcpMediaFolder_Error_ProjectRequire": "There must be a Project or Compound Clip in the Timeline.",
         "fcpMediaFolder_Error_ShowTimeline": "Unable to show the Timeline",
-        "fcpMediaFolder_Error_UnableToPaste": "Unable to add '{file}' to the Pasteboard.",
+        "fcpMediaFolder_Error_UnableToPaste": {
+            "zero": "Unable to add '%{file}' to the Pasteboard.",
+            "one": "Unable to add '%{file}' and one other to the Pasteboard.",
+            "other": "Unable to add '%{file}' and %{count} others to the Pasteboard."
+        },
         "fcpMediaFolderCancel": "Cancel",
         "fcpMediaFolderImport": "Import",
         "fcpMediaFolderImportAll": "All Files",
         "fcpMediaFolderIncomingSubTitle": {
+            "zero": "'%{file}' is incoming...",
             "one": "'%{file}' and one other are incoming...",
             "other": "'%{file}' and %{count} others are incoming..."
         },

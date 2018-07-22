@@ -596,6 +596,9 @@ end
 ---  * A `Statement` to execute.
 function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
     return Do(function()
+        if files == nil or #files == 0 then
+            return Throw(i18n("fcpMediaFolder_Error_NoFiles"))
+        end
         --------------------------------------------------------------------------------
         -- Temporarily stop the Pasteboard Watcher:
         --------------------------------------------------------------------------------
@@ -617,7 +620,7 @@ function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
         end
         local result = pasteboard.writeObjects(objects)
         if not result then
-            return Throw(i18n("fcpMediaFolder_Error_UnableToPaste", {file = v}))
+            return Throw(i18n("fcpMediaFolder_Error_UnableToPaste", {file = files[1], count = #files}))
         end
     end)
     :ThenYield()
