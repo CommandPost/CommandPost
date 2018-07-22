@@ -76,6 +76,7 @@ local log										= require("hs.logger").new("fcp")
 local fs 										= require("hs.fs")
 local inspect									= require("hs.inspect")
 local osascript 								= require("hs.osascript")
+local pathwatcher                               = require("hs.pathwatcher")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -302,8 +303,7 @@ prop.bind(fcp) {
 ---
 --- Returns:
 ---  * None
-function fcp:reset()
-    self._activeCommandSet = nil
+function fcp.reset()
 end
 
 --- cp.apple.finalcutpro:string(key[, locale[, quiet]]) -> string
@@ -1056,19 +1056,6 @@ function fcp.userCommandSetPath()
     return fs.pathToAbsolute("~/Library/Application Support/Final Cut Pro/Command Sets/")
 end
 
---- cp.apple.finalcutpro:activeCommandSetPath() -> string or nil
---- Method
---- Gets the 'Active Command Set' value from the Final Cut Pro preferences
----
---- Parameters:
----  * None
----
---- Returns:
----  * The 'Active Command Set' value, or the 'Default' Command Set if this is the first time Final Cut Pro has been run.
-function fcp:activeCommandSetPath()
-    return self.preferences:get("Active Command Set", self:defaultCommandSetPath())
-end
-
 --- cp.apple.finalcutpro:defaultCommandSetPath([locale]) -> string
 --- Method
 --- Gets the path to the 'Default' Command Set.
@@ -1082,6 +1069,11 @@ function fcp:defaultCommandSetPath(locale)
     locale = localeID(locale) or self:currentLocale()
     return self:getPath() .. "/Contents/Resources/" .. locale.code .. ".lproj/Default.commandset"
 end
+
+--- cp.apple.finalcutpro.activeCommandSetPath <cp.prop: string>
+--- Field
+--- Gets the 'Active Command Set' value from the Final Cut Pro preferences
+fcp.activeCommandSetPath = fcp.preferences:prop("Active Command Set", fcp:defaultCommandSetPath()):bind(fcp, "activeCommandSetPath")
 
 --- cp.apple.finalcutpro.commandSet(path) -> string
 --- Function
@@ -1101,29 +1093,36 @@ function fcp.commandSet(path)
     end
 end
 
---- cp.apple.finalcutpro:activeCommandSet([forceReload]) -> table or nil
---- Method
---- Returns the 'Active Command Set' as a Table. The result is cached, so pass in
---- `true` for `forceReload` if you want to reload it.
----
---- Parameters:
----  * [forceReload]	- If `true`, require the Command Set to be reloaded.
----
---- Returns:
----  * A table of the Active Command Set's contents, or `nil` if an error occurred
-function fcp:activeCommandSet(forceReload)
-    if forceReload or not self._activeCommandSet then
-        local path = self:activeCommandSetPath()
-        self._activeCommandSet = self.commandSet(path)
-        ----------------------------------------------------------------------------------------
-        -- Reset the command cache since we've loaded a new set:
-        ----------------------------------------------------------------------------------------
-        if self._activeCommands then
-            self._activeCommands = nil
-        end
-    end
-    return self._activeCommandSet
+--- cp.apple.finalcutpro.activeCommandSet <cp.prop: table; live>
+--- Variable
+--- Contins the 'Active Command Set' as a `table`. The result is cached, but
+--- updated automatically if the command set changes.
+fcp.activeCommandSet = prop(function()
+    local path = fcp.activeCommandSetPath()
+    local commandSet = fcp.commandSet(path)
+    ----------------------------------------------------------------------------------------
+    -- Reset the command cache since we've loaded a new set:
+    ----------------------------------------------------------------------------------------
+    fcp._activeCommands = nil
+
+    return commandSet
+end):bind(fcp, "activeCommandSet")
+:cached()
+:monitor(fcp.activeCommandSetPath)
+
+
+--------------------------------------------------------------------------------
+-- Refresh Command Set Cache if a Command Set is modified:
+--------------------------------------------------------------------------------
+local userCommandSetPath = fcp.userCommandSetPath()
+if userCommandSetPath then
+    --log.df("Setting up User Command Set Watcher: %s", userCommandSetPath)
+    pathwatcher.new(userCommandSetPath .. "/", function()
+        --log.df("Updating Final Cut Pro Command Editor Cache.")
+        fcp.activeCommandSet:update()
+    end):start()
 end
+
 
 --- cp.apple.finalcutpro.getCommandShortcuts(id) -> table of hs.commands.shortcut
 --- Method

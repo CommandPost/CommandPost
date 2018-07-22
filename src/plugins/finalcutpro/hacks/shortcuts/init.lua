@@ -658,22 +658,7 @@ function mod.init(deps, env)
     mod.fcpxCmds    = deps.fcpxCmds
     mod.commandSetsPath = env:pathToAbsolute("/commandsets/")
 
-    --------------------------------------------------------------------------------
-    -- Cache the last Command Set Path:
-    --------------------------------------------------------------------------------
-    mod.lastCommandSetPath = fcp:activeCommandSetPath()
-
-    --------------------------------------------------------------------------------
-    -- Refresh Shortcuts if the Command Set Path in Preferences file is modified:
-    --------------------------------------------------------------------------------
-    fcp.app.preferences:watch(function()
-        local activeCommandSetPath = fcp:activeCommandSetPath()
-        if activeCommandSetPath and mod.lastCommandSetPath ~= activeCommandSetPath then
-            --log.df("Updating Final Cut Pro Command Editor Cache.")
-            mod.refresh()
-            mod.lastCommandSetPath = activeCommandSetPath
-        end
-    end)
+    fcp.activeCommandSetPath:watch(mod.refresh)
 
     --------------------------------------------------------------------------------
     -- Refresh Shortcuts if Command Editor is Closed:
