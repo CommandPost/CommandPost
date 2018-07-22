@@ -87,26 +87,6 @@ local function prefsFilePath(self)
     return filePath
 end
 
--- prefsWatchers(prefs[, create])
--- Function
--- Returns the watcher cache for the `prefs` instance.
---
--- Parameters:
---  * prefs         - The `prefs` instance.
---  * create        - If `true`, the cache will be created if it doesn't already exist.
---
--- Returns:
---  * The watchers cache.
-local function prefsWatchers(prefs, create)
-    local data = metadata(prefs)
-    local watchers = data.watchers
-    if not watchers and create then
-        watchers = {}
-        data.watchers = watchers
-    end
-    return watchers
-end
-
 -- prefsProps(prefs[, create]) -> table
 -- Function
 -- Finds the `cp.prop` cache for the `prefs`.
@@ -188,15 +168,6 @@ local function watchFiles(prefs)
                 local fileName = file:match(PLIST_MATCH)
                 if fileName == data.bundleID then
                     --------------------------------------------------------------------------------
-                    -- Notify Watchers:
-                    --------------------------------------------------------------------------------
-                    local watchers = prefsWatchers(prefs, false)
-                        if watchers then
-                        for _,watcher in ipairs(watchers) do
-                            watcher(prefs)
-                        end
-                    end
-                    --------------------------------------------------------------------------------
                     -- Update cp.props:
                     --------------------------------------------------------------------------------
                     local props = prefsProps(prefs, false)
@@ -209,28 +180,6 @@ local function watchFiles(prefs)
             end
         end):start()
     end
-end
-
---- cp.app.prefs.watch(prefs, watchFn) -> nil
---- Function
---- Adds a watch function which will be notified when the preferences change.
---- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
----
---- Parameters:
----  * prefs     - The `prefs` instance to watch.
----  * watchFn   - The function that will get called.
----
---- Returns:
----  * Nothing
-function mod.watch(prefs, watchFn)
-    if type(watchFn) ~= "function" then
-        error("The `watchFn` provided is not a function: " .. type(watchFn))
-    end
-
-    local watchers = prefsWatchers(prefs, true)
-    table.insert(watchers, watchFn)
-
-    watchFiles(prefs)
 end
 
 --- cp.app.prefs.get(prefs, key[, defaultValue]) -> value
@@ -313,19 +262,7 @@ function mod.prop(prefs, key, defaultValue)
 end
 
 function mod.mt:__index(key)
-    if key == "watch" then
-        --- cp.app.prefs:watch(watchFn) -> nil
-        --- Method
-        --- Adds a watch function which will be notified when the preferences change.
-        --- The `watchFn` is a function which will be passed the `prefs` when it has been updated.
-        ---
-        --- Parameters:
-        ---  * watchFn   - The function that will get called.
-        ---
-        --- Returns:
-        ---  * Nothing
-        return mod.watch
-    elseif key == "prop" then
+    if key == "prop" then
         --- cp.app.prefs:prop(key, defaultValue) -> cp.prop
         --- Method
         --- Returns a `cp.prop` for the specified `key`. It can be watched for updates.
