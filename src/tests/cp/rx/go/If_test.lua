@@ -40,7 +40,7 @@ return test.suite("cp.rx.go.If"):with {
 
     test("If Complex", function()
         local thenCalled, otherwiseCalled = false, false
-        local result, completed = nil, false
+        local result, completed = {}, false
 
         If("a"):Is("b")
         :Then(function(_)
@@ -53,7 +53,7 @@ return test.suite("cp.rx.go.If"):with {
         end)
         :Now(
             function(value)
-                result = value
+                insert(result, value)
             end,
             function(message)
                 ok(false, message)
@@ -65,7 +65,7 @@ return test.suite("cp.rx.go.If"):with {
 
         ok(eq(thenCalled, false))
         ok(eq(otherwiseCalled, true))
-        ok(eq(result, nil))
+        ok(eq(result, {nil}))
         ok(eq(completed, true))
 
         local aProp = prop.TRUE()
@@ -243,5 +243,30 @@ return test.suite("cp.rx.go.If"):with {
         )
 
         ok(eq(error, true))
+    end),
+
+    test("If:Then:Then", function()
+        local ifProp = prop.FALSE()
+        local results = {}
+        local message = nil
+        local completed = true
+
+        If(ifProp):Is(false):Then(function() end)
+        :Then(Given(true))
+        :Now(
+            function(value)
+                insert(results, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(results, {true}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
     end),
 }

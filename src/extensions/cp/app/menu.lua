@@ -37,7 +37,7 @@ local go                        = require("cp.rx.go")
 local format                    = string.format
 local insert, remove, concat    = table.insert, table.remove, table.concat
 local Observable                = rx.Observable
-local Given, If, Throw, Last    = go.Given, go.If, go.Throw, go.Last
+local Do, If, Throw, Last       = go.Do, go.If, go.Throw, go.Last
 
 --------------------------------------------------------------------------------
 --
@@ -367,13 +367,13 @@ end
 ---   * `previewApp:menu():doSelectMenu({"File", "Take Screenshot", "From Entire Screen"}):Now()`
 function menu.mt:doSelectMenu(path, options)
     options = options or {}
-    local finder = self:doFindMenuUI(path, options)
+    local findMenu = self:doFindMenuUI(path, options)
 
     if not options.pressAll then
-        finder = Last(finder)
+        findMenu = Last(findMenu)
     end
 
-    return Given(finder)
+    return Do(findMenu)
     :Then(function(item)
         if item:attributeValue("AXEnabled") then
             item:doPress()
@@ -382,6 +382,7 @@ function menu.mt:doSelectMenu(path, options)
             return Throw("Menu Item Disabled: %s", item:attributeValue("AXTitle"))
         end
     end)
+    :ThenYield()
     :Label("menu:doSelectMenu")
 end
 
@@ -573,7 +574,7 @@ function menu.mt:doFindMenuUI(path, options)
         local menuItemName
         local menuUI = ui
 
-        return Given(Observable.fromTable(path, ipairs)):Then(
+        return Do(Observable.fromTable(path, ipairs)):Then(
             function(step)
                 local menuItemUI
                 if type(step) == "number" then

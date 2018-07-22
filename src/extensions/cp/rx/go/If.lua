@@ -1,19 +1,45 @@
-
 --- === cp.rx.go.If ===
 ---
 --- A `Statement` that will check if a `resolvable` matches a predicate, then executes other `resolvables`.
 
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local require = require
+--local log                   = require("hs.logger").new("go_If")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local inspect               = require("hs.inspect")
 
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local Observable            = require("cp.rx").Observable
 local Statement             = require("cp.rx.go.Statement")
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local toObservable          = Statement.toObservable
 local toObservables         = Statement.toObservables
 
 local insert                = table.insert
 local pack, unpack          = table.pack, table.unpack
 local format                = string.format
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
 
 -- checks that the value is not false and not nil.
 local function isTruthy(value)
@@ -59,10 +85,8 @@ end)
     local o = toObservable(context.value):first()
 
     o = o:flatMap(function(...)
-        -- log.df("If: processing result...")
         if context.predicate(...) then
             -- loop through the `thens`, passing the results to the next via zip/flatMap
-            -- log.df("If:Then: processing 'Then' #1")
             local o2 = Observable.zip(unpack(toObservables(thens[1], pack(...))))
             for i = 2, #thens do
                 -- log.df("If:Then: processing 'Then' #%d", i)
@@ -72,13 +96,12 @@ end)
             end
             return o2
         else
-            -- log.df("If: Otherwise...")
             local otherwises = context.otherwises
             if otherwises and #otherwises > 0 then
                     -- loop through the `thens`, passing the results to the next via zip/flatMap
                 -- log.df("If:Then:Otherwise: processing 'Otherwise' #1")
                 local o2 = Observable.zip(unpack(toObservables(otherwises[1], pack(...))))
-                for i = 2, #thens do
+                for i = 2, #otherwises do
                     -- log.df("If:Then:Otherwise: processing 'Otherwise' #%d", i)
                     o2 = o2:flatMap(function(...)
                         return Observable.zip(unpack(toObservables(otherwises[i], pack(...))))

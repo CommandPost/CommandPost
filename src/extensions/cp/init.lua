@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
+local require = require
 local logger = require("hs.logger")
 logger.defaultLogLevel = "verbose"
 
@@ -354,7 +355,8 @@ function mod.init()
     -- application, there may be a requirement to alter this value to get best
     -- performance in Lua applications.
     --------------------------------------------------------------------------------
-    collectgarbage("setpause",100)
+    -- NOTE: Disabled by David due to causing constant pausing with Scrolling Timeline
+    -- collectgarbage("setpause",100)
 
     --------------------------------------------------------------------------------
     -- GARBAGE COLLECTOR STEP MULTIPLIER:
@@ -367,7 +369,7 @@ function mod.init()
     -- not generally preferred. The default value is 200, which means the garbage
     -- collector runs twice as the speed of memory allocation.
     --------------------------------------------------------------------------------
-    collectgarbage("setstepmul",200)
+    -- collectgarbage("setstepmul",200)
 
     --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:

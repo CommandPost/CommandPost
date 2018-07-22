@@ -1,4 +1,4 @@
---- === plugins.finalcutpro.watchfolders.panels.fcpxml ===
+--- === plugins.finalcutpro.watchfolders.fcpxml ===
 ---
 --- Final Cut Pro FCPXML Watch Folder Plugin.
 
@@ -37,57 +37,57 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.SECONDS_UNTIL_DELETE -> number
+--- plugins.finalcutpro.watchfolders.fcpxml.SECONDS_UNTIL_DELETE -> number
 --- Constant
 --- Seconds until a file is deleted.
 mod.SECONDS_UNTIL_DELETE = 30
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolderTableID -> string
+--- plugins.finalcutpro.watchfolders.fcpxml.watchFolderTableID -> string
 --- Variable
 --- Watch Folder Table ID
 mod.watchFolderTableID = "fcpxmlWatchFoldersTable"
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.filesInTransit -> table
+--- plugins.finalcutpro.watchfolders.fcpxml.filesInTransit -> table
 --- Variable
 --- Files currently being copied
 mod.filesInTransit = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.notifications -> table
+--- plugins.finalcutpro.watchfolders.fcpxml.notifications -> table
 --- Variable
 --- Table of Path Watchers
 mod.pathwatchers = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.notifications -> table
+--- plugins.finalcutpro.watchfolders.fcpxml.notifications -> table
 --- Variable
 --- Table of Notifications
 mod.notifications = {}
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.disableImport -> boolean
+--- plugins.finalcutpro.watchfolders.fcpxml.disableImport -> boolean
 --- Variable
 --- When `true` Notifications will no longer be triggered.
 mod.disableImport = false
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.automaticallyImport <cp.prop: boolean>
+--- plugins.finalcutpro.watchfolders.fcpxml.automaticallyImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not new generated voice file are automatically added to the timeline or not.
 mod.automaticallyImport = config.prop("fcp.fcpxml.watchFolders.automaticallyImport", false)
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.savedNotifications <cp.prop: table>
+--- plugins.finalcutpro.watchfolders.fcpxml.savedNotifications <cp.prop: table>
 --- Variable
 --- Table of Notifications that are saved between restarts
 mod.savedNotifications = config.prop("fcp.fcpxml.watchFolders.savedNotifications", {})
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.deleteAfterImport <cp.prop: boolean>
+--- plugins.finalcutpro.watchfolders.fcpxml.deleteAfterImport <cp.prop: boolean>
 --- Variable
 --- Boolean that sets whether or not you want to delete file after they've been imported.
 mod.deleteAfterImport = config.prop("fcp.fcpxml.watchFolders.deleteAfterImport", false)
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolders <cp.prop: table>
+--- plugins.finalcutpro.watchfolders.fcpxml.watchFolders <cp.prop: table>
 --- Variable
 --- Table of the users watch folders.
 mod.watchFolders = config.prop("fcp.fcpxml.watchFolders", {})
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.generateTable() -> string
+--- plugins.finalcutpro.watchfolders.fcpxml.generateTable() -> string
 --- Function
 --- Generate HTML Table
 ---
@@ -151,7 +151,7 @@ function mod.generateTable()
 
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.refreshTable() -> string
+--- plugins.finalcutpro.watchfolders.fcpxml.refreshTable() -> string
 --- Function
 --- Refreshes the Final Cut Pro Watch Folder Panel via JavaScript Injection
 ---
@@ -176,7 +176,7 @@ function mod.refreshTable()
     mod.manager.injectScript(result)
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.controllerCallback(id, params) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.controllerCallback(id, params) -> none
 --- Function
 --- Callback Controller
 ---
@@ -196,7 +196,7 @@ function mod.controllerCallback(_, params)
     end
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.styleSheet() -> cp.web.html
+--- plugins.finalcutpro.watchfolders.fcpxml.styleSheet() -> cp.web.html
 --- Function
 --- Generates Style Sheet
 ---
@@ -301,7 +301,7 @@ function mod.styleSheet()
     ]])
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.insertFilesIntoFinalCutPro(files) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.insertFilesIntoFinalCutPro(files) -> none
 --- Function
 --- Imports a file into Final Cut Pro
 ---
@@ -343,7 +343,7 @@ function mod.insertFilesIntoFinalCutPro(files)
     return true
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.importFile(file, obj) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.importFile(file, obj) -> none
 --- Function
 --- Imports a file into Final Cut Pro
 ---
@@ -414,7 +414,7 @@ function mod.importFile(file)
 
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.createNotification(file) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.createNotification(file) -> none
 --- Function
 --- Creates a new notification
 ---
@@ -442,7 +442,7 @@ function mod.createNotification(file)
     mod.savedNotifications(savedNotifications)
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.watchFolderTriggered(files) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.watchFolderTriggered(files) -> none
 --- Function
 --- Watch Folder Triggered
 ---
@@ -543,7 +543,7 @@ function mod.watchFolderTriggered(files, eventFlags)
 
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.newWatcher(path) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.newWatcher(path) -> none
 --- Function
 --- New Folder Watcher
 ---
@@ -556,7 +556,7 @@ function mod.newWatcher(path)
     mod.pathwatchers[path] = pathwatcher.new(path, mod.watchFolderTriggered):start()
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.removeWatcher(path) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.removeWatcher(path) -> none
 --- Function
 --- Remove Folder Watcher
 ---
@@ -570,7 +570,7 @@ function mod.removeWatcher(path)
     mod.pathwatchers[path] = nil
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.addWatchFolder() -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.addWatchFolder() -> none
 --- Function
 --- Opens the "Add Watch Folder" Dialog.
 ---
@@ -628,7 +628,7 @@ local function getFileFromTag(tag)
     return nil
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.setupWatchers(path) -> none
+--- plugins.finalcutpro.watchfolders.fcpxml.setupWatchers(path) -> none
 --- Function
 --- Setup Folder Watchers
 ---
@@ -668,7 +668,7 @@ function mod.setupWatchers()
 
 end
 
---- plugins.finalcutpro.watchfolders.panels.fcpxml.init(deps, env) -> table
+--- plugins.finalcutpro.watchfolders.fcpxml.init(deps, env) -> table
 --- Function
 --- Initialises the module.
 ---
@@ -775,7 +775,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id = "finalcutpro.watchfolders.panels.fcpxml",
+    id = "finalcutpro.watchfolders.fcpxml",
     group = "finalcutpro",
     dependencies = {
         ["core.watchfolders.manager"]       = "manager",

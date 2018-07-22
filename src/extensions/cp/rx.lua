@@ -68,6 +68,21 @@ util.defaultScheduler = function(newScheduler)
     end
     return defaultScheduler
 end
+util.tableId = function(value)
+    local __tostring
+    local mt = getmetatable(value)
+    if mt then
+        __tostring = mt.__tostring
+        mt.__tostring = nil
+    end
+
+    local id = tostring(value)
+
+    if mt then
+        mt.__tostring = __tostring
+    end
+    return id
+end
 
 ---- @class Reference
 -- @description A handle representing the link between an Observer and an Observable, as well as any
@@ -1599,26 +1614,48 @@ function Observable:take(n)
     end
 
     local i = 1
+    local done = false
+    local ref
+
+    local function onCompleted()
+      if not done then
+        done = true
+        if ref then
+          ref:cancel()
+        end
+        return observer:onCompleted()
+      end
+    end
 
     local function onNext(...)
-      observer:onNext(...)
+      if not done and i <= n then
+        i = i + 1
+        observer:onNext(...)
 
-      i = i + 1
-
-      if i > n then
-        observer:onCompleted()
+        if i > n then
+          onCompleted()
+        end
       end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if not done then
+        done = true
+        if ref then
+          ref:cancel()
+        end
+        return observer:onError(e)
+      end
     end
 
-    local function onCompleted()
-      return observer:onCompleted()
-    end
+    ref = self:subscribe(onNext, onError, onCompleted)
 
-    return self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(function()
+      done = true
+      if ref then
+        ref:cancel()
+      end
+    end)
   end)
 end
 

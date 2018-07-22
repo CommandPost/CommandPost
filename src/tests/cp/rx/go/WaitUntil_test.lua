@@ -9,7 +9,7 @@ return test.suite("cp.rx.go.WaitUntil"):with {
         -- local scheduler = rx.CooperativeScheduler.create(0)
 
         local subject = Subject.create()
-        local received = nil
+        local received = {}
         local completed = false
 
         local wait = WaitUntil(subject):Is("green")
@@ -17,7 +17,7 @@ return test.suite("cp.rx.go.WaitUntil"):with {
         wait:Now(
             function(value)
                 ok(eq(value, "green"))
-                received = value
+                table.insert(received, value)
             end,
             function(message)
                 ok(false, message)
@@ -29,14 +29,18 @@ return test.suite("cp.rx.go.WaitUntil"):with {
 
         ok(subject == wait:context().requirement)
 
-        ok(eq(received, nil))
+        ok(eq(received, {}))
+
+        subject:onNext(nil)
+        ok(eq(received, {}))
+        ok(eq(completed, false))
 
         subject:onNext("red")
-        ok(eq(received, nil))
+        ok(eq(received, {}))
         ok(eq(completed, false))
 
         subject:onNext("green")
-        ok(eq(received, "green"))
+        ok(eq(received, {"green"}))
         ok(eq(completed, true))
     end),
 }
