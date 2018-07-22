@@ -12,6 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local log                                       = require("hs.logger").new("tng_favs")
+local _bench                                    = require("cp.bench")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -299,6 +300,9 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+    _bench.press("tangent_favourites", mod)
+    _bench.press("tangentManager", deps.tangentManager)
+    _bench.press("actionManager", deps.actionManager)
     mod.init(deps.tangentManager, deps.actionManager, deps.cpGroup)
     return mod
 end
