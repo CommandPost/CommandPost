@@ -11,6 +11,7 @@
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local require               = require
 local audiodevice           = require("hs.audiodevice")
 local audiowatcher          = require("hs.audiodevice.watcher")
 
@@ -98,25 +99,27 @@ function mod.init(osGroup)
         :onPrev(toggleMute)
 
     mod.currentOutputDevice:watch(function(device)
-        volume:update()
-        mute:update()
-        device:watcherCallback(function(_, name, scope, _)
-            -- log.df("audio device '%s' event: %s; %s; %s", uid, name, scope, element)
-            if scope == "outp" then
-                if name == "vmvc" then
-                    volume:update()
-                elseif name == "mute" then
-                    mute:update()
+        if device then
+            volume:update()
+            mute:update()
+            device:watcherCallback(function(_, name, scope, _)
+                -- log.df("audio device '%s' event: %s; %s; %s", uid, name, scope, element)
+                if scope and scope == "outp" then
+                    if name and name == "vmvc" and volume then
+                        volume:update()
+                    elseif name and name == "mute" and mute then
+                        mute:update()
+                    end
                 end
+            end)
+            if not device:watcherIsRunning() then
+                device:watcherStart()
             end
-        end)
-        if not device:watcherIsRunning() then
-            device:watcherStart()
         end
     end, true)
 
     audiowatcher.setCallback(function(event)
-        if event == "dOut" then
+        if event and event == "dOut" then
             mod.currentOutputDevice:update()
         end
     end)
