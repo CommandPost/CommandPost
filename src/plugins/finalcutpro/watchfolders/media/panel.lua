@@ -72,8 +72,8 @@ function mod.init(mediaFolderManager, panelManager)
         :addCheckbox(20,
             {
                 label		= i18n("deleteAfterImport", {
-                    numberOfSeconds = mod.SECONDS_UNTIL_DELETE,
-                    seconds = i18n("second", {count = mod.SECONDS_UNTIL_DELETE})
+                    numberOfSeconds = mediaFolderManager.SECONDS_UNTIL_DELETE,
+                    seconds = i18n("second", {count = mediaFolderManager.SECONDS_UNTIL_DELETE})
                 }),
                 checked		= mod.manager.deleteAfterImport,
                 onchange	= function(_, params) mod.manager.deleteAfterImport(params.checked) end,
