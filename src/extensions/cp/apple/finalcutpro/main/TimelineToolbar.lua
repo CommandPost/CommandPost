@@ -16,10 +16,15 @@ local axutils							= require("cp.ui.axutils")
 local prop								= require("cp.prop")
 
 local RadioButton						= require("cp.ui.RadioButton")
+local StaticText                        = require("cp.ui.StaticText")
 
 local TimelineAppearance				= require("cp.apple.finalcutpro.main.TimelineAppearance")
 
 local id								= require("cp.apple.finalcutpro.ids") "TimelineToolbar"
+
+local childMatching, childWithID        = axutils.childMatching, axutils.childWithID
+local childFromLeft                     = axutils.childFromLeft
+local cache                             = axutils.cache
 
 --------------------------------------------------------------------------------
 --
@@ -40,7 +45,7 @@ function TimelineToolbar.new(parent)
     -- TODO: Add documentation
     local UI = prop(function(self)
         return axutils.cache(self, "_ui", function()
-            return axutils.childMatching(self:parent():UI(), TimelineToolbar.matches)
+            return childMatching(self:parent():UI(), TimelineToolbar.matches)
         end,
         TimelineToolbar.matches)
     end)
@@ -56,15 +61,15 @@ function TimelineToolbar.new(parent)
         -- TODO: Add documentation
         -- Contains buttons relating to mouse skimming behaviour:
         skimmingGroupUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_skimmingGroup", function()
-                return axutils.childWithID(original(), id "SkimmingGroup")
+            return cache(self, "_skimmingGroup", function()
+                return childWithID(original(), id "SkimmingGroup")
             end)
         end),
 
         -- TODO: Add documentation
         effectsGroupUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_effectsGroup", function()
-                return axutils.childWithID(original(), id "EffectsGroup")
+            return cache(self, "_effectsGroup", function()
+                return childWithID(original(), id "EffectsGroup")
             end)
         end)
     }
@@ -84,9 +89,30 @@ end
 
 -----------------------------------------------------------------------
 --
--- THE BUTTONS:
+-- THE TOOLBAR ITEMS:
 --
 -----------------------------------------------------------------------
+
+
+--- cp.apple.finalcutpro.main.TimelineToolbar:title() -> cp.ui.StaticText
+--- Method
+--- Returns the title [StaticText](cp.ui.StaticText.md) from the Timeline Titlebar.
+---
+--- Parameters:
+--- * None.
+---
+--- Returns:
+--- * The [StaticText](cp.ui.StaticText.md) containing the title.
+function TimelineToolbar:title()
+    if not self._title then
+        self._title = StaticText.new(self, self.UI:mutate(function(original)
+            return cache(self, "_titleUI", function()
+                return childFromLeft(original(), 1, StaticText.matches)
+            end)
+        end))
+    end
+    return self._title
+end
 
 -- TODO: Add documentation
 function TimelineToolbar:appearance()

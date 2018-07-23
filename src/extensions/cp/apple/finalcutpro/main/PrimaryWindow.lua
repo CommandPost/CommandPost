@@ -362,10 +362,7 @@ end
 --- Returns:
 ---  * A `cp.ui.Alert` object
 function PrimaryWindow:alert()
-    if not self._alert then
-        self._alert = Alert.new(self)
-    end
-    return self._alert
+    return self:window():alert()
 end
 
 return PrimaryWindow

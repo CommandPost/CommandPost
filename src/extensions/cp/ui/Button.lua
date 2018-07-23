@@ -21,7 +21,7 @@ local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 local go                            = require("cp.rx.go")
 
-local Do, Throw                     = go.Do, go.Throw
+local If                            = go.If
 
 --------------------------------------------------------------------------------
 --
@@ -182,14 +182,13 @@ end
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
 function Button:doPress()
-    return Do(function()
-        local ui = self:UI()
-        if ui then
-            ui:doPress()
-        else
-            return Throw("Button not found.")
-        end
+    return If(self.UI):Then(function(ui)
+        ui:doPress()
+        return true
     end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("Button:doPress")
 end
 
 -- cp.ui.Button:__call() -> self, boolean

@@ -61,6 +61,8 @@ function TimelineContents.new(parent)
         end
         return nil
     end)
+    o:app():notifier():watchFor("AXUIElementDestroyed", function() scrollAreaUI:update() end)
+    o:app():notifier():watchFor("AXCreated", function() scrollAreaUI:update() end)
 
     -- TODO: Add documentation
     local UI = scrollAreaUI:mutate(function(original, self)

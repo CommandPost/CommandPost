@@ -510,4 +510,17 @@ function Timeline:toolbar()
     return self._toolbar
 end
 
+--- cp.apple.finalcutpro.main.Timeline:title() -> cp.ui.StaticText
+--- Method
+--- Returns the [StaticText](cp.ui.StaticText.md) containing the title.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `StaticText` object.
+function Timeline:title()
+    return self:toolbar():title()
+end
+
 return Timeline
