@@ -220,7 +220,8 @@ function Viewer.new(app, eventViewer)
     local contentsUI = UI:mutate(function(original)
         return cache(o, "_contents", function()
             local ui = original()
-            return ui and childFromTop(ui, 2)
+            local splitGroup = ui and childFromTop(ui, 2)
+            return splitGroup and splitGroup[1]
         end)
     end)
 
