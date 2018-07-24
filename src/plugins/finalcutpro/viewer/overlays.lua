@@ -147,11 +147,7 @@ mod.guidePosition = config.prop("fcpViewerGuidePosition", {})
 --- Returns:
 ---  * None
 function mod.getViewerUI()
-    local ui = fcp:viewer():UI()
-    local splitGroup = ui and axutils.childWithRole(ui, "AXSplitGroup")
-    local groups = splitGroup and axutils.childrenWithRole(splitGroup, "AXGroup")
-    local fcpFrame = groups and groups[#groups]
-    return fcpFrame
+    return fcp:viewer():contentsUI()
 end
 
 --- plugins.finalcutpro.viewer.overlays.show() -> none
