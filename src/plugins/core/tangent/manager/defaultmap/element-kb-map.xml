@@ -200,30 +200,35 @@
                         <Control type="Encoder" number="0"> <!-- Element-Kb Knob 1 -->
                             <Mapping mode="Std">
                                 <Key>0x00303102</Key> <!-- Color Board - Exposure - Master - Percentage -->
+                                <CustomName>Cb Ms Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="1"> <!-- Element-Kb Knob 2 -->
                             <Mapping mode="Std">
                                 <Key>0x00302102</Key> <!-- Color Board - Saturation - Master - Percentage -->
+                                <CustomName>Cb Ms Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="3"> <!-- Element-Kb Knob 4 -->
                             <Mapping mode="Std">
                                 <Key>0x00303202</Key> <!-- Color Board - Exposure - Shadows - Percentage -->
+                                <CustomName>Cb Sd Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="6"> <!-- Element-Kb Knob 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00303302</Key> <!-- Color Board - Exposure - Midtones - Percentage -->
+                                <CustomName>Cb Mt Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="9"> <!-- Element-Kb Knob 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00303402</Key> <!-- Color Board - Exposure - Highlights - Percentage -->
+                                <CustomName>Cb Hl Pct</CustomName>
                                 <Display>Number</Display>
                             </Mapping>
                         </Control>
