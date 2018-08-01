@@ -109,15 +109,14 @@ end
 -- Constructor
 -- Creates a new `activator` instance with the specified ID and action manager
 function activator.new(id, manager)
-    local o = {
+
+    local prefix = PACKAGE .. id .. "."
+
+    local o = prop.extend({
         _id             = id,
         _manager        = manager,
         _chooser        = nil,      -- the actual hs.chooser
-    }
-
-    prop.extend(o, activator.mt)
-
-    local prefix = PACKAGE .. id .. "."
+    }, activator.mt)
 
     --- plugins.core.action.activator.searchSubText <cp.prop: boolean>
     --- Field
