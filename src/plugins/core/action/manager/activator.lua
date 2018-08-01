@@ -22,6 +22,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require                   = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -56,7 +57,7 @@ local _                         = require("moses")
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local sort, insert              = table.sort, table.insert
+local sort, insert, pack        = table.sort, table.insert, table.pack
 local concat                    = fnutils.concat
 local format                    = string.format
 
@@ -280,7 +281,7 @@ end
 ---  * `true` if the handlers were found.
 function activator.mt:allowHandlers(...)
     local allowed = {}
-    for _,id in ipairs(table.pack(...)) do -- luacheck: ignore
+    for _,id in ipairs(pack(...)) do
         if self._manager.getHandler(id) then
             allowed[id] = true
         else
@@ -331,7 +332,7 @@ function activator.mt:enableHandler(id)
     return true
 end
 
---- plugins.core.action.activator:enableAllHandlers() -> nothing
+--- plugins.core.action.activator:enableAllHandlers() -> none
 --- Method
 --- Enables the all allowed handlers.
 ---
@@ -339,13 +340,13 @@ end
 ---  * None
 ---
 --- Returns:
----  * Nothing
+---  * None
 function activator.mt:enableAllHandlers()
     self._disabledHandlers:set(nil)
     self:refreshChooser()
 end
 
---- plugins.core.action.activator:disableAllHandlers() -> nothing
+--- plugins.core.action.activator:disableAllHandlers() -> none
 --- Method
 --- Disables the all allowed handlers.
 ---
@@ -353,7 +354,7 @@ end
 ---  * None
 ---
 --- Returns:
----  * Nothing
+---  * None
 function activator.mt:disableAllHandlers()
     local dh = {}
     for id,_ in pairs(self:allowedHandlers()) do
@@ -674,11 +675,18 @@ function activator.mt:activeChoices()
     return _.filter(self:allChoices(), function(_,choice) return (not choice.hidden or showHidden) and not disabledHandlers[choice.type] end)
 end
 
--- plugins.core.action.activator:_findChoices() -> nothing
+-- plugins.core.action.activator:_findChoices() -> none
 -- Method
 -- Finds and sorts all choices from enabled handlers. They are available via
 -- the [choices](#choices) or [allChoices](#allChoices) properties.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 function activator.mt:_findChoices()
+
     --------------------------------------------------------------------------------
     -- Check if we are already watching the handlers:
     --------------------------------------------------------------------------------
@@ -686,10 +694,11 @@ function activator.mt:_findChoices()
     self._watched = true
 
     local result = {}
-    for _,handler in pairs(self:allowedHandlers()) do
+    for _, handler in pairs(self:allowedHandlers()) do
         local choices = handler:choices()
         if choices then
-            concat(result, choices:getChoices())
+            local choicesTable = choices:getChoices()
+            concat(result, choicesTable)
         end
         --------------------------------------------------------------------------------
         -- Check if we should watch the handler choices:
@@ -712,9 +721,15 @@ function activator.mt:_findChoices()
     self:sortChoices()
 end
 
---- plugins.core.action.activator:refresh()
+--- plugins.core.action.activator:refresh() -> none
 --- Method
 --- Clears the existing set of choices and requests new ones from enabled action handlers.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
 function activator.mt:refresh()
     self._choices = nil
 end
@@ -791,7 +806,7 @@ function activator.mt:chooser()
     return self._chooser
 end
 
---- plugins.core.action.activator:refreshChooser()
+--- plugins.core.action.activator:refreshChooser() -> none
 --- Method
 --- Refreshes a Chooser.
 ---
@@ -807,7 +822,7 @@ function activator.mt:refreshChooser()
     end
 end
 
---- plugins.core.action.activator:show()
+--- plugins.core.action.activator:show() -> boolean
 --- Method
 --- Shows a chooser listing the available actions. When selected by the user,
 --- the [onActivate](#onActivate) function is called.
@@ -816,8 +831,12 @@ end
 ---  * None
 ---
 --- Returns:
----  * None
+---  * `true` if successful
 function activator.mt:show()
+
+    --------------------------------------------------------------------------------
+    -- Get Chooser:
+    --------------------------------------------------------------------------------
     local theChooser = self:chooser()
     if theChooser and theChooser:isVisible() then
         return
@@ -829,25 +848,29 @@ function activator.mt:show()
     self:refreshChooser()
 
     --------------------------------------------------------------------------------
-    -- Remember last query?
+    -- Remember Last Query:
     --------------------------------------------------------------------------------
     local chooserRememberLast = self:lastQueryRemembered()
-    if not chooserRememberLast then
-        theChooser:query("")
-    else
+    if chooserRememberLast then
         theChooser:query(self:lastQueryValue())
+    else
+        theChooser:query("")
     end
+
+    --------------------------------------------------------------------------------
+    -- Search Console Subtext:
+    --------------------------------------------------------------------------------
+    theChooser:searchSubText(self:searchSubText())
 
     --------------------------------------------------------------------------------
     -- Show Console:
     --------------------------------------------------------------------------------
-    theChooser:searchSubText(self:searchSubText())
     theChooser:show()
 
     return true
 end
 
---- plugins.core.action.activator:hide()
+--- plugins.core.action.activator:hide() -> none
 --- Method
 --- Hides a chooser listing the available actions.
 ---
@@ -1071,7 +1094,7 @@ function activator.mt:rightClickAction(index)
             end, disabled = allDisabled },
             { title = "-" }
         }
-        fnutils.concat(allItems, actionItems)
+        concat(allItems, actionItems)
 
         sections.menu = allItems
 
