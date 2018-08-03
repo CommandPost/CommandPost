@@ -244,3 +244,5 @@ end)
 --- Returns:
 ---  * A [Require.OrThrow](cp.rx.go.Require.OrThrow.md) instance.
 Require.Matches.allow(Require.OrThrow)
+
+return Require

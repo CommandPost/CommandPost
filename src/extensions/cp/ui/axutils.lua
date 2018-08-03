@@ -370,7 +370,7 @@ end
 --- Returns:
 ---  * `true` if the element is valid.
 function axutils.isValid(element)
-    return element ~= nil and element.role
+    return element ~= nil and element:isValid()
 end
 
 --- cp.ui.axutils.cache(source, key, finderFn, [verifyFn]) -> axuielement
@@ -452,6 +452,23 @@ function axutils.snapshot(element, filename)
         end
     end
     return nil
+end
+
+axutils.match = {}
+
+--- cp.ui.axutils.match.role(roleName) -> function
+--- Function
+--- Returns a `match` function that will return true if the `axuielement` has the specified `AXRole`.
+---
+--- Parameters:
+--- * roleName  - The role to check for.
+---
+--- Returns:
+--- * `function(element) -> boolean` that checks the `AXRole` is `roleName`
+function axutils.match.role(roleName)
+    return function(element)
+        return element and element:attributeValue("AXRole") == roleName
+    end
 end
 
 return axutils

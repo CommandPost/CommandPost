@@ -68,28 +68,27 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>VIDEO</CustomName>
+                                <CustomName>Video</CustomName>
                                 <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>BOARD</CustomName>
+                                <CustomName>Board</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>WHEELS</CustomName>
+                                <CustomName>Wheels</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>GLOBAL</CustomName>
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
@@ -166,89 +165,88 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>VIDEO</CustomName>
+                                <CustomName>Video</CustomName>
                                 <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>BOARD</CustomName>
+                                <CustomName>Board</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>WHEELS</CustomName>
+                                <CustomName>Wheels</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>GLOBAL</CustomName>
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>LOAD B1</CustomName>
+                                <CustomName>Load B1</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>SAVE B1</CustomName>
+                                <CustomName>Save B1</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>LOAD B2</CustomName>
+                                <CustomName>Load B2</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>SAVE B2</CustomName>
+                                <CustomName>Save B2</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
                             <Mapping mode="Std">
                                 <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>LOAD B3</CustomName>
+                                <CustomName>Load B3</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>SAVE B3</CustomName>
+                                <CustomName>Save B3</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
-                                <CustomName>VIEW M1</CustomName>
+                                <CustomName>View M1</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120005</Key> <!-- Save Current Frame to Stills Memory 1 -->
-                                <CustomName>SAVE M1</CustomName>
+                                <CustomName>Save M1</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00120006</Key> <!-- View Stills Memory 2 -->
-                                <CustomName>VIEW M2</CustomName>
+                                <CustomName>View M2</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120007</Key> <!-- Save Current Frame to Stills Memory 2 -->
-                                <CustomName>SAVE M2</CustomName>
+                                <CustomName>Save M2</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00120008</Key> <!-- View Stills Memory 3 -->
-                                <CustomName>VIEW M3</CustomName>
+                                <CustomName>View M3</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120009</Key> <!-- Save Current Frame to Stills Memory 3 -->
-                                <CustomName>SAVE M3</CustomName>
+                                <CustomName>Save M3</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -329,89 +327,88 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>VIDEO</CustomName>
+                                <CustomName>Video</CustomName>
                                 <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>BOARD</CustomName>
+                                <CustomName>Board</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>WHEELS</CustomName>
+                                <CustomName>Wheels</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>GLOBAL</CustomName>
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>LOAD B1</CustomName>
+                                <CustomName>Load B1</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>SAVE B1</CustomName>
+                                <CustomName>Save B1</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00130003</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>LOAD B2</CustomName>
+                                <CustomName>Load B2</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>SAVE B2</CustomName>
+                                <CustomName>Save B2</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
                             <Mapping mode="Std">
                                 <Key>0x00130005</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>LOAD B3</CustomName>
+                                <CustomName>Load B3</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>SAVE B3</CustomName>
+                                <CustomName>Save B3</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
-                                <CustomName>VIEW M1</CustomName>
+                                <CustomName>View M1</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120005</Key> <!-- Save Current Frame to Stills Memory 1 -->
-                                <CustomName>SAVE M1</CustomName>
+                                <CustomName>Save M1</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00120006</Key> <!-- View Stills Memory 2 -->
-                                <CustomName>VIEW M2</CustomName>
+                                <CustomName>View M2</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120007</Key> <!-- Save Current Frame to Stills Memory 2 -->
-                                <CustomName>SAVE M2</CustomName>
+                                <CustomName>Save M2</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00120008</Key> <!-- View Stills Memory 3 -->
-                                <CustomName>VIEW M3</CustomName>
+                                <CustomName>View M3</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120009</Key> <!-- Save Current Frame to Stills Memory 3 -->
-                                <CustomName>SAVE M3</CustomName>
+                                <CustomName>Save M3</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -525,89 +522,88 @@
                         <Control type="Button" number="0"> <!-- Element-Mf Button 1 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>VIDEO</CustomName>
+                                <CustomName>Video</CustomName>
                                 <Argument>0x00010010</Argument> <!-- FCP: Video -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="1"> <!-- Element-Mf Button 2 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>BOARD</CustomName>
+                                <CustomName>Board</CustomName>
                                 <Argument>0x00010003</Argument> <!-- FCP: Board -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="2"> <!-- Element-Mf Button 3 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>WHEELS</CustomName>
+                                <CustomName>Wheels</CustomName>
                                 <Argument>0x00010004</Argument> <!-- FCP: Wheels -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="3"> <!-- Element-Mf Button 4 -->
                             <Mapping mode="Std">
                                 <Key>0x8000000B</Key> <!-- Goto Mode -->
-                                <CustomName>GLOBAL</CustomName>
                                 <Argument>0x0000000A</Argument> <!-- Global -->
                             </Mapping>
                         </Control>
                         <Control type="Button" number="6"> <!-- Element-Mf Button 7 -->
                             <Mapping mode="Std">
                                 <Key>0x00130001</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>LOAD B1</CustomName>
+                                <CustomName>Load B1</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130000</Key> <!-- Pasteboard Buffer 1 -->
-                                <CustomName>SAVE B1</CustomName>
+                                <CustomName>Save B1</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="7"> <!-- Element-Mf Button 8 -->
                             <Mapping mode="Std">
                                 <Key>0x00130003</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>LOAD B2</CustomName>
+                                <CustomName>Load B2</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130002</Key> <!-- Pasteboard Buffer 2 -->
-                                <CustomName>SAVE B2</CustomName>
+                                <CustomName>Save B2</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="8"> <!-- Element-Mf Button 9 -->
                             <Mapping mode="Std">
                                 <Key>0x00130005</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>LOAD B3</CustomName>
+                                <CustomName>Load B3</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00130004</Key> <!-- Pasteboard Buffer 3 -->
-                                <CustomName>SAVE B3</CustomName>
+                                <CustomName>Save B3</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="9"> <!-- Element-Mf Button 10 -->
                             <Mapping mode="Std">
                                 <Key>0x00120004</Key> <!-- View Stills Memory 1 -->
-                                <CustomName>VIEW M1</CustomName>
+                                <CustomName>View M1</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120005</Key> <!-- Save Current Frame to Stills Memory 1 -->
-                                <CustomName>SAVE M1</CustomName>
+                                <CustomName>Save M1</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="10"> <!-- Element-Mf Button 11 -->
                             <Mapping mode="Std">
                                 <Key>0x00120006</Key> <!-- View Stills Memory 2 -->
-                                <CustomName>VIEW M2</CustomName>
+                                <CustomName>View M2</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120007</Key> <!-- Save Current Frame to Stills Memory 2 -->
-                                <CustomName>SAVE M2</CustomName>
+                                <CustomName>Save M2</CustomName>
                             </Mapping>
                         </Control>
                         <Control type="Button" number="11"> <!-- Element-Mf Button 12 -->
                             <Mapping mode="Std">
                                 <Key>0x00120008</Key> <!-- View Stills Memory 3 -->
-                                <CustomName>VIEW M3</CustomName>
+                                <CustomName>View M3</CustomName>
                             </Mapping>
                             <Mapping mode="Alt">
                                 <Key>0x00120009</Key> <!-- Save Current Frame to Stills Memory 3 -->
-                                <CustomName>SAVE M3</CustomName>
+                                <CustomName>Save M3</CustomName>
                             </Mapping>
                         </Control>
                     </Bank>

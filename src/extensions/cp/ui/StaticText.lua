@@ -90,7 +90,7 @@ function StaticText.new(parent, finderFn, convertFn)
     end
 
     prop.bind(o) {
-        --- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil>
+        --- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil; read-only; live?>
         --- Field
         --- The `axuielement` or `nil` if it's not available currently.
         UI = UI,

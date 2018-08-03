@@ -26,7 +26,11 @@ local hswindow                      = require("hs.window")
 local app                           = require("cp.app")
 local axutils                       = require("cp.ui.axutils")
 local notifier                      = require("cp.ui.notifier")
+local Alert                         = require("cp.ui.Alert")
 local prop                          = require("cp.prop")
+
+local If                            = require("cp.rx.go.If")
+local WaitUntil                     = require("cp.rx.go.WaitUntil")
 
 local format                        = string.format
 
@@ -94,6 +98,16 @@ function Window.new(cpApp, uiProp)
         function(original)
             local window = original()
             return window ~= nil and window:id()
+        end
+    )
+
+--- cp.ui.Window.id <cp.prop: string; read-only>
+--- Field
+--- The window title, or `nil` if the window is not currently visible.
+    local title = hsWindow:mutate(
+        function(original)
+            local window = original()
+            return window and window:title()
         end
     )
 
@@ -188,6 +202,7 @@ function Window.new(cpApp, uiProp)
         UI = UI,
         hsWindow = hsWindow,
         id = id,
+        title = title,
         visible = visible,
         focused = focused,
         exists = exists,
@@ -210,7 +225,7 @@ function Window:app()
     return self._app
 end
 
---- cp.ui.Window.close() -> boolean
+--- cp.ui.Window:close() -> boolean
 --- Method
 --- Attempts to close the window.
 ---
@@ -224,7 +239,31 @@ function Window:close()
     return hsWindow ~= nil and hsWindow:close()
 end
 
---- cp.ui.Window.focus() -> boolean
+--- cp.ui.Window:doClose([waitSeconds]) -> cp.rx.go.Statement <boolean>
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that will attempt to close the window, if it is visible.
+---
+--- Parameters:
+--- * waitSeconds   - If provided, this is the number of seconds to wait before failing. If not provided, no check is done and the statement completes immediately.
+---
+--- Returns:
+--- * The `Statement` to execute, resolving to `true` if the window is closed successfully, or `false` if not.
+function Window:doClose(waitSeconds)
+    waitSeconds = waitSeconds or 0
+    return If(self.hsWindow):Then(function(hsWindow)
+        return hsWindow:close()
+    end)
+    :Then(
+        If(waitSeconds):IsNot(0):Then(
+            WaitUntil(self.visible:NOT())
+            :TimeoutAfter(waitSeconds * 1000)
+        )
+    ):Otherwise(true)
+    :ThenYield()
+    :Label("Window:doClose")
+end
+
+--- cp.ui.Window:focus() -> boolean
 --- Method
 --- Attempts to focus the window.
 ---
@@ -238,6 +277,42 @@ function Window:focus()
     return hsWindow ~= nil and hsWindow:focus()
 end
 
+--- cp.ui.Window:doFocus() -> cp.rx.go.Statement
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) will attempt to focus on the window, if it is visible.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement` to execute, which resolves to `true` if the window was successfully focused, or `false` if not.
+function Window:doFocus()
+    return If(self.hsWindow):Then(function(hsWindow)
+        return hsWindow:focus()
+    end)
+    :Then(WaitUntil(self.focused))
+    :Otherwise(false)
+    :TimeoutAfter(10000)
+    :ThenYield()
+    :Label("Window:doFocus")
+end
+
+--- cp.ui.Window:alert() -> cp.ui.Alert
+--- Method
+--- Provides access to any 'Alert' windows on the PrimaryWindow.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * A `cp.ui.Alert` object
+function Window:alert()
+    if not self._alert then
+        self._alert = Alert.new(self)
+    end
+    return self._alert
+end
+
 --- cp.ui.Window:notifier() -> cp.ui.notifier
 --- Method
 --- Returns a `notifier` that is tracking the application UI element. It has already been started.
@@ -249,9 +324,7 @@ end
 ---  * The notifier.
 function Window:notifier()
     if not self._notifier then
-        local theApp = self:app()
-        local bundleID = theApp:bundleID()
-        self._notifier = notifier.new(bundleID, function() return self:UI() end):start()
+        self._notifier = notifier.new(self:app():bundleID(), self.UI):start()
     end
     return self._notifier
 end
@@ -275,7 +348,9 @@ function Window:snapshot(path)
 end
 
 function Window:__tostring()
-    return format("cp.ui.Window: %s", self:app())
+    local title = self:title()
+    local label = title and " ("..title..")" or ""
+    return format("cp.ui.Window: %s%s", self:app(), label)
 end
 
 return Window

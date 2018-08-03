@@ -52,18 +52,8 @@ function mod.init(tangentManager, fcpGroup)
     -- Add Final Cut Pro Modes:
     --------------------------------------------------------------------------------
     tangentManager.addMode(0x00010003, "FCP: Board")
-        :onActivate(function()
-            if fcp.isFrontmost() then
-                fcp:colorBoard():show()
-            end
-        end)
 
     tangentManager.addMode(0x00010004, "FCP: Wheels")
-        :onActivate(function()
-            if fcp.isFrontmost() then
-                fcp:inspector():color():colorWheels():show()
-            end
-        end)
 
     --------------------------------------------------------------------------------
     -- Add Final Cut Pro Parameters:

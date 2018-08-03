@@ -1669,14 +1669,15 @@ end
 --- Returns:
 ---  * The `target`, now extending the `source`.
 function prop.extend(target, source)
+    local o = {}
     -- bind any props to itself
-    prop.bind(target, true)(target)
+    prop.bind(o, true)(target)
     -- rebind any props in the source to the target
-    rebind(target, source)
+    rebind(o, source)
     if source.__index == nil then
         source.__index = source
     end
-    return setmetatable(target, source)
+    return setmetatable(o, source)
 end
 
 --- cp.prop.bind(owner[, relaxed]) -> function
@@ -1725,7 +1726,9 @@ function prop.bind(owner, relaxed)
                 elseif vOwner ~= owner then -- it's owned by someone else. wrap instead.
                     v:wrap(owner, k)
                 end
-            elseif not relaxed then
+            elseif relaxed then -- just copy the original over
+                owner[k] = v
+            else
                 error(format("The binding value must be a `cp.prop`, but was a `%s`.", type(v)))
             end
         end

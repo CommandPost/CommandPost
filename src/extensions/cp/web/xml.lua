@@ -100,7 +100,8 @@ local DEFAULT_STANDALONE = "yes"
 local xml = {}
 
 local function xmlEscape(s)
-    return gsub(s, "[\"><'&]", XML_ENTITIES)
+    local result = gsub(s, "[\"><'&]", XML_ENTITIES)
+    return result
 end
 
 --- cp.web.xml.is(value) -> boolean

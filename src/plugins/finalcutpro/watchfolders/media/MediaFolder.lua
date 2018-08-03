@@ -38,6 +38,7 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local Do, If            = go.Do, go.If
 local Throw             = go.Throw
+local Require           = go.Require
 local unpack            = table.unpack
 
 local fileExists        = tools.doesFileExist
@@ -595,6 +596,9 @@ end
 ---  * A `Statement` to execute.
 function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
     return Do(function()
+        if files == nil or #files == 0 then
+            return Throw(i18n("fcpMediaFolder_Error_NoFiles"))
+        end
         --------------------------------------------------------------------------------
         -- Temporarily stop the Pasteboard Watcher:
         --------------------------------------------------------------------------------
@@ -616,7 +620,7 @@ function MediaFolder.mt:doWriteFilesToPasteboard(files, context)
         end
         local result = pasteboard.writeObjects(objects)
         if not result then
-            return Throw("The URL could not be written to the Pasteboard.")
+            return Throw(i18n("fcpMediaFolder_Error_UnableToPaste", {file = files[1], count = #files}))
         end
     end)
     :ThenYield()
@@ -711,7 +715,11 @@ function MediaFolder.mt:doImportNext()
         --------------------------------------------------------------------------------
         :Then(
             timeline:doShow()
-            :TimeoutAfter(1000, "Unable to show the Timeline")
+            :TimeoutAfter(1000, i18n("fcpMediaFolder_Error_ShowTimeline"))
+        )
+
+        :Then(
+            Require(timeline.isLoaded):OrThrow(i18n("fcpMediaFolder_Error_ProjectRequired"))
         )
 
         --------------------------------------------------------------------------------
