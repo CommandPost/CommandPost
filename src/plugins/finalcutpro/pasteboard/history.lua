@@ -17,11 +17,12 @@ local log                                   = require("hs.logger").new("pasteboa
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local base64                                = require("hs.base64")
 local config                                = require("cp.config")
 local fcp                                   = require("cp.apple.finalcutpro")
 local fnutils                               = require("hs.fnutils")
-local json                                  = require("cp.json")
 local i18n                                  = require("cp.i18n")
+local json                                  = require("cp.json")
 
 --------------------------------------------------------------------------------
 --
@@ -113,8 +114,15 @@ end
 --- Returns:
 ---  * None
 function mod.addHistoryItem(data, label)
+
+    --------------------------------------------------------------------------------
+    -- Encode the data to base64:
+    --------------------------------------------------------------------------------
+    local encodedData = base64.encode(data)
+
     local history = mod.getHistory()
-    local item = {data, label}
+    local item = {encodedData, label}
+
     --------------------------------------------------------------------------------
     -- Drop old history items:
     --------------------------------------------------------------------------------
@@ -137,10 +145,19 @@ end
 function mod.pasteHistoryItem(index)
     local item = mod.getHistory()[index]
     if item then
+
+        --------------------------------------------------------------------------------
+        -- Decode the data:
+        --------------------------------------------------------------------------------
+        local data = base64.decode(item[1])
+        if not data then
+            log.w("Unable to decode the Pasteboard History Data for index %s.", index)
+        end
+
         --------------------------------------------------------------------------------
         -- Put item back in the Pasteboard quietly.
         --------------------------------------------------------------------------------
-        mod._manager.writeFCPXData(item[1], true)
+        mod._manager.writeFCPXData(data, true)
 
         --------------------------------------------------------------------------------
         -- Paste in FCPX:
@@ -279,7 +296,14 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     local legacy = config.get("pasteboardHistory", nil)
     if legacy then
-        mod.history(fnutils.copy(legacy))
+
+        local migrateHistory = {}
+
+        for i=1, #legacy do
+            table.insert(migrateHistory, {base64.encode(legacy[i][1]), legacy[i][2]})
+        end
+
+        mod.history(migrateHistory)
         config.set("pasteboardHistory", nil)
         log.df("Migrated Pasteboard History from Plist to JSON.")
     end
