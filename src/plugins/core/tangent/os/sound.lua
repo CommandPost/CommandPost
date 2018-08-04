@@ -7,11 +7,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local require               = require
 local audiodevice           = require("hs.audiodevice")
 local audiowatcher          = require("hs.audiodevice.watcher")
 

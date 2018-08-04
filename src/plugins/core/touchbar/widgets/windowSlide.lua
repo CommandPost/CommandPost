@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 local canvas   			= require("hs.canvas")
 local screen   			= require("hs.screen")
 local touchbar 			= require("hs._asm.undocumented.touchbar")

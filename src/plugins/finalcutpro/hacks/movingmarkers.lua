@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -29,11 +30,6 @@ local tools                     = require("cp.tools")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-
--- PRIORITY
--- Constant
--- The menubar position priority.
-local PRIORITY = 5
 
 -- DEFAULT_VALUE
 -- Constant

@@ -1,6 +1,7 @@
 -- local log		= require("hs.logger").new("t_named")
 -- local inspect	= require("hs.inspect")
 
+local require = require
 local test = require("cp.test")
 
 local named = require("named")

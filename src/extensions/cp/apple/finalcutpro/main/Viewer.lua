@@ -7,19 +7,20 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local require = require
 local log                               = require("hs.logger").new("viewer")
--- local inspect                           = require("hs.inspect")
+
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
+-- local inspect                           = require("hs.inspect")
 local timer                             = require("hs.timer")
 
 --------------------------------------------------------------------------------
@@ -43,13 +44,14 @@ local id                                = require("cp.apple.finalcutpro.ids") "V
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local match, sub, find                  = string.match, string.sub, string.find
-local childrenWithRole                  = axutils.childrenWithRole
-local childrenMatching                  = axutils.childrenMatching
 local cache                             = axutils.cache
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local childFromTop, childFromBottom     = axutils.childFromTop, axutils.childFromBottom
+local childrenMatching                  = axutils.childrenMatching
+local childrenWithRole                  = axutils.childrenWithRole
+local childWithRole                     = axutils.childWithRole
 local delayedTimer                      = timer.delayed
+local match, sub, find                  = string.match, string.sub, string.find
 
 --------------------------------------------------------------------------------
 --
@@ -220,8 +222,10 @@ function Viewer.new(app, eventViewer)
     local contentsUI = UI:mutate(function(original)
         return cache(o, "_contents", function()
             local ui = original()
-            local splitGroup = ui and childFromTop(ui, 2)
-            return splitGroup and splitGroup[1]
+            local splitGroup = ui and childWithRole(ui, "AXSplitGroup")
+            local groups = splitGroup and childrenWithRole(splitGroup, "AXGroup")
+            local contentGroup = groups and groups[#groups]
+            return contentGroup
         end)
     end)
 
