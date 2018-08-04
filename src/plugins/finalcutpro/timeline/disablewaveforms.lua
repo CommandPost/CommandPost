@@ -15,6 +15,8 @@ local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 
+local If                = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -69,14 +71,16 @@ mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE):mutate(
         --------------------------------------------------------------------------------
         -- Restart Final Cut Pro:
         --------------------------------------------------------------------------------
-        if running and not fcp:restart() then
-            --------------------------------------------------------------------------------
-            -- Failed to restart Final Cut Pro:
-            --------------------------------------------------------------------------------
-            dialog.displayErrorMessage(i18n("failedToRestart"))
-            return
+        if running then
+            If(fcp:doRestart()):Is(false):Then(function()
+                --------------------------------------------------------------------------------
+                -- Failed to restart Final Cut Pro:
+                --------------------------------------------------------------------------------
+                dialog.displayErrorMessage(i18n("failedToRestart"))
+                return
+            end)
+            :Now()
         end
-
     end
 )
 

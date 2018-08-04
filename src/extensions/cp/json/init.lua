@@ -117,7 +117,7 @@ function mod.decode(...)
     return json.decode(...)
 end
 
---- cp.json.prop(folder, filename, defaultValue) -> cp.prop
+--- cp.json.prop(path, folder, filename, defaultValue) -> cp.prop
 --- Function
 --- Returns a `cp.prop` instance for a JSON file.
 ---

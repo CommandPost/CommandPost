@@ -44,7 +44,7 @@ local util = {}
 local defaultScheduler = nil
 
 util.pack = table.pack or function(...) return { n = select('#', ...), ... } end
-util.unpack = table.unpack or unpack --luacheck: ignore
+util.unpack = table.unpack or _G.unpack
 util.eq = function(x, y) return x == y end
 util.noop = function() end
 util.identity = function(x) return x end
@@ -1140,22 +1140,27 @@ end
 function Observable:map(callback)
   return Observable.create(function(observer)
     callback = callback or util.identity
+    local ref = nil
 
     local function onNext(...)
-      return util.tryWithObserver(observer, function(...)
+      local success = util.tryWithObserver(observer, function(...)
         return observer:onNext(callback(...))
       end, ...)
+      if not success and ref then
+        ref:cancel()
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      observer:onError(e)
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return ref
   end)
 end
 

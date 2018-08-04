@@ -30,11 +30,6 @@ local tools                     = require("cp.tools")
 --
 --------------------------------------------------------------------------------
 
--- PRIORITY
--- Constant
--- The menubar position priority.
-local PRIORITY = 5
-
 -- DEFAULT_VALUE
 -- Constant
 -- Whether or not the plugin is enabled by default.
@@ -132,11 +127,15 @@ mod.enabled = prop.new(
         --------------------------------------------------------------------------------
         -- Restart Final Cut Pro:
         --------------------------------------------------------------------------------
-        if running and not fcp:restart() then
-            --------------------------------------------------------------------------------
-            -- Failed to restart Final Cut Pro:
-            --------------------------------------------------------------------------------
-            dialog.displayErrorMessage(i18n("failedToRestart"))
+        if running then
+            fcp:doRestart():Now(function(success)
+                if not success then
+                    --------------------------------------------------------------------------------
+                    -- Failed to restart Final Cut Pro:
+                    --------------------------------------------------------------------------------
+                    dialog.displayErrorMessage(i18n("failedToRestart"))
+                end
+            end)
         end
     end
 )

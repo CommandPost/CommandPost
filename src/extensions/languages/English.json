@@ -895,6 +895,8 @@
         "overrideValueInvalid": "The value you entered is not valid.\n\nPlease try again.",
         "pasteboard": "Pasteboard",
         "pasteboardBuffer": "Pasteboard Buffer",
+        "pasteboardHistory_TimelineEmpty": "Unable to Paste into Timeline",
+        "pasteboardHistory_TimelineEmptyInfo": "Nothing is currently loaded into the Timeline.",
         "pasteboardToMarkers_title": "Paste Markers to Selected Clip in Browser from Pasteboard",
         "pasteboardToMarkersCompleted": "Copying Pasteboard Markers to Selected Clip in Browser has completed successfully.",
         "pasteboardToMarkersFailed": "The pasteboard doesn't contain any text in the required format to process.\n\nYou should use the following syntax:\n\n05:00:00: Test Keyword 1\n#05:01:00:01: Test Keyword 2\n*05:02:00: Test Keyword 3\n05:02:15: Test Keyword 4\n*05:03:00: Test Keyword 5\n05:03:15: Test Keyword 6\n#05:03:30: Test Keyword 7\n*05:04:00: Test Keyword 8\n\nIf a * is place before the timecode, it will make the clip as a favourite between the current timecode value and the next timecode value.\n\nIf a # is place before the timecode, it will create a 'To Do' marker.",

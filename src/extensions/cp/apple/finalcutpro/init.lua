@@ -383,20 +383,15 @@ function fcp:doLaunch()
     return self.app:doLaunch()
 end
 
---- cp.apple.finalcutpro:restart([waitSeconds]) -> self
+--- cp.apple.finalcutpro:doRestart() -> cp.rx.go.Statement
 --- Method
---- Restart Final Cut Pro, if it is running. If not, nothing happens.
+--- Returns a [Statement](cp.rx.go.Statement.cp) that will restart Final Cut Pro, if it is running. If not, nothing happens.
 ---
 --- Parameters:
----  * `waitSeconds`	- If provided, the number of seconds to wait for the restart to complete.
+---  * None.
 ---
 --- Returns:
 ---  * The FCP instance.
-function fcp:restart(waitSeconds)
-    self.app:restart(waitSeconds)
-    return self
-end
-
 function fcp:doRestart()
     return self.app:doRestart()
 end
