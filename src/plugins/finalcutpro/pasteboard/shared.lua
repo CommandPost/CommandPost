@@ -30,6 +30,9 @@ local fcp                                       = require("cp.apple.finalcutpro"
 local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
 
+local Do                                        = require("cp.rx.go.Do")
+local Throw                                     = require("cp.rx.go.Throw")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -366,7 +369,21 @@ function mod.copyWithCustomClipNameAndFolder()
     end
 end
 
---- plugins.finalcutpro.pasteboard.shared.pasteHistoryItem(folderName, index) -> none
+function mod.doDecodeHistoryItem(folderName, index)
+    return Do(function()
+        local item = mod.getHistory(folderName)[index]
+        if item then
+            local data = base64.decode(item.data)
+            if data then
+                return data
+            end
+        end
+        return Throw("Unable to decode the item data for '%s' at %d.", folderName, index)
+    end)
+    :Label("shared.doDecodeHistoryItem")
+end
+
+--- plugins.finalcutpro.pasteboard.shared.doPasteHistoryItem(folderName, index) -> none
 --- Function
 --- Paste History Item.
 ---
@@ -376,32 +393,16 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.pasteHistoryItem(folderName, index)
-    local item = mod.getHistory(folderName)[index]
-    if item then
-        --------------------------------------------------------------------------------
-        -- Decode the data:
-        --------------------------------------------------------------------------------
-        local data = base64.decode(item.data)
-        if not data then
-            log.w("Unable to decode the item data for '%s' at %d.", folderName, index)
-        end
+function mod.doPasteHistoryItem(folderName, index)
+    return Do(mod.doDecodeHistoryItem(folderName, index))
+    :Then(function(data)
         --------------------------------------------------------------------------------
         -- Put item back in the pasteboard quietly:
         --------------------------------------------------------------------------------
         mod._manager.writeFCPXData(data, true)
-
-        --------------------------------------------------------------------------------
-        -- Paste in FCPX:
-        --------------------------------------------------------------------------------
-        fcp:launch()
-        if fcp:performShortcut("Paste") then
-            return true
-        else
-            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.pasteHistoryItem().")
-        end
-    end
-    return false
+    end)
+    :Then(fcp:doLaunch())
+    :Then(fcp.doShortcut("Paste"))
 end
 
 --- plugins.finalcutpro.pasteboard.shared.init() -> sharedPasteboard
@@ -482,7 +483,7 @@ function mod.generateSharedPasteboardMenu()
                 if #history > 0 then
                     for i=#history, 1, -1 do
                         local item = history[i]
-                        table.insert(historyItems, {title = item.name, fn = function() mod.pasteHistoryItem(folder, i) end, disabled = not fcpxRunning})
+                        table.insert(historyItems, {title = item.name, fn = function() mod.doPasteHistoryItem(folder, i):Now() end, disabled = not fcpxRunning})
                     end
                     table.insert(historyItems, { title = "-" })
                     table.insert(historyItems, { title = i18n("clearSharedPasteboard"), fn = function() mod.clearHistory(folder) end })

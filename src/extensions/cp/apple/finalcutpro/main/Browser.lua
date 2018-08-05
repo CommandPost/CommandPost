@@ -32,6 +32,9 @@ local prop                              = require("cp.prop")
 local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
 local BrowserMarkerPopover              = require("cp.apple.finalcutpro.main.BrowserMarkerPopover")
 
+local Do                                = require("cp.rx.go.Do")
+local If                                = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -201,6 +204,30 @@ function Browser:showOnPrimary()
     return self
 end
 
+--- cp.apple.finalcutpro.main.Browser:doShowOnPrimary() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show the Browser on Primary Screen.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function Browser:doShowOnPrimary()
+    local menuBar = self:app():menu()
+
+    return Do(
+        If(self.isOnSecondary):Then(
+            menuBar:doSelectMenu({"Window", "Show in Secondary Display", "Browser"})
+        )
+    ):Then(
+        If(self.isShowing):IsNot(true):Then(
+            menuBar:doSelectMenu({"Window", "Show in Workspace", "Browser"})
+        )
+    )
+    :Label("Browser:doShowOnPrimary")
+end
+
 --- cp.apple.finalcutpro.main.Browser:showOnSecondary() -> Browser
 --- Method
 --- Show Browser on Secondary Screen.
@@ -220,6 +247,48 @@ function Browser:showOnSecondary()
     return self
 end
 
+--- cp.apple.finalcutpro.main.Browser:doShowOnSecondary() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show the Browser on Secondary Screen.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function Browser:doShowOnSecondary()
+    local menuBar = self:app():menu()
+
+    return Do(
+        self:parent():doShow()
+    ):Then(
+        If(self.isOnSecondary):IsNot(true):Then(
+            menuBar:doSelectMenu({"Window", "Show in Secondary Display", "Browser"})
+        )
+    )
+    :Label("Browser:doShowOnSecondary")
+end
+
+--- cp.apple.finalcutpro.main.Browser:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will ensure the Browser is showing.
+--- If it's currently showing on the Secondary Screen it will stay there, otherwise
+--- it will get shown on the Primary Screen.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function Browser:doShow()
+    return Do(
+        If(self.isShowing):IsNot(true):Then(
+            self:doShowOnPrimary()
+        )
+    )
+    :Label("Browser:doShow")
+end
+
 --- cp.apple.finalcutpro.main.Browser:hide() -> Browser
 --- Method
 --- Hides the Browser.
@@ -235,6 +304,21 @@ function Browser:hide()
         self:app():menu():selectMenu({"Window", "Show in Workspace", "Browser"})
     end
     return self
+end
+
+--- cp.apple.finalcutpro.main.Browser:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will hide the Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function Browser:doHide()
+    return If(self.isShowing):Then(
+        self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Browser"})
+    )
 end
 
 -----------------------------------------------------------------------

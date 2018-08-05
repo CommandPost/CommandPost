@@ -17,6 +17,7 @@ local log								= require("hs.logger").new("librariesBrowser")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local i18n                              = require("cp.i18n")
 local just								= require("cp.just")
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
@@ -29,6 +30,13 @@ local Table								= require("cp.ui.Table")
 local TextField							= require("cp.ui.TextField")
 
 local id								= require("cp.apple.finalcutpro.ids") "LibrariesBrowser"
+
+local Observable                        = require("cp.rx").Observable
+local Do                                = require("cp.rx.go.Do")
+local Given                             = require("cp.rx.go.Given")
+local First                             = require("cp.rx.go.First")
+local If                                = require("cp.rx.go.If")
+local Throw                             = require("cp.rx.go.Throw")
 
 --------------------------------------------------------------------------------
 --
@@ -154,6 +162,25 @@ function LibrariesBrowser:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show the Libraries Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` object.
+function LibrariesBrowser:doShow()
+    local browser = self:parent()
+    return Given(browser:doShow())
+    :Then(function()
+        browser:librariesShowing(true)
+    end)
+    :ThenYield()
+    :Label("LibrariesBrowser:doShow")
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:hide() -> LibrariesBrowser
 --- Method
 --- Hide the Libraries Browser.
@@ -166,6 +193,19 @@ end
 function LibrariesBrowser:hide()
     self:parent():hide()
     return self
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will hide the Libraries Browser.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`.
+function LibrariesBrowser:doHide()
+    return self:parent():doHide()
 end
 
 -----------------------------------------------------------------------------
@@ -427,7 +467,7 @@ function LibrariesBrowser.matchesSidebar(element)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectLibrary(...) -> Table
---- Function
+--- Method
 --- Selects a Library.
 ---
 --- Parameters:
@@ -440,7 +480,7 @@ function LibrariesBrowser:selectLibrary(...)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:openClipTitled(name) -> boolean
---- Function
+--- Method
 --- Open a clip with a specific title.
 ---
 --- Parameters:
@@ -470,8 +510,28 @@ function LibrariesBrowser:openClipTitled(name)
     return false
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doOpenClipTitled(title) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to open the named clip in the Libraries Browser in the Timeline.
+---
+--- Parameters:
+--- * title      - The title of the clip to open.
+---
+--- Returns:
+--- * The `Statement` to execute.
+function LibrariesBrowser:doOpenClipTitled(title)
+    local menuBar = self:app():menu()
+
+    return Do(self:app():doLaunch())
+    :Then(self:doSelectClipTitled(title))
+    :Then(menuBar:doSelectMenu({"Window", "Go To", "Libraries"}))
+    :Then(menuBar:doSelectMenu({"Clip", "Open Clip"}))
+    :Catch(Throw("Unable to open clip: %s", title))
+    :Label("LibrariesBrowser:doOpenClipTitled")
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:clipsUI(filterFn) -> table | nil
---- Function
+--- Method
 --- Gets clip UIs using a custom filter.
 ---
 --- Parameters:
@@ -490,7 +550,7 @@ function LibrariesBrowser:clipsUI(filterFn)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:clips(filterFn) -> table | nil
---- Function
+--- Method
 --- Gets clips using a custom filter.
 ---
 --- Parameters:
@@ -509,7 +569,7 @@ function LibrariesBrowser:clips(filterFn)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectedClipsUI() -> table | nil
---- Function
+--- Method
 --- Gets selected clips UI's.
 ---
 --- Parameters:
@@ -528,7 +588,7 @@ function LibrariesBrowser:selectedClipsUI()
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectedClips() -> table | nil
---- Function
+--- Method
 --- Gets selected clips.
 ---
 --- Parameters:
@@ -547,7 +607,7 @@ function LibrariesBrowser:selectedClips()
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:showClip(clip) -> boolean
---- Function
+--- Method
 --- Shows a clip.
 ---
 --- Parameters:
@@ -564,7 +624,7 @@ function LibrariesBrowser:showClip(clip)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClip(clip) -> boolean
---- Function
+--- Method
 --- Selects a clip.
 ---
 --- Parameters:
@@ -584,7 +644,7 @@ function LibrariesBrowser:selectClip(clip)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipAt(index) -> boolean
---- Function
+--- Method
 --- Select clip at a specific index.
 ---
 --- Parameters:
@@ -601,7 +661,7 @@ function LibrariesBrowser:selectClipAt(index)
 end
 
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectClipTitled(title) -> boolean
---- Function
+--- Method
 --- Select clip with a specific title.
 ---
 --- Parameters:
@@ -622,8 +682,54 @@ function LibrariesBrowser:selectClipTitled(title)
     return false
 end
 
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doFindClips(filter) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will send each clip in the Libraries Browser matching the `filter` as an `onNext` signal.
+---
+--- Parameters:
+--- * filter    - a function which receives the [Clip](cp.apple.finalcutpro.content.Clip.md) to check and returns `true` or `false`.
+---
+--- Returns:
+--- * The `Statement`.
+function LibrariesBrowser:doFindClips(filter)
+    return Do(function() return Observable.fromTable(self:clips(filter)) end)
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doFindClipsTitled(title) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will send each clip in the Libraries Browser with the specified `title` as an `onNext` signal.
+---
+--- Parameters:
+--- * title    - The title string to check for.
+---
+--- Returns:
+--- * The `Statement`.
+function LibrariesBrowser:doFindClipsTitled(title)
+    return self:doFindClips(function(clip) return clip and clip:getTitle() == title end)
+end
+
+--- cp.apple.finalcutpro.main.LibrariesBrowser:doSelectClipTitled(title) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will select the first clip with a matching `title`.
+---
+--- Parameters:
+--- * title     - The title to select.
+---
+--- Returns:
+--- * The `Statement` ready to execute.
+function LibrariesBrowser:doSelectClipTitled(title)
+    return If(
+        First(self:doFindClipsTitled(title))
+    ):Then(function(clip)
+        return self:selectClip(clip)
+    end)
+    :Catch(Throw(i18n("LibrariesBrowser_NoClipTitled", {title = title})))
+    :ThenYield()
+    :Label("LibrariesBrowser:doSelectClipTitled")
+end
+
 --- cp.apple.finalcutpro.main.LibrariesBrowser:selectAll([clips]) -> boolean
---- Function
+--- Method
 --- Select all clips.
 ---
 --- Parameters:

@@ -480,6 +480,23 @@ function menu.mt:isEnabled(path, options)
     return menuItemUI and menuItemUI:attributeValue("AXEnabled")
 end
 
+--- cp.app.menu:doIsEnabled(path, options) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that returns `true` if the item at the end of the path is enabled.
+---
+--- Parameters:
+--- * path      - The menu path to check.
+--- * options   - The options.
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) to execute.
+function menu.mt:doIsEnabled(path, options)
+    return Do(Last(self:doFindMenuUI(path, options)))
+    :Then(function(item)
+        return item:attributeValue("AXEnabled") == true
+    end)
+end
+
 --- cp.app.menu:addMenuFinder(finder) -> nothing
 --- Method
 --- Registers an `AXMenuItem` finder function. The finder's job is to take an individual 'find'

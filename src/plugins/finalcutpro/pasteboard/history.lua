@@ -129,19 +129,17 @@ function mod.doPasteHistoryItem(index)
             mod._manager.writeFCPXData(item[1], true)
         end)
         :Then(
-            -- If(fcp:doShortcut("Paste"))
-            If(fcp:menu():doSelectMenu({"Edit", "Paste"}))
-                :Then(true)
-                :Otherwise(function()
-                    log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.doPasteHistoryItem().")
-                    return false
-                end)
+            fcp:menu():doSelectMenu({"Edit", "Paste"})
         ):Otherwise(function()
             dialog.displayAlertMessage(i18n("pasteboardHistory_TimelineEmpty"), i18n("pasteboardHistory_TimelineEmptyInfo"))
             return false
         end)
     )
     :Otherwise(false)
+    :Catch(function(message)
+        log.w("doPasteHistoryItem: %s", message)
+        return false
+    end)
     :Label("history.doPastHistoryItem")
 end
 

@@ -19,15 +19,18 @@ local log                               = require("hs.logger").new("multicam")
 local fcp                               = require("cp.apple.finalcutpro")
 local i18n                              = require("cp.i18n")
 
+local Do                                = require("cp.rx.go.Do")
+local Throw                             = require("cp.rx.go.Throw")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
 
--- PRIORITY -> number
+-- MAX_ANGLES -> number
 -- Constant
--- The menubar position priority.
+-- The maximum number of angles available.
 local MAX_ANGLES = 16
 
 -- ANGLE_TYPES -> table
@@ -42,44 +45,37 @@ local ANGLE_TYPES = {"Video", "Audio", "Both"}
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.multicam.cutAndSwitchMulticam(whichMode, whichAngle) -> boolean
+--- plugins.finalcutpro.timeline.multicam.doCutAndSwitchMulticam(whichMode, whichAngle) -> Statement
 --- Function
---- Cut & Switch Multicam.
+--- Creates a [Statement](cp.rx.go.Statement.md) to Cut & Switch Multicam.
 ---
 --- Parameters:
 ---  * whichMode - "Audio", "Video" or "Both" as string
 ---  * whichAngle - Number of Angle
 ---
 --- Returns:
----  * None
-function mod.cutAndSwitchMulticam(whichMode, whichAngle)
+---  * [Statement](cp.rx.go.Statement.md) to execute
+function mod.doCutAndSwitchMulticam(whichMode, whichAngle)
+    local cut = nil
     if whichMode == "Audio" then
-        if not fcp:performShortcut("MultiAngleEditStyleAudio") then
-            log.ef("We were unable to trigger the 'Cut/Switch Multicam Audio Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-            return false
-        end
+        cut = fcp:doShortcut("MultiAngleEditStyleAudio")
     end
 
     if whichMode == "Video" then
-        if not fcp:performShortcut("MultiAngleEditStyleVideo") then
-            log.ef("We were unable to trigger the 'Cut/Switch Multicam Video Only' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-            return false
-        end
+        cut = fcp:doShortcut("MultiAngleEditStyleVideo")
     end
 
     if whichMode == "Both" then
-        if not fcp:performShortcut("MultiAngleEditStyleAudioVideo") then
-            log.ef("We were unable to trigger the 'Cut/Switch Multicam Audio and Video' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-            return false
-        end
+        cut = fcp:doShortcut("MultiAngleEditStyleAudioVideo")
     end
 
-    if not fcp:performShortcut("CutSwitchAngle" .. tostring(string.format("%02d", whichAngle))) then
-        log.ef("We were unable to trigger the 'Cut and Switch to Viewer Angle " .. tostring(whichAngle) .. "' Shortcut.\n\nPlease make sure this shortcut is allocated in the Command Editor.\n\nError Occured in cutAndSwitchMulticam().")
-        return false
+    if not cut then
+        return Throw("Unsupported mode: %s", whichMode)
     end
 
-    return true
+    local switch = fcp.doShortcut("CutSwitchAngle" .. string.format("%02d", whichAngle))
+
+    return Do(fcp:doLaunch()):Then(cut):Then(switch)
 end
 
 --------------------------------------------------------------------------------
@@ -108,7 +104,7 @@ function plugin.init(deps)
             for _, whichType in ipairs(ANGLE_TYPES) do
                 deps.fcpxCmds:add("cpCutSwitchAngle" .. string.format("%02d", tostring(i)) .. whichType)
                     :titled(i18n("cpCutSwitch" .. whichType .. "Angle_customTitle", {count = i}))
-                    :whenActivated(function() mod.cutAndSwitchMulticam(whichType, i) end)
+                    :whenActivated(function() mod.doCutAndSwitchMulticam(whichType, i):Now() end)
             end
         end
     end

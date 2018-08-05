@@ -53,13 +53,13 @@ function mod.init(fcpGroup, pbm)
 
         mod.save:action(nextID, i18n("pasteboardBuffer") .. " " .. tostring(id))
         :onPress(function()
-            pbm.saveToBuffer(id)
+            pbm.doSaveToBuffer(id):Now()
         end)
         nextID = nextID + 1
 
         mod.restore:action(nextID, i18n("pasteboardBuffer") .. " " .. tostring(id))
         :onPress(function()
-            pbm.restoreFromBuffer(id)
+            pbm.doRestoreFromBuffer(id):Now()
         end)
         nextID = nextID + 1
 
