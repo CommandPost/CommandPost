@@ -929,6 +929,62 @@ function Observable:filter(predicate)
   end)
 end
 
+---- Returns an Observable that mirrors the source Observable, but will call a specified function when the source terminates on complete or error.
+-- @arg {function} handler - The handler function to call when onError/onComplete occurs.
+-- @returns {Observable}
+function Observable:finalize(handler)
+  return Observable.create(function(observer)
+    local done = false
+    local sub = nil
+
+    local function onNext(...)
+      if not done then
+        observer:onNext(...)
+      end
+    end
+
+    local function onError(message)
+      if not done then
+        local ok = util.tryWithObserver(observer, handler)
+        if ok then
+          observer:onError(message)
+        else
+          done = true
+          if sub then
+            sub:cancel()
+            sub = nil
+          end
+        end
+      end
+    end
+
+    local function onComplete()
+      if not done then
+        local ok = util.tryWithObserver(observer, handler)
+        if ok then
+          observer:onComplete()
+        else
+          done = true
+          if sub then
+            sub:cancel()
+            sub = nil
+          end
+        end
+      end
+    end
+
+    sub = self:subscribe(onNext, onError, onComplete)
+
+    return Reference.create(function()
+      done = true
+      if sub then
+        sub:cancel()
+        sub = nil
+      end
+    end)
+  end)
+end
+
 ---- Returns a new Observable that produces the first value of the original that satisfies a
 -- predicate.
 -- @arg {function} predicate - The predicate used to find a value.
@@ -936,24 +992,49 @@ function Observable:find(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local function onNext(...)
-      util.tryWithObserver(observer, function(...)
-        if predicate(...) then
-          observer:onNext(...)
-          return observer:onCompleted()
-        end
-      end, ...)
+    local done = false
+    local sub = nil
+
+    local function cancel()
+      if sub then
+        sub:cancel()
+        sub = nil
+      end
+      done = true
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if not done then
+        cancel()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if not done then
+        cancel()
+        observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    local function onNext(...)
+      if not done then
+        util.tryWithObserver(observer, function(...)
+          if predicate(...) then
+            observer:onNext(...)
+            onCompleted()
+          end
+        end, ...)
+      end
+    end
+
+    sub = self:subscribe(onNext, onError, onCompleted)
+    if done then
+      cancel()
+    end
+    return Reference.create(function()
+      cancel()
+    end)
   end)
 end
 
@@ -1351,6 +1432,47 @@ function Observable:retry(count)
   end)
 end
 
+---- Returns an Observable that restarts in the event of an error.
+-- @arg {number=} count - The maximum number of times to retry.  If left unspecified, an infinite
+--                        number of retries will be attempted.
+-- @arg {delay=1000} delay - The delay in milliseconds. If left unspecified, defaults to 1 second.
+-- @arg {scheduler=defaultScheduler()} scheduler - The scheduler to use. If not specified, it will use the `util.defaultScheduler()`.
+-- @returns {Observable}
+function Observable:retryWithDelay(count, delay, scheduler)
+  return Observable.create(function(observer)
+    local reference
+    local retries = 0
+
+    local function onNext(...)
+      return observer:onNext(...)
+    end
+
+    local function onCompleted()
+      return observer:onCompleted()
+    end
+
+    local function onError(message)
+      if reference then
+        reference:cancel()
+      end
+
+      retries = retries + 1
+      if count and retries > count then
+        return observer:onError(message)
+      end
+
+      scheduler = scheduler or util.defaultScheduler()
+      delay = delay or 1000
+
+      scheduler:schedule(function()
+        reference = self:subscribe(onNext, onError, onCompleted)
+      end, delay)
+    end
+
+    return self:subscribe(onNext, onError, onCompleted)
+  end)
+end
+
 ---- Returns a new Observable that produces its most recent value every time the specified observable
 -- produces a value.
 -- @arg {Observable} sampler - The Observable that is used to sample values from this Observable.
@@ -1629,7 +1751,11 @@ function Observable:take(n)
         if ref then
           ref:cancel()
         end
-        return observer:onCompleted()
+        if i <= n then
+          observer:onError(format("Expected at least %d, got %d.", n, i-1))
+        else
+          observer:onCompleted()
+        end
       end
     end
 
