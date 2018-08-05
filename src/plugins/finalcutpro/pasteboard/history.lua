@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -20,14 +21,15 @@ local log                                   = require("hs.logger").new("pasteboa
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local base64                                = require("hs.base64")
 local config                                = require("cp.config")
 local dialog                                = require("cp.dialog")
 local fcp                                   = require("cp.apple.finalcutpro")
-local fnutils                               = require("hs.fnutils")
-local json                                  = require("cp.json")
 local i18n                                  = require("cp.i18n")
+local json                                  = require("cp.json")
 
 local If                                    = require("cp.rx.go.If")
+local Do                                    = require("cp.rx.go.Do")
 
 --------------------------------------------------------------------------------
 --
@@ -93,8 +95,15 @@ end
 --- Returns:
 ---  * None
 function mod.addHistoryItem(data, label)
+
+    --------------------------------------------------------------------------------
+    -- Encode the data to base64:
+    --------------------------------------------------------------------------------
+    local encodedData = base64.encode(data)
+
     local history = mod.history()
-    local item = {data, label}
+    local item = {encodedData, label}
+
     --------------------------------------------------------------------------------
     -- Drop old history items:
     --------------------------------------------------------------------------------
@@ -120,21 +129,27 @@ function mod.doPasteHistoryItem(index)
     return If(function()
         return mod.history()[index]
     end)
-    :Then(fcp:doLaunch())
-    :Then(
-        If(timeline.isLoaded):Then(function(item)
-            --------------------------------------------------------------------------------
-            -- Put item back in the Pasteboard quietly.
-            --------------------------------------------------------------------------------
-            mod._manager.writeFCPXData(item[1], true)
-        end)
+    :Then(function(item)
+        return Do(fcp:doLaunch())
         :Then(
-            fcp:menu():doSelectMenu({"Edit", "Paste"})
-        ):Otherwise(function()
-            dialog.displayAlertMessage(i18n("pasteboardHistory_TimelineEmpty"), i18n("pasteboardHistory_TimelineEmptyInfo"))
-            return false
-        end)
-    )
+            If(timeline.isLoaded):Then(function()
+                local data = base64.decode(item[1])
+                if not data then
+                    log.w("Unable to decode the Pasteboard History Data for index %s.", index)
+                end
+                --------------------------------------------------------------------------------
+                -- Put item back in the Pasteboard quietly.
+                --------------------------------------------------------------------------------
+                mod._manager.writeFCPXData(data, true)
+            end)
+            :Then(
+                fcp:menu():doSelectMenu({"Edit", "Paste"})
+            ):Otherwise(function()
+                dialog.displayAlertMessage(i18n("pasteboardHistory_TimelineEmpty"), i18n("pasteboardHistory_TimelineEmptyInfo"))
+                return false
+            end)
+        )
+    end)
     :Otherwise(false)
     :Catch(function(message)
         log.w("doPasteHistoryItem: %s", message)
@@ -268,7 +283,14 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     local legacy = config.get("pasteboardHistory", nil)
     if legacy then
-        mod.history(fnutils.copy(legacy))
+
+        local migrateHistory = {}
+
+        for i=1, #legacy do
+            table.insert(migrateHistory, {base64.encode(legacy[i][1]), legacy[i][2]})
+        end
+
+        mod.history(migrateHistory)
         config.set("pasteboardHistory", nil)
         log.df("Migrated Pasteboard History from Plist to JSON.")
     end

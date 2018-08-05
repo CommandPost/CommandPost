@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.tangent.new ===
+--- === plugins.finalcutpro.timeline.playback ===
 ---
---- Final Cut Pro Tangent View Group
+--- Playback Plugin.
 
 --------------------------------------------------------------------------------
 --
@@ -10,15 +10,9 @@
 local require = require
 
 --------------------------------------------------------------------------------
--- Logger:
---------------------------------------------------------------------------------
--- local log                                       = require("hs.logger").new("fcptng_timeline")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp                                       = require("cp.apple.finalcutpro")
-local i18n                                      = require("cp.i18n")
+local fcp							= require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 --
@@ -27,29 +21,34 @@ local i18n                                      = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.tangent.new.group
---- Constant
---- The `core.tangent.manager.group` that collects Final Cut Pro New actions/parameters/etc.
-mod.group = nil
-
---- plugins.finalcutpro.tangent.new.init() -> none
+--- plugins.finalcutpro.timeline.playback.play() -> none
 --- Function
---- Initialises the module.
+--- 'Play' in Final Cut Pro
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * None
-function mod.init(fcpGroup)
+function mod.play()
+    if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+        fcp:performShortcut("PlayPause")
+    end
+end
 
-    local baseID = 0x00110000
-
-    mod.group = fcpGroup:group(i18n("new"))
-
-    mod.group:action(baseID+1, i18n("compoundClip"))
-        :onPress(fcp:doSelectMenu({"File", "New", "Compound Clip…"}))
-
+--- plugins.finalcutpro.timeline.playback.pause() -> none
+--- Function
+--- 'Pause' in Final Cut Pro
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.pause()
+    if fcp:viewer():isPlaying() or fcp:eventViewer():isPlaying() then
+        fcp:performShortcut("PlayPause")
+    end
 end
 
 --------------------------------------------------------------------------------
@@ -58,10 +57,10 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id = "finalcutpro.tangent.new",
+    id = "finalcutpro.timeline.playback",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.tangent.group"]   = "fcpGroup",
+        ["finalcutpro.commands"]	= "fcpxCmds",
     }
 }
 
@@ -69,10 +68,18 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
     --------------------------------------------------------------------------------
-    -- Initalise the Module:
+    -- Setup Commands:
     --------------------------------------------------------------------------------
-    mod.init(deps.fcpGroup)
+    if deps.fcpxCmds then
+        local cmds = deps.fcpxCmds
+        cmds:add("cpPlay")
+            :whenActivated(mod.play)
+
+        cmds:add("cpPause")
+            :whenActivated(mod.pause)
+    end
 
     return mod
 end

@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -137,19 +138,6 @@ mod.stillsLayout = config.prop("fcpViewerStillsLayout", DEFAULT_STILLS_LAYOUT)
 --- Guide Position.
 mod.guidePosition = config.prop("fcpViewerGuidePosition", {})
 
---- plugins.finalcutpro.viewer.overlays.getViewerUI() -> axuielementObject
---- Function
---- Gets the Viewer UI.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.getViewerUI()
-    return fcp:viewer():contentsUI()
-end
-
 --- plugins.finalcutpro.viewer.overlays.show() -> none
 --- Function
 --- Show's the Viewer Grid.
@@ -166,7 +154,7 @@ function mod.show()
     --------------------------------------------------------------------------------
     mod.hide()
 
-    local fcpFrame = mod.getViewerUI()
+    local fcpFrame = fcp:viewer():contentsUI()
     if fcpFrame then
         local frame = fcpFrame:attributeValue("AXFrame")
         if frame then
@@ -467,7 +455,7 @@ end
 --- Returns:
 ---  * None
 function mod.saveMemory(id)
-    local viewer = mod.getViewerUI()
+    local viewer = fcp:viewer():contentsUI()
     local result = false
     if viewer then
         local path = mod.getStillsFolderPath()

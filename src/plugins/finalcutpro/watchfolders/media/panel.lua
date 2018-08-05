@@ -1,3 +1,4 @@
+local require = require
 local host              = require("hs.host")
 local image             = require("hs.image")
 

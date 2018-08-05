@@ -7,6 +7,7 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
@@ -18,7 +19,6 @@ local log                                       = require("hs.logger").new(logNa
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local drawing                                   = require("hs.drawing")
-local geometry                                  = require("hs.geometry")
 local screen                                    = require("hs.screen")
 local webview                                   = require("hs.webview")
 local window                                    = require("hs.window")
