@@ -15,14 +15,11 @@ local require = require
 local log								= require("hs.logger").new("selectalltimelineclips")
 
 --------------------------------------------------------------------------------
--- Hammerspoon Extensions:
---------------------------------------------------------------------------------
-local timer                             = require("hs.timer")
-
---------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp								= require("cp.apple.finalcutpro")
+
+local Do                                = require("cp.rx.go.Do")
 
 --------------------------------------------------------------------------------
 --
@@ -31,7 +28,7 @@ local fcp								= require("cp.apple.finalcutpro")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.movetoplayhead.moveToPlayhead() -> nil
+--- plugins.finalcutpro.timeline.movetoplayhead.moveToPlayhead() -> cp.rx.go.Statement
 --- Function
 --- Move to Playhead
 ---
@@ -39,27 +36,19 @@ local mod = {}
 ---  * None
 ---
 --- Returns:
----  * `true` if successful otherwise `false`
-function mod.moveToPlayhead()
-
+---  * [Statement](cp.rx.go.Statement.md) to execute.
+function mod.doMoveToPlayhead()
     local pasteboardManager = mod.pasteboardManager
 
-    pasteboardManager.stopWatching()
-
-    if not fcp:performShortcut("Cut") then
-        log.ef("Failed to trigger the 'Cut' Shortcut.\n\nError occurred in moveToPlayhead().")
-        timer.doAfter(2, function() pasteboardManager.startWatching() end)
-        return false
-    end
-
-    if not fcp:performShortcut("Paste") then
-        log.ef("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in moveToPlayhead().")
-        timer.doAfter(2, function() pasteboardManager.startWatching() end)
-        return false
-    end
-
-    return true
-
+    return Do(pasteboardManager.stopWatching)
+    :Then(fcp:doShortcut("Cut"))
+    :Then(fcp:doShortcut("Paste"))
+    :Catch(function(message)
+        log.ef("doMoveToPlayhead: %s", message)
+    end)
+    :Finally(function()
+        Do(pasteboardManager.startWatching):After(2000)
+    end)
 end
 
 --------------------------------------------------------------------------------

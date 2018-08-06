@@ -464,6 +464,23 @@ function Statement.mt:Debug(label)
     return self
 end
 
+--- cp.rx.go.Statement:Finally(handler) -> Statement
+--- Method
+--- Provides a function handler to get called when the statement is done, either via an `onError` or `onComplete` signal.
+--- The original signal will be passed on without modification. This will trigger after any [Catch](#Catch) handler, so
+--- will be affected by the results of that.
+---
+--- Parameters:
+--- * handler   - The handler function.
+---
+--- Returns:
+--- * The same `Statement` instance.
+function Statement.mt:Finally(handler)
+    local context = self:context()
+    context._finally = handler
+    return self
+end
+
 --- cp.rx.go.Statement:Catch(handler) -> cp.rx.go.Statement
 --- Method
 --- Assigns a handler which will be applied at the end of the Statement.
@@ -579,6 +596,11 @@ function Statement.mt:toObservable(preserveTimer)
         o = o:catch(function(message)
             return Statement.toObservable(context._catcher(message))
         end)
+    end
+
+    -- Handle any 'finally' clause.
+    if context._finally then
+        o = o:finalize(context._finally)
     end
 
     -- only delay after everything else

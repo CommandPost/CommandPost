@@ -25,7 +25,7 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 local config                            = require("cp.config")
 local fcp                               = require("cp.apple.finalcutpro")
-local commandeditor						          = require("cp.apple.commandeditor")
+local commandeditor						= require("cp.apple.commandeditor")
 local shortcut                          = require("cp.commands.shortcut")
 local i18n                              = require("cp.i18n")
 
@@ -156,7 +156,7 @@ function mod.ninjaKeyStroke(whichModifier, whichKey)
     --------------------------------------------------------------------------------
     -- Go back to Full Screen Playback:
     --------------------------------------------------------------------------------
-    fcp:performShortcut("PlayFullscreen")
+    fcp:doShortcut("PlayFullscreen"):Now()
 end
 
 --- plugins.finalcutpro.fullscreen.shortcuts.performCommand(cmd, whichModifier, whichKey) -> boolean

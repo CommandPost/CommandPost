@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                                       = require("hs.logger").new("fcp_tangent")
+local log                                       = require("hs.logger").new("fcp_tangent")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -38,6 +38,13 @@ local format                                    = string.format
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+local function doShortcut(id)
+    return fcp:doShortcut(id):Catch(function(message)
+        log.wf("Unable to perform %q shortcut: %s", id, message)
+        dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
+    end)
+end
 
 --- plugins.finalcutpro.tangent.manager.init() -> none
 --- Function
@@ -365,32 +372,13 @@ function mod.init(tangentManager, fcpGroup)
     local colorShortcutGroup = fcpGroup:group(i18n("colorShortcuts"))
 
     colorShortcutGroup:action(wheelsBaseID+0x0105, i18n("applyColorCorrectionFromPreviousClip"))
-        :onPress(function()
-            if not fcp:performShortcut("SetCorrectionFromEdit-Back-1") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
-
+        :onPress(doShortcut("SetCorrectionFromEdit-Back-1"))
     colorShortcutGroup:action(wheelsBaseID+0x0106, i18n("applyColorCorrectionFromThreeClipsBack"))
-        :onPress(function()
-            if not fcp:performShortcut("SetCorrectionFromEdit-Back-3") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
-
+        :onPress(doShortcut("SetCorrectionFromEdit-Back-3"))
     colorShortcutGroup:action(wheelsBaseID+0x0107, i18n("applyColorCorrectionFromTwoClipsBack"))
-        :onPress(function()
-            if not fcp:performShortcut("SetCorrectionFromEdit-Back-2") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
-
+        :onPress(doShortcut("SetCorrectionFromEdit-Back-2"))
     colorShortcutGroup:action(wheelsBaseID+0x0108, i18n("enableDisableBalanceColor"))
-        :onPress(function()
-            if not fcp:performShortcut("ToggleColorBalance") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ToggleColorBalance"))
 
     colorShortcutGroup:action(wheelsBaseID+0x0109, i18n("goToColorInspector"))
         :onPress(fcp:doSelectMenu({"Window", "Go To", "Color Inspector"}))
@@ -399,25 +387,11 @@ function mod.init(tangentManager, fcpGroup)
         :onPress(fcp:doSelectMenu({"Modify", "Match Color…"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0111, i18n("saveColorEffectPreset"))
-        :onPress(function()
-            if not fcp:performShortcut("SaveColorEffectPreset") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
-
+        :onPress(doShortcut("SaveColorEffectPreset"))
     colorShortcutGroup:action(wheelsBaseID+0x0112, i18n("toggleColorCorrectionEffects"))
-        :onPress(function()
-            if not fcp:performShortcut("ColorBoard-ToggleAllCorrection") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
-
+        :onPress(doShortcut("ColorBoard-ToggleAllCorrection"))
     colorShortcutGroup:action(wheelsBaseID+0x0113, i18n("toggleEffects"))
-        :onPress(function()
-            if not fcp:performShortcut("ToggleSelectedEffectsOff") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ToggleSelectedEffectsOff"))
 
     colorShortcutGroup:action(wheelsBaseID+0x0114, i18n("viewAlphaColorChannel"))
         :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "Alpha"}))
@@ -435,12 +409,7 @@ function mod.init(tangentManager, fcpGroup)
         :onPress(fcp:doSelectMenu({"View", "Show in Viewer", "Color Channels", "All"}))
 
     colorShortcutGroup:action(wheelsBaseID+0x0119, i18n("switchBetweenInsideOutsideMarks"))
-        :onPress(function()
-            if not fcp:performShortcut("ColorBoard-ToggleInsideColorMask") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
-
+        :onPress(doShortcut("ColorBoard-ToggleInsideColorMask"))
     --------------------------------------------------------------------------------
     --
     -- COLOR BOARD ACTIONS:
@@ -493,25 +462,13 @@ function mod.init(tangentManager, fcpGroup)
         end)
 
     cbGroup:action(wheelsBaseID+0x0129, i18n("resetAllControls"))
-        :onPress(function()
-            if not fcp:performShortcut("ColorBoard-ResetAllPucks") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ColorBoard-ResetAllPucks"))
 
     cbGroup:action(wheelsBaseID+0x0130, i18n("resetCurrentEffectPane"))
-        :onPress(function()
-            if not fcp:performShortcut("ColorBoard-ResetPucksOnCurrentBoard") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ColorBoard-ResetPucksOnCurrentBoard"))
 
     cbGroup:action(wheelsBaseID+0x0131, i18n("resetSelectedControl"))
-        :onPress(function()
-            if not fcp:performShortcut("ColorBoard-ResetSelectedPuck") then
-                dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+        :onPress(doShortcut("ColorBoard-ResetSelectedPuck"))
 end
 
 --------------------------------------------------------------------------------

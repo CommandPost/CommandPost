@@ -90,11 +90,12 @@ function mod.init()
                 --------------------------------------------------------------------------------
                 action = action.id
             end
-            local result = fcp:performShortcut(action)
-            if not result then
+            fcp:doShortcut(action)
+            :Catch(function(message)
                 dialog.displayMessage(i18n("shortcutCouldNotBeTriggered"), i18n("ok"))
-                log.ef("Failed to trigger shortcut with action: %s", action and hs.inspect(action))
-            end
+                log.ef("Failed to trigger shortcut with action: %s; %s", hs.inspect(action), message)
+            end)
+            :Now()
         end)
         :onActionId(function()
             return "fcpxShortcuts"

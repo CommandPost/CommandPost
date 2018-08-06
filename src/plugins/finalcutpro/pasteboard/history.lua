@@ -15,14 +15,21 @@ local require = require
 local log                                   = require("hs.logger").new("pasteboardHistory")
 
 --------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local base64                                = require("hs.base64")
 local config                                = require("cp.config")
+local dialog                                = require("cp.dialog")
 local fcp                                   = require("cp.apple.finalcutpro")
-local fnutils                               = require("hs.fnutils")
 local i18n                                  = require("cp.i18n")
 local json                                  = require("cp.json")
+
+local If                                    = require("cp.rx.go.If")
+local Do                                    = require("cp.rx.go.Do")
 
 --------------------------------------------------------------------------------
 --
@@ -65,32 +72,6 @@ mod.enabled = config.prop("enablePasteboardHistory", DEFAULT_VALUE)
 --- Contains all the saved Touch Bar Buttons
 mod.history = json.prop(config.userConfigRootPath, mod.FOLDER_NAME, mod.FILE_NAME, {})
 
---- plugins.finalcutpro.pasteboard.history.getHistory() -> table
---- Function
---- Gets the Pasteboard History.
----
---- Parameters:
----  * None
----
---- Returns:
----  * A table of the Pasteboard history.
-function mod.getHistory()
-    return mod.history()
-end
-
---- plugins.finalcutpro.pasteboard.history.setHistory(history) -> none
---- Function
---- Sets the Pasteboard History.
----
---- Parameters:
----  * history - The history in a table.
----
---- Returns:
----  * None
-function mod.setHistory(history)
-    mod.history(history)
-end
-
 --- plugins.finalcutpro.pasteboard.history.clearHistory() -> none
 --- Function
 --- Clears the Pasteboard History.
@@ -101,7 +82,7 @@ end
 --- Returns:
 ---  * None
 function mod.clearHistory()
-    mod.setHistory({})
+    mod.history:set({})
 end
 
 --- plugins.finalcutpro.pasteboard.history.addHistoryItem(data, label) -> none
@@ -120,7 +101,7 @@ function mod.addHistoryItem(data, label)
     --------------------------------------------------------------------------------
     local encodedData = base64.encode(data)
 
-    local history = mod.getHistory()
+    local history = mod.history()
     local item = {encodedData, label}
 
     --------------------------------------------------------------------------------
@@ -130,47 +111,53 @@ function mod.addHistoryItem(data, label)
         table.remove(history,1)
     end
     table.insert(history, item)
-    mod.setHistory(history)
+    mod.history:set(history)
 end
 
---- plugins.finalcutpro.pasteboard.history.pasteHistoryItem(index) -> none
+--- plugins.finalcutpro.pasteboard.history.doPasteHistoryItem(index) -> cp.rx.go.Statement
 --- Function
---- Pastes a Pasteboard History Item.
+--- Returns a function which will paste a Pasteboard History Item when executed.
 ---
 --- Parameters:
 ---  * index - The index of the Pasteboard history item.
 ---
 --- Returns:
----  * None
-function mod.pasteHistoryItem(index)
-    local item = mod.getHistory()[index]
-    if item then
+---  * A [Statement](cp.rx.go.Statement.md) to be executed.
+function mod.doPasteHistoryItem(index)
+    local timeline = fcp:timeline()
 
-        --------------------------------------------------------------------------------
-        -- Decode the data:
-        --------------------------------------------------------------------------------
-        local data = base64.decode(item[1])
-        if not data then
-            log.w("Unable to decode the Pasteboard History Data for index %s.", index)
-        end
-
-        --------------------------------------------------------------------------------
-        -- Put item back in the Pasteboard quietly.
-        --------------------------------------------------------------------------------
-        mod._manager.writeFCPXData(data, true)
-
-        --------------------------------------------------------------------------------
-        -- Paste in FCPX:
-        --------------------------------------------------------------------------------
-        fcp:launch()
-        if fcp:performShortcut("Paste") then
-            return true
-        else
-            log.w("Failed to trigger the 'Paste' Shortcut.\n\nError occurred in pasteboard.history.pasteHistoryItem().")
-        end
-    end
-    return false
+    return If(function()
+        return mod.history()[index]
+    end)
+    :Then(function(item)
+        return Do(fcp:doLaunch())
+        :Then(
+            If(timeline.isLoaded):Then(function()
+                local data = base64.decode(item[1])
+                if not data then
+                    log.w("Unable to decode the Pasteboard History Data for index %s.", index)
+                end
+                --------------------------------------------------------------------------------
+                -- Put item back in the Pasteboard quietly.
+                --------------------------------------------------------------------------------
+                mod._manager.writeFCPXData(data, true)
+            end)
+            :Then(
+                fcp:menu():doSelectMenu({"Edit", "Paste"})
+            ):Otherwise(function()
+                dialog.displayAlertMessage(i18n("pasteboardHistory_TimelineEmpty"), i18n("pasteboardHistory_TimelineEmptyInfo"))
+                return false
+            end)
+        )
+    end)
+    :Otherwise(false)
+    :Catch(function(message)
+        log.w("doPasteHistoryItem: %s", message)
+        return false
+    end)
+    :Label("history.doPastHistoryItem")
 end
+
 
 -- watchUpdate(data, name) -> none
 -- Function
@@ -268,11 +255,11 @@ function plugin.init(deps)
             local historyItems = {}
             if mod.enabled() then
                 local fcpxRunning = fcp:isRunning()
-                local history = mod.getHistory()
+                local history = mod.history()
                 if #history > 0 then
                     for i=#history, 1, -1 do
                         local item = history[i]
-                        table.insert(historyItems, {title = item[2], fn = function() mod.pasteHistoryItem(i) end, disabled = not fcpxRunning})
+                        table.insert(historyItems, {title = item[2], fn = function() mod.doPasteHistoryItem(i):Now() end, disabled = not fcpxRunning})
                     end
                     table.insert(historyItems, { title = "-" })
                     table.insert(historyItems, { title = i18n("clearPasteboardHistory"), fn = mod.clearHistory })

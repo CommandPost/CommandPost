@@ -31,7 +31,9 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.play()
-    fcp:performShortcut("PlayPause")
+    if not fcp:viewer():isPlaying() and not fcp:eventViewer():isPlaying() then
+        fcp:performShortcut("PlayPause")
+    end
 end
 
 --- plugins.finalcutpro.timeline.playback.pause() -> none
@@ -44,7 +46,9 @@ end
 --- Returns:
 ---  * None
 function mod.pause()
-    mod.play()
+    if fcp:viewer():isPlaying() or fcp:eventViewer():isPlaying() then
+        fcp:performShortcut("PlayPause")
+    end
 end
 
 --------------------------------------------------------------------------------

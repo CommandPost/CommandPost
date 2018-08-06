@@ -420,7 +420,7 @@ function app.forBundleID(bundleID)
                     end
                 end
                 if self:running() then
-                    self:restart(20)
+                    self:doRestart():TimeoutAfter(20*1000):Now()
                 end
             end
         ):monitor(running)
@@ -676,43 +676,6 @@ function app.mt:doQuit()
     :Label(self:bundleID()..":doQuit")
 end
 
---- cp.app:restart(waitSeconds) -> self
---- Method
---- Restart the application, if currently running. If not, no action is taken.
----
---- Parameters:
----  * `waitSeconds`    - If povided, the number of seconds to wait until the quit completes. If `nil`, it will return immediately.
----
---- Returns:
----  * The `cp.app` instance.
-function app.mt:restart(waitSeconds)
-    local hsApp = self:hsApplication()
-    if hsApp then
-        local appPath = hsApp:path()
-        -- Kill it.
-        self:quit()
-
-        -- Wait until the app is Closed (checking every 0.1 seconds for up to 20 seconds):
-        just.doWhile(function() return self:running() end, 20, 0.1)
-
-        -- force the application prop to update, otherwise it isn't closed long enough to prompt an event.
-        self.hsApplication:update()
-
-        -- Launch:
-        if appPath then
-            local output, ok = hs.execute(format('open "%s"', appPath))
-            if not ok then
-                log.ef("There was a problem opening the '%s' application: %s", self:bundleID(), output)
-            end
-        end
-
-        if waitSeconds then
-            just.doUntil(function() return self:running() end, waitSeconds, 0.1)
-        end
-
-    end
-    return self
-end
 
 --- cp.app:doRestart() -> cp.rx.go.Statement <boolean>
 --- Method
@@ -738,20 +701,16 @@ function app.mt:doRestart()
         return Given(
             self:doQuit()
         )
-        :Then(function(success)
-            if success then
-                -- force the application prop to update, otherwise it isn't closed long enough to prompt an event.
-                self.hsApplication:update()
+        :Then(function()
+            -- force the application prop to update, otherwise it isn't closed long enough to prompt an event.
+            self.hsApplication:update()
 
-                local output, ok = hs.execute(format('open "%s"', appPath))
-                if not ok then
-                    return Throw("%s was unable to restart: %s", self:displayName(), output)
-                end
-
-                return WaitUntil(self.frontmost)
-            else
-                return Throw("%s was unable to restart because it did not quit successfully.", self:displayName())
+            local output, ok = hs.execute(format('open "%s"', appPath))
+            if not ok then
+                return Throw("%s was unable to restart: %s", self:displayName(), output)
             end
+
+            return WaitUntil(self.frontmost)
         end)
     end)
     :Otherwise(false)

@@ -83,6 +83,7 @@ local pathwatcher                               = require("hs.pathwatcher")
 --------------------------------------------------------------------------------
 local Set                                       = require("cp.collect.Set")
 local just										= require("cp.just")
+local i18n                                      = require("cp.i18n")
 local localeID                                  = require("cp.i18n.localeID")
 local plist										= require("cp.plist")
 local prop										= require("cp.prop")
@@ -117,7 +118,7 @@ local v											= require("semver")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local format, gsub 						        = string.format, string.gsub
-local Do                                        = go.Do
+local Do, Throw                                 = go.Do, go.Throw
 
 -- a Non-Breaking Space. Looks like a space, isn't a space.
 local NBSP = " "
@@ -199,8 +200,6 @@ fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = Set.union(fcp.ALLOWED_IMPORT_VIDEO_EXTENSION
 --- Returns:
 ---  * The app.
 function fcp:init()
-    self.app.hsApplication:watch(function() self:reset() end)
-
     -- set initial state
     self.app:update()
     return self
@@ -294,18 +293,6 @@ prop.bind(fcp) {
     isUnsupported = fcp.isInstalled:AND(fcp.isSupported:NOT())
 }
 
---- cp.apple.finalcutpro:reset() -> none
---- Function
---- Resets the language cache
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function fcp.reset()
-end
-
 --- cp.apple.finalcutpro:string(key[, locale[, quiet]]) -> string
 --- Method
 --- Looks up an application string with the specified `key`.
@@ -379,24 +366,28 @@ function fcp:launch(waitSeconds)
     return self
 end
 
+--- cp.apple.finalcutpro:doLaunch() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will launch, or focus it if already running FCP.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
 function fcp:doLaunch()
     return self.app:doLaunch()
 end
 
---- cp.apple.finalcutpro:restart([waitSeconds]) -> self
+--- cp.apple.finalcutpro:doRestart() -> cp.rx.go.Statement
 --- Method
---- Restart Final Cut Pro, if it is running. If not, nothing happens.
+--- Returns a [Statement](cp.rx.go.Statement.cp) that will restart Final Cut Pro, if it is running. If not, nothing happens.
 ---
 --- Parameters:
----  * `waitSeconds`	- If provided, the number of seconds to wait for the restart to complete.
+---  * None.
 ---
 --- Returns:
 ---  * The FCP instance.
-function fcp:restart(waitSeconds)
-    self.app:restart(waitSeconds)
-    return self
-end
-
 function fcp:doRestart()
     return self.app:doRestart()
 end
@@ -415,6 +406,15 @@ function fcp:show()
     return self
 end
 
+--- cp.apple.finalcutpro:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will show FCP on-screen.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
 function fcp:doShow()
     return self.app:doShow()
 end
@@ -433,6 +433,15 @@ function fcp:hide()
     return self
 end
 
+--- cp.apple.finalcutpro:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will hide the FCP.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
 function fcp:doHide()
     return self.app:doHide()
 end
@@ -451,6 +460,15 @@ function fcp:quit(waitSeconds)
     return self
 end
 
+--- cp.apple.finalcutpro:doQuit() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will quit FCP.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
 function fcp:doQuit()
     return self.app:doQuit()
 end
@@ -1158,25 +1176,6 @@ function fcp:getCommandShortcuts(id)
     return shortcuts
 end
 
---- cp.apple.finalcutpro:performShortcut(whichShortcut) -> boolean
---- Method
---- Performs a Final Cut Pro Shortcut
----
---- Parameters:
----  * whichShortcut - As per the Command Set name
----
---- Returns:
----  * true if successful otherwise false
-function fcp:performShortcut(whichShortcut)
-    self:launch()
-    local shortcuts = self:getCommandShortcuts(whichShortcut)
-    if shortcuts and #shortcuts > 0 then
-        shortcuts[1]:trigger()
-        return true
-    end
-    return false
-end
-
 --- cp.apple.finalcutpro:doShortcut(whichShortcut) -> Statement
 --- Method
 --- Perform a Final Cut Pro Keyboard Shortcut
@@ -1193,8 +1192,9 @@ function fcp:doShortcut(whichShortcut)
         if shortcuts and #shortcuts > 0 then
             shortcuts[1]:trigger()
             return true
+        else
+            return Throw(i18n("fcpShortcut_NoShortcutAssigned", {id=whichShortcut}))
         end
-        return false
     end)
     :ThenYield()
     :Label("fcp:doShortcut:"..whichShortcut)

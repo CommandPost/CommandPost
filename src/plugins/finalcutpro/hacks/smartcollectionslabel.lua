@@ -22,6 +22,8 @@ local fcp               = require("cp.apple.finalcutpro")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
 
+local If                = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -103,15 +105,16 @@ function mod.change()
     -- Restart Final Cut Pro:
     --------------------------------------------------------------------------------
     if restartStatus then
-        if not fcp:restart() then
+        If(fcp:doRestart()):Is(false):Then(function()
             --------------------------------------------------------------------------------
             -- Failed to restart Final Cut Pro:
             --------------------------------------------------------------------------------
             dialog.displayErrorMessage(i18n("failedToRestart"))
             return false
-        end
+        end):Now()
     end
 
+    return true
 end
 
 --------------------------------------------------------------------------------

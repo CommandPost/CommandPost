@@ -128,11 +128,15 @@ mod.enabled = prop.new(
         --------------------------------------------------------------------------------
         -- Restart Final Cut Pro:
         --------------------------------------------------------------------------------
-        if running and not fcp:restart() then
-            --------------------------------------------------------------------------------
-            -- Failed to restart Final Cut Pro:
-            --------------------------------------------------------------------------------
-            dialog.displayErrorMessage(i18n("failedToRestart"))
+        if running then
+            fcp:doRestart():Now(function(success)
+                if not success then
+                    --------------------------------------------------------------------------------
+                    -- Failed to restart Final Cut Pro:
+                    --------------------------------------------------------------------------------
+                    dialog.displayErrorMessage(i18n("failedToRestart"))
+                end
+            end)
         end
     end
 )

@@ -30,6 +30,9 @@ local prop          = require("cp.prop")
 local tools         = require("cp.tools")
 local i18n          = require("cp.i18n")
 
+local Do            = require("cp.rx.go.Do")
+local If            = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -370,44 +373,48 @@ function private.updateFCPXCommands(enable, silently)
             return nil
         end
         dialog.webviewAlert(webview, function(result)
-            if result == i18n("yes") then
-
-                --------------------------------------------------------------------------------
-                -- Let's do it!
-                --------------------------------------------------------------------------------
-                if not private.updateHacksShortcuts(enable) then
-                    return false
-                end
-
-                --------------------------------------------------------------------------------
-                -- Restart Final Cut Pro:
-                --------------------------------------------------------------------------------
-                if running and not fcp:restart() then
+            Do(
+                If(result == i18n("yes")):Then(function()
                     --------------------------------------------------------------------------------
-                    -- Failed to restart Final Cut Pro:
+                    -- Let's do it!
                     --------------------------------------------------------------------------------
-                    dialog.webviewAlert(webview, function()
-                        --------------------------------------------------------------------------------
-                        -- Refresh the Preferences Panel:
-                        --------------------------------------------------------------------------------
-                        if mod._manager then
-                            mod._manager.refresh()
-                        end
-                    end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")
-                end
+                    if not private.updateHacksShortcuts(enable) then
+                        return false
+                    end
 
-            end
-            --------------------------------------------------------------------------------
-            -- Refresh the Preferences Panel:
-            --------------------------------------------------------------------------------
-            if mod._manager then
-                if enable then
-                    mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), mod.editorRenderer)
-                else
-                    mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), nil)
+                    --------------------------------------------------------------------------------
+                    -- Restart Final Cut Pro:
+                    --------------------------------------------------------------------------------
+                    if running then
+                        return If(fcp:doRestart()):Then(function()
+                            --------------------------------------------------------------------------------
+                            -- Failed to restart Final Cut Pro:
+                            --------------------------------------------------------------------------------
+                            dialog.webviewAlert(webview, function()
+                                --------------------------------------------------------------------------------
+                                -- Refresh the Preferences Panel:
+                                --------------------------------------------------------------------------------
+                                if mod._manager then
+                                    mod._manager.refresh()
+                                end
+                            end, i18n("failedToRestart"), "", i18n("ok"), nil, "warning")
+                        end)
+                    end
+                end)
+            ):Then(function()
+                --------------------------------------------------------------------------------
+                -- Refresh the Preferences Panel:
+                --------------------------------------------------------------------------------
+                if mod._manager then
+                    if enable then
+                        mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), mod.editorRenderer)
+                    else
+                        mod._shortcuts.setGroupEditor(mod.fcpxCmds:id(), nil)
+                    end
+                    mod._manager.refresh()
                 end
-                mod._manager.refresh()
-            end
+            end)
+            :Now()
         end, prompt, i18n("doYouWantToContinue"), i18n("yes"), i18n("no"))
 
     end

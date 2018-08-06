@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log                                       = require("hs.logger").new("fcptng_timeline")
+local log                                       = require("hs.logger").new("fcptng_timeline")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -61,32 +61,39 @@ function mod.init(fcpGroup)
         :onPress(fcp:doSelectMenu({"Clip", "Expand Audio"}))
 
     mod.group:action(baseID+5, i18n("selectLeftAudioEdge"))
-        :onPress(function()
-            if not fcp:performShortcut("SelectLeftEdgeAudio") then
+        :onPress(fcp:doShortcut("SelectLeftEdgeAudio")
+            :Catch(function(message)
+                log.wf("clip.selectLeftAudioEdge: %s", message)
                 dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+            end)
+        )
 
     mod.group:action(baseID+6, i18n("selectRightAudioEdge"))
-        :onPress(function()
-            if not fcp:performShortcut("SelectRightEdgeAudio") then
+        :onPress(
+            fcp:doShortcut("SelectRightEdgeAudio")
+            :Catch(function(message)
+                log.wf("clip.selectRightAudioEdge: %s", message)
                 dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+            end)
+        )
 
     mod.group:action(baseID+7, i18n("selectLeftEdge"))
-        :onPress(function()
-            if not fcp:performShortcut("SelectLeftEdge") then
+        :onPress(
+            fcp:doShortcut("SelectLeftEdge")
+            :Catch(function(message)
+                log.wf("clip.selectLeftEdge: %s", message)
                 dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+            end)
+        )
 
     mod.group:action(baseID+8, i18n("selectRightEdge"))
-        :onPress(function()
-            if not fcp:performShortcut("SelectRightEdge") then
+        :onPress(
+            fcp:doShortcut("SelectRightEdge")
+            :Catch(function(message)
+                log.wf("clip.selectRightEdge: %s", message)
                 dialog.displayMessage(i18n("tangentFinalCutProShortcutFailed"))
-            end
-        end)
+            end)
+        )
 
 end
 
