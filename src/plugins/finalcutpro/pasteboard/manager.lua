@@ -30,12 +30,12 @@ local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local json                                      = require("cp.json")
-local just                                      = require("cp.just")
 local plist                                     = require("cp.plist")
 local prop                                      = require("cp.prop")
 local protect                                   = require("cp.protect")
 local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
+local Set                                       = require("cp.collect.Set")
 
 local Do                                        = require("cp.rx.go.Do")
 local Throw                                     = require("cp.rx.go.Throw")
@@ -51,8 +51,10 @@ local PASTEBOARD = protect({
     --------------------------------------------------------------------------------
     -- Final Cut Pro Types:
     --------------------------------------------------------------------------------
-    ANCHORED_COLLECTION                         = "FFAnchoredCollection",
-    MARKER                                      = "FFAnchoredTimeMarker",
+    COLLECTION                                  = "FFAnchoredCollection",
+    TIME_MARKER                                 = "FFAnchoredTimeMarker",
+    KEYWORD_MARKER                              = "FFAnchoredKeywordMarker",
+    FAVORITE_MARKER                             = "FFAnchoredFavoriteMarker",
     GAP                                         = "FFAnchoredGapGeneratorComponent",
 
     --------------------------------------------------------------------------------
@@ -92,7 +94,7 @@ mod.RESTART_DELAY = 0.5
 --- plugins.finalcutpro.pasteboard.manager.excludedClassnames -> table
 --- Variable
 --- Table of data we don't want to count when copying.
-mod.excludedClassnames = {PASTEBOARD.MARKER}
+mod.excludedClassnames = Set(PASTEBOARD.TIME_MARKER, PASTEBOARD.KEYWORD_MARKER, PASTEBOARD.FAVORITE_MARKER)
 
 -- plugins.finalcutpro.pasteboard.manager._watchersCount -> number
 -- Variable
@@ -137,24 +139,6 @@ function mod.processObject(data)
     return nil, 0
 end
 
---- plugins.finalcutpro.pasteboard.manager.isClassnameSupported(classname) -> boolean
---- Function
---- Is the class name supported?
----
---- Parameters:
----  * classname - The class name you want to check
----
---- Returns:
----  * `true` if the class name is supported otherwise `false`.
-function mod.isClassnameSupported(classname)
-    for _,name in ipairs(mod.excludedClassnames) do
-        if name == classname then
-            return false
-        end
-    end
-    return true
-end
-
 --- plugins.finalcutpro.pasteboard.manager.processArray(data) -> string, number
 --- Function
 --- Processes an 'array' table.
@@ -189,7 +173,7 @@ end
 ---  * `true` if supported otherwise `false`.
 function mod.supportsContainedItems(data)
     local classname = mod.getClassname(data)
-    return data.containedItems and classname ~= PASTEBOARD.ANCHORED_COLLECTION
+    return data.containedItems and classname ~= PASTEBOARD.COLLECTION
 end
 
 --- plugins.finalcutpro.pasteboard.manager.getClassname(data) -> string
@@ -216,7 +200,8 @@ end
 ---  * The primary clip name as a string.
 ---  * The number of clips as number.
 function mod.processContent(data)
-    if not mod.isClassnameSupported(data) then
+    local classname = mod.getClassname(data)
+    if mod.excludedClassnames:has(classname) then
         return nil, 0
     end
 
@@ -230,7 +215,7 @@ function mod.processContent(data)
     local displayName = data.displayName
     local count = displayName and 1 or 0
 
-    if mod.getClassname(data) == PASTEBOARD.GAP then
+    if classname == PASTEBOARD.GAP then
         displayName = nil
         count = 0
     end
@@ -312,7 +297,6 @@ end
 --- Returns:
 ---  * None
 function mod.copyWithCustomClipName()
-    --log.d("Copying Clip with custom Clip Name")
     local menuBar = fcp:menu()
     if menuBar:enabled("Edit", "Copy") then
         local result = dialog.displayTextBoxMessage(i18n("overrideClipNamePrompt"), i18n("overrideValueInvalid"), "")
@@ -457,8 +441,6 @@ function mod.startWatching()
         return
     end
 
-    --log.d("Starting Pasteboard Watcher.")
-
     if mod._timer then
         mod.stopWatching()
     end
@@ -519,7 +501,6 @@ function mod.startWatching()
     mod._timer:start()
 
     mod.watching:update()
-    --log.d("Started Pasteboard Watcher")
 end
 
 --- plugins.finalcutpro.pasteboard.manager.stopWatching() -> none
@@ -536,7 +517,6 @@ function mod.stopWatching()
         mod._timer:stop()
         mod._timer = nil
         mod.watching:update()
-        --log.d("Stopped Pasteboard Watcher")
     end
 end
 
