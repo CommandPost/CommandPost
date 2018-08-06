@@ -7,8 +7,6 @@
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("Set")
-
 local Set = {}
 
 local DATA = {}
