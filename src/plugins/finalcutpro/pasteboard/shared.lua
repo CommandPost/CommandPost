@@ -403,7 +403,7 @@ function mod.doPasteHistoryItem(folderName, index)
         mod._manager.writeFCPXData(data, true)
     end)
     :Then(fcp:doLaunch())
-    :Then(fcp.doShortcut("Paste"))
+    :Then(fcp:doShortcut("Paste"))
 end
 
 --- plugins.finalcutpro.pasteboard.shared.init() -> sharedPasteboard
