@@ -200,8 +200,6 @@ fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = Set.union(fcp.ALLOWED_IMPORT_VIDEO_EXTENSION
 --- Returns:
 ---  * The app.
 function fcp:init()
-    self.app.hsApplication:watch(function() self:reset() end)
-
     -- set initial state
     self.app:update()
     return self
@@ -294,18 +292,6 @@ prop.bind(fcp) {
     ---  * Supported version refers to any version of Final Cut Pro equal or higher to cp.apple.finalcutpro.EARLIEST_SUPPORTED_VERSION
     isUnsupported = fcp.isInstalled:AND(fcp.isSupported:NOT())
 }
-
---- cp.apple.finalcutpro:reset() -> none
---- Function
---- Resets the language cache
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function fcp.reset()
-end
 
 --- cp.apple.finalcutpro:string(key[, locale[, quiet]]) -> string
 --- Method
