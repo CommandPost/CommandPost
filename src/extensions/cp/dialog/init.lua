@@ -184,9 +184,9 @@ end
 --- Display a Choose File Dialog Box.
 ---
 --- Parameters:
----  * whatMessage - The message you want to display as a string
----  * fileType - The filetype you wish to display
----  * defaultLocation - Path to Default Location
+---  * whatMessage - The message you want to display as a string.
+---  * fileType - The filetype you wish to display as either a string or a table of strings.
+---  * defaultLocation - Path to Default Location. Defaults to the desktop.
 ---
 --- Returns:
 ---  * `false` if cancelled if pressed otherwise the path to the file as a string
@@ -194,19 +194,31 @@ end
 --- Notes:
 ---  * IMPORTANT: This should no longer be used in favour of `hs.dialog.chooseFileOrFolder`
 function dialog.displayChooseFile(whatMessage, fileType, defaultLocation)
+    local fileTypes = ""
+    if fileType and type(fileType) == "table" then
+        fileTypes = ' of type  {'
+        for i=1, #fileType do
+            fileTypes = fileTypes .. '"' .. fileType[i] .. '"'
+            if i ~= #fileType then fileTypes = fileTypes .. ", " end
+        end
+        fileTypes = fileTypes .. "}"
+    elseif fileType and type(fileType) == "string" then
+        fileTypes = [[ of type {"]] .. fileType .. [["}]]
+    end
     if not defaultLocation then
         defaultLocation = os.getenv("HOME") .. "/Desktop"
     end
     local appleScript = [[
         set whatMessage to "]] .. whatMessage .. [["
         try
-            set whichFile to POSIX path of (choose file with prompt whatMessage default location (POSIX path of "]] .. defaultLocation .. [[") of type {"]] .. fileType .. [["})
+            set whichFile to POSIX path of (choose file with prompt whatMessage default location (POSIX path of "]] .. defaultLocation .. [[")]] .. fileTypes .. [[)
             return whichFile
         on error
             -- Cancel Pressed:
             return false
         end try
     ]]
+    log.df("appleScript: %s", appleScript)
     return as(appleScript)
 end
 
