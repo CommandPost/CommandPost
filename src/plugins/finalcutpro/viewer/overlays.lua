@@ -286,7 +286,6 @@ function mod.show()
                     local guideAlpha = mod.getGuideAlpha(i) / 100
                     local customGuideColor = mod.getCustomGuideColor(i)
 
-                    local fillColor
                     if guideColor == "CUSTOM" and customGuideColor then
                         fillColor = customGuideColor
                         fillColor.alpha = guideAlpha
@@ -345,7 +344,7 @@ function mod.show()
                 end
             end
             if draggableGuideEnabled then
-                mod._canvas:mouseCallback(function(_, event, id, x, y)
+                mod._canvas:mouseCallback(function(_, event, id)
                     for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
                         if id == "dragCentre" .. i and event == "mouseDown" then
                             if not mod._mouseMoveTracker then
