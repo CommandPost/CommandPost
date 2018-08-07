@@ -805,7 +805,7 @@ function mod.setCustomGuideColor(id)
     id = tostring(id)
     dialog.color.continuous(false)
     dialog.color.callback(function(color, closed)
-        if closed then
+        if color and closed then
             local guideColor = mod.guideColor()
             guideColor[id] = "CUSTOM"
             mod.guideColor(guideColor)
@@ -898,7 +898,7 @@ local function contextualMenu(event)
                                     { title = i18n("yellow"),   checked = mod.getGuideColor(1) == "#F4D03F", fn = function() mod.setGuideColor(1, "#F4D03F") end },
                                     { title = i18n("red"),      checked = mod.getGuideColor(1) == "#FF5733", fn = function() mod.setGuideColor(1, "#FF5733") end },
                                     { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(1) == "CUSTOM" and mod.getCustomGuideColor(1), fn = function() mod.setCustomGuideColor(1) end},
+                                    { title = i18n("custom"),   checked = mod.getGuideColor(1) == "CUSTOM", fn = function() mod.setCustomGuideColor(1) end},
                                 }},
                                 { title = "  " .. i18n("opacity"), menu = {
                                     { title = "10%",  checked = mod.getGuideAlpha(1) == 10,  fn = function() mod.setGuideAlpha(1, 10) end },
@@ -923,7 +923,7 @@ local function contextualMenu(event)
                                     { title = i18n("yellow"),   checked = mod.getGuideColor(2) == "#F4D03F", fn = function() mod.setGuideColor(2, "#F4D03F") end },
                                     { title = i18n("red"),      checked = mod.getGuideColor(2) == "#FF5733", fn = function() mod.setGuideColor(2, "#FF5733") end },
                                     { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(2) == "CUSTOM" and mod.getCustomGuideColor(2), fn = function() mod.setCustomGuideColor(1) end},
+                                    { title = i18n("custom"),   checked = mod.getGuideColor(2) == "CUSTOM", fn = function() mod.setCustomGuideColor(2) end},
                                 }},
                                 { title = "  " .. i18n("opacity"), menu = {
                                     { title = "10%",  checked = mod.getGuideAlpha(2) == 10,  fn = function() mod.setGuideAlpha(2, 10) end },
@@ -948,7 +948,7 @@ local function contextualMenu(event)
                                     { title = i18n("yellow"),   checked = mod.getGuideColor(3) == "#F4D03F", fn = function() mod.setGuideColor(3, "#F4D03F") end },
                                     { title = i18n("red"),      checked = mod.getGuideColor(3) == "#FF5733", fn = function() mod.setGuideColor(3, "#FF5733") end },
                                     { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(3) == "CUSTOM" and mod.getCustomGuideColor(3), fn = function() mod.setCustomGuideColor(1) end},
+                                    { title = i18n("custom"),   checked = mod.getGuideColor(3) == "CUSTOM", fn = function() mod.setCustomGuideColor(3) end},
                                 }},
                                 { title = "  " .. i18n("opacity"), menu = {
                                     { title = "10%",  checked = mod.getGuideAlpha(3) == 10,  fn = function() mod.setGuideAlpha(3, 10) end },
@@ -973,7 +973,7 @@ local function contextualMenu(event)
                                     { title = i18n("yellow"),   checked = mod.getGuideColor(4) == "#F4D03F", fn = function() mod.setGuideColor(4, "#F4D03F") end },
                                     { title = i18n("red"),      checked = mod.getGuideColor(4) == "#FF5733", fn = function() mod.setGuideColor(4, "#FF5733") end },
                                     { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(4) == "CUSTOM" and mod.getCustomGuideColor(4), fn = function() mod.setCustomGuideColor(1) end},
+                                    { title = i18n("custom"),   checked = mod.getGuideColor(4) == "CUSTOM", fn = function() mod.setCustomGuideColor(4) end},
                                 }},
                                 { title = "  " .. i18n("opacity"), menu = {
                                     { title = "10%",  checked = mod.getGuideAlpha(4) == 10,  fn = function() mod.setGuideAlpha(4, 10) end },
@@ -998,7 +998,7 @@ local function contextualMenu(event)
                                     { title = i18n("yellow"),   checked = mod.getGuideColor(5) == "#F4D03F", fn = function() mod.setGuideColor(5, "#F4D03F") end },
                                     { title = i18n("red"),      checked = mod.getGuideColor(5) == "#FF5733", fn = function() mod.setGuideColor(5, "#FF5733") end },
                                     { title = "-", disabled = true },
-                                    { title = i18n("custom"),   checked = mod.getGuideColor(5) == "CUSTOM" and mod.getCustomGuideColor(5), fn = function() mod.setCustomGuideColor(1) end},
+                                    { title = i18n("custom"),   checked = mod.getGuideColor(5) == "CUSTOM", fn = function() mod.setCustomGuideColor(5) end},
                                 }},
                                 { title = "  " .. i18n("opacity"), menu = {
                                     { title = "10%",  checked = mod.getGuideAlpha(5) == 10,  fn = function() mod.setGuideAlpha(5, 10) end },
