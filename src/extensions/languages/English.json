@@ -1158,6 +1158,7 @@
         "toggleAutomaticScriptReloading": "Auto Reload",
         "toggleColorCorrectionEffects": "Toggle Color Correction Effects",
         "toggleEffects": "Toggle Effects",
+        "toggleOverlaysWithCapsLock": "Toggle Overlays with Caps Lock",
         "toggleVideoScopesInEventViewer": "Toggle Video Scopes in Event Viewer",
         "toggleVideoScopesInViewer": "Toggle Video Scopes in Viewer",
         "togglingMovingMarkersRestart": "Toggling Moving Markers requires Final Cut Pro to restart.",
