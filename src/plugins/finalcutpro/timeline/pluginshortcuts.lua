@@ -33,7 +33,7 @@ local i18n                              = require("cp.i18n")
 -- MAX_SHORTCUTS -> number
 -- Constant
 -- The maximum number of shortcuts
-local MAX_SHORTCUTS = 9
+local MAX_SHORTCUTS = 20
 
 -- PRIORITY -> number
 -- Constant
@@ -144,7 +144,6 @@ end
 --- Returns:
 ---  * None
 function mod.applyShortcut(handlerID, shortcutNumber)
-
     local action = mod.getShortcut(handlerID, shortcutNumber)
     local handler = mod._actionmanager.getHandler(handlerID)
     if handler then
@@ -152,7 +151,6 @@ function mod.applyShortcut(handlerID, shortcutNumber)
     else
         log.ef("Failed to find Plugins Shortcut Handler.")
     end
-
 end
 
 --- plugins.finalcutpro.timeline.pluginshortcuts.assignShortcut(shortcutNumber, handlerId) -> none
@@ -163,10 +161,11 @@ end
 --- Parameters:
 ---  * `handlerId`      - The action handler ID.
 ---  * `shortcutNumber` - The shortcut number, between 1 and 5, which is being assigned.
+---  * `completionFn`   - An optional completion function that triggers when a selection is made.
 ---
 --- Returns:
 ---  * None
-function mod.assignShortcut(handlerId, shortcutNumber)
+function mod.assignShortcut(handlerId, shortcutNumber, completionFn)
     local activator = mod._actionmanager.getActivator("finalcutpro.timeline.plugin.shortcuts."..handlerId)
         :allowHandlers(handlerId)
         :onActivate(function(_, action)
@@ -175,17 +174,29 @@ function mod.assignShortcut(handlerId, shortcutNumber)
                 -- Save the selection:
                 --------------------------------------------------------------------------------
                 mod.setShortcut(handlerId, action, shortcutNumber)
+                if completionFn and type(completionFn) == "function" then
+                    local ok, result = xpcall(completionFn, debug.traceback)
+                    if not ok then
+                        log.ef("Error while triggering completionFn for '%s':\n%s", i18n("apply") .. " " .. tools.firstToUpper(theLabel) .. " " .. string.format("%02d", i), result)
+                        return nil
+                    end
+                end
             end
         end)
+
     --------------------------------------------------------------------------------
     -- Not configurable by the user:
     --------------------------------------------------------------------------------
     activator:configurable(false)
+
     --------------------------------------------------------------------------------
     -- Don't bother remembering the last query:
     --------------------------------------------------------------------------------
     activator:lastQueryRemembered(false)
 
+    --------------------------------------------------------------------------------
+    -- Show the activator:
+    --------------------------------------------------------------------------------
     activator:show()
 end
 
@@ -199,7 +210,6 @@ local plugin = {
     id = "finalcutpro.timeline.pluginshortcuts",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.timeline"]                   = "menu",
         ["finalcutpro.commands"]                        = "fcpxCmds",
         ["core.action.manager"]                         = "actionmanager",
         ["finalcutpro.timeline.generators"]             = "generators",
@@ -216,52 +226,48 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
+    --------------------------------------------------------------------------------
+    -- Initialise the module:
+    --------------------------------------------------------------------------------
     mod.init(deps)
 
-    mod._actionmanager = deps.actionmanager
-
-    local menu = deps.menu:addMenu(PRIORITY, function()
-        if deps.shortcuts then -- and deps.shortcuts.active() then
-            return i18n("pluginShortcuts")
-        end
-    end)
-
     --------------------------------------------------------------------------------
-    -- Loop through the plugin types:
+    -- Setup the plugin commands:
     --------------------------------------------------------------------------------
+    local fcpxCmds = deps.fcpxCmds
     for _,details in pairs(pluginTypeDetails) do
-        local type, label = GROUP .. "_" .. details.type, details.label
-        --------------------------------------------------------------------------------
-        -- The 'Assign Shortcuts' menu:
-        --------------------------------------------------------------------------------
-        local submenu = menu:addMenu(PRIORITY, function() return label end)
-
-        submenu:addItems(1000, function()
-            --------------------------------------------------------------------------------
-            -- Effects Shortcuts:
-            --------------------------------------------------------------------------------
-            local shortcuts = mod.shortcuts()
-            local handlerShortcuts  = shortcuts[type] or {}
-
-            local items = {}
-
-            for i = 1,MAX_SHORTCUTS do
-                local shortcut = handlerShortcuts[i]
-                local shortcutName = shortcut and shortcut.name or i18n("unassignedTitle")
-                items[i] = { title = i18n("pluginShortcutTitle", { number = i, title = shortcutName}), fn = function() mod.assignShortcut(type, i) end }
-            end
-
-            return items
-        end)
-
-        --------------------------------------------------------------------------------
-        -- Commands with default shortcuts:
-        --------------------------------------------------------------------------------
-        local fcpxCmds = deps.fcpxCmds
+        local theType, theLabel = details.type, details.label
+        local groupType = GROUP .. "_" .. theType
         for i = 1, MAX_SHORTCUTS do
-            fcpxCmds:add("cp" .. tools.firstToUpper(details.type) .. tostring(i))
+            local preferencesKey = "fcpx.pluginshortcuts." .. theType .. "." .. tostring(i)
+            fcpxCmds:add("cp" .. tools.firstToUpper(theType) .. tostring(i))
                 :groupedBy("timeline")
-                :whenPressed(function() mod.applyShortcut(type, i) end)
+                :whenPressed(function() mod.applyShortcut(groupType, i) end)
+                :titled(i18n("apply") .. " " .. tools.firstToUpper(theLabel) .. " " .. string.format("%02d", i))
+
+                --------------------------------------------------------------------------------
+                -- This tells CommandPost to display an "action" in the Shortcuts Preferences:
+                --------------------------------------------------------------------------------
+                :action(
+                    --------------------------------------------------------------------------------
+                    -- Getter:
+                    --------------------------------------------------------------------------------
+                    function()
+                        local shortcuts = mod.shortcuts()
+                        local handlerShortcuts  = shortcuts[groupType] or {}
+                        local shortcut = handlerShortcuts[i]
+                        return shortcut and shortcut.name
+                    end,
+                    --------------------------------------------------------------------------------
+                    -- Setter:
+                    --------------------------------------------------------------------------------
+                    function(clear, completionFn)
+                        if clear then
+                            mod.setShortcut(groupType, nil, i)
+                        else
+                            mod.assignShortcut(groupType, i, completionFn)
+                        end
+                    end)
         end
     end
 

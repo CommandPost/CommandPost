@@ -231,7 +231,7 @@ local function shortcutAlreadyInUse(modifiers, keycode)
     return false
 end
 
--- updateShortcut(id, params) -> none
+-- shortcutsPanelCallback(id, params) -> none
 -- Function
 -- Updates a Shortcut.
 --
@@ -241,14 +241,69 @@ end
 --
 -- Returns:
 --  * None
-local function updateShortcut(_, params)
+local function shortcutsPanelCallback(_, params)
 
-    --------------------------------------------------------------------------------
-    -- Save Selected Group:
-    --------------------------------------------------------------------------------
-    if params and params["type"] == "updateGroup" then
-        mod.lastGroup(params["groupID"])
-        return
+    if params then
+        local paramsType = params["type"]
+        if paramsType == "updateGroup" then
+            --------------------------------------------------------------------------------
+            -- Update Group:
+            --------------------------------------------------------------------------------
+            mod.lastGroup(params["groupID"])
+            return
+        elseif paramsType == "updateAction" then
+            --------------------------------------------------------------------------------
+            -- Update Action:
+            --------------------------------------------------------------------------------
+            local group = commands.group(params.group)
+            local theCommand = group:get(params.command)
+            if theCommand then
+                local getFn, setFn = theCommand:getAction()
+                if setFn then
+                    local elementID = params["elementID"]
+                    local ok, result = xpcall(function()
+                        setFn(false, function()
+                            local getFnResult = getFn()
+                            if elementID and getFnResult then
+                                mod._manager.injectScript([[
+                                    document.getElementById("]] .. elementID .. [[").value = "]] .. (getFnResult or i18n("none")) .. [["
+                                ]])
+                            end
+                        end)
+                    end, debug.traceback)
+                    if not ok then
+                        log.ef("Error while triggering setFn for '%s':\n%s", elementID, result)
+                        return nil
+                    end
+                end
+            end
+            return
+        elseif paramsType == "clearAction" then
+            --------------------------------------------------------------------------------
+            -- Clear Action:
+            --------------------------------------------------------------------------------
+            local group = commands.group(params.group)
+            local theCommand = group:get(params.command)
+            if theCommand then
+                local _, setFn = theCommand:getAction()
+                if setFn then
+                    local elementID = params["elementID"]
+                    local ok, result = xpcall(function()
+                        setFn(true)
+                        if elementID then
+                            mod._manager.injectScript([[
+                                document.getElementById("]] .. elementID .. [[").value = "]] .. i18n("none") .. [["
+                            ]])
+                        end
+                    end, debug.traceback)
+                    if not ok then
+                        log.ef("Error while triggering setFn for '%s':\n%s", elementID, result)
+                        return nil
+                    end
+                end
+            end
+            return
+        end
     end
 
     --------------------------------------------------------------------------------
@@ -512,7 +567,7 @@ local function generateContent()
             //
             try {
                 var result = {
-                    id: "updateShortcut",
+                    id: "shortcutsPanelCallback",
                     params: {
                         type: "updateGroup",
                         groupID: this.value,
@@ -560,6 +615,8 @@ local function generateContent()
         i18nApplication         = i18n("application"),
         i18nCustomiseShortcuts  = i18n("customiseShortcuts"),
         i18nNone                = i18n("none"),
+        i18nSelect              = i18n("select"),
+        i18nClear               = i18n("clear"),
 
         webviewLabel            = mod._manager.getLabel(),
     }
@@ -614,7 +671,7 @@ function mod.init(deps, env)
                 class       = "resetShortcutsToNone",
             }
         )
-        :addHandler("onchange", "updateShortcut", updateShortcut)
+        :addHandler("onchange", "shortcutsPanelCallback", shortcutsPanelCallback)
 
     return mod
 
