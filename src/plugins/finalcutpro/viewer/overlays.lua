@@ -22,6 +22,7 @@ local dialog            = require("hs.dialog")
 local eventtap          = require("hs.eventtap")
 local fs                = require("hs.fs")
 local geometry          = require("hs.geometry")
+local hid               = require("hs.hid")
 local image             = require("hs.image")
 local menubar           = require("hs.menubar")
 local mouse             = require("hs.mouse")
@@ -40,6 +41,7 @@ local tools             = require("cp.tools")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local events            = eventtap.event.types
+local capslock          = hid.capslock
 
 --------------------------------------------------------------------------------
 --
@@ -158,6 +160,25 @@ mod.guideAlpha = config.prop("fcpx.ViewerOverlay.Guide.Alpha", {})
 --- Variable
 --- Viewer Custom Guide Color as HTML value
 mod.customGuideColor = config.prop("fcpx.ViewerOverlay.Guide.CustomColor", {})
+
+--- plugins.finalcutpro.viewer.overlays.capslock <cp.prop: boolean>
+--- Variable
+--- Toggle Viewer Overlays with Caps Lock.
+mod.capslock = config.prop("fcpx.ViewerOverlay.CapsLock", false):watch(function(enabled)
+    if enabled then
+        mod._capslockEventTap = eventtap.new({events.flagsChanged}, function(event)
+            local keycode = event:getKeyCode()
+            if keycode == 57 then
+                mod.update()
+            end
+        end):start()
+    else
+        if mod._capslockEventTap then
+            mod._capslockEventTap:stop()
+            mod._capslockEventTap = nil
+        end
+    end
+end)
 
 --- plugins.finalcutpro.viewer.overlays.show() -> none
 --- Function
@@ -436,8 +457,9 @@ function mod.update()
             --log.df("Starting Keyboard Monitor")
             mod._eventtap:start()
         end
+
         --------------------------------------------------------------------------------
-        -- Show the grid if enabled:
+        -- Check Guides:
         --------------------------------------------------------------------------------
         local draggableGuideEnabled = false
         for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
@@ -445,10 +467,20 @@ function mod.update()
                 draggableGuideEnabled = true
             end
         end
-        if not mod.disabled() and (mod.basicGridEnabled() or draggableGuideEnabled or mod.activeMemory() ~= 0) then
-            mod.show()
-        else
-            mod.hide()
+
+        --------------------------------------------------------------------------------
+        -- Toggle Overall Visibility:
+        --------------------------------------------------------------------------------
+        if (mod.basicGridEnabled() or draggableGuideEnabled or mod.activeMemory() ~= 0) then
+            if mod.capslock() == true and capslock.get() == true then
+                mod.show()
+            elseif mod.capslock() == true and capslock.get() == false then
+                mod.hide()
+            elseif mod.disabled() == true then
+                mod.hide()
+            else
+                mod.show()
+            end
         end
     else
         --------------------------------------------------------------------------------
@@ -880,7 +912,8 @@ local function contextualMenu(event)
                     -- ENABLE OVERLAYS:
                     --
                     --------------------------------------------------------------------------------
-                    { title = i18n("enable") .. " " .. i18n("overlays"), checked = not mod.disabled(), fn = function() mod.disabled:toggle(); mod.update() end },
+                    { title = i18n("enable") .. " " .. i18n("overlays"), checked = not mod.capslock() and not mod.disabled(), fn = function() mod.disabled:toggle(); mod.update() end, disabled = mod.capslock()  },
+                    { title = i18n("toggleOverlaysWithCapsLock"), checked = mod.capslock(), fn = function() mod.capslock:toggle(); mod.update() end },
                     { title = "-", disabled = true },
                     --------------------------------------------------------------------------------
                     --
@@ -1140,7 +1173,7 @@ function plugin.init(deps)
     -- Setup contextual menu:
     --------------------------------------------------------------------------------
     mod._menu = menubar.new(false)
-    mod._eventtap = eventtap.new({eventtap.event.types.rightMouseUp}, contextualMenu)
+    mod._eventtap = eventtap.new({events.rightMouseUp}, contextualMenu)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro is shown/hidden:
@@ -1159,6 +1192,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Force initial update:
     --------------------------------------------------------------------------------
+    mod.capslock:update()
     mod.update()
 
     --------------------------------------------------------------------------------
