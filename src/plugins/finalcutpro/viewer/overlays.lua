@@ -275,18 +275,16 @@ function mod.show()
             --------------------------------------------------------------------------------
             -- Draggable Guides:
             --------------------------------------------------------------------------------
-            local guideColorTable = mod.guideColor()
-            local guideAlphaTable = mod.guideAlpha()
-            local customGuideColorTable = mod.customGuideColor()
-            local guidePositionTable = mod.guidePosition()
-
+            local draggableGuideEnabled = false
             for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
                 if mod.getDraggableGuideEnabled(i) then
 
-                    local guidePosition = guidePositionTable and guidePositionTable[i] or {}
-                    local guideColor = guideColorTable and guideColorTable[i] or DEFAULT_COLOR
-                    local guideAlpha = guideAlphaTable and guideAlphaTable[i] and guideAlphaTable[i] / 100 or DEFAULT_ALPHA
-                    local customGuideColor = customGuideColorTable and customGuideColorTable[i]
+                    draggableGuideEnabled = true
+
+                    local guidePosition = mod.getGuidePosition(i)
+                    local guideColor = mod.getGuideColor(i)
+                    local guideAlpha = mod.getGuideAlpha(i) / 100
+                    local customGuideColor = mod.getCustomGuideColor(i)
 
                     local fillColor
                     if guideColor == "CUSTOM" and customGuideColor then
@@ -344,10 +342,12 @@ function mod.show()
                     })
                     mod._canvas:clickActivating(false)
                     mod._canvas:canvasMouseEvents(true, true, true, true)
-
-                    local canvasTopLeft = mod._canvas:topLeft()
-                    mod._canvas:mouseCallback(function(_, event, id, x, y)
-                        if id == "dragCentre" and event == "mouseDown" then
+                end
+            end
+            if draggableGuideEnabled then
+                mod._canvas:mouseCallback(function(_, event, id, x, y)
+                    for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
+                        if id == "dragCentre" .. i and event == "mouseDown" then
                             if not mod._mouseMoveTracker then
                                 mod._mouseMoveTracker = {}
                             end
@@ -358,6 +358,7 @@ function mod.show()
                                 else
                                     local mousePosition = mouse.getAbsolutePosition()
 
+                                    local canvasTopLeft = mod._canvas:topLeft()
                                     local newX = mousePosition.x - canvasTopLeft.x
                                     local newY = mousePosition.y - canvasTopLeft.y
 
@@ -368,15 +369,13 @@ function mod.show()
                                         mod._canvas["dragVertical" .. i].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
                                         mod._canvas["dragHorizontal" .. i].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
 
-                                        local guidePosition = mod.guidePosition()
-                                        guidePosition[i] = {x=newX, y=newY}
-                                        mod.guidePosition(guidePosition)
+                                        mod.setGuidePosition(i, {x=newX, y=newY})
                                     end
                                 end
                             end, false):start()
                         end
-                    end)
-                end
+                    end
+                end)
             end
 
             --------------------------------------------------------------------------------
@@ -441,7 +440,13 @@ function mod.update()
         --------------------------------------------------------------------------------
         -- Show the grid if enabled:
         --------------------------------------------------------------------------------
-        if not mod.disabled() and (mod.basicGridEnabled() or mod.draggableGuideEnabled() or mod.activeMemory() ~= 0) then
+        local draggableGuideEnabled = false
+        for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
+            if mod.getDraggableGuideEnabled(i) then
+                draggableGuideEnabled = true
+            end
+        end
+        if not mod.disabled() and (mod.basicGridEnabled() or draggableGuideEnabled or mod.activeMemory() ~= 0) then
             mod.show()
         else
             mod.hide()
@@ -676,6 +681,37 @@ function mod.setCustomGridColor()
     hs.focus()
 end
 
+--- plugins.finalcutpro.viewer.overlays.getGuidePosition() -> none
+--- Function
+--- Get Guide Position.
+---
+--- Parameters:
+---  * id - The ID of the guide.
+---
+--- Returns:
+---  * None
+function mod.setGuidePosition(id, value)
+    id = tostring(id)
+    local guidePosition = mod.guidePosition()
+    guidePosition[id] = value
+    mod.guidePosition(guidePosition)
+end
+
+--- plugins.finalcutpro.viewer.overlays.getGuidePosition() -> none
+--- Function
+--- Get Guide Position.
+---
+--- Parameters:
+---  * id - The ID of the guide.
+---
+--- Returns:
+---  * None
+function mod.getGuidePosition(id)
+    id = tostring(id)
+    local guidePosition = mod.guidePosition()
+    return guidePosition and guidePosition[id] or {}
+end
+
 --- plugins.finalcutpro.viewer.overlays.getGuideAlpha() -> none
 --- Function
 --- Get Guide Alpha.
@@ -686,11 +722,12 @@ end
 --- Returns:
 ---  * None
 function mod.getGuideAlpha(id)
+    id = tostring(id)
     local guideAlpha = mod.guideAlpha()
     return guideAlpha and guideAlpha[id] or DEFAULT_ALPHA
 end
 
---- plugins.finalcutpro.viewer.overlays.getGuideColor() -> none
+--- plugins.finalcutpro.viewer.overlays.getGuideColor(id) -> none
 --- Function
 --- Get Guide Color.
 ---
@@ -699,7 +736,8 @@ end
 ---
 --- Returns:
 ---  * None
-function mod.getGuideColor(id, value)
+function mod.getGuideColor(id)
+    id = tostring(id)
     local guideColor = mod.guideColor()
     return guideColor and guideColor[id] or DEFAULT_COLOR
 end
@@ -714,6 +752,7 @@ end
 --- Returns:
 ---  * None
 function mod.getCustomGuideColor(id)
+    id = tostring(id)
     local customGuideColor = mod.customGuideColor()
     return customGuideColor and customGuideColor[id]
 end
@@ -723,11 +762,13 @@ end
 --- Sets Guide Alpha.
 ---
 --- Parameters:
+---  * id - The ID of the guide.
 ---  * value - The value you want to set.
 ---
 --- Returns:
 ---  * None
 function mod.setGuideAlpha(id, value)
+    id = tostring(id)
     local guideAlpha = mod.guideAlpha()
     guideAlpha[id] = value
     mod.guideAlpha(guideAlpha)
@@ -739,11 +780,13 @@ end
 --- Sets Guide Color.
 ---
 --- Parameters:
+---  * id - The ID of the guide.
 ---  * value - The value you want to set.
 ---
 --- Returns:
 ---  * None
 function mod.setGuideColor(id, value)
+    id = tostring(id)
     local guideColor = mod.guideColor()
     guideColor[id] = value
     mod.guideColor(guideColor)
@@ -760,6 +803,7 @@ end
 --- Returns:
 ---  * None
 function mod.setCustomGuideColor(id)
+    id = tostring(id)
     dialog.color.continuous(false)
     dialog.color.callback(function(color, closed)
         if closed then
@@ -779,14 +823,34 @@ function mod.setCustomGuideColor(id)
     hs.focus()
 end
 
+--- plugins.finalcutpro.viewer.overlays.getDraggableGuideEnabled(id) -> none
+--- Function
+--- Get Guide Enabled.
+---
+--- Parameters:
+---  * id - The ID of the guide.
+---
+--- Returns:
+---  * None
 function mod.getDraggableGuideEnabled(id)
+    id = tostring(id)
     local draggableGuideEnabled = mod.draggableGuideEnabled()
     return draggableGuideEnabled and draggableGuideEnabled[id] and draggableGuideEnabled[id] == true
 end
 
+--- plugins.finalcutpro.viewer.overlays.toggleDraggableGuide(id) -> none
+--- Function
+--- Toggle Guide Enabled.
+---
+--- Parameters:
+---  * id - The ID of the guide.
+---
+--- Returns:
+---  * None
 function mod.toggleDraggableGuide(id)
+    id = tostring(id)
     local draggableGuideEnabled = mod.draggableGuideEnabled()
-    if draggableGuideEnabled[id] == true then
+    if draggableGuideEnabled[id] and draggableGuideEnabled[id] == true then
         draggableGuideEnabled[id] = false
     else
         draggableGuideEnabled[id] = true
@@ -1106,12 +1170,12 @@ function plugin.init(deps)
             :add("cpViewerBasicGrid")
             :whenActivated(function() mod.basicGridEnabled:toggle(); mod.update() end)
 
-        -- TODO: Fix this so it works with all 5 guides:
-        --[[
-        deps.fcpxCmds
-            :add("cpViewerDraggableGuide")
-            :whenActivated(function() mod.draggableGuideEnabled:toggle(); mod.update() end)
-        --]]
+        for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
+            deps.fcpxCmds
+                :add("cpViewerDraggableGuide" .. i)
+                :whenActivated(function() mod.toggleDraggableGuide(i); mod.update() end)
+                :titled(i18n("cpViewerDraggableGuide_title") .. " " .. i)
+        end
 
         deps.fcpxCmds
             :add("cpToggleAllViewerOverlays")
