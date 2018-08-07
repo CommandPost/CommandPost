@@ -20,7 +20,11 @@
 }
 
 .rowLabel {
-	width: 500px;
+	width: 300px;
+}
+
+.rowAction {
+	width: 200px;
 }
 
 .rowModifier {

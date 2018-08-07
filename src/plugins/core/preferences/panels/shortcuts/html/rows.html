@@ -4,21 +4,22 @@
 		cmds[#cmds+1] = cmd
 	end
 	table.sort(cmds, function(a, b) return a:getTitle() < b:getTitle() end)
-	
+
 	for _,cmd in ipairs(cmds) do
 		local shortcut = cmd:getFirstShortcut()
 %}
 			<tr>
 				<td class="rowLabel">{{ cmd:getTitle() }}</td>
+				<td class="rowAction">Action goes here</td>
 				<td class="rowModifier">
 					<select id="modifiers_{{ cmd:id() }}">
-						<option value="none">{{ i18n("none", {default = "None"}) }}</option>
+						<option value="none">{{ i18nNone }}</option>
 						{* modifierOptions(shortcut) *}
 					</select>
 				</td>
 				<td class="rowKeyCode">
 					<select id="keyCode_{{ cmd:id() }}">
-						<option value="none">{{ i18n("none", {default = "None"}) }}</option>
+						<option value="none">{{ i18nNone }}</option>
 						{* keyCodeOptions(shortcut) *}
 					</select>
 				</td>

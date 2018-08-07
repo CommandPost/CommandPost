@@ -549,7 +549,17 @@ local function generateContent()
         modifierOptions         = modifierOptions,
         keyCodeOptions          = keyCodeOptions,
 
-        i18n                    = i18n,
+        --------------------------------------------------------------------------------
+        -- i18n Labels (it seems to use up less memory if we only pass along the
+        -- individual items we need):
+        --------------------------------------------------------------------------------
+        i18nLabel               = i18n("label"),
+        i18nAction              = i18n("action"),
+        i18nModifier            = i18n("modifier"),
+        i18nKey                 = i18n("key"),
+        i18nApplication         = i18n("application"),
+        i18nCustomiseShortcuts  = i18n("customiseShortcuts"),
+        i18nNone                = i18n("none"),
 
         webviewLabel            = mod._manager.getLabel(),
     }
