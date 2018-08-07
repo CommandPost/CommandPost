@@ -445,6 +445,30 @@ function mod.getStillsFolderPath()
     end
 end
 
+--- plugins.finalcutpro.viewer.overlays.deleteMemory() -> none
+--- Function
+--- Deletes a memory.
+---
+--- Parameters:
+---  * id - An identifier in the form of a number.
+---
+--- Returns:
+---  * None
+function mod.deleteMemory(id)
+    local path = mod.getStillsFolderPath()
+    if path then
+        local imagePath = path .. "/memory" .. id .. ".png"
+        if tools.doesFileExist(imagePath) then
+            os.remove(imagePath)
+            local activeMemory = mod.activeMemory()
+            if activeMemory == id then
+                mod.activeMemory(0)
+                mod.update()
+            end
+        end
+    end
+end
+
 --- plugins.finalcutpro.viewer.overlays.saveMemory() -> none
 --- Function
 --- Saves a still frame to file.
@@ -622,6 +646,13 @@ local function contextualMenu(event)
                         { title = i18n("memory") .. " 3", fn = function() mod.saveMemory(3) end },
                         { title = i18n("memory") .. " 4", fn = function() mod.saveMemory(4) end },
                         { title = i18n("memory") .. " 5", fn = function() mod.saveMemory(5) end },
+                    }},
+                    { title = "  " .. i18n("delete"), menu = {
+                        { title = i18n("memory") .. " 1", fn = function() mod.deleteMemory(1) end, disabled = not mod.getMemory(1) },
+                        { title = i18n("memory") .. " 2", fn = function() mod.deleteMemory(2) end, disabled = not mod.getMemory(2) },
+                        { title = i18n("memory") .. " 3", fn = function() mod.deleteMemory(3) end, disabled = not mod.getMemory(3) },
+                        { title = i18n("memory") .. " 4", fn = function() mod.deleteMemory(4) end, disabled = not mod.getMemory(4) },
+                        { title = i18n("memory") .. " 5", fn = function() mod.deleteMemory(5) end, disabled = not mod.getMemory(5) },
                     }},
                     { title = "  " .. i18n("layout"), menu = {
                         { title = i18n("fullFrame"),  checked = mod.stillsLayout() == "Full Frame", fn = function() mod.stillsLayout("Full Frame"); mod.update() end },
