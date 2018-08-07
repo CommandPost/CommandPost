@@ -177,7 +177,7 @@ function mod.assignShortcut(handlerId, shortcutNumber, completionFn)
                 if completionFn and type(completionFn) == "function" then
                     local ok, result = xpcall(completionFn, debug.traceback)
                     if not ok then
-                        log.ef("Error while triggering completionFn for '%s':\n%s", i18n("apply") .. " " .. tools.firstToUpper(theLabel) .. " " .. string.format("%02d", i), result)
+                        log.ef("Error while triggering completionFn for '%s':\n%s", handlerId .. " " .. shortcutNumber, result)
                         return nil
                     end
                 end
@@ -239,7 +239,6 @@ function plugin.init(deps)
         local theType, theLabel = details.type, details.label
         local groupType = GROUP .. "_" .. theType
         for i = 1, MAX_SHORTCUTS do
-            local preferencesKey = "fcpx.pluginshortcuts." .. theType .. "." .. tostring(i)
             fcpxCmds:add("cp" .. tools.firstToUpper(theType) .. tostring(i))
                 :groupedBy("timeline")
                 :whenPressed(function() mod.applyShortcut(groupType, i) end)
