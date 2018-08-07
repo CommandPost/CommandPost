@@ -218,7 +218,6 @@ function dialog.displayChooseFile(whatMessage, fileType, defaultLocation)
             return false
         end try
     ]]
-    log.df("appleScript: %s", appleScript)
     return as(appleScript)
 end
 
