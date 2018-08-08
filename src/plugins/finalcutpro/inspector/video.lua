@@ -12,13 +12,12 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("videoInspector")
+--local log               = require("hs.logger").new("videoInspector")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local fcp               = require("cp.apple.finalcutpro")
-local i18n              = require("cp.i18n")
 local tools             = require("cp.tools")
 local just              = require("cp.just")
 local dialog            = require("cp.dialog")
@@ -34,7 +33,6 @@ local function setSpatialConform(value)
     -- Process each clip individually:
     --------------------------------------------------------------------------------
     local timeline = fcp:timeline()
-    local playhead = timeline:playhead()
     local timelineContents = timeline:contents()
     local clips = timelineContents:selectedClipsUI()
     for _,clip in tools.spairs(clips, function(t,a,b) return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription") end) do
