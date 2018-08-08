@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log               = require("hs.logger").new("videoInspector")
+local log               = require("hs.logger").new("videoInspector")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -30,11 +30,24 @@ local dialog            = require("cp.dialog")
 local function setSpatialConform(value)
 
     --------------------------------------------------------------------------------
-    -- Process each clip individually:
+    -- TODO: This could probably be Rx-ified?
+    --------------------------------------------------------------------------------
+
+    --------------------------------------------------------------------------------
+    -- Make sure at least one clip is selected:
     --------------------------------------------------------------------------------
     local timeline = fcp:timeline()
     local timelineContents = timeline:contents()
     local clips = timelineContents:selectedClipsUI()
+    if clips and #clips == 0 then
+        log.df("No clips selected.")
+        tools.playErrorSound()
+        return
+    end
+
+    --------------------------------------------------------------------------------
+    -- Process each clip individually:
+    --------------------------------------------------------------------------------
     for _,clip in tools.spairs(clips, function(t,a,b) return t[a]:attributeValue("AXValueDescription") < t[b]:attributeValue("AXValueDescription") end) do
 
         --------------------------------------------------------------------------------
@@ -59,10 +72,17 @@ local function setSpatialConform(value)
             return false
         end
 
-        --------------------------------------------------------------------------------
-        -- Select the clip:
-        --------------------------------------------------------------------------------
-        timelineContents:selectClip(clip)
+        if #clips ~= 1 then
+            --------------------------------------------------------------------------------
+            -- Select the clip:
+            --------------------------------------------------------------------------------
+            timelineContents:selectClip(clip)
+
+            --------------------------------------------------------------------------------
+            -- TODO: I'm not exactly sure why, but this only works if I add a wait here?
+            --------------------------------------------------------------------------------
+            just.wait(0.3)
+        end
 
         --------------------------------------------------------------------------------
         -- Make sure Video Inspector is active:
@@ -84,7 +104,7 @@ local function setSpatialConform(value)
             spatialConform:show()
             return spatialConform:isShowing()
         end) then
-            dialog.displayErrorMessage("The selected clip doesn't offer ay Spatial Conform options.")
+            dialog.displayErrorMessage("The selected clip doesn't offer any Spatial Conform options.")
             return false
         end
 
@@ -96,7 +116,7 @@ local function setSpatialConform(value)
             spatialConformType:show()
             return spatialConformType:isShowing()
         end) then
-            dialog.displayErrorMessage("The selected clip doesn't offer ay Spatial Conform options.")
+            dialog.displayErrorMessage("The selected clip doesn't offer any Spatial Conform options.")
             return false
         end
 
@@ -104,6 +124,7 @@ local function setSpatialConform(value)
         -- Set the Spatial Conform Type:
         --------------------------------------------------------------------------------
         spatialConformType:value(value)
+
     end
 
     --------------------------------------------------------------------------------

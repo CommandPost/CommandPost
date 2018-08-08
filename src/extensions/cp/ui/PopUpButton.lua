@@ -70,7 +70,6 @@ function PopUpButton.new(parent, finderFn)
     local value = UI:mutate(
         function(original)
             local ui = original()
-            log.df("ui: %s", ui)
             return ui and ui:value()
         end,
         function(newValue, original)
