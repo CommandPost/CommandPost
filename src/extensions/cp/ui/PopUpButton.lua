@@ -10,6 +10,11 @@
 local require = require
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+local log                           = require("hs.logger").new("popUpButton")
+
+--------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
@@ -65,6 +70,7 @@ function PopUpButton.new(parent, finderFn)
     local value = UI:mutate(
         function(original)
             local ui = original()
+            log.df("ui: %s", ui)
             return ui and ui:value()
         end,
         function(newValue, original)
