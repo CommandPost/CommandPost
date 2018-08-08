@@ -217,7 +217,6 @@ local plugin = {
         ["finalcutpro.timeline.transitions"]            = "transitions",
         ["finalcutpro.timeline.audioeffects"]           = "audioeffects",
         ["finalcutpro.timeline.videoeffects"]           = "videoeffects",
-        ["finalcutpro.hacks.shortcuts"]                 = "shortcuts",
     }
 }
 
