@@ -150,7 +150,6 @@ function plugin.init(deps)
             :whenActivated(function() setSpatialConform("None") end)
     end
 
-    return mod
 end
 
 return plugin
