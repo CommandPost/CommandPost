@@ -47,7 +47,7 @@ function plugin.init(deps)
             label       = i18n("finalCutProPanelLabel"),
             image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
             tooltip     = i18n("finalCutProPanelTooltip"),
-            height      = 540,
+            height      = 490,
         })
     end
 
