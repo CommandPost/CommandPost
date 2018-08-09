@@ -502,17 +502,19 @@ function mod.show()
                                             mod._mouseMoveTracker[i] = nil
                                         else
                                             Do(function()
-                                                local mousePosition = mouse.getAbsolutePosition()
-                                                local canvasTopLeft = mod._canvas:topLeft()
-                                                local newX = mousePosition.x - canvasTopLeft.x
-                                                local newY = mousePosition.y - canvasTopLeft.y
-                                                local viewerFrame = geometry.new(frame)
-                                                if geometry.new(mousePosition):inside(viewerFrame) then
-                                                    mod._canvas["dragCentre" .. i].center = { x = newX, y = newY}
-                                                    mod._canvas["dragCentreKill" .. i].center = {x = newX, y = newY }
-                                                    mod._canvas["dragVertical" .. i].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
-                                                    mod._canvas["dragHorizontal" .. i].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
-                                                    mod.setGuidePosition(i, {x=newX, y=newY})
+                                                if mod._canvas then
+                                                    local mousePosition = mouse.getAbsolutePosition()
+                                                    local canvasTopLeft = mod._canvas:topLeft()
+                                                    local newX = mousePosition.x - canvasTopLeft.x
+                                                    local newY = mousePosition.y - canvasTopLeft.y
+                                                    local viewerFrame = geometry.new(frame)
+                                                    if geometry.new(mousePosition):inside(viewerFrame) then
+                                                        mod._canvas["dragCentre" .. i].center = { x = newX, y = newY}
+                                                        mod._canvas["dragCentreKill" .. i].center = {x = newX, y = newY }
+                                                        mod._canvas["dragVertical" .. i].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
+                                                        mod._canvas["dragHorizontal" .. i].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
+                                                        mod.setGuidePosition(i, {x=newX, y=newY})
+                                                    end
                                                 end
                                             end):After(0)
                                         end
@@ -534,14 +536,16 @@ function mod.show()
                                         mod._mouseMoveLetterboxTracker = nil
                                     else
                                         Do(function()
-                                            local mousePosition = mouse.getAbsolutePosition()
-                                            local canvasTopLeft = mod._canvas:topLeft()
-                                            local letterboxHeight = mousePosition.y - canvasTopLeft.y
-                                            local viewerFrame = geometry.new(frame)
-                                            if geometry.new(mousePosition):inside(viewerFrame) and letterboxHeight > 10  and letterboxHeight < (frame.h/2) then
-                                                mod._canvas["topLetterbox"].frame = { x = 0, y = 0, h = letterboxHeight, w = "100%"}
-                                                mod._canvas["bottomLetterbox"].frame = { x = 0, y = frame.h - letterboxHeight, h = letterboxHeight, w = "100%"}
-                                                mod.letterboxHeight(letterboxHeight)
+                                            if mod._canvas then
+                                                local mousePosition = mouse.getAbsolutePosition()
+                                                local canvasTopLeft = mod._canvas:topLeft()
+                                                local letterboxHeight = mousePosition.y - canvasTopLeft.y
+                                                local viewerFrame = geometry.new(frame)
+                                                if geometry.new(mousePosition):inside(viewerFrame) and letterboxHeight > 10  and letterboxHeight < (frame.h/2) then
+                                                    mod._canvas["topLetterbox"].frame = { x = 0, y = 0, h = letterboxHeight, w = "100%"}
+                                                    mod._canvas["bottomLetterbox"].frame = { x = 0, y = frame.h - letterboxHeight, h = letterboxHeight, w = "100%"}
+                                                    mod.letterboxHeight(letterboxHeight)
+                                                end
                                             end
                                         end):After(0)
                                     end
