@@ -35,11 +35,6 @@ local i18n                              = require("cp.i18n")
 -- The maximum number of shortcuts
 local MAX_SHORTCUTS = 20
 
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 50000
-
 -- GROUP -> number
 -- Constant
 -- The Group
@@ -60,7 +55,7 @@ for _,type in pairs(plugins.types) do
 end
 sort(pluginTypeDetails, function(a, b) return a.label < b.label end)
 
---- plugins.finalcutpro.timeline.pluginshortcuts.init(handlerId, action, shortcutNumber) -> none
+--- plugins.finalcutpro.timeline.pluginshortcuts.init(handlerId, action, id) -> none
 --- Function
 --- Initialise the module.
 ---
@@ -87,97 +82,90 @@ end
 --- Table of shortcuts.
 mod.shortcuts = prop(
     function()
-        return config.get(fcp:currentLocale().code .. ".pluginShortcuts", {})
+        return config.get(fcp:currentLocale().code .. ".shortcuts.action", {})
     end,
     function(value)
-        config.set(fcp:currentLocale().code .. ".pluginShortcuts", value)
+        config.set(fcp:currentLocale().code .. ".shortcuts.action", value)
     end
 )
 
---- plugins.finalcutpro.timeline.pluginshortcuts.setShortcut(handlerId, action, shortcutNumber) -> none
+--- plugins.finalcutpro.timeline.pluginshortcuts.setShortcut(handlerId, action, id) -> none
 --- Function
 --- Sets a shortcut.
 ---
 --- Parameters:
+---  * `id` - The shortcut number, between 1 and 5, which is being assigned.
 ---  * `handlerId`      - The action handler ID.
 ---  * `action`         - The action.
----  * `shortcutNumber` - The shortcut number, between 1 and 5, which is being assigned.
 ---
 --- Returns:
 ---  * None
-function mod.setShortcut(handlerId, action, shortcutNumber)
-    assert(shortcutNumber >= 1 and shortcutNumber <= MAX_SHORTCUTS)
-    local shortcuts = mod.shortcuts()
-    local handlerShortcuts = shortcuts[handlerId]
-    if not handlerShortcuts then
-        handlerShortcuts = {}
-        shortcuts[handlerId] = handlerShortcuts
-    end
-    handlerShortcuts[shortcutNumber] = action
+function mod.setShortcut(id, action)
+    assert(id >= 1 and id <= MAX_SHORTCUTS)
+    local shortcuts = mod.shortcuts() or {}
+    shortcuts[id] = action
     mod.shortcuts(shortcuts)
 end
 
---- plugins.finalcutpro.timeline.pluginshortcuts.getShortcut(handlerId, shortcutNumber) -> shortcut
+--- plugins.finalcutpro.timeline.pluginshortcuts.getShortcut(handlerId, id) -> shortcut
 --- Function
 --- Gets a shortcut.
 ---
 --- Parameters:
 ---  * `handlerId`      - The action handler ID.
----  * `shortcutNumber` - The shortcut number, between 1 and 5, which is being assigned.
+---  * `id` - The shortcut number, between 1 and 5, which is being assigned.
 ---
 --- Returns:
 ---  * The shortcut
-function mod.getShortcut(handlerId, shortcutNumber)
+function mod.getShortcut(handlerId, id)
     local shortcuts = mod.shortcuts()
-    local handlerShortcuts = shortcuts[handlerId]
-    return handlerShortcuts and handlerShortcuts[shortcutNumber]
+    return shortcuts and shortcuts[id]
 end
 
---- plugins.finalcutpro.timeline.pluginshortcuts.applyShortcut(handlerId, shortcutNumber) -> none
+--- plugins.finalcutpro.timeline.pluginshortcuts.applyShortcut(handlerId, id) -> none
 --- Function
 --- Applies a shortcut.
 ---
 --- Parameters:
 ---  * `handlerId`      - The action handler ID.
----  * `shortcutNumber` - The shortcut number, between 1 and 5, which is being assigned.
+---  * `id` - The shortcut number, between 1 and 5, which is being assigned.
 ---
 --- Returns:
 ---  * None
-function mod.applyShortcut(handlerID, shortcutNumber)
-    local action = mod.getShortcut(handlerID, shortcutNumber)
-    local handler = mod._actionmanager.getHandler(handlerID)
+function mod.applyShortcut(id)
+    local action = mod.getShortcut(id)
+    local handler = mod._actionmanager.getHandler("finalcutpro.shortcuts.action")
     if handler then
         handler:execute(action)
     else
-        log.ef("Failed to find Plugins Shortcut Handler.")
+        log.ef("Failed to find Action Shortcut Handler.")
     end
 end
 
---- plugins.finalcutpro.timeline.pluginshortcuts.assignShortcut(shortcutNumber, handlerId) -> none
+--- plugins.finalcutpro.timeline.pluginshortcuts.assignShortcut(id, handlerId) -> none
 --- Function
 --- Asks the user to assign the specified video effect shortcut number to a selected effect.
 --- A chooser will be displayed, and the selected item will become the shortcut.
 ---
 --- Parameters:
 ---  * `handlerId`      - The action handler ID.
----  * `shortcutNumber` - The shortcut number, between 1 and 5, which is being assigned.
+---  * `id` - The shortcut number, between 1 and 5, which is being assigned.
 ---  * `completionFn`   - An optional completion function that triggers when a selection is made.
 ---
 --- Returns:
 ---  * None
-function mod.assignShortcut(handlerId, shortcutNumber, completionFn)
-    local activator = mod._actionmanager.getActivator("finalcutpro.timeline.plugin.shortcuts."..handlerId)
-        :allowHandlers(handlerId)
+function mod.assignShortcut(id, completionFn)
+    local activator = mod._actionmanager.getActivator("finalcutpro.shortcuts.action")
         :onActivate(function(_, action)
             if action ~= nil then
                 --------------------------------------------------------------------------------
                 -- Save the selection:
                 --------------------------------------------------------------------------------
-                mod.setShortcut(handlerId, action, shortcutNumber)
+                mod.setShortcut(id, action)
                 if completionFn and type(completionFn) == "function" then
                     local ok, result = xpcall(completionFn, debug.traceback)
                     if not ok then
-                        log.ef("Error while triggering completionFn for '%s':\n%s", handlerId .. " " .. shortcutNumber, result)
+                        log.ef("Error while triggering completionFn for Action Shortcut %s:\n%s", id, result)
                         return nil
                     end
                 end
@@ -234,39 +222,34 @@ function plugin.init(deps)
     -- Setup the plugin commands:
     --------------------------------------------------------------------------------
     local fcpxCmds = deps.fcpxCmds
-    for _,details in pairs(pluginTypeDetails) do
-        local theType, theLabel = details.type, details.label
-        local groupType = GROUP .. "_" .. theType
-        for i = 1, MAX_SHORTCUTS do
-            fcpxCmds:add("cp" .. tools.firstToUpper(theType) .. tostring(i))
-                :groupedBy("timeline")
-                :whenPressed(function() mod.applyShortcut(groupType, i) end)
-                :titled(i18n("apply") .. " " .. tools.firstToUpper(theLabel) .. " " .. string.format("%02d", i))
 
+    for i = 1, MAX_SHORTCUTS do
+        fcpxCmds:add("cpShortcutAction" .. tostring(i))
+            :groupedBy("timeline")
+            :whenPressed(function() mod.applyShortcut(i) end)
+            :titled(" Custom Action " .. string.format("%02d", i))
+
+            --------------------------------------------------------------------------------
+            -- This tells CommandPost to display an "action" in the Shortcuts Preferences:
+            --------------------------------------------------------------------------------
+            :action(
                 --------------------------------------------------------------------------------
-                -- This tells CommandPost to display an "action" in the Shortcuts Preferences:
+                -- Getter:
                 --------------------------------------------------------------------------------
-                :action(
-                    --------------------------------------------------------------------------------
-                    -- Getter:
-                    --------------------------------------------------------------------------------
-                    function()
-                        local shortcuts = mod.shortcuts()
-                        local handlerShortcuts  = shortcuts[groupType] or {}
-                        local shortcut = handlerShortcuts[i]
-                        return shortcut and shortcut.name
-                    end,
-                    --------------------------------------------------------------------------------
-                    -- Setter:
-                    --------------------------------------------------------------------------------
-                    function(clear, completionFn)
-                        if clear then
-                            mod.setShortcut(groupType, nil, i)
-                        else
-                            mod.assignShortcut(groupType, i, completionFn)
-                        end
-                    end)
-        end
+                function()
+                    local shortcuts = mod.shortcuts()
+                    return shortcuts and shortcuts[i] and shortcuts[i].name
+                end,
+                --------------------------------------------------------------------------------
+                -- Setter:
+                --------------------------------------------------------------------------------
+                function(clear, completionFn)
+                    if clear then
+                        mod.setShortcut(i, nil)
+                    else
+                        mod.assignShortcut(i, completionFn)
+                    end
+                end)
     end
 
     return mod
