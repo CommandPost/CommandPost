@@ -64,6 +64,8 @@ local IP                                = require("cp.apple.finalcutpro.inspecto
 local hasProperties                     = IP.hasProperties
 local section, slider, xy, popUpButton, checkBox = IP.section, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
 
+local If                                = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -238,6 +240,27 @@ function VideoInspector:show()
         self:parent():selectTab("Video")
     end
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.video.VideoInspector:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shows the Video Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function VideoInspector:doShow()
+    return If(self.isShowing):IsNot(true)
+    :Then(self:parent():doSelectTab("Video"))
+    :Label("VideoInspector:doShow")
+end
+
+function VideoInspector:doHide()
+    return If(self.isShowing)
+    :Then(self:parent():doHide())
+    :Label("VideoInspector:doHide")
 end
 
 return VideoInspector

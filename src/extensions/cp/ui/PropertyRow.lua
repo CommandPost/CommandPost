@@ -267,6 +267,19 @@ function PropertyRow:show()
     return self
 end
 
+--- cp.ui.PropertyRow:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shows the `PropertyRow`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * self
+function PropertyRow:doShow()
+    return self:parent():doShow()
+end
+
 --- cp.ui.PropertyRow:hide() -> self
 --- Method
 --- Hides the `PropertyRow`.
@@ -282,6 +295,10 @@ function PropertyRow:hide()
         parent:hide()
     end
     return self
+end
+
+function PropertyRow:doHide()
+    return self:parent():doHide()
 end
 
 --- cp.ui.PropertyRow:labelKeys() -> string
@@ -324,7 +341,7 @@ function PropertyRow:children()
         if labelFrame then
             children = childrenMatching(self:propertiesUI(), function(child)
                 -- match the children who are right of the label element (and not the AXScrollBar)
-                local childFrame = child and child:frame()
+                local childFrame = child and child:attributeValue("AXFrame")
                 return childFrame ~= nil and labelFrame:intersect(childFrame).h > 0 and child:attributeValue("AXRole") ~= "AXScrollBar"
             end)
             if children then

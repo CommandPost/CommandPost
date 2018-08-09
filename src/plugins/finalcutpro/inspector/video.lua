@@ -22,6 +22,10 @@ local tools             = require("cp.tools")
 local just              = require("cp.just")
 local dialog            = require("cp.dialog")
 
+local go                = require("cp.rx.go")
+local Do, Given, List   = go.Do, go.Given, go.List
+local WaitUntil         = go.WaitUntil
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -134,6 +138,58 @@ local function setSpatialConform(value)
 
 end
 
+local function timecodeComparison(a, b)
+    return a:attributeValue("AXValueDescription") < b:attributeValue("AXValueDescription")
+end
+
+local function doSetSpatialConform(value)
+    local timeline = fcp:timeline()
+    local timelineContents = timeline:contents()
+    local spatialConform = fcp:inspector():video():spatialConform()
+    local spatialConformType = spatialConform:type()
+
+    return Do(function()
+        --------------------------------------------------------------------------------
+        -- Make sure at least one clip is selected:
+        --------------------------------------------------------------------------------
+        local clips = timelineContents:selectedClipsUI()
+        if clips and #clips == 0 then
+            log.df("No clips selected.")
+            tools.playErrorSound()
+            return false
+        end
+
+        return Do(
+            --------------------------------------------------------------------------------
+            -- Process each clip individually:
+            --------------------------------------------------------------------------------
+            Given(List(clips):SortedBy(timecodeComparison))
+            :Then(function(clip)
+                return Do(fcp:doLaunch())
+                :Then(timeline:doShow())
+                :Then(timelineContents:doSelectClip(clip):ThenDelay(100))
+                :Then(spatialConformType:doShow())
+                :Then(function()
+                    spatialConformType:value(value)
+                end)
+                :ThenYield()
+            end)
+            :Then(WaitUntil(spatialConformType.value.value):Is(value):TimeoutAfter(2000):Debug("Spatial Conform Wait"))
+        )
+        --------------------------------------------------------------------------------
+        -- Reselect original clips:
+        --------------------------------------------------------------------------------
+        :Then(timelineContents:doSelectClips(clips))
+        :Then(true)
+    end)
+    :Catch(function(message)
+        dialog.displayErrorMessage(message)
+        return false
+    end)
+    :Label("video.doSetSpatialConform")
+
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -158,15 +214,15 @@ function plugin.init(deps)
     if deps.fcpxCmds then
         deps.fcpxCmds
             :add("cpSetSpatialConformTypeToFit")
-            :whenActivated(function() setSpatialConform("Fit") end)
+            :whenActivated(doSetSpatialConform("Fit"))
 
         deps.fcpxCmds
             :add("cpSetSpatialConformTypeToFill")
-            :whenActivated(function() setSpatialConform("Fill") end)
+            :whenActivated(doSetSpatialConform("Fill"))
 
         deps.fcpxCmds
             :add("cpSetSpatialConformTypeToNone")
-            :whenActivated(function() setSpatialConform("None") end)
+            :whenActivated(doSetSpatialConform("None"))
     end
 
 end

@@ -32,6 +32,7 @@ local inspect               = require("hs.inspect")
 --------------------------------------------------------------------------------
 local application           = require("hs.application")
 local applicationwatcher    = require("hs.application.watcher")
+local timer                 = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -355,15 +356,17 @@ function mod.mt:_observer(create)
 
             -- set up the callback to pass on to appropriate watchers.
             o:callback(function(_, element, notification, details)
-                local watchers = self.__watchers[notification]
-                if watchers then
-                    for fn,_ in pairs(watchers) do
-                        local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
-                        if not ok then
-                            log.ef("Error processing '%s' notification from app '%sS':\n%s", notification, self:bundleID(), result)
+                timer.doAfter(0, function()
+                    local watchers = self.__watchers[notification]
+                    if watchers then
+                        for fn,_ in pairs(watchers) do
+                            local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
+                            if not ok then
+                                log.ef("Error processing '%s' notification from app '%sS':\n%s", notification, self:bundleID(), result)
+                            end
                         end
                     end
-                end
+                end)
             end)
 
             -- update the watcher list (forced)

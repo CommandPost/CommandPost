@@ -351,6 +351,10 @@ function MenuButton:__call(parent, value)
     return self:value(value)
 end
 
+function MenuButton:__tostring()
+    return string.format("cp.ui.MenuButton: %s (%s)", self:title(), self:parent())
+end
+
 --- cp.ui.MenuButton:snapshot([path]) -> hs.image | nil
 --- Method
 --- Takes a snapshot of the UI in its current state as a PNG and returns it.

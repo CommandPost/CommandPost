@@ -34,6 +34,9 @@ local VideoInspector                    = require("cp.apple.finalcutpro.inspecto
 
 local id                                = require("cp.apple.finalcutpro.ids") "Inspector"
 
+local go                                = require("cp.rx.go")
+local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -282,6 +285,15 @@ function Inspector:show(tab)
     return self
 end
 
+function Inspector:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(self:parent():doShow())
+    :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(5000))
+    :Otherwise(true)
+    :Label("Inspector:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.Inspector:hide() -> Inspector
 --- Method
 --- Hides the inspector.
@@ -344,6 +356,55 @@ function Inspector:selectTab(value)
         end
     end
     return false
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:doFindTabButton(type) -> cp.rx.go.Statement
+--- Method
+--- Finds the named Inspector tab button, or sends an error if the type is unsupported.
+---
+--- Parameters:
+--- * type - the type of the button to return. (e.g. "Video")
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) to execute.
+---
+--- Notes:
+---  * Valid strings for `type` are as follows:
+---    * Audio
+---    * Color
+---    * Effect
+---    * Generator
+---    * Info
+---    * Share
+---    * Text
+---    * Title
+---    * Transition
+---    * Video
+--- * Not all button types are available in all contexts.
+function Inspector:doFindTabButton(type)
+    local code = Inspector.INSPECTOR_TABS[type]
+    if not code then
+        return Throw("Invalid Inspector Tab: %s", type)
+    end
+    local localTitle = self:app():string(code)
+
+    return WaitUntil(List(self.topBarUI))
+    :Matches(function(child)
+        return child:attributeValue("AXTitle") == localTitle
+    end)
+    :Label("Inpector:doFindTabButton")
+end
+
+function Inspector:doSelectTab(title)
+    return Do(self:doShow())
+    :Then(
+        If(self:doFindTabButton(title))
+        :Then(function(button)
+            return button:doPress()
+        end)
+        :Catch(Throw("Inspector Tab Unavailable: %s", title))
+    )
+    :Label("Inspector:doSelectTab")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:tabAvailable(tab) -> boolean
@@ -652,6 +713,10 @@ function Inspector:color()
         self._colorInspector = ColorInspector.new(self)
     end
     return self._colorInspector
+end
+
+function Inspector:__tostring()
+    return "cp.apple.finalcutpro.inspector.Inspector"
 end
 
 return Inspector

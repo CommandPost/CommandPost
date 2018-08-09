@@ -27,6 +27,8 @@ local axutils							= require("cp.ui.axutils")
 
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
+local If                                = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -116,6 +118,24 @@ function TimelineContents.new(parent)
         return ui and ui:frame()
     end)
 
+    local children = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXChildren")
+    end):preWatch(function(self, theProp)
+        self:app():notifier():watchFor("AXUIElementDestroyed", function()
+            theProp:update()
+        end)
+    end)
+
+    local selectedChildren = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXSelectedChildren")
+    end):preWatch(function(self, theProp)
+        self:app():notifier():watchFor("AXUIElementDestroyed", function()
+            theProp:update()
+        end)
+    end)
+
     prop.bind(o) {
 --- cp.apple.finalcutpro.main.TimelineContents.UI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
@@ -161,6 +181,16 @@ function TimelineContents.new(parent)
 --- Field
 --- The current 'frame' of the internal timeline content,  or `nil` if not available.
         timelineFrame = timelineFrame,
+
+--- cp.apple.finalcutpro.main.TimelineContents.children <cp.prop: table; read-only; live>
+--- Field
+--- The current set of child elements in the TimelineContents.
+        children = children,
+
+--- cp.apple.finalcutpro.main.TimelineContents.selectedChildren <cp.prop: table; read-only; live>
+--- Field
+--- The current set of selected child elements in the TimelineContents.
+        selectedChildren = selectedChildren,
     }
 
     return o
@@ -433,6 +463,24 @@ end
 -- TODO: Add documentation
 function TimelineContents:selectClip(clipUI)
     return self:selectClips({clipUI})
+end
+
+function TimelineContents:doSelectClips(clipsUI)
+    return If(self.UI):Then(function(ui)
+        local selectedClips = {}
+        for i,clip in ipairs(clipsUI) do
+            selectedClips[i] = clip
+        end
+        ui:setAttributeValue("AXSelectedChildren", selectedClips)
+        return true
+    end)
+    :ThenYield()
+    :Label("TimelineContents:doSelectClips")
+end
+
+function TimelineContents:doSelectClip(clipUI)
+    return self:doSelectClips({clipUI})
+    :Label("TimelineContents:doSelectClip")
 end
 
 -----------------------------------------------------------------------
