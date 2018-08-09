@@ -382,7 +382,7 @@ function mod.mt:scanSystemAudioUnits(locale)
             log.ef("  * Failed to cache Audio Units.")
         end
     else
-        log.ef("  * Failed to scan for Audio Units.")
+        log.ef("  * Failed to scan for Audio Units (Status: %s, Output: %s)", status, output)
     end
 
 end
