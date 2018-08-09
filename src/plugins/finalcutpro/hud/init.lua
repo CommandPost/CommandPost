@@ -506,7 +506,7 @@ end
 ---  * None
 function hud.setButton(index, value)
     local currentLocale = fcp:currentLocale()
-    config.set(string.format("%s.hudButton.%d", currentLocale.code, index), value)
+    config.set(string.format("hud.button.%s.%d", currentLocale.code, index), value)
 end
 
 --- plugins.finalcutpro.hud.updateVisibility() -> none
@@ -614,6 +614,7 @@ function hud.assignButton(button)
     local activator
 
     local chooserAction = function(handler, action, text)
+
         --------------------------------------------------------------------------------
         -- Perform Specific Function:
         --------------------------------------------------------------------------------
