@@ -538,7 +538,7 @@ function mod.show()
                                             local canvasTopLeft = mod._canvas:topLeft()
                                             local letterboxHeight = mousePosition.y - canvasTopLeft.y
                                             local viewerFrame = geometry.new(frame)
-                                            if geometry.new(mousePosition):inside(viewerFrame) then
+                                            if geometry.new(mousePosition):inside(viewerFrame) and letterboxHeight > 10  and letterboxHeight < (frame.h/2) then
                                                 mod._canvas["topLetterbox"].frame = { x = 0, y = 0, h = letterboxHeight, w = "100%"}
                                                 mod._canvas["bottomLetterbox"].frame = { x = 0, y = frame.h - letterboxHeight, h = letterboxHeight, w = "100%"}
                                                 mod.letterboxHeight(letterboxHeight)
