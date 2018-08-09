@@ -256,7 +256,7 @@ function Alert:containsText(value, plain)
                 return eValue == value
             else
                 local s,e = eValue:find(value)
-                log.df("Found: start: %s, end: %s, len: %s", s, e, eValue:len())
+                --log.df("Found: start: %s, end: %s, len: %s", s, e, eValue:len())
                 return s == 1 and e == eValue:len()
             end
         end
