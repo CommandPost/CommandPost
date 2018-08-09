@@ -37,6 +37,8 @@ local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local tools             = require("cp.tools")
 
+local Do                = require("cp.rx.go.Do")
+
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
@@ -74,10 +76,20 @@ local DEFAULT_GRID_SPACING = 20
 -- Default Stills Layout Setting.
 local DEFAULT_STILLS_LAYOUT = "Left Vertical"
 
+-- DEFAULT_LETTERBOX_HEIGHT -> number
+-- Constant
+-- Default Letterbox Height
+local DEFAULT_LETTERBOX_HEIGHT = 300
+
 -- FCP_COLOR_BLUE -> string
 -- Constant
 -- Apple's preferred blue colour in Final Cut Pro.
 local FCP_COLOR_BLUE = "#5760e7"
+
+-- CROSS_HAIR_LENGTH -> number
+-- Constant
+-- Cross Hair Length
+local CROSS_HAIR_LENGTH = 100
 
 --------------------------------------------------------------------------------
 --
@@ -101,10 +113,35 @@ mod.NUMBER_OF_DRAGGABLE_GUIDES = 5
 --- Are all the Viewer Overlay's disabled?
 mod.disabled = config.prop("fcpx.ViewerOverlay.MasterDisabled", false)
 
+--- plugins.finalcutpro.viewer.overlays.crossHairEnabled <cp.prop: boolean>
+--- Variable
+--- Is Viewer Cross Hair Enabled?
+mod.crossHairEnabled = config.prop("fcpx.ViewerOverlay.CrossHair.Enabled", false)
+
+--- plugins.finalcutpro.viewer.overlays.letterboxEnabled <cp.prop: boolean>
+--- Variable
+--- Is Viewer Letterbox Enabled?
+mod.letterboxEnabled = config.prop("fcpx.ViewerOverlay.Letterbox.Enabled", false)
+
+--- plugins.finalcutpro.viewer.overlays.letterboxHeight <cp.prop: number>
+--- Variable
+--- Letterbox Height
+mod.letterboxHeight = config.prop("fcpx.ViewerOverlay.Letterbox.Height", DEFAULT_LETTERBOX_HEIGHT)
+
 --- plugins.finalcutpro.viewer.overlays.basicGridEnabled <cp.prop: boolean>
 --- Variable
 --- Is Viewer Grid Enabled?
 mod.basicGridEnabled = config.prop("fcpx.ViewerOverlay.BasicGrid.Enabled", false)
+
+--- plugins.finalcutpro.viewer.overlays.crossHairColor <cp.prop: string>
+--- Variable
+--- Viewer Grid Color as HTML value
+mod.crossHairColor = config.prop("fcpx.ViewerOverlay.CrossHair.Color", DEFAULT_COLOR)
+
+--- plugins.finalcutpro.viewer.overlays.crossHairAlpha <cp.prop: number>
+--- Variable
+--- Viewer Grid Alpha
+mod.crossHairAlpha = config.prop("fcpx.ViewerOverlay.CrossHair.Alpha", DEFAULT_ALPHA)
 
 --- plugins.finalcutpro.viewer.overlays.gridColor <cp.prop: string>
 --- Variable
@@ -160,6 +197,11 @@ mod.guideAlpha = config.prop("fcpx.ViewerOverlay.Guide.Alpha", {})
 --- Variable
 --- Viewer Custom Guide Color as HTML value
 mod.customGuideColor = config.prop("fcpx.ViewerOverlay.Guide.CustomColor", {})
+
+--- plugins.finalcutpro.viewer.overlays.customCrossHairColor <cp.prop: table>
+--- Variable
+--- Viewer Custom Cross Hair Color as HTML value
+mod.customCrossHairColor = config.prop("fcpx.ViewerOverlay.CrossHair.CustomColor", {})
 
 --- plugins.finalcutpro.viewer.overlays.capslock <cp.prop: boolean>
 --- Variable
@@ -252,6 +294,46 @@ function mod.show()
                         })
                     end
                 end
+            end
+
+            --------------------------------------------------------------------------------
+            -- Cross Hair:
+            --------------------------------------------------------------------------------
+            if mod.crossHairEnabled() then
+
+                local length = CROSS_HAIR_LENGTH
+
+                local crossHairColor = mod.crossHairColor()
+                local crossHairAlpha = mod.crossHairAlpha() / 100
+
+                local fillColor
+                if crossHairColor == "CUSTOM" and mod.customCrossHairColor() then
+                    fillColor = mod.customCrossHairColor()
+                    fillColor.alpha = crossHairAlpha
+                else
+                    fillColor = { hex = crossHairColor, alpha = crossHairAlpha }
+                end
+
+                --------------------------------------------------------------------------------
+                -- Horizontal Bar:
+                --------------------------------------------------------------------------------
+                mod._canvas:appendElements({
+                    type = "rectangle",
+                    frame = { x = (frame.w / 2) - (length/2), y = frame.h / 2, h = 1, w = length},
+                    fillColor = fillColor,
+                    action = "fill",
+                })
+
+                --------------------------------------------------------------------------------
+                -- Vertical Bar:
+                --------------------------------------------------------------------------------
+                mod._canvas:appendElements({
+                    type = "rectangle",
+                    frame = { x = frame.w / 2, y = (frame.h / 2) - (length/2), h = length, w = 1},
+                    fillColor = fillColor,
+                    action = "fill",
+                })
+
             end
 
             --------------------------------------------------------------------------------
@@ -360,39 +442,111 @@ function mod.show()
                         trackMouseUp = true,
                         trackMouseMove = true,
                     })
-                    mod._canvas:clickActivating(false)
-                    mod._canvas:canvasMouseEvents(true, true, true, true)
                 end
             end
-            if draggableGuideEnabled then
+
+            --------------------------------------------------------------------------------
+            -- Letterbox:
+            --------------------------------------------------------------------------------
+            if mod.letterboxEnabled() then
+
+                local letterboxHeight = mod.letterboxHeight()
+                mod._canvas:appendElements({
+                    id = "topLetterbox",
+                    type = "rectangle",
+                    frame = { x = 0, y = 0, h = letterboxHeight, w = "100%"},
+                    fillColor = { hex = "#000000", alpha = 1 },
+                    action = "fill",
+                    trackMouseDown = true,
+                    trackMouseUp = true,
+                    trackMouseMove = true,
+                })
+
+                mod._canvas:appendElements({
+                    id = "bottomLetterbox",
+                    type = "rectangle",
+                    frame = { x = 0, y = frame.h - letterboxHeight, h = letterboxHeight, w = "100%"},
+                    fillColor = { hex = "#000000", alpha = 1 },
+                    action = "fill",
+                    trackMouseDown = true,
+                    trackMouseUp = true,
+                    trackMouseMove = true,
+                })
+
+            end
+
+            --------------------------------------------------------------------------------
+            -- Mouse Actions for Canvas:
+            --------------------------------------------------------------------------------
+            if draggableGuideEnabled or mod.letterboxEnabled() then
+                mod._canvas:clickActivating(false)
+                mod._canvas:canvasMouseEvents(true, true, true, true)
                 mod._canvas:mouseCallback(function(_, event, id)
-                    for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
-                        if id == "dragCentre" .. i and event == "mouseDown" then
-                            if not mod._mouseMoveTracker then
-                                mod._mouseMoveTracker = {}
-                            end
-                            mod._mouseMoveTracker[i] = eventtap.new({ events.leftMouseDragged, events.leftMouseUp }, function(e)
-                                if e:getType() == events.leftMouseUp then
-                                    mod._mouseMoveTracker[i]:stop()
-                                    mod._mouseMoveTracker[i] = nil
-                                else
-                                    local mousePosition = mouse.getAbsolutePosition()
-
-                                    local canvasTopLeft = mod._canvas:topLeft()
-                                    local newX = mousePosition.x - canvasTopLeft.x
-                                    local newY = mousePosition.y - canvasTopLeft.y
-
-                                    local viewerFrame = geometry.new(frame)
-                                    if geometry.new(mousePosition):inside(viewerFrame) then
-                                        mod._canvas["dragCentre" .. i].center = { x = newX, y = newY}
-                                        mod._canvas["dragCentreKill" .. i].center = {x = newX, y = newY }
-                                        mod._canvas["dragVertical" .. i].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
-                                        mod._canvas["dragHorizontal" .. i].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
-
-                                        mod.setGuidePosition(i, {x=newX, y=newY})
-                                    end
+                    --------------------------------------------------------------------------------
+                    -- Draggable Guides:
+                    --------------------------------------------------------------------------------
+                    if draggableGuideEnabled then
+                        for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
+                            if id == "dragCentre" .. i and event == "mouseDown" then
+                                if not mod._mouseMoveTracker then
+                                    mod._mouseMoveTracker = {}
                                 end
-                            end, false):start()
+                                if mod._mouseMoveLetterboxTracker then
+                                    mod._mouseMoveLetterboxTracker:stop()
+                                    mod._mouseMoveLetterboxTracker = nil
+                                end
+                                if not mod._mouseMoveTracker[i] then
+                                    mod._mouseMoveTracker[i] = eventtap.new({ events.leftMouseDragged, events.leftMouseUp }, function(e)
+                                        if e:getType() == events.leftMouseUp then
+                                            mod._mouseMoveTracker[i]:stop()
+                                            mod._mouseMoveTracker[i] = nil
+                                        else
+                                            Do(function()
+                                                local mousePosition = mouse.getAbsolutePosition()
+                                                local canvasTopLeft = mod._canvas:topLeft()
+                                                local newX = mousePosition.x - canvasTopLeft.x
+                                                local newY = mousePosition.y - canvasTopLeft.y
+                                                local viewerFrame = geometry.new(frame)
+                                                if geometry.new(mousePosition):inside(viewerFrame) then
+                                                    mod._canvas["dragCentre" .. i].center = { x = newX, y = newY}
+                                                    mod._canvas["dragCentreKill" .. i].center = {x = newX, y = newY }
+                                                    mod._canvas["dragVertical" .. i].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
+                                                    mod._canvas["dragHorizontal" .. i].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
+                                                    mod.setGuidePosition(i, {x=newX, y=newY})
+                                                end
+                                            end):After(0)
+                                        end
+                                    end, false):start()
+                                end
+                            end
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Letterbox:
+                    --------------------------------------------------------------------------------
+                    if mod.letterboxEnabled() then
+                        if id == "topLetterbox" or id == "bottomLetterbox" and event == "mouseDown" then
+                            if not mod._mouseMoveLetterboxTracker then
+                                mod._mouseMoveLetterboxTracker = eventtap.new({ events.leftMouseDragged, events.leftMouseUp }, function(e)
+                                    if e:getType() == events.leftMouseUp then
+                                        mod._mouseMoveLetterboxTracker:stop()
+                                        mod._mouseMoveLetterboxTracker = nil
+                                    else
+                                        Do(function()
+                                            local mousePosition = mouse.getAbsolutePosition()
+                                            local canvasTopLeft = mod._canvas:topLeft()
+                                            local letterboxHeight = mousePosition.y - canvasTopLeft.y
+                                            local viewerFrame = geometry.new(frame)
+                                            if geometry.new(mousePosition):inside(viewerFrame) then
+                                                mod._canvas["topLetterbox"].frame = { x = 0, y = 0, h = letterboxHeight, w = "100%"}
+                                                mod._canvas["bottomLetterbox"].frame = { x = 0, y = frame.h - letterboxHeight, h = letterboxHeight, w = "100%"}
+                                                mod.letterboxHeight(letterboxHeight)
+                                            end
+                                        end):After(0)
+                                    end
+                                end, false):start()
+                            end
                         end
                     end
                 end)
@@ -436,6 +590,45 @@ function mod.hide()
     end
 end
 
+--- plugins.finalcutpro.viewer.overlays.draggableGuidesEnabled() -> boolean
+--- Function
+--- Are any draggable guides enabled?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if at least one draggable guide is enabled otherwise `false`
+function mod.draggableGuidesEnabled()
+    local draggableGuideEnabled = mod.draggableGuideEnabled()
+    if draggableGuideEnabled then
+        for id=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
+            if draggableGuideEnabled[tostring(id)] == true then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- areAnyOverlaysEnabled() -> boolean
+-- Function
+-- Are any Final Cut Pro Viewer Overlays Enabled?
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * `true` if any Viewer Overlays are enabled otherwise `false`
+local function areAnyOverlaysEnabled()
+    return mod.basicGridEnabled() == true
+    or mod.draggableGuidesEnabled() == true
+    or mod.activeMemory() ~= 0
+    or mod.crossHairEnabled() == true
+    or mod.letterboxEnabled() == true
+    or false
+end
+
 --- plugins.finalcutpro.viewer.overlays.update() -> none
 --- Function
 --- Updates the Viewer Grid.
@@ -449,38 +642,43 @@ function mod.update()
     --------------------------------------------------------------------------------
     -- If Final Cut Pro is Front Most & Viewer is Showing:
     --------------------------------------------------------------------------------
-    if fcp.isFrontmost() and fcp:viewer():isShowing() then
+    local viewer = fcp:viewer()
+    if fcp.isFrontmost() and viewer:isShowing() then
         --------------------------------------------------------------------------------
         -- Start the Keyboard Watcher:
         --------------------------------------------------------------------------------
         if mod._eventtap then
-            --log.df("Starting Keyboard Monitor")
             mod._eventtap:start()
-        end
-
-        --------------------------------------------------------------------------------
-        -- Check Guides:
-        --------------------------------------------------------------------------------
-        local draggableGuideEnabled = false
-        for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
-            if mod.getDraggableGuideEnabled(i) then
-                draggableGuideEnabled = true
-            end
         end
 
         --------------------------------------------------------------------------------
         -- Toggle Overall Visibility:
         --------------------------------------------------------------------------------
-        if (mod.basicGridEnabled() or draggableGuideEnabled or mod.activeMemory() ~= 0) then
-            if mod.capslock() == true and capslock.get() == true then
-                mod.show()
-            elseif mod.capslock() == true and capslock.get() == false then
-                mod.hide()
-            elseif mod.disabled() == true then
-                mod.hide()
+        if areAnyOverlaysEnabled() == true then
+            if mod.capslock() == true then
+                --------------------------------------------------------------------------------
+                -- Caps Lock Mode:
+                --------------------------------------------------------------------------------
+                if capslock.get() == true then
+                    mod.show()
+                else
+                    mod.hide()
+                end
             else
-                mod.show()
+                --------------------------------------------------------------------------------
+                -- "Enable Overlays" Toggle:
+                --------------------------------------------------------------------------------
+                if mod.disabled() == true then
+                    mod.hide()
+                else
+                    mod.show()
+                end
             end
+        else
+            --------------------------------------------------------------------------------
+            -- No Overlays Enabled:
+            --------------------------------------------------------------------------------
+            mod.hide()
         end
     else
         --------------------------------------------------------------------------------
@@ -712,6 +910,29 @@ function mod.setCustomGridColor()
     hs.focus()
 end
 
+--- plugins.finalcutpro.viewer.overlays.setCustomCrossHairColor() -> none
+--- Function
+--- Pops up a Color Dialog box allowing the user to select a custom colour for cross hairs.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.setCustomCrossHairColor()
+    dialog.color.continuous(false)
+    dialog.color.callback(function(color, closed)
+        if closed then
+            mod.crossHairColor("CUSTOM")
+            mod.customCrossHairColor(color)
+            mod.update()
+            fcp:launch()
+        end
+    end)
+    dialog.color.show()
+    hs.focus()
+end
+
 --- plugins.finalcutpro.viewer.overlays.getGuidePosition() -> none
 --- Function
 --- Get Guide Position.
@@ -887,6 +1108,7 @@ function mod.toggleDraggableGuide(id)
         draggableGuideEnabled[id] = true
     end
     mod.draggableGuideEnabled(draggableGuideEnabled)
+    mod.update()
 end
 
 -- contextualMenu(event) -> none
@@ -922,7 +1144,7 @@ local function contextualMenu(event)
                     --------------------------------------------------------------------------------
                     { title = string.upper(i18n("guides")) .. ":", disabled = true },
                     { title = "  " .. i18n("draggableGuides"), menu = {
-                        { title = "Guide 1", menu = {
+                        { title = i18n("guide") .. " 1", menu = {
                             { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(1), fn = function() mod.toggleDraggableGuide(1); mod.update(); end },
                             { title = i18n("appearance"), menu = {
                                 { title = "  " .. i18n("color"), menu = {
@@ -947,7 +1169,7 @@ local function contextualMenu(event)
                                 }},
                             }},
                         }},
-                        { title = "Guide 2", menu = {
+                        { title = i18n("guide") .. " 2", menu = {
                             { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(2), fn = function() mod.toggleDraggableGuide(2); mod.update(); end },
                             { title = i18n("appearance"), menu = {
                                 { title = "  " .. i18n("color"), menu = {
@@ -972,7 +1194,7 @@ local function contextualMenu(event)
                                 }},
                             }},
                         }},
-                        { title = "Guide 3", menu = {
+                        { title = i18n("guide") .. " 3", menu = {
                             { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(3), fn = function() mod.toggleDraggableGuide(3); mod.update(); end },
                             { title = i18n("appearance"), menu = {
                                 { title = "  " .. i18n("color"), menu = {
@@ -997,7 +1219,7 @@ local function contextualMenu(event)
                                 }},
                             }},
                         }},
-                        { title = "Guide 4", menu = {
+                        { title = i18n("guide") .. " 4", menu = {
                             { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(4), fn = function() mod.toggleDraggableGuide(4); mod.update(); end },
                             { title = i18n("appearance"), menu = {
                                 { title = "  " .. i18n("color"), menu = {
@@ -1022,7 +1244,7 @@ local function contextualMenu(event)
                                 }},
                             }},
                         }},
-                        { title = "Guide 5", menu = {
+                        { title = i18n("guide") .. " 5", menu = {
                             { title = i18n("enable"),   checked = mod.getDraggableGuideEnabled(5), fn = function() mod.toggleDraggableGuide(5); mod.update(); end },
                             { title = i18n("appearance"), menu = {
                                 { title = "  " .. i18n("color"), menu = {
@@ -1047,6 +1269,41 @@ local function contextualMenu(event)
                                 }},
                             }},
                         }},
+                    }},
+                    --------------------------------------------------------------------------------
+                    --
+                    -- CROSS HAIR:
+                    --
+                    --------------------------------------------------------------------------------
+                    { title = "  " .. i18n("crossHair"), menu = {
+                        { title = i18n("enable"),   checked = mod.crossHairEnabled(), fn = function() mod.crossHairEnabled:toggle(); mod.update(); end },
+                        { title = i18n("appearance"), menu = {
+                            { title = "  " .. i18n("color"), menu = {
+                                { title = i18n("black"),    checked = mod.crossHairColor() == "#000000", fn = function() mod.crossHairColor("#000000"); mod.update() end },
+                                { title = i18n("white"),    checked = mod.crossHairColor() == "#FFFFFF", fn = function() mod.crossHairColor("#FFFFFF"); mod.update() end },
+                                { title = i18n("yellow"),   checked = mod.crossHairColor() == "#F4D03F", fn = function() mod.crossHairColor("#F4D03F"); mod.update() end },
+                                { title = i18n("red"),      checked = mod.crossHairColor() == "#FF5733", fn = function() mod.crossHairColor("#FF5733"); mod.update() end },
+                                { title = "-", disabled = true },
+                                { title = i18n("custom"),   checked = mod.crossHairColor() == "CUSTOM", fn = function() mod.setCustomCrossHairColor(); mod.update() end},
+                            }},
+                            { title = "  " .. i18n("opacity"), menu = {
+                                { title = "10%",  checked = mod.crossHairAlpha() == 10,  fn = function() mod.crossHairAlpha(10); mod.update() end },
+                                { title = "20%",  checked = mod.crossHairAlpha() == 20,  fn = function() mod.crossHairAlpha(20); mod.update() end },
+                                { title = "30%",  checked = mod.crossHairAlpha() == 30,  fn = function() mod.crossHairAlpha(30); mod.update() end },
+                                { title = "40%",  checked = mod.crossHairAlpha() == 40,  fn = function() mod.crossHairAlpha(40); mod.update() end },
+                                { title = "50%",  checked = mod.crossHairAlpha() == 50,  fn = function() mod.crossHairAlpha(50); mod.update() end },
+                                { title = "60%",  checked = mod.crossHairAlpha() == 60,  fn = function() mod.crossHairAlpha(60); mod.update() end },
+                                { title = "70%",  checked = mod.crossHairAlpha() == 70,  fn = function() mod.crossHairAlpha(70); mod.update() end },
+                                { title = "80%",  checked = mod.crossHairAlpha() == 80,  fn = function() mod.crossHairAlpha(80); mod.update() end },
+                                { title = "90%",  checked = mod.crossHairAlpha() == 90,  fn = function() mod.crossHairAlpha(90); mod.update() end },
+                                { title = "100%", checked = mod.crossHairAlpha() == 100, fn = function() mod.crossHairAlpha(100); mod.update() end },
+                            }},
+                        }},
+                    }},
+                    { title = "-", disabled = true },
+                    { title = string.upper(i18n("mattes")) .. ":", disabled = true },
+                    { title = "  " .. i18n("letterbox"), menu = {
+                        { title = i18n("enable"),   checked = mod.letterboxEnabled(), fn = function() mod.letterboxEnabled:toggle(); mod.update(); end },
                     }},
                     { title = "-", disabled = true },
                     --------------------------------------------------------------------------------
@@ -1141,7 +1398,7 @@ local function contextualMenu(event)
                             { title = "85",     checked = mod.gridSpacing() == 85, fn = function() mod.setGridSpacing(85) end },
                             { title = "90",     checked = mod.gridSpacing() == 90, fn = function() mod.setGridSpacing(90) end },
                             { title = "95",     checked = mod.gridSpacing() == 95, fn = function() mod.setGridSpacing(95) end },
-                            { title = "100",     checked = mod.gridSpacing() == 100, fn = function() mod.setGridSpacing(100) end },
+                            { title = "100",    checked = mod.gridSpacing() == 100, fn = function() mod.setGridSpacing(100) end },
                         }},
                     }},
                 })
