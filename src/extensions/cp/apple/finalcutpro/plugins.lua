@@ -315,7 +315,7 @@ function mod.mt:scanSystemAudioUnits(locale)
     --------------------------------------------------------------------------------
     -- Get the full list of Audio Unit Plugins via `auval`:
     --------------------------------------------------------------------------------
-    local output, status = hs.execute("auval -s aufx")
+    local output, status = hs.execute("auval -c -s aufx")
     local audioEffect = mod.types.audioEffect
 
     if status and output then
