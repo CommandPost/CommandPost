@@ -647,7 +647,14 @@ function mod.update()
     -- If Final Cut Pro is Front Most & Viewer is Showing:
     --------------------------------------------------------------------------------
     local viewer = fcp:viewer()
-    if fcp.isFrontmost() and viewer:isShowing() then
+
+    if fcp.isFrontmost()
+        and viewer:isShowing()
+        and not fcp.isModalDialogOpen()
+        and not fcp:fullScreenWindow():isShowing()
+        and not fcp:commandEditor():isShowing()
+        and not fcp:preferencesWindow():isShowing()
+    then
         --------------------------------------------------------------------------------
         -- Start the Keyboard Watcher:
         --------------------------------------------------------------------------------
@@ -1440,6 +1447,10 @@ function plugin.init(deps)
     -- Update Canvas when Final Cut Pro is shown/hidden:
     --------------------------------------------------------------------------------
     fcp.isFrontmost:watch(mod.update)
+    fcp.isModalDialogOpen:watch(mod.update)
+    fcp:fullScreenWindow().isShowing:watch(mod.update)
+    fcp:commandEditor().isShowing:watch(mod.update)
+    fcp:preferencesWindow().isShowing:watch(mod.update)
 
     --------------------------------------------------------------------------------
     -- Update Canvas when Final Cut Pro's Viewer is resized or moved:
