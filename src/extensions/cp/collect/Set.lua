@@ -227,7 +227,7 @@ function Set.is(thing)
     return type(thing) == "table" and thing == Set.mt or Set.is(getmetatable(thing))
 end
 
---- cp.collect.Set.new(...) -> cp.collect.Set
+--- cp.collect.Set.of(...) -> cp.collect.Set
 --- Constructor
 --- Creates a new `Set` instance, containing the items in the parameter list.
 ---
@@ -236,25 +236,71 @@ end
 ---
 --- Returns:
 --- * The new `Set` instance.
-function Set.new(...)
+function Set.of(...)
+    return Set.fromList(table.pack(...))
+end
+
+--- cp.collect.Set.fromList(list) -> cp.collect.Set
+--- Constructor
+--- Creates a new `Set` instance, containing the unique items in the table collected as a list from `1` to `n`.
+--- Any duplicate items will only occur in the `Set` once.
+---
+--- Parameters:
+--- * list      - The table that contains items as a list to add to the `Set`. E.g. `{"foo", "bar"}
+---
+--- Returns:
+--- * The new `Set`.
+function Set.fromList(list)
     local data = {}
-    local count = select("#", ...)
     local size = 0
-    for i = 1,count do
-        local value = select(i, ...)
+    for _,value in ipairs(list) do
         if not data[value] then
             size = size + 1
             data[value] = true
         end
     end
-
     return setmetatable({
         [SIZE] = size,
         [DATA] = data,
     }, Set.mt)
 end
 
+--- cp.collect.Set.fromMap(map) -> cp.collect.Set
+--- Constructor
+--- Creates a new `Set` instance, containing the items in the provided `table` who's key value is `true`.
+--- Keys with values other than `true` will be ignored.
+---
+--- Parameters:
+--- * map      - The table that contains key/value items to add to the set. E.g. `{foo = true, bar = true}`
+---
+--- Returns:
+--- * The new `Set`.
+function Set.fromMap(map)
+    local data = {}
+    local size = 0
+    for key,value in pairs(map) do
+        if value == true then
+            size = size + 1
+            data[key] = true
+        end
+    end
+    return setmetatable({
+        [SIZE] = size,
+        [DATA] = data,
+    }, Set.mt)
+end
+
+--- cp.collect.Set.clone(set) -> cp.collect.Set
+--- Constructor
+--- Creates a new `Set` which is a clone of the provided `Set`.
+---
+--- Parameters:
+--- * set       - The set to clone.
+---
+--- Returns:
+--- * The new `Set` instance.
 function Set.clone(set)
+    assert(Set.is(set), "Parameter #1 must be a cp.collect.Set.")
     return setmetatable({
         [SIZE] = set[SIZE],
         [COMPLEMENT] = set[COMPLEMENT],
@@ -290,7 +336,7 @@ function Set.union(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
 
-    local result = Set.new()
+    local result = Set.of()
     local leftData, rightData = getData(left), getData(right)
 
     if isComplement(left) then
@@ -325,7 +371,7 @@ function Set.intersection(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
 
-    local result = Set.new()
+    local result = Set.of()
     local leftData, rightData = getData(left), getData(right)
 
     if isComplement(left) then
@@ -358,7 +404,7 @@ function Set.difference(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
 
-    local result = Set.new()
+    local result = Set.of()
     local leftData, rightData = getData(left), getData(right)
 
     if isComplement(left) then
@@ -392,7 +438,7 @@ function Set.symetricDifference(left, right)
     assert(Set.is(left), "left must be a Set.")
     assert(Set.is(right), "right must be a Set.")
 
-    local result = Set.new()
+    local result = Set.of()
     local leftData, rightData = getData(left), getData(right)
     local leftComplement, rightComplement = isComplement(left), isComplement(right)
 
@@ -420,7 +466,7 @@ end
 function Set.complement(set)
     assert(Set.is(set), "parameter #1 must be a Set.")
 
-    local result = Set.new()
+    local result = Set.of()
     setData(result, clone(getData(set)))
     if not isComplement(set) then
         makeComplement(result)
@@ -647,18 +693,18 @@ Set.mt = {
 --- cp.collect.Set.nothing <cp.collect.Set>
 --- Constant
 --- An empty `Set`.
-Set.nothing = Set.new()
+Set.nothing = Set.of()
 
 --- cp.collect.Set.everything <cp.collect.Set>
 --- Constant
 --- A `Set` which contains the whole universe.
-Set.everything = Set.new():complement()
+Set.everything = Set.of():complement()
 
 Set.__getData = getData
 
 setmetatable(Set, {
     __call = function(_, ...)
-        return Set.new(...)
+        return Set.of(...)
     end
 })
 
