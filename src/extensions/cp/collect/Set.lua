@@ -224,7 +224,12 @@ end
 --- Returns:
 --- * `true` if it is a `Set`.
 function Set.is(thing)
-    return type(thing) == "table" and thing == Set.mt or Set.is(getmetatable(thing))
+    if type(thing) == "table" and thing == Set.mt then
+        return true
+    else
+        local mt = getmetatable(thing)
+        return thing ~= mt and Set.is(mt)
+    end
 end
 
 --- cp.collect.Set.of(...) -> cp.collect.Set

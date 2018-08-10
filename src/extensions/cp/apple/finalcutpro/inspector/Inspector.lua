@@ -715,7 +715,7 @@ function Inspector:color()
     return self._colorInspector
 end
 
-function Inspector:__tostring()
+function Inspector.__tostring()
     return "cp.apple.finalcutpro.inspector.Inspector"
 end
 

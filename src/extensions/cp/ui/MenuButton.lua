@@ -26,6 +26,9 @@ local axutils						= require("cp.ui.axutils")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
 
+local go                            = require("cp.rx.go")
+local If, WaitUntil                 = go.If, go.WaitUntil
+
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
@@ -80,37 +83,27 @@ function MenuButton.new(parent, finderFn)
         end
     end
 
-    prop.bind(o) {
-        --- cp.ui.MenuButton:UI() -> hs._asm.axuielement | nil
-        --- Method
-        --- Returns the `axuielement` representing the MenuButton, or `nil` if not available.
-        ---
-        --- Parameters:
-        ---  * None
-        ---
-        --- Return:
-        ---  * The `axuielement` or `nil`.
-        UI = UI,
 
-        --- cp.ui.MenuButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Checks if the MenuButton is visible on screen.
-        isShowing = UI:ISNOT(nil),
+    if prop.is(parent.UI) then
+        UI:monitor(parent.UI)
+    end
 
-        --- cp.ui.MenuButton.value <cp.prop: anything>
-        --- Field
-        --- Returns or sets the current MenuButton value.
-        value = UI:mutate(
-            function(original)
-                local ui = original()
-                return ui and ui:attributeValue("AXTitle")
-            end,
-            function(value, original)
-                local ui = original()
-                if ui and not ui:attributeValue("AXTitle") == value then
-                    local items = ui:doPress()[1]
-                    for _,item in items do
-                        if item:title() == value then
+    local isShowing = UI:mutate(function(original, self)
+        return original() ~= nil and self:parent():isShowing()
+    end)
+
+    local value = UI:mutate(
+        function(original)
+            local ui = original()
+            return ui and ui:value()
+        end,
+        function(newValue, original)
+            local ui = original()
+            if ui and ui:value() ~= newValue then
+                local items = ui:doPress()[1]
+                if items then
+                    for _,item in ipairs(items) do
+                        if item:title() == newValue then
                             item:doPress()
                             return
                         end
@@ -118,11 +111,50 @@ function MenuButton.new(parent, finderFn)
                     items:doCancel()
                 end
             end
-        ),
+        end
+    )
+    -- if anyone starts watching, then register with the app notifier.
+    value:preWatch(function()
+        o:app():notifier():watchFor("AXMenuItemSelected", function()
+            value:update()
+        end)
+    end)
 
-        --- cp.ui.MenuButton.title <cp.prop: string; read-only>
-        --- Field
-        --- Returns the MenuButton's title.
+    local menuUI = UI:mutate(function(original)
+        local ui = original()
+        return ui and axutils.childWithRole(ui, "AXMenu")
+    end)
+    -- if anyone opens the menu, update the prop watchers
+    menuUI:preWatch(function()
+        o:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
+            menuUI:update()
+        end)
+    end)
+
+    prop.bind(o) {
+--- cp.ui.MenuButton.UI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- The `axuielement` representing the MenuButton, or `nil` if not available.
+        UI = UI,
+
+--- cp.ui.MenuButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Checks if the MenuButton is visible on screen.
+        isShowing = isShowing,
+
+--- cp.ui.MenuButton.value <cp.prop: anything>
+--- Field
+--- Returns or sets the current MenuButton value.
+        value = value,
+
+--- cp.ui.PopUpButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `AXMenu` for the PopUpMenu if it is currently visible.
+        menuUI = menuUI,
+
+--- cp.ui.MenuButton.title <cp.prop: string; read-only>
+--- Field
+--- Returns the MenuButton's title.
         title = UI:mutate(function(original)
             local ui = original()
             return ui and ui:attributeValue("AXTitle")
@@ -143,6 +175,10 @@ end
 ---  * parent
 function MenuButton:parent()
     return self._parent
+end
+
+function MenuButton:app()
+    return self:parent():app()
 end
 
 --- cp.ui.MenuButton:show() -> self
@@ -190,6 +226,62 @@ function MenuButton:selectItem(index)
         self.value:update()
     end
     return false
+end
+
+--- cp.ui.MenuButton:doSelectItem(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by index.
+---
+--- Parameters:
+---  * index - The index number of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function MenuButton:doSelectItem(index)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        local item = menuUI[index]
+        if item then
+            item:doPress()
+            return true
+        else
+            item:doCancel()
+            return false
+        end
+    end)
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Otherwise(false)
+    :Label("MenuButton:doSelectItem")
+end
+
+--- cp.ui.MenuButton:doSelectValue(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by value.
+---
+--- Parameters:
+---  * value - The value of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function MenuButton:doSelectValue(value)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        for _,item in ipairs(menuUI) do
+            if item:title() == value then
+                item:doPress()
+                return true
+            end
+        end
+        menuUI:doCancel()
+        return false
+    end)
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Otherwise(false)
+    :Label("MeuButton:doSelectValue")
 end
 
 --- cp.ui.MenuButton:selectItemMatching(pattern) -> boolean
@@ -243,8 +335,7 @@ end
 --- Returns:
 ---  * The `MenuButton` title as string, or `nil` if the title cannot be determined.
 function MenuButton:getTitle()
-    local ui = self:UI()
-    return ui and ui:attributeValue("AXTitle")
+    return self:title()
 end
 
 --- cp.ui.MenuButton:getValue() -> string | nil
@@ -303,6 +394,24 @@ function MenuButton:press()
         ui:doPress()
     end
     return self
+end
+
+--- cp.ui.MenuButton:doPress() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that presses the `MenuButton`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function MenuButton:doPress()
+    return If(self.UI)
+    :Then(function(ui)
+        ui:doPress()
+    end)
+    :ThenYield()
+    :Label("MenuButton:doPress")
 end
 
 --- cp.ui.MenuButton:saveLayout() -> table

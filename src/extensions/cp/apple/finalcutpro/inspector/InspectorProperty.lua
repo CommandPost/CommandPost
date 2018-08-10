@@ -17,7 +17,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local require = require
-local log                   = require("hs.logger").new("InspectorProperty")
+-- local log                   = require("hs.logger").new("InspectorProperty")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -94,7 +94,6 @@ local function propHide(self)
 end
 
 local function propDoShow(self)
-    log.df("doShow: called...")
     return Do(self:parent():doShow())
     :Then(function()
         self.section:expanded(true)
@@ -104,7 +103,6 @@ local function propDoShow(self)
 end
 
 local function propDoHide(self)
-    log.df("doHide: called...")
     return Do(function()
         self.section:expanded(false)
     end)
@@ -368,6 +366,15 @@ end
 function mod.popUpButton(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = PopUpButton.new(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
+
+        function row:doSelectValue(value)
+            return Do(self:doShow())
+            :Then(self.value:doSelectValue(value))
+        end
+        -- returns the PopUpButton.value prop as the observable
+        function row:toObservable()
+            return self.value.value:toObservable()
+        end
     end, index)
 end
 

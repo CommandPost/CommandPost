@@ -73,7 +73,6 @@ local inspect       = require("hs.inspect")
 -----------------------------------------------------------
 -- Imports and Local functions
 -----------------------------------------------------------
-local prop          = require("cp.prop")
 local rx            = require("cp.rx")
 
 local Observable    = rx.Observable
@@ -111,7 +110,7 @@ Statement.mt.__index = Statement.mt
 ---
 --- * `Observable`          - Returned unchanged.
 --- * `cp.rx.go.Statement`  - Returns the result of the `toObservable()` method. Note: this will cancel any scheduled executions for the Statement.
---- * `cp.prop`             - Returns the `cp.prop:observe()` value.
+--- * `cp.prop`             - Returns the `cp.prop:toObservable()` value.
 --- * `function`            - Executes the function, passing in the `params` as a list of values, returning the results converted to an `Observable`.
 --- * Other values          - Returned via `Observable.of(thing)`.
 ---
@@ -151,8 +150,11 @@ function Statement.toObservable(thing, params)
         obs = thing
     elseif Statement.is(thing) then
         obs = thing:toObservable()
-    elseif prop.is(thing) then
-        obs = thing:observe()
+    elseif type(thing) == "table" and type(thing.toObservable) == "function" then
+        obs = thing:toObservable()
+        if not Observable.is(obs) then
+            error(format("Invalid Observable conversion: %s", type(obs)))
+        end
     else
         obs = Observable.of(thing)
     end

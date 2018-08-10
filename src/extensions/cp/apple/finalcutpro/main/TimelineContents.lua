@@ -23,11 +23,13 @@ local fnutils							= require("hs.fnutils")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local prop								= require("cp.prop")
+local tools                             = require("cp.tools")
 local axutils							= require("cp.ui.axutils")
 
 local Playhead							= require("cp.apple.finalcutpro.main.Playhead")
 
-local If                                = require("cp.rx.go.If")
+local go                                = require("cp.rx.go")
+local If, WaitUntil                     = go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
@@ -465,6 +467,38 @@ function TimelineContents:selectClip(clipUI)
     return self:selectClips({clipUI})
 end
 
+-- containsOnly(values) -> function
+-- Function
+-- Returns a "match" function which will check its input value to see if it is a table which contains the same values in any order.
+--
+-- Parameters:
+-- * values     - A [Set](cp.collect.Set.md) or `table` specifying exactly what items must be in the matching table, in any order.
+--
+-- Returns:
+-- * A `function` that will accept a single input value, which will only return `true` the input is a `table` containing exactly the items in `values` in any order.
+local function containsOnly(values)
+    return function(other)
+        if other and values and #other == #values then
+            for _,v in ipairs(other) do
+                if not tools.tableContains(values, v) then
+                    return false
+                end
+            end
+            return true
+        end
+        return false
+    end
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doSelectClips(clipsUI) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will select the specified list of `hs._asm.axuielement` values in the Timeline Contents area.
+---
+--- Parameters:
+--- * clipsUI       - The table of `hs._asm.axuilement` values to select.
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) that will select the clips or throw an error if there is an issue.
 function TimelineContents:doSelectClips(clipsUI)
     return If(self.UI):Then(function(ui)
         local selectedClips = {}
@@ -474,10 +508,20 @@ function TimelineContents:doSelectClips(clipsUI)
         ui:setAttributeValue("AXSelectedChildren", selectedClips)
         return true
     end)
-    :ThenYield()
+    :Then(WaitUntil(self.selectedChildren):Matches(containsOnly(clipsUI)))
+    :TimeoutAfter(5000)
     :Label("TimelineContents:doSelectClips")
 end
 
+--- cp.apple.finalcutpro.main.TimelineContents:doSelectClip(clipUI) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will select the specified single `hs._asm.axuielement` value in the Timeline Contents area.
+---
+--- Parameters:
+--- * clipUI       - The `hs._asm.axuilement` values to select.
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) that will select the clip or throw an error if there is an issue.
 function TimelineContents:doSelectClip(clipUI)
     return self:doSelectClips({clipUI})
     :Label("TimelineContents:doSelectClip")
