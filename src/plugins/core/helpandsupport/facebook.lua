@@ -1,6 +1,6 @@
---- === plugins.core.helpandsupport.developerguide ===
+--- === plugins.core.helpandsupport.facebook ===
 ---
---- Developer Guide Menu Item.
+--- Facebook Group Menu Item.
 
 --------------------------------------------------------------------------------
 --
@@ -21,7 +21,7 @@ local i18n                  = require("cp.i18n")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.core.helpandsupport.developerguide.show() -> nil
+--- plugins.core.helpandsupport.facebook.show() -> nil
 --- Function
 --- Opens the CommandPost Developer Guide in the Default Browser.
 ---
@@ -31,7 +31,7 @@ local mod = {}
 --- Returns:
 ---  * None
 function mod.show()
-    os.execute('open "http://dev.commandpost.io/"')
+    os.execute('open "https://www.facebook.com/groups/commandpost/"')
 end
 
 --------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.helpandsupport.developerguide",
+    id              = "core.helpandsupport.facebook",
     group           = "core",
     dependencies    = {
         ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
@@ -58,7 +58,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local global = deps.global
     if global then
-        global:add("cpDeveloperGuide")
+        global:add("cpFacebookGroup")
             :whenActivated(mod.show)
             :groupedBy("helpandsupport")
     end
@@ -68,9 +68,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local helpandsupport = deps.helpandsupport
     if helpandsupport then
-        deps.helpandsupport
-            :addItem(6, function() return { title = i18n("developerGuide"), fn = mod.show } end)
-            :addSeparator(7)
+        helpandsupport
+            :addItem(8, function() return { title = i18n("cpFacebookGroup_title"), fn = mod.show } end)
+            :addSeparator(9)
     end
 
     return mod
