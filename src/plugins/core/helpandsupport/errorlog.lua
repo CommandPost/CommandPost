@@ -16,17 +16,6 @@ local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 1.1
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -79,10 +68,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     local helpandsupport = deps.helpandsupport
     if helpandsupport then
-        helpandsupport:addSeparator(PRIORITY)
-        helpandsupport:addItem(PRIORITY+0.01, function()
-            return { title = i18n("openErrorLog"), fn = mod.open }
-        end)
+        helpandsupport
+            :addItem(1, function() return { title = i18n("openErrorLog"), fn = mod.open } end)
+            :addSeparator(2)
     end
 
     return mod
