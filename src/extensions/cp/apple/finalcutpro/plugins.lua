@@ -22,9 +22,10 @@ local log                       = require("hs.logger").new("scan")
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
--- local inspect                   = require("hs.inspect")
+local audiounit                 = require("hs.audiounit")
 local fnutils                   = require("hs.fnutils")
 local fs                        = require("hs.fs")
+--local inspect                   = require("hs.inspect")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -313,57 +314,54 @@ function mod.mt:scanSystemAudioUnits(locale)
     end
 
     --------------------------------------------------------------------------------
-    -- Get the full list of Audio Unit Plugins via `auval`:
+    -- Get the full list of Audio Unit Effects:
     --------------------------------------------------------------------------------
-    local output, status = hs.execute("auval -c -s aufx")
+    local effects = audiounit.getAudioEffectNames()
     local audioEffect = mod.types.audioEffect
 
-    if status and output then
+    if effects and next(effects) ~= nil then
 
         local coreAudioPlistPath = mod.coreAudioPreferences
         local coreAudioPlistData = plist.fileToTable(coreAudioPlistPath)
 
-        local lines = tools.lines(output)
-        for _, line in pairs(lines) do
-            local fullName = string.match(line, "^%w%w%w%w%s%w%w%w%w%s%w%w%w%w%s+%-%s+(.*)$")
-            if fullName then
-                local category, plugin = string.match(fullName, "^(.-):%s*(.*)$")
+        for _, fullName in pairs(effects) do
+            local category, plugin = string.match(fullName, "^(.-):%s*(.*)$")
+            --------------------------------------------------------------------------------
+            -- CoreAudio Audio Units:
+            --------------------------------------------------------------------------------
+            if coreAudioPlistData and category == "Apple" then
                 --------------------------------------------------------------------------------
-                -- CoreAudio Audio Units:
+                -- Look up the alternate name:
                 --------------------------------------------------------------------------------
-                if coreAudioPlistData and category == "Apple" then
-                    --------------------------------------------------------------------------------
-                    -- Look up the alternate name:
-                    --------------------------------------------------------------------------------
-                    for _, component in pairs(coreAudioPlistData["AudioComponents"]) do
-                        if component.name == fullName then
-                            category = "Specialized"
-                            local tags = component.tags
-                            if tags then
-                                if contains(tags, "Pitch") then category = "Voice"
-                                elseif contains(tags, "Delay") then category = "Echo"
-                                elseif contains(tags, "Reverb") then category = "Spaces"
-                                elseif contains(tags, "Equalizer") then category = "EQ"
-                                elseif contains(tags, "Dynamics Processor") then category = "Levels"
-                                elseif contains(tags, "Distortion") then category = "Distortion" end
-                            end
+                for _, component in pairs(coreAudioPlistData["AudioComponents"]) do
+                    if component.name == fullName then
+                        category = "Specialized"
+                        local tags = component.tags
+                        if tags then
+                            if contains(tags, "Pitch") then category = "Voice"
+                            elseif contains(tags, "Delay") then category = "Echo"
+                            elseif contains(tags, "Reverb") then category = "Spaces"
+                            elseif contains(tags, "Equalizer") then category = "EQ"
+                            elseif contains(tags, "Dynamics Processor") then category = "Levels"
+                            elseif contains(tags, "Distortion") then category = "Distortion" end
                         end
                     end
                 end
-
-                --------------------------------------------------------------------------------
-                -- Cache Plugin:
-                --------------------------------------------------------------------------------
-                table.insert(cache, {
-                    coreAudioPlistPath = coreAudioPlistPath,
-                    audioEffect = audioEffect,
-                    category = category,
-                    plugin = plugin,
-                    locale = locale.code,
-                })
-
-                self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, locale)
             end
+
+            --------------------------------------------------------------------------------
+            -- Cache Plugin:
+            --------------------------------------------------------------------------------
+            table.insert(cache, {
+                coreAudioPlistPath = coreAudioPlistPath,
+                audioEffect = audioEffect,
+                category = category,
+                plugin = plugin,
+                locale = locale.code,
+            })
+
+            self:registerPlugin(coreAudioPlistPath, audioEffect, category, "OS X", plugin, locale)
+
         end
 
         --------------------------------------------------------------------------------
