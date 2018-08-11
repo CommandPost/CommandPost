@@ -16,17 +16,6 @@ local i18n                  = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-
--- PRIORITY -> number
--- Constant
--- The menubar position priority.
-local PRIORITY = 1
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -68,16 +57,20 @@ function plugin.init(deps)
     -- Commands:
     --------------------------------------------------------------------------------
     local global = deps.global
-    global:add("cpUserGuide")
-        :whenActivated(mod.show)
-        :groupedBy("helpandsupport")
+    if global then
+        global:add("cpUserGuide")
+            :whenActivated(mod.show)
+            :groupedBy("helpandsupport")
+    end
 
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    deps.helpandsupport:addItem(PRIORITY, function()
-        return { title = i18n("userGuide"), fn = mod.show }
-    end)
+    local helpandsupport = deps.helpandsupport
+    if helpandsupport then
+        helpandsupport
+            :addItem(5, function() return { title = i18n("userGuide"), fn = mod.show } end)
+    end
 
     return mod
 end

@@ -97,23 +97,18 @@ function mod.init()
     --------------------------------------------------------------------------------
     -- Console Colour Scheme:
     --------------------------------------------------------------------------------
-    console.consoleCommandColor{hex = "#999999", alpha = 1}
-    console.outputBackgroundColor{hex = "#161616", alpha = 1}
+    local grey = {hex = "#999999", alpha = 1}
+    console.consoleCommandColor(grey)
+    console.consolePrintColor(grey)
+    console.consoleResultColor(grey)
+    console.outputBackgroundColor({hex = "#161616", alpha = 1})
 
     --------------------------------------------------------------------------------
     -- Debug Mode:
     --------------------------------------------------------------------------------
     local debugMode = config.developerMode()
     if debugMode then
-        logger.defaultLogLevel = 'debug'
         require("cp.developer")
-    --else
-        --------------------------------------------------------------------------------
-        -- NOTE: For now, whilst we're in beta, it's probably better if our error
-        --       logs contain all the debug message we write to the console, so we can
-        --       refer to them if users submit feedback.
-        --------------------------------------------------------------------------------
-        --logger.defaultLogLevel = 'warning'
     end
 
     --------------------------------------------------------------------------------
@@ -261,7 +256,9 @@ function mod.init()
         --------------------------------------------------------------------------------
         -- Enable Automatic Launch by default:
         --------------------------------------------------------------------------------
-        hs.autoLaunch(true)
+        if not hs.autoLaunch() then
+            hs.autoLaunch(true)
+        end
 
         --------------------------------------------------------------------------------
         -- Set Log Level to Verbose for Debugging:
@@ -344,46 +341,10 @@ function mod.init()
     log.df("Plugins Loaded.")
 
     --------------------------------------------------------------------------------
-    -- GARBAGE COLLECTOR PAUSE:
-    --
-    -- Garbage collector pause is used for controlling how long the garbage
-    -- collector needs to wait, before; it is called again by the Lua's automatic
-    -- memory management. Values less than 100 would mean that Lua will not wait for
-    -- the next cycle. Similarly, higher values of this value would result in the
-    -- garbage collector being slow and less aggressive in nature. A value of 200,
-    -- means that the collector waits for the total memory in use to double before
-    -- starting a new cycle. Hence, depending on the nature and speed of
-    -- application, there may be a requirement to alter this value to get best
-    -- performance in Lua applications.
-    --------------------------------------------------------------------------------
-    -- NOTE: Disabled by David due to causing constant pausing with Scrolling Timeline
-    -- collectgarbage("setpause",100)
-
-    --------------------------------------------------------------------------------
-    -- GARBAGE COLLECTOR STEP MULTIPLIER:
-    --
-    -- This step multiplier controls the relative speed of garbage collector to
-    -- that of memory allocation in Lua program. Larger step values will lead to
-    -- garbage collector to be more aggressive and it also increases the step size
-    -- of each incremental step of garbage collection. Values less than 100 could
-    -- often lead to avoid the garbage collector not to complete its cycle and its
-    -- not generally preferred. The default value is 200, which means the garbage
-    -- collector runs twice as the speed of memory allocation.
-    --------------------------------------------------------------------------------
-    -- collectgarbage("setstepmul",200)
-
-    --------------------------------------------------------------------------------
     -- Collect Garbage because we love a fresh slate:
     --------------------------------------------------------------------------------
     collectgarbage("collect")
     collectgarbage("collect")
-    local afterRS = crash.residentSize()
-    local afterGC = floor(collectgarbage("count")*1024)
-    log.df("---------------------------------------------------------")
-    log.df("GARBAGE COLLECTION STATS:")
-    log.df("Process resident size: %s - %s = %s", beforeRS, afterRS, beforeRS-afterRS)
-    log.df("Lua state size: %s - %s = %s", beforeGC, afterGC, beforeGC-afterGC)
-    log.df("---------------------------------------------------------")
 
     --------------------------------------------------------------------------------
     -- Return the module:

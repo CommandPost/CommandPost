@@ -28,14 +28,15 @@ local mouse         = require("hs.mouse")
 --------------------------------------------------------------------------------
 local compressor    = require("cp.apple.compressor")
 local config        = require("cp.config")
+local destinations  = require("cp.apple.finalcutpro.export.destinations")
 local dialog        = require("cp.dialog")
+local Do            = require("cp.rx.go.Do")
 local fcp           = require("cp.apple.finalcutpro")
-local just          = require("cp.just")
-local tools         = require("cp.tools")
+local go            = require("cp.rx.go")
 local html          = require("cp.web.html")
 local i18n          = require("cp.i18n")
-local go            = require("cp.rx.go")
-local destinations  = require("cp.apple.finalcutpro.export.destinations")
+local just          = require("cp.just")
+local tools         = require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -401,7 +402,11 @@ function mod.batchExportBrowserClips(clips)
         -- Wait for Export Dialog to open:
         --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
-        exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
+        local errorMessage
+        _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
+        if errorMessage then
+            return false
+        end
 
         --------------------------------------------------------------------------------
         -- Press 'Next':
@@ -650,7 +655,11 @@ function mod.batchExportTimelineClips(clips)
         -- Trigger Export:
         --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
-        exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
+        local errorMessage
+        _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
+        if errorMessage then
+            return false
+        end
 
         --------------------------------------------------------------------------------
         -- Press 'Next':
@@ -1296,7 +1305,9 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationFolder"),
-                onclick = mod.changeExportDestinationFolder,
+                onclick = function()
+                    Do(mod.changeExportDestinationFolder):After(0)
+                end,
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following Destination Preset:")
@@ -1324,7 +1335,7 @@ function plugin.init(deps)
                 width = 200,
                 label = i18n("changeDestinationPreset"),
                 onclick = function()
-                    mod.changeExportDestinationPreset():Now()
+                    Do(function() mod.changeExportDestinationPreset():Now() end):After(0)
                 end,
             })
         :addParagraph(nextID(), html.br())
@@ -1344,7 +1355,9 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeCustomFilename"),
-                onclick = mod.changeCustomFilename,
+                onclick = function()
+                    Do(mod.changeCustomFilename):After(0)
+                end,
             })
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),
@@ -1383,7 +1396,9 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("performBatchExport"),
-                onclick = function() mod.performBatchExport("timeline") end,
+                onclick = function()
+                    Do(function() mod.performBatchExport("timeline") end):After(0)
+                end,
             })
 
     --------------------------------------------------------------------------------

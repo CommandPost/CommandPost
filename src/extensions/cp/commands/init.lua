@@ -417,17 +417,17 @@ function commands.loadFromFile(name)
     local filePath = commands.getShortcutsPath(name)
     local file = io.open(filePath, "r")
     if file then
-        log.df("Loading shortcuts: '%s'", filePath)
+        --log.df("Loading shortcuts: '%s'", filePath)
         local content = file:read("*all")
         file:close()
         if not moses.isEmpty(content) then
             groupData = json.decode(content)
         else
-            log.df("Empty shortcut file: '%s'", filePath)
+            --log.df("Empty shortcut file: '%s'", filePath)
             return false
         end
     else
-        log.df("Unable to load shortcuts: '%s'", filePath)
+        log.ef("Unable to load shortcuts: '%s'", filePath)
         return false
     end
 
@@ -464,12 +464,12 @@ function commands.saveToFile(name)
     local filePath = commands.getShortcutsPath(name)
     local file = io.open(filePath, "w")
     if file then
-        log.df("Saving shortcuts: '%s'", filePath)
+        --log.df("Saving shortcuts: '%s'", filePath)
         file:write(json.encode(groupData))
         file:close()
         return true
     else
-        log.df("Unable to save shortcuts: '%s'", filePath)
+        log.ef("Unable to save shortcuts: '%s'", filePath)
     end
     return false
 end
