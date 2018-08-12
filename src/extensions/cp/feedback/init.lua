@@ -7,36 +7,36 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local require = require
-local log										= require("hs.logger").new("feedback")
+local log                                       = require("hs.logger").new("feedback")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local application								= require("hs.application")
-local base64									= require("hs.base64")
-local console									= require("hs.console")
-local screen									= require("hs.screen")
-local timer										= require("hs.timer")
-local urlevent									= require("hs.urlevent")
-local webview									= require("hs.webview")
+local application                               = require("hs.application")
+local base64                                    = require("hs.base64")
+local console                                   = require("hs.console")
+local screen                                    = require("hs.screen")
+local timer                                     = require("hs.timer")
+local urlevent                                  = require("hs.urlevent")
+local webview                                   = require("hs.webview")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config									= require("cp.config")
-local dialog									= require("cp.dialog")
+local config                                    = require("cp.config")
+local dialog                                    = require("cp.dialog")
 local i18n                                      = require("cp.i18n")
-local tools										= require("cp.tools")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
-local template									= require("resty.template")
+local template                                  = require("resty.template")
 
 --------------------------------------------------------------------------------
 --
@@ -48,12 +48,12 @@ local mod = {}
 --------------------------------------------------------------------------------
 -- SETTINGS:
 --------------------------------------------------------------------------------
-mod.defaultWidth 		= 365
-mod.defaultHeight 		= 500
-mod.defaultTitle 		= config.appName .. " " .. i18n("feedback")
-mod.quitOnComplete		= false
-mod.position 			= config.prop("feedbackPosition", nil)
-mod.isOpen				= false
+mod.defaultWidth        = 365
+mod.defaultHeight       = 500
+mod.defaultTitle        = config.appName .. " " .. i18n("feedback")
+mod.quitOnComplete      = false
+mod.position            = config.prop("feedbackPosition", nil)
+mod.isOpen              = false
 
 -- generateHTML() -> string
 -- Function
@@ -164,118 +164,118 @@ end
 --- Returns:
 ---  * None
 function mod.showFeedback(quitOnComplete)
+    timer.doAfter(0.000000001, function()
+        --------------------------------------------------------------------------------
+        -- Feedback window already open:
+        --------------------------------------------------------------------------------
+        if mod.isOpen then
+            mod.feedbackWebView:show()
+            return
+        end
 
-    --------------------------------------------------------------------------------
-    -- Feedback window already open:
-    --------------------------------------------------------------------------------
-    if mod.isOpen then
-        mod.feedbackWebView:show()
-        return
-    end
+        --------------------------------------------------------------------------------
+        -- Quit on Complete?
+        --------------------------------------------------------------------------------
+        if quitOnComplete == true then
+            mod.quitOnComplete = true
+        else
+            mod.quitOnComplete = false
+        end
 
-    --------------------------------------------------------------------------------
-    -- Quit on Complete?
-    --------------------------------------------------------------------------------
-    if quitOnComplete == true then
-        mod.quitOnComplete = true
-    else
-        mod.quitOnComplete = false
-    end
+        --------------------------------------------------------------------------------
+        -- Use last Position or Centre on Screen:
+        --------------------------------------------------------------------------------
+        local defaultRect = mod.position()
+        if tools.isOffScreen(defaultRect) then
+            defaultRect = centredPosition()
+        end
+        defaultRect.w = mod.defaultWidth
+        defaultRect.h = mod.defaultHeight
 
-    --------------------------------------------------------------------------------
-    -- Use last Position or Centre on Screen:
-    --------------------------------------------------------------------------------
-    local defaultRect = mod.position()
-    if tools.isOffScreen(defaultRect) then
-        defaultRect = centredPosition()
-    end
-    defaultRect.w = mod.defaultWidth
-    defaultRect.h = mod.defaultHeight
+        --------------------------------------------------------------------------------
+        -- Setup Web View Controller:
+        --------------------------------------------------------------------------------
+        mod.feedbackWebViewController = webview.usercontent.new("feedback")
+            :setCallback(function(message)
+                if message["body"] == "cancel" then
+                    if mod.quitOnComplete then
+                        application.applicationForPID(hs.processInfo["processID"]):kill()
+                    else
+                        mod.feedbackWebView:delete()
+                        mod.feedbackWebView = nil
+                    end
+                elseif message["body"] == "hide" then
+                    mod.feedbackWebView:hide()
+                elseif type(message["body"]) == "table" then
+                    config.set("userFullName", message["body"][1])
+                    config.set("userEmail", message["body"][2])
+                else
+                    log.df("Message: %s", hs.inspect(message))
+                end
+            end)
 
-    --------------------------------------------------------------------------------
-    -- Setup Web View Controller:
-    --------------------------------------------------------------------------------
-    mod.feedbackWebViewController = webview.usercontent.new("feedback")
-        :setCallback(function(message)
-            if message["body"] == "cancel" then
+        --------------------------------------------------------------------------------
+        -- Setup Web View:
+        --------------------------------------------------------------------------------
+        local prefs = {}
+        if config.developerMode() then prefs = {developerExtrasEnabled = true} end
+        mod.feedbackWebView = webview.new(defaultRect, prefs, mod.feedbackWebViewController)
+            :windowStyle({"titled"})
+            :shadow(true)
+            :allowNewWindows(false)
+            :allowTextEntry(true)
+            :windowTitle(mod.defaultTitle)
+            :html(generateHTML())
+            :windowCallback(windowCallback)
+            :darkMode(true)
+            :policyCallback(function(action, _, details1, _)
+                if action == "navigationResponse" then
+                    local statusCode = details1.response.statusCode
+                    if statusCode == 403 or statusCode == 404 then
+                        mod.feedbackWebView:delete()
+                        mod.feedbackWebView = nil
+                        dialog.displayMessage(i18n("feedbackError"))
+                        return false
+                    end
+                end
+                return true
+            end)
+
+        --------------------------------------------------------------------------------
+        -- Setup URL Events:
+        --------------------------------------------------------------------------------
+        mod.urlEvent = urlevent.bind("feedback", function(_, params)
+            --------------------------------------------------------------------------------
+            -- PHP Executed Successfully:
+            --------------------------------------------------------------------------------
+            if params["action"] == "done" then
+                mod.feedbackWebView:delete()
+                mod.feedbackWebView = nil
+                dialog.displayMessage(i18n("feedbackSuccess"))
                 if mod.quitOnComplete then
                     application.applicationForPID(hs.processInfo["processID"]):kill()
-                else
-                    mod.feedbackWebView:delete()
-                    mod.feedbackWebView = nil
                 end
-            elseif message["body"] == "hide" then
-                mod.feedbackWebView:hide()
-            elseif type(message["body"]) == "table" then
-                config.set("userFullName", message["body"][1])
-                config.set("userEmail", message["body"][2])
-            else
-                log.df("Message: %s", hs.inspect(message))
+            --------------------------------------------------------------------------------
+            -- Server Side Error:
+            --------------------------------------------------------------------------------
+            elseif params["action"] == "error" then
+                mod.feedbackWebView:delete()
+                mod.feedbackWebView = nil
+
+                local errorMessage = "Unknown"
+                if params["message"] then errorMessage = params["message"] end
+
+                dialog.displayMessage(i18n("feedbackError", {message=tools.urlQueryStringDecode(errorMessage)}))
             end
         end)
 
-    --------------------------------------------------------------------------------
-    -- Setup Web View:
-    --------------------------------------------------------------------------------
-    local prefs = {}
-    if config.developerMode() then prefs = {developerExtrasEnabled = true} end
-    mod.feedbackWebView = webview.new(defaultRect, prefs, mod.feedbackWebViewController)
-        :windowStyle({"titled"})
-        :shadow(true)
-        :allowNewWindows(false)
-        :allowTextEntry(true)
-        :windowTitle(mod.defaultTitle)
-        :html(generateHTML())
-        :windowCallback(windowCallback)
-        :darkMode(true)
-        :policyCallback(function(action, _, details1, _)
-            if action == "navigationResponse" then
-                local statusCode = details1.response.statusCode
-                if statusCode == 403 or statusCode == 404 then
-                    mod.feedbackWebView:delete()
-                    mod.feedbackWebView = nil
-                    dialog.displayMessage(i18n("feedbackError"))
-                    return false
-                end
-            end
-            return true
-        end)
-
-    --------------------------------------------------------------------------------
-    -- Setup URL Events:
-    --------------------------------------------------------------------------------
-    mod.urlEvent = urlevent.bind("feedback", function(_, params)
         --------------------------------------------------------------------------------
-        -- PHP Executed Successfully:
+        -- Show Welcome Screen:
         --------------------------------------------------------------------------------
-        if params["action"] == "done" then
-            mod.feedbackWebView:delete()
-            mod.feedbackWebView = nil
-            dialog.displayMessage(i18n("feedbackSuccess"))
-            if mod.quitOnComplete then
-                application.applicationForPID(hs.processInfo["processID"]):kill()
-            end
-        --------------------------------------------------------------------------------
-        -- Server Side Error:
-        --------------------------------------------------------------------------------
-        elseif params["action"] == "error" then
-            mod.feedbackWebView:delete()
-            mod.feedbackWebView = nil
-
-            local errorMessage = "Unknown"
-            if params["message"] then errorMessage = params["message"] end
-
-            dialog.displayMessage(i18n("feedbackError", {message=tools.urlQueryStringDecode(errorMessage)}))
-        end
+        mod.feedbackWebView:show()
+        mod.isOpen = true
+        timer.doAfter(0.1, function() mod.feedbackWebView:hswindow():focus() end)
     end)
-
-    --------------------------------------------------------------------------------
-    -- Show Welcome Screen:
-    --------------------------------------------------------------------------------
-    mod.feedbackWebView:show()
-    mod.isOpen = true
-    timer.doAfter(0.1, function() mod.feedbackWebView:hswindow():focus() end)
-
 end
 
 --------------------------------------------------------------------------------
