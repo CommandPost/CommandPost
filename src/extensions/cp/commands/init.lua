@@ -7,11 +7,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local require = require
 local log						= require("hs.logger").new("commands")
 
 --------------------------------------------------------------------------------
@@ -413,7 +413,9 @@ end
 function commands.loadFromFile(name)
     local groupData
 
-    -- load the file
+    --------------------------------------------------------------------------------
+    -- Load the file:
+    --------------------------------------------------------------------------------
     local filePath = commands.getShortcutsPath(name)
     local file = io.open(filePath, "r")
     if file then
@@ -427,17 +429,24 @@ function commands.loadFromFile(name)
             return false
         end
     else
-        log.ef("Unable to load shortcuts: '%s'", filePath)
+        --log.ef("Unable to load shortcuts: '%s'", filePath)
         return false
     end
 
-    -- apply the shortcuts
+    --------------------------------------------------------------------------------
+    -- Apply the shortcuts:
+    --------------------------------------------------------------------------------
     for groupId,shortcuts in pairs(groupData) do
         local group = commands.group(groupId)
         if group then
-            -- clear existing shortcuts
+            --------------------------------------------------------------------------------
+            -- Clear existing shortcuts:
+            --------------------------------------------------------------------------------
             group:deleteShortcuts()
-            -- apply saved ones
+
+            --------------------------------------------------------------------------------
+            -- Apply saved ones:
+            --------------------------------------------------------------------------------
             group:loadShortcuts(shortcuts)
         end
     end
@@ -454,13 +463,17 @@ end
 --- Returns:
 --- * `true` if the shortcuts were saved successfully.
 function commands.saveToFile(name)
-    -- get the shortcuts
+    --------------------------------------------------------------------------------
+    -- Get the shortcuts:
+    --------------------------------------------------------------------------------
     local groupData = {}
     for id,group in pairs(commands._groups) do
         groupData[id] = group:saveShortcuts()
     end
 
-    -- save the file
+    --------------------------------------------------------------------------------
+    -- Save the file:
+    --------------------------------------------------------------------------------
     local filePath = commands.getShortcutsPath(name)
     local file = io.open(filePath, "w")
     if file then
