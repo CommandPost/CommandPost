@@ -4,7 +4,7 @@
 ---
 --- A [Statement](cp.rx.go.Statement.md) that will loop through a table as a list from item `1` to the table length.
 
-local log                   = require("hs.logger").new("List")
+-- local log                   = require("hs.logger").new("List")
 
 local Statement             = require("cp.rx.go.Statement")
 local Observable            = require("cp.rx").Observable

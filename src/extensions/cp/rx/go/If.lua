@@ -12,7 +12,7 @@
 -- Logger:
 --------------------------------------------------------------------------------
 local require = require
---local log                   = require("hs.logger").new("go_If")
+-- local log                   = require("hs.logger").new("go_If")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -44,6 +44,25 @@ local format                = string.format
 -- checks that the value is not false and not nil.
 local function isTruthy(value)
     return value ~= false and value ~= nil
+end
+
+-- handles the 'otherwise' clauses.
+local function handleOtherwises(otherwises, ...)
+    if otherwises and #otherwises > 0 then
+        -- loop through the `thens`, passing the results to the next via zip/flatMap
+        -- log.df("If:Then:Otherwise: processing 'Otherwise' #1")
+        local o2 = Observable.zip(unpack(toObservables(otherwises[1], pack(...))))
+        for i = 2, #otherwises do
+            -- log.df("If:Then:Otherwise: processing 'Otherwise' #%d", i)
+            o2 = o2:flatMap(function(...)
+                return Observable.zip(unpack(toObservables(otherwises[i], pack(...))))
+            end)
+        end
+        return o2
+    else
+        -- log.df("If:Otherwise: default to `empty`")
+        return Observable.of(nil)
+    end
 end
 
 --- cp.rx.go.If(value) -> If
@@ -82,9 +101,11 @@ end)
     assert(#thens > 0, "Please specify a 'Then'")
 
     -- we only deal with the first result
-    local o = toObservable(context.value):first()
+    local o = toObservable(context.value):next()
+    local handled = false
 
     o = o:flatMap(function(...)
+        handled = true
         if context.predicate(...) then
             -- loop through the `thens`, passing the results to the next via zip/flatMap
             local o2 = Observable.zip(unpack(toObservables(thens[1], pack(...))))
@@ -96,24 +117,16 @@ end)
             end
             return o2
         else
-            local otherwises = context.otherwises
-            if otherwises and #otherwises > 0 then
-                    -- loop through the `thens`, passing the results to the next via zip/flatMap
-                -- log.df("If:Then:Otherwise: processing 'Otherwise' #1")
-                local o2 = Observable.zip(unpack(toObservables(otherwises[1], pack(...))))
-                for i = 2, #otherwises do
-                    -- log.df("If:Then:Otherwise: processing 'Otherwise' #%d", i)
-                    o2 = o2:flatMap(function(...)
-                        return Observable.zip(unpack(toObservables(otherwises[i], pack(...))))
-                    end)
-                end
-                return o2
-            else
-                -- log.df("If:Otherwise: default to `nil`")
-                return Observable.of(nil)
-            end
+            return handleOtherwises(context.otherwises, ...)
         end
     end)
+    :switchIfEmpty(Observable.defer(function()
+        if not handled then
+            return handleOtherwises(context.otherwises)
+        else
+            return Observable.of(nil)
+        end
+    end))
 
     return o
 end)
