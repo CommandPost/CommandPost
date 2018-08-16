@@ -49,6 +49,13 @@ local function splitByDot(str)
 end
 
 local function parsePrereleaseAndBuildWithSign(str)
+  --------------------------------------------------------------------------------
+  -- Temporary workaround for Final Cut Pro pre-release builds:
+  --------------------------------------------------------------------------------
+  if str and string.find(str, "%.") == 1 then
+    str = str:gsub("%.", "-")
+  end
+  --------------------------------------------------------------------------------
   local prereleaseWithSign, buildWithSign = str:match("^(-[^+]+)(+.+)$")
   if not (prereleaseWithSign and buildWithSign) then
     prereleaseWithSign = str:match("^(-.+)$")
