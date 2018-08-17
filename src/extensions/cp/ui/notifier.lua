@@ -32,6 +32,7 @@ local inspect               = require("hs.inspect")
 --------------------------------------------------------------------------------
 local application           = require("hs.application")
 local applicationwatcher    = require("hs.application.watcher")
+local timer                 = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -66,54 +67,67 @@ mod.mt.__index = mod.mt
 -- The table of bundle IDs with notifiers registered.
 -- The key is the `Bundle ID`, the value is a list of `cp.ui.notifiers`.
 local registeredBundleIDs = {}
+mod._registeredBundleIDs = registeredBundleIDs
 
 -- The table of observed PIDs.
 -- The key is the `pid`, and the value is the matching `Bundle ID`.
 local registeredPIDs = {}
-
-mod._registeredBundleIDs = registeredBundleIDs
 mod._registeredPIDs = registeredPIDs
 
--- the overall app watcher for all cp.ui.notifiers.
-local appWatcher = applicationwatcher.new(
+-- The table of AX observers:
+mod.__observers = {}
+
+-- The table of AX observer callback functions:
+mod.__observersFn = {}
+
+-- The overall app watcher for all cp.ui.notifiers:
+mod._appWatcher = applicationwatcher.new(
     function(_, eventType, app)
         local pid = app:pid()
         local notifiers = nil
         if eventType == LAUNCHED then
-            -- figure out if there are any notifiers for the app
+            --------------------------------------------------------------------------------
+            -- Figure out if there are any notifiers for the app:
+            --------------------------------------------------------------------------------
             local bundleID = app:bundleID()
             notifiers = registeredBundleIDs[bundleID]
-            if notifiers then -- we have notifiers, so link the PID to the BundleID
-                -- log.df("Registering PID %s to Bundle ID '%s'", pid, bundleID)
+            if notifiers then
+                --------------------------------------------------------------------------------
+                -- We have notifiers, so link the PID to the BundleID:
+                --------------------------------------------------------------------------------
+                --log.df("Registering PID %s to Bundle ID '%s'", pid, bundleID)
                 registeredPIDs[pid] = bundleID
             end
         elseif eventType == TERMINATED then
             local bundleID = registeredPIDs[pid]
             registeredPIDs[pid] = nil
             if bundleID then
-                -- log.df("Deregistering PID %s from Bundle ID '%s'", pid, bundleID)
+                --log.df("Deregistering PID %s from Bundle ID '%s'", pid, bundleID)
                 notifiers = registeredBundleIDs[bundleID]
             end
         end
 
-        -- check if we need to update
+        --------------------------------------------------------------------------------
+        -- Check if we need to update:
+        --------------------------------------------------------------------------------
         if notifiers then
-            -- log.df("Updating notifiers that their app has changed state...")
+            --log.df("Updating notifiers that their app has changed state...")
             for _,o in ipairs(notifiers) do
                 o:reset():_startObserving()
             end
         end
     end
-)
+):start()
 
 -- registerNotifier(notifier) -> nil
 -- Local Function
 -- Registers the specified `cp.ui.notifier`
 local function registerNotifier(notifier)
-    appWatcher:start()
     local bundleID = notifier:bundleID()
 
-    -- add it to the list of notifiers
+    --------------------------------------------------------------------------------
+    -- Add it to the list of notifiers:
+    --------------------------------------------------------------------------------
     local notifiers = registeredBundleIDs[bundleID]
     if not notifiers then
         notifiers = {}
@@ -121,7 +135,9 @@ local function registerNotifier(notifier)
     end
     insert(notifiers, notifier)
 
-    -- if the app is running, link the PID to the BundleID.
+    --------------------------------------------------------------------------------
+    -- If the app is running, link the PID to the BundleID:
+    --------------------------------------------------------------------------------
     local pid = notifier:pid()
     if pid then
         registeredPIDs[pid] = bundleID
@@ -222,7 +238,9 @@ function mod.mt:watchFor(notifications, callbackFn)
     return self:update(true)
 end
 
--- does the actual notification registration
+--------------------------------------------------------------------------------
+-- Does the actual notification registration:
+--------------------------------------------------------------------------------
 function mod.mt:_registerNotification(notification, callbackFn)
     local watchers = self.__watchers[notification]
     if not watchers then
@@ -230,7 +248,9 @@ function mod.mt:_registerNotification(notification, callbackFn)
         self.__watchers[notification] = watchers
     end
 
-    -- add it to the list of functions for the notification type
+    --------------------------------------------------------------------------------
+    -- Add it to the list of functions for the notification type:
+    --------------------------------------------------------------------------------
     watchers[callbackFn] = true
 end
 
@@ -307,13 +327,21 @@ end
 function mod.mt:app()
     local app = self.__app
     if not app or app:bundleID() == nil or not app:isRunning() then
-        -- new/no app available. Reset!
+
+        --------------------------------------------------------------------------------
+        -- New/no app available. Reset:
+        --------------------------------------------------------------------------------
         self:reset()
 
-        -- find the app for the bundle ID
+        --------------------------------------------------------------------------------
+        -- Find the app for the bundle ID:
+        --------------------------------------------------------------------------------
         local result = application.applicationsForBundleID(self.__bundleID)
         if result and #result > 0 then
-            app = result[1] -- If there is at least one copy running, return the first one
+            --------------------------------------------------------------------------------
+            -- If there is at least one copy running, return the first one:
+            --------------------------------------------------------------------------------
+            app = result[1]
         else
             app = nil
         end
@@ -346,36 +374,102 @@ end
 -- Returns:
 -- * The current `hs._asm.axuilelement.observer`, or `nil` if it does not exist and/or could not be created.
 function mod.mt:_observer(create)
-    if not self.__observer and create then
-        local app = self:app()
-        if app then
-            -- create the observer
-            local o = ax.observer.new(app:pid())
-            self.__observer = o
 
-            -- set up the callback to pass on to appropriate watchers.
-            o:callback(function(_, element, notification, details)
-                local watchers = self.__watchers[notification]
-                if watchers then
-                    for fn,_ in pairs(watchers) do
-                        local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
-                        if not ok then
-                            log.ef("Error processing '%s' notification from app '%sS':\n%s", notification, self:bundleID(), result)
-                        end
-                    end
-                end
-            end)
-
-            -- update the watcher list (forced)
-            self:update(true)
-
-            -- match the running state
-            if self:running() then
-                o:start()
-            end
+    --------------------------------------------------------------------------------
+    -- Get the App:
+    --------------------------------------------------------------------------------
+    local app = self.__app
+    if not app or app:bundleID() == nil or not app:isRunning() then
+        local result = application.applicationsForBundleID(self.__bundleID)
+        if result and #result > 0 then
+            app = result[1] -- If there is at least one copy running, return the first one
+        else
+            app = nil
         end
     end
-    return self.__observer
+
+    --------------------------------------------------------------------------------
+    -- Get the PID:
+    --------------------------------------------------------------------------------
+    local pid = app and app:pid()
+
+    if create and pid and not mod.__observers[pid] then
+        --------------------------------------------------------------------------------
+        -- Create the observer:
+        --------------------------------------------------------------------------------
+        mod.__observers[pid] = ax.observer.new(pid)
+
+        --------------------------------------------------------------------------------
+        -- Set up the callback to pass on to appropriate watchers:
+        --------------------------------------------------------------------------------
+        mod.__observers[pid]:callback(function(_, element, notification, details)
+            if mod.__observersFn[pid] then
+                for _, v in pairs(mod.__observersFn[pid]) do
+                    if type(v) == "function" then
+                        timer.doAfter(0.00000000000001, function()
+                            v(_, element, notification, details)
+                        end)
+                    end
+                end
+            end
+        end)
+
+        --------------------------------------------------------------------------------
+        -- Update the watcher list (forced):
+        --------------------------------------------------------------------------------
+        self:update(true)
+
+        --------------------------------------------------------------------------------
+        -- Match the running state:
+        --------------------------------------------------------------------------------
+        if self:running() then
+            mod.__observers[pid]:start()
+        end
+
+    end
+
+    if create and pid then
+        --------------------------------------------------------------------------------
+        -- Prepare the module table of observer callback functions per app.
+        --------------------------------------------------------------------------------
+        if not mod.__observersFn[pid] then
+            mod.__observersFn[pid] = {}
+        end
+
+        --------------------------------------------------------------------------------
+        -- Setup the individual callback function:
+        --------------------------------------------------------------------------------
+        local fn = function(_, element, notification, details)
+            local watchers = self.__watchers[notification]
+            if watchers then
+                for fn,_ in pairs(watchers) do
+                    local ok, result = xpcall(function() fn(element, notification, details) end, debug.traceback)
+                    if not ok then
+                        log.ef("Error processing '%s' notification from app '%sS':\n%s", notification, self:bundleID(), result)
+                    end
+                end
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- Check that the function isn't already in the table:
+        --------------------------------------------------------------------------------
+        local alreadyExists = false
+        for _, v in pairs(mod.__observersFn[pid]) do
+            if v == fn then
+                alreadyExists = true
+            end
+        end
+
+        --------------------------------------------------------------------------------
+        -- If it isn't add it.
+        --------------------------------------------------------------------------------
+        if not alreadyExists then
+            mod.__observersFn[pid][#mod.__observersFn[pid] + 1] = fn
+        end
+    end
+
+    return pid and mod.__observers and mod.__observers[pid]
 end
 
 -- cp.ui.notifier:_startObserving() -> boolean
@@ -430,28 +524,32 @@ function mod.mt:update(force)
     local lastElement = self._lastElement
     self._lastElement = element
 
-    -- get the current observer (don't create if not present)
+    --------------------------------------------------------------------------------
+    -- Get the current observer (don't create if not present):
+    --------------------------------------------------------------------------------
     local observer = self:_observer(false)
 
     if observer then
-        --------------------------------------------------------------------------------
-        -- TODO: figure out if/how we can remove watches on elements that
-        --       are no longer valid.
-        --------------------------------------------------------------------------------
         local doRemove = axutils.isValid(lastElement) and (force or lastElement ~= element)
         for n,watchers in pairs(self.__watchers) do
-            -- deregister the old element
+            --------------------------------------------------------------------------------
+            -- De-register the old element:
+            --------------------------------------------------------------------------------
             if doRemove then
                 observer:removeWatcher(lastElement, n)
             end
 
-            -- register the current one
+            --------------------------------------------------------------------------------
+            -- Register the current one:
+            --------------------------------------------------------------------------------
             if next(watchers) ~= nil then
                 if element then
                     observer:addWatcher(element, n)
                 end
             else
-                -- no more watchers registered, remove it.
+                --------------------------------------------------------------------------------
+                -- No more watchers registered, remove it:
+                --------------------------------------------------------------------------------
                 self.__watchers[n] = nil
             end
         end
@@ -477,7 +575,9 @@ end
 ---  * The `cp.ui.notifier` instance.
 function mod.mt:start()
     self:running(true)
-    -- start observing, if possible
+    --------------------------------------------------------------------------------
+    -- Start observing, if possible:
+    --------------------------------------------------------------------------------
     self:_startObserving()
     return self
 end
@@ -504,9 +604,23 @@ end
 --- Resets the notifier
 function mod.mt:reset()
     self:_stopObserving()
-    self.__observer = nil
-    self.__lastElement = nil
 
+    --------------------------------------------------------------------------------
+    -- Destroy any dead observers and their callback functions:
+    --------------------------------------------------------------------------------
+    for pid, _ in pairs(mod.__observers) do
+        if not mod._registeredPIDs[pid] then
+            mod.__observers[pid] = nil
+            if mod.__observersFn[pid] then
+                for i, _ in pairs(mod.__observersFn[pid]) do
+                    mod.__observersFn[pid][i] = nil
+                end
+            end
+            mod.__observersFn[pid] = nil
+        end
+    end
+
+    self.__lastElement = nil
     self.__app = nil
 
     return self
