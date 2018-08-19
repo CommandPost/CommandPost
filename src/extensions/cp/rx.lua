@@ -3821,7 +3821,9 @@ function ReplaySubject.create(n)
   local self = {
     observers = {},
     stopped = false,
-    buffer = {},
+    completed = false,
+    err = nil,
+    buffer = Queue(),
     bufferSize = n
   }
 
@@ -3850,13 +3852,22 @@ function ReplaySubject:subscribe(onNext, onError, onCompleted)
     observer = Observer.create(onNext, onError, onCompleted)
   end
 
-  local reference = Subject.subscribe(self, observer)
-
-  for i = 1, #self.buffer do
-    observer:onNext(util.unpack(self.buffer[i]))
+  if self.buffer then
+    for i = 1, #self.buffer do
+      observer:onNext(util.unpack(self.buffer[i]))
+    end
   end
 
-  return reference
+  if self.stopped then
+    if self.completed then
+      observer:onCompleted()
+    else
+      observer:onError(self.err)
+    end
+    return Reference.create(util.noop)
+  else
+    return Subject.subscribe(self, observer)
+  end
 end
 
 --- cp.rx.RelaySubject:onNext(...) -> nil
@@ -3866,12 +3877,28 @@ end
 --- Parameters:
 --- * ...   - The values to send.
 function ReplaySubject:onNext(...)
-  insert(self.buffer, util.pack(...))
-  if self.bufferSize and #self.buffer > self.bufferSize then
-    remove(self.buffer, 1)
-  end
+  if not self.stopped then
+    self.buffer:pushRight(util.pack(...))
+    if self.bufferSize and #self.buffer > self.bufferSize then
+      self.buffer:popLeft()
+    end
 
-  return Subject.onNext(self, ...)
+    Subject.onNext(self, ...)
+  end
+end
+
+function ReplaySubject:onError(err)
+  if not self.stopped then
+    self.err = err
+    Subject.onError(self, err)
+  end
+end
+
+function ReplaySubject:onCompleted()
+  if not self.stopped then
+    self.completed = true
+    Subject.onCompleted(self)
+  end
 end
 
 ReplaySubject.__call = ReplaySubject.onNext

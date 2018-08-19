@@ -3015,6 +3015,42 @@ return test.suite("cp.rx.Subject")
         ok(eq(#scheduler, 3))
     end),
 
+    test("unpack", function()
+        local s = Subject.create()
+        local result = sub(s:unpack())
+
+        ok(result:is({}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext({1,2,3})
+        ok(result:is({{1,2,3,n=3}}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onCompleted()
+        ok(result:is({{1,2,3,n=3}}, nil, true))
+        ok(eq(#s.observers, 0))
+    end),
+
+    test("unwrap", function()
+        local s = Subject.create()
+        local result = sub(s:unwrap())
+
+        ok(result:is({}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext(1,2,3)
+        ok(result:is({1,2,3}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext(nil, 5)
+        ok(result:is({1,2,3,nil,5,n=5}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onCompleted()
+        ok(result:is({1,2,3,nil,5,n=5}, nil, true))
+        ok(eq(#s.observers, 0))
+    end),
+
     test("with", function()
         local s = Subject.create()
         local a, b = Subject.create(), Subject.create()
@@ -3191,4 +3227,34 @@ return test.suite("cp.rx.Subject")
         ok(eq(#b.observers, 0))
     end),
 
+    test("zip flatMap", function()
+        local outerSubject = Subject.create()
+        local innerSubject = Subject.create()
+        local flatValue = nil
+
+        local result = sub(Observable.zip(outerSubject)
+        :first()
+        :flatMap(function(value)
+            flatValue = value
+            return Observable.zip(innerSubject)
+        end))
+
+        -- initially...
+        ok(result:is({}, nil, false))
+        ok(eq(flatValue, nil))
+
+        -- send true, passes:
+        outerSubject:onNext(true)
+        ok(result:is({}, nil, false))
+        ok(eq(flatValue, true))
+
+        -- send "success" internally
+        innerSubject:onNext("success")
+        ok(result:is({"success"}, nil, false))
+        ok(eq(flatValue, true))
+
+        -- send internal completed
+        innerSubject:onCompleted()
+        ok(result:is({"success"}, nil, true))
+    end),
 }
