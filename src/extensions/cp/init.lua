@@ -8,11 +8,21 @@
 --
 --------------------------------------------------------------------------------
 local require = require
+local hs = hs
+
+--------------------------------------------------------------------------------
+-- ZeroBraneStudio Debugger:
+--------------------------------------------------------------------------------
+--[[
+local ZBS = "/Applications/ZeroBraneStudio.app/Contents/ZeroBraneStudio"
+package.path = package.path .. ";" .. ZBS .. "/lualibs/?/?.lua;" .. ZBS .. "/lualibs/?.lua"
+package.cpath = package.cpath .. ";" .. ZBS .. "/bin/?.dylib;" .. ZBS .. "/bin/clibs53/?.dylib"
+require("mobdebug").start()
+--]]
 
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local require = require
 local logger = require("hs.logger")
 logger.defaultLogLevel = "verbose"
 
@@ -21,7 +31,6 @@ logger.defaultLogLevel = "verbose"
 --------------------------------------------------------------------------------
 local application               = require("hs.application")
 local console                   = require("hs.console")
-local crash                     = require("hs.crash")
 local image                     = require("hs.image")
 local keycodes                  = require("hs.keycodes")
 local settings                  = require("hs.settings")
