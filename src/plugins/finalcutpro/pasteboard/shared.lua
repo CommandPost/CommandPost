@@ -115,7 +115,7 @@ end
 --  * None
 local function watchUpdate(data, name)
     if name then
-        log.df("Pasteboard updated. Adding '%s' to shared history.", name)
+        --log.df("Pasteboard updated. Adding '%s' to shared history.", name)
 
         local sharedPasteboardPath = mod.getRootPath()
         if sharedPasteboardPath ~= nil then

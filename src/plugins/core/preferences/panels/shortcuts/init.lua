@@ -47,7 +47,7 @@ local mod = {}
 --- plugins.core.preferences.panels.shortcuts.DEFAULT_SHORTCUTS -> string
 --- Constant
 --- Default Shortcuts File Name
-mod.DEFAULT_SHORTCUTS                           = "Default Shortcuts"
+mod.DEFAULT_SHORTCUTS = "Default"
 
 --- plugins.core.preferences.panels.shortcuts.lastGroup <cp.prop: string>
 --- Field
@@ -110,7 +110,6 @@ end
 -- Returns:
 --  * None
 local function cacheShortcuts()
-    log.df("Caching Default Shortcuts.")
     mod.defaultShortcuts = {}
     local groupIDs = commands.groupIds()
     for _, groupID in ipairs(groupIDs) do
@@ -755,7 +754,6 @@ function plugin.postInit()
     --------------------------------------------------------------------------------
     if not result then
         local filePath = commands.getShortcutsPath(mod.DEFAULT_SHORTCUTS)
-        log.df("Creating new shortcut file: '%s'", filePath)
         commands.saveToFile(mod.DEFAULT_SHORTCUTS)
     end
 

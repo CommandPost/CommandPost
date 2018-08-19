@@ -597,7 +597,7 @@ mod._generalCallbacks = {}
 --- plugins.core.midi.manager.maxItems -> number
 --- Variable
 --- The maximum number of MIDI items per group.
-mod.maxItems = 150
+mod.maxItems = 50
 
 --- plugins.core.midi.manager.buttons <cp.prop: table>
 --- Field

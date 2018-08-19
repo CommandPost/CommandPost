@@ -49,6 +49,8 @@ local idle                      = require("cp.idle")
 local prop                      = require("cp.prop")
 local i18n                      = require("cp.i18n")
 
+local Do                        = require("cp.rx.go.Do")
+
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
@@ -865,7 +867,7 @@ function activator.mt:show()
     --------------------------------------------------------------------------------
     -- Show Console:
     --------------------------------------------------------------------------------
-    theChooser:show()
+    Do(function() theChooser:show() end):After(0)
 
     return true
 end

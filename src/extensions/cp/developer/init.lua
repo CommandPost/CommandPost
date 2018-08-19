@@ -32,6 +32,7 @@ local geometry      = require("hs.geometry")
 local inspect       = require("hs.inspect")
 local mouse         = require("hs.mouse")
 local timer         = require("hs.timer")
+local json          = require("hs.json")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -74,8 +75,21 @@ _G._fcp                = require("cp.apple.finalcutpro")
 -- FIND UNUSED LANGUAGES STRINGS:
 --------------------------------------------------------------------------------
 function _G._findUnusedLanguageStrings()
-    local translations = require("cp.resources.languages.en")["en"]
-    local result = "\nUNUSED STRINGS IN EN.LUA:\n"
+
+    local path = config.languagePath .. "English.json"
+    local data = io.open(path, "r")
+    local content, decoded
+    if data then
+        content = data:read("*all")
+        data:close()
+    end
+    if content then
+        decoded = json.decode(content)
+    end
+
+    local translations = decoded["en"]
+
+    local result = "\nUNUSED STRINGS IN English.json:\n"
     local stringCount = 0
     local ignoreStart = {"plugin_group_", "shareDetails_", "plugin_status_", "plugin_action_", "shortcut_group_"}
     local ignoreEnd = {"_action", "_label", "_title", "_customTitle", "_group"}
