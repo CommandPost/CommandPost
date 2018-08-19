@@ -27,12 +27,15 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local timer = require("hs.timer")
+local timer     = require("hs.timer")
+local List      = require("cp.collect.List")
+local Queue     = require("cp.collect.Queue")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local format = string.format
+local insert, remove = table.insert, table.remove
 
 --------------------------------------------------------------------------------
 --
@@ -52,8 +55,9 @@ util.constant = function(x) return function() return x end end
 util.isa = function(object, class)
   if type(object) == 'table' then
     local mt = getmetatable(object)
-    return mt and mt.__index == class or util.isa(mt, class)
+    return mt ~= nil and mt.__index == class or mt ~= object and util.isa(mt, class)
   end
+  return false
 end
 util.tryWithObserver = function(observer, fn, ...)
   local args = util.pack(...)
@@ -381,7 +385,11 @@ function Observable.fromTable(t, iterator, keys)
   iterator = iterator or pairs
   return Observable.create(function(observer)
     for key, value in iterator(t) do
-      observer:onNext(value, keys and key or nil)
+      if keys then
+        observer:onNext(value, key)
+      else
+        observer:onNext(value)
+      end
     end
 
     observer:onCompleted()
@@ -522,25 +530,48 @@ function Observable:all(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local active, ref = true
+
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      util.tryWithObserver(observer, function(...)
-        if not predicate(...) then
-          observer:onNext(false)
-          observer:onCompleted()
+      if active then
+        local ok = util.tryWithObserver(observer, function(...)
+          if not predicate(...) then
+            done()
+            observer:onNext(false)
+            observer:onCompleted()
+          end
+        end, ...)
+        if not ok then
+          done()
         end
-      end, ...)
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      observer:onNext(true)
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onNext(true)
+        observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -558,44 +589,67 @@ function Observable.firstEmitting(a, b, ...)
 
   return Observable.create(function(observer)
     local referenceA, referenceB
+    local active = true
 
-    local function onNextA(...)
-      if referenceB then referenceB:cancel() end
-      observer:onNext(...)
-    end
-
-    local function onErrorA(e)
-      if referenceB then referenceB:cancel() end
-      observer:onError(e)
-    end
-
-    local function onCompletedA()
-      if referenceB then referenceB:cancel() end
-      observer:onCompleted()
-    end
-
-    local function onNextB(...)
+    local function cancelA()
       if referenceA then referenceA:cancel() end
-      observer:onNext(...)
+      referenceA = nil
     end
 
-    local function onErrorB(e)
-      if referenceA then referenceA:cancel() end
-      observer:onError(e)
+    local function cancelB()
+      if referenceB then referenceB:cancel() end
+      referenceB = nil
     end
 
-    local function onCompletedB()
-      if referenceA then referenceA:cancel() end
-      observer:onCompleted()
+    local function done()
+      active = false
+      cancelA()
+      cancelB()
     end
 
-    referenceA = a:subscribe(onNextA, onErrorA, onCompletedA)
-    referenceB = b:subscribe(onNextB, onErrorB, onCompletedB)
+    referenceA = a:subscribe(
+      function(...)
+        if active then
+          cancelB()
+          observer:onNext(...)
+        end
+      end,
+      function(e)
+        if active then
+          done()
+          observer:onError(e)
+        end
+      end,
+      function()
+        if active then
+          done()
+          observer:onCompleted()
+        end
+      end
+    )
 
-    return Reference.create(function()
-      referenceA:cancel()
-      referenceB:cancel()
-    end)
+    referenceB = b:subscribe(
+      function(...)
+        if active then
+          cancelA()
+          observer:onNext(...)
+        end
+      end,
+      function(e)
+        if active then
+          done()
+          observer:onError(e)
+        end
+      end,
+      function()
+        if active then
+          done()
+          observer:onCompleted()
+        end
+      end
+    )
+
+    return Reference.create(done)
   end):firstEmitting(...)
 end
 
@@ -642,6 +696,16 @@ end
 function Observable:buffer(size)
   return Observable.create(function(observer)
     local buffer = {}
+    local active, ref = true
+
+    local function done()
+      if active then
+        active = false
+        ref:cancel()
+        ref = nil
+        buffer = nil
+      end
+    end
 
     local function emit()
       if #buffer > 0 then
@@ -651,9 +715,9 @@ function Observable:buffer(size)
     end
 
     local function onNext(...)
-      local values = {...}
+      local values = util.pack(...)
       for i = 1, #values do
-        table.insert(buffer, values[i])
+        insert(buffer, values[i])
         if #buffer >= size then
           emit()
         end
@@ -662,15 +726,19 @@ function Observable:buffer(size)
 
     local function onError(message)
       emit()
-      return observer:onError(message)
+      done()
+      observer:onError(message)
     end
 
     local function onCompleted()
       emit()
-      return observer:onCompleted()
+      done()
+      observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -689,36 +757,53 @@ function Observable:catch(handler)
   handler = handler and (type(handler) == 'function' and handler or util.constant(handler))
 
   return Observable.create(function(observer)
-    local reference
+    local active, ref = true
+
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
 
     local function onNext(...)
-      return observer:onNext(...)
+      if active then
+        observer:onNext(...)
+      end
     end
 
     local function onError(e)
+      if not active then
+        return
+      end
+
       if not handler then
-        return observer:onCompleted()
+        done()
+        observer:onCompleted()
       end
 
       local success, continue = pcall(handler, e)
       if success and continue then
-        if reference then reference:cancel() end
-        continue:subscribe(observer)
+        if ref then ref:cancel() end
+        ref = continue:subscribe(observer)
       else
+        done()
         observer:onError(success and e or continue)
       end
     end
 
     local function onCompleted()
+      done()
       observer:onCompleted()
     end
 
-    reference = self:subscribe(onNext, onError, onCompleted)
-    return reference
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
---- cp.rx.Observable:combindLatest(...) -> cp.rx.Observable
+--- cp.rx.Observable:combineLatest(...) -> cp.rx.Observable
 --- Method
 --- Returns a new `Observable` that runs a combinator function on the most recent values from a set
 --- of `Observables` whenever any of them produce a new value. The results of the combinator `function`
@@ -733,12 +818,12 @@ end
 --- * The new `Observable`.
 function Observable:combineLatest(...)
   local sources = {...}
-  local combinator = table.remove(sources)
+  local combinator = remove(sources)
   if type(combinator) ~= 'function' then
-    table.insert(sources, combinator)
+    insert(sources, combinator)
     combinator = function(...) return ... end
   end
-  table.insert(sources, 1, self)
+  insert(sources, 1, self)
 
   return Observable.create(function(observer)
     local latest = {}
@@ -765,7 +850,7 @@ function Observable:combineLatest(...)
 
     local function onCompleted(i)
       return function()
-        table.insert(completed, i)
+        insert(completed, i)
 
         if #completed == #sources then
           observer:onCompleted()
@@ -811,23 +896,47 @@ function Observable:concat(other, ...)
   local others = {...}
 
   return Observable.create(function(observer)
+    local active, ref = true
+
+    local function done()
+      active = false
+      others = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      return observer:onNext(...)
+      if active then
+        return observer:onNext(...)
+      end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
     local function chain()
-      return other:concat(util.unpack(others)):subscribe(onNext, onError, onCompleted)
+      if active then
+        ref = other:concat(util.unpack(others)):subscribe(onNext, onError, onCompleted)
+        others = nil
+      end
     end
 
-    return self:subscribe(onNext, onError, chain)
+    ref = self:subscribe(onNext, onError, chain)
+
+    return Reference.create(done)
   end)
 end
 
@@ -843,37 +952,53 @@ end
 --- * The new `Observable`.
 function Observable:contains(value)
   return Observable.create(function(observer)
-    local reference
+    local active, reference = true
+
+    local function done()
+      active = false
+      if reference then
+        reference:cancel()
+        reference = nil
+      end
+    end
 
     local function onNext(...)
-      local args = util.pack(...)
+      if active then
+        local args = util.pack(...)
 
-      if #args == 0 and value == nil then
-        observer:onNext(true)
-        if reference then reference:cancel() end
-        return observer:onCompleted()
-      end
-
-      for i = 1, #args do
-        if args[i] == value then
+        if #args == 0 and value == nil then
+          done()
           observer:onNext(true)
-          if reference then reference:cancel() end
-          return observer:onCompleted()
+          observer:onCompleted()
+        end
+
+        for i = 1, #args do
+          if args[i] == value then
+            done()
+            observer:onNext(true)
+            observer:onCompleted()
+          end
         end
       end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      observer:onNext(false)
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onNext(false)
+        return observer:onCompleted()
+      end
     end
 
     reference = self:subscribe(onNext, onError, onCompleted)
-    return reference
+    return Reference.create(done)
   end)
 end
 
@@ -891,26 +1016,44 @@ function Observable:count(predicate)
   predicate = predicate or util.constant(true)
 
   return Observable.create(function(observer)
+    local active, ref = true
     local count = 0
 
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      util.tryWithObserver(observer, function(...)
-        if predicate(...) then
-          count = count + 1
+      if active then
+        local success = util.tryWithObserver(observer, function(...)
+          if predicate(...) then
+            count = count + 1
+          end
+        end, ...)
+        if not success then
+          done()
         end
-      end, ...)
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      done()
+      observer:onError(e)
     end
 
     local function onCompleted()
+      done()
       observer:onNext(count)
       observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -972,26 +1115,44 @@ function Observable:defaultIfEmpty(...)
   local defaults = util.pack(...)
 
   return Observable.create(function(observer)
+    local active, ref = true
     local hasValue = false
 
+    local function done()
+      active = false
+      defaults = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      hasValue = true
-      observer:onNext(...)
+      if active then
+        hasValue = true
+        observer:onNext(...)
+      end
     end
 
     local function onError(e)
+      done()
       observer:onError(e)
     end
 
     local function onCompleted()
-      if not hasValue then
-        observer:onNext(util.unpack(defaults))
+      if active then
+        active = false
+        if not hasValue then
+          observer:onNext(util.unpack(defaults))
+        end
+        done()
+        observer:onCompleted()
       end
-
-      observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -1019,7 +1180,7 @@ function Observable:delay(time, scheduler)
         local handle = scheduler:schedule(function()
           observer[key](observer, util.unpack(arg))
         end, time())
-        table.insert(actions, handle)
+        insert(actions, handle)
       end
     end
 
@@ -1030,6 +1191,7 @@ function Observable:delay(time, scheduler)
       for i = 1, #actions do
         actions[i]:cancel()
       end
+      actions = nil
     end)
   end)
 end
@@ -1156,23 +1318,47 @@ function Observable:filter(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local active, ref = true
+
+    local function done()
+      active = false
+      predicate = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      util.tryWithObserver(observer, function(...)
-        if predicate(...) then
-          return observer:onNext(...)
+      if active then
+        local success = util.tryWithObserver(observer, function(...)
+          if predicate(...) then
+            return observer:onNext(...)
+          end
+        end, ...)
+        if not success then
+          done()
         end
-      end, ...)
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        return observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        return observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -1187,40 +1373,38 @@ end
 --- * The new `Observable`.
 function Observable:switchIfEmpty(alternate)
   return Observable.create(function(observer)
-    local done = false
+    local active, ref = true
     local hasNext = false
-    local ref = nil
 
-    local function unsubscribe()
-      if not done then
-        if ref then
-          ref:cancel()
-          ref = nil
-        end
-        done = true
-        return true
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
       end
-      return false
     end
 
     local function onCompleted()
-      if unsubscribe() then
+      if active then
         if hasNext then
+          done()
           observer:onCompleted()
         else
-          alternate:subscribe(observer)
+          active = false
+          ref = alternate:subscribe(observer)
         end
       end
     end
 
     local function onError(message)
-      if unsubscribe() then
+      if active then
+        done()
         observer:onError(message)
       end
     end
 
     local function onNext(...)
-      if not done then
+      if active then
         hasNext = true
         observer:onNext(...)
       end
@@ -1228,9 +1412,7 @@ function Observable:switchIfEmpty(alternate)
 
     ref = self:subscribe(onNext, onError, onCompleted)
 
-    return Reference.create(function()
-      unsubscribe()
-    end)
+    return Reference.create(done)
   end)
 end
 
@@ -1246,54 +1428,45 @@ end
 --- * The new `Observable`.
 function Observable:finalize(handler)
   return Observable.create(function(observer)
-    local done = false
-    local sub = nil
+    local active, ref = true
+
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
 
     local function onNext(...)
-      if not done then
+      if active then
         observer:onNext(...)
       end
     end
 
     local function onError(message)
-      if not done then
+      if active then
+        done()
         local ok = util.tryWithObserver(observer, handler)
         if ok then
           observer:onError(message)
-        else
-          done = true
-          if sub then
-            sub:cancel()
-            sub = nil
-          end
         end
       end
     end
 
     local function onCompleted()
-      if not done then
+      if active then
+        done()
         local ok = util.tryWithObserver(observer, handler)
         if ok then
           observer:onCompleted()
-        else
-          done = true
-          if sub then
-            sub:cancel()
-            sub = nil
-          end
         end
       end
     end
 
-    sub = self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
 
-    return Reference.create(function()
-      done = true
-      if sub then
-        sub:cancel()
-        sub = nil
-      end
-    end)
+    return Reference.create(done)
   end)
 end
 
@@ -1311,49 +1484,46 @@ function Observable:find(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
-    local done = false
-    local sub = nil
+    local active, ref = true
 
-    local function cancel()
-      if sub then
-        sub:cancel()
-        sub = nil
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
       end
-      done = true
     end
 
     local function onError(message)
-      if not done then
-        cancel()
+      if active then
+        done()
         observer:onError(message)
       end
     end
 
     local function onCompleted()
-      if not done then
-        cancel()
+      if active then
+        done()
         observer:onCompleted()
       end
     end
 
     local function onNext(...)
-      if not done then
-        util.tryWithObserver(observer, function(...)
+      if active then
+        local ok = util.tryWithObserver(observer, function(...)
           if predicate(...) then
             observer:onNext(...)
             onCompleted()
           end
         end, ...)
+        if not ok then
+          done()
+        end
       end
     end
 
-    sub = self:subscribe(onNext, onError, onCompleted)
-    if done then
-      cancel()
-    end
-    return Reference.create(function()
-      cancel()
-    end)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -1380,47 +1550,41 @@ end
 --- * This is similar to [#first], but will not throw an error if no `onNext` signal is sent before `onCompleted`.
 function Observable:next()
   return Observable.create(function(observer)
-    local done = false
-    local ref = nil
+    local active, ref = true
+
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
 
     local function onCompleted()
-      if not done then
-        done = true
-        if ref then
-          ref:cancel()
-          ref = nil
-        end
+      if active then
+        done()
         observer:onCompleted()
       end
     end
 
     local function onError(message)
-      if not done then
-        done = true
-        if ref then
-          ref:cancel()
-          ref = nil
-        end
+      if active then
+        done()
         observer:onError(message)
       end
     end
 
     local function onNext(...)
-      if not done then
+      if active then
+        done()
         observer:onNext(...)
-        onCompleted()
+        observer:onCompleted()
       end
     end
 
     ref = self:subscribe(onNext, onError, onCompleted)
 
-    return Reference.create(function()
-      done = false
-      if ref then
-        ref:cancel()
-        ref = nil
-      end
-    end)
+    return Reference.create(done)
   end)
 end
 
@@ -1452,40 +1616,62 @@ end
 function Observable:flatMapLatest(callback)
   callback = callback or util.identity
   return Observable.create(function(observer)
-    local innerReference
+    local active, outerRef, innerRef = true
+
+    local function cancelOuter()
+      if outerRef then
+        outerRef:cancel()
+        outerRef = nil
+      end
+    end
+
+    local function cancelInner()
+      if innerRef then
+        innerRef:cancel()
+        innerRef = nil
+      end
+    end
+
+    local function done()
+      active = false
+      cancelOuter()
+      cancelInner()
+    end
 
     local function onNext(...)
-      observer:onNext(...)
+      if active then
+        observer:onNext(...)
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        return observer:onCompleted()
+      end
     end
 
     local function subscribeInner(...)
-      if innerReference then
-        innerReference:cancel()
-      end
+      cancelInner()
 
-      return util.tryWithObserver(observer, function(...)
-        innerReference = callback(...):subscribe(onNext, onError)
+      local ok = util.tryWithObserver(observer, function(...)
+        innerRef = callback(...):subscribe(onNext, onError)
       end, ...)
+      if not ok then
+        done()
+      end
     end
 
-    local reference = self:subscribe(subscribeInner, onError, onCompleted)
-    return Reference.create(function()
-      if innerReference then
-        innerReference:cancel()
-      end
+    outerRef = self:subscribe(subscribeInner, onError, onCompleted)
 
-      if reference then
-        reference:cancel()
-      end
-    end)
+    return Reference.create(done)
   end)
 end
 
@@ -1604,7 +1790,7 @@ function Observable:last()
     end
 
     local function onError(e)
-      return observer:onError(e)
+      observer:onError(e)
     end
 
     local function onCompleted()
@@ -1612,7 +1798,7 @@ function Observable:last()
         observer:onNext(util.unpack(value or {}))
       end
 
-      return observer:onCompleted()
+      observer:onCompleted()
     end
 
     return self:subscribe(onNext, onError, onCompleted)
@@ -1631,27 +1817,43 @@ end
 function Observable:map(callback)
   return Observable.create(function(observer)
     callback = callback or util.identity
-    local ref = nil
+    local active, ref = true, nil
+    local function done()
+      active = false
+      callback = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
 
     local function onNext(...)
-      local success = util.tryWithObserver(observer, function(...)
-        return observer:onNext(callback(...))
-      end, ...)
-      if not success and ref then
-        ref:cancel()
+      if active then
+        local success = util.tryWithObserver(observer, function(...)
+          return observer:onNext(callback(...))
+        end, ...)
+        if not success then
+          done()
+        end
       end
     end
 
     local function onError(e)
-      observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
     ref = self:subscribe(onNext, onError, onCompleted)
-    return ref
+    return Reference.create(done)
   end)
 end
 
@@ -1676,32 +1878,7 @@ end
 --- Returns:
 --- * The new `Observable`.
 function Observable:merge(...)
-  local sources = {...}
-  table.insert(sources, 1, self)
-
-  return Observable.create(function(observer)
-    local function onNext(...)
-      return observer:onNext(...)
-    end
-
-    local function onError(message)
-      return observer:onError(message)
-    end
-
-    local function onCompleted(i)
-      return function()
-        sources[i] = nil
-
-        if not next(sources) then
-          observer:onCompleted()
-        end
-      end
-    end
-
-    for i = 1, #sources do
-      sources[i]:subscribe(onNext, onError, onCompleted(i))
-    end
-  end)
+  return Observable.of(self, ...):flatten()
 end
 
 --- cp.rx.Observable:min() -> cp.rx.Observable
@@ -1789,30 +1966,54 @@ end
 --- * The new `Observable`.
 function Observable:reduce(accumulator, seed)
   return Observable.create(function(observer)
+    local active, ref = true, nil
     local result = seed
     local first = true
 
+    local function done()
+      active = false
+      result = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      if first and seed == nil then
-        result = ...
-        first = false
-      else
-        return util.tryWithObserver(observer, function(...)
-          result = accumulator(result, ...)
-        end, ...)
+      if active then
+        if first and seed == nil then
+          result = ...
+          first = false
+        else
+          local ok = util.tryWithObserver(observer, function(...)
+            result = accumulator(result, ...)
+          end, ...)
+          if not ok then
+            done()
+          end
+        end
       end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      observer:onNext(result)
-      return observer:onCompleted()
+      if active then
+        local final = result
+        done()
+        observer:onNext(final)
+        observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -1829,25 +2030,48 @@ function Observable:reject(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local active, ref = true
+
+    local function done()
+      active = false
+      predicate = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      util.tryWithObserver(observer, function(...)
-        if not predicate(...) then
-          return observer:onNext(...)
+      if active then
+        local success = util.tryWithObserver(observer, function(...)
+          if not predicate(...) then
+            return observer:onNext(...)
+          end
+        end, ...)
+        if not success then
+          done()
         end
-      end, ...)
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        return observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        return observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
-  end)
-end
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
+  end)end
 
 --- cp.rx.Observable:retry([count]) -> cp.rx.Observable
 --- Method
@@ -1861,31 +2085,50 @@ end
 --- * The new `Observable`.
 function Observable:retry(count)
   return Observable.create(function(observer)
-    local reference
+    local active, ref = true, nil
     local retries = 0
 
+    local function cancelRef()
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
+    local function done()
+      active = false
+      cancelRef()
+    end
+
     local function onNext(...)
-      return observer:onNext(...)
+      if active then
+        return observer:onNext(...)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
     local function onError(message)
-      if reference then
-        reference:cancel()
+      if active then
+        cancelRef()
+        retries = retries + 1
+        if count and retries > count then
+          active = false
+          observer:onError(message)
+        else
+          ref = self:subscribe(onNext, onError, onCompleted)
+        end
       end
-
-      retries = retries + 1
-      if count and retries > count then
-        return observer:onError(message)
-      end
-
-      reference = self:subscribe(onNext, onError, onCompleted)
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -1896,44 +2139,62 @@ end
 --- Parameters:
 --- * count     - The maximum number of times to retry.  If left unspecified, an infinite
 ---               number of retries will be attempted.
---- * delay     - The delay in milliseconds. If left unspecified, defaults to 1000 (1 second).
+--- * delay     - The `function` returning or a `number` representing the delay in milliseconds or a `function`. If left unspecified, defaults to 1000 ms (1 second).
 --- * scheduler - The [Scheduler](cp.rx.Scheduler.md) to use.
 ---               If not specified, it will use the [defaultScheduler](cp.rx.util#defaultScheduler].
 ---
 --- Returns:
 --- * The new `Observable`.
 function Observable:retryWithDelay(count, delay, scheduler)
+  delay = type(delay) == "function" and delay or util.constant(delay or 1000)
   return Observable.create(function(observer)
-    local reference
+    local active, ref = true, nil
     local retries = 0
 
+    local function cancelRef()
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
+    local function done()
+      active = false
+      cancelRef()
+    end
+
     local function onNext(...)
-      return observer:onNext(...)
+      if active then
+        observer:onNext(...)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
     local function onError(message)
-      if reference then
-        reference:cancel()
+      if active then
+        cancelRef()
+        retries = retries + 1
+        if count and retries > count then
+          done()
+          observer:onError(message)
+        else
+          scheduler = scheduler or util.defaultScheduler()
+          ref = scheduler:schedule(function()
+            ref = self:subscribe(onNext, onError, onCompleted)
+          end, delay())
+        end
       end
-
-      retries = retries + 1
-      if count and retries > count then
-        return observer:onError(message)
-      end
-
-      scheduler = scheduler or util.defaultScheduler()
-      delay = delay or 1000
-
-      scheduler:schedule(function()
-        reference = self:subscribe(onNext, onError, onCompleted)
-      end, delay)
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -1948,36 +2209,58 @@ end
 --- Returns:.
 --- * The new `Observable`.
 function Observable:sample(sampler)
-  if not sampler then error('Expected an Observable') end
+  if not Observable.is(sampler) then error('Expected an Observable') end
 
   return Observable.create(function(observer)
+    local active, sourceRef, sampleRef = true
     local latest = {}
 
+    local function cancelSource()
+      if sourceRef then
+        sourceRef:cancel()
+        sourceRef = nil
+      end
+    end
+
+    local function done()
+      active = false
+      cancelSource()
+      if sampleRef then
+        sampleRef:cancel()
+        sampleRef = nil
+      end
+    end
+
     local function setLatest(...)
-      latest = util.pack(...)
+      if active then
+        latest = util.pack(...)
+      end
     end
 
     local function onNext()
-      if #latest > 0 then
-        return observer:onNext(util.unpack(latest))
+      if active and #latest > 0 then
+        observer:onNext(util.unpack(latest))
       end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
-    local sourceReference = self:subscribe(setLatest, onError)
-    local sampleReference = sampler:subscribe(onNext, onError, onCompleted)
+    sourceRef = self:subscribe(setLatest, onError, cancelSource)
+    sampleRef = sampler:subscribe(onNext, onError, onCompleted)
 
-    return Reference.create(function()
-      if sourceReference then sourceReference:cancel() end
-      if sampleReference then sampleReference:cancel() end
-    end)
+    return Reference.create(done)
   end)
 end
 
@@ -1997,30 +2280,52 @@ end
 --- * The new `Observable`.
 function Observable:scan(accumulator, seed)
   return Observable.create(function(observer)
+    local active, ref = true
     local result = seed
     local first = true
 
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      if first and seed == nil then
-        result = ...
-        first = false
-      else
-        return util.tryWithObserver(observer, function(...)
-          result = accumulator(result, ...)
-          observer:onNext(result)
-        end, ...)
+      if active then
+        if first and seed == nil then
+          result = ...
+          first = false
+        else
+          local ok = util.tryWithObserver(observer, function(...)
+            result = accumulator(result, ...)
+            observer:onNext(result)
+          end, ...)
+          if not ok then
+            done()
+          end
+        end
       end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -2049,15 +2354,43 @@ function Observable:skip(n)
     end
 
     local function onError(e)
-      return observer:onError(e)
+      observer:onError(e)
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      observer:onCompleted()
     end
 
     return self:subscribe(onNext, onError, onCompleted)
   end)
+end
+
+local buffer = {}
+buffer.__index = buffer
+
+function buffer.new()
+  return setmetatable({
+    first = 1, last = 0
+  }, buffer)
+end
+
+function buffer:size()
+  return self.last - self.first + 1
+end
+
+function buffer:pop()
+  if self:size() > 0 then
+    local first = self.first
+    local values = self[first]
+    self[first] = nil
+    self.first = first + 1
+    return values
+  end
+end
+
+function buffer:push(value)
+  self.last = self.last + 1
+  buffer[self.last] = value
 end
 
 --- cp.rx.Observable:skipLast(count) -> cp.rx.Observable
@@ -2070,30 +2403,50 @@ end
 --- Returns:
 --- * The new `Observable`.
 function Observable:skipLast(count)
-  local buffer = {}
   return Observable.create(function(observer)
+    -- cycling buffer
+    local active, ref = true, nil
+    local buff = buffer.new()
+
+    local function done()
+      active = false
+      buff = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function emit()
-      if #buffer > count and buffer[1] then
-        local values = table.remove(buffer, 1)
-        observer:onNext(util.unpack(values))
+      while buff:size() > count do
+        observer:onNext(util.unpack(buff:pop()))
       end
     end
 
     local function onNext(...)
-      emit()
-      table.insert(buffer, util.pack(...))
+      if active then
+        buff:push(util.pack(...))
+        emit()
+      end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        return observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      emit()
-      return observer:onCompleted()
+      if active then
+        done()
+        return observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -2109,32 +2462,54 @@ end
 --- * The new `Observable`.
 function Observable:skipUntil(other)
   return Observable.create(function(observer)
+    local active, ref, otherRef = true
     local triggered = false
-    local function trigger()
-      triggered = true
+
+    local function cancelOther()
+      if otherRef then
+        otherRef:cancel()
+        otherRef = nil
+      end
     end
 
-    other:subscribe(trigger, trigger, trigger)
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+      cancelOther()
+    end
+
+    local function trigger()
+      triggered = true
+      cancelOther()
+    end
 
     local function onNext(...)
-      if triggered then
+      if active and triggered then
         observer:onNext(...)
       end
     end
 
     local function onError()
-      if triggered then
+      if active and triggered then
+        done()
         observer:onError()
       end
     end
 
     local function onCompleted()
-      if triggered then
+      if active and triggered then
+        done()
         observer:onCompleted()
       end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    otherRef = other:subscribe(trigger, trigger, trigger)
+    ref = self:subscribe(onNext, onError, onCompleted)
+
+    return Reference.create(done)
   end)
 end
 
@@ -2151,29 +2526,51 @@ function Observable:skipWhile(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local active, ref = true, nil
     local skipping = true
 
-    local function onNext(...)
-      if skipping then
-        util.tryWithObserver(observer, function(...)
-          skipping = predicate(...)
-        end, ...)
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
       end
+    end
 
-      if not skipping then
-        return observer:onNext(...)
+    local function onNext(...)
+      if active then
+        if skipping then
+          local ok = util.tryWithObserver(observer, function(...)
+            skipping = predicate(...)
+          end, ...)
+          if not ok then
+            done()
+            return
+          end
+        end
+
+        if not skipping then
+          observer:onNext(...)
+        end
       end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2215,29 +2612,53 @@ end
 --- * The new `Observable`.
 function Observable:switch()
   return Observable.create(function(observer)
-    local reference
+    local active, ref, sourceRef = true
+
+    local function cancelSource()
+      if sourceRef then
+        sourceRef:cancel()
+        sourceRef = nil
+      end
+    end
+
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+      cancelSource()
+    end
 
     local function onNext(...)
-      return observer:onNext(...)
+      if active then
+        observer:onNext(...)
+      end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
     local function switch(source)
-      if reference then
-        reference:cancel()
+      if active then
+        cancelSource()
+        sourceRef = source:subscribe(onNext, onError, nil)
       end
-
-      reference = source:subscribe(onNext, onError, nil)
     end
 
-    return self:subscribe(switch, onError, onCompleted)
+    ref = self:subscribe(switch, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2321,27 +2742,47 @@ end
 --- * The new `Observable`.
 function Observable:takeLast(count)
   return Observable.create(function(observer)
-    local buffer = {}
+    local active, ref = true
+    local buff = buffer.new()
+
+    local function done()
+      active = false
+      buff = nil
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
 
     local function onNext(...)
-      table.insert(buffer, util.pack(...))
-      if #buffer > count then
-        table.remove(buffer, 1)
+      if active then
+        buff:push(util.pack(...))
+        if buff:size() > count then
+          buff:pop()
+        end
       end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      for i = 1, #buffer do
-        observer:onNext(util.unpack(buffer[i]))
+      if active then
+        active = false
+        while buff:size() > 0 do
+          observer:onNext(util.unpack(buff:pop()))
+        end
+        done()
+        observer:onCompleted()
       end
-      return observer:onCompleted()
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2356,21 +2797,42 @@ end
 --- * The new `Observable`.
 function Observable:takeUntil(other)
   return Observable.create(function(observer)
+    local active, ref, otherRef = true
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+      if otherRef then
+        otherRef:cancel()
+        otherRef = nil
+      end
+    end
+
     local function onNext(...)
-      return observer:onNext(...)
+      if active then
+        observer:onNext(...)
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
-    other:subscribe(onCompleted, onCompleted, onCompleted)
-
-    return self:subscribe(onNext, onError, onCompleted)
+    otherRef = other:subscribe(onCompleted, onCompleted, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2387,31 +2849,52 @@ function Observable:takeWhile(predicate)
   predicate = predicate or util.identity
 
   return Observable.create(function(observer)
+    local active, ref = true
     local taking = true
 
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
     local function onNext(...)
-      if taking then
-        util.tryWithObserver(observer, function(...)
+      if active and taking then
+        local ok = util.tryWithObserver(observer, function(...)
           taking = predicate(...)
         end, ...)
 
-        if taking then
-          return observer:onNext(...)
+        if not ok then
+          done()
         else
-          return observer:onCompleted()
+          if taking then
+            observer:onNext(...)
+          else
+            done()
+            observer:onCompleted()
+          end
         end
       end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref =  self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2433,31 +2916,56 @@ function Observable:tap(_onNext, _onError, _onCompleted)
   _onCompleted = _onCompleted or util.noop
 
   return Observable.create(function(observer)
-    local function onNext(...)
-      util.tryWithObserver(observer, function(...)
-        _onNext(...)
-      end, ...)
+    local active, ref = true
 
-      return observer:onNext(...)
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
+
+    local function onNext(...)
+      if active then
+        local ok = util.tryWithObserver(observer, function(...)
+          _onNext(...)
+        end, ...)
+
+        if ok then
+          observer:onNext(...)
+        else
+          done()
+        end
+      end
     end
 
     local function onError(message)
-      util.tryWithObserver(observer, function()
-        _onError(message)
-      end)
-
-      return observer:onError(message)
+      if active then
+        done()
+        local ok = util.tryWithObserver(observer, function()
+          _onError(message)
+        end)
+        if ok then
+          observer:onError(message)
+        end
+      end
     end
 
     local function onCompleted()
-      util.tryWithObserver(observer, function()
-        _onCompleted()
-      end)
-
-      return observer:onCompleted()
+      if active then
+        done()
+        local ok = util.tryWithObserver(observer, function()
+          _onCompleted()
+        end)
+        if ok then
+          observer:onCompleted()
+        end
+      end
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2467,62 +2975,93 @@ end
 ---
 --- Parameters:
 --- * timeInMs          - The time in milliseconds to wait before an error is emitted.
---- * next              - If a `string`, it will be sent as an error. If an `Observable`, it will be passed on instead of an error.
+--- * next              - If a `string`, it will be sent as an error. If an `Observable`, switch to that `Observable` instead of sending an error.
 --- * scheduler         - The scheduler to use. Uses the [defaultScheduler](cp.rx.util#defaultSubscriber) if not provided.
 ---
 --- Returns:
 --- * The new `Observable`.
 function Observable:timeout(timeInMs, next, scheduler)
-    timeInMs = type(timeInMs) == "function" and timeInMs or util.constant(timeInMs)
-    scheduler = scheduler or util.defaultScheduler()
+  timeInMs = type(timeInMs) == "function" and timeInMs or util.constant(timeInMs)
+  scheduler = scheduler or util.defaultScheduler()
 
-    return Observable.create(function(observer)
-        local kill, subscription
+  return Observable.create(function(observer)
+    local active, ref, actionRef = true
 
-        local function clean()
-            if kill then
-                kill:cancel()
-                kill = nil
-            end
-            if subscription then
-                subscription:cancel()
-                subscription = nil
-            end
-        end
+    local function cancelRef()
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+    end
 
-        local function timedOut()
-            clean()
-            if Observable.is(next) then
-                observer:onNext(next)
-            else
-                observer:onError(next or format("Timed out after %d ms.", timeInMs()))
-            end
-            kill = nil
-        end
+    local function done()
+      active = false
+      cancelRef()
+      if actionRef then
+          actionRef:cancel()
+          actionRef = nil
+      end
+    end
 
-        local function onNext(...)
-            -- restart the timer...
-            if kill then
-                kill:cancel()
-                kill = scheduler:schedule(timedOut, timeInMs())
+    local function timedOut()
+      if active then
+        if Observable.is(next) then
+          cancelRef()
+          ref = next:subscribe(
+            function(...)
+              if active then
                 observer:onNext(...)
+              end
+            end,
+            function(e)
+              if active then
+                done()
+                observer:onError(e)
+              end
+            end,
+            function()
+              if active then
+                done()
+                observer:onCompleted()
+              end
             end
+          )
+        else
+          done()
+          observer:onError(next or format("Timed out after %d ms.", timeInMs()))
         end
+      end
+    end
 
-        local function onError(message)
-            clean()
-            return observer:onError(message)
+    local function onNext(...)
+      if active then
+        -- restart the timer...
+        if actionRef then
+          actionRef:cancel()
+          actionRef = scheduler:schedule(timedOut, timeInMs())
+          observer:onNext(...)
         end
+      end
+    end
 
-        local function onCompleted()
-            clean()
-            return observer:onCompleted()
-        end
+    local function onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
+    end
 
-        kill = scheduler:schedule(timedOut, timeInMs())
-        subscription = self:subscribe(onNext, onError, onCompleted)
-        return subscription
-      end)
+    local function onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
+    end
+
+    actionRef = scheduler:schedule(timedOut, timeInMs())
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
+  end)
 end
 
 --- cp.rx.Observable:unpack() -> cp.rx.Observable
@@ -2563,41 +3102,6 @@ function Observable:unwrap()
   end)
 end
 
---- cp.rx.Observable:window(size) -> cp.rx.Observable
---- Method
---- Returns an `Observable` that produces a sliding window of the values produced by the original.
----
---- Parameters:
---- * size      - The size of the window. The returned `Observable` will produce this number
----               of the most recent values as multiple arguments to `onNext`.
----
---- Returns:
---- * The new `Observable`.
-function Observable:window(size)
-  return Observable.create(function(observer)
-    local window = {}
-
-    local function onNext(value)
-      table.insert(window, value)
-
-      if #window >= size then
-        observer:onNext(util.unpack(window))
-        table.remove(window, 1)
-      end
-    end
-
-    local function onError(message)
-      return observer:onError(message)
-    end
-
-    local function onCompleted()
-      return observer:onCompleted()
-    end
-
-    return self:subscribe(onNext, onError, onCompleted)
-  end)
-end
-
 --- cp.rx.Observable:with(...) -> cp.rx.Observable
 --- Method
 --- Returns an `Observable` that produces values from the original along with the most recently
@@ -2613,7 +3117,28 @@ function Observable:with(...)
   local sources = {...}
 
   return Observable.create(function(observer)
-    local latest = setmetatable({}, {__len = util.constant(#sources)})
+    local active, ref = true
+    local latest = List.sized(#sources)
+    local sourceRefs = List.sized(#sources)
+
+    local function done()
+      active = false
+      if ref then
+        ref:cancel()
+        ref = nil
+      end
+      local count = #sourceRefs
+      for i = 1,count do
+        latest[i] = nil
+        local sourceRef = sourceRefs[i]
+        if sourceRef then
+          sourceRefs[i]:cancel()
+          sourceRefs[i] = nil
+        end
+      end
+        latest = nil
+      sourceRefs = nil
+    end
 
     local function setLatest(i)
       return function(value)
@@ -2622,22 +3147,41 @@ function Observable:with(...)
     end
 
     local function onNext(value)
-      return observer:onNext(value, util.unpack(latest))
+      if active then
+        observer:onNext(value, util.unpack(latest))
+      end
     end
 
     local function onError(e)
-      return observer:onError(e)
+      if active then
+        done()
+        observer:onError(e)
+      end
     end
 
     local function onCompleted()
-      return observer:onCompleted()
+      if active then
+        done()
+        observer:onCompleted()
+      end
+    end
+
+    local function cancelSource(i)
+      return function()
+        local sourceRef = sourceRefs[i]
+        if sourceRef then
+          sourceRef:cancel()
+          sourceRefs[i] = nil
+        end
+      end
     end
 
     for i = 1, #sources do
-      sources[i]:subscribe(setLatest(i), util.noop, util.noop)
+      sourceRefs[i] = sources[i]:subscribe(setLatest(i), cancelSource(i), cancelSource(i))
     end
 
-    return self:subscribe(onNext, onError, onCompleted)
+    ref = self:subscribe(onNext, onError, onCompleted)
+    return Reference.create(done)
   end)
 end
 
@@ -2661,60 +3205,84 @@ function Observable.zip(...)
   -- log.df("zip: count = %d", count)
 
   return Observable.create(function(observer)
-    local values = {}
-    local active = {}
+    local active = true
+    local refs = List.sized(count)
+    local values = List.sized(count)
     for i = 1, count do
-      values[i] = {n = 0}
-      active[i] = true
+      values[i] = Queue()
+    end
+
+    local function done()
+      active = false
+      if values ~= nil then
+        values:size(0)
+        values = nil
+      end
+      if refs ~= nil then
+        for i = 1, count do
+          local ref = refs[i]
+          if ref then
+            ref:cancel()
+            refs[i] = nil
+          end
+        end
+        refs = nil
+      end
+    end
+
+    local function isReady()
+      for i = 1,count do
+        if #values[i] == 0 then
+          return false
+        end
+      end
+      return true
     end
 
     local function onNext(i)
       return function(...)
-        table.insert(values[i], util.pack(...))
-        values[i].n = values[i].n + 1
+        if active then
+          values[i]:pushRight(util.pack(...))
 
-        local ready = true
-        for j = 1, count do
-          if values[j].n == 0 then
-            ready = false
-            break
-          end
-        end
+          if isReady() then
+            local payload = {}
 
-        if ready then
-          local payload = {}
-
-          for j = 1, count do
-            local args = table.remove(values[j], 1)
-            for _,arg in ipairs(args) do
-                table.insert(payload, arg)
+            for j = 1, count do
+              local args = values[j]:popLeft()
+              for _,arg in ipairs(args) do
+                  insert(payload, arg)
+              end
             end
-            values[j].n = values[j].n - 1
-          end
 
-          observer:onNext(util.unpack(payload))
+            observer:onNext(util.unpack(payload))
+          end
         end
       end
     end
 
     local function onError(message)
-      return observer:onError(message)
+      if active then
+        done()
+        observer:onError(message)
+      end
     end
 
     local function onCompleted(i)
       return function()
-        -- log.df("zip: completed #%d", i)
-        active[i] = nil
-        if not next(active) or values[i].n == 0 then
-            -- log.df("zip: sending completed...")
-          return observer:onCompleted()
+        if active and refs[i] then
+          refs[i] = nil
+          if #refs:trim() == 0 or #values[i] == 0 then
+            done()
+            observer:onCompleted()
+          end
         end
       end
     end
 
     for i = 1, count do
-      sources[i]:subscribe(onNext(i), onError, onCompleted(i))
+      refs[i] = sources[i]:subscribe(onNext(i), onError, onCompleted(i))
     end
+    return Reference.create(done)
   end)
 end
 
@@ -2794,7 +3362,7 @@ function CooperativeScheduler:schedule(action, delay)
     due = self.currentTime + (delay or 0)
   }
 
-  table.insert(self.tasks, task)
+  insert(self.tasks, task)
 
   return Reference.create(function()
     return self:unschedule(task)
@@ -2804,7 +3372,7 @@ end
 function CooperativeScheduler:unschedule(task)
   for i = 1, #self.tasks do
     if self.tasks[i] == task then
-      table.remove(self.tasks, i)
+      remove(self.tasks, i)
     end
   end
 end
@@ -2829,7 +3397,7 @@ function CooperativeScheduler:update(delta)
       local success, delay = coroutine.resume(task.thread)
 
       if coroutine.status(task.thread) == 'dead' then
-        table.remove(self.tasks, i)
+        remove(self.tasks, i)
       else
         task.due = math.max(task.due + (delay or 0), self.currentTime)
         i = i + 1
@@ -2951,13 +3519,15 @@ function Subject:subscribe(onNext, onError, onCompleted)
     return Reference.create(util.noop)
   end
 
-  table.insert(self.observers, observer)
+  insert(self.observers, observer)
 
   return Reference.create(function()
-    for i = 1, #self.observers do
-      if self.observers[i] == observer then
-        table.remove(self.observers, i)
-        return
+    if not self.stopping then
+      for i = 1, #self.observers do
+        if self.observers[i] == observer then
+          remove(self.observers, i)
+          return
+        end
       end
     end
   end)
@@ -2965,7 +3535,7 @@ end
 
 -- cp.rx.Subject:_stop() -> nil
 -- Method
--- Stops future signals from being sent, and unsubscribs any observers.
+-- Stops future signals from being sent, and unsubscribes any observers.
 function Subject:_stop()
   self.stopped = true
   self.observers = {}
@@ -2993,10 +3563,11 @@ end
 --- * message     - A string describing what went wrong.
 function Subject:onError(message)
   if not self.stopped then
+    self.stopping = true
     for i = 1, #self.observers do
       self.observers[i]:onError(message)
     end
-
+    self.stopping = true
     self:_stop()
   end
 end
@@ -3006,10 +3577,11 @@ end
 --- Signal to all [Observers](cp.rx.Observer.md) that the `Subject` will not produce any more values.
 function Subject:onCompleted()
   if not self.stopped then
+    self.stopping = true
     for i = 1, #self.observers do
       self.observers[i]:onCompleted()
     end
-
+    self.stopping = true
     self:_stop()
   end
 end
@@ -3073,12 +3645,12 @@ function AsyncSubject:subscribe(onNext, onError, onCompleted)
     observer:onError(self.errorMessage)
     return Reference.create(util.noop)
   else
-    table.insert(self.observers, observer)
+    insert(self.observers, observer)
 
     return Reference.create(function()
       for i = 1, #self.observers do
         if self.observers[i] == observer then
-          table.remove(self.observers, i)
+          remove(self.observers, i)
           return
         end
       end
@@ -3294,9 +3866,9 @@ end
 --- Parameters:
 --- * ...   - The values to send.
 function ReplaySubject:onNext(...)
-  table.insert(self.buffer, util.pack(...))
+  insert(self.buffer, util.pack(...))
   if self.bufferSize and #self.buffer > self.bufferSize then
-    table.remove(self.buffer, 1)
+    remove(self.buffer, 1)
   end
 
   return Subject.onNext(self, ...)

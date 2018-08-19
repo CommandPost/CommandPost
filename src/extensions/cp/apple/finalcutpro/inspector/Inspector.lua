@@ -36,6 +36,7 @@ local id                                = require("cp.apple.finalcutpro.ids") "I
 
 local go                                = require("cp.rx.go")
 local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
+local Given, Done                       = go.Given, go.Done
 
 --------------------------------------------------------------------------------
 --
@@ -388,21 +389,34 @@ function Inspector:doFindTabButton(type)
     end
     local localTitle = self:app():string(code)
 
-    return WaitUntil(List(self.topBarUI))
-    :Matches(function(child)
-        return child:attributeValue("AXTitle") == localTitle
+    return Given(List(self.topBarUI))
+    :Then(function(child)
+        if child:attributeValue("AXTitle") == localTitle then
+            return child
+        end
+        return Done()
     end)
     :Label("Inpector:doFindTabButton")
 end
 
+--- cp.apple.finalcutpro.inspector.Inspector:doSelectTab(title) -> cp.rx.go.Statement
+--- Method
+--- A Statement that selects the specified tab title.
+---
+--- Parameters:
+--- * title     - The title of the tab to select.
+---
+--- Returns:
+--- * The [Statement](cp.rx.go.Statement.md)
 function Inspector:doSelectTab(title)
     return Do(self:doShow())
     :Then(
         If(self:doFindTabButton(title))
         :Then(function(button)
-            return button:doPress()
+            button:doPress()
+            return true
         end)
-        :Catch(Throw("Inspector Tab Unavailable: %s", title))
+        :Otherwise(false)
     )
     :Label("Inspector:doSelectTab")
 end

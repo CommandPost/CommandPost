@@ -774,8 +774,9 @@
             "other": "items"
         },
 		"justifyAll_title": "Justify all",
-		"justifyLastCentre_title": "Justify last centre",
-		"justifyLastRight_title": "Justify last right",
+        "justifyLastCentre_title": "Justify last centre",
+        "justifyLastLeft_title": "Justify last left",
+        "justifyLastRight_title": "Justify last right",
     	"key": "Key",
         "japanese": "Japanese",
         "joinClips": "Join Clips",

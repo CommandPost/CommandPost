@@ -4,6 +4,8 @@ local rxTest        = require("cp.rx.test")
 local Subject       = require("cp.rx").Subject
 local sub           = rxTest.subscribe
 
+local insert        = table.insert
+
 return test.suite("cp.rx.Subject")
 :with {
     test("simple", function()
@@ -35,6 +37,99 @@ return test.suite("cp.rx.Subject")
 
         s:onError("bar")
         ok(result:is({"foo"}, "bar", false))
+        ok(eq(#s.observers, 0))
+    end),
+
+    test("multiple subscribers", function()
+        local s = Subject.create()
+
+        local result1, result2 = sub(s), sub(s)
+
+        ok(result1:is({}, nil, false))
+        ok(result2:is({}, nil, false))
+        ok(eq(#s.observers, 2))
+
+        s:onNext(1)
+        s:onCompleted()
+        ok(result1:is({1}, nil, true))
+        ok(result2:is({1}, nil, true))
+        ok(eq(#s.observers, 0))
+
+    end),
+
+    test("recursive next", function()
+        local s = Subject.create()
+        local nexts = {}
+        local message = nil
+        local completed = false
+
+        s:subscribe(
+            function(value)
+                insert(nexts, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                -- this should get ignored...
+                s:onNext(100)
+                completed = true
+            end
+        )
+
+        ok(eq(nexts, {}))
+        ok(eq(message, nil))
+        ok(eq(completed, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext(1)
+
+        ok(eq(nexts, {1}))
+        ok(eq(message, nil))
+        ok(eq(completed, false))
+        ok(eq(#s.observers, 1))
+
+        s:onCompleted()
+
+        ok(eq(nexts, {1}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
+        ok(eq(#s.observers, 0))
+    end),
+
+    test("unpack", function()
+        local s = Subject.create()
+        local result = sub(s:unpack())
+
+        ok(result:is({}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext({1,2,3})
+        ok(result:is({{1,2,3,n=3}}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onCompleted()
+        ok(result:is({{1,2,3,n=3}}, nil, true))
+        ok(eq(#s.observers, 0))
+    end),
+
+    test("unwrap", function()
+        local s = Subject.create()
+        local result = sub(s:unwrap())
+
+        ok(result:is({}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext(1,2,3)
+        ok(result:is({1,2,3}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onNext(nil, 5)
+        ok(result:is({1,2,3,nil,5,n=5}, nil, false))
+        ok(eq(#s.observers, 1))
+
+        s:onCompleted()
+        ok(result:is({1,2,3,nil,5,n=5}, nil, true))
         ok(eq(#s.observers, 0))
     end),
 }

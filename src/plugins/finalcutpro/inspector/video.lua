@@ -25,7 +25,7 @@ local go                = require("cp.rx.go")
 local Do                = go.Do
 local WaitUntil         = go.WaitUntil
 
-local function doSetSpatialConform(value)
+local function doSpatialConformType(value)
     local timeline = fcp:timeline()
     local timelineContents = timeline:contents()
     local spatialConformType = fcp:inspector():video():spatialConform():type()
@@ -49,7 +49,7 @@ local function doSetSpatialConform(value)
         dialog.displayErrorMessage(message)
         return false
     end)
-    :Label("video.doSetSpatialConform")
+    :Label("video.doSpatialConformType")
 
 end
 
@@ -77,15 +77,15 @@ function plugin.init(deps)
     if deps.fcpxCmds then
         deps.fcpxCmds
             :add("cpSetSpatialConformTypeToFit")
-            :whenActivated(doSetSpatialConform("Fit"))
+            :whenActivated(doSpatialConformType("Fit"))
 
         deps.fcpxCmds
             :add("cpSetSpatialConformTypeToFill")
-            :whenActivated(doSetSpatialConform("Fill"))
+            :whenActivated(doSpatialConformType("Fill"))
 
         deps.fcpxCmds
             :add("cpSetSpatialConformTypeToNone")
-            :whenActivated(doSetSpatialConform("None"))
+            :whenActivated(doSpatialConformType("None"))
     end
 
 end

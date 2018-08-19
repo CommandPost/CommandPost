@@ -220,10 +220,30 @@ function TimelineContents:show()
     return self
 end
 
+--- cp.apple.finalcutpro.main.TimelineContents:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to show the Timeline Contents.
+---
+--- Returns:
+--- * The `Statement`.
+function TimelineContents:doShow()
+    return self:parent():doShow()
+end
+
 -- TODO: Add documentation
 function TimelineContents:hide()
     self:parent():hide()
     return self
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the Timeline Contents.
+---
+--- Returns:
+--- * The `Statement`.
+function TimelineContents:doHide()
+    return self:parent():doHide()
 end
 
 -----------------------------------------------------------------------
@@ -525,6 +545,27 @@ end
 function TimelineContents:doSelectClip(clipUI)
     return self:doSelectClips({clipUI})
     :Label("TimelineContents:doSelectClip")
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+---
+--- Parameters:
+--- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+---
+--- Returns:
+--- * The `Statement`.
+function TimelineContents:doFocus(show)
+    show = show or false
+    local menu = self:app():menu()
+
+    return If(self.isFocused):Is(false):Then(
+        menu:doSelectMenu({"Window", "Go To", "Timeline"}):Debug("Go To Timeline")
+    )
+    :Then(WaitUntil(self.isFocused):TimeoutAfter(2000))
+    :Otherwise(true)
+    :Label("TimelineContents:doFocus")
 end
 
 -----------------------------------------------------------------------

@@ -373,6 +373,20 @@ function axutils.isValid(element)
     return element ~= nil and element:isValid()
 end
 
+-- isInvalid(value, verifyFn) -> boolean
+-- Function
+-- Checks to see if an `axuielement` is invalid.
+--
+-- Parameters:
+--  * value     - an `axuielement` object.
+--  * verifyFn  - an optional function which will check the cached element to verify it is still valid.
+--
+-- Returns:
+--  * `true` if the `value` is invalid or not verified, otherwise `false`.
+local function isInvalid(value, verifyFn)
+    return value == nil or not axutils.isValid(value) or verifyFn and not verifyFn(value)
+end
+
 --- cp.ui.axutils.cache(source, key, finderFn, [verifyFn]) -> axuielement
 --- Function
 --- Checks if the cached value at the `source[key]` is a valid axuielement. If not
@@ -391,16 +405,19 @@ end
 --- Returns:
 ---  * The valid cached value.
 function axutils.cache(source, key, finderFn, verifyFn)
-    local value = source and source[key]
-    if value == nil or not axutils.isValid(value) or verifyFn and not verifyFn(value) then
-        value = finderFn()
-        if axutils.isValid(value) and source then
-            source[key] = value
-        else
-            return nil
+    if source then
+        local value = source[key]
+        if isInvalid(value, verifyFn) then
+            value = finderFn()
+            if isInvalid(value, verifyFn) then
+                value = nil
+            end
         end
+        source[key] = value
+        return value
+    else
+        return finderFn()
     end
-    return value
 end
 
 --- cp.ui.axutils.snapshot(element, [filename]) -> hs.image

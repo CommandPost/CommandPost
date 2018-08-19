@@ -106,13 +106,31 @@
 --- To use a `prop` as a method, you need to `attach` it to the owning table, like so:
 ---
 --- ```lua
---- local owner = {
----     _value = true
---- }
+--- local owner = { _value = true }
 --- owner.isMethod = prop(function(self) return self._value end, function(value, self) self._value = value end):bind(owner)
 --- owner:isMethod()                -- success!
 --- owner.isMethod()                -- also works - will still pass in the bound owner.
 --- owner.isMethod:owner() == owner -- is true~
+--- ```
+---
+--- You can also use the [prop.bind](#bind) function to bind multple properties at once:
+---
+--- ```lua
+--- local owner = { _value = true }
+--- prop.bind(o) {
+---     isMethod = prop(function(self) return self._value end)
+--- }
+--- owner:isMethod()                -- success!
+--- ```
+---
+--- The [prop.extend](#extend) function will also bind any `cp.prop` values it finds:
+---
+--- ```lua
+--- local owner = prop.extend({
+---     _value = true,
+---     isMethod = prop(function(self) return self._value end),
+--- })
+--- owner:isMethod()                -- success!
 --- ```
 ---
 --- The bound `owner` is passed in as the last parameter of the `get` and `set` functions.

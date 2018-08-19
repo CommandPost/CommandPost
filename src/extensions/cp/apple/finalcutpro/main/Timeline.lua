@@ -276,9 +276,9 @@ function Timeline:doShowOnPrimary()
         )
         :Then(
             If(self.isOnPrimary):Is(false):Then(
-                menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+                Do(menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"}))
+                :Then(WaitUntil(self.isOnPrimary):TimeoutAfter(5000))
             ):Otherwise(true)
-            :Then(WaitUntil(self.isOnPrimary):TimeoutAfter(5000))
         )
     ):Otherwise(false)
     :Label("Timeline:doShowOnPrimary")
@@ -376,6 +376,20 @@ function Timeline:doHide()
         )
     ):Otherwise(false)
     :Label("Timeline:doHide")
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+---
+--- Parameters:
+--- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+---
+--- Returns:
+--- * The `Statement`.
+function Timeline:doFocus(show)
+    return self:contents():doFocus(show)
+    :Label("Timeline:doFocus")
 end
 
 -----------------------------------------------------------------------

@@ -93,10 +93,20 @@ local function deepeq(a, b, msg)
     if type(a) ~= 'table' then return notequal(a, b, msg) end
     -- Compare tables field by field
     for k,v in pairs(a) do
-        if b[k] == nil or not deepeq(v, b[k], msg) then return notequal(a, b, msg) end
+        if b[k] == nil or not deepeq(v, b[k]) then
+            -- check for special `n` key for table length
+            if k ~= "n" or b.n ~= nil or a.n ~= #b then
+                return notequal(a, b, msg)
+            end
+        end
     end
     for k,v in pairs(b) do
-        if a[k] == nil or not deepeq(v, a[k], msg) then return notequal(a, b, msg) end
+        if a[k] == nil or not deepeq(v, a[k]) then
+            -- check for special `n` key for table length
+            if k ~= "n" or a.n ~= nil or b.n ~= #a then
+                return notequal(a, b, msg)
+            end
+        end
     end
     return true
 end
