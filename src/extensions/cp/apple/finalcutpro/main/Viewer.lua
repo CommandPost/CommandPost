@@ -432,10 +432,19 @@ function Viewer.new(app, eventViewer)
     end)
 
     -----------------------------------------------------------------------
+    -- Reduce the amount of AX notifications when a Final Cut Pro window
+    -- is moved or resized:
+    -----------------------------------------------------------------------
+    local frameUpdater
+    frameUpdater = delayedTimer.new(0.001, function()
+        o.frame:update()
+    end)
+
+    -----------------------------------------------------------------------
     -- Watch for the Viewer being resized:
     -----------------------------------------------------------------------
     app:notifier():watchFor({"AXWindowResized", "AXWindowMoved", "AXSelectedChildrenChanged"}, function()
-        o.frame:update()
+        frameUpdater:start()
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
