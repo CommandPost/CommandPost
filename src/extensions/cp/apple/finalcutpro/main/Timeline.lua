@@ -29,7 +29,7 @@ local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents"
 local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
 local go                                = require("cp.rx.go")
-local Do, If, First                     = go.Do, go.If, go.First
+local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
@@ -276,7 +276,8 @@ function Timeline:doShowOnPrimary()
         )
         :Then(
             If(self.isOnPrimary):Is(false):Then(
-                menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+                Do(menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"}))
+                :Then(WaitUntil(self.isOnPrimary):TimeoutAfter(5000))
             ):Otherwise(true)
         )
     ):Otherwise(false)
@@ -318,8 +319,8 @@ function Timeline:doShowOnSecondary()
 
     return If(self:app().isRunning):Then(
         If(self.isOnSecondary):Is(false)
-        :Then(menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}):Debug())
-        :Then(First(self.isOnSecondary):Debug())
+        :Then(menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"}))
+        :Then(WaitUntil(self.isOnSecondary):TimeoutAfter(5000))
         :Otherwise(true)
     ):Otherwise(false)
     :Label("Timeline:doShowOnSecondary")
@@ -360,20 +361,35 @@ function Timeline:doHide()
     local menu = self:app():menu()
 
     return If(self:app().isRunning):Then(
-        Do(function()
-            if self:isOnSecondary() then
-                return menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
-            end
-        end)
-        :Then(function()
-            if self:isOnPrimary() then
-                return menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
-            else
-                return true
-            end
-        end)
+        Do(
+            If(self.isOnSecondary):Then(
+                menu:doSelectMenu({"Window", "Show in Secondary Display", "Timeline"})
+            )
+            :Then(WaitUntil(self.isOnSecondary:NOT()):TimeoutAfter(5000))
+        )
+        :Then(
+            If(self.isOnPrimary):Then(
+                menu:doSelectMenu({"Window", "Show in Workspace", "Timeline"})
+            )
+            :Then(WaitUntil(self.isOnPrimary:NOT()):TimeoutAfter(5000))
+            :Otherwise(true)
+        )
     ):Otherwise(false)
     :Label("Timeline:doHide")
+end
+
+--- cp.apple.finalcutpro.main.TimelineContents:doFocus(show) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) which will focus on the `TimelineContents`.
+---
+--- Parameters:
+--- * show      - if `true`, the `TimelineContents` will be shown before focusing.
+---
+--- Returns:
+--- * The `Statement`.
+function Timeline:doFocus(show)
+    return self:contents():doFocus(show)
+    :Label("Timeline:doFocus")
 end
 
 -----------------------------------------------------------------------

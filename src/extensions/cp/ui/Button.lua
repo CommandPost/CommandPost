@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
--- local log							= require("hs.logger").new("button")
+local log							= require("hs.logger").new("Button")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -67,6 +67,7 @@ function Button.new(parent, finderFn)
         UI = prop(function()
             return axutils.cache(o, "_ui", function()
                 local ui = finderFn()
+                log.df("Button.UI: %s", hs.inspect(ui))
                 return Button.matches(ui) and ui or nil
             end,
             Button.matches)
@@ -84,6 +85,15 @@ function Button.new(parent, finderFn)
 --- If `true`, the `Button` is showing on screen.
         isShowing = UI:mutate(function(original, self)
             return original() ~= nil and self:parent():isShowing()
+        end),
+
+
+--- cp.ui.Button.isEnabled <cp.prop: boolean; read-only>
+--- Field
+--- Returns `true` if the button is visible and enabled.
+        isEnabled = UI:mutate(function(original)
+            local ui = original()
+            return ui ~= nil and ui:enabled()
         end),
 
 --- cp.ui.Button.title <cp.prop: string; read-only>
@@ -140,19 +150,6 @@ function Button:app()
     return self:parent():app()
 end
 
---- cp.ui.Button:isEnabled() -> boolean
---- Method
---- Returns `true` if the button is visible and enabled.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the button is visible and enabled.
-function Button:isEnabled()
-    local ui = self:UI()
-    return ui ~= nil and ui:enabled()
-end
 
 --- cp.ui.Button:press() -> self, boolean
 --- Method

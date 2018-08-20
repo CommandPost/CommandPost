@@ -25,6 +25,14 @@ local require = require
 local axutils						= require("cp.ui.axutils")
 local notifier						= require("cp.ui.notifier")
 local prop							= require("cp.prop")
+local timer                         = require("hs.timer")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                         = axutils.cache
+local delayedTimer                  = timer.delayed
+local snapshot                      = axutils.snapshot
 
 --------------------------------------------------------------------------------
 --
@@ -81,7 +89,7 @@ function StaticText.new(parent, finderFn, convertFn)
         UI = finderFn
     else
         UI = prop(function()
-            return axutils.cache(o, "_ui", function()
+            return cache(o, "_ui", function()
                 local ui = finderFn()
                 return StaticText.matches(ui) and ui or nil
             end,
@@ -137,9 +145,19 @@ function StaticText.new(parent, finderFn, convertFn)
         ),
     }
 
+    -----------------------------------------------------------------------
+    -- Reduce the amount of AX notifications when timecode is updated:
+    -----------------------------------------------------------------------
+    local timecodeUpdater
+    timecodeUpdater = delayedTimer.new(0.001, function()
+        o.value:update()
+    end)
+
     -- wire up a notifier to watch for value changes.
     o.value:preWatch(function()
-        o:notifier():watchFor("AXValueChanged", function() o.value:update() end):start()
+        o:notifier():watchFor("AXValueChanged", function()
+            timecodeUpdater:start()
+        end):start()
     end)
 
     -- watch for changes in parent visibility, and update the notifier if it changes.
@@ -285,7 +303,7 @@ end
 function StaticText:snapshot(path)
     local ui = self:UI()
     if ui then
-        return axutils.snapshot(ui, path)
+        return snapshot(ui, path)
     end
     return nil
 end

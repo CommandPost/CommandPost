@@ -1,3 +1,5 @@
+local log           = require("hs.logger").new("If_test")
+
 local test          = require("cp.test")
 
 local prop          = require("cp.prop")
@@ -249,7 +251,7 @@ return test.suite("cp.rx.go.If"):with {
         local ifProp = prop.FALSE()
         local results = {}
         local message = nil
-        local completed = true
+        local completed = false
 
         If(ifProp):Is(false):Then(function() end)
         :Then(Given(true))
@@ -266,6 +268,42 @@ return test.suite("cp.rx.go.If"):with {
         )
 
         ok(eq(results, {true}))
+        ok(eq(message, nil))
+        ok(eq(completed, true))
+    end),
+
+    test("If(empty):Then:Otherwise", function()
+        local check = Subject.create()
+        local results = {}
+        local message = nil
+        local completed = false
+
+        If(check):Then(function()
+            log.df("returning 1")
+            return 1
+        end)
+        :Otherwise(function()
+            log.df("returning 2")
+            return 2
+        end)
+        :Now(
+            function(value)
+                insert(results, value)
+            end,
+            function(msg)
+                message = msg
+            end,
+            function()
+                completed = true
+            end
+        )
+
+        ok(eq(results, {}))
+        ok(eq(message, nil))
+        ok(eq(completed, false))
+
+        check:onCompleted()
+        ok(eq(results, {2}))
         ok(eq(message, nil))
         ok(eq(completed, true))
     end),

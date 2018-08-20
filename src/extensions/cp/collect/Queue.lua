@@ -393,7 +393,17 @@ Queue.mt = {
         return stateless_iter, self, nil
       end,
 
-    __tostring = function() return "Queue" end
+    __tostring = function() return "Queue" end,
+
+    __gc = function(self)
+        local data = getdata(self)
+        if data then
+            for i = data.left,data.right do
+                data[i] = nil
+            end
+        end
+        self[DATA] = nil
+    end,
 }
 
 setmetatable(Queue, {

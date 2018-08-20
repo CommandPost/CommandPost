@@ -2,9 +2,9 @@ local test          = require("cp.test")
 local Set          = require("cp.collect.Set")
 
 return test.suite("cp.collect.Set"):with {
-    test("new", function()
+    test("of", function()
         -- the `new` method directly
-        local s = Set.new()
+        local s = Set.of()
         ok(eq(s:size(), 0))
 
         -- alternate method, with default items
@@ -19,6 +19,24 @@ return test.suite("cp.collect.Set"):with {
         ok(eq(s[2], true))
         ok(eq(s[3], true))
         ok(eq(s[4], nil))
+    end),
+
+    test("fromList", function()
+        local s = Set.fromList({1,1,2,3})
+        ok(eq(s:size(), 3))
+        ok(eq(s:has(1), true))
+        ok(eq(s:has(2), true))
+        ok(eq(s:has(3), true))
+        ok(eq(s:has(4), false))
+    end),
+
+    test("fromMap", function()
+        local s = Set.fromMap({[1] = true,[2] = true, [3] = false, [4] = "foobar"})
+        ok(eq(s:size(), 2))
+        ok(eq(s:has(1), true))
+        ok(eq(s:has(2), true))
+        ok(eq(s:has(3), false))
+        ok(eq(s:has(4), false))
     end),
 
     test("new duplicates", function()
@@ -41,8 +59,8 @@ return test.suite("cp.collect.Set"):with {
     end),
 
     test("intersection", function()
-        local a = Set.new(1, 2)
-        local b = Set.new(2, 3)
+        local a = Set.of(1, 2)
+        local b = Set.of(2, 3)
         ok(eq(a:size(), 2))
         ok(eq(b:size(), 2))
 
