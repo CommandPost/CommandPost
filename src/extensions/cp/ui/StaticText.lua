@@ -27,6 +27,12 @@ local notifier						= require("cp.ui.notifier")
 local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                         = axutils.cache
+local snapshot                      = axutils.snapshot
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
@@ -81,7 +87,7 @@ function StaticText.new(parent, finderFn, convertFn)
         UI = finderFn
     else
         UI = prop(function()
-            return axutils.cache(o, "_ui", function()
+            return cache(o, "_ui", function()
                 local ui = finderFn()
                 return StaticText.matches(ui) and ui or nil
             end,
@@ -285,7 +291,7 @@ end
 function StaticText:snapshot(path)
     local ui = self:UI()
     if ui then
-        return axutils.snapshot(ui, path)
+        return snapshot(ui, path)
     end
     return nil
 end
