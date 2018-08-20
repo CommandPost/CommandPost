@@ -12,13 +12,12 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log							= require("hs.logger").new("textField")
+--local log							= require("hs.logger").new("textField")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 --local inspect                       = require("hs.inspect")
-local timer                         = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -26,13 +25,6 @@ local timer                         = require("hs.timer")
 local axutils						= require("cp.ui.axutils")
 local notifier						= require("cp.ui.notifier")
 local prop							= require("cp.prop")
-
---------------------------------------------------------------------------------
--- Local Lua Functions:
---------------------------------------------------------------------------------
-local cache                         = axutils.cache
-local delayedTimer                  = timer.delayed
-local snapshot                      = axutils.snapshot
 
 --------------------------------------------------------------------------------
 --
@@ -89,7 +81,7 @@ function StaticText.new(parent, finderFn, convertFn)
         UI = finderFn
     else
         UI = prop(function()
-            return cache(o, "_ui", function()
+            return axutils.cache(o, "_ui", function()
                 local ui = finderFn()
                 return StaticText.matches(ui) and ui or nil
             end,
@@ -145,18 +137,9 @@ function StaticText.new(parent, finderFn, convertFn)
         ),
     }
 
-    -----------------------------------------------------------------------
-    -- Reduce the amount of AX notifications when timecode is updated:
-    -----------------------------------------------------------------------
-    local timecodeUpdater = delayedTimer.new(0.01, function()
-        o.value:update()
-    end)
-
     -- wire up a notifier to watch for value changes.
     o.value:preWatch(function()
-        o:notifier():watchFor("AXValueChanged", function()
-            timecodeUpdater:start()
-        end):start()
+        o:notifier():watchFor("AXValueChanged", function() o.value:update() end):start()
     end)
 
     -- watch for changes in parent visibility, and update the notifier if it changes.
@@ -302,7 +285,7 @@ end
 function StaticText:snapshot(path)
     local ui = self:UI()
     if ui then
-        return snapshot(ui, path)
+        return axutils.snapshot(ui, path)
     end
     return nil
 end
