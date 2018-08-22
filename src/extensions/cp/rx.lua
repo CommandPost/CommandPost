@@ -1723,10 +1723,8 @@ function Observable:flatten()
       local function innerOnCompleted()
         cancelSub()
         if not stopped then
-            -- log.df("flatten: inner completed: original completed: %s", outerCompleted)
             waiting = waiting - 1
             if waiting == 0 and outerCompleted then
-                -- log.df("flatten: inner completed, sending on")
                 stopped = true
                 return observer:onCompleted()
             end
@@ -1738,7 +1736,6 @@ function Observable:flatten()
     end
 
     local function onCompleted()
-      -- log.df("flatten: outer completed")
       if not stopped then
         outerCompleted = true
         if waiting == 0 then
@@ -3202,8 +3199,6 @@ function Observable.zip(...)
   local sources = util.pack(...)
   local count = #sources
 
-  -- log.df("zip: count = %d", count)
-
   return Observable.create(function(observer)
     local active = true
     local refs = List.sized(count)
@@ -3269,9 +3264,12 @@ function Observable.zip(...)
 
     local function onCompleted(i)
       return function()
-        if active and refs[i] then
-          refs[i] = nil
-          if #refs:trim() == 0 or #values[i] == 0 then
+        if active then
+          if refs and refs[i] then
+            refs[i] = nil
+            refs:trim()
+          end
+          if refs == nil or #refs:trim() == 0 or #values[i] == 0 then
             done()
             observer:onCompleted()
           end
@@ -3280,7 +3278,14 @@ function Observable.zip(...)
     end
 
     for i = 1, count do
-      refs[i] = sources[i]:subscribe(onNext(i), onError, onCompleted(i))
+      -- have to check if `refs` is still a thing each time
+      -- since it's possible that a source may close it immediately.
+      local ref = sources[i]:subscribe(onNext(i), onError, onCompleted(i))
+      if refs then
+        refs[i] = ref
+      else
+        break
+      end
     end
     return Reference.create(done)
   end)
