@@ -3257,4 +3257,12 @@ return test.suite("cp.rx.Subject")
         innerSubject:onCompleted()
         ok(result:is({"success"}, nil, true))
     end),
+
+    test("zip immediate completed", function()
+        local a = Subject.create()
+        local result = sub(Observable.zip(a, Observable.empty()))
+
+        ok(result:is({}, nil, true))
+        ok(eq(#a.observers, 0))
+    end)
 }
