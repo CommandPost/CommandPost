@@ -32,7 +32,6 @@ local destinations  = require("cp.apple.finalcutpro.export.destinations")
 local dialog        = require("cp.dialog")
 local Do            = require("cp.rx.go.Do")
 local fcp           = require("cp.apple.finalcutpro")
-local go            = require("cp.rx.go")
 local html          = require("cp.web.html")
 local i18n          = require("cp.i18n")
 local just          = require("cp.just")
@@ -42,7 +41,6 @@ local tools         = require("cp.tools")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local insert        = table.insert
-local Given         = go.Given
 
 --------------------------------------------------------------------------------
 --
@@ -262,7 +260,10 @@ function mod.sendTimelineClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"File", "Send to Compressor"}) then
+        result = just.doUntil(function()
+            return fcp:selectMenu({"File", "Send to Compressor"}) == true
+        end, 5, 0.1)
+        if not result then
             dialog.displayErrorMessage("Could not trigger 'Send to Compressor'.")
             return false
         end
@@ -336,7 +337,10 @@ function mod.sendBrowserClipsToCompressor(clips)
         --------------------------------------------------------------------------------
         -- Trigger Export:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"File", "Send to Compressor"}) then
+        result = just.doUntil(function()
+            return fcp:selectMenu({"File", "Send to Compressor"}) == true
+        end, 5, 0.1)
+        if not result then
             dialog.displayErrorMessage("Could not trigger 'Send to Compressor'.")
             return false
         end
@@ -751,7 +755,7 @@ end
 
 mod.destinationPreset = config.prop("batchExportDestinationPreset")
 
---- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> cp.rx.go.Statement
+--- plugins.finalcutpro.export.batch.changeExportDestinationPreset() -> none
 --- Function
 --- Change Export Destination Preset.
 ---
@@ -759,29 +763,30 @@ mod.destinationPreset = config.prop("batchExportDestinationPreset")
 ---  * None
 ---
 --- Returns:
----  * A `Statement` which is ready to be executed.
+---  * None
 function mod.changeExportDestinationPreset()
-    return Given(
-        destinations.names(),
-        mod.destinationPreset()
-    )
-    :Then(function(destinationList, currentPreset)
+    Do(function()
+        local destinationList = destinations.names()
+        local currentPreset = mod.destinationPreset()
+
         if compressor.isInstalled() then
             insert(destinationList, 1, i18n("sendToCompressor"))
         end
-        return Given(
-            dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, {currentPreset})
-        ):Then(function(result)
-            if result and #result > 0 then
-                mod.destinationPreset(result[1])
-            end
 
-            mod._bmMan.refresh()
-        end)
-    end)
+        local result = dialog.displayChooseFromList(i18n("selectDestinationPreset"), destinationList, {currentPreset})
+
+        if result and #result > 0 then
+            mod.destinationPreset(result[1])
+        end
+
+        --------------------------------------------------------------------------------
+        -- Refresh the Preferences:
+        --------------------------------------------------------------------------------
+        mod._bmMan.refresh()
+    end):After(0)
 end
 
---- plugins.finalcutpro.export.batch.changeExportDestinationFolder() -> boolean
+--- plugins.finalcutpro.export.batch.changeExportDestinationFolder() -> none
 --- Function
 --- Change Export Destination Folder.
 ---
@@ -789,21 +794,22 @@ end
 ---  * None
 ---
 --- Returns:
----  * `true` if successful otherwise `false`
+---  * None
 function mod.changeExportDestinationFolder()
-    local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
-    if result == false then return false end
-    config.set("batchExportDestinationFolder", result)
+    Do(function()
+        local result = dialog.displayChooseFolder(i18n("selectDestinationFolder"))
+        if result ~= false then
+            config.set("batchExportDestinationFolder", result)
 
-    --------------------------------------------------------------------------------
-    -- Refresh the Preferences:
-    --------------------------------------------------------------------------------
-    mod._bmMan.refresh()
-
-    return true
+            --------------------------------------------------------------------------------
+            -- Refresh the Preferences:
+            --------------------------------------------------------------------------------
+            mod._bmMan.refresh()
+        end
+    end):After(0)
 end
 
---- plugins.finalcutpro.export.batch.changeCustomFilename() -> boolean
+--- plugins.finalcutpro.export.batch.changeCustomFilename() -> none
 --- Function
 --- Change Custom Filename String.
 ---
@@ -811,25 +817,25 @@ end
 ---  * None
 ---
 --- Returns:
----  * `true` if successful otherwise `false`
+---  * None
 function mod.changeCustomFilename()
-    local result = mod.customFilename(dialog.displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
-        if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
-            return true
-        else
-            return false
+    Do(function()
+        local result = mod.customFilename(dialog.displayTextBoxMessage(i18n("enterCustomFilename") .. ":", i18n("enterCustomFilenameError"), mod.customFilename(), function(value)
+            if value and type("value") == "string" and value ~= tools.trim("") and tools.safeFilename(value, value) == value then
+                return true
+            else
+                return false
+            end
+        end))
+        if type(result) == "string" then
+            mod.customFilename(result)
         end
-    end))
-    if type(result) == "string" then
-        mod.customFilename(result)
-    end
 
-    --------------------------------------------------------------------------------
-    -- Refresh the Preferences:
-    --------------------------------------------------------------------------------
-    mod._bmMan.refresh()
-
-    return true
+        --------------------------------------------------------------------------------
+        -- Refresh the Preferences:
+        --------------------------------------------------------------------------------
+        mod._bmMan.refresh()
+    end):After(0)
 end
 
 --- plugins.finalcutpro.export.batch.getDestinationFolder() -> string
@@ -1078,38 +1084,38 @@ end
 --- Returns:
 ---  * None
 function mod.performBatchExport(mode)
+    Do(function()
+        --------------------------------------------------------------------------------
+        -- Hide the Window:
+        --------------------------------------------------------------------------------
+        mod._bmMan.hide()
 
-    --------------------------------------------------------------------------------
-    -- Hide the Window:
-    --------------------------------------------------------------------------------
-    mod._bmMan.hide()
-
-    --------------------------------------------------------------------------------
-    -- Export the clips:
-    --------------------------------------------------------------------------------
-    local result
-    local destinationPreset = mod.getDestinationPreset()
-    if destinationPreset == i18n("sendToCompressor") then
-        if mode == "browser" then
-            result = mod.sendBrowserClipsToCompressor(mod._clips)
+        --------------------------------------------------------------------------------
+        -- Export the clips:
+        --------------------------------------------------------------------------------
+        local result
+        local destinationPreset = mod.getDestinationPreset()
+        if destinationPreset == i18n("sendToCompressor") then
+            if mode == "browser" then
+                result = mod.sendBrowserClipsToCompressor(mod._clips)
+            else
+                result = mod.sendTimelineClipsToCompressor(mod._clips)
+            end
         else
-            result = mod.sendTimelineClipsToCompressor(mod._clips)
+            if mode == "browser" then
+                result = mod.batchExportBrowserClips(mod._clips)
+            else
+                result = mod.batchExportTimelineClips(mod._clips)
+            end
         end
-    else
-        if mode == "browser" then
-            result = mod.batchExportBrowserClips(mod._clips)
-        else
-            result = mod.batchExportTimelineClips(mod._clips)
+
+        --------------------------------------------------------------------------------
+        -- Batch Export Complete:
+        --------------------------------------------------------------------------------
+        if result then
+            dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
         end
-    end
-
-    --------------------------------------------------------------------------------
-    -- Batch Export Complete:
-    --------------------------------------------------------------------------------
-    if result then
-        dialog.displayMessage(i18n("batchExportComplete"), {i18n("done")})
-    end
-
+    end):After(0)
 end
 
 -- nextID() -> number
@@ -1173,13 +1179,22 @@ function plugin.init(deps)
                 return "Final Cut Pro will export the " ..  clipCountString .. "selected " ..  itemString .. " in the browser to the following location:"
             end)
         :addParagraph(nextID(), html.br())
-        :addStatus(nextID(), mod.getDestinationFolder(), "No Destination Folder Selected")
+        :addContent(nextID(), function()
+                local destinationFolder = mod.getDestinationFolder()
+                if destinationFolder then
+                    return html.div {style="white-space: nowrap; overflow: hidden;"} (
+                        html.p {class="uiItem", style="color:#5760e7; font-weight:bold;"} (destinationFolder)
+                    )
+                else
+                    html.p {class="uiItem", style="color:#d1393e; font-weight:bold;"} "No Destination Folder Selected"
+                end
+            end)
         :addParagraph(nextID(), html.br())
         :addButton(nextID(),
             {
                 width = 200,
                 label = i18n("changeDestinationFolder"),
-                onclick = mod.changeExportDestinationFolder,
+                onclick = mod.changeExportDestinationFolder
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following Destination Preset:")
@@ -1206,9 +1221,7 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationPreset"),
-                onclick = function()
-                    mod.changeExportDestinationPreset():Now()
-                end
+                onclick = mod.changeExportDestinationPreset
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following naming convention:")
@@ -1305,9 +1318,7 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationFolder"),
-                onclick = function()
-                    Do(mod.changeExportDestinationFolder):After(0)
-                end,
+                onclick = mod.changeExportDestinationFolder
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following Destination Preset:")
@@ -1334,9 +1345,7 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeDestinationPreset"),
-                onclick = function()
-                    Do(function() mod.changeExportDestinationPreset():Now() end):After(0)
-                end,
+                onclick = mod.changeExportDestinationPreset
             })
         :addParagraph(nextID(), html.br())
         :addParagraph(nextID(), "Using the following naming convention:")
@@ -1355,9 +1364,7 @@ function plugin.init(deps)
             {
                 width = 200,
                 label = i18n("changeCustomFilename"),
-                onclick = function()
-                    Do(mod.changeCustomFilename):After(0)
-                end,
+                onclick = mod.changeCustomFilename,
             })
         :addHeading(nextID(), "Preferences")
         :addCheckbox(nextID(),
