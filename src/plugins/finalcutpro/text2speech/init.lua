@@ -972,12 +972,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     deps.fcpxCmds:add("cpText2Speech")
         :whenActivated(mod.show)
-        :activatedBy():cmd():option():ctrl("u")
 
     deps.fcpxCmds:add("cpText2SpeechFromPasteboard")
         :whenActivated(mod.insertFromPasteboard)
-        :activatedBy():cmd():option():ctrl():shift("u")
-
 
     return mod
 end

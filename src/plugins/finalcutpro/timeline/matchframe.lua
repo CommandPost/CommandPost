@@ -422,22 +422,18 @@ function plugin.init(deps)
         local cmds = deps.fcpxCmds
         cmds:add("cpRevealMulticamClipInBrowserAndHighlight")
             :groupedBy("timeline")
-            :activatedBy():ctrl():option():cmd("d")
             :whenActivated(function() mod.multicamMatchFrame(true) end)
 
         cmds:add("cpRevealMulticamClipInAngleEditorAndHighlight")
             :groupedBy("timeline")
-            :activatedBy():ctrl():option():cmd("g")
             :whenActivated(function() mod.multicamMatchFrame(false) end)
 
         cmds:add("cpRevealInBrowserAndHighlight")
             :groupedBy("timeline")
-            :activatedBy():ctrl():option():cmd("f")
             :whenActivated(function() mod.matchFrame(false) end)
 
         cmds:add("cpSingleMatchFrameAndHighlight")
             :groupedBy("timeline")
-            :activatedBy():ctrl():option():cmd("s")
             :whenActivated(function() mod.matchFrame(true) end)
     end
 
