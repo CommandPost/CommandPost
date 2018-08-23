@@ -36,7 +36,7 @@
 --- Similarly, you can 'observe' a prop as a `cp.rx.Observer` by calling the `observe` method:
 ---
 --- ```lua
---- propValue:observe():subscribe(function(value) print(tostring(value) end))
+--- propValue:toObservable():subscribe(function(value) print(tostring(value) end))
 --- ```
 ---
 --- These will never emit an `onError` or `onComplete` message, just `onNext` with either `nil` or the current value as it changes.
@@ -106,13 +106,31 @@
 --- To use a `prop` as a method, you need to `attach` it to the owning table, like so:
 ---
 --- ```lua
---- local owner = {
----     _value = true
---- }
+--- local owner = { _value = true }
 --- owner.isMethod = prop(function(self) return self._value end, function(value, self) self._value = value end):bind(owner)
 --- owner:isMethod()                -- success!
 --- owner.isMethod()                -- also works - will still pass in the bound owner.
 --- owner.isMethod:owner() == owner -- is true~
+--- ```
+---
+--- You can also use the [prop.bind](#bind) function to bind multple properties at once:
+---
+--- ```lua
+--- local owner = { _value = true }
+--- prop.bind(o) {
+---     isMethod = prop(function(self) return self._value end)
+--- }
+--- owner:isMethod()                -- success!
+--- ```
+---
+--- The [prop.extend](#extend) function will also bind any `cp.prop` values it finds:
+---
+--- ```lua
+--- local owner = prop.extend({
+---     _value = true,
+---     isMethod = prop(function(self) return self._value end),
+--- })
+--- owner:isMethod()                -- success!
 --- ```
 ---
 --- The bound `owner` is passed in as the last parameter of the `get` and `set` functions.
@@ -768,7 +786,7 @@ function prop.mt:unwatch(watchFn)
     return _unwatch(self._watchers, watchFn)
 end
 
---- cp.prop:observe() -> cp.rx.Observable
+--- cp.prop:toObservable() -> cp.rx.Observable
 --- Method
 --- Returns the `cp.rx.Observable` for the property. This will emit
 --- `onNext()` events with the current value whenever the `cp.prop` is updated.
@@ -783,7 +801,7 @@ end
 --- Notes:
 ---  * It will only emit `onNext` events, never an `onError` or `onCompleted` event.
 ---  * This will trigger an `update` each time it is called.
-function prop.mt:observe()
+function prop.mt:toObservable()
     self:update()
     if not self._observable then
         local rx = require("cp.rx")

@@ -12,13 +12,16 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                           = require("hs.logger").new("popUpButton")
+-- local log                           = require("hs.logger").new("popUpButton")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
+
+local go                            = require("cp.rx.go")
+local If, WaitUntil                 = go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
 --
@@ -76,32 +79,56 @@ function PopUpButton.new(parent, finderFn)
             local ui = original()
             if ui and ui:value() ~= newValue then
                 local items = ui:doPress()[1]
-                for _,item in ipairs(items) do
-                    if item:title() == newValue then
-                        item:doPress()
-                        return
+                if items then
+                    for _,item in ipairs(items) do
+                        if item:title() == newValue then
+                            item:doPress()
+                            return
+                        end
                     end
+                    items:doCancel()
                 end
-                items:doCancel()
             end
         end
     )
+    -- if anyone starts watching, then register with the app notifier.
+    value:preWatch(function()
+        o:app():notifier():watchFor("AXMenuItemSelected", function()
+            value:update()
+        end)
+    end)
+
+    local menuUI = UI:mutate(function(original)
+        local ui = original()
+        return ui and axutils.childWithRole(ui, "AXMenu")
+    end)
+    -- if anyone opens the menu, update the prop watchers
+    menuUI:preWatch(function()
+        o:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
+            menuUI:update()
+        end)
+    end)
 
     return prop.bind(o) {
-        --- cp.ui.PopUpButton.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Provides the `axuielement` for the `PopUpButton`.
+--- cp.ui.PopUpButton.UI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Provides the `axuielement` for the `PopUpButton`.
         UI = UI,
 
-        --- cp.ui.PopUpButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Checks if the `PopUpButton` is visible on screen.
+--- cp.ui.PopUpButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Checks if the `PopUpButton` is visible on screen.
         isShowing = isShowing,
 
-        --- cp.ui.PopUpButton.value <cp.prop: anything>
-        --- Field
-        --- Returns or sets the current `PopUpButton` value.
+--- cp.ui.PopUpButton.value <cp.prop: anything; live>
+--- Field
+--- Returns or sets the current `PopUpButton` value.
         value = value,
+
+--- cp.ui.PopUpButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `AXMenu` for the PopUpMenu if it is currently visible.
+        menuUI = menuUI,
     }
 end
 
@@ -116,6 +143,19 @@ end
 ---  * parent
 function PopUpButton:parent()
     return self._parent
+end
+
+--- cp.ui.PopUpButton:app() -> app
+--- Method
+--- Returns the application object.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * the Application
+function PopUpButton:app()
+    return self:parent():app()
 end
 
 --- cp.ui.PopUpButton:selectItem(index) -> self
@@ -143,6 +183,62 @@ function PopUpButton:selectItem(index)
         end
     end
     return self
+end
+
+--- cp.ui.PopUpButton:doSelectItem(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `PopUpButton` by index.
+---
+--- Parameters:
+---  * index - The index number of the item you want to select.
+---
+--- Returns:
+---  * the `Statement`.
+function PopUpButton:doSelectItem(index)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        local item = menuUI[index]
+        if item then
+            item:doPress()
+            return true
+        else
+            item:doCancel()
+            return false
+        end
+    end)
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Otherwise(false)
+    :Label("PopUpMenu:doSelectItem")
+end
+
+--- cp.ui.PopUpButton:doSelectValue(value) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will select an item on the `PopUpButton` by value.
+---
+--- Parameters:
+---  * value - The value of the item to match.
+---
+--- Returns:
+---  * the `Statement`.
+function PopUpButton:doSelectValue(value)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        for _,item in ipairs(menuUI) do
+            if item:title() == value then
+                item:doPress()
+                return true
+            end
+        end
+        menuUI:doCancel()
+        return false
+    end)
+    :Then(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(5000))
+    :Otherwise(false)
+    :Label("PopUpButton:doSelectValue")
 end
 
 --- cp.ui.PopUpButton:getValue() -> string | nil
@@ -203,6 +299,24 @@ function PopUpButton:press()
     return self
 end
 
+--- cp.ui.PopUpButton:doPress() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that presses the `PopUpButton`.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The [Statement](cp.rx.go.Statement.md)
+function PopUpButton:doPress()
+    return If(self.UI)
+    :Then(function(ui)
+        ui:doPress()
+    end)
+    :ThenYield()
+    :Label("PopUpButton:doPress")
+end
+
 -- cp.ui.PopUpButton:__call() -> boolean
 -- Method
 -- Allows the `PopUpButton` to be called as a function and will return the button value.
@@ -217,6 +331,10 @@ function PopUpButton:__call(parent, value)
         value = parent
     end
     return self:value(value)
+end
+
+function PopUpButton:__tostring()
+    return string.format("cp.ui.PopUpButton: %s", self:value())
 end
 
 --- cp.ui.PopUpButton:saveLayout() -> table

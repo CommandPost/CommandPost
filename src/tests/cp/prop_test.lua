@@ -956,7 +956,7 @@ return test.suite("cp.prop"):with {
         local aProp = prop.THIS("a")
         local observed = nil
 
-        aProp:observe():subscribe(function(value) observed = value end)
+        aProp:toObservable():subscribe(function(value) observed = value end)
 
         ok(eq(observed, "a"))
 

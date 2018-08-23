@@ -14,10 +14,10 @@ local require = require
 --------------------------------------------------------------------------------
 local log                               = require("hs.logger").new("viewer")
 
-
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local canvas					        = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
 -- local inspect                           = require("hs.inspect")
@@ -333,11 +333,46 @@ function Viewer.new(app, eventViewer)
         --- This can be set via `viewer:isPlaying(true|false)`, or toggled via `viewer.isPlaying:toggle()`.
         isPlaying = prop(
             function(self)
-                local snapshot = self:playButton():snapshot()
-                if snapshot then
-                    snapshot:size({h=60,w=60})
-                    local spot = snapshot:colorAt({x=31,y=31})
-                    return spot and spot.blue < 0.5
+                local element = self:playButton():UI()
+                if element then
+                    local window = element:attributeValue("AXWindow")
+
+                    local hsWindow = window:asHSWindow()
+                    local windowSnap = hsWindow:snapshot()
+                    local windowFrame = window:frame()
+                    local shotSize = windowSnap:size()
+
+                    local ratio = shotSize.h/windowFrame.h
+                    local elementFrame = element:frame()
+
+                    local imageFrame = {
+                        x = (windowFrame.x-elementFrame.x)*ratio,
+                        y = (windowFrame.y-elementFrame.y)*ratio,
+                        w = shotSize.w,
+                        h = shotSize.h,
+                    }
+
+                    --------------------------------------------------------------------------------
+                    -- TODO: Replace this hs.canvas using hs.image:croppedCopy(rectangle)
+                    --------------------------------------------------------------------------------
+
+                    local c = canvas.new({w=elementFrame.w*ratio, h=elementFrame.h*ratio})
+                    c[1] = {
+                        type = "image",
+                        image = windowSnap,
+                        imageScaling = "none",
+                        imageAlignment = "topLeft",
+                        frame = imageFrame,
+                    }
+
+                    local elementSnap = c:imageFromCanvas()
+                    c:delete()
+
+                    if elementSnap then
+                        elementSnap:size({h=60,w=60})
+                        local spot = elementSnap:colorAt({x=31,y=31})
+                        return spot and spot.blue < 0.5
+                    end
                 end
                 return false
             end,
@@ -432,10 +467,19 @@ function Viewer.new(app, eventViewer)
     end)
 
     -----------------------------------------------------------------------
+    -- Reduce the amount of AX notifications when a Final Cut Pro window
+    -- is moved or resized:
+    -----------------------------------------------------------------------
+    local frameUpdater
+    frameUpdater = delayedTimer.new(0.001, function()
+        o.frame:update()
+    end)
+
+    -----------------------------------------------------------------------
     -- Watch for the Viewer being resized:
     -----------------------------------------------------------------------
-    app:notifier():watchFor({"AXWindowResized", "AXWindowMoved", "AXValueChanged"}, function()
-        o.frame:update()
+    app:notifier():watchFor({"AXWindowResized", "AXWindowMoved", "AXSelectedChildrenChanged"}, function()
+        frameUpdater:start()
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>

@@ -70,6 +70,8 @@ local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFr
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local section, slider, popUpButton, checkBox = IP.section, IP.slider, IP.popUpButton, IP.checkBox
 
+local If                                = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -343,4 +345,34 @@ function TextInspector:show()
     return self
 end
 
+
+--- cp.apple.finalcutpro.inspector.text.TextInspector:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shows the Text Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function TextInspector:doShow()
+    return If(self.isShowing):IsNot(true)
+    :Then(self:parent():doSelectTab("Text"))
+    :Label("TextInspector:doShow")
+end
+
+--- cp.apple.finalcutpro.inspector.text.TextInspector:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that hides the Text Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` to execute.
+function TextInspector:doHide()
+    return If(self.isShowing)
+    :Then(self:parent():doHide())
+    :Label("TextInspector:doHide")
+end
 return TextInspector

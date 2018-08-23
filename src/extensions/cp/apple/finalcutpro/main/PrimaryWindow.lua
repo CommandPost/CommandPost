@@ -20,11 +20,13 @@ local require = require
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
-local Alert							= require("cp.ui.Alert")
 local Window						= require("cp.ui.Window")
 
 local Inspector						= require("cp.apple.finalcutpro.inspector.Inspector")
 local PrimaryToolbar				= require("cp.apple.finalcutpro.main.PrimaryToolbar")
+
+local Do                            = require("cp.rx.go.Do")
+local If                            = require("cp.rx.go.If")
 
 --------------------------------------------------------------------------------
 --
@@ -280,6 +282,15 @@ function PrimaryWindow:show()
         return self:window():focus()
     end
     return self
+end
+
+function PrimaryWindow:doShow()
+    return Do(self:app():doShow())
+    :Then(
+        If(self.isShowing):Is(false)
+        :Then(self:window():doFocus())
+    )
+    :Label("PrimaryWindow:doShow")
 end
 
 -----------------------------------------------------------------------

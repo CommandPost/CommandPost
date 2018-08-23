@@ -32,6 +32,8 @@ local require = require
 local axutils						= require("cp.ui.axutils")
 local prop							= require("cp.prop")
 
+local If                            = require("cp.rx.go.If")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -88,6 +90,22 @@ function CheckBox.new(parent, finderFn)
         return original() ~= nil and self:parent():isShowing()
     end)
 
+    --- cp.ui.Button.title <cp.prop: string; read-only>
+    --- Field
+    --- The button title, if available.
+    local title   = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:attributeValue("AXTitle")
+    end)
+
+    --- cp.ui.Button.frame <cp.prop: table; read-only>
+    --- Field
+    --- Returns the table containing the `x`, `y`, `w`, and `h` values for the button frame, or `nil` if not available.
+    local frame = UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:frame() or nil
+    end)
+
     --- cp.ui.CheckBox.checked <cp.prop: boolean>
     --- Field
     --- Indicates if the checkbox is currently checked.
@@ -106,7 +124,7 @@ function CheckBox.new(parent, finderFn)
     )
 
     prop.bind(o) {
-        UI = UI, isShowing = isShowing, checked = checked,
+        UI = UI, isShowing = isShowing, checked = checked, title = title, frame = frame,
     }
 
     return o
@@ -168,6 +186,26 @@ function CheckBox:press()
         ui:doPress()
     end
     return self
+end
+
+--- cp.ui.CheckBox:doPress() -> cp.rx.go.Statement
+--- Method
+--- Returns a `Statement` that will press the button when executed, if available at the time.
+--- If not an `error` is sent.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement` which will press the button when executed.
+function CheckBox:doPress()
+    return If(self.UI):Then(function(ui)
+        ui:doPress()
+        return true
+    end)
+    :Otherwise(false)
+    :ThenYield()
+    :Label("CheckBox:doPress")
 end
 
 --- cp.ui.CheckBox:saveLayout() -> table

@@ -28,6 +28,7 @@ local suites = {}
 
 local format = string.format
 local insert, remove = table.insert, table.remove
+local unpack = _G.unpack or table.unpack
 
 local function topSuite()
     return #suites > 0 and suites[#suites] or nil
@@ -75,35 +76,45 @@ local DEFAULT_HANDLER = {
 
 local handler = DEFAULT_HANDLER
 
-local function notequal(a, b)
-    return false, format("%s ~= %s", inspect(a), inspect(b))
+local function notequal(a, b, msg)
+    return false, format("%s%s ~= %s", (msg and msg ..": " or ""), inspect(a), inspect(b))
 end
 
-local function deepeq(a, b)
+local function deepeq(a, b, msg)
     -- Different types: false
-    if type(a) ~= type(b) then return notequal(type(a), type(b)) end
+    if type(a) ~= type(b) then return notequal(type(a), type(b), msg) end
     -- Functions
     if type(a) == 'function' then
-        return string.dump(a) == string.dump(b) or notequal(a, b)
+        return string.dump(a) == string.dump(b) or notequal(a, b, msg)
     end
     -- Primitives and equal pointers
     if a == b then return true end
     -- Only equal tables could have passed previous tests
-    if type(a) ~= 'table' then return notequal(a, b) end
+    if type(a) ~= 'table' then return notequal(a, b, msg) end
     -- Compare tables field by field
     for k,v in pairs(a) do
-        if b[k] == nil or not deepeq(v, b[k]) then return notequal(a, b) end
+        if b[k] == nil or not deepeq(v, b[k]) then
+            -- check for special `n` key for table length
+            if k ~= "n" or b.n ~= nil or a.n ~= #b then
+                return notequal(a, b, msg)
+            end
+        end
     end
     for k,v in pairs(b) do
-        if a[k] == nil or not deepeq(v, a[k]) then return notequal(a, b) end
+        if a[k] == nil or not deepeq(v, a[k]) then
+            -- check for special `n` key for table length
+            if k ~= "n" or a.n ~= nil or b.n ~= #a then
+                return notequal(a, b, msg)
+            end
+        end
     end
     return true
 end
 
-local function deepneq(a, b)
+local function deepneq(a, b, msg)
     local ok, _ = deepeq(a, b)
     if ok then
-        return false, format("%s == %s", inspect(a), inspect(b))
+        return false, format("%s%s == %s", (msg and msg ..": " or ""), inspect(a), inspect(b))
     else
         return true
     end
@@ -122,12 +133,12 @@ local function spy(f)
         table.insert(ss.called, {...})
         if f then
             local r
-            r = args(xpcall(function() f((unpack or table.unpack)(a, 1, a.n)) end, debug.traceback)) -- luacheck: ignore
+            r = args(xpcall(function() f(unpack(a, 1, a.n)) end, debug.traceback))
             if not r[1] then
                 s.errors = s.errors or {}
                 s.errors[#s.called] = r[2]
             else
-                return (unpack or table.unpack)(r, 2, r.n) -- luacheck: ignore
+                return unpack(r, 2, r.n)
             end
         end
     end})
@@ -147,6 +158,18 @@ test.suite.mt.__index = test.suite.mt
 
 test.result.mt = {}
 test.result.mt.__index = test.result.mt
+
+test.okDepth = 1
+
+function test.incOkDepth(amount)
+    amount = amount or 1
+    test.okDepth = test.okDepth + amount
+end
+
+function test.decOkDepth(amount)
+    amount = amount or 1
+    test.okDepth = test.okDepth - amount
+end
 
 function test.result.new()
     local o = {
@@ -188,7 +211,6 @@ local function newCase(name, executeFn)
     end
 
     local o = {
-        --parent		= parent, -- TODO: David, I'm not sure why this is here?
         name		= name,
         executeFn	= executeFn,
     }
@@ -229,7 +251,8 @@ function test.case.mt:run()
                 msg = msg .. (msg:len() > 0 and " " or "") .. tostring(m)
             end
         end
-        msg = "["..debug.getinfo(2, 'S').short_src..":"..debug.getinfo(2, 'l').currentline.."] " .. msg
+        local depth = 1 + test.okDepth
+        msg = "["..debug.getinfo(depth, 'S').short_src..":"..debug.getinfo(depth, 'l').currentline.."] " .. msg
         if cond then
             if handler.pass then
                 handler.pass(self, msg)

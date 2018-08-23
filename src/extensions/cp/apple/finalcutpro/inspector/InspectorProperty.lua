@@ -34,6 +34,8 @@ local PropertyRow           = require("cp.ui.PropertyRow")
 local StaticText            = require("cp.ui.StaticText")
 local TextField             = require("cp.ui.TextField")
 
+local Do                    = require("cp.rx.go.Do")
+
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
@@ -91,6 +93,23 @@ local function propHide(self)
     return self
 end
 
+local function propDoShow(self)
+    return Do(self:parent():doShow())
+    :Then(function()
+        self.section:expanded(true)
+    end)
+    :ThenYield()
+    :Label("PropertyRow:doShow")
+end
+
+local function propDoHide(self)
+    return Do(function()
+        self.section:expanded(false)
+    end)
+    :ThenYield()
+    :Label("ProeprtyRow:doHide")
+end
+
 --- cp.apple.finalcutpro.inspector.InspectorProperty.section(labelKey[, index]) -> function
 --- Function
 --- Returns a 'section row' factory function that can be called to create a section row that contains other `PropertyRow' `cp.prop`s.
@@ -137,15 +156,15 @@ function mod.section(labelKey, index)
                     local frame = rowUI:frame()
                     local rowPos = frame.y + frame.h
                     return childrenMatching(propsUI, function(child)
-                        local childFrame = child:frame()
-                        return childFrame.y >= rowPos
+                        local childFrame = child:attributeValue("AXFrame")
+                        return childFrame ~= nil and childFrame.y >= rowPos
                     end)
                 end
                 return nil
             end))
 
             row.enabled     = CheckBox.new(row, function() return childFromLeft(row:children(), 1) end)
-            row.toggle      = Button.new(row, function() return childFromRight(row:children(), 2) end)
+            row.toggle      = CheckBox.new(row, function() return childFromRight(row:children(), 2) end)
             row.reset       = Button.new(row, function() return childFromRight(row:children(), 1) end)
             row.expanded    = prop(
                 function(theRow)
@@ -155,19 +174,21 @@ function mod.section(labelKey, index)
                 function(newValue, theRow, theProp)
                     local currentValue = theProp:get()
                     if newValue ~= currentValue then
-                        theRow.toggle()
+                        theRow.toggle:press()
                     end
                 end
             ):bind(row)
 
             if subProps then
                 prop.bind(row)(subProps)
-                -- hijack the 'show' function
+                -- hijack the 'show/hide' functions
                 for _,p in pairs(subProps) do
                     local subRow = p()
                     subRow.section = row
                     subRow.show = propShow
                     subRow.hide = propHide
+                    subRow.doShow = propDoShow
+                    subRow.doHide = propDoHide
                 end
             end
 
@@ -345,6 +366,15 @@ end
 function mod.popUpButton(labelKey, index)
     return mod.simple(labelKey, function(row)
         row.value = PopUpButton.new(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
+
+        function row:doSelectValue(value)
+            return Do(self:doShow())
+            :Then(self.value:doSelectValue(value))
+        end
+        -- returns the PopUpButton.value prop as the observable
+        function row:toObservable()
+            return self.value.value:toObservable()
+        end
     end, index)
 end
 

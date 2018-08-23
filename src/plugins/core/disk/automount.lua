@@ -56,15 +56,32 @@ function mod.mountPhysicalDrives()
     disk.mount({ejectable = true, physical = true})
 end
 
+-- update(enabled) -> none
+-- Function
+-- Enables or disabled the battery watcher.
+--
+-- Parameters:
+--  * enabled - `true` if enabled otherwise `false`
+--
+-- Returns:
+--  * None
+local function update(enabled)
+    if enabled then
+        battery.start()
+    else
+        battery.stop()
+    end
+end
+
 --- plugins.core.disk.automount.autoUnmountOnBattery <cp.prop: boolean>
 --- Variable
 --- Automatically Unmount on disconnection from battery.
-mod.autoUnmountOnBattery = config.prop("autoUnmountOnBattery", false)
+mod.autoUnmountOnBattery = config.prop("autoUnmountOnBattery", false):watch(update)
 
 --- plugins.core.disk.automount.autoMountOnAC <cp.prop: boolean>
 --- Variable
 --- Automatically mount on connection to mains power.
-mod.autoMountOnAC = config.prop("autoMountOnAC", false)
+mod.autoMountOnAC = config.prop("autoMountOnAC", false):watch(update)
 
 --------------------------------------------------------------------------------
 --
@@ -87,6 +104,12 @@ function plugin.init(deps)
 
     local global, prefs = deps.global, deps.prefs
     local hasBattery = battery.powerSource()
+
+    --------------------------------------------------------------------------------
+    -- Force update of props:
+    --------------------------------------------------------------------------------
+    mod.autoMountOnAC:update()
+    mod.autoUnmountOnBattery:update()
 
     --------------------------------------------------------------------------------
     -- Watch for power source changes:
