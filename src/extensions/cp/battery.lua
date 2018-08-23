@@ -12,6 +12,9 @@
 ---
 --- This will `print` "Now using AC Power" or "Now using Battery Power" whenever the
 --- power supply changes.
+---
+--- By default the watcher initialises in a "stopped" state, and must be started for
+--- the `cp.prop` watchers to trigger.
 
 --- cp.battery.amperage <cp.prop: number; read-only>
 --- Constant
@@ -151,7 +154,11 @@ local EXCLUDED = {
 --------------------------------------------------------------------------------
 local mod = {}
 
-local watcher = battery.watcher.new(function()
+
+--- cp.battery._watcher -> hs.battery.watcher object
+--- Variable
+--- The battery watcher.
+mod._watcher = battery.watcher.new(function()
     for key,value in pairs(mod) do
         if prop.is(value) then
             local ok, result = xpcall(function() value:update() end, debug.traceback)
@@ -162,15 +169,45 @@ local watcher = battery.watcher.new(function()
     end
 end)
 
-local function startWatching()
-    watcher:start()
+--- cp.battery.start() -> none
+--- Function
+--- Starts the battery watcher.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.start()
+    mod._watcher:start()
 end
 
+--- cp.battery.stop() -> none
+--- Function
+--- Stops the battery watcher.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function mod.stop()
+    mod._watcher:stop()
+end
+
+-- init() -> none
+-- Function
+-- Initialise the module.
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * The module
 local function init()
     for key,value in pairs(battery) do
         if EXCLUDED[key] ~= true and type(value) == "function" then
-            mod[key] = prop(value):label(key)
-            mod[key]:preWatch(startWatching)
+            mod[key] = prop(value):label(string.format("cp.battery: %s", key))
         end
     end
     return mod
