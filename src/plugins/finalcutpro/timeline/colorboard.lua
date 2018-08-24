@@ -181,7 +181,6 @@ function plugin.init(deps)
         fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
             :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :activatedBy():ctrl():option():cmd(puck.shortcut)
             :whenActivated(function() puck.fn( colorBoard:current() ):select() end)
 
         fcpxCmds:add("cpPuck" .. iWord .. "Mouse")

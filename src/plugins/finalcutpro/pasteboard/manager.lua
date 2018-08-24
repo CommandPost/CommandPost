@@ -29,13 +29,14 @@ local base64                                    = require("hs.base64")
 local config                                    = require("cp.config")
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
+local i18n                                      = require("cp.i18n")
 local json                                      = require("cp.json")
+local just                                      = require("cp.just")
 local plist                                     = require("cp.plist")
 local prop                                      = require("cp.prop")
 local protect                                   = require("cp.protect")
-local tools                                     = require("cp.tools")
-local i18n                                      = require("cp.i18n")
 local Set                                       = require("cp.collect.Set")
+local tools                                     = require("cp.tools")
 
 local Do                                        = require("cp.rx.go.Do")
 local Throw                                     = require("cp.rx.go.Throw")
@@ -532,7 +533,16 @@ end)
 --- Contains the Pasteboard Buffer.
 mod.buffer = json.prop(config.userConfigRootPath, "Pasteboard Buffer", "Pasteboard Buffer.cpPasteboard", {})
 
--- Waits for up to 10 seconds for new data to copy to the clipboard. If none is found, an error is sent.
+--- plugins.finalcutpro.pasteboard.manager.doWaitForFreshData(oldData) -> cp.rx.go.Statement
+--- Function
+--- A [Statement](cp.rx.go.Statement.md) which waits for up to 10 seconds for new data to copy
+--- to the clipboard. If none is found, an error is sent.
+---
+--- Parameters:
+---  * oldData - The original Pasteboard data.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md)
 function mod.doWaitForFreshData(oldData)
     return Retry(function()
         local d = mod.readFCPXData()
@@ -544,6 +554,15 @@ function mod.doWaitForFreshData(oldData)
     end):DelayedBy(100):UpTo(100)
 end
 
+--- plugins.finalcutpro.pasteboard.manager.doSaveToBuffer(id) -> cp.rx.go.Statement
+--- Function
+--- A [Statement](cp.rx.go.Statement.md) which saves a Pasteboard item to the buffer.
+---
+--- Parameters:
+---  * id - The ID of the buffer item.
+---
+--- Returns:
+---  * A [Statement](cp.rx.go.Statement.md)
 function mod.doSaveToBuffer(id)
     local menuBar = fcp:menu()
 
@@ -585,15 +604,15 @@ function mod.doSaveToBuffer(id)
     end)
 end
 
--- plugins.finalcutpro.pasteboard.manager.doDecodeBuffer(id) -> cp.rx.go.Statement
--- Function
--- A [Statement](cp.rx.go.Statement.md) which decodes the buffer with the specified ID.
---
--- Parameters:
--- * id        - The ID to decode
---
--- Returns:
--- * A [Statement](cp.rx.go.Statement.md) that sends the decoded buffer, or throws an error if not available.
+--- plugins.finalcutpro.pasteboard.manager.doDecodeBuffer(id) -> cp.rx.go.Statement
+--- Function
+--- A [Statement](cp.rx.go.Statement.md) which decodes the buffer with the specified ID.
+---
+--- Parameters:
+--- * id        - The ID to decode
+---
+--- Returns:
+--- * A [Statement](cp.rx.go.Statement.md) that sends the decoded buffer, or throws an error if not available.
 function mod.doDecodeBuffer(id)
     return Do(function()
         local buffer = mod.buffer()
@@ -646,6 +665,59 @@ function mod.doRestoreFromBuffer(id)
     end)
 end
 
+--- plugins.finalcutpro.pasteboard.manager.saveToBuffer(id) -> none
+--- Function
+--- Save a Pasteboard item to the buffer.
+---
+--- Parameters:
+---  * id - The ID of the buffer item.
+---
+--- Returns:
+---  * None
+function mod.saveToBuffer(id)
+    local menuBar = fcp:menu()
+    if menuBar:isEnabled({"Edit", "Copy"}) then
+         local wasWatching = mod.watching()
+         if wasWatching then
+             mod.stopWatching()
+         end
+
+         local data
+         local originalContents = mod.readFCPXData()
+
+         local result = menuBar:selectMenu({"Edit", "Copy"})
+         if result then
+             data = just.doUntil(function()
+                 local d = mod.readFCPXData()
+                 return d and d ~= originalContents and d
+             end)
+         else
+             tools.playErrorSound()
+         end
+
+         if data then
+             local buffer = mod.buffer()
+             buffer[id] = base64.encode(data)
+             mod.buffer(buffer)
+             dialog.displayNotification(i18n("savedToPasteboardBuffer", {id=tostring(id)}))
+         else
+             tools.playErrorSound()
+         end
+
+         timer.doAfter(mod.RESTART_DELAY, function()
+             if originalContents then
+                 mod.writeFCPXData(originalContents)
+             end
+             if wasWatching then
+                 mod.startWatching()
+             end
+         end)
+
+        else
+         tools.playErrorSound()
+    end
+ end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -680,7 +752,7 @@ function plugin.init(deps)
         for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
             deps.fcpxCmds:add("saveToPasteboardBuffer" .. tostring(id))
                 :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(function() mod.doSaveToBuffer(id):Now() end)
+                :whenActivated(function() mod.saveToBuffer(id) end)
 
             deps.fcpxCmds:add("restoreFromPasteboardBuffer" .. tostring(id))
                 :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))

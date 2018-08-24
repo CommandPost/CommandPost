@@ -110,7 +110,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     deps.fcpxCmds:add("cpChangeBackupInterval")
         :groupedBy("hacks")
-        :activatedBy():ctrl():option():cmd("b")
         :whenActivated(mod.set)
 
     return mod
