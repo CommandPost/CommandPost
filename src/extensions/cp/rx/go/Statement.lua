@@ -133,20 +133,18 @@ Statement.mt.__index = Statement.mt
 --- Returns:
 ---  * The `Observable`.
 function Statement.toObservable(thing, params)
-    if type(thing) == "function" then
-        -- log.df("toObservable: function")
-        local results = pack(thing(unpack(params or {})))
-        if #results > 1 then
-            -- log.df("toObservable: function: multiple results, zipping...")
-            return Observable.zip(unpack(Statement.toObservables(results)))
-        else
-            -- log.df("toObservable: function: single result: %s", type(results[1]))
-            return Statement.toObservable(results[1])
-        end
-    end
-
     local obs
-    if Observable.is(thing) then
+    if type(thing) == "function" then
+        obs = Observable.defer(function()
+            local results = pack(thing(unpack(params or {})))
+            if #results > 1 then
+                return Observable.zip(unpack(Statement.toObservables(results)))
+            else
+                -- log.df("toObservable: function: single result: %s", type(results[1]))
+                return Statement.toObservable(results[1])
+            end
+        end)
+    elseif Observable.is(thing) then
         obs = thing
     elseif Statement.is(thing) then
         obs = thing:toObservable()

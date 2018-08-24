@@ -1,4 +1,4 @@
-local log           = require("hs.logger").new("If_test")
+-- local log           = require("hs.logger").new("If_test")
 
 local test          = require("cp.test")
 
@@ -279,11 +279,9 @@ return test.suite("cp.rx.go.If"):with {
         local completed = false
 
         If(check):Then(function()
-            log.df("returning 1")
             return 1
         end)
         :Otherwise(function()
-            log.df("returning 2")
             return 2
         end)
         :Now(
