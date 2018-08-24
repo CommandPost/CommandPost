@@ -14,6 +14,7 @@ return test.suite("cp.rx.go"):with {
     require("cp.rx.go.Given_test"),
     require("cp.rx.go.If_test"),
     require("cp.rx.go.Last_test"),
+    require("cp.rx.go.Retry_test"),
     require("cp.rx.go.Throw_test"),
     require("cp.rx.go.WaitUntil_test"),
 

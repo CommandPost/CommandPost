@@ -2114,7 +2114,7 @@ function Observable:retry(count)
       if active then
         cancelRef()
         retries = retries + 1
-        if count and retries > count then
+        if count and retries == count then
           active = false
           observer:onError(message)
         else
@@ -2177,7 +2177,7 @@ function Observable:retryWithDelay(count, delay, scheduler)
       if active then
         cancelRef()
         retries = retries + 1
-        if count and retries > count then
+        if count and retries == count then
           done()
           observer:onError(message)
         else

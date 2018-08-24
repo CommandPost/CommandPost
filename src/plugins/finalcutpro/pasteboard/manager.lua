@@ -31,7 +31,6 @@ local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
 local json                                      = require("cp.json")
-local just                                      = require("cp.just")
 local plist                                     = require("cp.plist")
 local prop                                      = require("cp.prop")
 local protect                                   = require("cp.protect")
@@ -665,59 +664,6 @@ function mod.doRestoreFromBuffer(id)
     end)
 end
 
---- plugins.finalcutpro.pasteboard.manager.saveToBuffer(id) -> none
---- Function
---- Save a Pasteboard item to the buffer.
----
---- Parameters:
----  * id - The ID of the buffer item.
----
---- Returns:
----  * None
-function mod.saveToBuffer(id)
-    local menuBar = fcp:menu()
-    if menuBar:isEnabled({"Edit", "Copy"}) then
-         local wasWatching = mod.watching()
-         if wasWatching then
-             mod.stopWatching()
-         end
-
-         local data
-         local originalContents = mod.readFCPXData()
-
-         local result = menuBar:selectMenu({"Edit", "Copy"})
-         if result then
-             data = just.doUntil(function()
-                 local d = mod.readFCPXData()
-                 return d and d ~= originalContents and d
-             end)
-         else
-             tools.playErrorSound()
-         end
-
-         if data then
-             local buffer = mod.buffer()
-             buffer[id] = base64.encode(data)
-             mod.buffer(buffer)
-             dialog.displayNotification(i18n("savedToPasteboardBuffer", {id=tostring(id)}))
-         else
-             tools.playErrorSound()
-         end
-
-         timer.doAfter(mod.RESTART_DELAY, function()
-             if originalContents then
-                 mod.writeFCPXData(originalContents)
-             end
-             if wasWatching then
-                 mod.startWatching()
-             end
-         end)
-
-        else
-         tools.playErrorSound()
-    end
- end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -752,11 +698,11 @@ function plugin.init(deps)
         for id=1, mod.NUMBER_OF_PASTEBOARD_BUFFERS do
             deps.fcpxCmds:add("saveToPasteboardBuffer" .. tostring(id))
                 :titled(i18n("copyToFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(function() mod.saveToBuffer(id) end)
+                :whenActivated(mod.doSaveToBuffer(id))
 
             deps.fcpxCmds:add("restoreFromPasteboardBuffer" .. tostring(id))
                 :titled(i18n("pasteFromFinalCutProPasteboardBuffer", {id=tostring(id)}))
-                :whenActivated(function() mod.doRestoreFromBuffer(id):Now() end)
+                :whenActivated(mod.doRestoreFromBuffer(id))
 
         end
     end

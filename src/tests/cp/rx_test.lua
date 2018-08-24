@@ -7,4 +7,5 @@ return test.suite("cp.rx")
     require "cp.rx.AsyncSubject_test",
     require "cp.rx.BehaviorSubject_test",
     require "cp.rx.ReplaySubject_test",
+    require "cp.rx.go_test",
 }
