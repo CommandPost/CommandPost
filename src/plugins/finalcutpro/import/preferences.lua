@@ -186,12 +186,12 @@ mod.leaveInPlace = fcp.preferences:prop(COPY_TO_MEDIA_FOLDER, true):mutate(
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-    function(original) return original() end,
+    function(original) return not original() end,
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
     function(newValue, original)
-        local currentValue = original()
+        local currentValue = not original()
         if newValue ~= currentValue then
             if fcp:isRunning() then
                 --------------------------------------------------------------------------------
