@@ -26,15 +26,16 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local just                              = require("cp.just")
-local prop                              = require("cp.prop")
-local flicks                            = require("cp.time.flicks")
-local tools                             = require("cp.tools")
 local axutils                           = require("cp.ui.axutils")
-local notifier                          = require("cp.ui.notifier")
 local Button                            = require("cp.ui.Button")
+local deferred                          = require("cp.deferred")
+local flicks                            = require("cp.time.flicks")
+local just                              = require("cp.just")
 local MenuButton                        = require("cp.ui.MenuButton")
+local notifier                          = require("cp.ui.notifier")
+local prop                              = require("cp.prop")
 local StaticText                        = require("cp.ui.StaticText")
+local tools                             = require("cp.tools")
 
 local PrimaryWindow                     = require("cp.apple.finalcutpro.main.PrimaryWindow")
 local SecondaryWindow                   = require("cp.apple.finalcutpro.main.SecondaryWindow")
@@ -471,7 +472,7 @@ function Viewer.new(app, eventViewer)
     -- is moved or resized:
     -----------------------------------------------------------------------
     local frameUpdater
-    frameUpdater = delayedTimer.new(0.001, function()
+    frameUpdater = deferred.new(0.001):action(function()
         o.frame:update()
     end)
 
@@ -479,7 +480,7 @@ function Viewer.new(app, eventViewer)
     -- Watch for the Viewer being resized:
     -----------------------------------------------------------------------
     app:notifier():watchFor({"AXWindowResized", "AXWindowMoved", "AXSelectedChildrenChanged"}, function()
-        frameUpdater:start()
+        frameUpdater:run()
     end)
 
     --- cp.apple.finalcutpro.main.Viewer.formatUI <cp.prop: hs._asm.axuielement; read-only>
