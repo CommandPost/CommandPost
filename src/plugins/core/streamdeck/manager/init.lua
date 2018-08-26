@@ -508,7 +508,6 @@ end
 ---  * None
 function mod.start()
     if #application.applicationsForBundleID("com.elgato.StreamDeck") == 0 then
-        log.df("Starting Stream Deck Support...")
         mod._streamDeck = {}
         mod._appWatcher = application.watcher.new(mod.appWatcherCallback):start()
         streamdeck.init(mod.discoveryCallback)
@@ -530,7 +529,6 @@ end
 --- Returns:
 ---  * None
 function mod.stop()
-    log.df("Stopping Stream Deck Support...")
     if mod._streamDeck then
         for i, _ in pairs(mod._streamDeck) do
             mod._streamDeck[i] = nil
