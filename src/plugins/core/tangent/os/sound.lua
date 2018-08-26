@@ -18,8 +18,15 @@ local audiowatcher          = require("hs.audiodevice.watcher")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop                  = require("cp.prop")
+local dialog                = require("cp.dialog")
 local i18n                  = require("cp.i18n")
+local prop                  = require("cp.prop")
+local tools                 = require("cp.tools")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local format                = string.format
 
 --------------------------------------------------------------------------------
 --
@@ -40,16 +47,18 @@ end)
 --- Tangent Sound Group.
 mod.group = nil
 
---- plugins.core.tangent.os.sound.init() -> none
+--- plugins.core.tangent.os.sound.init() -> self
 --- Function
 --- Initialise the module.
 ---
 --- Parameters:
----  * osGroup - The Tangent Sound Group.
+---  * deps - Dependancies
 ---
 --- Returns:
----  * None
-function mod.init(osGroup)
+---  * Self
+function mod.init(deps)
+    local osGroup = deps.osGroup
+
     local soundGroup = osGroup:group(i18n("sound"))
     mod.group = soundGroup
 
@@ -79,6 +88,12 @@ function mod.init(osGroup)
                 local volume = output:outputVolume()
                 if volume ~= nil then
                     output:setOutputVolume(volume + increment)
+                    local outputVolume = output:outputVolume()
+                    if outputVolume and outputVolume ~= mod._lastOutputVolume then
+                        mod._lastOutputVolume = outputVolume
+                        outputVolume = tools.round(outputVolume)
+                        dialog.displayNotification(format(i18n("volume") .. ": %s", outputVolume))
+                    end
                 end
             end
         end)
@@ -126,6 +141,8 @@ function mod.init(osGroup)
     if not audiowatcher.isRunning() then
         audiowatcher.start()
     end
+
+    return mod
 end
 
 --------------------------------------------------------------------------------
@@ -145,8 +162,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    mod.init(deps.osGroup)
-    return mod
+    return mod.init(deps)
 end
 
 return plugin
