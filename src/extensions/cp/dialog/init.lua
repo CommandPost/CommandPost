@@ -30,8 +30,9 @@ local window                                    = require("hs.window")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config                                    = require("cp.config")
 local app                                       = require("cp.app")
+local config                                    = require("cp.config")
+local Do                                        = require("cp.rx.go.Do")
 local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
@@ -424,8 +425,10 @@ end
 --- Notes:
 ---  * Any existing alerts will be removed to make way for the new one.
 function dialog.displayNotification(whatMessage)
-    alert.closeAll(0)
-    alert.show(whatMessage, { textStyle = { paragraphStyle = { alignment = "center" } } })
+    Do(function()
+        alert.closeAll(0)
+        alert.show(whatMessage, { textStyle = { paragraphStyle = { alignment = "center" } } })
+    end):After(0)
 end
 
 return dialog
