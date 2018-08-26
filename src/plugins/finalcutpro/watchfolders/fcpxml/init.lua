@@ -10,6 +10,11 @@
 local require = require
 
 --------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log				= require("hs.logger").new("fcpxml")
+
+--------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local eventtap          = require("hs.eventtap")
@@ -25,11 +30,12 @@ local uuid              = require("hs.host").uuid
 --------------------------------------------------------------------------------
 local config            = require("cp.config")
 local dialog            = require("cp.dialog")
+local Do                = require("cp.rx.go.Do")
 local fcp               = require("cp.apple.finalcutpro")
-local tools             = require("cp.tools")
 local html              = require("cp.web.html")
-local ui                = require("cp.web.ui")
 local i18n              = require("cp.i18n")
+local tools             = require("cp.tools")
+local ui                = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -457,81 +463,79 @@ function mod.watchFolderTriggered(files, eventFlags)
     local autoFiles = {}
     if not mod.disableImport then
         for i,file in pairs(files) do
-
             --------------------------------------------------------------------------------
-            -- File deleted or removed from Watch Folder:
+            -- Ignore some events:
             --------------------------------------------------------------------------------
-            if eventFlags[i] and eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] and not tools.doesFileExist(file) then
-                --log.df("File deleted or moved outside of watch folder!")
-                if mod.notifications[file] then
-                    mod.notifications[file]:withdraw()
-                    mod.notifications[file] = nil
-                    local savedNotifications = mod.savedNotifications()
-                    savedNotifications[file] = nil
-                    mod.savedNotifications(savedNotifications)
-                end
-            else
+            local skipEvent = false
+            if eventFlags[i]["itemIsFile"] and
+            not eventFlags[i]["itemModified"] and
+            not eventFlags[i]["itemRenamed"] and
+            not eventFlags[i]["itemChangeOwner"] then
+                skipEvent = true
+            end
 
+            if not skipEvent then
                 --------------------------------------------------------------------------------
-                -- New File Added to Watch Folder:
+                -- File deleted or removed from Watch Folder:
                 --------------------------------------------------------------------------------
-                --local newFile = false
-                --if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemModified"] then
-                    --log.df("New File Added: %s", file)
-                    --newFile = true
-                --end
-
-                --------------------------------------------------------------------------------
-                -- New File Added to Watch Folder, but still in transit:
-                --------------------------------------------------------------------------------
-                if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
-
-                    -------------------------------------------------------------------------------
-                    -- Add filename to table:
-                    -------------------------------------------------------------------------------
-                    mod.filesInTransit[#mod.filesInTransit + 1] = file
-
-                    -------------------------------------------------------------------------------
-                    -- Show Temporary Notification:
-                    --------------------------------------------------------------------------------
-                    mod.notifications[file] = notify.new()
-                        :title(i18n("incomingFile"))
-                        :subTitle(tools.getFilenameFromPath(file))
-                        :hasActionButton(false)
-                        :withdrawAfter(0)
-                        :send()
-
-                end
-
-                --------------------------------------------------------------------------------
-                -- New File Added to Watch Folder after copying:
-                --------------------------------------------------------------------------------
-                if eventFlags[i]["itemModified"] and eventFlags[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
-                    tools.removeFromTable(mod.filesInTransit, file)
+                if eventFlags[i] and eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] and not tools.doesFileExist(file) then
                     if mod.notifications[file] then
                         mod.notifications[file]:withdraw()
                         mod.notifications[file] = nil
+                        local savedNotifications = mod.savedNotifications()
+                        savedNotifications[file] = nil
+                        mod.savedNotifications(savedNotifications)
                     end
-                    --newFile = true
-                end
+                else
+                    --------------------------------------------------------------------------------
+                    -- New File Added to Watch Folder, but still in transit:
+                    --------------------------------------------------------------------------------
+                    if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
 
-                --------------------------------------------------------------------------------
-                -- New File Moved into Watch Folder:
-                --------------------------------------------------------------------------------
-                --local movedFile = false
-                --if eventFlags[i]["itemRenamed"] and eventFlags[i]["itemIsFile"] then
-                    --log.df("File Moved or Renamed: %s", file)
-                    --movedFile = true
-                --end
+                        -------------------------------------------------------------------------------
+                        -- Add filename to table:
+                        -------------------------------------------------------------------------------
+                        mod.filesInTransit[#mod.filesInTransit + 1] = file
 
-                --------------------------------------------------------------------------------
-                -- Check Extensions:
-                --------------------------------------------------------------------------------
-                if string.lower(file:sub(-7)) == ".fcpxml" and tools.doesFileExist(file) then
-                    if mod.automaticallyImport() then
-                        autoFiles[#autoFiles + 1] = file
-                    else
-                        mod.createNotification(file)
+                        -------------------------------------------------------------------------------
+                        -- Show Temporary Notification:
+                        --------------------------------------------------------------------------------
+                        mod.notifications[file] = notify.new()
+                            :title(i18n("incomingFile"))
+                            :subTitle(tools.getFilenameFromPath(file))
+                            :hasActionButton(false)
+                            :withdrawAfter(0)
+                            :send()
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- New File Added to Watch Folder after copying:
+                    --------------------------------------------------------------------------------
+                    if eventFlags[i]["itemModified"] and eventFlags[i]["itemIsFile"] and fnutils.contains(mod.filesInTransit, file) then
+                        tools.removeFromTable(mod.filesInTransit, file)
+                        if mod.notifications[file] then
+                            mod.notifications[file]:withdraw()
+                            mod.notifications[file] = nil
+                        end
+                    end
+
+                    if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemChangeOwner"] and fnutils.contains(mod.filesInTransit, file) then
+                        tools.removeFromTable(mod.filesInTransit, file)
+                        if mod.notifications[file] then
+                            mod.notifications[file]:withdraw()
+                            mod.notifications[file] = nil
+                        end
+                    end
+
+                    --------------------------------------------------------------------------------
+                    -- Check Extensions:
+                    --------------------------------------------------------------------------------
+                    if string.lower(file:sub(-7)) == ".fcpxml" and tools.doesFileExist(file) then
+                        if mod.automaticallyImport() then
+                            autoFiles[#autoFiles + 1] = file
+                        else
+                            mod.createNotification(file)
+                        end
                     end
                 end
             end
@@ -540,8 +544,6 @@ function mod.watchFolderTriggered(files, eventFlags)
     if mod.automaticallyImport() and next(autoFiles) ~= nil then
         mod.insertFilesIntoFinalCutPro(autoFiles)
     end
-
-
 end
 
 --- plugins.finalcutpro.watchfolders.fcpxml.newWatcher(path) -> none
@@ -581,33 +583,35 @@ end
 --- Returns:
 ---  * None
 function mod.addWatchFolder()
-    local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
-    if path then
+    Do(function()
+        local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
+        if path then
 
-        local watchFolders = mod.watchFolders()
+            local watchFolders = mod.watchFolders()
 
-        if tools.tableContains(watchFolders, path) then
-            dialog.displayMessage(i18n("alreadyWatched"))
-        else
-            watchFolders[#watchFolders + 1] = path
+            if tools.tableContains(watchFolders, path) then
+                dialog.displayMessage(i18n("alreadyWatched"))
+            else
+                watchFolders[#watchFolders + 1] = path
+            end
+
+            --------------------------------------------------------------------------------
+            -- Update Settings:
+            --------------------------------------------------------------------------------
+            mod.watchFolders(watchFolders)
+
+            --------------------------------------------------------------------------------
+            -- Refresh HTML Table:
+            --------------------------------------------------------------------------------
+            mod.refreshTable()
+
+            --------------------------------------------------------------------------------
+            -- Setup New Watcher:
+            --------------------------------------------------------------------------------
+            mod.newWatcher(path)
+
         end
-
-        --------------------------------------------------------------------------------
-        -- Update Settings:
-        --------------------------------------------------------------------------------
-        mod.watchFolders(watchFolders)
-
-        --------------------------------------------------------------------------------
-        -- Refresh HTML Table:
-        --------------------------------------------------------------------------------
-        mod.refreshTable()
-
-        --------------------------------------------------------------------------------
-        -- Setup New Watcher:
-        --------------------------------------------------------------------------------
-        mod.newWatcher(path)
-
-    end
+    end):After(0)
 end
 
 -- getFileFromTag(tag) -> string
