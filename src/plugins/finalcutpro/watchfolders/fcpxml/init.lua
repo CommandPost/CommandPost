@@ -490,7 +490,7 @@ function mod.watchFolderTriggered(files, eventFlags)
                     --------------------------------------------------------------------------------
                     -- New File Added to Watch Folder, but still in transit:
                     --------------------------------------------------------------------------------
-                    if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
+                    if string.lower(file:sub(-7)) == ".fcpxml" and eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and not eventFlags[i]["itemModified"] then
 
                         -------------------------------------------------------------------------------
                         -- Add filename to table:
@@ -518,7 +518,6 @@ function mod.watchFolderTriggered(files, eventFlags)
                             mod.notifications[file] = nil
                         end
                     end
-
                     if eventFlags[i]["itemCreated"] and eventFlags[i]["itemIsFile"] and eventFlags[i]["itemChangeOwner"] and fnutils.contains(mod.filesInTransit, file) then
                         tools.removeFromTable(mod.filesInTransit, file)
                         if mod.notifications[file] then
