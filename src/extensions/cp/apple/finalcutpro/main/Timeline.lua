@@ -228,7 +228,7 @@ end
 function Timeline:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:doShowOnPrimary())
-    :Otherwise(false)
+    :Otherwise(true)
     :Label("Timeline:doShow")
 end
 

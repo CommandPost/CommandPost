@@ -188,7 +188,7 @@ fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS	= Set("bmp", "gif", "jpeg", "jpg", "png", "p
 --- cp.apple.finalcutpro.ALLOWED_IMPORT_EXTENSIONS -> table
 --- Constant
 --- Table of all file extensions Final Cut Pro can import.
-fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = Set.union(fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS, fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS, fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS)
+fcp.ALLOWED_IMPORT_ALL_EXTENSIONS = fcp.ALLOWED_IMPORT_VIDEO_EXTENSIONS + fcp.ALLOWED_IMPORT_AUDIO_EXTENSIONS + fcp.ALLOWED_IMPORT_IMAGE_EXTENSIONS
 
 --- cp.apple.finalcutpro:init() -> App
 --- Function

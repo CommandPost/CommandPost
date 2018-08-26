@@ -39,7 +39,7 @@ local i18n              = require("cp.i18n")
 --------------------------------------------------------------------------------
 local Do, If            = go.Do, go.If
 local Throw             = go.Throw
-local Require           = go.Require
+local WaitUntil         = go.WaitUntil
 local unpack            = table.unpack
 
 local fileExists        = tools.doesFileExist
@@ -220,7 +220,9 @@ local function isSupported(file, flags)
     if isFile(flags) then
         local supported = fcp.ALLOWED_IMPORT_ALL_EXTENSIONS
         local ext = file:match("%.([^%.]+)$")
-        return supported:has(ext)
+        if ext then
+            return supported:has(ext:lower())
+        end
     end
     return false
 end
@@ -720,7 +722,8 @@ function MediaFolder.mt:doImportNext()
         )
 
         :Then(
-            Require(timeline.isLoaded):OrThrow(i18n("fcpMediaFolder_Error_ProjectRequired"))
+            WaitUntil(timeline.isLoaded)
+            :TimeoutAfter(1000, i18n("fcpMediaFolder_Error_ProjectRequired"))
         )
 
         --------------------------------------------------------------------------------
