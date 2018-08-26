@@ -137,11 +137,6 @@ function plugin.init(deps)
     local video = fcp:inspector():video()
 
     deps.tangentManager.addMode(0x00010010, "FCP: Video")
-        :onActivate(function()
-            if fcp.isFrontmost() then
-                video:show()
-            end
-        end)
 
     local videoGroup = deps.fcpGroup:group(i18n("video") .. " " .. i18n("inspector"))
 
