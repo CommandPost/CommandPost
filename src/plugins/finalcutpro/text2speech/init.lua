@@ -924,6 +924,18 @@ function mod.insertFromPasteboard()
     local pasteboardString = pasteboard.readString()
     if pasteboardString then
         --------------------------------------------------------------------------------
+        -- If directory doesn't exist then prompt user to select a new folder:
+        --------------------------------------------------------------------------------
+        if not tools.doesDirectoryExist(mod.path()) then
+            local folderResult = mod.chooseFolder()
+            if not folderResult then
+                return nil
+            else
+                mod.path(folderResult)
+            end
+        end
+
+        --------------------------------------------------------------------------------
         -- Build table:
         --------------------------------------------------------------------------------
         local result = {}
@@ -940,6 +952,8 @@ function mod.insertFromPasteboard()
         -- Trigger Completion Function:
         --------------------------------------------------------------------------------
         mod._completionFn(result)
+    else
+        tools.playErrorSound()
     end
 end
 
