@@ -40,6 +40,9 @@
 				<li>Fixed bugs when using the Color Board actions in French, German & Japanese.</li>
 				<li>Fixed "Change Smart Collections" Action.</li>
 				<li>Fixed a bug assigning HUD actions.</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Tangent panels may occasionally lock up when switching between applications. If your Tangent panel appears unresponsive in Final Cut Pro after switching between applications try clicking the CommandPost menu bar icon, and if that fails to fix things, try pressing "Restart" from the CommandPost menu bar.</li></ul>
 			]]>
 			</description>
 			<pubDate>Mon, 27 Aug 2018 23:12:18 +1000</pubDate>
