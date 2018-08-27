@@ -89,6 +89,7 @@ local function xyParameter(group, param, id)
         :stepSize(0.5)
         :onGet(function() return param:x() end)
         :onChange(function(amount)
+            fcp:inspector():video():show()
             x = x + amount
             updateUI()
         end)
@@ -105,7 +106,6 @@ local function xyParameter(group, param, id)
         :stepSize(0.5)
         :onGet(function() return param:y() end)
         :onChange(function(amount)
-            fcp:inspector():video():show()
             y = y + amount
             updateUI()
         end)
@@ -142,6 +142,7 @@ local function sliderParameter(group, param, id, minValue, maxValue, stepSize, d
     local updateUI = deferred.new(DEFER)
     updateUI:action(function()
         if value ~= 0 then
+            fcp:inspector():video():show()
             local currentValue = param.value()
             if currentValue then
                 param.value(currentValue + value)
@@ -159,7 +160,6 @@ local function sliderParameter(group, param, id, minValue, maxValue, stepSize, d
         :stepSize(stepSize)
         :onGet(function() return param:value() end)
         :onChange(function(amount)
-            fcp:inspector():video():show()
             value = value + amount
             updateUI()
         end)
@@ -190,9 +190,9 @@ function mod.init(deps)
     local id = 0x0F730000
 
     local px, py, rotation
-    id, px, py = xyParameter(transformGroup, transform:show():position(), id)
-    id, rotation = sliderParameter(transformGroup, transform:show():rotation(), id, 0, 360, 0.1)
-    transformGroup:binding(tostring(transform:show():position()) .. " " .. tostring(transform:rotation()))
+    id, px, py = xyParameter(transformGroup, transform:position(), id)
+    id, rotation = sliderParameter(transformGroup, transform:rotation(), id, 0, 360, 0.1)
+    transformGroup:binding(tostring(transform:position()) .. " " .. tostring(transform:rotation()))
         :members(px, py, rotation)
 
     id = sliderParameter(transformGroup, transform:scaleAll(), id, 0, 100, 0.1, 100.0)
