@@ -580,10 +580,12 @@ local function callback(commands)
 
         local fn = fromHub[id]
         if fn then
-            local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
-            if not ok then
-                log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
-            end
+            timer.doAfter(0, function()
+                local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
+                if not ok then
+                    log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
+                end
+            end)
         else
             log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
         end
