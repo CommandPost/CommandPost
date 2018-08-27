@@ -27,7 +27,7 @@ local just							= require("cp.just")
 local prop							= require("cp.prop")
 
 local go                            = require("cp.rx.go")
-local If, WaitUntil                 = go.If, go.WaitUntil
+local If, WaitUntil, Do             = go.If, go.WaitUntil, go.Do
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -228,7 +228,7 @@ function MenuButton:selectItem(index)
     return false
 end
 
---- cp.ui.MenuButton:doSelectItem(index) -> cp.rx.go.Statement
+--- cp.ui.MenuButton:`Item(index) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by index.
 ---
@@ -323,6 +323,33 @@ function MenuButton:selectItemMatching(pattern)
         self.value:update()
     end
     return false
+end
+
+function MenuButton:doSelectItemMatching(pattern)
+    return If(self.UI)
+    :Then(self:doPress())
+    :Then(WaitUntil(self.menuUI):TimeoutAfter(5000))
+    :Then(function(menuUI)
+        for _,item in ipairs(menuUI) do
+            local title = item:attributeValue("AXTitle")
+            if title then
+                local s,e = find(title, pattern)
+                if s == 1 and e == title:len() then
+                    -- perfect match
+                    item:doPress()
+                    return true
+                end
+            end
+        end
+        menuUI:doCancel()
+        return false
+    end)
+    :Then(function(success)
+        return Do(WaitUntil(self.menuUI):Is(nil):TimeoutAfter(3000))
+        :Then(success)
+    end)
+    :Otherwise(false)
+    :Label("MeuButton:doSelectItemMatching")
 end
 
 --- cp.ui.MenuButton:getTitle() -> string | nil

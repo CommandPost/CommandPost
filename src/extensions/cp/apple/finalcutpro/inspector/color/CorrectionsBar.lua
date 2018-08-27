@@ -25,6 +25,10 @@ local just                              = require("cp.just")
 local MenuButton                        = require("cp.ui.MenuButton")
 local prop                              = require("cp.prop")
 
+local Do                                = require("cp.rx.go.Do")
+local If                                = require("cp.rx.go.If")
+local Throw                             = require("cp.rx.go.Throw")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -168,6 +172,19 @@ function CorrectionsBar:show()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:doShow() -> cp.rx.go.Statement
+--- Method
+--- A Statement that will attempt to show the bar.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, which will resolve to `true` if successful, or send an `error` if not.
+function CorrectionsBar:doShow()
+    return self:parent():doShow():Label("CorrectionsBar:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:menuButton() -> MenuButton
 --- Method
 --- Returns the menu button.
@@ -244,6 +261,44 @@ function CorrectionsBar:activate(correctionType, number)
     end
 
     return false
+end
+
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:activate(correctionType, number) -> cp.rx.go.Statement
+--- Method
+--- A Statement that activates a correction type.
+---
+--- Parameters:
+---  * `correctionType` - The correction type as string.
+---  * `number` - The number of the correction.
+---
+--- Returns:
+---  *  The `Statement`.
+function CorrectionsBar:doActivate(correctionType, number)
+    number = number or 1
+    local menuButton = self:menuButton()
+
+    return Do(self:doShow())
+    :Then(function()
+        local correctionText = self:findCorrectionLabel(correctionType)
+        if not correctionText then
+            return Throw("Invalid Correction Type: '%s' (%s)", correctionType, correctionText)
+        end
+
+        local pattern = "%s*"..correctionText.." "..number
+
+        return If(menuButton:doSelectItemMatching(pattern)):Is(false)
+        :Then(function()
+            --------------------------------------------------------------------------------
+            -- Try adding a new correction of the specified type:
+            --------------------------------------------------------------------------------
+            pattern = "%+"..correctionText
+            return If(menuButton:doSelectItemMatching(pattern)):Is(false)
+            :Then(Throw("Unable to find correction: '%s' (%s)", correctionType, correctionText))
+            :Otherwise(true)
+        end)
+        :Otherwise(true)
+    end)
+    :Label("doActivate")
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar

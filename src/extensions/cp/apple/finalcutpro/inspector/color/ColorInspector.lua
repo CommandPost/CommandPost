@@ -28,6 +28,8 @@ local ColorWheels                       = require("cp.apple.finalcutpro.inspecto
 local ColorCurves                       = require("cp.apple.finalcutpro.inspector.color.ColorCurves")
 local HueSaturationCurves               = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
 
+local If, WaitUntil                     = require("cp.rx.go.If"), require("cp.rx.go.WaitUntil")
+
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
@@ -225,6 +227,16 @@ function ColorInspector:show()
         self:app():menu():selectMenu({"Window", "Go To", idBoard "ColorBoard"})
     end
     return self
+end
+
+function ColorInspector:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        self:app():menu():doSelectMenu({"Window", "Go To", idBoard "ColorBoard"})
+    )
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the " .. idBoard("ColorBoard")))
+    :Otherwise(true)
+    :Label("ColorInspector:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self
