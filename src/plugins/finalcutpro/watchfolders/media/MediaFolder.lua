@@ -189,8 +189,8 @@ function MediaFolder.mt:doTagFiles(files)
 
         for _, file in pairs(files) do
             local ext = file:match("%.([^%.]+)$")
-
             if ext then
+                ext = ext:lower()
                 if videoTag and videoExtensions:has(ext) and fileExists(file) then
                     if not fs.tagsAdd(file, {videoTag}) then
                         log.ef("Failed to add Finder Tag (%s) to: %s", videoTag, file)
