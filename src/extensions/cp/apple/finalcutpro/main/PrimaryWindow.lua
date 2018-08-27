@@ -166,7 +166,9 @@ function PrimaryWindow.new(app)
                 local top = nil
                 for _,child in ipairs(left) do
                     if child:attributeValue("AXRole") == "AXGroup" then
-                        if top == nil or top:frame().y > child:frame().y then
+                        local topFrame = top and top:frame()
+                        local childFrame = child and child:frame()
+                        if top == nil or (topFrame and childFrame and topFrame.y > childFrame.y) then
                             top = child
                         end
                     end
