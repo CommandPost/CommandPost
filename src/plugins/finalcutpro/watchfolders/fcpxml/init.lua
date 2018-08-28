@@ -642,7 +642,6 @@ end
 --- Returns:
 ---  * None
 function mod.setupWatchers()
-
     --------------------------------------------------------------------------------
     -- Setup Watchers:
     --------------------------------------------------------------------------------
@@ -657,19 +656,20 @@ function mod.setupWatchers()
     --------------------------------------------------------------------------------
     local deliveredNotifications = notify.deliveredNotifications()
     local newSavedNotifications = {}
-    for _, v in pairs(deliveredNotifications) do
-        local tag = v:getFunctionTag()
-        local file = getFileFromTag(tag)
-        if file then
-            local notificationFn = function(obj)
-                mod.importFile(file, obj:getFunctionTag())
+    if deliveredNotifications then
+        for _, v in pairs(deliveredNotifications) do
+            local tag = v:getFunctionTag()
+            local file = getFileFromTag(tag)
+            if file then
+                local notificationFn = function(obj)
+                    mod.importFile(file, obj:getFunctionTag())
+                end
+                notify.register(tag, notificationFn)
+                newSavedNotifications[file] = tag
             end
-            notify.register(tag, notificationFn)
-            newSavedNotifications[file] = tag
         end
     end
     mod.savedNotifications(newSavedNotifications)
-
 end
 
 --- plugins.finalcutpro.watchfolders.fcpxml.init(deps, env) -> table
