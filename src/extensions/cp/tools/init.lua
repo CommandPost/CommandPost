@@ -1149,7 +1149,7 @@ end
 ---  * path - A path as string
 ---
 --- Returns:
----  * A table containing filenames as strings, or an empty table if an error occurs.
+---  * A table containing filenames as strings, or `nil` followed by the error message if an error occurs.
 function tools.dirFiles(path)
     if not path then
         return nil
@@ -1159,12 +1159,9 @@ function tools.dirFiles(path)
         return nil
     end
     local contents, data = fs.dir(path)
-
     if not contents then
-        log.ef("An error occured in cp.tools.dirFiles: %s", data)
-        return {}
+        return nil, data
     end
-
     local files = {}
     for file in function() return contents(data) end do
         files[#files+1] = file
@@ -1190,7 +1187,6 @@ function tools.rmdir(path, recursive)
         --------------------------------------------------------------------------------
         local iterFn, dirObj = fs.dir(path)
         if not iterFn then
-            log.ef("An error occured in cp.tools.rmdir: %s", dirObj)
             return nil, dirObj
         else
             for name in iterFn, dirObj do
