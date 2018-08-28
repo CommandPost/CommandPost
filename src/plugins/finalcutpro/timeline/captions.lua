@@ -45,12 +45,11 @@ local mod = {}
 --- Returns:
 ---  * `cp.rx.go.Statement`
 function mod.doPasteTextAsCaption()
-
     --------------------------------------------------------------------------------
     -- Check Pasteboard contents for text:
     --------------------------------------------------------------------------------
     return Given(
-        Require(pasteboard.readString())
+        Require(pasteboard.readString)
         :OrThrow("No text could be found on the Pasteboard.")
     ):Then(
         --------------------------------------------------------------------------------
