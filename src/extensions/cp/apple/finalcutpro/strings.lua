@@ -63,7 +63,7 @@ end
 
 mod._versionCache = {}
 
--- cp.apple.finalcutpro.strings:versions(locale) -> table
+-- cp.apple.finalcutpro.strings:_versions(locale) -> table
 -- Method
 -- Returns the list of specific version strings files available for the specified locale.
 function mod:_versions(locale)
@@ -74,12 +74,17 @@ function mod:_versions(locale)
         local stringsPath = extraPath .. locale.code
         local path = fs.pathToAbsolute(stringsPath)
         if path then
-            for file in fs.dir(path) do
-                if file:sub(-8) == ".strings" then
-                    local versionString = file:sub(1, -9)
-                    local version = toVersion(versionString)
-                    if version then
-                        insert(versions, version)
+            local iterFn, dirObj = fs.dir(path)
+            if not iterFn then
+                log.ef("An error occured in cp.apple.finalcutpro.strings:_versions: %s", dirObj)
+            else
+                for file in iterFn, dirObj do
+                    if file:sub(-8) == ".strings" then
+                        local versionString = file:sub(1, -9)
+                        local version = toVersion(versionString)
+                        if version then
+                            insert(versions, version)
+                        end
                     end
                 end
             end

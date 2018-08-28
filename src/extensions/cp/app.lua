@@ -330,14 +330,18 @@ function app.forBundleID(bundleID)
                         -- always add the base locale, if present.
                         insert(locales, theBaseLocale)
                     end
-
-                    for file in fs.dir(resourcesPath) do
-                        local localeCode = file:match("(.+)%.lproj")
-                        if localeCode then
-                            if localeCode ~= BASE_LOCALE then
-                                local locale = localeID.forCode(localeCode)
-                                if locale and locale ~= theBaseLocale then
-                                    insert(locales, locale)
+                    local iterFn, dirObj = fs.dir(resourcesPath)
+                    if not iterFn then
+                        log.ef("An error occured in cp.app.forBundleID: %s", dirObj)
+                    else
+                        for file in iterFn, dirObj do
+                            local localeCode = file:match("(.+)%.lproj")
+                            if localeCode then
+                                if localeCode ~= BASE_LOCALE then
+                                    local locale = localeID.forCode(localeCode)
+                                    if locale and locale ~= theBaseLocale then
+                                        insert(locales, locale)
+                                    end
                                 end
                             end
                         end

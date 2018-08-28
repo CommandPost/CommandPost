@@ -1149,7 +1149,7 @@ end
 ---  * path - A path as string
 ---
 --- Returns:
----  * A table containing filenames as strings.
+---  * A table containing filenames as strings, or an empty table if an error occurs.
 function tools.dirFiles(path)
     if not path then
         return nil
@@ -1159,6 +1159,11 @@ function tools.dirFiles(path)
         return nil
     end
     local contents, data = fs.dir(path)
+
+    if not contents then
+        log.ef("An error occured in cp.tools.dirFiles: %s", data)
+        return {}
+    end
 
     local files = {}
     for file in function() return contents(data) end do
@@ -1180,21 +1185,29 @@ end
 ---  * `true` if successful, or `nil, err` if there was a problem.
 function tools.rmdir(path, recursive)
     if recursive then
-        -- remove the contents.
-        for name in fs.dir(path) do
-            if name ~= "." and name ~= ".." then
-                local filePath = path .. "/" .. name
-                local attrs = fs.symlinkAttributes(filePath)
-                local ok, err
-                if attrs == nil then
-                    return nil, "Unable to find file to remove: "..filePath
-                elseif attrs.mode == "directory" then
-                    ok, err = tools.rmdir(filePath, true)
-                else
-                    ok, err = os.remove(filePath)
-                end
-                if not ok then
-                    return nil, err
+        --------------------------------------------------------------------------------
+        -- Remove the contents:
+        --------------------------------------------------------------------------------
+        local iterFn, dirObj = fs.dir(path)
+        if not iterFn then
+            log.ef("An error occured in cp.tools.rmdir: %s", dirObj)
+            return nil, dirObj
+        else
+            for name in iterFn, dirObj do
+                if name ~= "." and name ~= ".." then
+                    local filePath = path .. "/" .. name
+                    local attrs = fs.symlinkAttributes(filePath)
+                    local ok, err
+                    if attrs == nil then
+                        return nil, "Unable to find file to remove: "..filePath
+                    elseif attrs.mode == "directory" then
+                        ok, err = tools.rmdir(filePath, true)
+                    else
+                        ok, err = os.remove(filePath)
+                    end
+                    if not ok then
+                        return nil, err
+                    end
                 end
             end
         end
