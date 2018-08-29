@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log							= require("hs.logger").new("textField")
+--local log							= require("hs.logger").new("staticText")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -23,6 +23,7 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
+local Element                       = require("cp.ui.element")
 local notifier						= require("cp.ui.notifier")
 local prop							= require("cp.prop")
 local timer                         = require("hs.timer")
@@ -39,7 +40,7 @@ local snapshot                      = axutils.snapshot
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local StaticText = {}
+local StaticText = Element:subtype()
 
 --- cp.ui.StaticText.matches(element) -> boolean
 --- Function
@@ -51,10 +52,10 @@ local StaticText = {}
 --- Returns:
 ---  * If `true`, the element is a Static Text element.
 function StaticText.matches(element)
-    return element and element:attributeValue("AXRole") == "AXStaticText"
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXStaticText"
 end
 
---- cp.ui.StaticText.new(parent, finderFn[, convertFn]) -> StaticText
+--- cp.ui.StaticText.new(parent, uiFinder[, convertFn]) -> StaticText
 --- Method
 --- Creates a new StaticText. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -72,57 +73,19 @@ end
 ---
 --- Parameters:
 ---  * parent	- The parent object.
----  * finderFn	- The function will return the `axuielement` for the StaticText.
+---  * uiFinder	- The function will return the `axuielement` for the StaticText.
 ---  * convertFn	- (optional) If provided, will be passed the `string` value when returning.
 ---
 --- Returns:
 ---  * The new `StaticText`.
-function StaticText.new(parent, finderFn, convertFn)
-    local o = prop.extend({
-        _parent = parent,
-        _finder = finderFn,
-        _convert = convertFn,
-    }, StaticText)
-
-    local UI
-    if prop.is(finderFn) then
-        UI = finderFn
-    else
-        UI = prop(function()
-            return cache(o, "_ui", function()
-                local ui = finderFn()
-                return StaticText.matches(ui) and ui or nil
-            end,
-            StaticText.matches)
-        end)
-    end
+function StaticText.new(parent, uiFinder, convertFn)
+    local o = Element.new(parent, uiFinder, StaticText)
 
     prop.bind(o) {
-        --- cp.ui.StaticText.UI <cp.prop: hs._asm.axuielement | nil; read-only; live?>
-        --- Field
-        --- The `axuielement` or `nil` if it's not available currently.
-        UI = UI,
-
-        --- cp.ui.StaticText.isShowing <cp.prop: boolean>
-        --- Field
-        --- Checks if the static text is currently showing.
-        isShowing = UI:mutate(function(original, self)
-            local ui = original()
-            return ui ~= nil and self:parent():isShowing()
-        end),
-
-        --- cp.ui.StaticText.isShowing <cp.prop: table | nil>
-        --- Field
-        --- The frame table (`{x, y, w, h}`) for the UI element, or `nil` if not.
-        frame = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXFrame")
-        end),
-
         --- cp.ui.StaticText.value <cp.prop: anything>
         --- Field
         --- The current value of the text field.
-        value = UI:mutate(
+        value = o.UI:mutate(
             function(original)
                 local ui = original()
                 local value = ui and ui:attributeValue("AXValue") or nil
@@ -171,32 +134,6 @@ function StaticText.new(parent, finderFn, convertFn)
     return o
 end
 
---- cp.ui.StaticText:parent() -> table
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent.
-function StaticText:parent()
-    return self._parent
-end
-
---- cp.ui.StaticText:app() -> table
---- Method
---- Returns the app object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The app.
-function StaticText:app()
-    return self:parent():app()
-end
-
 -- Deprecated: use the `value` property directly
 function StaticText:getValue()
     return self:value()
@@ -220,20 +157,6 @@ end
 function StaticText:clear()
     self.value:set("")
     return self
-end
-
---- cp.ui.StaticText:isEnabled() -> boolean
---- Method
---- Is the Static Text box enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled, otherwise `false`.
-function StaticText:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
 end
 
 function StaticText:notifier()
@@ -288,24 +211,6 @@ function StaticText:__call(parent, value)
         value = parent
     end
     return self:value(value)
-end
-
---- cp.ui.StaticText:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function StaticText:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return snapshot(ui, path)
-    end
-    return nil
 end
 
 return StaticText

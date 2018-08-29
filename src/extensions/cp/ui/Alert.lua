@@ -12,13 +12,15 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                           = require("hs.logger").new("alert")
+-- local log                           = require("hs.logger").new("alert")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
+local Element                       = require("cp.ui.Element")
 local Button                        = require("cp.ui.Button")
+local lazy                          = require("cp.lazy")
 local prop                          = require("cp.prop")
 
 local If                            = require("cp.rx.go.If")
@@ -29,7 +31,7 @@ local WaitUntil                     = require("cp.rx.go.WaitUntil")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Alert = {}
+local Alert = Element:subtype()
 
 --- cp.ui.Alert.matches(element) -> boolean
 --- Function
@@ -41,10 +43,7 @@ local Alert = {}
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function Alert.matches(element)
-    if element then
-        return element:attributeValue("AXRole") == "AXSheet"
-    end
-    return false
+    return Element.matche(element) and element:attributeValue("AXRole") == "AXSheet"
 end
 
 --- cp.ui.Alert.new(app) -> Alert
@@ -61,73 +60,29 @@ function Alert.new(parent)
         return axutils.childMatching(original(), Alert.matches)
     end)
 
-    local o = prop.extend({
-        _parent = parent,
+    local o = Element.new(parent, UI, Alert)
 
---- cp.ui.Alert.UI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- The `axuielement` for the Alert, or `nil` if not available.
-        UI = UI,
-
-
---- cp.ui.Alert.isShowing <cp.prop: boolean; read-only; live>
---- Field
---- Is the alert showing?
-        isShowing = UI:ISNOT(nil),
-
+    prop.bind(o) {
 --- cp.ui.Alert.title <cp.prop: string>
 --- Field
 --- Gets the title of the alert.
-        title = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXTitle")
-        end),
+        title = axutils.prop(o.UI, "AXTitle"),
 
-    }, Alert)
+    }
 
+    lazy.value(o) {
 --- cp.ui.Alert.default <cp.ui.Button>
 --- Field
 --- The default [Button](cp.ui.Button.md) for the `Alert`.
-    o.default = Button.new(o, UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXDefaultButton")
-    end))
+        default = function(self) return Button.new(self, axutils.prop(UI, "AXDefaultButton")) end,
 
 --- cp.ui.Alert.cancel <cp.ui.Button>
 --- Field
 --- The cancel [Button](cp.ui.Button.md) for the `Alert`.
-    o.cancel = Button.new(o, UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXDefaultButton")
-    end))
+        cancel = function(self) return Button.new(self, axutils.prop(UI, "AXDefaultButton")) end,
+    }
 
     return o
-end
-
---- cp.ui.Alert:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function Alert:parent()
-    return self._parent
-end
-
---- cp.ui.Alert:app() -> App
---- Method
---- Returns the app instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Alert:app()
-    return self:parent():app()
 end
 
 --- cp.ui.Alert:hide() -> none

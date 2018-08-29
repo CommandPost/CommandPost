@@ -19,6 +19,7 @@ local require = require
 --------------------------------------------------------------------------------
 local prop							= require("cp.prop")
 local axutils						= require("cp.ui.axutils")
+local Element                       = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
 --
@@ -26,8 +27,7 @@ local axutils						= require("cp.ui.axutils")
 --
 --------------------------------------------------------------------------------
 local Table = {}
-Table.mt = {}
-Table.mt.__index = Table.mt
+Table.mt = Element:subtype()
 
 --- cp.ui.Table.is(thing) -> boolean
 --- Function
@@ -39,7 +39,11 @@ Table.mt.__index = Table.mt
 --- Returns:
 ---  * `true` if the thing is a `Table` instance.
 function Table.is(thing)
-    return thing and getmetatable(thing) == Table.mt
+    if type(thing) == "table" then
+        local mt = getmetatable(thing)
+        return mt and mt == Table.mt or mt.__index == Table.mt
+    end
+    return false
 end
 
 --- cp.ui.Table.cellTextValue(cell) -> boolean
@@ -171,43 +175,27 @@ end
 --- Returns:
 ---  * `true` if it matches.
 function Table.matches(element)
-    return element ~= nil
+    return Element.matches(element)
 end
 
---- cp.ui.Table.new(parent, finder) -> self
+--- cp.ui.Table.new(parent, uiFinder) -> self
 --- Constructor
 --- Creates a new Table.
 ---
 --- Parameters:
----  * `parent`		- The parent object.
----  * `finder`		- A function which will return the `axuielement` that this table represents.
+---  * `parent`     - The parent object.
+---  * `uiFinder`   - A `function` or `cp.prop` which will return the `axuielement` that this table represents.
 ---
 --- Returns:
 ---  * A new `Table` instance.
-function Table.new(parent, finder)
-    local o = prop.extend({_parent = parent, _finder = finder}, Table.mt)
-
-    local UI = prop(function(self)
-        if not self._uncached then
-            return axutils.cache(self, "_ui", function()
-                return self._finder()
-            end,
-            Table.matches)
-        else
-            return self._finder()
-        end
-    end)
+function Table.new(parent, uiFinder)
+    local o = Element.new(parent, uiFinder, Table.mt)
 
     prop.bind(o) {
-        --- cp.ui.Table.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the current `axuielement` element for the table. May be `nil` if it is not available at present.
-        UI = UI,
-
         --- cp.ui.Table.contentUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
         --- Returns the `axuielement` that contains the actual rows.
-        contentUI = UI:mutate(function(original, self)
+        contentUI = o.UI:mutate(function(original, self)
             return axutils.cache(self, "_content", function()
                 local ui = original()
                 return ui and axutils.childMatching(ui, Table.matchesContent)
@@ -218,30 +206,17 @@ function Table.new(parent, finder)
         --- cp.ui.Table.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
         --- The vertical scroll bar UI element, if present.
-        verticalScrollBarUI = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXVerticalScrollBar")
-        end),
+        verticalScrollBarUI = axutils.prop(o.UI, "AXVerticalScrollBar"),
 
         --- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
         --- Field
         --- The horizontal scroll bar UI element, if present.
-        horizontalScrollBarUI = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXHorizontalScrollBar")
-        end),
-
-        --- cp.ui.Table.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Returns `true` if the table is visible.
-        isShowing = UI:mutate(function(original)
-            return original() ~= nil
-        end),
+        horizontalScrollBarUI = axutils.prop(o.UI, "AXHorizontalScrollBar"),
 
         --- cp.ui.Table.isFocused <cp.prop: boolean; read-only>
         --- Field
         --- Returns `true` if the table is focused by the user.
-        isFocused = UI:mutate(function(original)
+        isFocused = o.UI:mutate(function(original)
             local ui = original()
             return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
         end),
@@ -261,19 +236,6 @@ end
 function Table.mt:uncached()
     self._uncached = true
     return self
-end
-
---- cp.ui.Table:parent() -> value
---- Method
---- The table's parent, as provided in the constructor.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The table's parent.
-function Table.mt:parent()
-    return self._parent
 end
 
 --- cp.ui.Table.matchesContent(element) -> boolean

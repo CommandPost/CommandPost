@@ -22,7 +22,8 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
+local axutils                       = require("cp.ui.axutils")
+local Element						= require("cp.ui.Element")
 local just							= require("cp.just")
 local prop							= require("cp.prop")
 
@@ -39,7 +40,7 @@ local find                          = string.find
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local MenuButton = {}
+local MenuButton = Element:subtype()
 
 --- cp.ui.MenuButton.matches(element) -> boolean
 --- Function
@@ -51,48 +52,20 @@ local MenuButton = {}
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function MenuButton.matches(element)
-    return element and element:attributeValue("AXRole") == "AXMenuButton"
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXMenuButton"
 end
 
---- cp.ui.MenuButton.new(parent, finderFn) -> MenuButton
+--- cp.ui.MenuButton.new(parent, uiFinder) -> MenuButton
 --- Constructor
 --- Creates a new MenuButton.
 ---
 --- Parameters:
 --- * parent		- The parent object. Should have an `isShowing` property.
---- * finderFn		- A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
-function MenuButton.new(parent, finderFn)
-    local o = prop.extend({_parent = parent, _finder = finderFn}, MenuButton)
+--- * uiFinder		- A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
+function MenuButton.new(parent, uiFinder)
+    local o = Element.new(parent, uiFinder, MenuButton)
 
-    --- cp.ui.MenuButton.UI <cp.prop: hs._asm.axuielement; read-only>
-    --- Field
-    --- Provides the `axuielement` for the MenuButton.
-    local UI
-    if prop.is(finderFn) then
-        UI = finderFn
-    else
-        UI = prop(function(self)
-            return axutils.cache(self, "_ui", function()
-                return self._finder()
-            end,
-            MenuButton.matches)
-        end)
-
-        if prop.is(parent.UI) then
-            UI:monitor(parent.UI)
-        end
-    end
-
-
-    if prop.is(parent.UI) then
-        UI:monitor(parent.UI)
-    end
-
-    local isShowing = UI:mutate(function(original, self)
-        return original() ~= nil and self:parent():isShowing()
-    end)
-
-    local value = UI:mutate(
+    local value = o.UI:mutate(
         function(original)
             local ui = original()
             return ui and ui:value()
@@ -120,7 +93,7 @@ function MenuButton.new(parent, finderFn)
         end)
     end)
 
-    local menuUI = UI:mutate(function(original)
+    local menuUI = o.UI:mutate(function(original)
         local ui = original()
         return ui and axutils.childWithRole(ui, "AXMenu")
     end)
@@ -132,16 +105,6 @@ function MenuButton.new(parent, finderFn)
     end)
 
     prop.bind(o) {
---- cp.ui.MenuButton.UI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- The `axuielement` representing the MenuButton, or `nil` if not available.
-        UI = UI,
-
---- cp.ui.MenuButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Checks if the MenuButton is visible on screen.
-        isShowing = isShowing,
-
 --- cp.ui.MenuButton.value <cp.prop: anything>
 --- Field
 --- Returns or sets the current MenuButton value.
@@ -155,10 +118,7 @@ function MenuButton.new(parent, finderFn)
 --- cp.ui.MenuButton.title <cp.prop: string; read-only>
 --- Field
 --- Returns the MenuButton's title.
-        title = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXTitle")
-        end),
+        title = axutils.prop(o.UI, "AXTitle"),
     }
 
     return o
@@ -390,20 +350,6 @@ end
 function MenuButton:setValue(value)
     self.value:set(value)
     return self
-end
-
---- cp.ui.MenuButton:isEnabled() -> boolean
---- Method
---- Is the `MenuButton` enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled otherwise `false`.
-function MenuButton:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
 end
 
 --- cp.ui.MenuButton:press() -> self

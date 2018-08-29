@@ -28,6 +28,7 @@ local prop                              = require("cp.prop")
 local Do                                = require("cp.rx.go.Do")
 local If                                = require("cp.rx.go.If")
 local Throw                             = require("cp.rx.go.Throw")
+local Require                           = require("cp.rx.go.Require")
 
 --------------------------------------------------------------------------------
 --
@@ -213,7 +214,12 @@ end
 --- Returns:
 ---  * The correction label as string.
 function CorrectionsBar:findCorrectionLabel(correctionType)
-    return self:app():string(self.CORRECTION_TYPES[correctionType])
+    local key = self.CORRECTION_TYPES[correctionType]
+    if key then
+        return self:app():string(key)
+    else
+        error(string.format("Unable to find label for %q", correctionType))
+    end
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:activate(correctionType, number) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
@@ -281,7 +287,7 @@ function CorrectionsBar:doActivate(correctionType, number)
     :Then(function()
         local correctionText = self:findCorrectionLabel(correctionType)
         if not correctionText then
-            return Throw("Invalid Correction Type: '%s' (%s)", correctionType, correctionText)
+            return Throw("Invalid Correction Type: '%s'", correctionType)
         end
 
         local pattern = "%s*"..correctionText.." "..number
@@ -291,10 +297,7 @@ function CorrectionsBar:doActivate(correctionType, number)
             --------------------------------------------------------------------------------
             -- Try adding a new correction of the specified type:
             --------------------------------------------------------------------------------
-            pattern = "%+"..correctionText
-            return If(menuButton:doSelectItemMatching(pattern)):Is(false)
-            :Then(Throw("Unable to find correction: '%s' (%s)", correctionType, correctionText))
-            :Otherwise(true)
+            return self:doAdd(correctionType)
         end)
         :Otherwise(true)
     end)
@@ -326,6 +329,21 @@ function CorrectionsBar:add(correctionType)
     end
 
     return self
+end
+
+function CorrectionsBar:doAdd(correctionType)
+    return Do(self:doShow())
+    :Then(function()
+        local correctionText = self:findCorrectionLabel(correctionType)
+        if not correctionText then
+            log.ef("Invalid Correction Type: %s", correctionType)
+        end
+
+        local pattern = "%+"..correctionText
+
+        return Require(self:menuButton():doSelectItemMatching(pattern))
+        :OrThrow("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+    end)
 end
 
 return CorrectionsBar

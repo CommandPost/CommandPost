@@ -24,6 +24,9 @@ local id                                = require("cp.apple.finalcutpro.ids") "C
 local prop                              = require("cp.prop")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 
+local go                                = require("cp.rx.go")
+local If, Do, Throw                     = go.If, go.Do, go.Throw
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -274,6 +277,24 @@ function ColorBoard:show()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shows the Color Board.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, which will send a single `true` if successful, otherwise `false`, or an error being sent.
+function ColorBoard:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        self:parent():doActivateCorrection(CORRECTION_TYPE)
+    )
+    :Otherwise(true)
+    :Label("ColorBoard:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:hide() -> self
 --- Method
 --- Hides the Color Board
@@ -290,6 +311,26 @@ function ColorBoard:hide()
         self:parent():hide()
     end
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that hides the Color Board.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, which will send a single `true` if successful, otherwise `false`, or an error being sent.
+function ColorBoard:doHide()
+    return If(self:backButton().isShowing)
+    :Then(
+        self:backButton():doPress()
+    )
+    :Otherwise(
+        self:parent():doHide()
+    )
+    :Label("ColorBoard:doHide")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:backButton() -> Button
@@ -405,6 +446,39 @@ function ColorBoard:current()
     return self:color()
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:doResetCurrent([range]) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will reset the current 'active' aspect (e.g. `color`) in the Color Board.
+--- If the `range` is provided, only that subset (`master`, `shadows`, `midtones`, `highlights`) will be reset.
+---
+--- Parameters:
+--- * range     - Optional range to reset in the current aspect.
+---
+--- Returns:
+--- * The `Statement`, resolving with `true` if completed or an error if not.
+function ColorBoard:doResetCurrent(range)
+    return Do(self:doShow())
+    :Then(function()
+        local current = self:current()
+        if range then
+            local puckFn = current[range]
+            if type(puckFn) ~= "function" then
+                return Throw("Invalid range: %s", range)
+            end
+
+            local puck = puckFn(current)
+            if puck and type(puck.doReset) == "function" then
+                return puck:doReset()
+            else
+                return Throw("Invalid puck: %s", range)
+            end
+        else
+            return current:doReset()
+        end
+    end)
+    :Label("ColorBoard:doResetCurrent")
+end
+
 -----------------------------------------------------------------------
 --
 -- PANEL CONTROLS:
@@ -430,6 +504,22 @@ function ColorBoard:aspectGroup()
     return self._aspectGroup
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:doSelectAspect(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to select the specified aspect `index`.
+--- If the `index` is not between `1` and `3`, and error will be thrown.
+---
+--- Parameters:
+--- * index     - The index to select.
+---
+--- Returns:
+--- * The `Statement`, which will resolve to `true` if successful, or throw an error if not.
+function ColorBoard:doSelectAspect(index)
+    return Do(self:doShow())
+    :Then(self:aspectGroup():doSelectOption(index))
+    :Label("ColorBoard:doSelectAspect")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:nextAspect() -> ColorBoard object
 --- Method
 --- Toggles the Color Board Panels between "Color", "Saturation" and "Exposure"
@@ -446,6 +536,24 @@ function ColorBoard:nextAspect()
     aspects:nextOption()
 
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:doNextAspect() -> cp.rx.go.Statement<boolean>
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that toggles the Color Board Panels between "Color", "Saturation" and "Exposure".
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * ColorBoard object
+function ColorBoard:doNextAspect()
+    local aspects = self:aspectGroup()
+    return Do(self:doShow())
+    :Then(
+        aspects:doNextOption()
+    )
+    :Label("ColorBoard:doNextAspect")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:reset() -> self

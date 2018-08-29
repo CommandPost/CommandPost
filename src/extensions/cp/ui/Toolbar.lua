@@ -4,13 +4,14 @@
 
 local require = require
 local axutils						= require("cp.ui.axutils")
+local Element                       = require("cp.ui.Element")
 local prop							= require("cp.prop")
 
 local Button                        = require("cp.ui.Button")
 
 local Do                            = require("cp.rx.go").Do
 
-local Toolbar = {}
+local Toolbar = Element:subtype()
 
 --- cp.ui.Toolbar.matches(element) -> boolean
 --- Function
@@ -22,69 +23,32 @@ local Toolbar = {}
 --- Returns:
 ---  * `true` if the `element` is a `Button`, or `false` if not.
 function Toolbar.matches(element)
-    return element and element:attributeValue("AXRole") == "AXToolbar"
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXToolbar"
 end
 
---- cp.ui.Toolbar.new(parent, finder) -> cp.ui.Toolbar
+--- cp.ui.Toolbar.new(parent, uiFinder) -> cp.ui.Toolbar
 --- Constructor
---- Creates a new `Toolbar` instance, given the specified `parent` and `finder`
+--- Creates a new `Toolbar` instance, given the specified `parent` and `uiFinder`
 ---
 --- Parameters:
 ---  * parent   - The parent object.
----  * finder   - The `cp.prop` or `function` that finds the `hs._asm.axuielement` that represents the `Toolbar`.
+---  * uiFinder   - The `cp.prop` or `function` that finds the `hs._asm.axuielement` that represents the `Toolbar`.
 ---
 --- Returns:
 ---  * The new `Toolbar` instance.
-function Toolbar.new(parent, finderFn)
-    local o = prop.extend(
-        {
-            _parent = parent,
-        }, Toolbar
-    )
-
-    local UI
-    if prop.is(finderFn) then
-        UI = finderFn
-    else
-        UI = prop(function()
-            return axutils.cache(o, "_ui", function()
-                local ui = finderFn()
-                return Toolbar.matches(ui) and ui or nil
-            end,
-            Toolbar.matches)
-        end)
-    end
+function Toolbar.new(parent, uiFinder)
+    local o = Element.new(parent, uiFinder, Toolbar)
 
     prop.bind(o) {
---- cp.ui.Toolbar.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Retrieves the `axuielement` for the `Toolbar`, or `nil` if not available..
-        UI = UI,
-
---- cp.ui.Toolbar.isShowing <cp.prop: boolean; read-only>
---- Field
---- If `true`, the `Toolbar` is showing on screen.
-        isShowing = UI:mutate(function(original, self)
-            return original() ~= nil and self:parent():isShowing()
-        end),
-
 --- cp.ui.Toolbar.selectedTitle <cp.prop: string; read-only>
 --- Field
 --- The title of the first selected item, if available.
-        selectedTitle   = UI:mutate(function(original)
+        selectedTitle   = o.UI:mutate(function(original)
             local ui = original()
             local selected = ui and ui:attributeValue("AXSelectedChildren")
             if selected and #selected > 0 then
                 return selected[1]:attributeValue("AXTitle")
             end
-        end),
-
---- cp.ui.Toolbar.frame <cp.prop: table; read-only>
---- Field
---- Returns the table containing the `x`, `y`, `w`, and `h` values for the Toolbar frame, or `nil` if not available.
-        frame = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:frame() or nil
         end),
     }
 
@@ -106,47 +70,6 @@ function Toolbar.new(parent, finderFn)
     end
 
     return o
-end
-
-
---- cp.ui.Toolbar:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function Toolbar:parent()
-    return self._parent
-end
-
---- cp.ui.Toolbar:app() -> App
---- Method
---- Returns the app instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Toolbar:app()
-    return self:parent():app()
-end
-
---- cp.ui.Toolbar:isEnabled() -> boolean
---- Method
---- Returns `true` if the Toolbar is visible and enabled.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if the Toolbar is visible and enabled.
-function Toolbar:isEnabled()
-    local ui = self:UI()
-    return ui ~= nil and ui:enabled()
 end
 
 --- cp.ui.Toolbar:doSelect(title) -> Statement

@@ -18,6 +18,7 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
+local Element                       = require("cp.ui.Element")
 local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ local prop							= require("cp.prop")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextField = {}
+local TextField = Element:subtype()
 
 --- cp.ui.TextField.matches(element) -> boolean
 --- Function
@@ -37,10 +38,10 @@ local TextField = {}
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function TextField.matches(element)
-    return element ~= nil and element:attributeValue("AXRole") == "AXTextField"
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.ui.TextField.new(parent, finderFn[, convertFn]) -> TextField
+--- cp.ui.TextField.new(parent, uiFinder[, convertFn]) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -58,81 +59,45 @@ end
 ---
 --- Parameters:
 ---  * parent	- The parent object.
----  * finderFn	- The function will return the `axuielement` for the TextField.
+---  * uiFinder	- The function will return the `axuielement` for the TextField.
 ---  * convertFn	- (optional) If provided, will be passed the `string` value when returning.
 ---
 --- Returns:
 ---  * The new `TextField`.
-function TextField.new(parent, finderFn, convertFn)
-    return prop.extend({
-        _parent = parent,
-        _finder = finderFn,
-        _convert = convertFn,
-    }, TextField)
-end
+function TextField.new(parent, uiFinder, convertFn)
+    local o = Element.new(parent, uiFinder, TextField)
+    o._convert = convertFn
 
---- cp.ui.TextField:parent() -> table
---- Method
---- The parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function TextField:parent()
-    return self._parent
-end
-
---- cp.ui.TextField:UI() -> hs._asm.axuielement | nil
---- Method
---- Returns the `axuielement` representing the `TextField`, or `nil` if not available.
----
---- Parameters:
----  * None
----
---- Return:
----  * The `axuielement` or `nil`.
-function TextField:UI()
-    return axutils.cache(self, "_ui", function()
-        local ui = self._finder()
-        return TextField.matches(ui) and ui or nil
-    end,
-    TextField.matches)
-end
-
---- cp.ui.TextField.isShowing <cp.prop: boolean>
---- Variable
---- Is the Text Field showing?
-function TextField:isShowing()
-    return self:UI() ~= nil and self:parent():isShowing()
-end
-
+    prop.bind(o) {
 --- cp.ui.TextField.value <cp.prop: string>
 --- Field
 --- The current value of the text field.
-TextField.value = prop(
-    function(self)
-        local ui = self:UI()
-        local value = ui and ui:attributeValue("AXValue") or nil
-        if value and self._convert then
-            value = self._convert(value)
-        end
-        return value
-    end,
-    function(value, self)
-        local ui = self:UI()
-        if ui then
-            value = tostring(value)
-            local focused = ui:attributeValue("AXFocused")
-            ui:setAttributeValue("AXFocused", true)
-            ui:setAttributeValue("AXValue", value)
-            ui:setAttributeValue("AXFocused", focused)
-            ui:performAction("AXConfirm")
-        end
+        value = prop(
+            function(self)
+                local ui = self:UI()
+                local value = ui and ui:attributeValue("AXValue") or nil
+                if value and self._convert then
+                    value = self._convert(value)
+                end
+                return value
+            end,
+            function(value, self)
+                local ui = self:UI()
+                if ui then
+                    value = tostring(value)
+                    local focused = ui:attributeValue("AXFocused")
+                    ui:setAttributeValue("AXFocused", true)
+                    ui:setAttributeValue("AXValue", value)
+                    ui:setAttributeValue("AXFocused", focused)
+                    ui:performAction("AXConfirm")
+                end
 
-    end
-):bind(TextField)
+            end
+        ),
+    }
+
+    return o
+end
 
 --- cp.ui.TextField:getValue() -> string
 --- Method
@@ -173,20 +138,6 @@ end
 function TextField:clear()
     self.value:set("")
     return self
-end
-
---- cp.ui.TextField:isEnabled() -> boolean
---- Method
---- Is the Text Field enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled, otherwise `false`.
-function TextField:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
 end
 
 --- cp.ui.TextField:saveLayout() -> table
@@ -234,24 +185,6 @@ function TextField.__call(self, parent, value)
         value = parent
     end
     return self:value(value)
-end
-
---- cp.ui.TextField:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function TextField:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return TextField
