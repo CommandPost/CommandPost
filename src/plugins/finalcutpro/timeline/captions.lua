@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                               = require("hs.logger").new("doPasteTextAsCaption")
+--local log                               = require("hs.logger").new("doPasteTextAsCaption")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
