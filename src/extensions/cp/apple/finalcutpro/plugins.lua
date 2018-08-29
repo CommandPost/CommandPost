@@ -296,7 +296,8 @@ function mod.mt:scanSystemAudioUnits(locale)
     local cache = {}
     local cacheFile = mod.audioUnitsCache
 
-    local currentModification = fs.attributes(cacheFile) and fs.attributes(cacheFile).modification
+    local attrs = fs.attributes(cacheFile)
+    local currentModification = attrs and attrs.modification
     local lastModification = config.get("audioUnitsCacheModification", nil)
     local audioUnitsCache = json.read(CP_FCP_CACHE_PATH .. "/Audio Units.cpCache")
 
@@ -407,7 +408,8 @@ function mod.mt:scanUserEffectsPresets(locale)
     --------------------------------------------------------------------------------
     local cache = {}
 
-    local currentSize = fs.attributes(path) and fs.attributes(path).size
+    local attrs = fs.attributes(path)
+    local currentSize = attrs and attrs.size
     local lastSize = config.get("userEffectsPresetsCacheModification", nil)
     local userEffectsPresetsCache = json.read(CP_FCP_CACHE_PATH .. "/User Effects Presets.cpCache")
 
@@ -774,7 +776,8 @@ function mod.mt:scanPluginThemeDirectory(locale, path, plugin)
             if file:sub(1,1) ~= "." then
                 local p = copy(plugin)
                 local pluginPath = path .. "/" .. file
-                if fs.attributes(pluginPath).mode == "directory" then
+                local attrs = fs.attributes(pluginPath)
+                if attrs and attrs.mode == "directory" then
                     self:handlePluginDirectory(locale, pluginPath, p)
                 end
             end
@@ -966,7 +969,8 @@ function mod.mt:scanUserMotionTemplates(locale)
     --------------------------------------------------------------------------------
     -- Restore from cache:
     --------------------------------------------------------------------------------
-    local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
+    local attrs = fs.attributes(pathToAbsolute)
+    local currentSize = attrs and attrs.size
     local lastSize = config.get("userMotionTemplatesCacheSize", nil)
     local userMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/User Motion Templates.cpCache")
     if currentSize and lastSize and currentSize == lastSize then
@@ -1031,7 +1035,8 @@ function mod.mt:scanSystemMotionTemplates(locale)
     --------------------------------------------------------------------------------
     -- Restore from cache:
     --------------------------------------------------------------------------------
-    local currentSize = fs.attributes(pathToAbsolute) and fs.attributes(pathToAbsolute).size
+    local attrs = fs.attributes(pathToAbsolute)
+    local currentSize = attrs and attrs.size
     local lastSize = config.get("systemMotionTemplatesCacheSize", nil)
     local systemMotionTemplatesCache = json.read(CP_FCP_CACHE_PATH .. "/System Motion Templates.cpCache")
 
