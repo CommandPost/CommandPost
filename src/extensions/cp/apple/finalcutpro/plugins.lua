@@ -110,8 +110,8 @@ mod.scanned = config.prop("finalCutProScanned", false)
 
 --- cp.apple.finalcutpro.plugins.outputReport <cp.prop: boolean>
 --- Variable
---- Set this to `false` via `_fcp:plugins():outputReport(false)` to disable reporting.
-mod.outputReport = config.prop("fcpPluginsOutputReport", true)
+--- Set this to `true` via `_fcp:plugins():outputReport(true)` to enable reporting.
+mod.outputReport = config.prop("fcpPluginsOutputReport", false)
 
 -- report(message, ...) -> none
 -- Function

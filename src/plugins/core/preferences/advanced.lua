@@ -125,7 +125,7 @@ end
 --- plugins.core.preferences.advanced.openErrorLogOnDockClick <cp.prop: boolean>
 --- Variable
 --- Open Error Log on Dock Icon Click.
-mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", true)
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
 
 --------------------------------------------------------------------------------
 --
@@ -184,14 +184,6 @@ function plugin.init(deps)
                         label = i18n("enableAutomaticScriptReloading"),
                         onchange = mod.toggleEnableAutomaticScriptReloading,
                         checked = config.automaticScriptReloading(),
-                    }
-                )
-
-                :addCheckbox(63,
-                    {
-                        label = i18n("openErrorLogOnDockClick"),
-                        onchange = function() mod.openErrorLogOnDockClick:toggle() end,
-                        checked = mod.openErrorLogOnDockClick
                     }
                 )
 

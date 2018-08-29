@@ -101,7 +101,7 @@ function mod.init()
         -- performance in Lua applications.
         --------------------------------------------------------------------------------
         --collectgarbage("setpause",100)
-        log.df("Garbage Collector Pause: %s", collectgarbage("setpause"))
+        --log.df("Garbage Collector Pause: %s", collectgarbage("setpause"))
 
         --------------------------------------------------------------------------------
         -- GARBAGE COLLECTOR STEP MULTIPLIER (default value 200):
@@ -115,12 +115,14 @@ function mod.init()
         -- collector runs twice as the speed of memory allocation.
         --------------------------------------------------------------------------------
         --collectgarbage("setstepmul",200)
-        log.df("Garbage Collector Step Multiplier: %s", collectgarbage("setstepmul"))
+        --log.df("Garbage Collector Step Multiplier: %s", collectgarbage("setstepmul"))
 
     --------------------------------------------------------------------------------
     -- Show Dock Icon:
     --------------------------------------------------------------------------------
-    hs.dockIcon(true)
+    if config.get("dockIcon", true) then
+        hs.dockIcon(true)
+    end
 
     --------------------------------------------------------------------------------
     -- Not used in `init.lua`, but is required to "jump start" the CLI support:
