@@ -17,13 +17,14 @@ local require = require
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
-local config			= require("cp.config")
-local prop				= require("cp.prop")
+local hs                = hs
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local i18n        = require("cp.i18n")
+local config			= require("cp.config")
+local i18n              = require("cp.i18n")
+local prop				= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
@@ -61,6 +62,18 @@ function mod.openPrivacyPolicy()
     hs.execute("open '" .. config.privacyPolicyURL .. "'")
 end
 
+--- plugins.core.preferences.general.dockIcon <cp.prop: boolean>
+--- Field
+--- Controls if CommandPost will automatically upload crash data to the developer.
+mod.dockIcon = config.prop("dockIcon", true):watch(function(value)
+    hs.dockIcon(value)
+end)
+
+--- plugins.core.preferences.general.openErrorLogOnDockClick <cp.prop: boolean>
+--- Variable
+--- Open Error Log on Dock Icon Click.
+mod.openErrorLogOnDockClick = config.prop("openErrorLogOnDockClick", false)
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -73,6 +86,7 @@ local plugin = {
         ["core.preferences.panels.general"]	= "general",
     }
 }
+
 --------------------------------------------------------------------------------
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
@@ -104,8 +118,10 @@ function plugin.init(deps)
                     <div class="generalPrefsColumn">
             ]], false)
 
+            --------------------------------------------------------------------------------
+            -- General Section:
+            --------------------------------------------------------------------------------
             :addHeading(1, i18n("general"))
-
             :addCheckbox(3,
                 {
                     label		= i18n("launchAtStartup"),
@@ -114,8 +130,10 @@ function plugin.init(deps)
                 }
             )
 
+            --------------------------------------------------------------------------------
+            -- Privacy Section:
+            --------------------------------------------------------------------------------
             :addHeading(10, i18n("privacy"))
-
             :addCheckbox(11,
                 {
                     label		= i18n("sendCrashData"),
@@ -123,7 +141,6 @@ function plugin.init(deps)
                     onchange	= function(_, params) mod.uploadCrashData(params.checked) end,
                 }
             )
-
             :addButton(12,
                 {
                     label 		= i18n("openPrivacyPolicy"),
@@ -137,6 +154,25 @@ function plugin.init(deps)
                     <div class="generalPrefsColumn">
             ]], false)
 
+            --------------------------------------------------------------------------------
+            -- Dock Icon Section:
+            --------------------------------------------------------------------------------
+            :addHeading(31, i18n("dockIcon"))
+            :addCheckbox(32,
+                {
+                    label		= i18n("enableDockIcon"),
+                    checked		= mod.dockIcon,
+                    onchange	= function() mod.dockIcon:toggle() end,
+                }
+            )
+            :addCheckbox(33,
+                {
+                    label = i18n("openErrorLogOnDockClick"),
+                    checked = mod.openErrorLogOnDockClick,
+                    onchange = function() mod.openErrorLogOnDockClick:toggle() end
+                }
+            )
+
             :addContent(100, [[
                     </div>
                 </div>
@@ -146,6 +182,13 @@ function plugin.init(deps)
 
     return mod
 
+end
+
+--------------------------------------------------------------------------------
+-- POST INITIALISE PLUGIN:
+--------------------------------------------------------------------------------
+function plugin.postInit()
+    mod.dockIcon:update()
 end
 
 return plugin

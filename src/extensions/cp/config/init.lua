@@ -278,6 +278,9 @@ function mod.reset()
     hs.reload()
 end
 
+--- cp.config.watcher() -> watcher
+--- Variable
+--- Config Watcher
 mod.watcher = watcher.new("reset")
 
 --- cp.config.watch(events) -> id
@@ -315,9 +318,9 @@ end
 --- When `true`, the app is in developer mode.
 mod.developerMode = mod.prop("debugMode", false):watch(function(value)
     if value then
-        log.df("Developer Mode Enabled")
+        --log.df("Developer Mode Enabled")
     else
-        log.df("Developer Mode Disabled")
+        --log.df("Developer Mode Disabled")
     end
 end)
 
@@ -326,10 +329,10 @@ end)
 --- Automatic Script Reloading.
 mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(function(value)
     if value then
-        log.df("Automatic Script Reloading Enabled")
+        --log.df("Automatic Script Reloading Enabled")
         mod.sourceWatcher:start()
     else
-        log.df("Automatic Script Reloading Disabled")
+        --log.df("Automatic Script Reloading Disabled")
         mod.sourceWatcher:stop()
     end
 end)

@@ -632,7 +632,10 @@ function plugin.init(deps)
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             })
-            :addSelect(102,
+            :addContent(101.2, [[
+                <div style="padding-left: 19px">
+            ]], false)
+            :addSelect(101.3,
             {
                 label		= i18n("modifierKey"),
                 value		= mod.customModifier,
@@ -665,6 +668,7 @@ function plugin.init(deps)
                 required	= true,
                 onchange	= function(_, params) mod.customModifier(params.value) end,
             })
+            :addContent(101.4, "</div>", false)
     end
 
     return mod
