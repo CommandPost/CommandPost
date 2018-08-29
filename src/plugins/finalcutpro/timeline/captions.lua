@@ -12,11 +12,13 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("doPasteTextAsCaption")
+local log                               = require("hs.logger").new("doPasteTextAsCaption")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local eventtap                          = require("hs.eventtap")
+local keycodes                          = require("hs.keycodes")
 local pasteboard                        = require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
@@ -24,9 +26,14 @@ local pasteboard                        = require("hs.pasteboard")
 --------------------------------------------------------------------------------
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
-
 local go                                = require("cp.rx.go")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local event                             = eventtap.event
 local Given, Require, Retry             = go.Given, go.Require, go.Retry
+local map                               = keycodes.map
 
 --------------------------------------------------------------------------------
 --
@@ -68,8 +75,15 @@ function mod.doPasteTextAsCaption()
         --------------------------------------------------------------------------------
         Retry(fcp:doSelectMenu({"Edit", "Paste"}))
         :UpTo(5):DelayedBy(100)
-    )
-    :Catch(function(message)
+    ):Then(
+        --------------------------------------------------------------------------------
+        -- Close Caption box & Move playhead to the end of the caption:
+        --------------------------------------------------------------------------------
+        function()
+            event.newKeyEvent(map.escape, true):post()
+            event.newKeyEvent(map.down, true):post()
+        end
+    ):Catch(function(message)
         dialog.displayErrorMessage("Unable to 'Paste Text as Caption': "..message)
     end)
 end
