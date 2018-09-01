@@ -44,6 +44,7 @@ local printf                    = hs.printf
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                   = require("cp.ui.axutils")
+local is                        = require("cp.is")
 local just                      = require("cp.just")
 local languageID                = require("cp.i18n.languageID")
 local localeID                  = require("cp.i18n.localeID")
@@ -105,7 +106,7 @@ local apps = {}
 --- Returns:
 ---  * `true` if it is a `cp.app` instance, otherwise `false`.
 function app.is(thing)
-    return type(thing) == "table" and thing == app.mt or app.is(getmetatable(thing))
+    return is.instance(thing, app.mt)
 end
 
 --- cp.app.bundleIDs() -> table

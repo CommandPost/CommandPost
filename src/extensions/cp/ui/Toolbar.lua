@@ -56,7 +56,7 @@ function Toolbar.new(parent, uiFinder)
 --- Field
 --- The "overflow" button which appears if there are more toolbar items
 --- available than can be fit on screen.
-    o.overflowButton = Button.new(o, UI:mutate(function(original)
+    o.overflowButton = Button.new(o, o.UI:mutate(function(original)
         local ui = original()
         return ui and ui:attributeValue("AXOverflowButton")
     end))

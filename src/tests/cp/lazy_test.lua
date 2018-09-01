@@ -1,99 +1,114 @@
 local test          = require "cp.test"
-local lazy          = require "cp.lazy"
+local class         = require "middleclass"
+local Lazy          = require "cp.lazy"
 
 -- local log           = require "hs.logger" .new "lazy_test"
 
 return test.suite("cp.lazy"):with {
-    test("getFactory", function()
-        local alphaMt = {}
-        alphaMt.__index = alphaMt
-        local alphaFactory = {}
-        lazy._setFactory(alphaMt, alphaFactory)
+    test("statics", function()
+        local Alpha = class("Alpha"):include(Lazy)
 
-        local a = setmetatable({}, alphaMt)
-
-        ok(eq(lazy._getFactory(a), alphaFactory))
-
-        local aFactory = setmetatable({}, {__index = alphaFactory})
-        lazy._setFactory(a, aFactory)
-
-        ok(eq(lazy._getFactory(a), aFactory))
-    end),
-
-    test("fn", function()
-        local count = 0
-        local o = lazy.fn({
-            a = "a",
-        }) {
-            id = function() count = count+1; return count end,
-            a = function() return "b" end,
-        }
-
-        ok(eq(o:id(), 1)) -- initially 1
-        ok(eq(o:id(), 1)) -- still 1
-
-        ok(eq(o.a, "a")) -- doesn't override existing values
+        ok(eq(type(Alpha.static.lazy), "table"))
+        ok(eq(type(Alpha.lazy), "table"))
+        ok(eq(Alpha.lazy, Alpha.static.lazy))
     end),
 
     test("value", function()
+        local Alpha = class("Alpha"):include(Lazy)
+
         local count = 0
-        local o = lazy.value({
-            a = "a",
-        }) {
-            id = function() count = count+1; return count end,
-            a = function() return "b" end,
-        }
+        function Alpha.lazy.value.id()
+            count = count + 1
+            return count
+        end
 
-        ok(eq(o.id, 1)) -- initially 1
-        ok(eq(o.id, 1)) -- still 1
+        local a = Alpha()
+        local b = Alpha()
 
-        ok(eq(o.a, "a")) -- doesn't override existing values.
+        ok(eq(a.id, 1))
+        ok(eq(a.id, 1))
+        ok(eq(b.id, 2))
+        ok(eq(b.id, 2))
     end),
 
-    test("subtype", function()
-        local alpha = {
-            first = function() return 1 end,
-            __tostring = function(self)
-                return "alpha: " .. self.name
-            end
-        }
-
-        local beta = {
-            second = function() return 2 end,
-            __tostring = function(self)
-                return "beta: " .. self.name
-            end
-        }
-        -- beta extends alpha
-        setmetatable(beta, {__index = alpha})
+    test("method", function()
+        local Alpha = class("Alpha"):include(Lazy)
 
         local count = 0
-        lazy.fn(alpha) {
-            id = function()
-                count = count+1;
-                return count
-            end,
-        }
-        lazy.fn(beta) {
-            fromB = function() return true end,
-        }
+        function Alpha.lazy.method.id()
+            count = count + 1
+            return count
+        end
 
-        local a = setmetatable({
-            name = "a",
-        }, {__index = alpha})
-
-        local b = setmetatable({
-            name = "b",
-            two = function() return 2 end,
-        }, {__index = beta})
+        local a = Alpha()
+        local b = Alpha()
 
         ok(eq(a:id(), 1))
         ok(eq(a:id(), 1))
         ok(eq(b:id(), 2))
         ok(eq(b:id(), 2))
-        ok(eq(a:first(), 1))
-        ok(eq(b:first(), 1))
-        ok(eq(b:second(), 2))
-        ok(eq(b:fromB(), true))
     end),
+
+    test("override", function()
+        local Alpha = class("Alpha"):include(Lazy)
+
+        function Alpha.a()
+            return "a"
+        end
+
+        function Alpha.b()
+            return "b"
+        end
+
+        function Alpha.lazy.method.b()
+            return "bb"
+        end
+
+        function Alpha.lazy.method.c()
+            return "cc"
+        end
+
+        local a = Alpha()
+
+        ok(eq(a:a(), "a"))
+        ok(eq(a:b(), "b"), "Lazy methods should not override 'real' methods")
+        ok(eq(a:c(), "cc"))
+    end),
+
+    test("subclass", function()
+        local Alpha = class("Alpha"):include(Lazy)
+
+        local count = 0
+        function Alpha.lazy.method.id()
+            count = count + 1
+            return count
+        end
+
+        function Alpha.lazy.method.a()
+            return "a"
+        end
+
+        function Alpha.lazy.method.b()
+            return "b"
+        end
+
+        local Beta = Alpha:subclass("Beta")
+
+        function Beta.lazy.method.b()
+            return "bb"
+        end
+
+        local a = Alpha()
+        local b = Beta()
+
+        ok(eq(a:id(), 1))
+        ok(eq(a:id(), 1))
+        ok(eq(b:id(), 2))
+        ok(eq(b:id(), 2))
+
+        ok(eq(a:a(), "a"))
+        ok(eq(a:b(), "b"))
+        ok(eq(b:a(), "a"))
+        ok(eq(b:b(), "bb"))
+    end)
 }
