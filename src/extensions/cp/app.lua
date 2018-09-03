@@ -44,7 +44,6 @@ local printf                    = hs.printf
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                   = require("cp.ui.axutils")
-local is                        = require("cp.is")
 local just                      = require("cp.just")
 local languageID                = require("cp.i18n.languageID")
 local localeID                  = require("cp.i18n.localeID")
@@ -148,11 +147,21 @@ end
 local frontmostApp = nil
 
 --- cp.app.frontmostApp <cp.prop: cp.app; read-only; live>
---- Field
+--- Variable
 --- Returns the most recent 'registered' app that was active, other than CommandPost itself.
 app.static.frontmostApp = prop(function() return frontmostApp end):label("frontmostApp")
 
--- utility function to help set up watchers
+-- notifyWatch(cpProp, notifications) -> cp.prop
+-- Function
+-- Utility function to help set up watchers. Adds a watch for the specified notifications
+-- and then updates the property.
+--
+-- Parameters:
+-- * cpProp         - The [cp.prop](cp.prop.md) to update
+-- * notifications  - The list of notification types to update the prop on.
+--
+-- Returns:
+-- * The same `cp.prop`.
 local function notifyWatch(cpProp, notifications)
     cpProp:preWatch(function(self)
         log.df("notifyWatch > preWatch: type(notifier) == %q", type(self.notifier))
@@ -161,71 +170,195 @@ local function notifyWatch(cpProp, notifications)
             function() cpProp:update() end
         )
     end)
+    return cpProp
 end
 
+--- cp.app.forBundleID(bundleID)
+--- Constructor
+--- Returns the `cp.app` for the specified Bundle ID. If the app has already been created,
+--- the same instance of `cp.app` will be returned on subsequent calls.
+---
+--- The Bundle ID
+---
+--- Parameters:
+---  * bundleID      - The application bundle ID to find the app for.
+---
+--- Returns:
+---  * The `cp.app` for the bundle.
+function app.static.forBundleID(bundleID)
+    assert(type(bundleID) == "string", "`bundleID` must be a string")
+    local theApp = apps[bundleID]
+    if not theApp then
+        theApp = app:new(bundleID)
+        apps[bundleID] = theApp
+    end
+
+    return theApp
+end
+
+--------------------------------------------------------------
+-- cp.app instance configuration
+--------------------------------------------------------------
+
+-- cp.app:initialize(bundleID) -> cp.app
+-- Constructor
+-- Initializes new `cp.app` instances. This should not be called directly.
+-- Rather, get them via the [forBundleID](#forBundleID) function.
+--
+-- Parameters:
+-- * bundleID       - The BundleID for the app
+--
+-- Returns:
+-- * The new `cp.app`.
 function app:initialize(bundleID)
     self._bundleID = bundleID
+    app._initWatchers()
+end
 
-    local hsApplication = prop(function()
-        local hsApp = self._hsApplication
-        if not hsApp or hsApp:bundleID() == nil or not hsApp:isRunning() then
-            local result = application.applicationsForBundleID(self._bundleID)
-            if result and #result > 0 then
-                hsApp = result[1] -- If there is at least one copy running, return the first one
-            else
-                hsApp = nil
+--- cp.app:bundleID() -> string
+--- Method
+--- Returns the Bundle ID for the app.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Bundle ID.
+function app:bundleID()
+    return self._bundleID
+end
+
+--- cp.app.preferences <cp.app.prefs>
+--- Field
+--- The current [preferences](cp.app.prefs.md) for the application.
+function app.lazy.value:preferences()
+    return prefs.new(self:bundleID())
+end
+
+--- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
+--- Field
+--- Returns the running `hs.application` for the application, or `nil` if it's not running.
+function app.lazy.prop:hsApplication()
+    return notifyWatch(
+        prop(function()
+            local hsApp = self._hsApplication
+            if not hsApp or hsApp:bundleID() == nil or not hsApp:isRunning() then
+                local result = application.applicationsForBundleID(self._bundleID)
+                if result and #result > 0 then
+                    hsApp = result[1] -- If there is at least one copy running, return the first one
+                else
+                    hsApp = nil
+                end
+                self._hsApplication = hsApp
             end
-            self._hsApplication = hsApp
-        end
-        return hsApp
-    end)
+            return hsApp
+        end),
+        {"AXApplicationActivated", "AXApplicationDeactivated"}
+    )
+end
 
-    local pid = hsApplication:mutate(function(original)
+--- cp.app.pid <cp.prop: number; read-only; live>
+--- Field
+--- Returns the PID for the currently-running application, or `nil` if it's not running.
+function app.lazy.prop:pid()
+    return self.hsApplication:mutate(function(original)
         local hsApp = original()
         return hsApp and hsApp:pid()
     end)
+end
 
-    local running = hsApplication:mutate(function(original)
+--- cp.app.running <cp.prop: boolean; read-only; live>
+--- Field
+--- Checks if the application currently is running.
+function app.lazy.prop:running()
+    return self.hsApplication:mutate(function(original)
         local hsApp = original()
         return hsApp ~= nil and hsApp:bundleID() ~= nil and hsApp:isRunning()
     end)
+end
 
-    local UI = pid:mutate(function(original)
+--- cp.app.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the application's `axuielement`, if available.
+function app.lazy.prop:UI()
+    return self.pid:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             local thePid = original()
             return thePid and ax.applicationElementForPID(thePid)
         end)
     end)
+end
 
-    local showing = UI:mutate(function(original)
-        local ui = original()
-        return ui ~= nil and not ui:attributeValue("AXHidden")
-    end)
+--- cp.app.showing <cp.prop: boolean; read-only; live>
+--- Field
+--- Is the app visible on screen?
+function app.lazy.prop:showing()
+    return notifyWatch(
+        self.UI:mutate(function(original)
+            local ui = original()
+            return ui ~= nil and not ui:attributeValue("AXHidden")
+        end),
+        {"AXApplicationHidden", "AXApplicationShown"}
+    )
+end
 
-    local frontmost = UI:mutate(function(original)
-        local ui = original()
-        return ui ~= nil and ui:attributeValue("AXFrontmost")
-    end)
+--- cp.app.frontmost <cp.prop: boolean; read-only; live>
+--- Field
+--- Is the application currently frontmost?
+function app.lazy.prop:frontmost()
+    return notifyWatch(
+        self.UI:mutate(function(original)
+            local ui = original()
+            return ui ~= nil and ui:attributeValue("AXFrontmost")
+        end),
+        {"AXApplicationActivated", "AXApplicationDeactivated"}
+    )
+end
 
-    local focusedWindowUI = UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXFocusedWindow")
-    end)
+--- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI containing the currently-focused window for the app.
+function app.lazy.prop:focusedWindowUI()
+    return notifyWatch(
+        self.UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXFocusedWindow")
+        end),
+        {"AXFocusedWindowChanged"}
+    )
+end
 
-    local mainWindowUI = UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXMainWindow")
-    end)
+--- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI containing the currently-focused window for the app.
+function app.lazy.prop:mainWindowUI()
+    return notifyWatch(
+        self.UI:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue("AXMainWindow")
+        end),
+        {"AXMainWindowChanged"}
+    )
+end
 
-    local modalDialogOpen = focusedWindowUI:mutate(function(original)
+--- cp.app.modalDialogOpen <cp.prop: boolean; read-only>
+--- Field
+--- Checks if a modal dialog window is currently opon.
+function app.lazy.prop:modalDialogOpen()
+    return self.focusedWindowUI:mutate(function(original)
         local window = original()
         if window then
             return window:attributeValue("AXModal") == true or window:attributeValue("AXRole") == "AXSheet"
         end
         return false
     end)
+end
 
-    local path = hsApplication:mutate(function(original)
+--- cp.app.path <cp.prop: string; read-only; live>
+--- Field
+--- Path to the application, or `nil` if not found.
+function app.lazy.prop:path()
+    return self.hsApplication:mutate(function(original)
         local hsApp = original()
         if hsApp and hsApp:isRunning() then
             ----------------------------------------------------------------------------------------
@@ -248,8 +381,15 @@ function app:initialize(bundleID)
         end
         return nil
     end)
+end
 
-    local info = hsApplication:mutate(function(original, self)
+--- cp.app.info <cp.prop: table; read-only; live>
+--- Field
+--- The info table for the application, if available.
+--- If multiple versions of the app are installed, it will return the details for the running app as first priority,
+--- and then it could be any installed version after that.
+function app.lazy.prop:info()
+    return self.hsApplication:mutate(function(original)
         ----------------------------------------------------------------------------------------
         -- Check if the app is running already...
         ----------------------------------------------------------------------------------------
@@ -268,50 +408,92 @@ function app:initialize(bundleID)
         ----------------------------------------------------------------------------------------
         return application.infoForBundleID(self:bundleID())
     end)
+end
 
-    local versionString = info:mutate(function(original)
+--- cp.app.versionString <cp.prop: string; read-only; live>
+--- Field
+--- The application version as a `string`.
+---
+--- Notes:
+---  * If the application is running it will get the version of the active application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
+function app.lazy.prop:versionString()
+    return self.info:mutate(function(original)
         local theInfo = original()
         return theInfo and theInfo["CFBundleShortVersionString"]
     end)
+end
 
-    local version = versionString:mutate(function(original)
+--- cp.app.version <cp.prop: semver; read-only; live>
+--- Field
+--- The application version as a [semver](https://github.com/kikito/semver.lua).
+---
+--- Notes:
+---  * If the application is running it will get the version of the active application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
+function app.lazy.prop:version()
+    return self.versionString:mutate(function(original)
         local vs = original()
         return vs ~= nil and v(vs) or nil
     end)
+end
 
-    local displayName = info:mutate(function(original)
+--- cp.app.displayName <cp.prop: string; read-only; live>
+--- The application display name as a string.
+function app.lazy.prop:displayName()
+    return self.info:mutate(function(original)
         local theInfo = original()
         return theInfo and (theInfo["CFBundleDisplayName"] or theInfo["CFBundleName"])
     end)
+end
 
-    local installed = info:mutate(function(original) return original() ~= nil end)
+--- cp.app.installed <cp.prop: boolean; read-only>
+--- Field
+--- Checks if the application currently installed.
+function app.lazy.prop:installed()
+    return self.info:mutate(function(original) return original() ~= nil end)
+end
 
-    local windowsUI = UI:mutate(function(original)
-        local ui = original()
-        local windows = ui and ui:attributeValue("AXWindows")
-        if windows ~= nil and #windows == 0 then
-            local mainWindow = ui:attributeValue("AXMainWindow")
-            if mainWindow then
-                insert(windows, mainWindow)
+--- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the UI containing the list of windows in the app.
+function app.lazy.prop:windowsUI()
+    return notifyWatch(
+        self.UI:mutate(function(original)
+            local ui = original()
+            local windows = ui and ui:attributeValue("AXWindows")
+            if windows ~= nil and #windows == 0 then
+                local mainWindow = ui:attributeValue("AXMainWindow")
+                if mainWindow then
+                    insert(windows, mainWindow)
+                end
             end
-        end
-        return windows
-    end)
+            return windows
+        end),
+        {"AXWindowCreated", "AXDrawerCreated", "AXSheetCreated", "AXUIElementDestroyed"}
+    )
+end
 
-    -- Localization/I18N
-    local baseLocale = info:mutate(function(original)
+--- cp.app.baseLocale <cp.prop: cp.i18n.localeID; read-only>
+--- Field
+--- Returns the [localeID](cp.i18n.localeID.md) of the development region. This is the 'Base' locale for I18N.
+function app.lazy.prop:baseLocale()
+    return self.info:mutate(function(original)
         local theInfo = original()
         local devRegion = theInfo and theInfo.CFBundleDevelopmentRegion or nil
         return devRegion and localeID.forCode(devRegion)
     end)
+end
 
-    local supportedLocales = path:mutate(function(original)
+--- cp.app.supportedLocales <cp.prop: table of cp.i18n.localeID; read-only; live>
+--- Field
+--- Returns a list of `cp.i18n.localeID` values for locales that are supported by this app.
+function app.lazy.prop:supportedLocales()
+    return self.path:mutate(function(original)
         local locales = {}
         local appPath = original()
         if appPath then
             local resourcesPath = fs.pathToAbsolute(appPath .. "/Contents/Resources")
             if resourcesPath then
-                local theBaseLocale = baseLocale()
+                local theBaseLocale = self:baseLocale()
                 if theBaseLocale then
                     -- always add the base locale, if present.
                     insert(locales, theBaseLocale)
@@ -333,8 +515,13 @@ function app:initialize(bundleID)
         table.sort(locales)
         return locales
     end)
+end
 
-    local currentLocale = prop(
+--- cp.app.currentLocale <cp.prop: cp.i18n.localeID; live>
+--- Field
+--- Gets and sets the current locale for the application.
+function app.lazy.prop:currentLocale()
+    return prop(
         function()
             --------------------------------------------------------------------------------
             -- If the app is not running, we next try to determine the language using
@@ -409,161 +596,7 @@ function app:initialize(bundleID)
                 self:doRestart():TimeoutAfter(20*1000):Now()
             end
         end
-    ):monitor(running)
-
-
-    prop.bind(self) {
-        --- cp.app.hsApplication <cp.prop: hs.application; read-only; live>
-        --- Field
-        --- Returns the running `hs.application` for the application, or `nil` if it's not running.
-        hsApplication = hsApplication,
-
-        --- cp.app.pid <cp.prop: number; read-only; live>
-        --- Field
-        --- Returns the PID for the currently-running application, or `nil` if it's not running.
-        pid = pid,
-
-        --- cp.app.running <cp.prop: boolean; read-only; live>
-        --- Field
-        --- Checks if the application currently is running.
-        running = running,
-
-        --- cp.app.showing <cp.prop: boolean; read-only; live>
-        --- Field
-        --- Is the app visible on screen?
-        showing = showing,
-
-        --- cp.app.frontmost <cp.prop: boolean; read-only; live>
-        --- Field
-        --- Is the application currently frontmost?
-        frontmost = frontmost,
-
-        --- cp.app.modalDialogOpen <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if a modal dialog window is currently opon.
-        modalDialogOpen = modalDialogOpen,
-
-        --- cp.app.path <cp.prop: string; read-only; live>
-        --- Field
-        --- Path to the application, or `nil` if not found.
-        path = path,
-
-        --- cp.app.info <cp.prop: table; read-only; live>
-        --- Field
-        --- The info table for the application, if available.
-        --- If multiple versions of the app are installed, it will return the details for the running app as first priority,
-        --- and then it could be any installed version after that.
-        info = info,
-
-        --- cp.app.versionString <cp.prop: string; read-only; live>
-        --- Field
-        --- The application version as a `string`.
-        ---
-        --- Notes:
-        ---  * If the application is running it will get the version of the active application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
-        versionString = versionString,
-
-        --- cp.app.version <cp.prop: semver; read-only; live>
-        --- Field
-        --- The application version as a `semver`.
-        ---
-        --- Notes:
-        ---  * If the application is running it will get the version of the active application as a string, otherwise, it will use `hs.application.infoForBundleID()` to find the version.
-        version = version,
-
-        --- cp.app.displayName <cp.prop: string; read-only; live>
-        --- The application display name as a string.
-        displayName = displayName,
-
-        --- cp.app.installed <cp.prop: boolean; read-only>
-        --- Field
-        --- Checks if the application currently installed.
-        installed = installed,
-
-        --- cp.app.UI <cp.prop: hs._asm.axuielement; read-only; live>
-        --- Field
-        --- Returns the application's `axuielement`, if available.
-        UI = UI,
-
-        --- cp.app.windowsUI <cp.prop: hs._asm.axuielement; read-only; live>
-        --- Field
-        --- Returns the UI containing the list of windows in the app.
-        windowsUI = windowsUI,
-
-        --- cp.app.focusedWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
-        --- Field
-        --- Returns the UI containing the currently-focused window for the app.
-        focusedWindowUI = focusedWindowUI,
-
-        --- cp.app.mainWindowUI <cp.prop: hs._asm.axuielement; read-only; live>
-        --- Field
-        --- Returns the UI containing the currently-focused window for the app.
-        mainWindowUI = mainWindowUI,
-
-        --- cp.app.baseLocale <cp.prop: cp.i18n.localeID; read-only>
-        --- Field
-        --- Returns the locale of the development region. This is the 'Base' locale for I18N.
-        baseLocale = baseLocale,
-
-        --- cp.app.supportedLocales <cp.prop: table of cp.i18n.localeID; read-only; live>
-        --- Field
-        --- Returns a list of `cp.i18n.localeID` values for locales that are supported by this app.
-        supportedLocales = supportedLocales,
-
-        --- cp.app.currentLocale <cp.prop: cp.i18n.localeID; live>
-        --- Field
-        --- Gets and sets the current locale for the application.
-        currentLocale = currentLocale,
-    }
-
-    notifyWatch(hsApplication, {"AXApplicationActivated", "AXApplicationDeactivated"})
-    notifyWatch(showing, {"AXApplicationHidden", "AXApplicationShown"})
-    notifyWatch(frontmost, {"AXApplicationActivated", "AXApplicationDeactivated"})
-    notifyWatch(focusedWindowUI, {"AXFocusedWindowChanged"})
-    notifyWatch(mainWindowUI, {"AXMainWindowChanged"})
-    notifyWatch(windowsUI, {"AXWindowCreated", "AXDrawerCreated", "AXSheetCreated", "AXUIElementDestroyed"})
-
-    app._initWatchers()
-end
-
-function app.lazy.value:preferences()
-    return prefs.new(self:bundleID())
-end
-
---- cp.app.forBundleID(bundleID)
---- Constructor
---- Returns the `cp.app` for the specified Bundle ID. If the app has already been created,
---- the same instance of `cp.app` will be returned on subsequent calls.
----
---- The Bundle ID
----
---- Parameters:
----  * bundleID      - The application bundle ID to find the app for.
----
---- Returns:
----  * The `cp.app` for the bundle.
-function app.static.forBundleID(bundleID)
-    assert(type(bundleID) == "string", "`bundleID` must be a string")
-    local theApp = apps[bundleID]
-    if not theApp then
-        theApp = app:new(bundleID)
-        apps[bundleID] = theApp
-    end
-
-    return theApp
-end
-
---- cp.app:bundleID() -> string
---- Method
---- Returns the Bundle ID for the app.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Bundle ID.
-function app:bundleID()
-    return self._bundleID
+    ):monitor(self.running)
 end
 
 --- cp.app:menu() -> cp.app.menu
@@ -816,8 +849,15 @@ function app.lazy.method:notifier()
     return notifier.new(self:bundleID(), function() return self:UI() end):start()
 end
 
-function app:__tostring()
+--- cp.app.description -> string
+--- Field
+--- Returns the short description of the class as "cp.app: <bundleID>"
+function app.lazy.value:description()
     return format("cp.app: %s", self:bundleID())
+end
+
+function app:__tostring()
+    return self.description
 end
 
 -- cp.app._findApp(bundleID, appName) -> cp.app

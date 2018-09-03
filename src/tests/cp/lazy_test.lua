@@ -69,6 +69,12 @@ return test.suite("cp.lazy"):with {
 
         ok(prop.is(a.id), true)
         ok(prop.is(b.id), true)
+
+        ok(eq(a.id:owner(), a))
+        ok(eq(b.id:owner(), b))
+
+        ok(eq(a.id:label(), "id"))
+        ok(eq(b.id:label(), "id"))
     end),
 
     test("override", function()
