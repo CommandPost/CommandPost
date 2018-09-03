@@ -1,6 +1,7 @@
 local test          = require "cp.test"
 local class         = require "middleclass"
 local Lazy          = require "cp.lazy"
+local prop          = require "cp.prop"
 
 -- local log           = require "hs.logger" .new "lazy_test"
 
@@ -47,6 +48,27 @@ return test.suite("cp.lazy"):with {
         ok(eq(a:id(), 1))
         ok(eq(b:id(), 2))
         ok(eq(b:id(), 2))
+    end),
+
+    test("prop", function()
+        local Alpha = class("Alpha"):include(Lazy)
+
+        local count = 0
+        function Alpha.lazy.prop.id()
+            count = count + 1
+            return prop.THIS(count)
+        end
+
+        local a = Alpha()
+        local b = Alpha()
+
+        ok(eq(a:id(), 1))
+        ok(eq(a:id(), 1))
+        ok(eq(b:id(), 2))
+        ok(eq(b:id(), 2))
+
+        ok(prop.is(a.id), true)
+        ok(prop.is(b.id), true)
     end),
 
     test("override", function()
@@ -110,5 +132,21 @@ return test.suite("cp.lazy"):with {
         ok(eq(a:b(), "b"))
         ok(eq(b:a(), "a"))
         ok(eq(b:b(), "bb"))
-    end)
+    end),
+
+    test("in initialize", function()
+        local Alpha = class("Alpha"):include(Lazy)
+
+        function Alpha.lazy.value.id()
+            return "a"
+        end
+
+        function Alpha:initialize(key)
+            self.something = self.id .. key
+        end
+
+        local a = Alpha("x")
+
+        ok(eq(a.something, "ax"))
+    end),
 }

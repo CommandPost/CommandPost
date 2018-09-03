@@ -1,8 +1,11 @@
 --- === cp.lazy ===
 ---
---- `cp.lazy` is a `middleclass` "mix-in" that allows for simple specification of "lazy-loaded"
---- values and functions in class definitions. Some values an function results in classes are
---- only created once, and may never be created, depending on what happens in the class's lifetime.
+--- `cp.lazy` is a [middleclass](https://github.com/kikito/middleclass) "mix-in" that allows for
+--- simple specification of "lazy-loaded" values and functions in class definitions.
+---
+--- Some values and function results in classes are only created once, and may never be created,
+--- depending on what happens in the class's lifetime.
+---
 --- In these cases, it is useful to have the value created on demand, rather than when the instance
 --- is initialised.
 ---
@@ -70,8 +73,20 @@
 --- ```
 ---
 --- The `expensiveLookup` function would only get called once for each method, caching the result for future calls.
+---
+--- You can also create [cp.prop](cp.prop.md) values:
+---
+--- ```lua
+--- function MyClass.lazy.prop.enabled()
+---     return prop.TRUE()
+--- end
+--- ```
+---
+--- It is very similar to the `value` factory, but the returned `cp.prop` will be automatically bound
+--- to the new instance and labeled with the key ("enabled" in the example above).
 
-local format = string.format
+local prop          = require "cp.prop"
+local format        = string.format
 
 local Lazy = {}
 
@@ -92,17 +107,20 @@ local function _initLazyStatics(klass, superLazy)
     lazy = {
         value = {},
         method = {},
+        prop = {},
     }
+
+    local function checkKey(key)
+        for k,v in pairs(lazy) do
+            if rawget(v, key) then
+                error(format("There is already a lazy %s value factory for %q", k, key))
+            end
+        end
+    end
 
     setmetatable(lazy.value, {
         __newindex = function(self, key, value)
-            if rawget(self, key) then
-                error(format("there is already a lazy value factory for %q", key))
-            end
-
-            if rawget(lazy.method, key) then
-                error(format("There is already a lazy method factory for %q", key))
-            end
+            checkKey(key)
             rawset(self, key, value)
         end,
         __index = superLazy and superLazy.value,
@@ -110,16 +128,18 @@ local function _initLazyStatics(klass, superLazy)
 
     setmetatable(lazy.method, {
         __newindex = function(self, key, value)
-            if rawget(self, key) then
-                error(format("there is already a lazy method factory for %q", key))
-            end
-
-            if rawget(lazy.value, key) then
-                error(format("There is already a lazy value for %q", key))
-            end
+            checkKey(key)
             rawset(self, key, value)
         end,
         __index = superLazy and superLazy.method
+    })
+
+    setmetatable(lazy.prop, {
+        __newindex = function(self, key, value)
+            checkKey(key)
+            rawset(self, key, value)
+        end,
+        __index = superLazy and superLazy.prop
     })
 
     klass.static.lazy = lazy
@@ -142,12 +162,19 @@ local function _getLazyResult(instance, name)
     local value
     if lazy.value[name] then
         value = lazy.value[name](instance, name)
+        rawset(instance, name, value)
     elseif lazy.method[name] then
         local result = lazy.method[name](instance, name)
         value = function() return result end
-    end
-    if value ~= nil then
         rawset(instance, name, value)
+    elseif lazy.prop[name] then
+        value = lazy.prop[name](instance, name)
+        if prop.is(value) then
+            rawset(instance, name, value)
+            value:bind(instance, name)
+        else
+            error(format("Expected a cp.prop for the lazy prop named '%s', but got %s", name, value))
+        end
     end
     return value
 end
