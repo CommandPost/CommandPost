@@ -43,7 +43,7 @@ local Alert = Element:subtype()
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function Alert.matches(element)
-    return Element.matche(element) and element:attributeValue("AXRole") == "AXSheet"
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXSheet"
 end
 
 --- cp.ui.Alert.new(app) -> Alert

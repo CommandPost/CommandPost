@@ -84,7 +84,7 @@ function ScrollArea.new(parent, uiFinder)
 --- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs._asm.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
-        selectedChildrenUI = axutils.prop(contentsUI, "AXSelectedChidlren"),
+        selectedChildrenUI = axutils.prop(contentsUI, "AXSelectedChildren"),
     }
 
     return o
@@ -324,7 +324,7 @@ end
 --- Loads a Scroll Area layout.
 ---
 --- Parameters:
----  * layout - A table containing the Browser layout settings - created using `cp.apple.finalcutpro.main.Browser:saveLayout()`.
+---  * layout - A table containing the ScrollArea layout settings, typically created using [saveLayout](#saveLayout).
 ---
 --- Returns:
 ---  * None
