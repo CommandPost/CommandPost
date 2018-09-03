@@ -170,6 +170,10 @@ local function _getLazyResult(instance, name)
     elseif lazy.prop[name] then
         value = lazy.prop[name](instance, name)
         if prop.is(value) then
+            local owner = value:owner()
+            if owner and owner ~= instance then
+                value = value:wrap()
+            end
             rawset(instance, name, value)
             value:bind(instance, name)
         else

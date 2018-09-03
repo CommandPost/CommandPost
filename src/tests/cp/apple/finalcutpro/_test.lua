@@ -630,7 +630,7 @@ onRun(
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
-        if not fcp.openLibrary(targetLibraryPath) then
+        if not fcp:openLibrary(targetLibraryPath) then
             error(format("Unable to open the Test Library: %s", targetLibraryPath))
         end
 
