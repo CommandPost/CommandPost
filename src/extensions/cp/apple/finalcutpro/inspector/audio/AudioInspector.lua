@@ -119,13 +119,11 @@ function AudioInspector:initialize(parent)
     end)
 
     Element.initialize(self, parent, UI)
-    self._child = {}
-    self._rows = {}
 end
 
 function AudioInspector.lazy.method:content()
-    return SplitGroup(o, UI:mutate(function(original)
-        return axutils.cache(this, "_ui", function()
+    return SplitGroup(self, self.UI:mutate(function(original)
+        return axutils.cache(self, "_ui", function()
             local ui = original()
             if ui then
                 local splitGroup = ui[1]
@@ -153,7 +151,7 @@ function AudioInspector.lazy.method:topProperties()
     hasProperties(topProps, topProps.contentUI) {
         volume              = slider "FFAudioVolumeToolName",
     }
-    
+
     return topProps
 end
 
@@ -161,7 +159,7 @@ function AudioInspector.lazy.method:mainProperties()
     local mainProps = SplitGroup(self, function()
         return axutils.childFromTop(self:content():UI(), 2)
     end)
-    
+
     prop.bind(mainProps) {
         contentUI = self.UI:mutate(function(original)
             local ui = original()

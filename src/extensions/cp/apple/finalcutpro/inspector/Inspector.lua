@@ -578,7 +578,7 @@ end
 --- Returns:
 ---  * InfoInspector
 function Inspector.lazy.method:info()
-    return InfoInspector.new(self)
+    return InfoInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -616,7 +616,7 @@ end
 --- Returns:
 ---  * TextInspector
 function Inspector.lazy.method:text()
-    return TextInspector.new(self)
+    return TextInspector(self)
 end
 
 -----------------------------------------------------------------------
