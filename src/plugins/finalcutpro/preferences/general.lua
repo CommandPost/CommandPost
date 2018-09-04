@@ -66,7 +66,7 @@ function plugin.init(deps)
 
             :addParagraph(2201, html.span { class="tbTip" } ( i18n("advancedFeaturesWarning") .. "<br /><br />", false ).. "\n\n")
 
-            :addContent(3100, [[
+            :addContent(9000, [[
                     </div>
                 </div>
             ]], false)

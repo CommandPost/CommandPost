@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                       = require("hs.logger").new("i18n")
+local log                       = require("hs.logger").new("i18n")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -53,19 +53,24 @@ function mod.init()
     if not mod._loaded then
         local languagePath = config.languagePath
         local allLanguages = {}
-        for file in fs.dir(languagePath) do
-            if file:sub(-5) == ".json" then
-                local path = languagePath .. "/" .. file
-                local data = io.open(path, "r")
-                local content, decoded
-                if data then
-                    content = data:read("*all")
-                    data:close()
-                end
-                if content then
-                    decoded = json.decode(content)
-                    if decoded and type(decoded) == "table" then
-                        allLanguages = tools.mergeTable(allLanguages, decoded)
+        local iterFn, dirObj = fs.dir(languagePath)
+        if not iterFn then
+            log.ef("An error occured in cp.18n.init: %s", dirObj)
+        else
+            for file in fs.dir(languagePath) do
+                if file:sub(-5) == ".json" then
+                    local path = languagePath .. "/" .. file
+                    local data = io.open(path, "r")
+                    local content, decoded
+                    if data then
+                        content = data:read("*all")
+                        data:close()
+                    end
+                    if content then
+                        decoded = json.decode(content)
+                        if decoded and type(decoded) == "table" then
+                            allLanguages = tools.mergeTable(allLanguages, decoded)
+                        end
                     end
                 end
             end
