@@ -355,7 +355,7 @@ end
 ---  * A new ColorWheels object
 function ColorInspector:colorWheels()
     if not self._colorWheels then
-        self._colorWheels = ColorWheels.new(self)
+        self._colorWheels = ColorWheels(self)
     end
     return self._colorWheels
 end

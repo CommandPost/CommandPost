@@ -45,6 +45,11 @@ local Given, Done                       = go.Given, go.Done
 --------------------------------------------------------------------------------
 local Inspector = {}
 
+function Inspector.__tostring()
+    return "cp.apple.finalcutpro.inspector.Inspector"
+end
+
+
 --- cp.apple.finalcutpro.inspector.Inspector.INSPECTOR_TABS -> table
 --- Constant
 --- Table of supported Inspector Tabs
@@ -208,6 +213,12 @@ function Inspector.new(parent)
         end
     ):bind(o)
 
+    o.UI:preWatch(function()
+        o:app():notifier():watchFor({"AXUIElementDestroyed", "AXValueChanged"}, function()
+            o.UI:update()
+        end)
+    end)
+
     return o
 end
 
@@ -286,6 +297,12 @@ function Inspector:show(tab)
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.Inspector:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to show the `Inspector`.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if the Inspector was shown successfully, or an error if not.
 function Inspector:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:parent():doShow())
@@ -311,6 +328,20 @@ function Inspector:hide()
         menuBar:selectMenu({"Window", "Show in Workspace", "Inspector"})
     end
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.Inspector:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to hide the `Inspector`.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if the Inspector was hidden successfully, or an error if not.
+function Inspector:doHide()
+    return If(self.isShowing):Is(true)
+    :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
+    :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))
+    :Otherwise(true)
+    :Label("Inspector:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.Inspector:selectTab(tab) -> boolean
@@ -727,10 +758,6 @@ function Inspector:color()
         self._colorInspector = ColorInspector.new(self)
     end
     return self._colorInspector
-end
-
-function Inspector.__tostring()
-    return "cp.apple.finalcutpro.inspector.Inspector"
 end
 
 return Inspector

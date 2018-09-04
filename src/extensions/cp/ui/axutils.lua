@@ -20,6 +20,7 @@ local require = require
 local canvas					= require("hs.canvas")
 local fnutils					= require("hs.fnutils")
 local prop                      = require("cp.prop")
+local is                        = require("cp.is")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -57,7 +58,7 @@ function axutils.children(element)
         -- It's an AXUIElement:
         --------------------------------------------------------------------------------
         children = element:attributeValue("AXChildren") or element
-    elseif type(element.children) == "function" then
+    elseif is.callable(element.children) then
         children = element:children()
     end
     return children
@@ -151,7 +152,7 @@ function axutils.childMatching(element, matcherFn, index)
     index = index or 1
     if element then
         local children = axutils.children(element)
-        if #children > 0 then
+        if children and #children > 0 then
             local count = 0
             for _,child in ipairs(children) do
                 if matcherFn(child) then

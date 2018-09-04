@@ -21,7 +21,7 @@ local Element = class("Element"):include(lazy)
 
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
---- Matches to any valid `hs._asm.axuielement`. Sub-types should provide their own `match` method.
+--- Matches to any valid `hs._asm.axuielement`. Sub-types should provide their own `matches` method.
 ---
 --- Parameters:
 --- * The element to check
