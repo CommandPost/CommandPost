@@ -292,6 +292,19 @@ function ColorInspector:addCorrection(correctionType)
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:doAddCorrection(correctionType) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that adds the named correction type.
+---
+--- Parameters:
+---  * correctionType   - The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful, or sending an error if not.
+function ColorInspector:doAddCorrection(correctionType)
+    return self:corrections():doAdd(correctionType)
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:hide() -> ColorInspector
 --- Method
 --- Hides the Color Inspector

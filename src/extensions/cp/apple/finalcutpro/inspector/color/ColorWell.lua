@@ -484,7 +484,7 @@ end
 function ColorWell:doReset()
     return Do(function()
         self:reset()
-    end):DoYield()
+    end):ThenYield()
 end
 
 return ColorWell
