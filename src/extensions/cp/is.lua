@@ -234,6 +234,32 @@ local function is_blank(value)
     return value == nil or tostring(value) == ""
 end
 
+--- cp.is.instance(value, class) -> boolean
+--- Function
+--- Check if the value is an instance of the provided class `table`. It is considered
+--- an instance if the `class` is either the value itself, or is the `__index` or `__class` field
+--- of the `metatable`.
+---
+--- Parameters:
+--- * value     - the value to check
+--- * class     - the class table to check
+---
+--- Returns:
+--- * `true` if it is an instance.
+local function is_instance(value, class)
+    if type(value) == "table" then
+        if value == class then
+            return true
+        else
+            local mt = getmetatable(value)
+            if mt then
+                return is_instance(mt.__index, class) or is_instance(mt.__class, class)
+            end
+        end
+    end
+    return false
+end
+
 local is = {
     nothing         = is_nothing,
     something       = is_something,
@@ -243,6 +269,7 @@ local is = {
     boolean         = is_boolean,
     table           = is_table,
     userdata        = is_userdata,
+    instance        = is_instance,
     object          = is_object,
     list            = is_list,
     truthy          = is_truthy,

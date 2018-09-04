@@ -187,7 +187,7 @@ end
 ---  * The title of the Save Sheet window as a string or `nil`.
 function SaveSheet:filename()
     if not self._filename then
-        self._filename = TextField.new(self, function()
+        self._filename = TextField(self, function()
             return axutils.childWithRole(self:UI(), "AXTextField")
         end)
     end

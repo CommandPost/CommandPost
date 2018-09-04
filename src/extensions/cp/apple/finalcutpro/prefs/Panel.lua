@@ -43,7 +43,7 @@ function Panel.new(parent, titleKey, subclass)
         contentsUI = prop.OR(isShowing:AND(parent.groupUI), prop.NIL),
     }
 
-    o.button = Button.new(o, buttonUI)
+    o.button = Button(o, buttonUI)
 
     return o
 end

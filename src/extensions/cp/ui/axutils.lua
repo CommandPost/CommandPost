@@ -19,6 +19,7 @@ local require = require
 --------------------------------------------------------------------------------
 local canvas					= require("hs.canvas")
 local fnutils					= require("hs.fnutils")
+local prop                      = require("cp.prop")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -469,6 +470,35 @@ function axutils.snapshot(element, filename)
         end
     end
     return nil
+end
+
+--- cp.ui.axutils.prop(uiFinder, attributeName[, settable]) -> cp.prop
+--- Function
+--- Creates a new `cp.prop` which will find the `hs._asm.axuielement` via the `uiFinder` and
+--- get/set the value (if settable is `true`).
+---
+--- Parameters:
+--- * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs._asm.axuielement`.
+--- * attributeName - the `AX` atrribute name the property links to.
+--- * settable      - Defaults to `false`. If `true`, the property will also be settable.
+---
+--- Returns:
+--- * The `cp.prop` for the attribute.
+---
+--- Notes:
+--- * If the `uiFinder` is a `cp.prop`, it will be monitored for changes, making the resulting `prop` "live".
+function axutils.prop(uiFinder, attributeName, settable)
+    if prop.is(uiFinder) then
+        return uiFinder:mutate(function(original)
+            local ui = original()
+            return ui and ui:attributeValue(attributeName)
+        end,
+        settable and function(newValue, original)
+            local ui = original()
+            return ui and ui:setAttributeValue(attributeName, newValue)
+        end
+    )
+    end
 end
 
 axutils.match = {}

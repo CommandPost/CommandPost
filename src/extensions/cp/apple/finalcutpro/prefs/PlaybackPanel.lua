@@ -73,7 +73,7 @@ end
 
 function PlaybackPanel.mt:createMulticamOptimizedMedia()
     if not self._createOptimizedMedia then
-        self._createOptimizedMedia = CheckBox.new(self, function()
+        self._createOptimizedMedia = CheckBox(self, function()
             return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateMulticamOptimizedMedia")
         end)
     end
@@ -82,7 +82,7 @@ end
 
 function PlaybackPanel.mt:backgroundRender()
     if not self._backgroundRender then
-        self._backgroundRender = CheckBox.new(self, function()
+        self._backgroundRender = CheckBox(self, function()
             return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "BackgroundRender")
         end)
     end

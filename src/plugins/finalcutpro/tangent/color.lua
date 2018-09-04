@@ -146,7 +146,7 @@ function mod.init(tangentManager, fcpGroup)
                     percentChange = percentChange + change
                     updateUI()
                 end)
-                :onReset(function() puck:show():reset() end)
+                :onReset(puck:doReset())
 
             if puck:hasAngle() then
                 local angle = cbGroup:parameter(rangeID + 1)
@@ -165,7 +165,7 @@ function mod.init(tangentManager, fcpGroup)
                         angleChange = angleChange + change
                         updateUI()
                     end)
-                    :onReset(function() puck:show():reset() end)
+                    :onReset(puck:doReset())
 
                 cbGroup:binding(format("%s %s %s", iColorBoard, pName, aName))
                     :member(angle)

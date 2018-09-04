@@ -113,7 +113,7 @@ end
 ---  * A `axuielementObject` object.
 function TimelineAppearance:toggle()
     if not self._toggle then
-        self._toggle = CheckBox.new(self:parent(), function()
+        self._toggle = CheckBox(self:parent(), function()
             return self:toggleUI()
         end)
     end
@@ -194,7 +194,7 @@ end
 ---  * A `Slider` object.
 function TimelineAppearance:clipHeight()
     if not self._clipHeight then
-        self._clipHeight = Slider.new(self, function()
+        self._clipHeight = Slider(self, function()
             return axutils.childMatching(self:UI(), function(e)
                 return e:attributeValue("AXRole") == "AXSlider" and e:attributeValue("AXMaxValue") == 210
             end)
@@ -214,7 +214,7 @@ end
 ---  * A `Slider` object.
 function TimelineAppearance:zoomAmount()
     if not self._zoomAmount then
-        self._zoomAmount = Slider.new(self, function()
+        self._zoomAmount = Slider(self, function()
             return axutils.childWithID(self:UI(), id "ZoomAmount")
         end)
     end

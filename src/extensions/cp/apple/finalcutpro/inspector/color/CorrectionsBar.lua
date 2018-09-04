@@ -25,6 +25,11 @@ local just                              = require("cp.just")
 local MenuButton                        = require("cp.ui.MenuButton")
 local prop                              = require("cp.prop")
 
+local Do                                = require("cp.rx.go.Do")
+local If                                = require("cp.rx.go.If")
+local Throw                             = require("cp.rx.go.Throw")
+local Require                           = require("cp.rx.go.Require")
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -119,7 +124,7 @@ function CorrectionsBar.new(parent)
     --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.correction <cp.ui.MenuButton>
     --- Field
     --- The `MenuButton` that lists the current correction.
-    o.correction = MenuButton.new(o, function()
+    o.correction = MenuButton(o, function()
         return axutils.childWithRole(UI(), "AXMenuButton")
     end)
 
@@ -168,6 +173,19 @@ function CorrectionsBar:show()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:doShow() -> cp.rx.go.Statement
+--- Method
+--- A Statement that will attempt to show the bar.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, which will resolve to `true` if successful, or send an `error` if not.
+function CorrectionsBar:doShow()
+    return self:parent():doShow():Label("CorrectionsBar:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:menuButton() -> MenuButton
 --- Method
 --- Returns the menu button.
@@ -179,7 +197,7 @@ end
 ---  * A `menuButton` object.
 function CorrectionsBar:menuButton()
     if not self._menuButton then
-        self._menuButton = MenuButton.new(self, function()
+        self._menuButton = MenuButton(self, function()
             return axutils.childWithRole(self:UI(), "AXMenuButton")
         end)
     end
@@ -196,7 +214,12 @@ end
 --- Returns:
 ---  * The correction label as string.
 function CorrectionsBar:findCorrectionLabel(correctionType)
-    return self:app():string(self.CORRECTION_TYPES[correctionType])
+    local key = self.CORRECTION_TYPES[correctionType]
+    if key then
+        return self:app():string(key)
+    else
+        error(string.format("Unable to find label for %q", correctionType))
+    end
 end
 
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:activate(correctionType, number) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
@@ -246,6 +269,41 @@ function CorrectionsBar:activate(correctionType, number)
     return false
 end
 
+--- cp.apple.finalcutpro.inspector.color.CorrectionsBar:activate(correctionType, number) -> cp.rx.go.Statement
+--- Method
+--- A Statement that activates a correction type.
+---
+--- Parameters:
+---  * `correctionType` - The correction type as string.
+---  * `number` - The number of the correction.
+---
+--- Returns:
+---  *  The `Statement`.
+function CorrectionsBar:doActivate(correctionType, number)
+    number = number or 1
+    local menuButton = self:menuButton()
+
+    return Do(self:doShow())
+    :Then(function()
+        local correctionText = self:findCorrectionLabel(correctionType)
+        if not correctionText then
+            return Throw("Invalid Correction Type: '%s'", correctionType)
+        end
+
+        local pattern = "%s*"..correctionText.." "..number
+
+        return If(menuButton:doSelectItemMatching(pattern)):Is(false)
+        :Then(function()
+            --------------------------------------------------------------------------------
+            -- Try adding a new correction of the specified type:
+            --------------------------------------------------------------------------------
+            return self:doAdd(correctionType)
+        end)
+        :Otherwise(true)
+    end)
+    :Label("doActivate")
+end
+
 --- cp.apple.finalcutpro.inspector.color.CorrectionsBar:add(correctionType) -> cp.apple.finalcutpro.inspector.color.CorrectionsBar
 --- Method
 --- Adds the specific correction type.
@@ -271,6 +329,21 @@ function CorrectionsBar:add(correctionType)
     end
 
     return self
+end
+
+function CorrectionsBar:doAdd(correctionType)
+    return Do(self:doShow())
+    :Then(function()
+        local correctionText = self:findCorrectionLabel(correctionType)
+        if not correctionText then
+            log.ef("Invalid Correction Type: %s", correctionType)
+        end
+
+        local pattern = "%+"..correctionText
+
+        return Require(self:menuButton():doSelectItemMatching(pattern))
+        :OrThrow("Unable to find correction: '%s' (%s)", correctionType, correctionText)
+    end)
 end
 
 return CorrectionsBar

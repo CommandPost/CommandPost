@@ -5,6 +5,14 @@ local app       = require("cp.app")
 local just      = require("cp.just")
 
 return test.suite("cp.app"):with {
+    test("is", function()
+        local preview = app.forBundleID("com.apple.Preview")
+
+        ok(eq(app.is(preview), true))
+        ok(eq(app.is("foobar"), false))
+        ok(eq(app.is(true), false))
+    end),
+
     test("forBundleID", function()
         local preview = app.forBundleID("com.apple.Preview")
 

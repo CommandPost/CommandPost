@@ -28,6 +28,8 @@ local ColorWheels                       = require("cp.apple.finalcutpro.inspecto
 local ColorCurves                       = require("cp.apple.finalcutpro.inspector.color.ColorCurves")
 local HueSaturationCurves               = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
 
+local If, WaitUntil                     = require("cp.rx.go.If"), require("cp.rx.go.WaitUntil")
+
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
@@ -227,6 +229,25 @@ function ColorInspector:show()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to show the Color Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful or sending an error if not.
+function ColorInspector:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        self:app():menu():doSelectMenu({"Window", "Go To", idBoard "ColorBoard"})
+    )
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the " .. idBoard("ColorBoard")))
+    :Otherwise(true)
+    :Label("ColorInspector:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self
 --- Method
 --- Activates the named correction type and number, if present. If no corrector with the type/number combination exists, a new one is added.
@@ -240,6 +261,21 @@ end
 function ColorInspector:activateCorrection(correctionType, number)
     self:corrections():activate(correctionType, number)
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:doActivateCorrection(correctionType[, number]) -> cp.rx.go.Statement<boolean>
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that activates the named correction type and number, if present.
+--- If no corrector with the type/number combination exists, a new one is added.
+---
+--- Parameters:
+---  * correctionType   - The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.
+---  * number           - The correction number for that type. Defaults to `1`.
+---
+--- Returns:
+---  * The `Statement`, which sends a single `true` value if successful, or sends an error if not.
+function ColorInspector:doActivateCorrection(correctionType, number)
+    return self:corrections():doActivate(correctionType, number)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:addCorrection(correctionType) -> self
@@ -270,6 +306,14 @@ function ColorInspector:hide()
         self:parent():hide()
     end
     return self
+end
+
+function ColorInspector:doHide()
+    return If(self.isShowing)
+    :Then(
+        self:parent():doHide()
+    )
+    :Label("ColorInspector:doHide")
 end
 
 --------------------------------------------------------------------------------

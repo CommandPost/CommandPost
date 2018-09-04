@@ -21,6 +21,9 @@ local ColorPuck                 = require("cp.apple.finalcutpro.inspector.color.
 local just                      = require("cp.just")
 local prop                      = require("cp.prop")
 
+local go                        = require("cp.rx.go")
+local If, Do, Throw, WaitUntil  = go.If, go.Do, go.Throw, go.WaitUntil
+
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -70,6 +73,33 @@ function ColorBoardAspect.new(parent, index, hasAngle)
         _hasAngle = hasAngle,
     }, ColorBoardAspect)
 
+    local UI = parent.contentUI:mutate(function(original)
+        -- only return the if this is the currently-selected aspect
+        local ui = original()
+        if ui and parent:aspectGroup():selectedOption() == index then
+            return ui
+        end
+    end)
+
+    local isShowing = UI:ISNOT(nil)
+
+    prop.bind(o) {
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.UI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- The main `axuielement` for the individual Color Board 'aspect' panel.
+        UI = UI,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:isShowing() -> <cp.prop: boolean; read-only; live>
+--- Field
+--- Is the Color Board Aspect showing?
+        isShowing = isShowing,
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:selected() -> boolean
+--- Field
+--- Is the Color Board Aspect selected?
+        selected = isShowing,
+    }
+
     return o
 end
 
@@ -99,23 +129,6 @@ function ColorBoardAspect:app()
     return self:parent():app()
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:UI() -> axuielementObject
---- Method
---- Returns the Color Board Aspect Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function ColorBoardAspect:UI()
-    local parent = self:parent()
-    -- only return the if this is the currently-selected aspect
-    if parent:aspectGroup():selectedOption() == self._index then
-        return parent:contentUI()
-    end
-end
-
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:show() -> cp.apple.finalcutpro.inspector.color.ColorBoardAspect
 --- Method
 --- Shows the Color Board Aspect
@@ -135,17 +148,26 @@ function ColorBoardAspect:show()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:doShow() -> cp.rx.go.Statement
 --- Method
---- Gets whether or not the Color Board Aspect is showing.
+--- A [Statement](cp.rx.go.Statement.md) that shows this Color Board Aspect.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `true` if showing or `false` if not.
-function ColorBoardAspect:isShowing()
-    return self:UI() ~= nil
+---  * The `Statement`, resolving to `true` if successful or throwing an error if not.
+function ColorBoardAspect:doShow()
+    local parent = self:parent()
+
+    return If(self.isShowing):Is(false)
+    :Then(parent:doSelectAspect(self._index))
+    :Then(
+        WaitUntil(self.isShowing)
+        :TimeoutAfter(3000, Throw("Unable to show the %q aspect of the Color Board", self:id()))
+    )
+    :Otherwise(true)
+    :Label("ColorBoardAspect:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:index() -> number
@@ -170,6 +192,9 @@ end
 ---
 --- Returns:
 --- * `true` if it has an `angle` propery.
+function ColorBoardAspect:hasAngle()
+    return self._hasAngle
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:id() -> string
 --- Method
@@ -182,19 +207,6 @@ end
 ---  * The ID as string.
 function ColorBoardAspect:id()
     return ColorBoardAspect.ids[self._index]
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:selected() -> boolean
---- Method
---- Is the Color Board Aspect selected?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if selected otherwise `false`.
-function ColorBoardAspect:selected()
-    return self:isShowing()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:reset() -> cp.apple.finalcutpro.inspector.color.ColorBoardAspect
@@ -213,6 +225,24 @@ function ColorBoardAspect:reset()
     self:midtones():reset()
     self:highlights():reset()
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:reset() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that resets all pucks in the the Color Board Aspect.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, which will resolve to `true` if sucessful, or throws an error if not.
+function ColorBoardAspect:doReset()
+    return Do(self:doShow())
+    :Then(self:master():doReset())
+    :Then(self:shadows():doReset())
+    :Then(self:midtones():doReset())
+    :Then(self:highlight():doReset())
+    :Labeled("ColorBoardAspect:doReset")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:master() -> ColorPuck

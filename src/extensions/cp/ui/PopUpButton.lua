@@ -18,7 +18,7 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
+local Element                       = require("cp.ui.Element")
 
 local go                            = require("cp.rx.go")
 local If, WaitUntil                 = go.If, go.WaitUntil
@@ -28,7 +28,7 @@ local If, WaitUntil                 = go.If, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PopUpButton = {}
+local PopUpButton = Element:subclass("PopUpButton")
 
 --- cp.ui.PopUpButton.matches(element) -> boolean
 --- Function
@@ -39,38 +39,26 @@ local PopUpButton = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function PopUpButton.matches(element)
-    return element and element:attributeValue("AXRole") == "AXPopUpButton"
+function PopUpButton.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
---- cp.ui.PopUpButton.new(axuielement, function) -> cp.ui.PopUpButton
+--- cp.ui.PopUpButton:new(parent, uiFinder) -> cp.ui.PopUpButton
 --- Constructor
 --- Creates a new PopUpButton.
 ---
 --- Parameters:
 ---  * parent		- The parent table. Should have a `isShowing` property.
+---  * uiFinder      - The `function` or `cp.prop` that provides the current `hs._asm.axuielement`.
 ---
 --- Returns:
 ---  * The new `PopUpButton` instance.
-function PopUpButton.new(parent, finderFn)
-    local o = prop.extend({_parent = parent, _finder = finderFn}, PopUpButton)
 
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        PopUpButton.matches)
-    end)
-
-    if prop.is(parent.UI) then
-        UI:monitor(parent.UI)
-    end
-
-    local isShowing = UI:mutate(function(original, self)
-        return original() ~= nil and self:parent():isShowing()
-    end)
-
-    local value = UI:mutate(
+--- cp.ui.PopUpButton.value <cp.prop: anything; live>
+--- Field
+--- Returns or sets the current `PopUpButton` value.
+function PopUpButton.lazy.prop:value()
+    return self.UI:mutate(
         function(original)
             local ui = original()
             return ui and ui:value()
@@ -92,70 +80,27 @@ function PopUpButton.new(parent, finderFn)
         end
     )
     -- if anyone starts watching, then register with the app notifier.
-    value:preWatch(function()
-        o:app():notifier():watchFor("AXMenuItemSelected", function()
-            value:update()
+    :preWatch(function(_, theProp)
+        self:app():notifier():watchFor("AXMenuItemSelected", function()
+            theProp:update()
         end)
     end)
-
-    local menuUI = UI:mutate(function(original)
-        local ui = original()
-        return ui and axutils.childWithRole(ui, "AXMenu")
-    end)
-    -- if anyone opens the menu, update the prop watchers
-    menuUI:preWatch(function()
-        o:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
-            menuUI:update()
-        end)
-    end)
-
-    return prop.bind(o) {
---- cp.ui.PopUpButton.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Provides the `axuielement` for the `PopUpButton`.
-        UI = UI,
-
---- cp.ui.PopUpButton.isShowing <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Checks if the `PopUpButton` is visible on screen.
-        isShowing = isShowing,
-
---- cp.ui.PopUpButton.value <cp.prop: anything; live>
---- Field
---- Returns or sets the current `PopUpButton` value.
-        value = value,
+end
 
 --- cp.ui.PopUpButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
 --- Field
 --- Returns the `AXMenu` for the PopUpMenu if it is currently visible.
-        menuUI = menuUI,
-    }
-end
-
---- cp.ui.PopUpButton:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function PopUpButton:parent()
-    return self._parent
-end
-
---- cp.ui.PopUpButton:app() -> app
---- Method
---- Returns the application object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * the Application
-function PopUpButton:app()
-    return self:parent():app()
+function PopUpButton.lazy.prop:menuUI()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and axutils.childWithRole(ui, "AXMenu")
+    end)
+    -- if anyone opens the menu, update the prop watchers
+    :preWatch(function(_, theProp)
+        self:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
+            theProp:update()
+        end)
+    end)
 end
 
 --- cp.ui.PopUpButton:selectItem(index) -> self
@@ -268,20 +213,6 @@ function PopUpButton:setValue(value)
     return self
 end
 
---- cp.ui.PopUpButton:isEnabled() -> boolean
---- Method
---- Is the `PopUpButton` enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled otherwise `false`.
-function PopUpButton:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
-end
-
 --- cp.ui.PopUpButton:press() -> self
 --- Method
 --- Presses the `PopUpButton`.
@@ -357,7 +288,7 @@ end
 --- Loads a `PopUpButton` layout.
 ---
 --- Parameters:
----  * layout - A table containing the `PopUpButton` layout settings - created using `cp.ui.PopUpButton:saveLayout()`.
+---  * layout - A table containing the `PopUpButton` layout settings - created using [saveLayout](#saveLayout).
 ---
 --- Returns:
 ---  * None
@@ -365,24 +296,6 @@ function PopUpButton:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
     end
-end
-
---- cp.ui.PopUpButton:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path		- (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function PopUpButton:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return PopUpButton
