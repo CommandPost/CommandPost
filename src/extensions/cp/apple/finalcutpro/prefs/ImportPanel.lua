@@ -74,7 +74,7 @@ end
 
 function ImportPanel.mt:createProxyMedia()
     if not self._createProxyMedia then
-        self._createProxyMedia = CheckBox.new(self, function()
+        self._createProxyMedia = CheckBox(self, function()
             return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateProxyMedia")
         end)
     end
@@ -83,7 +83,7 @@ end
 
 function ImportPanel.mt:createOptimizedMedia()
     if not self._createOptimizedMedia then
-        self._createOptimizedMedia = CheckBox.new(self, function()
+        self._createOptimizedMedia = CheckBox(self, function()
             return axutils.childFromTop(axutils.childrenWithRole(self:contentsUI(), "AXCheckBox"), id "CreateOptimizedMedia")
         end)
     end
@@ -98,7 +98,7 @@ end
 
 function ImportPanel.mt:copyToMediaFolder()
     if not self._copyToMediaFolder then
-        self._copyToMediaFolder = RadioButton.new(self, function()
+        self._copyToMediaFolder = RadioButton(self, function()
             local groupUI = self:mediaLocationGroupUI()
             return groupUI and groupUI[id "CopyToMediaFolder"]
         end)
@@ -108,7 +108,7 @@ end
 
 function ImportPanel.mt:leaveInPlace()
     if not self._leaveInPlace then
-        self._leaveInPlace = RadioButton.new(self, function()
+        self._leaveInPlace = RadioButton(self, function()
             local groupUI = self:mediaLocationGroupUI()
             return groupUI and groupUI[id "LeaveInPlace"]
         end)

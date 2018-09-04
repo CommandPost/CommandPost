@@ -31,7 +31,6 @@ local require = require
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local Element						= require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 local If                            = require("cp.rx.go.If")
 
@@ -40,7 +39,7 @@ local If                            = require("cp.rx.go.If")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local CheckBox = Element:subtype()
+local CheckBox = Element:subclass("CheckBox")
 
 --- cp.ui.CheckBox.matches(element) -> boolean
 --- Function
@@ -51,11 +50,11 @@ local CheckBox = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if it's a match, or `false` if not.
-function CheckBox.matches(element)
+function CheckBox.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXCheckBox"
 end
 
---- cp.ui.CheckBox.new(parent, uiFinder) -> cp.ui.CheckBox
+--- cp.ui.CheckBox:new(parent, uiFinder) -> cp.ui.CheckBox
 --- Constructor
 --- Creates a new CheckBox.
 ---
@@ -65,19 +64,23 @@ end
 ---
 --- Returns:
 ---  * The new `CheckBox`.
-function CheckBox.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, CheckBox)
+function CheckBox:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
 --- cp.ui.CheckBox.title <cp.prop: string; read-only>
 --- Field
 --- The button title, if available.
-    local title   = axutils.prop(o.UI, "AXTitle")
+function CheckBox.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
+end
 
 --- cp.ui.CheckBox.checked <cp.prop: boolean>
 --- Field
 --- Indicates if the checkbox is currently checked.
 --- May be set by calling as a function with `true` or `false` to the function.
-    local checked = o.UI:mutate(
+function CheckBox.lazy.prop:checked()
+    return self.UI:mutate(
         function(original) -- get
             local ui = original()
             return ui ~= nil and ui:value() == 1
@@ -89,12 +92,6 @@ function CheckBox.new(parent, uiFinder)
             end
         end
     )
-
-    prop.bind(o) {
-        checked = checked, title = title,
-    }
-
-    return o
 end
 
 --- cp.ui.CheckBox:toggle() -> self

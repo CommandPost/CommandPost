@@ -138,7 +138,7 @@ function AudioInspector.new(parent)
     function o:content()
         local content = self._content
         if not content then
-            content = SplitGroup.new(o, UI:mutate(function(original, this)
+            content = SplitGroup(o, UI:mutate(function(original, this)
                 return axutils.cache(this, "_ui", function()
                     local ui = original()
                     if ui then
@@ -156,7 +156,7 @@ function AudioInspector.new(parent)
     function o:topProperties()
         local topProps = self._topProperties
         if not topProps then
-            topProps = Group.new(self, function()
+            topProps = Group(self, function()
                 return axutils.childFromTop(self:content():UI(), 1)
             end)
 
@@ -181,7 +181,7 @@ function AudioInspector.new(parent)
     function o:mainProperties()
         local mainProps = self._mainProperties
         if not mainProps then
-            mainProps = SplitGroup.new(self, function()
+            mainProps = SplitGroup(self, function()
                 return axutils.childFromTop(self:content():UI(), 2)
             end)
 
@@ -207,10 +207,10 @@ function AudioInspector.new(parent)
                         },
                         humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
                             frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)
-                                row.fiftyHz     = RadioButton.new(row, function()
+                                row.fiftyHz     = RadioButton(row, function()
                                     return childFromLeft(row:children(), 1, RadioButton.matches)
                                 end)
-                                row.sixtyHz     = RadioButton.new(row, function()
+                                row.sixtyHz     = RadioButton(row, function()
                                     return childFromRight(row:children(), 1, RadioButton.matches)
                                 end)
                             end),

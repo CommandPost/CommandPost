@@ -156,7 +156,7 @@ function TextInspector.new(parent)
 
     -- The 'Shape Preset' popup
 
-    o.shapePreset = PopUpButton.new(o, function()
+    o.shapePreset = PopUpButton(o, function()
         local ui = o.contentUI()
         return ui and PopUpButton.matches(ui[1]) and ui[1]
     end)
@@ -165,63 +165,63 @@ function TextInspector.new(parent)
     hasProperties(o, o.contentUI) {
         basic             = section "FCP Text Inspector Basic Heading" {
             font            = simple("Text Font Folder", function(row)
-                row.family        = PopUpButton.new(row, function()
+                row.family        = PopUpButton(row, function()
                     return childFromRight(row, 2, PopUpButton.matches)
                 end)
-                row.typeface        = PopUpButton.new(row, function()
+                row.typeface        = PopUpButton(row, function()
                     return childFromRight(row, 1, PopUpButton.matches)
                 end)
             end),
             size            = slider "Text Format Size",
             alignment       = simple("Text Paragraph Alignment", function(row)
-                row.flush = Group.new(row, function()
+                row.flush = Group(row, function()
                     return childFromRight(row, 2, Group.matches)
                 end)
 
-                row.left = CheckBox.new(row, function()
+                row.left = CheckBox(row, function()
                     return childFromLeft(row.flush:UI(), 1, CheckBox.matches)
                 end)
-                row.center = CheckBox.new(row, function()
+                row.center = CheckBox(row, function()
                     return childFromLeft(row.flush:UI(), 2, CheckBox.matches)
                 end)
-                row.right = CheckBox.new(row, function()
+                row.right = CheckBox(row, function()
                     return childFromLeft(row.flush:UI(), 3, CheckBox.matches)
                 end)
 
-                row.justified = Group.new(row, function()
+                row.justified = Group(row, function()
                     return childFromRight(row, 1, Group.matches)
                 end)
 
-                row.justifiedLeft = CheckBox.new(row, function()
+                row.justifiedLeft = CheckBox(row, function()
                     return childFromLeft(row.justified:UI(), 1, CheckBox.matches)
                 end)
 
-                row.justifiedCenter = CheckBox.new(row, function()
+                row.justifiedCenter = CheckBox(row, function()
                     return childFromLeft(row.justified:UI(), 2, CheckBox.matches)
                 end)
 
-                row.justifiedRight = CheckBox.new(row, function()
+                row.justifiedRight = CheckBox(row, function()
                     return childFromLeft(row.justified:UI(), 3, CheckBox.matches)
                 end)
 
-                row.justifiedFull = CheckBox.new(row, function()
+                row.justifiedFull = CheckBox(row, function()
                     return childFromLeft(row.justified:UI(), 4, CheckBox.matches)
                 end)
             end),
             verticalAlignment    = simple("Text Layout Vertical Alignment", function(row)
-                row.options = RadioGroup.new(row, function()
+                row.options = RadioGroup(row, function()
                     return childFromLeft(row:children(), 1, RadioGroup.matches)
                 end)
 
-                row.top = RadioButton.new(row, function()
+                row.top = RadioButton(row, function()
                     return childFromLeft(row.options:UI(), 1)
                 end)
 
-                row.middle = RadioButton.new(row, function()
+                row.middle = RadioButton(row, function()
                     return childFromLeft(row.options:UI(), 2)
                 end)
 
-                row.bottom = RadioButton.new(row, function()
+                row.bottom = RadioButton(row, function()
                     return childFromLeft(row.options:UI(), 3)
                 end)
             end),

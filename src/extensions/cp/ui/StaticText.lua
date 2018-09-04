@@ -22,7 +22,6 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.element")
 local notifier						= require("cp.ui.notifier")
 local prop							= require("cp.prop")
@@ -31,16 +30,14 @@ local timer                         = require("hs.timer")
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local cache                         = axutils.cache
 local delayedTimer                  = timer.delayed
-local snapshot                      = axutils.snapshot
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local StaticText = Element:subtype()
+local StaticText = Element:subclass("StaticText")
 
 --- cp.ui.StaticText.matches(element) -> boolean
 --- Function
@@ -51,7 +48,7 @@ local StaticText = Element:subtype()
 ---
 --- Returns:
 ---  * If `true`, the element is a Static Text element.
-function StaticText.matches(element)
+function StaticText.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXStaticText"
 end
 
@@ -78,60 +75,62 @@ end
 ---
 --- Returns:
 ---  * The new `StaticText`.
-function StaticText.new(parent, uiFinder, convertFn)
-    local o = Element.new(parent, uiFinder, StaticText)
+function StaticText:initialize(parent, uiFinder, convertFn)
+    Element.initialize(self, parent, uiFinder)
 
-    prop.bind(o) {
-        --- cp.ui.StaticText.value <cp.prop: anything>
-        --- Field
-        --- The current value of the text field.
-        value = o.UI:mutate(
-            function(original)
-                local ui = original()
-                local value = ui and ui:attributeValue("AXValue") or nil
-                if value and convertFn then
-                    value = convertFn(value)
-                end
-                return value
-            end,
-            function(value, original)
-                local ui = original()
-                if ui then
-                    value = tostring(value)
-                    local focused = ui:attributeValue("AXFocused")
-                    ui:setAttributeValue("AXFocused", true)
-                    ui:setAttributeValue("AXValue", value)
-                    ui:performAction("AXConfirm")
-                    ui:setAttributeValue("AXFocused", focused)
-                end
+    self._convertFn = convertFn
+
+    -- watch for changes in parent visibility, and update the notifier if it changes.
+    if prop.is(parent.isShowing) then
+        self.isShowing:monitor(parent.isShowing)
+        self.isShowing:watch(function()
+            self:notifier():update()
+        end)
+    end
+end
+
+--- cp.ui.StaticText.value <cp.prop: anything>
+--- Field
+--- The current value of the text field.
+function StaticText.lazy.prop:value()
+    local value = self.UI:mutate(
+        function(original)
+            local ui = original()
+            local value = ui and ui:attributeValue("AXValue") or nil
+            if value and self._convertFn then
+                value = self._convertFn(value)
             end
-        ),
-    }
+            return value
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                value = tostring(value)
+                local focused = ui:attributeValue("AXFocused")
+                ui:setAttributeValue("AXFocused", true)
+                ui:setAttributeValue("AXValue", value)
+                ui:performAction("AXConfirm")
+                ui:setAttributeValue("AXFocused", focused)
+            end
+        end
+    )
 
     -----------------------------------------------------------------------
     -- Reduce the amount of AX notifications when timecode is updated:
     -----------------------------------------------------------------------
     local timecodeUpdater
     timecodeUpdater = delayedTimer.new(0.001, function()
-        o.value:update()
+        value:update()
     end)
 
     -- wire up a notifier to watch for value changes.
-    o.value:preWatch(function()
-        o:notifier():watchFor("AXValueChanged", function()
+    value:preWatch(function()
+        self:notifier():watchFor("AXValueChanged", function()
             timecodeUpdater:start()
         end):start()
     end)
 
-    -- watch for changes in parent visibility, and update the notifier if it changes.
-    if prop.is(parent.isShowing) then
-        o.isShowing:monitor(parent.isShowing)
-        o.isShowing:watch(function()
-            o:notifier():update()
-        end)
-    end
-
-    return o
+    return value
 end
 
 -- Deprecated: use the `value` property directly
@@ -159,11 +158,8 @@ function StaticText:clear()
     return self
 end
 
-function StaticText:notifier()
-    if not self._notifier then
-        self._notifier = notifier.new(self:app():bundleID(), function() return self:UI() end)
-    end
-    return self._notifier
+function StaticText.lazy.method:notifier()
+    return notifier.new(self:app():bundleID(), self.UI)
 end
 
 --- cp.ui.StaticText:saveLayout() -> table

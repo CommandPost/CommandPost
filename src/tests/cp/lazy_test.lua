@@ -1,13 +1,13 @@
 local test          = require "cp.test"
 local class         = require "middleclass"
-local Lazy          = require "cp.lazy"
+local lazy          = require "cp.lazy"
 local prop          = require "cp.prop"
 
 -- local log           = require "hs.logger" .new "lazy_test"
 
 return test.suite("cp.lazy"):with {
     test("statics", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         ok(eq(type(Alpha.static.lazy), "table"))
         ok(eq(type(Alpha.lazy), "table"))
@@ -15,7 +15,7 @@ return test.suite("cp.lazy"):with {
     end),
 
     test("value", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
         function Alpha.lazy.value.id()
@@ -33,7 +33,7 @@ return test.suite("cp.lazy"):with {
     end),
 
     test("method", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
         function Alpha.lazy.method.id()
@@ -51,7 +51,7 @@ return test.suite("cp.lazy"):with {
     end),
 
     test("prop", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
         function Alpha.lazy.prop.id()
@@ -78,7 +78,7 @@ return test.suite("cp.lazy"):with {
     end),
 
     test("override", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         function Alpha.a()
             return "a"
@@ -99,12 +99,12 @@ return test.suite("cp.lazy"):with {
         local a = Alpha()
 
         ok(eq(a:a(), "a"))
-        ok(eq(a:b(), "b"), "Lazy methods should not override 'real' methods")
+        ok(eq(a:b(), "b"), "lazy methods should not override 'real' methods")
         ok(eq(a:c(), "cc"))
     end),
 
     test("subclass", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         local count = 0
         function Alpha.lazy.method.id()
@@ -141,7 +141,7 @@ return test.suite("cp.lazy"):with {
     end),
 
     test("in initialize", function()
-        local Alpha = class("Alpha"):include(Lazy)
+        local Alpha = class("Alpha"):include(lazy)
 
         function Alpha.lazy.value.id()
             return "a"

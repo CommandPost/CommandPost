@@ -187,7 +187,7 @@ end
 ---  * `Table` object.
 function MediaBrowser:sidebar()
     if not self._sidebar then
-        self._sidebar = Table.new(self, function()
+        self._sidebar = Table(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
         end)
     end
@@ -223,7 +223,7 @@ end
 ---  * `TextField` object.
 function MediaBrowser:search()
     if not self._search then
-        self._search = TextField.new(self, function()
+        self._search = TextField(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXTextField")
         end)
     end

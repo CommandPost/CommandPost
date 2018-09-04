@@ -347,7 +347,7 @@ end
 ---  * This no longer exists in FCP 10.4+, so will always be non-functional.
 function ColorBoard:backButton()
     if not self._backButton then
-        self._backButton = Button.new(self, function()
+        self._backButton = Button(self, function()
             local group = axutils.childFromTop(self:contentUI(), 1)
             if group and group:attributeValue("AXRole") == "AXGroup" then
                 return axutils.childWithID(group, id "BackButton")
@@ -497,7 +497,7 @@ end
 --- * The `RadioGroup`.
 function ColorBoard:aspectGroup()
     if not self._aspectGroup then
-        self._aspectGroup = RadioGroup.new(self, function()
+        self._aspectGroup = RadioGroup(self, function()
             return axutils.childWithRole(self:contentUI(), "AXRadioGroup")
         end)
     end

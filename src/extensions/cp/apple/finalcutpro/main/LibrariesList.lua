@@ -208,7 +208,7 @@ end
 ---  * `Table` object
 function LibrariesList:contents()
     if not self._content then
-        self._content = Table.new(self, function()
+        self._content = Table(self, function()
             return axutils.childWithRole(self:UI(), "AXScrollArea")
         end)
     end

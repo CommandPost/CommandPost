@@ -19,14 +19,13 @@ local require = require
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ScrollArea = Element:subtype()
+local ScrollArea = Element:subclass("ScrollArea")
 
 --- cp.ui.ScrollArea.matches(element) -> boolean
 --- Function
@@ -37,11 +36,11 @@ local ScrollArea = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function ScrollArea.matches(element)
+function ScrollArea.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
---- cp.ui.ScrollArea.new(parent, uiFinder) -> cp.ui.ScrollArea
+--- cp.ui.ScrollArea:new(parent, uiFinder) -> cp.ui.ScrollArea
 --- Constructor
 --- Creates a new `ScrollArea`.
 ---
@@ -51,10 +50,15 @@ end
 ---
 --- Returns:
 ---  * The new `ScrollArea`.
-function ScrollArea.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, ScrollArea)
+function ScrollArea:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
-    local contentsUI = o.UI:mutate(function(original)
+--- cp.ui.ScrollArea.contentsUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
+function ScrollArea.lazy.prop:contentsUI()
+    return self.UI:mutate(function(original)
         local ui = original()
         if ui then
             local role = ui:attributeValue("AXRole")
@@ -63,31 +67,27 @@ function ScrollArea.new(parent, uiFinder)
             end
         end
     end)
+end
 
-    prop.bind(o) {
 --- cp.ui.ScrollArea.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Vertical Scroll Bar, or `nil` if not available.
-        verticalScrollBarUI = axutils.prop(o.UI, "AXVerticalScrollBar"),
+function ScrollArea.lazy.prop:verticalScrollBarUI()
+    return axutils.prop(self.UI, "AXVerticalScrollBar")
+end
 
 --- cp.ui.ScrollArea.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Horizontal Scroll Bar, or `nil` if not available.
-        horizontalScrollBarUI = axutils.prop(o.UI, "AXHorizontalScrollBar"),
-
-
---- cp.ui.ScrollArea.contentsUI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- Returns the `axuielement` representing the Scroll Area Contents, or `nil` if not available.
-        contentsUI = contentsUI,
+function ScrollArea.lazy.prop:horizontalScrollBarUI()
+    return axutils.prop(self.UI, "AXHorizontalScrollBar")
+end
 
 --- cp.ui.ScrollArea.selectedChildrenUI <cp.prop: hs._asm.axuielement; read-only; live?>
 --- Field
 --- Returns the `axuielement` representing the Scroll Area Selected Children, or `nil` if not available.
-        selectedChildrenUI = axutils.prop(contentsUI, "AXSelectedChildren"),
-    }
-
-    return o
+function ScrollArea.lazy.prop:selectedChildrenUI()
+    return axutils.prop(self.contentsUI, "AXSelectedChildren")
 end
 
 -----------------------------------------------------------------------

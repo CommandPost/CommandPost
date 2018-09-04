@@ -34,9 +34,9 @@
 ---
 --- ```lua
 --- local class     = require "middleclass"
---- local Lazy      = require "cp.lazy"
+--- local lazy      = require "cp.lazy"
 ---
---- local MyClass = class("MyClass"):include(Lazy)
+--- local MyClass = class("MyClass"):include(lazy)
 --- function MyClass.lazy.method:expensiveThing()
 ---     return someObject.new()
 --- end
@@ -49,9 +49,9 @@
 ---
 --- ```lua
 --- local class     = require "middleclass"
---- local Lazy      = require "cp.lazy"
+--- local lazy      = require "cp.lazy"
 ---
---- local MyClass = class("MyClass"):include(Lazy)
+--- local MyClass = class("MyClass"):include(lazy)
 --- function MyClass.lazy.value:expensiveThing()
 ---     return someObject.new()
 --- end
@@ -88,9 +88,9 @@
 local prop          = require "cp.prop"
 local format        = string.format
 
-local Lazy = {}
+local lazy = {}
 
-Lazy.static = {}
+lazy.static = {}
 
 -- _initLazyStatics(klass, superLazy) -> nil
 -- Function
@@ -103,22 +103,22 @@ Lazy.static = {}
 -- Returns:
 -- * Nothing
 local function _initLazyStatics(klass, superLazy)
-    local lazy
-    lazy = {
+    local lzy
+    lzy = {
         value = {},
         method = {},
         prop = {},
     }
 
     local function checkKey(key)
-        for k,v in pairs(lazy) do
+        for k,v in pairs(lzy) do
             if rawget(v, key) then
                 error(format("There is already a lazy %s value factory for %q", k, key))
             end
         end
     end
 
-    setmetatable(lazy.value, {
+    setmetatable(lzy.value, {
         __newindex = function(self, key, value)
             checkKey(key)
             rawset(self, key, value)
@@ -126,7 +126,7 @@ local function _initLazyStatics(klass, superLazy)
         __index = superLazy and superLazy.value,
     })
 
-    setmetatable(lazy.method, {
+    setmetatable(lzy.method, {
         __newindex = function(self, key, value)
             checkKey(key)
             rawset(self, key, value)
@@ -134,7 +134,7 @@ local function _initLazyStatics(klass, superLazy)
         __index = superLazy and superLazy.method
     })
 
-    setmetatable(lazy.prop, {
+    setmetatable(lzy.prop, {
         __newindex = function(self, key, value)
             checkKey(key)
             rawset(self, key, value)
@@ -142,10 +142,10 @@ local function _initLazyStatics(klass, superLazy)
         __index = superLazy and superLazy.prop
     })
 
-    klass.static.lazy = lazy
+    klass.static.lazy = lzy
 end
 
--- _getLazyResult(instance, name) -> anything
+-- _getLazyResults(instance, name) -> anything
 -- Function
 -- Checks if there is a `lazy` factory function for the specified name, and if so returns
 -- either the `value` or `method` function for that result.
@@ -156,19 +156,19 @@ end
 --
 -- Returns:
 -- * The value or `function`, depending on the factory type.
-local function _getLazyResult(instance, name)
+local function _getLazyResults(instance, name)
     local klass = instance.class
-    local lazy = instance and klass.lazy
+    local lzy = instance and klass.lazy
     local value
-    if lazy.value[name] then
-        value = lazy.value[name](instance, name)
+    if lzy.value[name] then
+        value = lzy.value[name](instance, name)
         rawset(instance, name, value)
-    elseif lazy.method[name] then
-        local result = lazy.method[name](instance, name)
+    elseif lzy.method[name] then
+        local result = lzy.method[name](instance, name)
         value = function() return result end
         rawset(instance, name, value)
-    elseif lazy.prop[name] then
-        value = lazy.prop[name](instance, name)
+    elseif lzy.prop[name] then
+        value = lzy.prop[name](instance, name)
         if prop.is(value) then
             local owner = value:owner()
             if owner and owner ~= instance then
@@ -194,14 +194,14 @@ end
 -- * The new `__index` `function`.
 local function _getNewInstanceIndex(prevIndex)
     if type(prevIndex) == 'function' then
-        return function(instance, name) return prevIndex(instance, name) or _getLazyResult(instance, name) end
+        return function(instance, name) return prevIndex(instance, name) or _getLazyResults(instance, name) end
     end
-    return function(instance, name) return prevIndex[name] or _getLazyResult(instance, name) end
+    return function(instance, name) return prevIndex[name] or _getLazyResults(instance, name) end
 end
 
 -- _modifyInstanceIndex(klass) -> nothing
 -- Function
--- Updates the `__index` function to the wrapper for Lazy.
+-- Updates the `__index` function to the wrapper for lazy.
 --
 -- Parameters:
 -- * klass      - The middleclass `class` instance to modify.
@@ -211,7 +211,7 @@ end
 
 -- _newSublassMethod(prevSubclass) -> function
 -- Function
--- Creates a wrapper function to replace the existing `subclass` method to pass on Lazy configurations.
+-- Creates a wrapper function to replace the existing `subclass` method to pass on lazy configurations.
 --
 -- Parameters:
 -- * prevSubclass       - The previous `subclass` function/method
@@ -226,16 +226,16 @@ end
 
 -- _modifySubclassMethod(klass) -> nothing
 -- Function
--- Modifies the `subclass` method to add Lazy factory support to subclasses.
+-- Modifies the `subclass` method to add lazy factory support to subclasses.
 local function _modifySubclassMethod(klass)
     klass.static.subclass = _getNewSubclassMethod(klass.static.subclass)
 end
 
--- initialises the provided class when it includes the `Lazy` mix-in.
-function Lazy:included(klass) -- luacheck: ignore
+-- initialises the provided class when it includes the `lazy` mix-in.
+function lazy:included(klass) -- luacheck: ignore
     _initLazyStatics(klass)
     _modifyInstanceIndex(klass)
     _modifySubclassMethod(klass)
 end
 
-return Lazy
+return lazy

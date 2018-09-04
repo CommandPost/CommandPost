@@ -124,7 +124,7 @@ function CorrectionsBar.new(parent)
     --- cp.apple.finalcutpro.inspector.color.CorrectionsBar.correction <cp.ui.MenuButton>
     --- Field
     --- The `MenuButton` that lists the current correction.
-    o.correction = MenuButton.new(o, function()
+    o.correction = MenuButton(o, function()
         return axutils.childWithRole(UI(), "AXMenuButton")
     end)
 
@@ -197,7 +197,7 @@ end
 ---  * A `menuButton` object.
 function CorrectionsBar:menuButton()
     if not self._menuButton then
-        self._menuButton = MenuButton.new(self, function()
+        self._menuButton = MenuButton(self, function()
             return axutils.childWithRole(self:UI(), "AXMenuButton")
         end)
     end

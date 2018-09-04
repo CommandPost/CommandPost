@@ -17,16 +17,14 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextField = Element:subtype()
+local TextField = Element:subclass("TextField")
 
 --- cp.ui.TextField.matches(element) -> boolean
 --- Function
@@ -37,11 +35,11 @@ local TextField = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function TextField.matches(element)
+function TextField.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.ui.TextField.new(parent, uiFinder[, convertFn]) -> TextField
+--- cp.ui.TextField:new(parent, uiFinder[, convertFn]) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -54,7 +52,7 @@ end
 --- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
 ---
 --- ```lua
---- local numberField = TextField.new(parent, function() return ... end, tonumber)
+--- local numberField = TextField(parent, function() return ... end, tonumber)
 --- ```
 ---
 --- Parameters:
@@ -64,39 +62,37 @@ end
 ---
 --- Returns:
 ---  * The new `TextField`.
-function TextField.new(parent, uiFinder, convertFn)
-    local o = Element.new(parent, uiFinder, TextField)
-    o._convert = convertFn
+function TextField:initialize(parent, uiFinder, convertFn)
+    Element.initialize(self, parent, uiFinder)
+    self._convert = convertFn
+end
 
-    prop.bind(o) {
 --- cp.ui.TextField.value <cp.prop: string>
 --- Field
 --- The current value of the text field.
-        value = prop(
-            function(self)
-                local ui = self:UI()
-                local value = ui and ui:attributeValue("AXValue") or nil
-                if value and self._convert then
-                    value = self._convert(value)
-                end
-                return value
-            end,
-            function(value, self)
-                local ui = self:UI()
-                if ui then
-                    value = tostring(value)
-                    local focused = ui:attributeValue("AXFocused")
-                    ui:setAttributeValue("AXFocused", true)
-                    ui:setAttributeValue("AXValue", value)
-                    ui:setAttributeValue("AXFocused", focused)
-                    ui:performAction("AXConfirm")
-                end
-
+function TextField.lazy.prop:value()
+    return self.UI:mutate(
+        function(original)
+            local ui = original()
+            local value = ui and ui:attributeValue("AXValue") or nil
+            if value and self._convert then
+                value = self._convert(value)
             end
-        ),
-    }
+            return value
+        end,
+        function(value, original)
+            local ui = original()
+            if ui then
+                value = tostring(value)
+                local focused = ui:attributeValue("AXFocused")
+                ui:setAttributeValue("AXFocused", true)
+                ui:setAttributeValue("AXValue", value)
+                ui:setAttributeValue("AXFocused", focused)
+                ui:performAction("AXConfirm")
+            end
 
-    return o
+        end
+    )
 end
 
 --- cp.ui.TextField:getValue() -> string
@@ -185,6 +181,10 @@ function TextField.__call(self, parent, value)
         value = parent
     end
     return self:value(value)
+end
+
+function TextField.__tostring()
+    return "cp.ui.TextField"
 end
 
 return TextField

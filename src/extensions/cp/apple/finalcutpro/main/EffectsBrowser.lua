@@ -617,7 +617,7 @@ end
 ---  * A `Table` object.
 function EffectsBrowser:sidebar()
     if not self._sidebar then
-        self._sidebar = Table.new(self, function()
+        self._sidebar = Table(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
         end):uncached()
     end
@@ -635,7 +635,7 @@ end
 ---  * A `ScrollArea` object.
 function EffectsBrowser:contents()
     if not self._contents then
-        self._contents = ScrollArea.new(self, function()
+        self._contents = ScrollArea(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Contents")
         end)
     end
@@ -653,7 +653,7 @@ end
 ---  * A `CheckBox` object.
 function EffectsBrowser:sidebarToggle()
     if not self._sidebarToggle then
-        self._sidebarToggle = CheckBox.new(self, function()
+        self._sidebarToggle = CheckBox(self, function()
             return axutils.childWithRole(self:UI(), "AXCheckBox")
         end)
     end
@@ -689,7 +689,7 @@ end
 ---  * A `PopUpButton` object.
 function EffectsBrowser:search()
     if not self._search then
-        self._search = TextField.new(self, function()
+        self._search = TextField(self, function()
             return axutils.childWithRole(self:UI(), "AXTextField")
         end)
     end

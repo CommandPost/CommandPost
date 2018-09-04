@@ -240,12 +240,12 @@ function Viewer.new(app, eventViewer)
     -----------------------------------------------------------------------
     -- The StaticText that contains the timecode:
     -----------------------------------------------------------------------
-    o._timecode = StaticText.new(o, bottomToolbarUI:mutate(function(original)
+    o._timecode = StaticText(o, bottomToolbarUI:mutate(function(original)
         local ui = original()
         return ui and childFromLeft(childrenWithRole(ui, "AXStaticText"), 1)
     end))
 
-    o._viewMenu = MenuButton.new(o, topToolbarUI:mutate(function(original)
+    o._viewMenu = MenuButton(o, topToolbarUI:mutate(function(original)
         local ui = original()
         return ui and childFromRight(childrenWithRole(ui, "AXMenuButton"), 1)
     end))
@@ -676,7 +676,7 @@ end
 --- * A Button
 function Viewer:playButton()
     if not self._playButton then
-        self._playButton = Button.new(self, self.bottomToolbarUI:mutate(function(original)
+        self._playButton = Button(self, self.bottomToolbarUI:mutate(function(original)
             return childFromLeft(childrenWithRole(original(), "AXButton"), 1)
         end))
     end
@@ -700,6 +700,10 @@ function Viewer:notifier()
         self._notifier = notifier.new(bundleID, function() return self:UI() end):start()
     end
     return self._notifier
+end
+
+function Viewer:__tostring()
+    return string.format("cp.apple.finalcutpro.main.Viewer: %s", self.eventViewer and "event" or "main")
 end
 
 return Viewer

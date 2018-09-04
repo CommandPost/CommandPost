@@ -188,7 +188,7 @@ end
 ---  * A `Table` object.
 function GeneratorsBrowser:sidebar()
     if not self._sidebar then
-        self._sidebar = Table.new(self, function()
+        self._sidebar = Table(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
         end):uncached()
     end
@@ -206,7 +206,7 @@ end
 ---  * A `ScrollArea` object.
 function GeneratorsBrowser:contents()
     if not self._contents then
-        self._contents = ScrollArea.new(self, function()
+        self._contents = ScrollArea(self, function()
             local group = axutils.childMatching(self:mainGroupUI(), function(child)
                 return child:role() == "AXGroup" and #child == 1
             end)
@@ -245,7 +245,7 @@ end
 ---  * A `PopUpButton` object.
 function GeneratorsBrowser:search()
     if not self._search then
-        self._search = TextField.new(self, function()
+        self._search = TextField(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXTextField")
         end)
     end

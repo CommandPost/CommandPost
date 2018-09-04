@@ -10,14 +10,13 @@
 local require = require
 local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Slider = Element:subtype()
+local Slider = Element:subclass("Element")
 
 --- cp.ui.Slider.matches(element) -> boolean
 --- Function
@@ -28,11 +27,11 @@ local Slider = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if it's a match, or `false` if not.
-function Slider.matches(element)
+function Slider.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXSlider"
 end
 
---- cp.ui.Slider.new(parent, uiFinder) -> cp.ui.Slider
+--- cp.ui.Slider:new(parent, uiFinder) -> cp.ui.Slider
 --- Constructor
 --- Creates a new Slider
 ---
@@ -42,27 +41,29 @@ end
 ---
 --- Returns:
 ---  * A new `Slider` instance.
-function Slider.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, Slider)
+function Slider:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
-    prop.bind(o) {
-        --- cp.ui.Slider.value <cp.prop: number>
-        --- Field
-        --- Sets or gets the value of the slider.
-        value = axutils.prop(o.UI, "AXValue", true),
+--- cp.ui.Slider.value <cp.prop: number>
+--- Field
+--- Sets or gets the value of the slider.
+function Slider.lazy.prop:value()
+    return axutils.prop(self.UI, "AXValue", true)
+end
 
-        --- cp.ui.Slider.minValue <cp.prop: number; read-only>
-        --- Field
-        --- Gets the minimum value of the slider.
-        minValue = axutils.prop(o.UI, "AXMinValue"),
+--- cp.ui.Slider.minValue <cp.prop: number; read-only>
+--- Field
+--- Gets the minimum value of the slider.
+function Slider.lazy.prop:minValue()
+    return axutils.prop(self.UI, "AXMinValue")
+end
 
-        --- cp.ui.Slider.maxValue <cp.prop: number; read-only>
-        --- Field
-        --- Gets the maximum value of the slider.
-        maxValue = axutils.prop(o.UI, "AXMaxValue"),
-    }
-
-    return o
+--- cp.ui.Slider.maxValue <cp.prop: number; read-only>
+--- Field
+--- Gets the maximum value of the slider.
+function Slider.lazy.prop:maxValue()
+    return axutils.prop(self.UI, "AXMaxValue")
 end
 
 --- cp.ui.Slider:getValue() -> number
@@ -204,7 +205,7 @@ end
 --- Loads a Slider layout.
 ---
 --- Parameters:
----  * layout - A table containing the Slider layout settings - created using `cp.ui.Slider:saveLayout()`.
+---  * layout - A table containing the Slider layout settings - created using [saveLayout](#saveLayout].
 ---
 --- Returns:
 ---  * None

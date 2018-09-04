@@ -114,7 +114,7 @@ local PreferencesWindow							= require("cp.apple.finalcutpro.prefs.PreferencesW
 --------------------------------------------------------------------------------
 local v											= require("semver")
 local class                                     = require("middleclass")
-local Lazy                                      = require("cp.lazy")
+local lazy                                      = require("cp.lazy")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -130,7 +130,7 @@ local NBSP = " "
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local fcp = class("finalcutpro"):include(Lazy)
+local fcp = class("finalcutpro"):include(lazy)
 
 function fcp:initialize()
 --- cp.apple.finalcutpro.app <cp.app>

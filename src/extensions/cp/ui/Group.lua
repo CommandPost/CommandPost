@@ -19,7 +19,7 @@ local Element           = require("cp.ui.Element")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Group = Element:subtype()
+local Group = Element:subclass("Group")
 
 --- cp.ui.Group.matches(element) -> boolean
 --- Function
@@ -30,11 +30,11 @@ local Group = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Group.matches(element)
+function Group.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.ui.Group.new(parent, uiFinder) -> Alert
+--- cp.ui.Group:new(parent, uiFinder) -> Alert
 --- Constructor
 --- Creates a new `Group` instance.
 ---
@@ -44,9 +44,5 @@ end
 ---
 --- Returns:
 ---  * A new `Group` object.
-function Group.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, Group)
-    return o
-end
 
 return Group

@@ -120,7 +120,7 @@ function PreferencesWindow.new(app)
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.toolbar <cp.ui.Toolbar>
 --- Field
 --- The `Toolbar` for the Preferences Window.
-    o.toolbar = Toolbar.new(o, o.toolbarUI)
+    o.toolbar = Toolbar(o, o.toolbarUI)
 
     return o
 end

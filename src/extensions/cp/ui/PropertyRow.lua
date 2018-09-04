@@ -28,6 +28,8 @@ local Button					= require("cp.ui.Button")
 local is                        = require("cp.is")
 local prop						= require("cp.prop")
 
+local Element                   = require("cp.ui.Element")
+
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
@@ -40,7 +42,7 @@ local childrenMatching          = axutils.childrenMatching
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PropertyRow = {}
+local PropertyRow = Element:subclass("PropertyRow")
 
 -- UI_FINDER -> table
 -- Constant
@@ -62,7 +64,7 @@ local UI_FINDER_LABEL = "PropertyRow UI Finder"
 ---
 --- Returns:
 ---  * The `cp.prop` which provides access to the finder, or `nil`.
-function PropertyRow.parentUIFinder(parent)
+function PropertyRow.static.parentUIFinder(parent)
     return parent[UI_FINDER]
 end
 
@@ -78,7 +80,7 @@ end
 ---
 --- Returns:
 ---  * None
-function PropertyRow.prepareParent(parent, uiFinder)
+function PropertyRow.static.prepareParent(parent, uiFinder)
     if is.nt.callable(uiFinder) then
         error(format("The `finder` must be callable: %s", type(uiFinder)))
     end
@@ -106,7 +108,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the parent is prepared.
-function PropertyRow.isParent(parent)
+function PropertyRow.static.isParent(parent)
     return parent[UI_FINDER] ~= nil
 end
 
@@ -120,11 +122,11 @@ end
 ---
 --- Returns:
 ---  * `true` if the element could be a property row.
-function PropertyRow.matches(element)
+function PropertyRow.static.matches(element)
     return element ~= nil
 end
 
---- cp.ui.PropertyRow.new(parent, labelKey[, index]) -> cp.ui.PropertyRow
+--- cp.ui.PropertyRow:new(parent, labelKey[, index]) -> cp.ui.PropertyRow
 --- Constructor
 --- Creates a new `PropertyRow` with the specified parent and label key.
 ---
@@ -138,93 +140,85 @@ end
 ---
 --- Returns:
 ---  * The new `PropertyRow` instance.
-function PropertyRow.new(parent, labelKey, index)
-    local o
-
+function PropertyRow:initialize(parent, labelKey, index)
     local uiFinder = PropertyRow.parentUIFinder(parent)
     if not uiFinder then
-        error(format("The `parent` has not been prepared with `PropertyRow.prepareParent(...)`:", inspect(uiFinder)))
+        error(format("The `parent` has not been prepared with `PropertyRow.prepareParent(...)`: %s", parent))
     end
-
-    index = index or 1
-
-    o = prop.extend({
-        _parent = parent,
-        _labelKeys = is.string(labelKey) and {labelKey} or labelKey,
-        _index = index,
-        _children = nil,
-    }, PropertyRow)
-
-    prop.bind(o) {
---- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- The `axuielement` from the parent that contains the properties.
-        propertiesUI = uiFinder,
 
 --- cp.ui.PropertyRow.labelUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
---- The `axuielement` containing the row label.
-        labelUI = uiFinder:mutate(function(original)
-            return axutils.cache(o, "_labelUI", function()
-                local ui = original()
-                if ui then
-                    local label = o:label()
-                    return childMatching(ui, function(child)
-                        return child:attributeValue("AXRole") == "AXStaticText"
-                            and child:attributeValue("AXValue") == label
-                    end, index)
-                end
-                return nil
-            end)
-        end),
-
---- cp.ui.PropertyRow.label <cp.prop: string; read-only>
---- Field
---- The label of the property row, in the current langauge.
-        label = prop(function(self)
-            local app = self:app()
-            for _,key in ipairs(self._labelKeys) do
-                local label = app:string(key, true)
-                if label then
-                    return label
-                end
+--- Returns the `axuielement` for the label UI.
+    local labelUI = uiFinder:mutate(function(original)
+        return axutils.cache(self, "_labelUI", function()
+            local ui = original()
+            if ui then
+                local label = self:label()
+                return childMatching(ui, function(child)
+                    return child:attributeValue("AXRole") == "AXStaticText"
+                        and child:attributeValue("AXValue") == label
+                end, index)
             end
-            log.wf("Unable to find a label with these keys: [%s]%s", index, inspect(self._labelKeys))
             return nil
-        end):monitor(parent:app().currentLocale),
-    }
-
-    -- keep an eye on the label as an indicator of when to update.
-    uiFinder:monitor(o.label)
+        end)
+    end)
 
 --- cp.ui.PropertyRow.UI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `axuielement` for the row.
-    o.UI = o.labelUI
+    local UI = labelUI
 
-    prop.bind(o) {
---- cp.ui.PropertyRow.isShowing <cp.prop: boolean; read-only>
---- Field
---- Checks if the row is showing.
-        isShowing = o.UI:mutate(function(original)
-            return original() ~= nil
-        end)
+    Element.initialize(self, parent, UI)
+
+    prop.bind(self) {
+        uiFinder = uiFinder,
+        labelUI = labelUI,
     }
+
+    -- keep an eye on the label as an indicator of when to update.
+    uiFinder:monitor(self.label)
+
+    self._labelKeys = is.string(labelKey) and {labelKey} or labelKey
+    self._index = index or 1
+end
+
+--- cp.ui.PropertyRow.propertiesUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` from the parent that contains the properties.
+function PropertyRow.lazy.prop:propertiesUI()
+    return self.uiFinder
+end
+
+--- cp.ui.PropertyRow.label <cp.prop: string; read-only>
+--- Field
+--- The label of the property row, in the current langauge.
+function PropertyRow.lazy.prop:label()
+    return prop(function()
+        local app = self:app()
+        for _,key in ipairs(self._labelKeys) do
+            local label = app:string(key, true)
+            if label then
+                return label
+            end
+        end
+        log.wf("Unable to find a label with these keys: [%s]%s", self._index, inspect(self._labelKeys))
+        return nil
+    end):monitor(self:parent():app().currentLocale)
+end
 
 --- cp.ui.PropertyRow.reset <cp.ui.Button>
 --- Field
 --- The `reset` button for the row, which may or may not actually exist.
 --- It can be triggered by calling `row:reset()`.
-    o.reset = Button.new(o, function()
-        local children = o:children()
+function PropertyRow.lazy.value:reset()
+    return Button(self, function()
+        local children = self:children()
         if children then
             local last = children[#children]
             return Button.matches(last) and last or nil
         end
         return nil
     end)
-
-    return o
 end
 
 --- cp.ui.PropertyRow:parent() -> parent
@@ -297,6 +291,12 @@ function PropertyRow:hide()
     return self
 end
 
+--- cp.ui.PropertyRow:doHide() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to hide the `PropertyRow`.
+---
+--- Returns:
+--- * The `Statement`.
 function PropertyRow:doHide()
     return self:parent():doHide()
 end

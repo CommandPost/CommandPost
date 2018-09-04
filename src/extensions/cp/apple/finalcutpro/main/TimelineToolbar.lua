@@ -105,7 +105,7 @@ end
 --- * The [StaticText](cp.ui.StaticText.md) containing the title.
 function TimelineToolbar:title()
     if not self._title then
-        self._title = StaticText.new(self, self.UI:mutate(function(original)
+        self._title = StaticText(self, self.UI:mutate(function(original)
             return cache(self, "_titleUI", function()
                 return childFromLeft(original(), 1, StaticText.matches)
             end)
@@ -125,7 +125,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:effectsToggle()
     if not self._effectsToggle then
-        self._effectsToggle = RadioButton.new(self, function()
+        self._effectsToggle = RadioButton(self, function()
             local effectsGroup = self:effectsGroupUI()
             return effectsGroup and effectsGroup[1]
         end)
@@ -136,7 +136,7 @@ end
 -- TODO: Add documentation
 function TimelineToolbar:transitionsToggle()
     if not self._transitionsToggle then
-        self._transitionsToggle = RadioButton.new(self, function()
+        self._transitionsToggle = RadioButton(self, function()
             local effectsGroup = self:effectsGroupUI()
             return effectsGroup and effectsGroup[2]
         end)

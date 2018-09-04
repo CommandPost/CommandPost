@@ -12,16 +12,14 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local axutils           = require("cp.ui.axutils")
 local Element           = require("cp.ui.Element")
-local prop              = require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local SplitGroup = Element:subtype()
+local SplitGroup = Element:subclass("SplitGroup")
 
 --- cp.ui.SplitGroup.matches(element) -> boolean
 --- Function
@@ -32,11 +30,11 @@ local SplitGroup = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function SplitGroup.matches(element)
+function SplitGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXSplitGroup"
 end
 
---- cp.ui.SplitGroup.new(parent, uiFinder) -> cp.ui.SplitGroup
+--- cp.ui.SplitGroup:new(parent, uiFinder) -> cp.ui.SplitGroup
 --- Constructor
 --- Creates a new Split Group.
 ---
@@ -46,9 +44,8 @@ end
 ---
 --- Returns:
 ---  * A new `SplitGroup` instance.
-function SplitGroup.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, SplitGroup)
-    return o
+function SplitGroup:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
 end
 
 return SplitGroup

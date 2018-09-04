@@ -147,7 +147,7 @@ end
 function mod.section(labelKey, index)
     return function(subProps)
         local section = prop(function(self)
-            local row = PropertyRow.new(self, labelKey, index)
+            local row = PropertyRow(self, labelKey, index)
             -- sections are also parents of other PropertyRows.
             PropertyRow.prepareParent(row, row.propertiesUI:mutate(function(original)
                 local propsUI = original()
@@ -163,9 +163,9 @@ function mod.section(labelKey, index)
                 return nil
             end))
 
-            row.enabled     = CheckBox.new(row, function() return childFromLeft(row:children(), 1) end)
-            row.toggle      = CheckBox.new(row, function() return childFromRight(row:children(), 2) end)
-            row.reset       = Button.new(row, function() return childFromRight(row:children(), 1) end)
+            row.enabled     = CheckBox(row, function() return childFromLeft(row:children(), 1) end)
+            row.toggle      = CheckBox(row, function() return childFromRight(row:children(), 2) end)
+            row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
             row.expanded    = prop(
                 function(theRow)
                     local iHide = theRow:app():string("FFInspectorHeaderControllerButtonHide")
@@ -220,8 +220,8 @@ local function simple(labelKey, prepareFn, index)
     end
 
     return prop(function(self)
-        local row = PropertyRow.new(self, labelKey, index)
-        row.reset       = Button.new(row, function() return childFromRight(row:children(), 1) end)
+        local row = PropertyRow(self, labelKey, index)
+        row.reset       = Button(row, function() return childFromRight(row:children(), 1) end)
 
         if prepareFn then
             prepareFn(row)
@@ -248,7 +248,7 @@ mod.simple = simple
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.textField(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(row:children(), 1, TextField.matches) end)
+        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end)
     end, index)
 end
 
@@ -267,7 +267,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.numberField(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
+        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
     end, index)
 end
 
@@ -286,7 +286,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.staticText(labelKey, index)
     return simple(labelKey, function(row)
-        row.value = StaticText.new(row, function() return childFromRight(row:children(), 1, StaticText.matches) end)
+        row.value = StaticText(row, function() return childFromRight(row:children(), 1, StaticText.matches) end)
     end, index)
 end
 
@@ -306,8 +306,8 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.xy(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.x = TextField.new(row, function() return childFromLeft(row:children(), 1, TextField.matches) end, tonumber)
-        row.y = TextField.new(row, function() return childFromLeft(row:children(), 2, TextField.matches) end, tonumber)
+        row.x = TextField(row, function() return childFromLeft(row:children(), 1, TextField.matches) end, tonumber)
+        row.y = TextField(row, function() return childFromLeft(row:children(), 2, TextField.matches) end, tonumber)
     end, index)
 end
 
@@ -327,7 +327,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.slider(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = TextField.new(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
+        row.value = TextField(row, function() return childFromRight(row:children(), 1, TextField.matches) end, tonumber)
     end, index)
 end
 
@@ -346,7 +346,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.menuButton(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = MenuButton.new(row, function() return childFromRight(row:children(), 1, MenuButton.matches) end)
+        row.value = MenuButton(row, function() return childFromRight(row:children(), 1, MenuButton.matches) end)
     end, index)
 end
 
@@ -365,7 +365,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.popUpButton(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = PopUpButton.new(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
+        row.value = PopUpButton(row, function() return childFromRight(row:children(), 1, PopUpButton.matches) end)
 
         function row:doSelectValue(value)
             return Do(self:doShow())
@@ -393,7 +393,7 @@ end
 --- * The `cp.prop` that returns the `PropertyRow`.
 function mod.checkBox(labelKey, index)
     return mod.simple(labelKey, function(row)
-        row.value = CheckBox.new(row, function() return childFromLeft(row:children(), 1, CheckBox.matches) end)
+        row.value = CheckBox(row, function() return childFromLeft(row:children(), 1, CheckBox.matches) end)
     end, index)
 end
 

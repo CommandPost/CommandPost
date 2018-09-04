@@ -6,25 +6,18 @@
 --- * [Button](cp.ui.Button.md)
 --- * [CheckBox](cp.rx.CheckBox.md)
 --- * [MenuButton](cp.rx.MenuButton.md)
-
 local require           = require
+local log               = require("hs.logger").new("Element")
 
 local axutils           = require("cp.ui.axutils")
 local prop              = require("cp.prop")
 
+local class             = require("middleclass")
+local lazy              = require("cp.lazy")
+
 local cache             = axutils.cache
 
-local Element = {}
-
---- cp.ui.Element:subtype()
---- Method
---- Returns a subtype table of `Element`, suitible for extension.
----
---- Returns:
---- * The new subtype table.
-function Element:subtype()
-    return setmetatable({}, {__index = self})
-end
+local Element = class("Element"):include(lazy)
 
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
@@ -35,57 +28,59 @@ end
 ---
 --- Returns:
 --- * `true` if the element is a valid instance of an `hs._asm.axuielement`.
-function Element.matches(element)
+function Element.static.matches(element)
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
 end
 
-function Element.new(parent, uiFinder, subtype)
-    subtype = subtype or Element
-    local o = prop.extend({
-        _parent = parent,
-    }, subtype)
+function Element:initialize(parent, uiFinder)
+    self._parent = parent
 
     local UI
     if prop.is(uiFinder) then
         UI = uiFinder
-    else
+    elseif type(uiFinder) == "function" then
         UI = prop(function()
-            return cache(o, "_ui", function()
+            return cache(self, "_ui", function()
                 local ui = uiFinder()
-                return (subtype.matches == nil or subtype.matches(ui)) and ui or nil
+                return (self.class.matches == nil or self.class.matches(ui)) and ui or nil
             end,
-            subtype.matches)
+            self.class.matches)
         end)
     end
 
-    prop.bind(o) {
-        UI = UI,
+    prop.bind(self) {
+        UI = UI
+    }
+
+    if prop.is(parent.UI) then
+        UI:monitor(parent.UI)
+    end
+end
 
 --- cp.ui.Element.isShowing <cp.prop: boolean; read-only; live?>
 --- Field
 --- If `true`, the `Element` is showing on screen.
-        isShowing = UI:ISNOT(nil):AND(parent.isShowing),
+function Element.lazy.prop:isShowing()
+    local parent = self:parent()
+    local isShowing = self.UI:ISNOT(nil):AND(parent.isShowing)
+    if prop.is(parent.isShowing) then
+        isShowing:monitor(parent.isShowing)
+    end
+    return isShowing
+end
 
 --- cp.ui.Element.isEnabled <cp.prop: boolean; read-only>
 --- Field
 --- Returns `true` if the `Element` is visible and enabled.
-        isEnabled = axutils.prop(UI, "AXEnabled"),
+function Element.lazy.prop:isEnabled()
+    return axutils.prop(self.UI, "AXEnabled")
+end
 
 --- cp.ui.Element.frame <cp.prop: table; read-only; live?>
 --- Field
 --- Returns the table containing the `x`, `y`, `w`, and `h` values for the `Element` frame, or `nil` if not available.
-        frame = axutils.prop(UI, "AXFrame"),
-    }
-
-    if prop.is(parent.UI) then
-        o.UI:monitor(parent.UI)
-    end
-
-    if prop.is(parent.isShowing) then
-        o.isShowing:monitor(parent.isShowing)
-    end
-
-    return o
+function Element.lazy.prop:frame()
+    return axutils.prop(self.UI, "AXFrame")
 end
 
 --- cp.ui.Element:parent() -> parent

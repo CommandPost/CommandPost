@@ -1,6 +1,6 @@
 --- === cp.ui.MenuButton ===
 ---
---- Pop Up Button Module.
+--- Menu Button Module.
 
 --------------------------------------------------------------------------------
 --
@@ -25,7 +25,6 @@ local require = require
 local axutils                       = require("cp.ui.axutils")
 local Element						= require("cp.ui.Element")
 local just							= require("cp.just")
-local prop							= require("cp.prop")
 
 local go                            = require("cp.rx.go")
 local If, WaitUntil, Do             = go.If, go.WaitUntil, go.Do
@@ -40,7 +39,7 @@ local find                          = string.find
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local MenuButton = Element:subtype()
+local MenuButton = Element:subclass("MenuButton")
 
 --- cp.ui.MenuButton.matches(element) -> boolean
 --- Function
@@ -51,21 +50,23 @@ local MenuButton = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function MenuButton.matches(element)
+function MenuButton.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXMenuButton"
 end
 
---- cp.ui.MenuButton.new(parent, uiFinder) -> MenuButton
+--- cp.ui.MenuButton(parent, uiFinder) -> MenuButton
 --- Constructor
 --- Creates a new MenuButton.
 ---
 --- Parameters:
 --- * parent		- The parent object. Should have an `isShowing` property.
 --- * uiFinder		- A `cp.prop` or function which will return a `hs._asm.axuielement`, or `nil` if it's not available.
-function MenuButton.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, MenuButton)
 
-    local value = o.UI:mutate(
+--- cp.ui.MenuButton.value <cp.prop: anything>
+--- Field
+--- Returns or sets the current MenuButton value.
+function MenuButton.lazy.prop:value()
+    return self.UI:mutate(
         function(original)
             local ui = original()
             return ui and ui:value()
@@ -87,58 +88,34 @@ function MenuButton.new(parent, uiFinder)
         end
     )
     -- if anyone starts watching, then register with the app notifier.
-    value:preWatch(function()
-        o:app():notifier():watchFor("AXMenuItemSelected", function()
-            value:update()
+    :preWatch(function(_,thisProp)
+        self:app():notifier():watchFor("AXMenuItemSelected", function()
+            thisProp:update()
         end)
     end)
+end
 
-    local menuUI = o.UI:mutate(function(original)
+--- cp.ui.MenuButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
+--- Field
+--- Returns the `AXMenu` for the MenuButton if it is currently visible.
+function MenuButton.lazy.prop:menuUI()
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and axutils.childWithRole(ui, "AXMenu")
     end)
     -- if anyone opens the menu, update the prop watchers
-    menuUI:preWatch(function()
-        o:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
-            menuUI:update()
+    :preWatch(function(_, thisProp)
+        self:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
+            thisProp:update()
         end)
     end)
-
-    prop.bind(o) {
---- cp.ui.MenuButton.value <cp.prop: anything>
---- Field
---- Returns or sets the current MenuButton value.
-        value = value,
-
---- cp.ui.PopUpButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- Returns the `AXMenu` for the PopUpMenu if it is currently visible.
-        menuUI = menuUI,
+end
 
 --- cp.ui.MenuButton.title <cp.prop: string; read-only>
 --- Field
---- Returns the MenuButton's title.
-        title = axutils.prop(o.UI, "AXTitle"),
-    }
-
-    return o
-end
-
---- cp.ui.MenuButton:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function MenuButton:parent()
-    return self._parent
-end
-
-function MenuButton:app()
-    return self:parent():app()
+--- Returns the title for the MenuButton.
+function MenuButton.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
 end
 
 --- cp.ui.MenuButton:show() -> self
@@ -188,7 +165,7 @@ function MenuButton:selectItem(index)
     return false
 end
 
---- cp.ui.MenuButton:`Item(index) -> cp.rx.go.Statement
+--- cp.ui.MenuButton:doSelectItem(index) -> cp.rx.go.Statement
 --- Method
 --- A [Statement](cp.rx.go.Statement.md) that will select an item on the `MenuButton` by index.
 ---
@@ -407,7 +384,7 @@ end
 --- Loads a `MenuButton` layout.
 ---
 --- Parameters:
----  * layout - A table containing the `MenuButton` layout settings - created using `cp.ui.MenuButton:saveLayout()`.
+---  * layout - A table containing the `MenuButton` layout settings - created using [saveLayout](#saveLayout).
 ---
 --- Returns:
 ---  * None

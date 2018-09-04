@@ -171,7 +171,7 @@ end
 ---  * A `RadioButton` object.
 function BrowserMarkerPopover:standard()
     if not self._standard then
-        self._standard = RadioButton.new(self, function()
+        self._standard = RadioButton(self, function()
             local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
             return radioGroup and axutils.childFromLeft(radioGroup, 1)
         end)
@@ -190,7 +190,7 @@ end
 ---  * A `RadioButton` object.
 function BrowserMarkerPopover:toDo()
     if not self._toDo then
-        self._toDo = RadioButton.new(self, function()
+        self._toDo = RadioButton(self, function()
             local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
             return radioGroup and axutils.childFromLeft(radioGroup, 2)
         end)
@@ -209,7 +209,7 @@ end
 ---  * A `RadioButton` object.
 function BrowserMarkerPopover:chapter()
     if not self._chapter then
-        self._chapter = RadioButton.new(self, function()
+        self._chapter = RadioButton(self, function()
             local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
             return radioGroup and axutils.childFromLeft(radioGroup, 3)
         end)
@@ -228,7 +228,7 @@ end
 ---  * A `Button` object.
 function BrowserMarkerPopover:done()
     if not self._done then
-        self._done = Button.new(self, function()
+        self._done = Button(self, function()
             local buttons = axutils.childrenWithRole(self:UI(), "AXButton")
             return buttons and buttons[1]
         end)
@@ -247,7 +247,7 @@ end
 ---  * A `Button` object.
 function BrowserMarkerPopover:delete()
     if not self._delete then
-        self._delete = Button.new(self, function()
+        self._delete = Button(self, function()
             local buttons = axutils.childrenWithRole(self:UI(), "AXButton")
             return buttons and buttons[2]
         end)
@@ -266,7 +266,7 @@ end
 ---  * A `Button` object.
 function BrowserMarkerPopover:completed()
     if not self._completed then
-        self._completed = CheckBox.new(self, function()
+        self._completed = CheckBox(self, function()
             local checkbox = axutils.childrenWithRole(self:UI(), "AXCheckBox")
             return checkbox and checkbox[1]
         end)
@@ -285,7 +285,7 @@ end
 ---  * A `TextField` object.
 function BrowserMarkerPopover:name()
     if not self._name then
-        self._name = TextField.new(self, function()
+        self._name = TextField(self, function()
             return axutils.childWithRole(self:UI(), "AXTextField")
         end)
     end

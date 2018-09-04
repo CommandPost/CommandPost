@@ -248,7 +248,7 @@ end
 ---  * An `MenuButton` object.
 function InfoInspector:metadataViewButton()
     if not self._metadataViewButton then
-        self._metadataViewButton = MenuButton.new(self, function()
+        self._metadataViewButton = MenuButton(self, function()
             local ui = self:parent():bottomBarUI()
             local menu = axutils.childFromLeft(ui, 1)
             if menu:attributeValue("AXRole") == "AXGroup" then

@@ -17,7 +17,6 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop							= require("cp.prop")
 local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
 
@@ -26,8 +25,7 @@ local Element                       = require("cp.ui.Element")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Table = {}
-Table.mt = Element:subtype()
+local Table = Element:subclass("Table")
 
 --- cp.ui.Table.is(thing) -> boolean
 --- Function
@@ -38,12 +36,8 @@ Table.mt = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if the thing is a `Table` instance.
-function Table.is(thing)
-    if type(thing) == "table" then
-        local mt = getmetatable(thing)
-        return mt and mt == Table.mt or mt.__index == Table.mt
-    end
-    return false
+function Table.static.is(thing)
+    return type(thing) == "table" and thing.isInstanceOf ~= nil and thing:isInstanceOf(Table)
 end
 
 --- cp.ui.Table.cellTextValue(cell) -> boolean
@@ -55,7 +49,7 @@ end
 ---
 --- Returns:
 ---  * The combined text value of the cell.
-function Table.cellTextValue(cell)
+function Table.static.cellTextValue(cell)
     local textValue = nil
     if #cell > 0 then
         for _,item in ipairs(cell) do
@@ -83,7 +77,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the cell text value equals the provided `value`.
-function Table.cellTextValueIs(cell, value)
+function Table.static.cellTextValueIs(cell, value)
     return Table.cellTextValue(cell) == value
 end
 
@@ -96,7 +90,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the row is disclosable and is now expanded.
-function Table.discloseRow(row)
+function Table.static.discloseRow(row)
     local disclosing = row:attributeValue("AXDisclosing")
     if disclosing == nil then
         return false
@@ -116,7 +110,7 @@ end
 ---
 --- Returns:
 ---  * The row that was visited, or `nil` if not.
-function Table.findRow(rows, names)
+function Table.static.findRow(rows, names)
     if rows then
         local name = table.remove(names, 1)
         for _,row in ipairs(rows) do
@@ -145,7 +139,7 @@ end
 ---
 --- Returns:
 ---  * The row that was visited, or `nil` if not.
-function Table.visitRow(rows, names, actionFn)
+function Table.static.visitRow(rows, names, actionFn)
     local row = Table.findRow(rows, names)
     if row then actionFn(row) end
     return row
@@ -161,7 +155,7 @@ end
 ---
 --- Returns:
 ---  * The row that was visited, or `nil` if not.
-function Table.selectRow(rows, names)
+function Table.static.selectRow(rows, names)
     return Table.visitRow(rows, names, function(row) row:setAttributeValue("AXSelected", true) end)
 end
 
@@ -174,7 +168,7 @@ end
 ---
 --- Returns:
 ---  * `true` if it matches.
-function Table.matches(element)
+function Table.static.matches(element)
     return Element.matches(element)
 end
 
@@ -188,41 +182,45 @@ end
 ---
 --- Returns:
 ---  * A new `Table` instance.
-function Table.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, Table.mt)
+function Table:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
-    prop.bind(o) {
-        --- cp.ui.Table.contentUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- Returns the `axuielement` that contains the actual rows.
-        contentUI = o.UI:mutate(function(original, self)
-            return axutils.cache(self, "_content", function()
-                local ui = original()
-                return ui and axutils.childMatching(ui, Table.matchesContent)
-            end,
-            Table.matchesContent)
-        end),
-
-        --- cp.ui.Table.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The vertical scroll bar UI element, if present.
-        verticalScrollBarUI = axutils.prop(o.UI, "AXVerticalScrollBar"),
-
-        --- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The horizontal scroll bar UI element, if present.
-        horizontalScrollBarUI = axutils.prop(o.UI, "AXHorizontalScrollBar"),
-
-        --- cp.ui.Table.isFocused <cp.prop: boolean; read-only>
-        --- Field
-        --- Returns `true` if the table is focused by the user.
-        isFocused = o.UI:mutate(function(original)
+--- cp.ui.Table.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- Returns the `axuielement` that contains the actual rows.
+function Table.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return axutils.cache(self, "_content", function()
             local ui = original()
-            return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
-        end),
-    }
+            return ui and axutils.childMatching(ui, Table.matchesContent)
+        end,
+        Table.matchesContent)
+    end)
+end
 
-    return o
+--- cp.ui.Table.verticalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The vertical scroll bar UI element, if present.
+function Table.lazy.prop:verticalScrollBarUI()
+    return axutils.prop(self.UI, "AXVerticalScrollBar")
+end
+
+--- cp.ui.Table.horizontalScrollBarUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The horizontal scroll bar UI element, if present.
+function Table.lazy.prop:horizontalScrollBarUI()
+    return axutils.prop(self.UI, "AXHorizontalScrollBar")
+end
+
+--- cp.ui.Table.isFocused <cp.prop: boolean; read-only>
+--- Field
+--- Returns `true` if the table is focused by the user.
+function Table.lazy.prop:isFocused()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and ui:focused() or axutils.childWith(ui, "AXFocused", true) ~= nil
+    end)
 end
 
 --- cp.ui.Table:uncached() -> Table
@@ -233,7 +231,7 @@ end
 ---  * None
 ---
 ---  * The same `Table`, now uncached..
-function Table.mt:uncached()
+function Table:uncached()
     self._uncached = true
     return self
 end
@@ -247,7 +245,7 @@ end
 ---
 --- Returns:
 ---  * `true` if the element is a valid content element.
-function Table.matchesContent(element)
+function Table.static.matchesContent(element)
     if element then
         local role = element:attributeValue("AXRole")
         return role == "AXOutline" or role == "AXTable"
@@ -265,7 +263,7 @@ end
 ---
 --- Returns:
 ---  * Table of rows. If the table is visible but no rows match, it will be an empty table, otherwise it will be `nil`.
-function Table.mt:rowsUI(filterFn)
+function Table:rowsUI(filterFn)
     local ui = self:contentUI()
     if ui then
         local rows = {}
@@ -291,7 +289,7 @@ end
 ---
 --- Returns:
 ---  * Table of rows. If the table is visible but no rows match, it will be an empty table, otherwise it will be `nil`.
-function Table.mt:topRowsUI(filterFn)
+function Table:topRowsUI(filterFn)
     return self:rowsUI(function(row)
         local disclosureLevel = row:attributeValue("AXDisclosureLevel")
         return (disclosureLevel == 0 or disclosureLevel == nil) and (filterFn == nil or filterFn(row))
@@ -307,7 +305,7 @@ end
 ---
 --- Returns:
 ---  * Table of column headers. If the table is visible but no column headers are defined, an empty table is returned. If it's not visible, `nil` is returned.
-function Table.mt:columnsUI()
+function Table:columnsUI()
     local ui = self:contentUI()
     if ui then
         local columns = {}
@@ -330,7 +328,7 @@ end
 ---
 --- Returns:
 ---  * A column index as a number, or `nil` if no index can be found.
-function Table.mt:findColumnIndex(id)
+function Table:findColumnIndex(id)
     local cols = self:columnsUI()
     if cols then
         for i=1,#cols do
@@ -352,7 +350,7 @@ end
 ---
 --- Returns:
 ---  * A `hs._asm.axuielement` object for the cell, or `nil` if the cell cannot be found.
-function Table.mt:findCellUI(rowNumber, columnId)
+function Table:findCellUI(rowNumber, columnId)
     local rows = self:rowsUI()
     if rows and rowNumber >= 1 and rowNumber < #rows then
         local colNumber = self:findColumnIndex(columnId)
@@ -370,7 +368,7 @@ end
 ---
 --- Returns:
 ---  * Table of `hs._asm.axuielement` objects, or `nil` if none could be found.
-function Table.mt:selectedRowsUI()
+function Table:selectedRowsUI()
     local rows = self:rowsUI()
     if rows then
         local selected = {}
@@ -393,7 +391,7 @@ end
 ---
 --- Return:
 ---  * The frame in the form of a `hs.geometry` rect object.
-function Table.mt:viewFrame()
+function Table:viewFrame()
     local ui = self:UI()
     if ui then
         local vFrame = ui:frame()
@@ -424,7 +422,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:showRow(rowUI)
+function Table:showRow(rowUI)
     local ui = self:UI()
     if ui and rowUI then
         local vFrame = self:viewFrame()
@@ -466,7 +464,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:showRowAt(index)
+function Table:showRowAt(index)
     local rows = self:rowsUI()
     if rows then
         if index > 0 and index <= #rows then
@@ -485,7 +483,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:selectRow(rowUI) -- luacheck: ignore
+function Table:selectRow(rowUI) -- luacheck: ignore
     if rowUI then
         rowUI:setAttributeValue("AXSelected", true)
         return true
@@ -503,7 +501,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:selectRowAt(index)
+function Table:selectRowAt(index)
     local ui = self:rowsUI()
     if ui and #ui >= index then
         return self:selectRow(ui[index])
@@ -520,7 +518,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:deselectRow(rowUI) -- luacheck: ignore
+function Table:deselectRow(rowUI) -- luacheck: ignore
     if rowUI then
         rowUI:setAttributeValue("AXSelected", false)
         return true
@@ -538,7 +536,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:deselectRowAt(index)
+function Table:deselectRowAt(index)
     local ui = self:rowsUI()
     if ui and #ui >= index then
         return self:deselectRow(ui[index])
@@ -555,7 +553,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:selectAll(rowsUI)
+function Table:selectAll(rowsUI)
     rowsUI = rowsUI or self:rowsUI()
     local outline = self:contentUI()
     if rowsUI and outline then
@@ -574,7 +572,7 @@ end
 ---
 --- Return:
 ---  * `true` if successful, otherwise `false`.
-function Table.mt:deselectAll(rowsUI)
+function Table:deselectAll(rowsUI)
     rowsUI = rowsUI or self:selectedRowsUI()
     if rowsUI then
         for _,row in ipairs(rowsUI) do
@@ -594,7 +592,7 @@ end
 ---
 --- Returns:
 ---  * A table containing the current Table Layout.
-function Table.mt:saveLayout()
+function Table:saveLayout()
     local layout = {}
     local hScroll = self:horizontalScrollBarUI()
     if hScroll then
@@ -618,7 +616,7 @@ end
 ---
 --- Returns:
 ---  * None
-function Table.mt:loadLayout(layout)
+function Table:loadLayout(layout)
     if layout then
         self:selectAll(layout.selectedRows)
         local vScroll = self:verticalScrollBarUI()
@@ -630,6 +628,10 @@ function Table.mt:loadLayout(layout)
             hScroll:setValue(layout.horizontalScrollBar)
         end
     end
+end
+
+function Table.__tostring()
+    return "cp.ui.Table"
 end
 
 return Table

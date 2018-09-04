@@ -19,7 +19,6 @@ local require = require
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 local go                            = require("cp.rx.go")
 local If, WaitUntil                 = go.If, go.WaitUntil
@@ -29,7 +28,7 @@ local If, WaitUntil                 = go.If, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local PopUpButton = Element:subtype()
+local PopUpButton = Element:subclass("PopUpButton")
 
 --- cp.ui.PopUpButton.matches(element) -> boolean
 --- Function
@@ -40,11 +39,11 @@ local PopUpButton = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function PopUpButton.matches(element)
+function PopUpButton.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
---- cp.ui.PopUpButton.new(parent, uiFinder) -> cp.ui.PopUpButton
+--- cp.ui.PopUpButton:new(parent, uiFinder) -> cp.ui.PopUpButton
 --- Constructor
 --- Creates a new PopUpButton.
 ---
@@ -54,10 +53,12 @@ end
 ---
 --- Returns:
 ---  * The new `PopUpButton` instance.
-function PopUpButton.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, PopUpButton)
 
-    local value = o.UI:mutate(
+--- cp.ui.PopUpButton.value <cp.prop: anything; live>
+--- Field
+--- Returns or sets the current `PopUpButton` value.
+function PopUpButton.lazy.prop:value()
+    return self.UI:mutate(
         function(original)
             local ui = original()
             return ui and ui:value()
@@ -79,34 +80,27 @@ function PopUpButton.new(parent, uiFinder)
         end
     )
     -- if anyone starts watching, then register with the app notifier.
-    value:preWatch(function()
-        o:app():notifier():watchFor("AXMenuItemSelected", function()
-            value:update()
+    :preWatch(function(_, theProp)
+        self:app():notifier():watchFor("AXMenuItemSelected", function()
+            theProp:update()
         end)
     end)
-
-    local menuUI = o.UI:mutate(function(original)
-        local ui = original()
-        return ui and axutils.childWithRole(ui, "AXMenu")
-    end)
-    -- if anyone opens the menu, update the prop watchers
-    menuUI:preWatch(function()
-        o:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
-            menuUI:update()
-        end)
-    end)
-
-    return prop.bind(o) {
---- cp.ui.PopUpButton.value <cp.prop: anything; live>
---- Field
---- Returns or sets the current `PopUpButton` value.
-        value = value,
+end
 
 --- cp.ui.PopUpButton.menuUI <cp.prop: hs._asm.axuielement; read-only; live?>
 --- Field
 --- Returns the `AXMenu` for the PopUpMenu if it is currently visible.
-        menuUI = menuUI,
-    }
+function PopUpButton.lazy.prop:menuUI()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and axutils.childWithRole(ui, "AXMenu")
+    end)
+    -- if anyone opens the menu, update the prop watchers
+    :preWatch(function(_, theProp)
+        self:app():notifier():watchFor({"AXMenuOpened", "AXMenuClosed"}, function()
+            theProp:update()
+        end)
+    end)
 end
 
 --- cp.ui.PopUpButton:selectItem(index) -> self
@@ -294,7 +288,7 @@ end
 --- Loads a `PopUpButton` layout.
 ---
 --- Parameters:
----  * layout - A table containing the `PopUpButton` layout settings - created using `cp.ui.PopUpButton:saveLayout()`.
+---  * layout - A table containing the `PopUpButton` layout settings - created using [saveLayout](#saveLayout).
 ---
 --- Returns:
 ---  * None

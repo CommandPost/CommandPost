@@ -171,12 +171,12 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     }
 
     -- prepare the parent to provide the content UI.
-    PropertyRow.prepareParent(o, function() return parent:UI() end)
+    PropertyRow.prepareParent(o, parent.UI)
 
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.row <cp.prop: PropertyRow>
     --- Field
     --- Finds the 'row' for the property type.
-    o.row = PropertyRow.new(o, o._labelKeys)
+    o.row = PropertyRow(o, o._labelKeys)
 
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
     --- Field
@@ -186,7 +186,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.percent <cp.prop: TextField>
     --- Field
     --- The 'percent' text field.
-    o.percent = TextField.new(o, function()
+    o.percent = TextField(o, function()
         local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
         return fields and fields[#fields] or nil
     end, tonumber)
@@ -194,7 +194,7 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
     --- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.prop: TextField>
     --- Field
     --- The 'angle' text field (only present for the 'color' aspect).
-    o.angle = TextField.new(o, function()
+    o.angle = TextField(o, function()
         if o._hasAngle then
             local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
             return fields and #fields > 1 and fields[1] or nil

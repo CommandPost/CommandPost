@@ -265,7 +265,7 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser:toggleViewMode()
     if not self._viewMode then
-        self._viewMode = Button.new(self, function()
+        self._viewMode = Button(self, function()
             return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 3)
         end)
     end
@@ -283,7 +283,7 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser:appearanceAndFiltering()
     if not self._appearanceAndFiltering then
-        self._appearanceAndFiltering = Button.new(self, function()
+        self._appearanceAndFiltering = Button(self, function()
             return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 2)
         end)
     end
@@ -301,7 +301,7 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser:searchToggle()
     if not self._searchToggle then
-        self._searchToggle = Button.new(self, function()
+        self._searchToggle = Button(self, function()
             return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXButton"), 1)
         end)
     end
@@ -319,7 +319,7 @@ end
 ---  * The `TextField` object.
 function LibrariesBrowser:search()
     if not self._search then
-        self._search = TextField.new(self, function()
+        self._search = TextField(self, function()
             return axutils.childWithID(self:mainGroupUI(), id "Search")
         end)
     end
@@ -337,7 +337,7 @@ end
 ---  * The `Button` object.
 function LibrariesBrowser:filterToggle()
     if not self._filterToggle then
-        self._filterToggle = Button.new(self, function()
+        self._filterToggle = Button(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXButton")
         end)
     end
@@ -445,7 +445,7 @@ end
 ---  * `Table` object.
 function LibrariesBrowser:sidebar()
     if not self._sidebar then
-        self._sidebar = Table.new(self, function()
+        self._sidebar = Table(self, function()
             return axutils.childMatching(self:mainGroupUI(), LibrariesBrowser.matchesSidebar)
         end):uncached()
     end

@@ -23,7 +23,6 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local Element						= require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 local go                            = require("cp.rx.go")
 local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
@@ -33,7 +32,7 @@ local If, Throw, WaitUntil          = go.If, go.Throw, go.WaitUntil
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local RadioGroup = Element:subtype()
+local RadioGroup = Element:subclass("RadioGroup")
 
 --- cp.ui.RadioGroup.matches(element) -> boolean
 --- Function
@@ -44,12 +43,12 @@ local RadioGroup = Element:subtype()
 ---
 --- Returns:
 --- * `true` if the element is a RadioGroup.
-function RadioGroup.matches(element)
+function RadioGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup.new(parent, finderFn[, cached]) -> RadioGroup
---- Method
+--- cp.ui.RadioGroup:new(parent, finderFn[, cached]) -> cp.ui.RadioGroup
+--- Constructor
 --- Creates a new RadioGroup.
 ---
 --- Parameters:
@@ -58,17 +57,27 @@ end
 ---
 --- Returns:
 --- * The new `RadioGroup` instance.
-function RadioGroup.new(parent, finderFn)
-    local o = Element.new(parent, finderFn, RadioGroup)
+function RadioGroup:initialize(parent, finderFn)
+    Element.initialize(self, parent, finderFn)
+end
 
-    local optionCount = o.UI:mutate(
+--- cp.ui.RadioGroup.optionCount <cp.prop: number; read-only>
+--- Field
+--- The number of options in the group.
+function RadioGroup.lazy.prop:optionCount()
+    return self.UI:mutate(
         function(original)
             local ui = original()
             return ui and #ui or 0
         end
     )
+end
 
-    local selectedOption = o.UI:mutate(
+--- cp.ui.RadioGroup.selectedOption <cp.prop: number>
+--- Field
+--- The currently selected option number.
+function RadioGroup.lazy.prop:selectedOption()
+    return self.UI:mutate(
         function(original)
             local ui = original()
             if ui then
@@ -94,20 +103,6 @@ function RadioGroup.new(parent, finderFn)
             return nil
         end
     )
-
-    prop.bind(o) {
---- cp.ui.RadioGroup.optionCount <cp.prop: number; read-only>
---- Field
---- The number of options in the group.
-        optionCount = optionCount,
-
---- cp.ui.RadioGroup.selectedOption <cp.prop: number>
---- Field
---- The currently selected option number.
-        selectedOption = selectedOption,
-    }
-
-    return o
 end
 
 --- cp.ui.RadioGroup:doSelectOption(index) -> cp.rx.go.Statement<boolean>

@@ -20,8 +20,6 @@ local require = require
 local axutils                       = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
 local Button                        = require("cp.ui.Button")
-local lazy                          = require("cp.lazy")
-local prop                          = require("cp.prop")
 
 local If                            = require("cp.rx.go.If")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
@@ -31,7 +29,7 @@ local WaitUntil                     = require("cp.rx.go.WaitUntil")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Alert = Element:subtype()
+local Alert = Element:subclass("Alert")
 
 --- cp.ui.Alert.matches(element) -> boolean
 --- Function
@@ -42,11 +40,11 @@ local Alert = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Alert.matches(element)
+function Alert.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXSheet"
 end
 
---- cp.ui.Alert.new(app) -> Alert
+--- cp.ui.Alert:new(app) -> Alert
 --- Constructor
 --- Creates a new `Alert` instance.
 ---
@@ -55,34 +53,33 @@ end
 ---
 --- Returns:
 ---  * A new `Browser` object.
-function Alert.new(parent)
+function Alert:initialize(parent)
     local UI = parent.UI:mutate(function(original)
         return axutils.childMatching(original(), Alert.matches)
     end)
 
-    local o = Element.new(parent, UI, Alert)
+    Element.initialize(self, parent, UI)
+end
 
-    prop.bind(o) {
 --- cp.ui.Alert.title <cp.prop: string>
 --- Field
 --- Gets the title of the alert.
-        title = axutils.prop(o.UI, "AXTitle"),
+function Alert.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
+end
 
-    }
-
-    lazy.value(o) {
 --- cp.ui.Alert.default <cp.ui.Button>
 --- Field
 --- The default [Button](cp.ui.Button.md) for the `Alert`.
-        default = function(self) return Button.new(self, axutils.prop(UI, "AXDefaultButton")) end,
+function Alert.lazy.value:default()
+    return Button(self, axutils.prop(self.UI, "AXDefaultButton"))
+end
 
 --- cp.ui.Alert.cancel <cp.ui.Button>
 --- Field
 --- The cancel [Button](cp.ui.Button.md) for the `Alert`.
-        cancel = function(self) return Button.new(self, axutils.prop(UI, "AXDefaultButton")) end,
-    }
-
-    return o
+function Alert.lazy.value:cancel()
+    return Button(self, axutils.prop(self.UI, "AXCancelButton"))
 end
 
 --- cp.ui.Alert:hide() -> none

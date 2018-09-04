@@ -11,7 +11,7 @@ local Button                        = require("cp.ui.Button")
 
 local Do                            = require("cp.rx.go").Do
 
-local Toolbar = Element:subtype()
+local Toolbar = Element:subclass("Toolbar")
 
 --- cp.ui.Toolbar.matches(element) -> boolean
 --- Function
@@ -22,11 +22,11 @@ local Toolbar = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if the `element` is a `Button`, or `false` if not.
-function Toolbar.matches(element)
+function Toolbar.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXToolbar"
 end
 
---- cp.ui.Toolbar.new(parent, uiFinder) -> cp.ui.Toolbar
+--- cp.ui.Toolbar(parent, uiFinder) -> cp.ui.Toolbar
 --- Constructor
 --- Creates a new `Toolbar` instance, given the specified `parent` and `uiFinder`
 ---
@@ -36,40 +36,41 @@ end
 ---
 --- Returns:
 ---  * The new `Toolbar` instance.
-function Toolbar.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, Toolbar)
+function Toolbar:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
 
-    prop.bind(o) {
+    if prop.is(parent.UI) then
+        self.UI:monitor(parent.UI)
+    end
+
+    if prop.is(parent.isShowing) then
+        self.isShowing:monitor(parent.isShowing)
+    end
+
+end
+
 --- cp.ui.Toolbar.selectedTitle <cp.prop: string; read-only>
 --- Field
 --- The title of the first selected item, if available.
-        selectedTitle   = o.UI:mutate(function(original)
-            local ui = original()
-            local selected = ui and ui:attributeValue("AXSelectedChildren")
-            if selected and #selected > 0 then
-                return selected[1]:attributeValue("AXTitle")
-            end
-        end),
-    }
+function Toolbar.lazy.prop:selectedTitle()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        local selected = ui and ui:attributeValue("AXSelectedChildren")
+        if selected and #selected > 0 then
+            return selected[1]:attributeValue("AXTitle")
+        end
+    end)
+end
 
 --- cp.ui.Toolbar.overflowButton <cp.ui.Button>
 --- Field
 --- The "overflow" button which appears if there are more toolbar items
 --- available than can be fit on screen.
-    o.overflowButton = Button.new(o, o.UI:mutate(function(original)
+function Toolbar.lazy.value:overflowButton()
+    return Button(self, self.UI:mutate(function(original)
         local ui = original()
         return ui and ui:attributeValue("AXOverflowButton")
     end))
-
-    if prop.is(parent.UI) then
-        o.UI:monitor(parent.UI)
-    end
-
-    if prop.is(parent.isShowing) then
-        o.isShowing:monitor(parent.isShowing)
-    end
-
-    return o
 end
 
 --- cp.ui.Toolbar:doSelect(title) -> Statement
@@ -103,6 +104,10 @@ end
 
 function Toolbar:doHide()
     return self:parent():doHide()
+end
+
+function Toolbar.__tostring()
+    return "cp.ui.Toolbar"
 end
 
 return Toolbar

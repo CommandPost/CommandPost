@@ -25,16 +25,14 @@
 --
 --------------------------------------------------------------------------------
 local require = require
-local axutils						= require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local RadioButton = Element:subtype()
+local RadioButton = Element:subclass("RadioButton")
 
 --- cp.ui.RadioButton.matches(element) -> boolean
 --- Function
@@ -45,28 +43,8 @@ local RadioButton = Element:subtype()
 ---
 --- Returns:
 --- * `true` if it's a match, or `false` if not.
-function RadioButton.matches(element)
-    local o = Element.matches(element) and element:attributeValue("AXRole") == "AXRadioButton"
-
-    prop.bind(o) {
---- cp.ui.RadioButton.checked <cp.prop: boolean>
---- Field
---- Indicates if the checkbox is currently checked.
---- May be set by calling as a function with `true` or `false` to the function.
-        checked = o.UI:mutate(
-            function(original) -- get
-                local ui = original()
-                return ui and ui:attributeValue("AXValue") == 1
-            end,
-            function(value, original) -- set
-                local ui = original()
-                if ui and value ~= (ui:attributeValue("AXValue") == 1) then
-                    ui:doPress()
-                end
-            end
-        ),
-    }
-    return o
+function RadioButton.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioButton"
 end
 
 --- cp.ui.RadioButton.new(axuielement, function) -> RadioButton
@@ -79,8 +57,27 @@ end
 ---
 --- Returns:
 --- * The new `RadioButton`.
-function RadioButton.new(parent, finderFn)
-    return Element.new(parent, finderFn, RadioButton)
+function RadioButton:initialize(parent, finderFn)
+    Element.initialize(self, parent, finderFn)
+end
+
+--- cp.ui.RadioButton.checked <cp.prop: boolean>
+--- Field
+--- Indicates if the checkbox is currently checked.
+--- May be set by calling as a function with `true` or `false` to the function.
+function RadioButton.lazy.prop:checked()
+    return self.UI:mutate(
+        function(original) -- get
+            local ui = original()
+            return ui and ui:attributeValue("AXValue") == 1
+        end,
+        function(value, original) -- set
+            local ui = original()
+            if ui and value ~= (ui:attributeValue("AXValue") == 1) then
+                ui:doPress()
+            end
+        end
+    )
 end
 
 --- cp.ui.RadioButton:toggle() -> self
@@ -134,6 +131,10 @@ function RadioButton.__call(self, parent, value)
         value = parent
     end
     return self:checked(value)
+end
+
+function RadioButton.__tostring()
+    return "cp.ui.RadioButton"
 end
 
 return RadioButton

@@ -63,7 +63,7 @@ local WaitUntil, Throw, If      = go.WaitUntil, go.Throw, go.If
 --------------------------------------------------------------------------------
 local v							= require("semver")
 local class                     = require("middleclass")
-local Lazy                      = require("cp.lazy")
+local lazy                      = require("cp.lazy")
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -92,7 +92,7 @@ local BASE_LOCALE = "Base"
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local app = class("app"):include(Lazy)
+local app = class("app"):include(lazy)
 
 -- keeps a log of all apps that have been created.
 local apps = {}
@@ -164,7 +164,6 @@ app.static.frontmostApp = prop(function() return frontmostApp end):label("frontm
 -- * The same `cp.prop`.
 local function notifyWatch(cpProp, notifications)
     cpProp:preWatch(function(self)
-        log.df("notifyWatch > preWatch: type(notifier) == %q", type(self.notifier))
         self:notifier():watchFor(
             notifications,
             function() cpProp:update() end

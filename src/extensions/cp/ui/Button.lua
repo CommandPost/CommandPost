@@ -20,7 +20,6 @@ local require = require
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
 local Element                       = require("cp.ui.Element")
-local prop							= require("cp.prop")
 local go                            = require("cp.rx.go")
 
 local If                            = go.If
@@ -30,7 +29,7 @@ local If                            = go.If
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Button = Element:subtype()
+local Button = Element:subclass("Button")
 
 --- cp.ui.Button.matches(element) -> boolean
 --- Function
@@ -41,7 +40,7 @@ local Button = Element:subtype()
 ---
 --- Returns:
 ---  * `true` if the `element` is a `Button`, or `false` if not.
-function Button.matches(element)
+function Button.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXButton"
 end
 
@@ -55,18 +54,15 @@ end
 ---
 --- Returns:
 --- The new `Button` instance.
-function Button.new(parent, uiFinder)
-    local o = Element.new(parent, uiFinder, Button)
-
-    prop.bind(o) {
+function Button:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
+end
 
 --- cp.ui.Button.title <cp.prop: string; read-only>
 --- Field
 --- The button title, if available.
-        title   = axutils.prop(o.UI, "AXTitle"),
-    }
-
-    return o
+function Button.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
 end
 
 --- cp.ui.Button:press() -> self, boolean
@@ -121,7 +117,7 @@ function Button:__call()
 end
 
 function Button:__tostring()
-    return string.format("cp.ui.Button: %s (%s)", self:title(), self:parent())
+    return string.format("cp.ui.Button: %q (parent: %s)", self:title(), self:parent())
 end
 
 return Button
