@@ -61,6 +61,7 @@ local function xyParameter(group, param, id)
     local x, y = 0, 0
     local updateUI = deferred.new(DEFER)
     updateUI:action(function()
+    fcp:inspector():video():show()
         if x ~= 0 then
             local current = param:x()
             if current then
@@ -89,7 +90,6 @@ local function xyParameter(group, param, id)
         :stepSize(0.5)
         :onGet(function() return param:x() end)
         :onChange(function(amount)
-            fcp:inspector():video():show()
             x = x + amount
             updateUI()
         end)
