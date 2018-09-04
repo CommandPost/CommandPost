@@ -58,9 +58,12 @@ local require = require
 --------------------------------------------------------------------------------
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local Group                             = require("cp.ui.Group")
 local RadioButton                       = require("cp.ui.RadioButton")
 local SplitGroup                        = require("cp.ui.SplitGroup")
+
+local If                                = require("cp.rx.go.If")
 
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
@@ -73,7 +76,7 @@ local section, slider, numberField, popUpButton      = IP.section, IP.slider, IP
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local AudioInspector = {}
+local AudioInspector = Element:subclass("AudioInspector")
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector.matches(element)
 --- Function
@@ -84,8 +87,8 @@ local AudioInspector = {}
 ---
 --- Returns:
 --- * `true` if it matches, `false` if not.
-function AudioInspector.matches(element)
-    if element then
+function AudioInspector.static.matches(element)
+    if Element.matches(element) then
         if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
             local group = element[1]
             return group and group:attributeValue("AXRole") == "AXSplitGroup" and #group > 5
@@ -94,7 +97,7 @@ function AudioInspector.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioInspector.new(parent) -> cp.apple.finalcutpro.audio.AudioInspector
+--- cp.apple.finalcutpro.inspector.audio.AudioInspector(parent) -> cp.apple.finalcutpro.audio.AudioInspector
 --- Constructor
 --- Creates a new `AudioInspector` object
 ---
@@ -103,19 +106,10 @@ end
 ---
 --- Returns:
 ---  * A `AudioInspector` object
-function AudioInspector.new(parent)
-    local o
-    o = prop.extend({
-        _parent = parent,
-        _child = {},
-        _rows = {},
-    }, AudioInspector)
+function AudioInspector:initialize(parent)
 
---- cp.apple.finalcutpro.inspector.color.AudioInspector.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Returns the `hs._asm.axuielement` object for the Audio Inspector.
     local UI = parent.panelUI:mutate(function(original)
-        return axutils.cache(o, "_ui",
+        return axutils.cache(self, "_ui",
             function()
                 local ui = original()
                 return AudioInspector.matches(ui) and ui or nil
@@ -124,141 +118,99 @@ function AudioInspector.new(parent)
         )
     end)
 
---- cp.apple.finalcutpro.inspector.color.AudioInspector.isShowing <cp.prop: boolean; read-only>
---- Field
---- Checks if the AudioInspector is currently showing.
-    local isShowing = UI:mutate(function(original)
-        return original() ~= nil
+    Element.initialize(self, parent, UI)
+    self._child = {}
+    self._rows = {}
+end
+
+function AudioInspector.lazy.method:content()
+    return SplitGroup(o, UI:mutate(function(original)
+        return axutils.cache(this, "_ui", function()
+            local ui = original()
+            if ui then
+                local splitGroup = ui[1]
+                return SplitGroup.matches(splitGroup) and splitGroup or nil
+            end
+            return nil
+        end)
+    end))
+end
+
+function AudioInspector.lazy.method:topProperties()
+    local topProps = Group(self, function()
+        return axutils.childFromTop(self:content():UI(), 1)
     end)
 
-    prop.bind(o) {
-        UI = UI, isShowing = isShowing,
+    prop.bind(topProps) {
+        contentUI = self.UI:mutate(function(original)
+            local ui = original()
+            if ui and ui[1] then
+                return ui[1]
+            end
+        end)
     }
 
-    function o:content()
-        local content = self._content
-        if not content then
-            content = SplitGroup(o, UI:mutate(function(original, this)
-                return axutils.cache(this, "_ui", function()
-                    local ui = original()
-                    if ui then
-                        local splitGroup = ui[1]
-                        return SplitGroup.matches(splitGroup) and splitGroup or nil
-                    end
-                    return nil
-                end)
-            end))
-            self._content = content
-        end
-        return content
-    end
+    hasProperties(topProps, topProps.contentUI) {
+        volume              = slider "FFAudioVolumeToolName",
+    }
+    
+    return topProps
+end
 
-    function o:topProperties()
-        local topProps = self._topProperties
-        if not topProps then
-            topProps = Group(self, function()
-                return axutils.childFromTop(self:content():UI(), 1)
-            end)
+function AudioInspector.lazy.method:mainProperties()
+    local mainProps = SplitGroup(self, function()
+        return axutils.childFromTop(self:content():UI(), 2)
+    end)
+    
+    prop.bind(mainProps) {
+        contentUI = self.UI:mutate(function(original)
+            local ui = original()
+            if ui and ui[1] and ui[1][1] then
+                return ui[1][1]
+            end
+        end)
+    }
 
-            prop.bind(topProps) {
-                contentUI = topProps.UI:mutate(function(original)
-                    local ui = original()
-                    if ui and ui[1] then
-                        return ui[1]
-                    end
-                end),
-            }
-
-            hasProperties(topProps, topProps.contentUI) {
-                volume              = slider "FFAudioVolumeToolName",
-            }
-
-            self._topProperties = topProps
-        end
-        return topProps
-    end
-
-    function o:mainProperties()
-        local mainProps = self._mainProperties
-        if not mainProps then
-            mainProps = SplitGroup(self, function()
-                return axutils.childFromTop(self:content():UI(), 2)
-            end)
-
-            prop.bind(mainProps) {
-                contentUI = mainProps.UI:mutate(function(original)
-                    local ui = original()
-                    if ui and ui[1] and ui[1][1] then
-                        return ui[1][1]
-                    end
-                end),
-            }
-
-            hasProperties(mainProps, mainProps.contentUI) {
-                audioEnhancements   = section "FFAudioAnalysisLabel_EnhancementsBrick" {
-                    equalization    = popUpButton "FFAudioAnalysisLabel_Equalization",
-                    audioAnalysis   = section "FFAudioAnalysisLabel_AnalysisBrick" {
-                        loudness        = section "FFAudioAnalysisLabel_Loudness" {
-                            amount      = numberField "FFAudioAnalysisLabel_LoudnessAmount",
-                            uniformity   = numberField "FFAudioAnalysisLabel_LoudnessUniformity",
-                        },
-                        noiseRemoval    = section "FFAudioAnalysisLabel_NoiseRemoval" {
-                            amount      = numberField "FFAudioAnalysisLabel_NoiseRemovalAmount",
-                        },
-                        humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
-                            frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)
-                                row.fiftyHz     = RadioButton(row, function()
-                                    return childFromLeft(row:children(), 1, RadioButton.matches)
-                                end)
-                                row.sixtyHz     = RadioButton(row, function()
-                                    return childFromRight(row:children(), 1, RadioButton.matches)
-                                end)
-                            end),
-                        }
-                    },
+    hasProperties(mainProps, mainProps.contentUI) {
+        audioEnhancements   = section "FFAudioAnalysisLabel_EnhancementsBrick" {
+            equalization    = popUpButton "FFAudioAnalysisLabel_Equalization",
+            audioAnalysis   = section "FFAudioAnalysisLabel_AnalysisBrick" {
+                loudness        = section "FFAudioAnalysisLabel_Loudness" {
+                    amount      = numberField "FFAudioAnalysisLabel_LoudnessAmount",
+                    uniformity   = numberField "FFAudioAnalysisLabel_LoudnessUniformity",
                 },
+                noiseRemoval    = section "FFAudioAnalysisLabel_NoiseRemoval" {
+                    amount      = numberField "FFAudioAnalysisLabel_NoiseRemovalAmount",
+                },
+                humRemoval      = section "FFAudioAnalysisLabel_HumRemoval" {
+                    frequency   = simple("FFAudioAnalysisLabel_HumRemovalFrequency", function(row)
+                        row.fiftyHz     = RadioButton(row, function()
+                            return childFromLeft(row:children(), 1, RadioButton.matches)
+                        end)
+                        row.sixtyHz     = RadioButton(row, function()
+                            return childFromRight(row:children(), 1, RadioButton.matches)
+                        end)
+                    end),
+                }
+            },
+        },
 
-                effects             = section "FFInspectorBrickEffects" {},
-            }
-
-            self._mainProperties = mainProps
-        end
-        return mainProps
-    end
-
-    prop.bind(o) {
-        volume = o:topProperties().volume,
-        audioEnhancements = o:mainProperties().audioEnhancements,
-        effects = o:mainProperties().effects,
+        effects             = section "FFInspectorBrickEffects" {},
     }
 
-    return o
+    return mainProps
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioInspector:parent() -> table
---- Method
---- Returns the AudioInspector's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function AudioInspector:parent()
-    return self._parent
+function AudioInspector.lazy.prop:volume()
+    return self:topProperties().volume
 end
 
---- cp.apple.finalcutpro.inspector.audio.AudioInspector:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function AudioInspector:app()
-    return self:parent():app()
+function AudioInspector.lazy.prop:audioEnhancements()
+    return self:mainProperties().audioEnhancements
+end
+
+function AudioInspector.lazy.prop:effects()
+    return self:mainProperties().effects
 end
 
 --------------------------------------------------------------------------------
@@ -281,6 +233,22 @@ function AudioInspector:show()
         self:parent():selectTab("Audio")
     end
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.audio.AudioInspector:show() -> AudioInspector
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shows the Audio Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful and sending an error if not.
+function AudioInspector:doShow()
+    return If(self.isShowing):Is(false):Then(
+        self:parent():doSelectTab("Audio")
+    ):Otherwise(true)
+    :Label("AudioInspector:doShow")
 end
 
 return AudioInspector
