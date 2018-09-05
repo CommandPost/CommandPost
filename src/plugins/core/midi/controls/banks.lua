@@ -76,6 +76,7 @@ function mod.init()
                 end
             end
         end)
+        :onActionId(function(action) return "midiBank" .. action.id end)
     return mod
 end
 
