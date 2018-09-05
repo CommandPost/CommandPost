@@ -141,10 +141,14 @@ function mod.sendTimelineClipsToCompressor(clips)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure the Timeline is selected:
+    -- Make sure the Timeline is focussed:
     --------------------------------------------------------------------------------
-    if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-        dialog.displayErrorMessage("Could not trigger 'Go To Timeline'.")
+    result = just.doUntil(function()
+        fcp:timeline():doFocus(true):Now()
+        return fcp:timeline():isFocused()
+    end, 10, 0.1)
+    if not result then
+        dialog.displayErrorMessage("Failed to focus on timeline.")
         return false
     end
 
@@ -168,10 +172,14 @@ function mod.sendTimelineClipsToCompressor(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'.")
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -250,10 +258,14 @@ function mod.sendTimelineClipsToCompressor(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'.")
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -409,6 +421,7 @@ function mod.batchExportBrowserClips(clips)
         local errorMessage
         _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
         if errorMessage then
+            dialog.displayErrorMessage(errorMessage)
             return false
         end
 
@@ -549,10 +562,14 @@ function mod.batchExportTimelineClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'." .. errorFunction)
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -648,10 +665,14 @@ function mod.batchExportTimelineClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'." .. errorFunction)
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -662,6 +683,7 @@ function mod.batchExportTimelineClips(clips)
         local errorMessage
         _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
         if errorMessage then
+            dialog.displayErrorMessage(errorMessage)
             return false
         end
 
@@ -901,6 +923,12 @@ function mod.getDestinationPreset()
             local title = defaultItem:attributeValue("AXTitle")
             if title then
                 --log.df("Using Default Destination: '%s'", title)
+                --------------------------------------------------------------------------------
+                -- Remove the " (default)…" if it exists:
+                --------------------------------------------------------------------------------
+                if title:sub(-13) == " (default)…" then
+                    title = title:sub(1, -14)
+                end
                 destinationPreset = title
             end
         end
@@ -914,7 +942,12 @@ function mod.getDestinationPreset()
         if firstItem ~= nil then
             local title = firstItem:attributeValue("AXTitle")
             if title then
-                --log.df("Using first item: '%s'", title)
+                --------------------------------------------------------------------------------
+                -- Remove the "…" if it exists:
+                --------------------------------------------------------------------------------
+                if title:sub(-3) == "…" then
+                    title = title:sub(1, -4)
+                end
                 destinationPreset = title
             end
         end
