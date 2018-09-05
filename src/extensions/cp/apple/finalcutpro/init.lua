@@ -413,7 +413,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doLaunch()
+function fcp.lazy.method:doLaunch()
     return self.app:doLaunch()
 end
 
@@ -426,7 +426,7 @@ end
 ---
 --- Returns:
 ---  * The FCP instance.
-function fcp:doRestart()
+function fcp.lazy.method:doRestart()
     return self.app:doRestart()
 end
 
@@ -453,7 +453,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doShow()
+function fcp.lazy.method:doShow()
     return self.app:doShow()
 end
 
@@ -480,7 +480,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doHide()
+function fcp.lazy.method:doHide()
     return self.app:doHide()
 end
 
@@ -507,7 +507,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doQuit()
+function fcp.lazy.method:doQuit()
     return self.app:doQuit()
 end
 
@@ -747,7 +747,7 @@ end
 --- Returns:
 ---  * The Primary Window
 function fcp.lazy.method:primaryWindow()
-    return PrimaryWindow.new(self)
+    return PrimaryWindow(self)
 end
 
 --- cp.apple.finalcutpro:secondaryWindow() -> secondaryWindow object
@@ -760,7 +760,7 @@ end
 --- Returns:
 ---  * The Secondary Window
 function fcp.lazy.method:secondaryWindow()
-    return SecondaryWindow.new(self)
+    return SecondaryWindow(self)
 end
 
 --- cp.apple.finalcutpro:fullScreenWindow() -> fullScreenWindow object
