@@ -142,8 +142,10 @@ end
 function RadioGroup:nextOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
-    selected = selected >= count and 1 or selected + 1
-    self:selectedOption(selected)
+    if selected and count then
+        selected = selected >= count and 1 or selected + 1
+        self:selectedOption(selected)
+    end
     return self
 end
 
@@ -181,8 +183,10 @@ end
 function RadioGroup:previousOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
-    selected = selected <= 1 and count or selected - 1
-    self:selectedOption(selected)
+    if selected and count then
+        selected = selected <= 1 and count or selected - 1
+        self:selectedOption(selected)
+    end
     return self
 end
 
