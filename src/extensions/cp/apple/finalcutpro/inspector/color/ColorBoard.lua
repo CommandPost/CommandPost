@@ -472,6 +472,22 @@ function ColorBoard:doSelectAspect(index)
     :Label("ColorBoard:doSelectAspect")
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:doSelectAspect(index) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that will attempt to select the specified aspect `index`.
+--- If the `index` is not between `1` and `3`, and error will be thrown.
+---
+--- Parameters:
+--- * index     - The index to select.
+---
+--- Returns:
+--- * The `Statement`, which will resolve to `true` if successful, or throw an error if not.
+function ColorBoard:doSelectAspect(index)
+    return Do(self:doShow())
+    :Then(self:aspectGroup():doSelectOption(index))
+    :Label("ColorBoard:doSelectAspect")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:nextAspect() -> ColorBoard object
 --- Method
 --- Toggles the Color Board Panels between "Color", "Saturation" and "Exposure"

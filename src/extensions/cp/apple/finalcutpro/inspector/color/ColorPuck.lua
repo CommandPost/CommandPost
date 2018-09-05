@@ -68,6 +68,11 @@ ColorPuck.static.DEFAULT_ANGLES = { 110, 180, 215, 250 }
 -- Which ColorPuck actively has a mouse puck running?
 ColorPuck.static._active = nil
 
+-- cp.apple.finalcutpro.inspector.color.ColorPuck._active -> ColorPuck | nil
+-- Variable
+-- Which ColorPuck actively has a mouse puck running?
+ColorPuck._active = nil
+
 -- tension(diff) -> number
 -- Function
 -- Calculates the tension given the x/y difference value, based on the ColorPuck elasticity and natural length.
