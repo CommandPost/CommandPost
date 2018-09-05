@@ -255,7 +255,6 @@ local function touchBarPanelCallback(id, params)
             local groupID = params["groupID"]
 
             mod.activator[groupID]:onActivate(function(handler, action, text)
-
                 --------------------------------------------------------------------------------
                 -- Process Stylised Text:
                 --------------------------------------------------------------------------------
@@ -266,7 +265,13 @@ local function touchBarPanelCallback(id, params)
                 local actionTitle = text
                 local handlerID = handler:id()
 
-                mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action)
+                --------------------------------------------------------------------------------
+                -- Check for duplicates:
+                --------------------------------------------------------------------------------
+                if not mod._tb.updateAction(params["buttonID"], params["groupID"], actionTitle, handlerID, action) then
+                    dialog.webviewAlert(mod._manager.getWebview(), function() end, i18n("touchBarDuplicateWidget"), i18n("touchBarDuplicateWidgetInfo"), i18n("ok"))
+                end
+
                 mod._manager.refresh()
             end)
 

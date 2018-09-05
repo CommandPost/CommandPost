@@ -292,20 +292,37 @@ function mod.updateIcon(button, group, icon)
     mod.update()
 end
 
---- plugins.core.touchbar.manager.updateAction(button, group, action) -> none
+--- plugins.core.touchbar.manager.updateAction(button, group, action) -> boolean
 --- Function
 --- Updates a Touch Bar action.
 ---
 --- Parameters:
 ---  * button - Button ID as string
 ---  * group - Group ID as string
----  * action - Action as string
+---  * actionTitle - Action Title as string
+---  * handlerID - Handler ID as string
+---  * action - Action as table
 ---
 --- Returns:
----  * None
+---  * `true` if successfully updated, or `false` if a duplicate entry was found
 function mod.updateAction(button, group, actionTitle, handlerID, action)
-
     local buttons = mod._items()
+
+    --------------------------------------------------------------------------------
+    -- Check to make sure the widget isn't already in use:
+    --------------------------------------------------------------------------------
+    if handlerID and handlerID:sub(-8) == "_widgets" then
+        for _, group in pairs(buttons) do
+            for _, button in pairs(group) do
+                if button.action and button.action.id and action.id and button.action.id == action.id then
+                    --------------------------------------------------------------------------------
+                    -- Duplicate found, so abort:
+                    --------------------------------------------------------------------------------
+                    return false
+                end
+            end
+        end
+    end
 
     button = tostring(button)
     if not buttons[group] then
@@ -320,7 +337,7 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
 
     mod._items(buttons)
     mod.update()
-
+    return true
 end
 
 --- plugins.core.touchbar.manager.updateLabel(button, group, label) -> none

@@ -1146,6 +1146,8 @@
         "topCentreOfTimeline": "Top Centre of Timeline",
         "topHorizontal": "Top Horizontal",
         "touchBarDragTip": "If Draggable is selected, you can hold down the left OPTION key to drag.",
+        "touchBarDuplicateWidget": "The selected Touch Bar widget is already in use.",
+        "touchBarDuplicateWidgetInfo": "An individual Touch Bar widget can only be used once on your custom Touch Bar. Please select a different widget and try again, or remove the original instance of the widget.",
         "touchBarError": "Virtual Touch Bar support requires macOS 10.12.1 (Build 16B2657) or later.\n\nPlease update macOS and try again.",
         "touchbarPanelLabel": "Touch Bar",
         "touchbarPanelTooltip": "Touch Bar Preferences",
