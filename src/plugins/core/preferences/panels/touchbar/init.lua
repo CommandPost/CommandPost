@@ -573,7 +573,7 @@ function mod.init(deps, env)
                 onchange    = function(_, params) mod._virtual.location(params.value) end,
             }
         )
-        :addParagraph(5, html.span {style="display: clear;", class="tbTip"} (
+        :addParagraph(5, html.span {style="display: clear; margin-left: 243px;", class="tbTip"} (
             i18n("touchBarDragTip") ) ..
             "\n\n"
         )
