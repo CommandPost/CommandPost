@@ -68,7 +68,7 @@ function SecondaryWindow:app()
 end
 
 function SecondaryWindow.lazy.method:window()
-    return Window.new(self:app().app, self.UI)
+    return Window(self:app().app, self.UI)
 end
 
 function SecondaryWindow.lazy.prop:UI()

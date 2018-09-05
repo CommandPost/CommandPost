@@ -90,7 +90,7 @@ end
 --- Returns:
 ---  * The `Window` instance.
 function PrimaryWindow.lazy.method:window()
-    return Window.new(self:app().app, self.UI)
+    return Window(self:app().app, self.UI)
 end
 
 --- cp.apple.finalcutpro.main.PrimaryWindow.UI <cp.prop: hs._asm.axuielement; read-only; live>
