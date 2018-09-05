@@ -24,7 +24,7 @@ local Element                       = require("cp.ui.Element")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextField = Element:subclass("TextField")
+local TextField = Element:subclass("cp.ui.TextField")
 
 --- cp.ui.TextField.matches(element) -> boolean
 --- Function
@@ -166,25 +166,11 @@ function TextField:loadLayout(layout)
     end
 end
 
--- cp.ui.TextField:__call(parent, value) -> self, boolean
--- Method
--- Allows the Text Field instance to be called as a function/method which will get/set the value.
---
--- Parameters:
---  * parent - (optional) The parent object.
---  * value - The value you want to set the Text Field to.
---
--- Returns:
---  * The value of the Static Text box.
 function TextField.__call(self, parent, value)
     if parent and parent ~= self:parent() then
         value = parent
     end
     return self:value(value)
-end
-
-function TextField.__tostring()
-    return "cp.ui.TextField"
 end
 
 return TextField

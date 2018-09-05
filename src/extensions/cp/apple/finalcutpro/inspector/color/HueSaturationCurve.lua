@@ -4,16 +4,19 @@
 
 local axutils                               = require("cp.ui.axutils")
 local Element                               = require("cp.ui.Element")
+local Button                                = require("cp.ui.Button")
 
 local If                                    = require("cp.rx.go.If")
 
 local childWithRole                         = axutils.childWithRole
 local childMatching, childrenMatching       = axutils.childMatching, axutils.childrenMatching
-local cache                                 = axutils.cache
+local cache, childFromRight                 = axutils.cache, axutils.childFromRight
 
-local HueSaturationCurve = Element:subclass("HueSaturationCurve")
+local ColorWell                             = require("cp.apple.finalcutpro.inspector.color.ColorWell")
 
-HueSaturationCurve.static.TYPE ={
+local HueSaturationCurve = Element:subclass("cp.apple.finalcutpro.inspector.color.HueSaturationCurve")
+
+HueSaturationCurve.static.TYPE = {
     HUE_VS_HUE = 1,
     HUE_VS_SAT = 2,
     HUE_VS_LUMA = 3,
@@ -94,6 +97,18 @@ function HueSaturationCurve.lazy.method:doShow()
     ):Then(true)
     :Otherwise(true)
     :Label("HueSaturationCurve:doShow")
+end
+
+function HueSaturationCurve.lazy.value:reset()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromRight(childrenMatching(original(), Button.matches), 1)
+    end))
+end
+
+function HueSaturationCurve.lazy.value:color()
+    return ColorWell(self, self.UI:mutate(function(original)
+        return childMatching(original(), ColorWell.matches)
+    end))
 end
 
 return HueSaturationCurve

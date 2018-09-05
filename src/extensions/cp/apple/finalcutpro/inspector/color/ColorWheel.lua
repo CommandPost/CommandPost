@@ -48,6 +48,11 @@ ColorWheel.static.TYPE = {
     HIGHLIGHTS  = { single = 4, all = 2 },
 }
 
+-- cp.apple.finalcutpro.inspector.clor.ColorWheel.HUE_SHIFT -> number
+-- Constant
+-- The hue shift currently being output from AXColorWell values.
+ColorWheel.static.HUE_SHIFT = 4183333/6000000
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.matches(element)
 --- Function
 --- Checks if the specified element is a Color Well.
@@ -118,7 +123,7 @@ end
 --- Field
 --- The current color value, as a `hs.drawing.color` table.
 function ColorWheel.lazy.prop:colorValue()
-    return self:colorWell().values
+    return self:colorWell().value
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
@@ -232,7 +237,7 @@ end
 function ColorWheel.lazy.method:colorWell()
     return ColorWell(self, function()
         return axutils.childMatching(self:UI(), ColorWell.matches)
-    end)
+    end, ColorWheel.HUE_SHIFT)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:saturation() -> ValueIndicator

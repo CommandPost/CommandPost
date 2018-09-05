@@ -6,13 +6,10 @@
 
 --------------------------------------------------------------------------------
 -- TODO:
---  * Add API to Reset Individual Curves
 --  * Add API to trigger Color Picker for Individual Curves
---  * Add API for "Add Shape Mask", "Add Color Mask" and "Invert Masks".
 --  * Add API for "Save Effects Preset".
 --  * Add API for "Mask Inside/Output".
 --  * Add API for "View Masks".
---  * Add API for "Preserve Luma" Checkbox
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------

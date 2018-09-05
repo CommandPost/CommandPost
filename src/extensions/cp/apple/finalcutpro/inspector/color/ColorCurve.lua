@@ -4,12 +4,14 @@
 
 local axutils                               = require("cp.ui.axutils")
 local Element                               = require("cp.ui.Element")
+local Button                                = require("cp.ui.Button")
+local ColorWell                             = require("cp.apple.finalcutpro.inspector.color.ColorWell")
 
 local If                                    = require("cp.rx.go.If")
 
 local childWithRole                         = axutils.childWithRole
 local childMatching, childrenMatching       = axutils.childMatching, axutils.childrenMatching
-local cache                                 = axutils.cache
+local cache, childFromRight, childFromTop   = axutils.cache, axutils.childFromRight, axutils.childFromTop
 
 local ColorCurve = Element:subclass("ColorCurve")
 
@@ -54,7 +56,7 @@ function ColorCurve:initialize(parent, type)
                     --------------------------------------------------------------------------------
                     -- All Wheels:
                     --------------------------------------------------------------------------------
-                    return axutils.childFromTop(childrenMatching(ui, ColorCurve.matches), self:type())
+                    return childFromTop(childrenMatching(ui, ColorCurve.matches), self:type())
                 elseif parent:wheelType():selectedOption() == self:type() then
                     --------------------------------------------------------------------------------
                     -- Single Wheels - with only a single wheel visible:
@@ -92,6 +94,18 @@ function ColorCurve.lazy.method:doShow()
     ):Then(true)
     :Otherwise(true)
     :Label("ColorCurve:doShow")
+end
+
+function ColorCurve.lazy.value:reset()
+    return Button(self, self.UI:mutate(function(original)
+        return childFromRight(childrenMatching(original(), Button.matches), 1)
+    end))
+end
+
+function ColorCurve.lazy.value:color()
+    return ColorWell(self, self.UI:mutate(function(original)
+        return childMatching(original(), ColorWell.matches)
+    end))
 end
 
 return ColorCurve
