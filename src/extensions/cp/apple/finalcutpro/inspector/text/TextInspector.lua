@@ -56,7 +56,6 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 local CheckBox                          = require("cp.ui.CheckBox")
@@ -112,7 +111,7 @@ end
 ---  * A `TextInspector` object
 function TextInspector:initialize(parent)
     local UI = parent.panelUI:mutate(function(original)
-        return axutils.cache(o, "_ui",
+        return axutils.cache(self, "_ui",
             function()
                 local ui = original()
                 return TextInspector.matches(ui) and ui or nil
