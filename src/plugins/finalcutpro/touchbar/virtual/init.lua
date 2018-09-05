@@ -65,8 +65,17 @@ function mod._checkVisibility(active)
     end
 end
 
+-- updateStatus(enabled) -> none
+-- Function
+-- Update a Touch Bar Group Status
+--
+-- Parameters:
+--  * enabled - `true` if enabled, otherwise `false`
+--
+-- Returns:
+--  * None
 local function updateStatus(enabled)
-    mod._manager.groupStatus("fcpx", enabled)
+    mod._tbManager.groupStatus("fcpx", enabled)
 end
 
 --- plugins.finalcutpro.touchbar.virtual.enabled <cp.prop: boolean>
@@ -99,15 +108,19 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
                 --------------------------------------------------------------------------------
                 local viewFrame = timeline:contents():viewFrame()
                 if viewFrame then
-                    local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod._manager.touchBar():getFrame().w/2, y = viewFrame.y + 20}
-                    mod._manager.touchBar():topLeft(topLeft)
+                    if mod._manager._touchBar then
+                        local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod._manager._touchBar:getFrame().w/2, y = viewFrame.y + 20}
+                        mod._manager._touchBar:topLeft(topLeft)
+                    end
                 end
             elseif displayVirtualTouchBarLocation == mod._manager.LOCATION_MOUSE then
 
                 --------------------------------------------------------------------------------
                 -- Position Touch Bar to Mouse Pointer Location:
                 --------------------------------------------------------------------------------
-                mod._manager.touchBar():atMousePosition()
+                if mod._manager._touchBar then
+                    mod._manager._touchBar:atMousePosition()
+                end
 
             end
         end)
@@ -191,6 +204,7 @@ local plugin = {
     dependencies = {
         ["finalcutpro.commands"]        = "fcpxCmds",
         ["core.touchbar.virtual"]       = "manager",
+        ["core.touchbar.manager"]       = "tbManager",
         ["core.commands.global"]        = "global",
     }
 }
@@ -204,6 +218,7 @@ function plugin.init(deps)
     -- Connect to Manager:
     --------------------------------------------------------------------------------
     mod._manager = deps.manager
+    mod._tbManager = deps.tbManager
 
     --------------------------------------------------------------------------------
     -- Add Commands if Supported:
