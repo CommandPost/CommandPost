@@ -558,8 +558,14 @@ end
 function EffectsBrowser:applyItem(itemUI)
     if itemUI then
         self:contents():showChild(itemUI)
-        local targetPoint = geometry.rect(itemUI:frame()).center
-        tools.ninjaDoubleClick(targetPoint)
+        local uiFrame = itemUI:frame()
+        if uiFrame then
+            local rect = geometry.rect(uiFrame)
+            local targetPoint = rect and rect.center
+            if targetPoint then
+                tools.ninjaDoubleClick(targetPoint)
+            end
+        end
     end
     return self
 end
