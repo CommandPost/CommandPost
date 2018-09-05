@@ -48,7 +48,7 @@ end)
         if success then
             return Observable.of(success)
         else
-            return Observable.throw(context.errorMessage or "Requirement not met.")
+            return Observable.throw(context.errorMessage or "Requirement not met.", table.unpack(context.errorParams))
         end
     end)
 
@@ -70,8 +70,9 @@ end)
 --- Returns:
 ---  * The `OrThrow` `Statement.Modifier`.
 Require.modifier("OrThrow")
-:onInit(function(context, message)
+:onInit(function(context, message, ...)
     context.errorMessage = message
+    context.errorParams = table.pack(...)
 end)
 :define()
 

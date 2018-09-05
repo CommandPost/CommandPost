@@ -32,6 +32,10 @@ function Element.static.matches(element)
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
 end
 
+function Element:__tostring()
+    return self.class.name
+end
+
 function Element:initialize(parent, uiFinder)
     self._parent = parent
 

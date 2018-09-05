@@ -245,10 +245,10 @@ end
 --- Returns:
 --- * The saturation `ValueIndicator` instance.
 function ColorWheel.lazy.method:saturation()
-    return ValueIndicator.new(self,
-        function()
-            return axutils.childFromLeft(self:UI(), 1)
-        end,
+    return ValueIndicator(self,
+        self.UI:mutate(function(original)
+            return axutils.childFromLeft(original(), 1)
+        end),
         0, 10,
         function(value) -- toAXValue
             return value / 2
@@ -269,10 +269,10 @@ end
 --- Returns:
 --- * The brightness `ValueIndicator` instance.
 function ColorWheel.lazy.method:brightness()
-    return ValueIndicator.new(self,
-        function()
-            return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXValueIndicator"), 1)
-        end,
+    return ValueIndicator(self,
+        self.UI:mutate(function(original)
+            return axutils.childFromRight(axutils.childrenWithRole(original(), "AXValueIndicator"), 1)
+        end),
         -12, 10,
         function(value) -- toAXValue
             return (value+1)/2

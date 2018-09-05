@@ -23,7 +23,6 @@ local timer                             = require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local ColorBoardAspect					= require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
 local i18n                              = require("cp.i18n")
@@ -172,10 +171,10 @@ function plugin.init(deps)
     }
 
     local pucks = {
-        { id = "master", title = "Master", i18n = i18n("master"), fn = ColorBoardAspect.master, shortcut = "m" },
-        { id = "shadows", title = "Shadows", i18n = i18n("shadows"), fn = ColorBoardAspect.shadows, shortcut = "," },
-        { id = "midtones", title = "Midtones", i18n = i18n("midtones"), fn = ColorBoardAspect.midtones, shortcut = "." },
-        { id = "highlights", title = "Highlights", i18n = i18n("highlights"), fn = ColorBoardAspect.highlights, shortcut = "/" },
+        { id = "master", title = "Master", i18n = i18n("master"), shortcut = "m" },
+        { id = "shadows", title = "Shadows", i18n = i18n("shadows"), shortcut = "," },
+        { id = "midtones", title = "Midtones", i18n = i18n("midtones"), shortcut = "." },
+        { id = "highlights", title = "Highlights", i18n = i18n("highlights"), shortcut = "/" },
     }
 
     for i,puck in ipairs(pucks) do
@@ -183,19 +182,19 @@ function plugin.init(deps)
         fcpxCmds:add("cpSelectColorBoardPuck" .. iWord)
             :titled(i18n("cpSelectColorBoardPuck_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :whenActivated(function() puck.fn( colorBoard:current() ):select() end)
+            :whenActivated(function() colorBoard:current()[puck.id]():select() end)
 
         fcpxCmds:add("cpPuck" .. iWord .. "Mouse")
             :titled(i18n("cpPuckMouse_customTitle", {count = i}))
             :groupedBy("colorboard")
-            :whenActivated(function() mod.startMousePuck(puck.fn( colorBoard:current() )) end)
+            :whenActivated(function() mod.startMousePuck(colorBoard:current()[puck.id]()) end)
             :whenReleased(function() mod.stopMousePuck() end)
 
         for _, aspect in ipairs(colorBoardAspects) do
             --------------------------------------------------------------------------------
             -- Find the puck for the current aspect (eg. "color > master"):
             --------------------------------------------------------------------------------
-            local puckControl = puck.fn( aspect.control )
+            local puckControl = aspect.control[puck.id]()
             if not puckControl then
                 log.ef("Unable to find the %s puck control for the %s aspect.", puck.title, aspect.title)
             end

@@ -19,9 +19,9 @@ local require = require
 --------------------------------------------------------------------------------
 local Aspect                            = require("cp.apple.finalcutpro.inspector.color.ColorBoardAspect")
 local axutils                           = require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local Button                            = require("cp.ui.Button")
 local id                                = require("cp.apple.finalcutpro.ids") "ColorBoard"
-local prop                              = require("cp.prop")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 
 local go                                = require("cp.rx.go")
@@ -32,19 +32,19 @@ local If, Do, Throw                     = go.If, go.Do, go.Throw
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorBoard = {}
+local ColorBoard = Element:subclass("ColorBoard")
 
 local CORRECTION_TYPE                   = "Color Board"
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect -> table
 --- Constant
 --- A table containing tables of all the aspect panel settings
-ColorBoard.aspect                       = {"color", "saturation", "exposure"}
+ColorBoard.static.aspect                       = {"color", "saturation", "exposure"}
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect.color -> table
 --- Constant
 --- A table containing the Color Board Color panel settings
-ColorBoard.aspect.color                 = {
+ColorBoard.static.aspect.color                 = {
     id                                  = 1,
     reset                               = id "ColorReset",
     global                              = { puck = id "ColorGlobalPuck", pct = id "ColorGlobalPct", angle = id "ColorGlobalAngle"},
@@ -56,7 +56,7 @@ ColorBoard.aspect.color                 = {
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect.saturation -> table
 --- Constant
 --- A table containing the Color Board Saturation panel settings
-ColorBoard.aspect.saturation            = {
+ColorBoard.static.aspect.saturation            = {
     id                                  = 2,
     reset                               = id "SatReset",
     global                              = { puck = id "SatGlobalPuck", pct = id "SatGlobalPct"},
@@ -68,7 +68,7 @@ ColorBoard.aspect.saturation            = {
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect.exposure -> table
 --- Constant
 --- A table containing the Color Board Exposure panel settings
-ColorBoard.aspect.exposure              = {
+ColorBoard.static.aspect.exposure              = {
     id                                  = 3,
     reset                               = id "ExpReset",
     global                              = { puck = id "ExpGlobalPuck", pct = id "ExpGlobalPct"},
@@ -80,7 +80,7 @@ ColorBoard.aspect.exposure              = {
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.currentAspect -> string
 --- Variable
 --- The current aspect as a string.
-ColorBoard.currentAspect = "*"
+ColorBoard.static.currentAspect = "*"
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.matches(element) -> boolean
 --- Function
@@ -91,7 +91,7 @@ ColorBoard.currentAspect = "*"
 ---
 --- Returns:
 ---  * `true` if the `element` is a Color Board otherwise `false`
-function ColorBoard.matches(element)
+function ColorBoard.static.matches(element)
     return ColorBoard.matchesCurrent(element) or ColorBoard.matchesOriginal(element)
 end
 
@@ -104,8 +104,8 @@ end
 ---
 --- Returns:
 ---  * `true` if the `element` is a pre-10.4 Color Board otherwise `false`
-function ColorBoard.matchesOriginal(element)
-    if element then
+function ColorBoard.static.matchesOriginal(element)
+    if Element.matches(element) then
         local group = axutils.childWithRole(element, "AXGroup")
         return group and axutils.childWithID(group, id "BackButton")
     end
@@ -122,7 +122,7 @@ end
 --- Returns:
 ---  * `true` if the `element` is a 10.4+ Color Board otherwise `false`
 function ColorBoard.matchesCurrent(element)
-    if element and #element == 1 then
+    if Element.matches(element) and #element == 1 then
         local scroll = element[1]
         if scroll:attributeValue("AXRole") == "AXScrollArea" then
             local aspectGroup = axutils.childFromTop(scroll, 2)
@@ -132,7 +132,7 @@ function ColorBoard.matchesCurrent(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoard.new(parent) -> ColorBoard object
+--- cp.apple.finalcutpro.inspector.color.ColorBoard(parent) -> ColorBoard object
 --- Constructor
 --- Creates a new ColorBoard object
 ---
@@ -141,13 +141,10 @@ end
 ---
 --- Returns:
 ---  * A ColorBoard object
-function ColorBoard.new(parent)
-    local o = prop.extend({
-        _parent = parent,
-        _child = {},
-    }, ColorBoard)
+function ColorBoard:initialize(parent)
+    self._child = {}
 
-    local UI = parent.correctorUI:mutate(function(original, self)
+    local UI = parent.correctorUI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             local ui = original()
             if ui and ui[1] then
@@ -158,7 +155,14 @@ function ColorBoard.new(parent)
         end, ColorBoard.matches)
     end)
 
-    local contentUI = UI:mutate(function(original, self)
+    Element.initialize(self, parent, UI)
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.contentUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Returns the `hs._asm.axuielement` object for the Color Board's content.
+function ColorBoard.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_content", function()
             local ui = original()
             -----------------------------------------------------------------------
@@ -167,17 +171,33 @@ function ColorBoard.new(parent)
             return ui and ((#ui == 1 and ui[1]) or ui) or nil
         end)
     end)
+end
 
-    local isShowing = UI:mutate(function(original)
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.isShowing <cp.prop: boolean; read-only; live>
+--- Field
+--- Returns whether or not the Color Board is visible.
+function ColorBoard.lazy.prop:isShowing()
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui ~= nil and ui:attributeValue("AXSize").w > 0
     end)
+end
 
-    local isActive = prop.new(function(self)
-        return self:aspectGroup():isShowing()
-    end)
+--- cp.apple.finalcutpro.inspector.color.ColorBoard:isActive <cp.prop: boolean; read-only>
+--- Field
+--- Returns whether or not the Color Board is active
+function ColorBoard.lazy.prop:isActive()
+    return self:aspectGroup().isShowing
+end
 
-    local topToolbarUI = UI:mutate(function(original, self)
+--- cp.apple.finalcutpro.inspector.color.ColorBoard.topToolbarUI <cp.prop: hs._asm.axuielement; read-only; live>
+--- Field
+--- Gets the `hs._asm.axuielement` object for the top toolbar (i.e. where the Back Button is located in Final Cut Pro 10.3)
+---
+--- Notes:
+---  * This object doesn't exist in Final Cut Pro 10.4 as the Color Board is now contained within the Color Inspector
+function ColorBoard.lazy.prop:topToolbarUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_topToolbar", function()
             local ui = original()
             if ui then
@@ -190,69 +210,13 @@ function ColorBoard.new(parent)
             return nil
         end)
     end)
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.inspector.color.ColorBoard.UI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- Returns the `hs._asm.axuielement` object for the Color Board.
-        UI = UI,
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.contentUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- Returns the `hs._asm.axuielement` object for the Color Board's content.
-        contentUI = contentUI,
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.isShowing <cp.prop: boolean; read-only; live>
---- Field
---- Returns whether or not the Color Board is visible.
-        isShowing = isShowing,
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:isActive <cp.prop: boolean; read-only>
---- Field
---- Returns whether or not the Color Board is active
-        isActive = isActive,
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.topToolbarUI <cp.prop: hs._asm.axuielement; read-only; live>
---- Field
---- Gets the `hs._asm.axuielement` object for the top toolbar (i.e. where the Back Button is located in Final Cut Pro 10.3)
----
---- Notes:
----  * This object doesn't exist in Final Cut Pro 10.4 as the Color Board is now contained within the Color Inspector
-        topToolbarUI = topToolbarUI,
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.isAdvanced <cp.prop: boolean; read-only>
 --- Field
 --- Checks if the advanced Color Inspector (from 10.4) is supported.
-        isAdvanced = parent.isAdvanced,
-    }
-
-    return o
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:parent() -> table
---- Method
---- Returns the ColorBoard's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function ColorBoard:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function ColorBoard:app()
-    return self:parent():app()
+function ColorBoard.lazy.prop:isAdvanced()
+    return self:parent().isAdvanced
 end
 
 -----------------------------------------------------------------------
@@ -286,7 +250,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement`, which will send a single `true` if successful, otherwise `false`, or an error being sent.
-function ColorBoard:doShow()
+function ColorBoard.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(
         self:parent():doActivateCorrection(CORRECTION_TYPE)
@@ -322,7 +286,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement`, which will send a single `true` if successful, otherwise `false`, or an error being sent.
-function ColorBoard:doHide()
+function ColorBoard.lazy.method:doHide()
     return If(self:backButton().isShowing)
     :Then(
         self:backButton():doPress()
@@ -388,11 +352,8 @@ end
 ---
 --- Returns:
 --- * The `ColorBoardAspect`.
-function ColorBoard:color()
-    if not self._color then
-        self._color = Aspect.new(self, 1, true)
-    end
-    return self._color
+function ColorBoard.lazy.method:color()
+    return Aspect(self, 1, true)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:saturation() -> ColorBoardAspect
@@ -404,11 +365,8 @@ end
 ---
 --- Returns:
 --- * The `ColorBoardAspect`.
-function ColorBoard:saturation()
-    if not self._saturation then
-        self._saturation = Aspect.new(self, 2)
-    end
-    return self._saturation
+function ColorBoard.lazy.method:saturation()
+    return Aspect(self, 2)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:exposure() -> ColorBoardAspect
@@ -420,11 +378,8 @@ end
 ---
 --- Returns:
 --- * The `ColorBoardAspect`.
-function ColorBoard:exposure()
-    if not self._exposure then
-        self._exposure = Aspect.new(self, 3)
-    end
-    return self._exposure
+function ColorBoard.lazy.method:exposure()
+    return Aspect(self, 3)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:current() -> ColorBoardAspect
@@ -495,13 +450,10 @@ end
 ---
 --- Returns:
 --- * The `RadioGroup`.
-function ColorBoard:aspectGroup()
-    if not self._aspectGroup then
-        self._aspectGroup = RadioGroup(self, function()
-            return axutils.childWithRole(self:contentUI(), "AXRadioGroup")
-        end)
-    end
-    return self._aspectGroup
+function ColorBoard.lazy.method:aspectGroup()
+    return RadioGroup(self, function()
+        return axutils.childWithRole(self:contentUI(), "AXRadioGroup")
+    end)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard:doSelectAspect(index) -> cp.rx.go.Statement
@@ -547,7 +499,7 @@ end
 ---
 --- Returns:
 ---  * ColorBoard object
-function ColorBoard:doNextAspect()
+function ColorBoard.lazy.method:doNextAspect()
     local aspects = self:aspectGroup()
     return Do(self:doShow())
     :Then(

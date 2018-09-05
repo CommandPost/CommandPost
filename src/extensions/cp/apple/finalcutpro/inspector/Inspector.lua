@@ -711,7 +711,7 @@ end
 --- Returns:
 ---  * ColorInspector
 function Inspector.lazy.method:color()
-    return ColorInspector.new(self)
+    return ColorInspector(self)
 end
 
 return Inspector
