@@ -312,9 +312,9 @@ function mod.updateAction(button, group, actionTitle, handlerID, action)
     -- Check to make sure the widget isn't already in use:
     --------------------------------------------------------------------------------
     if handlerID and handlerID:sub(-8) == "_widgets" then
-        for _, group in pairs(buttons) do
-            for _, button in pairs(group) do
-                if button.action and button.action.id and action.id and button.action.id == action.id then
+        for _, _group in pairs(buttons) do
+            for _, _button in pairs(_group) do
+                if _button.action and _button.action.id and action.id and _button.action.id == action.id then
                     --------------------------------------------------------------------------------
                     -- Duplicate found, so abort:
                     --------------------------------------------------------------------------------
