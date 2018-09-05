@@ -47,7 +47,7 @@ function RadioButton.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioButton"
 end
 
---- cp.ui.RadioButton.new(axuielement, function) -> RadioButton
+--- cp.ui.RadioButton(axuielement, function) -> RadioButton
 --- Method
 --- Creates a new RadioButton.
 ---

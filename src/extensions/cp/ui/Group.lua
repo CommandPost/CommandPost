@@ -34,7 +34,7 @@ function Group.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.ui.Group:new(parent, uiFinder) -> Alert
+--- cp.ui.Group(parent, uiFinder) -> Alert
 --- Constructor
 --- Creates a new `Group` instance.
 ---

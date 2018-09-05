@@ -47,7 +47,7 @@ function RadioGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup:new(parent, finderFn[, cached]) -> cp.ui.RadioGroup
+--- cp.ui.RadioGroup(parent, finderFn[, cached]) -> cp.ui.RadioGroup
 --- Constructor
 --- Creates a new RadioGroup.
 ---

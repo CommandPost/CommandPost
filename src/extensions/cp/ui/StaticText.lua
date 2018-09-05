@@ -52,7 +52,7 @@ function StaticText.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXStaticText"
 end
 
---- cp.ui.StaticText.new(parent, uiFinder[, convertFn]) -> StaticText
+--- cp.ui.StaticText(parent, uiFinder[, convertFn]) -> StaticText
 --- Method
 --- Creates a new StaticText. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -65,7 +65,7 @@ end
 --- For example, to have the value be converted into a `number`, simply use `tonumber` like this:
 ---
 --- ```lua
---- local numberField = StaticText.new(parent, function() return ... end, tonumber)
+--- local numberField = StaticText(parent, function() return ... end, tonumber)
 --- ```
 ---
 --- Parameters:

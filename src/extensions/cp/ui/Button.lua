@@ -44,7 +44,7 @@ function Button.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXButton"
 end
 
---- cp.ui.Button.new(parent, uiFinder) -> cp.ui.Button
+--- cp.ui.Button(parent, uiFinder) -> cp.ui.Button
 --- Constructor
 --- Creates a new `Button` instance.
 ---

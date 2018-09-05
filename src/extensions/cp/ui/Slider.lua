@@ -31,7 +31,7 @@ function Slider.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXSlider"
 end
 
---- cp.ui.Slider:new(parent, uiFinder) -> cp.ui.Slider
+--- cp.ui.Slider(parent, uiFinder) -> cp.ui.Slider
 --- Constructor
 --- Creates a new Slider
 ---

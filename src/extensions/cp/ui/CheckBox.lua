@@ -54,7 +54,7 @@ function CheckBox.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXCheckBox"
 end
 
---- cp.ui.CheckBox:new(parent, uiFinder) -> cp.ui.CheckBox
+--- cp.ui.CheckBox(parent, uiFinder) -> cp.ui.CheckBox
 --- Constructor
 --- Creates a new CheckBox.
 ---

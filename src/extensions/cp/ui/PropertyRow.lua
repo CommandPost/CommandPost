@@ -126,7 +126,7 @@ function PropertyRow.static.matches(element)
     return element ~= nil
 end
 
---- cp.ui.PropertyRow:new(parent, labelKey[, index]) -> cp.ui.PropertyRow
+--- cp.ui.PropertyRow(parent, labelKey[, index]) -> cp.ui.PropertyRow
 --- Constructor
 --- Creates a new `PropertyRow` with the specified parent and label key.
 ---

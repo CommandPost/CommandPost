@@ -39,7 +39,7 @@ function TextField.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.ui.TextField:new(parent, uiFinder[, convertFn]) -> TextField
+--- cp.ui.TextField(parent, uiFinder[, convertFn]) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:

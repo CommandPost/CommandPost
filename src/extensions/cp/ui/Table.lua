@@ -172,7 +172,7 @@ function Table.static.matches(element)
     return Element.matches(element)
 end
 
---- cp.ui.Table.new(parent, uiFinder) -> self
+--- cp.ui.Table(parent, uiFinder) -> self
 --- Constructor
 --- Creates a new Table.
 ---
@@ -182,9 +182,6 @@ end
 ---
 --- Returns:
 ---  * A new `Table` instance.
-function Table:initialize(parent, uiFinder)
-    Element.initialize(self, parent, uiFinder)
-end
 
 --- cp.ui.Table.contentUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
