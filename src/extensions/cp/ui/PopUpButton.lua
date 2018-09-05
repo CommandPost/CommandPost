@@ -43,7 +43,7 @@ function PopUpButton.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXPopUpButton"
 end
 
---- cp.ui.PopUpButton:new(parent, uiFinder) -> cp.ui.PopUpButton
+--- cp.ui.PopUpButton(parent, uiFinder) -> cp.ui.PopUpButton
 --- Constructor
 --- Creates a new PopUpButton.
 ---
