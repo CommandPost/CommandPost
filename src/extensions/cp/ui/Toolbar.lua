@@ -98,11 +98,11 @@ function Toolbar:doSelect(title)
     end)
 end
 
-function Toolbar:doShow()
+function Toolbar.lazy.method:doShow()
     return self:parent():doShow()
 end
 
-function Toolbar:doHide()
+function Toolbar.lazy.method:doHide()
     return self:parent():doHide()
 end
 

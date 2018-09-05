@@ -313,7 +313,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function TextInspector:doShow()
+function TextInspector.lazy.method:doShow()
     return If(self.isShowing):IsNot(true)
     :Then(self:parent():doSelectTab("Text"))
     :Label("TextInspector:doShow")
@@ -328,7 +328,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function TextInspector:doHide()
+function TextInspector.lazy.method:doHide()
     return If(self.isShowing)
     :Then(self:parent():doHide())
     :Label("TextInspector:doHide")

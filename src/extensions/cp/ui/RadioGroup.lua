@@ -157,7 +157,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, that resolves to `true` if successful or sends an error if not.
-function RadioGroup:doNextOption()
+function RadioGroup.lazy.method:doNextOption()
     return If(self.isEnabled)
     :Then(function()
         local selected = self:selectedOption()
@@ -196,7 +196,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, which resolves to `true` if successful or sends an error if not..
-function RadioGroup:doPreviousOption()
+function RadioGroup.lazy.method:doPreviousOption()
     return If(self.isEnabled)
     :Then(function()
         local selected = self:selectedOption()

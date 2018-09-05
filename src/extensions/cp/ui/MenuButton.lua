@@ -355,7 +355,7 @@ end
 ---
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md)
-function MenuButton:doPress()
+function MenuButton.lazy.method:doPress()
     return If(self.UI)
     :Then(function(ui)
         ui:doPress()

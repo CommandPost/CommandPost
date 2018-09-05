@@ -287,7 +287,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, resolving to `true` if the Inspector was shown successfully, or an error if not.
-function Inspector:doShow()
+function Inspector.lazy.method:doShow()
     return If(self.isShowing):Is(false)
     :Then(self:parent():doShow())
     :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
@@ -320,7 +320,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, resolving to `true` if the Inspector was hidden successfully, or an error if not.
-function Inspector:doHide()
+function Inspector.lazy.method:doHide()
     return If(self.isShowing):Is(true)
     :Then(self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Inspector"}))
     :Then(WaitUntil(self.isShowing:NOT()):TimeoutAfter(5000))

@@ -180,7 +180,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, resolving to `true` if shown, `false` if not.
-function ColorWheel:doShow()
+function ColorWheel.lazy.method:doShow()
     local wheelType = self:parent():wheelType()
     return Do(self:parent():doShow())
     :Then(
@@ -212,7 +212,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, resolving to `true` if selected, otherwise `false`.
-function ColorWheel:doSelect()
+function ColorWheel.lazy.method:doSelect()
     return Do(self:doShow())
     :Then(function()
         self:focused(true)

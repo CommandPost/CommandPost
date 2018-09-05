@@ -206,7 +206,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement`, resolving to `true` if successfully shown.
-function ColorWheels:doShow()
+function ColorWheels.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
         self:parent():doActivateCorrection(CORRECTION_TYPE)
     ):Otherwise(true)

@@ -239,7 +239,7 @@ end
 ---
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md)
-function PopUpButton:doPress()
+function PopUpButton.lazy.method:doPress()
     return If(self.UI)
     :Then(function(ui)
         ui:doPress()

@@ -198,7 +198,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement`, resolving to `true` if successful and sending an error if not.
-function InfoInspector:doShow()
+function InfoInspector.lazy.method:doShow()
     return If(self.isShowing):Is(false):Then(
         self:parent():doSelectTab("Info")
     ):Otherwise(true)

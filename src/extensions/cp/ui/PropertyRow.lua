@@ -270,8 +270,8 @@ end
 ---
 --- Returns:
 ---  * self
-function PropertyRow:doShow()
-    return self:parent():doShow()
+function PropertyRow.lazy.method:doShow()
+    return self:parent():doShow():Label("PropertyRow:doShow")
 end
 
 --- cp.ui.PropertyRow:hide() -> self
@@ -297,8 +297,8 @@ end
 ---
 --- Returns:
 --- * The `Statement`.
-function PropertyRow:doHide()
-    return self:parent():doHide()
+function PropertyRow.lazy.method:doHide()
+    return self:parent():doHide():Label("PropertyRow:doHide")
 end
 
 --- cp.ui.PropertyRow:labelKeys() -> string

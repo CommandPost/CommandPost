@@ -408,7 +408,7 @@ function ColorWell:show()
     return self
 end
 
-function ColorWell:doShow()
+function ColorWell.lazy.method:doShow()
     return self:parent():doShow():Lable("ColorWell:doShow")
 end
 
@@ -426,7 +426,7 @@ function ColorWell:select()
     return self
 end
 
-function ColorWell:doSelect()
+function ColorWell.lazy.method:doSelect()
     return self:parent():doSelect():Label("ColorWell:doSelect")
 end
 
@@ -481,7 +481,7 @@ function ColorWell:reset()
     self:value({})
 end
 
-function ColorWell:doReset()
+function ColorWell.lazy.method:doReset()
     return Do(function()
         self:reset()
     end):ThenYield()

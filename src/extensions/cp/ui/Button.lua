@@ -92,7 +92,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
-function Button:doPress()
+function Button.lazy.method:doPress()
     return If(self.UI):Then(function(ui)
         ui:doPress()
         return true
