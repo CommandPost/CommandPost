@@ -1999,6 +1999,7 @@ function plugin.postInit(deps)
                 return choices
             end)
             :onExecute(function() end)
+            :onActionId(function() return "midiControls" end)
     end
 
     --------------------------------------------------------------------------------

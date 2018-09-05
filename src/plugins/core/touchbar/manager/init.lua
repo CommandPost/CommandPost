@@ -766,6 +766,7 @@ function plugin.postInit(deps)
                 return choices
             end)
             :onExecute(function() end)
+            :onActionId(function() return "touchBarWidget" end)
     end
 
     --------------------------------------------------------------------------------
