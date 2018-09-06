@@ -413,7 +413,10 @@ local function processCommands(commands)
     -- Trigger the callback:
     --------------------------------------------------------------------------------
     if mod._callback then
-        mod._callback(commands)
+        local success, result = xpcall(function() mod._callback(commands) end, debug.traceback)
+        if not success then
+            log.ef("Error in Tangent Callback: %s", result)
+        end
     end
 end
 
