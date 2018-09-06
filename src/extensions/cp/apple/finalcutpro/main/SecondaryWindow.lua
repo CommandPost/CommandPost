@@ -162,19 +162,6 @@ function SecondaryWindow:app()
     return self._app
 end
 
---- cp.apple.finalcutpro.main.SecondaryWindow:window() -> cp.ui.Window
---- Method
---- Returns the `Window` instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Window` instance.
-function SecondaryWindow:window()
-    return self._window
-end
-
 --- cp.apple.finalcutpro.main.SecondaryWindow:show() -> SecondaryWindow
 --- Method
 --- Show the Secondary Window.
