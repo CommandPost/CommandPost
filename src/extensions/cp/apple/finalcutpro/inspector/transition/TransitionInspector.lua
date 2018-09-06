@@ -28,8 +28,8 @@ local childMatching, withValue          = axutils.childMatching, axutils.withVal
 local cache                             = axutils.cache
 
 
-local hasProperties, simple             = IP.hasProperties, IP.simple
-local section, slider, numberField, popUpButton      = IP.section, IP.slider, IP.numberField, IP.popUpButton
+local hasProperties                     = IP.hasProperties
+local section, popUpButton              = IP.section, IP.popUpButton
 
 --------------------------------------------------------------------------------
 --
