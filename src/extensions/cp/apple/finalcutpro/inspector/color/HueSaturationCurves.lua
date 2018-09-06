@@ -345,7 +345,7 @@ end
 --- Field
 --- The mix amount for this corrector. A number ranging from `0` to `1`.
 function HueSaturationCurves.lazy.prop:mix()
-    return self:mixSlider().values
+    return self:mixSlider().value
 end
 
 return HueSaturationCurves
