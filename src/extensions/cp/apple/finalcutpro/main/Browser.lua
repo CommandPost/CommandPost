@@ -269,7 +269,7 @@ end
 --- Returns:
 ---  * The `Statement` to execute.
 function Browser.lazy.method:doShow()
-    If(self.isShowing):IsNot(true):Then(
+    return If(self.isShowing):IsNot(true):Then(
         self:doShowOnPrimary()
     )
     :Label("Browser:doShow")
@@ -422,7 +422,7 @@ end
 --- Returns:
 ---  * A `BrowserMarkerPopover` object.
 function Browser.lazy.method:markerPopover()
-    return BrowserMarkerPopover.new(self)
+    return BrowserMarkerPopover(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:saveLayout() -> table
