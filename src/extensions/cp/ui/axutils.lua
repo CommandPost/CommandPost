@@ -79,6 +79,52 @@ function axutils.hasAttributeValue(element, name, value)
     return element and element:attributeValue(name) == value
 end
 
+--- cp.ui.axutils.withAttributeValue(element, name, value) -> hs._asm.axuielement | nil
+--- Function
+--- Checks if the element has an attribute value with the specified `name` and `value`.
+--- If so, the element is returned, otherwise `nil`.
+---
+--- Parameters:
+--- * element       - The element to check
+--- * name          - The name of the attribute to check
+--- * value         - The value of the attribute
+---
+--- Returns:
+--- * The `axuielement` if it matches, otherwise `nil`.
+function axutils.withAttributeValue(element, name, value)
+    return axutils.hasAttributeValue(element, name, value) and element or nil
+end
+
+--- cp.ui.axutils.withRole(element, role) -> hs._asm.axuielement | nil
+--- Function
+--- Checks if the element has an "AXRole" attribute with the specified `role`.
+--- If so, the element is returned, otherwise `nil`.
+---
+--- Parameters:
+--- * element       - The element to check
+--- * role          - The required role
+---
+--- Returns:
+--- * The `axuielement` if it matches, otherwise `nil`.
+function axutils.withRole(element, role)
+    return axutils.withAttributeValue(element, "AXRole", role)
+end
+
+--- cp.ui.axutils.withValue(element, value) -> hs._asm.axuielement | nil
+--- Function
+--- Checks if the element has an "AXValue" attribute with the specified `value`.
+--- If so, the element is returned, otherwise `nil`.
+---
+--- Parameters:
+--- * element       - The element to check
+--- * value         - The required value
+---
+--- Returns:
+--- * The `axuielement` if it matches, otherwise `nil`.
+function axutils.withValue(element, value)
+    return axutils.withAttributeValue(element, "AXValue", value)
+end
+
 --- cp.ui.axutils.childWith(element, name, value) -> axuielement
 --- Function
 --- This searches for the first child of the specified element which has an attribute with the matching name and value.
@@ -372,10 +418,13 @@ end
 --- Returns:
 ---  * `true` if the element is valid.
 function axutils.isValid(element)
+    if element ~= nil and type(element) ~= "userdata" then
+        error(string.format("The element must be \"userdata\" but was %q.", type(element)))
+    end
     return element ~= nil and element:isValid()
 end
 
--- isInvalid(value, verifyFn) -> boolean
+-- isInvalid(value[, verifyFn]) -> boolean
 -- Function
 -- Checks to see if an `axuielement` is invalid.
 --
@@ -389,7 +438,7 @@ local function isInvalid(value, verifyFn)
     return value == nil or not axutils.isValid(value) or verifyFn and not verifyFn(value)
 end
 
---- cp.ui.axutils.cache(source, key, finderFn, [verifyFn]) -> axuielement
+--- cp.ui.axutils.cache(source, key, finderFn[, verifyFn]) -> axuielement
 --- Function
 --- Checks if the cached value at the `source[key]` is a valid axuielement. If not
 --- it will call the provided `finderFn()` function (with no arguments), cache the result and return it.
@@ -407,22 +456,26 @@ end
 --- Returns:
 ---  * The valid cached value.
 function axutils.cache(source, key, finderFn, verifyFn)
+    local value
     if source then
-        local value = source[key]
-        if isInvalid(value, verifyFn) then
-            value = finderFn()
-            if isInvalid(value, verifyFn) then
-                value = nil
-            end
-        end
-        source[key] = value
-        return value
-    else
-        return finderFn()
+        value = source[key]
     end
+
+    if value == nil or isInvalid(value, verifyFn) then
+        value = finderFn()
+        if isInvalid(value, verifyFn) then
+            value = nil
+        end
+    end
+
+    if source then
+        source[key] = value
+    end
+
+    return value
 end
 
---- cp.ui.axutils.snapshot(element, [filename]) -> hs.image
+--- cp.ui.axutils.snapshot(element[, filename]) -> hs.image
 --- Function
 --- Takes a snapshot of the specified `axuielement` and returns it.
 --- If the `filename` is provided it also saves the file to the specified location.
@@ -515,7 +568,7 @@ axutils.match = {}
 --- * `function(element) -> boolean` that checks the `AXRole` is `roleName`
 function axutils.match.role(roleName)
     return function(element)
-        return element and element:attributeValue("AXRole") == roleName
+        return axutils.hasAttributeValue(element, "AXRole", roleName)
     end
 end
 

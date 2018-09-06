@@ -18,24 +18,26 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
 local MenuButton                        = require("cp.ui.MenuButton")
 local prop                              = require("cp.prop")
 
-local If                                = require("cp.rx.go.If")
-
 local strings                           = require("cp.apple.finalcutpro.strings")
+
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local hasProperties                     = IP.hasProperties
 local textField, staticText, menuButton = IP.textField, IP.staticText, IP.menuButton
+
+local childrenWithRole, childWithRole   = axutils.childrenWithRole, axutils.childWithRole
+local withRole, withAttributeValue      = axutils.withRole, axutils.withAttributeValue
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local InfoInspector = Element:subclass("InfoInspector")
+local InfoInspector = BasePanel:subclass("InfoInspector")
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector.metadataViews -> table
 --- Constant
@@ -64,11 +66,9 @@ InfoInspector.static.metadataViews = {
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function InfoInspector.static.matches(element)
-    if Element.matches(element) and #element >= 4 and #axutils.childrenWithRole(element, "AXStaticText") == 3 then
-        local scrollArea = axutils.childWithRole(element, "AXScrollArea")
-        return scrollArea and scrollArea:attributeValue("AXDescription") == strings:find("FFInspectorModuleMetadataScrollViewAXDescription")
-    end
-    return false
+    local root = BasePanel.matches(element) and withRole(element, "AXGroup")
+    local scrollArea = root and #childrenWithRole(root, "AXStaticText") >= 2 and childWithRole(root, "AXScrollArea")
+    return scrollArea and withAttributeValue(scrollArea, "AXDescription", strings:find("FFInspectorModuleMetadataScrollViewAXDescription")) or false
 end
 
 --- cp.apple.finalcutpro.inspector.info.InfoInspector.new(parent) -> InfoInspector object
@@ -81,18 +81,7 @@ end
 --- Returns:
 ---  * A InfoInspector object
 function InfoInspector:initialize(parent)
-
-    local UI = parent.panelUI:mutate(function(original)
-        return axutils.cache(self, "_ui",
-            function()
-                local ui = original()
-                return InfoInspector.matches(ui) and ui or nil
-            end,
-            InfoInspector.matches
-        )
-    end)
-
-    Element.initialize(self, parent, UI)
+    BasePanel.initialize(self, parent, "Info")
 
     hasProperties(self, self.propertiesUI) {
         name                    = textField "Name",
@@ -173,38 +162,6 @@ function InfoInspector.lazy.prop:metadataView()
     )
 end
 
---- cp.apple.finalcutpro.inspector.info.InfoInspector:show() -> none
---- Method
---- Shows the Info Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function InfoInspector:show()
-    if not self:isShowing() then
-        self:parent():selectTab("Info")
-    end
-    return self
-end
-
---- cp.apple.finalcutpro.inspector.audio.InfoInspector:doShow() -> cp.rx.go.Statment
---- Method
---- A [Statement](cp.rx.go.Statement.md) that shows the Audio Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement`, resolving to `true` if successful and sending an error if not.
-function InfoInspector.lazy.method:doShow()
-    return If(self.isShowing):Is(false):Then(
-        self:parent():doSelectTab("Info")
-    ):Otherwise(true)
-    :Label("InfoInspector:doShow")
-end
-
 --- cp.apple.finalcutpro.inspector.info.InfoInspector:show() -> MenuButton
 --- Method
 --- Gets the Info Inspector Metadata View Button.
@@ -224,11 +181,5 @@ function InfoInspector.lazy.method:metadataViewButton()
         return MenuButton.matches(menu) and menu or nil
     end)
 end
-
---------------------------------------------------------------------------------
---
--- INFO INSPECTOR:
---
---------------------------------------------------------------------------------
 
 return InfoInspector

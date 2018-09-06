@@ -146,7 +146,7 @@ function ShareInspector.new(parent)
                 local ui = original()
                 if ui then
                     local scrollArea = ui[1][1]
-                    return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
+                    return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea or nil
                 end
                 return nil
             end)

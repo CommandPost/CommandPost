@@ -112,7 +112,7 @@ function PreferencesWindow.new(app)
                 local ui = original()
                 local group = ui and axutils.childWithRole(ui, "AXGroup")
                 -- The group conains another single group that contains the actual checkboxes, etc.
-                return group and #group == 1 and group[1]
+                return group and #group == 1 and group[1] or nil
             end)
         end),
     }
