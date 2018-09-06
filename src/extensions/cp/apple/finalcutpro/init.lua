@@ -898,7 +898,7 @@ end
 --- Returns:
 ---  * the Browser
 function fcp.lazy.method:browser()
-    return Browser.new(self)
+    return Browser(self)
 end
 
 --- cp.apple.finalcutpro:libraries() -> LibrariesBrowser
