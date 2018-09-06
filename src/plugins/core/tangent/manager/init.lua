@@ -234,7 +234,7 @@ end
 
 --- plugins.core.tangent.manager.activeModeID <cp.prop: string>
 --- Field
---- The current active mode.
+--- The current active mode ID.
 mod.activeModeID = config.prop("tangent.activeModeID")
 
 --- plugins.core.tangent.manager.activeMode <cp.prop: mode>
