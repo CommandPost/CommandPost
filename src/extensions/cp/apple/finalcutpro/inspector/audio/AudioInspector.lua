@@ -58,16 +58,15 @@ local require = require
 --------------------------------------------------------------------------------
 local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
 local Group                             = require("cp.ui.Group")
 local RadioButton                       = require("cp.ui.RadioButton")
 local SplitGroup                        = require("cp.ui.SplitGroup")
 
-local If                                = require("cp.rx.go.If")
-
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local section, slider, numberField, popUpButton      = IP.section, IP.slider, IP.numberField, IP.popUpButton
 
@@ -76,7 +75,7 @@ local section, slider, numberField, popUpButton      = IP.section, IP.slider, IP
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local AudioInspector = Element:subclass("AudioInspector")
+local AudioInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector.matches(element)
 --- Function
@@ -88,13 +87,9 @@ local AudioInspector = Element:subclass("AudioInspector")
 --- Returns:
 --- * `true` if it matches, `false` if not.
 function AudioInspector.static.matches(element)
-    if Element.matches(element) then
-        if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
-            local group = element[1]
-            return group and group:attributeValue("AXRole") == "AXSplitGroup" and #group > 5
-        end
-    end
-    return false
+    local root = BasePanel.matches(element) and withRole(element, "AXGroup")
+    local split = root and #root == 1 and childWithRole(root, "AXSplitGroup")
+    return split and #split > 5 or false
 end
 
 --- cp.apple.finalcutpro.inspector.audio.AudioInspector(parent) -> cp.apple.finalcutpro.audio.AudioInspector
@@ -107,18 +102,7 @@ end
 --- Returns:
 ---  * A `AudioInspector` object
 function AudioInspector:initialize(parent)
-
-    local UI = parent.panelUI:mutate(function(original)
-        return axutils.cache(self, "_ui",
-            function()
-                local ui = original()
-                return AudioInspector.matches(ui) and ui or nil
-            end,
-            AudioInspector.matches
-        )
-    end)
-
-    Element.initialize(self, parent, UI)
+    BasePanel.initialize(self, parent, "Audio")
 end
 
 function AudioInspector.lazy.method:content()
@@ -209,44 +193,6 @@ end
 
 function AudioInspector.lazy.prop:effects()
     return self:mainProperties().effects
-end
-
---------------------------------------------------------------------------------
---
--- VIDEO INSPECTOR:
---
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.audio.AudioInspector:show() -> AudioInspector
---- Method
---- Shows the Audio Inspector
----
---- Parameters:
----  * None
----
---- Returns:
----  * AudioInspector
-function AudioInspector:show()
-    if not self:isShowing() then
-        self:parent():selectTab("Audio")
-    end
-    return self
-end
-
---- cp.apple.finalcutpro.inspector.audio.AudioInspector:show() -> AudioInspector
---- Method
---- A [Statement](cp.rx.go.Statement.md) that shows the Audio Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement`, resolving to `true` if successful and sending an error if not.
-function AudioInspector.lazy.method:doShow()
-    return If(self.isShowing):Is(false):Then(
-        self:parent():doSelectTab("Audio")
-    ):Otherwise(true)
-    :Label("AudioInspector:doShow")
 end
 
 return AudioInspector

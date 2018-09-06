@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.inspector.generator.GeneratorInspector ===
 ---
---- Generator Inspector Module.
+--- Generator Inspector Module. This appears for both Generators and Titles.
 
 --------------------------------------------------------------------------------
 --
@@ -12,21 +12,21 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("generatorInspect")
+--local log                               = require("hs.logger").new("generatorInspector")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop                              = require("cp.prop")
+local BaseMotionPanel                       = require("cp.apple.finalcutpro.inspector.BaseMotionPanel")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local GeneratorInspector = {}
+local GeneratorInspector = BaseMotionPanel:subclass("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
 
---- cp.apple.finalcutpro.inspector.generator.GeneratorInspector.new(parent) -> GeneratorInspector object
+--- cp.apple.finalcutpro.inspector.generator.GeneratorInspector(parent) -> GeneratorInspector object
 --- Constructor
 --- Creates a new GeneratorInspector object
 ---
@@ -35,44 +35,8 @@ local GeneratorInspector = {}
 ---
 --- Returns:
 ---  * A GeneratorInspector object
-function GeneratorInspector.new(parent)
-    local o = {
-        _parent = parent,
-        _child = {}
-    }
-    return prop.extend(o, GeneratorInspector)
+function GeneratorInspector:initialize(parent)
+    BaseMotionPanel.initialize(self, parent, "Generator")
 end
-
---- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:parent() -> table
---- Method
---- Returns the GeneratorInspector's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function GeneratorInspector:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.generator.GeneratorInspector:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function GeneratorInspector:app()
-    return self:parent():app()
-end
-
---------------------------------------------------------------------------------
---
--- GENERATOR INSPECTOR:
---
---------------------------------------------------------------------------------
 
 return GeneratorInspector

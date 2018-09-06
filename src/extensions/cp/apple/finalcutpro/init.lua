@@ -872,7 +872,7 @@ end
 --- Returns:
 ---  * the Viewer
 function fcp.lazy.method:viewer()
-    return Viewer.new(self, false)
+    return Viewer(self, false)
 end
 
 --- cp.apple.finalcutpro:eventViewer() -> Event Viewer
@@ -885,7 +885,7 @@ end
 --- Returns:
 ---  * the Event Viewer
 function fcp.lazy.method:eventViewer()
-    return Viewer.new(self, true)
+    return Viewer(self, true)
 end
 
 --- cp.apple.finalcutpro:browser() -> Browser
@@ -898,7 +898,7 @@ end
 --- Returns:
 ---  * the Browser
 function fcp.lazy.method:browser()
-    return Browser.new(self)
+    return Browser(self)
 end
 
 --- cp.apple.finalcutpro:libraries() -> LibrariesBrowser

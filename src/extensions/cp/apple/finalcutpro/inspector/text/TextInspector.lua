@@ -57,16 +57,17 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
 local CheckBox                          = require("cp.ui.CheckBox")
 local Group                             = require("cp.ui.Group")
 local PopUpButton                       = require("cp.ui.PopUpButton")
 local RadioButton                       = require("cp.ui.RadioButton")
 local RadioGroup                        = require("cp.ui.RadioGroup")
 
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
 local hasProperties, simple             = IP.hasProperties, IP.simple
 local section, slider, popUpButton, checkBox = IP.section, IP.slider, IP.popUpButton, IP.checkBox
 
@@ -77,7 +78,7 @@ local If                                = require("cp.rx.go.If")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextInspector = Element:subclass("TextInspector")
+local TextInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.text.TextInspector")
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector.matches(element)
 --- Function
@@ -89,15 +90,9 @@ local TextInspector = Element:subclass("TextInspector")
 --- Returns:
 ---  * `true` if it matches, `false` if not.
 function TextInspector.static.matches(element)
-    if Element.matches(element) then
-        if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
-            local scrollArea = element[1]
-            if scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and #scrollArea > 1 then
-                return PopUpButton.matches(scrollArea[1])
-            end
-        end
-    end
-    return false
+    local root = BasePanel.matches(element) and withRole(element, "AXGroup")
+    local scroll = root and #root == 1 and childWithRole(root, "AXScrollArea")
+    return scroll and #scroll > 1 and PopUpButton.matches(scroll[1]) or false
 end
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector(parent) -> cp.apple.finalcutpro.text.TextInspector
@@ -110,17 +105,7 @@ end
 --- Returns:
 ---  * A `TextInspector` object
 function TextInspector:initialize(parent)
-    local UI = parent.panelUI:mutate(function(original)
-        return axutils.cache(self, "_ui",
-            function()
-                local ui = original()
-                return TextInspector.matches(ui) and ui or nil
-            end,
-            TextInspector.matches
-        )
-    end)
-
-    Element.initialize(self, parent, UI)
+    BasePanel.initialize(self, parent)
 
     -- specify that the `contentUI` contains the PropertyRows.
     hasProperties(self, self.contentUI) {
@@ -265,7 +250,7 @@ function TextInspector.lazy.prop:contentUI()
             local ui = original()
             if ui then
                 local scrollArea = ui[1]
-                return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
+                return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea or nil
             end
             return nil
         end)

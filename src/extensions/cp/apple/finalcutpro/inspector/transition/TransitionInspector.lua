@@ -17,16 +17,56 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop								= require("cp.prop")
+local axutils                           = require("cp.ui.axutils")
+
+local strings                           = require("cp.apple.finalcutpro.strings")
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
+local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
+
+local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
+local childMatching, withValue          = axutils.childMatching, axutils.withValue
+local cache                             = axutils.cache
+
+
+local hasProperties                     = IP.hasProperties
+local section, popUpButton              = IP.section, IP.popUpButton
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TransitionInspector = {}
+local TransitionInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 
---- cp.apple.finalcutpro.inspector.transition.TransitionInspector.new(parent) -> TransitionInspector
+local function findContentUI(element)
+    local root = BasePanel.matches(element) and withRole(element, "AXGroup")
+    local group = root and #root == 1 and childWithRole(root, "AXGroup")
+    return group and #group == 1 and childWithRole(group, "AXScrollArea") or nil
+end
+
+local function isAudioCrossfade(element)
+    return withRole(element, "AXStaticText") ~= nil and withValue(element, strings:find("FFAudioTransitionEffect")) ~= nil
+end
+
+local function findAudioCrossfade(contentUI)
+    return contentUI and childMatching(contentUI, isAudioCrossfade)
+end
+
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector.matches(element)
+--- Function
+--- Checks if the element is the `TransitionInspector`
+---
+--- Parameters:
+--- * element   - The element to check
+---
+--- Returns:
+--- * `true` if the element is a match, otherwise `false`.
+function TransitionInspector.static.matches(element)
+    local contentUI = findContentUI(element)
+    return findAudioCrossfade(contentUI) ~= nil
+end
+
+--- cp.apple.finalcutpro.inspector.transition.TransitionInspector(parent) -> TransitionInspector
 --- Constructor
 --- Creates a new `TransitionInspector` object.
 ---
@@ -35,38 +75,23 @@ local TransitionInspector = {}
 ---
 --- Returns:
 ---  * A `TransitionInspector` object
-function TransitionInspector.new(parent)
-    local o = {
-        _parent = parent,
-        _child = {}
+function TransitionInspector:initialize(parent)
+    BasePanel.initialize(self, parent, "Transition")
+
+    hasProperties(self, self.contentUI) {
+        audioCrossfade          = section "FFAudioTransitionEffect" {
+            fadeInType              = popUpButton "FFAudioTransitionFadeInType",
+            fadeOutType             = popUpButton "FFAudioTransitionFadeOutType",
+        }
     }
-    return prop.extend(o, TransitionInspector)
 end
 
---- cp.apple.finalcutpro.inspector.transition.TransitionInspector:parent() -> table
---- Method
---- Returns the TransitionInspector's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function TransitionInspector:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.transition.TransitionInspector:app() -> App
---- Method
---- Returns the `cp.apple.finalcutpro` object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object
-function TransitionInspector:app()
-    return self:parent():app()
+function TransitionInspector.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_content", function()
+            return findContentUI(original())
+        end)
+    end)
 end
 
 return TransitionInspector
