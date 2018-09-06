@@ -383,7 +383,7 @@ end
 --- Returns:
 ---  * A `LibrariesBrowser` object.
 function Browser.lazy.method:libraries()
-    return LibrariesBrowser.new(self)
+    return LibrariesBrowser(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:media() -> MediaBrowser
