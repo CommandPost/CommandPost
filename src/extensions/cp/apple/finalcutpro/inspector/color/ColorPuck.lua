@@ -169,7 +169,7 @@ end
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
 --- Field
 --- The human-readable label for the puck, in FCPX's current language.
-function ColorPuck.lazy.value:label()
+function ColorPuck.lazy.prop:label()
     return self.row.label
 end
 
@@ -183,7 +183,7 @@ function ColorPuck.lazy.value:percent()
     end, tonumber)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.prop: TextField>
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.ui.TextField>
 --- Field
 --- The 'angle' text field (only present for the 'color' aspect).
 function ColorPuck.lazy.value:angle()
