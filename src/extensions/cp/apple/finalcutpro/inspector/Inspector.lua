@@ -26,7 +26,6 @@ local strings                           = require("cp.apple.finalcutpro.strings"
 local AudioInspector                    = require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
 local ColorInspector                    = require("cp.apple.finalcutpro.inspector.color.ColorInspector")
-local EffectInspector                   = require("cp.apple.finalcutpro.inspector.effect.EffectInspector")
 local GeneratorInspector                = require("cp.apple.finalcutpro.inspector.generator.GeneratorInspector")
 local InfoInspector                     = require("cp.apple.finalcutpro.inspector.info.InfoInspector")
 local ShareInspector                    = require("cp.apple.finalcutpro.inspector.share.ShareInspector")
@@ -34,6 +33,9 @@ local TextInspector                     = require("cp.apple.finalcutpro.inspecto
 local TitleInspector                    = require("cp.apple.finalcutpro.inspector.title.TitleInspector")
 local TransitionInspector               = require("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 local VideoInspector                    = require("cp.apple.finalcutpro.inspector.video.VideoInspector")
+
+local id                                = require("cp.apple.finalcutpro.ids") "Inspector"
+local strings                           = require("cp.apple.finalcutpro.strings")
 
 local go                                = require("cp.rx.go")
 local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
@@ -365,8 +367,11 @@ function Inspector:selectTab(value)
         return false
     end
     local ui = self:topBarUI()
-    local app = self:app()
-    local valueTitle = app:string(code)
+    local valueTitle = strings:find(code)
+    if not valueTitle then
+        log.ef("Inspector:selectTab: unable to find string for tab code %q", code)
+        return false
+    end
     for _,subChild in ipairs(ui) do
         local title = subChild:attributeValue("AXTitle")
         if title == valueTitle then
@@ -542,7 +547,7 @@ end
 --- Returns:
 ---  * ColorInspector
 function Inspector.lazy.method:video()
-    return VideoInspector.new(self)
+    return VideoInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -561,7 +566,7 @@ end
 --- Returns:
 ---  * GeneratorInspector
 function Inspector.lazy.method:generator()
-    return GeneratorInspector.new(self)
+    return GeneratorInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -581,25 +586,6 @@ end
 ---  * InfoInspector
 function Inspector.lazy.method:info()
     return InfoInspector(self)
-end
-
------------------------------------------------------------------------
---
--- EFFECT INSPECTOR:
---
------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.Inspector:effect() -> EffectInspector
---- Method
---- Gets the EffectInspector object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * EffectInspector
-function Inspector.lazy.method:effect()
-    return EffectInspector.new(self)
 end
 
 -----------------------------------------------------------------------
@@ -637,7 +623,7 @@ end
 --- Returns:
 ---  * TitleInspector
 function Inspector.lazy.method:title()
-    return TitleInspector.new(self)
+    return TitleInspector(self)
 end
 
 -----------------------------------------------------------------------
@@ -656,7 +642,7 @@ end
 --- Returns:
 ---  * TransitionInspector
 function Inspector.lazy.method:transition()
-    return TransitionInspector.new(self)
+    return TransitionInspector(self)
 end
 
 -----------------------------------------------------------------------

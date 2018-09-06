@@ -56,22 +56,30 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
+
+local strings                           = require("cp.apple.finalcutpro.strings")
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 
 local IP                                = require("cp.apple.finalcutpro.inspector.InspectorProperty")
 
 local hasProperties                     = IP.hasProperties
 local section, slider, xy, popUpButton, checkBox = IP.section, IP.slider, IP.xy, IP.popUpButton, IP.checkBox
-
-local If                                = require("cp.rx.go.If")
+local withRole, childWithRole           = axutils.withRole, axutils.childWithRole
+local withValue, childMatching          = axutils.withValue, axutils.childMatching
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local VideoInspector = {}
+local VideoInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.video.VideoInspector")
+
+local function findContentUI(rootUI)
+    local root = BasePanel.matches(rootUI) and withRole(rootUI, "AXGroup")
+    local group = root and #root == 1 and childWithRole(root, "AXGroup")
+    return group and #group == 1 and childWithRole(group, "AXScrollArea") or nil
+end
 
 --- cp.apple.finalcutpro.inspector.video.VideoInspector.matches(element)
 --- Function
@@ -82,17 +90,14 @@ local VideoInspector = {}
 ---
 --- Returns:
 --- * `true` if it matches, `false` if not.
-function VideoInspector.matches(element)
-    if element then
-        if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
-            local group = element[1]
-            return group and group:attributeValue("AXRole") == "AXGroup" and #group == 1
-        end
-    end
-    return false
+function VideoInspector.static.matches(element)
+    local contentUI = findContentUI(element)
+    return contentUI and #contentUI > 0 and childMatching(contentUI, function(child)
+        return withRole(child, "AXStaticText") and withValue(child, strings:find("FFHeliumBlendCompositingEffect"))
+    end) ~= nil or false
 end
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector.new(parent) -> cp.apple.finalcutpro.video.VideoInspector
+--- cp.apple.finalcutpro.inspector.video.VideoInspector(parent) -> cp.apple.finalcutpro.inspector.video.VideoInspector
 --- Constructor
 --- Creates a new `VideoInspector` object
 ---
@@ -101,54 +106,11 @@ end
 ---
 --- Returns:
 ---  * A `VideoInspector` object
-function VideoInspector.new(parent)
-    local o
-    o = prop.extend({
-        _parent = parent,
-        _child = {},
-        _rows = {},
-
---- cp.apple.finalcutpro.inspector.color.VideoInspector.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Returns the `hs._asm.axuielement` object for the Video Inspector.
-        UI = parent.panelUI:mutate(function(original)
-            return axutils.cache(o, "_ui",
-                function()
-                    local ui = original()
-                    return VideoInspector.matches(ui) and ui or nil
-                end,
-                VideoInspector.matches
-            )
-        end),
-
-    }, VideoInspector)
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.inspector.color.VideoInspector.isShowing <cp.prop: boolean; read-only>
---- Field
---- Checks if the VideoInspector is currently showing.
-        isShowing = o.UI:ISNOT(nil),
-
---- cp.apple.finalcutpro.inspector.color.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- The `axuielement` containing the properties rows, if available.
-        contentUI = o.UI:mutate(function(original)
-            return axutils.cache(o, "_contentUI", function()
-                local ui = original()
-                if ui then
-                    local group = ui[1]
-                    if group then
-                        local scrollArea = group[1]
-                        return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
-                    end
-                end
-                return nil
-            end)
-        end),
-    }
+function VideoInspector:initialize(parent)
+    BasePanel.initialize(self, parent, "Video")
 
     -- specify that the `contentUI` contains the PropertyRows.
-    hasProperties(o, o.contentUI) {
+    hasProperties(self, self.contentUI) {
         effects             = section "FFInspectorBrickEffects" {},
 
         compositing         = section "FFHeliumBlendCompositingEffect" {
@@ -190,77 +152,17 @@ function VideoInspector.new(parent)
             type            = popUpButton "FFType",
         },
     }
-
-    return o
 end
 
---- cp.apple.finalcutpro.inspector.video.VideoInspector:parent() -> table
---- Method
---- Returns the VideoInspector's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function VideoInspector:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.video.VideoInspector:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function VideoInspector:app()
-    return self:parent():app()
-end
-
---------------------------------------------------------------------------------
---
--- VIDEO INSPECTOR:
---
---------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.video.VideoInspector:show() -> VideoInspector
---- Method
---- Shows the Video Inspector
----
---- Parameters:
----  * None
----
---- Returns:
----  * VideoInspector
-function VideoInspector:show()
-    if not self:isShowing() then
-        self:parent():selectTab("Video")
-    end
-    return self
-end
-
---- cp.apple.finalcutpro.inspector.video.VideoInspector:doShow() -> cp.rx.go.Statement
---- Method
---- A [Statement](cp.rx.go.Statement.md) that shows the Video Inspector.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The `Statement` to execute.
-function VideoInspector:doShow()
-    return If(self.isShowing):IsNot(true)
-    :Then(self:parent():doSelectTab("Video"))
-    :Label("VideoInspector:doShow")
-end
-
-function VideoInspector:doHide()
-    return If(self.isShowing)
-    :Then(self:parent():doHide())
-    :Label("VideoInspector:doHide")
+--- cp.apple.finalcutpro.inspector.color.VideoInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` containing the properties rows, if available.
+function VideoInspector.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return axutils.cache(self, "_contentUI", function()
+            return findContentUI(original())
+        end)
+    end)
 end
 
 return VideoInspector

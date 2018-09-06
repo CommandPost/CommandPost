@@ -3,13 +3,13 @@
 -- If you want to just run a specific test against a specific locale, you can do this:
 --
 -- ```lua
--- require("tests.test_fcp")("en", "Launch FCP")
+-- _test("cp.apple.finalcutpro")("en", "Launch FCP")
 -- ```
 --
 -- You can run multiple specific locales like so:
 --
 -- ```lua
--- require("tests.test_fcp")({"de", "es"}, "Launch FCP", "Command Editor")
+-- _test("cp.apple.finalcutpro")({"de", "es"}, "Launch FCP", "Command Editor")
 -- ```
 
 local log           = require("hs.logger").new("testfcp")

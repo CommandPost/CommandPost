@@ -20,9 +20,10 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
-local Element                           = require("cp.ui.Element")
 
 local idBoard                           = require("cp.apple.finalcutpro.ids") "ColorBoard"
+
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 
 local CorrectionsBar                    = require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
@@ -31,6 +32,8 @@ local ColorCurves                       = require("cp.apple.finalcutpro.inspecto
 local HueSaturationCurves               = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
 
 local If, WaitUntil                     = require("cp.rx.go.If"), require("cp.rx.go.WaitUntil")
+
+local withRole, childWithRole, childFromTop = axutils.withRole, axutils.childWithRole, axutils.childFromTop
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -42,7 +45,7 @@ local v                                 = require("semver")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorInspector = Element:subclass("ColorInspector")
+local ColorInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.color.ColorInspector")
 
 local ADVANCED_VERSION = v("10.4")
 
@@ -56,17 +59,12 @@ local ADVANCED_VERSION = v("10.4")
 --- Returns:
 --- * `true` if the element is the Color Inspector.
 function ColorInspector.static.matches(element)
-    if Element.matches(element) then
-        local role = element:attributeValue("AXRole") -- 10.4+
-        if role == "AXGroup" and #element == 1 then
-            local split = element[1]
-            if split:attributeValue("AXRole") == "AXSplitGroup" then
-                local top = axutils.childFromTop(split, 1)
-                if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
-                    -- check it's the correction bar.
-                    return CorrectionsBar.matches(top[1])
-                end
-            end
+    if BasePanel.matches(element) then
+        local root = #element == 1 and withRole(element, "AXGroup")
+        if root then -- 10.4+
+            local split = childWithRole(root, "AXSplitGroup")
+            local top = split and withRole(childFromTop(split, 1), "AXGroup")
+            return top and #top == 1 and CorrectionsBar.matches(top[1]) or false
         else -- 10.3 Color Board
             return ColorBoard.matchesOriginal(element)
         end
@@ -84,17 +82,7 @@ end
 --- Returns:
 ---  * A ColorInspector object
 function ColorInspector:initialize(parent)
-    local UI = parent.panelUI:mutate(function(original)
-        return axutils.cache(self, "_ui",
-            function()
-                local ui = original()
-                return ColorInspector.matches(ui) and ui or nil
-            end,
-            ColorInspector.matches
-        )
-    end)
-
-    Element.initialize(self, parent, UI)
+    BasePanel.initialize(self, parent, "Color")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
@@ -280,14 +268,6 @@ function ColorInspector:hide()
         self:parent():hide()
     end
     return self
-end
-
-function ColorInspector.lazy.method:doHide()
-    return If(self.isShowing)
-    :Then(
-        self:parent():doHide()
-    )
-    :Label("ColorInspector:doHide")
 end
 
 --------------------------------------------------------------------------------
