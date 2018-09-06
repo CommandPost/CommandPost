@@ -34,7 +34,7 @@ function SplitGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXSplitGroup"
 end
 
---- cp.ui.SplitGroup:new(parent, uiFinder) -> cp.ui.SplitGroup
+--- cp.ui.SplitGroup(parent, uiFinder) -> cp.ui.SplitGroup
 --- Constructor
 --- Creates a new Split Group.
 ---

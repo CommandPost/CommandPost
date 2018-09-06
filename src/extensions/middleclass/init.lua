@@ -116,7 +116,7 @@ end
 local DefaultMixin = {
   __tostring   = function(self) return "instance of " .. tostring(self.class) end,
 
-  initialize   = function(self, ...) end,
+  initialize   = function(self, ...) end, -- luacheck: ignore
 
   isInstanceOf = function(self, aClass)
     return type(aClass) == 'table'
@@ -157,7 +157,7 @@ local DefaultMixin = {
       return subclass
     end,
 
-    subclassed = function(self, other) end,
+    subclassed = function(self, other) end, -- luacheck:ignore
 
     isSubclassOf = function(self, other)
       return type(other)      == 'table' and

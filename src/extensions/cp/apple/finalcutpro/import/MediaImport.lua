@@ -94,7 +94,7 @@ function MediaImport.new(app)
         MediaImport.matches)
     end)
 
-    local window = Window.new(app.app, UI)
+    local window = Window(app.app, UI)
     o._window = window
 
     prop.bind(o) {

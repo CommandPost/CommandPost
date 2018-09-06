@@ -18,15 +18,20 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
 local Window						= require("cp.ui.Window")
+
+local go                            = require("cp.rx.go")
+local Do, If                        = go.Do, go.If
+
+local class                         = require("middleclass")
+local lazy                          = require("cp.lazy")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local SecondaryWindow = {}
+local SecondaryWindow = class("SecondaryWindow"):include(lazy)
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.matches(element) -> boolean
 --- Function
@@ -37,15 +42,15 @@ local SecondaryWindow = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function SecondaryWindow.matches(element)
-    if element and element:attributeValue("AXModal") == false then
+function SecondaryWindow.static.matches(element)
+    if element ~= nil and element:attributeValue("AXModal") == false then
         local children = element:attributeValue("AXChildren")
         return children and #children == 1 and children[1]:attributeValue("AXRole") == "AXSplitGroup"
     end
     return false
 end
 
---- cp.apple.finalcutpro.main.Browser.new(app) -> SecondaryWindow
+--- cp.apple.finalcutpro.main.SecondaryWindow(app) -> SecondaryWindow
 --- Constructor
 --- Creates a new `SecondaryWindow` instance.
 ---
@@ -54,83 +59,94 @@ end
 ---
 --- Returns:
 ---  * A new `SecondaryWindow` object.
-function SecondaryWindow.new(app)
-    local o = prop.extend({
-        _app = app
-    }, SecondaryWindow)
+function SecondaryWindow:initialize(app)
+    self._app = app
+end
 
-    local window = Window.new(app.app, app.windowsUI:mutate(function(original)
-        return axutils.cache(o, "_ui", function()
+function SecondaryWindow:app()
+    return self._app
+end
+
+function SecondaryWindow.lazy.method:window()
+    return Window(self:app().app, self.UI)
+end
+
+function SecondaryWindow.lazy.prop:UI()
+    return self:app().windowsUI:mutate(function(original)
+        return axutils.cache(self, "_ui", function()
             return axutils.childMatching(original(), SecondaryWindow.matches)
         end,
         SecondaryWindow.matches)
-    end))
-    o._window = window
-
-    prop.bind(o) {
-
---- cp.apple.finalcutpro.main.SecondaryWindow.UI <cp.prop: axuielement; read-only; live>
---- Field
---- The `axuielement` for the window.
-        UI = window.UI,
+    end)
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.hsWindow <cp.prop: hs.window; read-only; live>
 --- Field
 --- The `hs.window` instance for the window, or `nil` if it can't be found.
-        hsWindow = window.hsWindow,
+function SecondaryWindow.lazy.prop:hsWindow()
+    return self:window().hsWindow
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.isShowing <cp.prop: boolean; read-only; live>
 --- Field
 --- Is `true` if the window is visible.
-        isShowing = window.visible,
+function SecondaryWindow.lazy.prop:isShowing()
+    return self:window().visible
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.isFullScreen <cp.prop: boolean; live>
 --- Field
 --- Is `true` if the window is full-screen.
-        isFullScreen = window.fullScreen,
+function SecondaryWindow.lazy.prop:isFullScreen()
+    return self:window().fullScreen
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.frame <cp.prop: frame>
 --- Field
 --- The current position (x, y, width, height) of the window.
-        frame = window.frame,
-    }
+function SecondaryWindow.lazy.prop:frame()
+    return self:window().frame
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.rootGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The root UI element on the window.
-    local rootGroupUI = window.UI:mutate(function(original, self)
+function SecondaryWindow.lazy.prop:rootGroupUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_rootGroup", function()
             local ui = original()
             return ui and axutils.childWithRole(ui, "AXSplitGroup")
         end)
-    end):bind(o, "rootGroupUI")
+    end)
+end
 
-    prop.bind(o) {
 --- cp.apple.finalcutpro.main.SecondaryWindow.viewerGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The UI element that will contain the `Viewer` if it's on the Secondary Window.
-        viewerGroupUI = rootGroupUI,
+function SecondaryWindow.lazy.prop:viewerGroupUI()
+    return self.rootGroupUI
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.browserGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The UI element that will contain the `Browser` if it's on the Secondary Window.
-        browserGroupUI = rootGroupUI,
+function SecondaryWindow.lazy.prop:browserGroupUI()
+    return self.rootGroupUI
+end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow.timelineGroupUI <cp.prop: hs._asm.axuielement; read-only; live>
 --- Field
 --- The UI element that will contain the `Timeline` if it's on the Secondary Window.
-        timelineGroupUI = rootGroupUI:mutate(function(original, self)
-            return axutils.cache(self, "_timelineGroup", function()
-                -- for some reason, the Timeline is burried under three levels
-                local root = original()
-                if root and root[1] and root[1][1] then
-                    return root[1][1]
-                end
-            end)
-        end),
-    }
-
-    return o
+function SecondaryWindow.lazy.prop:timelineGroupUI()
+    return self.rootGroupUI:mutate(function(original)
+        return axutils.cache(self, "_timelineGroup", function()
+            -- for some reason, the Timeline is burried under three levels
+            local root = original()
+            if root and root[1] and root[1][1] then
+                return root[1][1]
+            end
+        end)
+    end)
 end
 
 --- cp.apple.finalcutpro.main.SecondaryWindow:app() -> App
@@ -175,6 +191,25 @@ function SecondaryWindow:show()
     --------------------------------------------------------------------------------
     self:app():show()
     return self
+end
+
+--- cp.apple.finalcutpro.main.SecondaryWindow:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement) that shows the Secondary Window.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `SecondaryWindow` object.
+function SecondaryWindow.lazy.method:doShow()
+    return Do(self:app():doShow())
+    :Then(
+        If(self.isShowing):Is(false)
+        :Then(self:window():doFocus())
+        :TimeoutAfter(1000, "Unable to focus on Secondary Window.")
+    )
+    :Label("SecondaryWindow:doShow")
 end
 
 return SecondaryWindow

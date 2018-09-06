@@ -413,7 +413,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doLaunch()
+function fcp.lazy.method:doLaunch()
     return self.app:doLaunch()
 end
 
@@ -426,7 +426,7 @@ end
 ---
 --- Returns:
 ---  * The FCP instance.
-function fcp:doRestart()
+function fcp.lazy.method:doRestart()
     return self.app:doRestart()
 end
 
@@ -453,7 +453,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doShow()
+function fcp.lazy.method:doShow()
     return self.app:doShow()
 end
 
@@ -480,7 +480,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doHide()
+function fcp.lazy.method:doHide()
     return self.app:doHide()
 end
 
@@ -507,7 +507,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function fcp:doQuit()
+function fcp.lazy.method:doQuit()
     return self.app:doQuit()
 end
 
@@ -747,7 +747,7 @@ end
 --- Returns:
 ---  * The Primary Window
 function fcp.lazy.method:primaryWindow()
-    return PrimaryWindow.new(self)
+    return PrimaryWindow(self)
 end
 
 --- cp.apple.finalcutpro:secondaryWindow() -> secondaryWindow object
@@ -760,7 +760,7 @@ end
 --- Returns:
 ---  * The Secondary Window
 function fcp.lazy.method:secondaryWindow()
-    return SecondaryWindow.new(self)
+    return SecondaryWindow(self)
 end
 
 --- cp.apple.finalcutpro:fullScreenWindow() -> fullScreenWindow object
@@ -1088,7 +1088,7 @@ end
 --- Field
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 function fcp.lazy.prop:activeCommandSetPath()
-    return self.preferences:prop("Active Command Set", fcp:defaultCommandSetPath()):bind(fcp, "activeCommandSetPath")
+    return self.preferences:prop("Active Command Set", self:defaultCommandSetPath())
 end
 
 --- cp.apple.finalcutpro.commandSet(path) -> string
@@ -1100,7 +1100,7 @@ end
 ---
 --- Returns:
 ---  * The Command Set as a table, or `nil` if there was a problem.
-function fcp.commandSet(path)
+function fcp.static.commandSet(path)
     if not fs.attributes(path) then
         log.ef("Invalid Command Set Path: %s", path)
         return nil
@@ -1115,7 +1115,7 @@ end
 --- updated automatically if the command set changes.
 function fcp.lazy.prop:activeCommandSet()
     return prop(function()
-        local path = fcp.activeCommandSetPath()
+        local path = self:activeCommandSetPath()
         local commandSet = fcp.commandSet(path)
         ----------------------------------------------------------------------------------------
         -- Reset the command cache since we've loaded a new set:

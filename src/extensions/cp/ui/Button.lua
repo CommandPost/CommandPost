@@ -44,7 +44,7 @@ function Button.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXButton"
 end
 
---- cp.ui.Button.new(parent, uiFinder) -> cp.ui.Button
+--- cp.ui.Button(parent, uiFinder) -> cp.ui.Button
 --- Constructor
 --- Creates a new `Button` instance.
 ---
@@ -92,7 +92,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
-function Button:doPress()
+function Button.lazy.method:doPress()
     return If(self.UI):Then(function(ui)
         ui:doPress()
         return true

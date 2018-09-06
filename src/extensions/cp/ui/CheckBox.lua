@@ -54,7 +54,7 @@ function CheckBox.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXCheckBox"
 end
 
---- cp.ui.CheckBox:new(parent, uiFinder) -> cp.ui.CheckBox
+--- cp.ui.CheckBox(parent, uiFinder) -> cp.ui.CheckBox
 --- Constructor
 --- Creates a new CheckBox.
 ---
@@ -135,7 +135,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` which will press the button when executed.
-function CheckBox:doPress()
+function CheckBox.lazy.method:doPress()
     return If(self.UI):Then(function(ui)
         ui:doPress()
         return true

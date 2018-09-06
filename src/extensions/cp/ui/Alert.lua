@@ -104,7 +104,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
-function Alert:doHide()
+function Alert.lazy.method:doHide()
     return If(self.isShowing):Then(
         self:doCancel()
     ):Then(WaitUntil(self.isShowing():NOT()))
@@ -122,7 +122,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
-function Alert:doCancel()
+function Alert.lazy.method:doCancel()
     return self.cancel:doPress()
 end
 
@@ -135,7 +135,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
-function Alert:doDefault()
+function Alert.lazy.method:doDefault()
     return self.default:doPress()
 end
 

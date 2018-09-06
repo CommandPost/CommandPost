@@ -69,11 +69,11 @@ function MenuButton.lazy.prop:value()
     return self.UI:mutate(
         function(original)
             local ui = original()
-            return ui and ui:value()
+            return ui and ui:attributeValue("AXValue")
         end,
         function(newValue, original)
             local ui = original()
-            if ui and ui:value() ~= newValue then
+            if ui and ui:attributeValue("AXValue") ~= newValue then
                 local items = ui:doPress()[1]
                 if items then
                     for _,item in ipairs(items) do
@@ -355,7 +355,7 @@ end
 ---
 --- Returns:
 ---  * The [Statement](cp.rx.go.Statement.md)
-function MenuButton:doPress()
+function MenuButton.lazy.method:doPress()
     return If(self.UI)
     :Then(function(ui)
         ui:doPress()

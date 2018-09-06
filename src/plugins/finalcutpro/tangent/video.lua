@@ -21,6 +21,9 @@ local fcp                   = require("cp.apple.finalcutpro")
 local deferred              = require("cp.deferred")
 local i18n                  = require("cp.i18n")
 
+local Do                    = require("cp.rx.go.Do")
+local If                    = require('cp.rx.go.If')
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -53,43 +56,48 @@ local mod = {}
 --  * The `x` parameter value
 --  * The `y` parameter value
 --  * The xy binding
-local function xyParameter(group, param, id)
+local function xyParameter(group, param, id, minValue, maxValue, stepSize)
+    minValue, maxValue, stepSize = minValue or 0, maxValue or 100, stepSize or 0.5
 
     --------------------------------------------------------------------------------
     -- Set up the accumulator:
     --------------------------------------------------------------------------------
     local x, y = 0, 0
     local updateUI = deferred.new(DEFER)
-    updateUI:action(function()
-        if x ~= 0 then
-            local current = param:x()
-            if current then
-                param:x(current + x)
-            end
-            x = 0
-        end
-        if y ~= 0 then
-            local current = param:y()
-            if current then
-                param:y(current + y)
-            end
-            y = 0
-        end
-    end)
+    local updating = false
+    updateUI:action(
+        If(function() return not updating and (x ~= 0 or y ~= 0) end)
+        :Then(
+            Do(param:doShow())
+            :Then(function()
+                updating = true
+                if x ~= 0 then
+                    local current = param:x()
+                    if current then
+                        param:x(current + x)
+                    end
+                    x = 0
+                end
+                if y ~= 0 then
+                    local current = param:y()
+                    if current then
+                        param:y(current + y)
+                    end
+                    y = 0
+                end
+                updating = false
+            end)
+        )
+    )
 
     local label = param:label()
     local xParam = group:parameter(id + 1)
         :name(label .. " X")
-        --------------------------------------------------------------------------------
-        -- TODO: Hack to work around Tangent Hub bug that doesn't send changes if
-        --       no min/max are set.
-        --------------------------------------------------------------------------------
-        :minValue(0)
-        :maxValue(100)
-        :stepSize(0.5)
+        :minValue(minValue)
+        :maxValue(maxValue)
+        :stepSize(stepSize)
         :onGet(function() return param:x() end)
         :onChange(function(amount)
-            fcp:inspector():video():show()
             x = x + amount
             updateUI()
         end)
@@ -97,13 +105,9 @@ local function xyParameter(group, param, id)
 
     local yParam = group:parameter(id + 2)
         :name(label .. " Y")
-        --------------------------------------------------------------------------------
-        -- TODO: Hack to work around Tangent Hub bug that doesn't send changes if
-        --       no min/max are set.
-        --------------------------------------------------------------------------------
-        :minValue(0)
-        :maxValue(100)
-        :stepSize(0.5)
+        :minValue(minValue)
+        :maxValue(maxValue)
+        :stepSize(stepSize)
         :onGet(function() return param:y() end)
         :onChange(function(amount)
             y = y + amount
@@ -140,16 +144,22 @@ local function sliderParameter(group, param, id, minValue, maxValue, stepSize, d
     --------------------------------------------------------------------------------
     local value = 0
     local updateUI = deferred.new(DEFER)
-    updateUI:action(function()
-        if value ~= 0 then
-            fcp:inspector():video():show()
-            local currentValue = param.value()
-            if currentValue then
-                param.value(currentValue + value)
-                value = 0
-            end
-        end
-    end)
+    local updating = false
+    updateUI:action(
+        If(function() return not updating and value ~= 0 end)
+        :Then(
+            Do(param:doShow())
+            :Then(function()
+                updating = true
+                local currentValue = param:value()
+                if currentValue then
+                    param:value(currentValue + value)
+                    value = 0
+                end
+                updating = false
+            end)
+        )
+    )
 
     default = default or 0
 
@@ -190,7 +200,7 @@ function mod.init(deps)
     local id = 0x0F730000
 
     local px, py, rotation
-    id, px, py = xyParameter(transformGroup, transform:position(), id)
+    id, px, py = xyParameter(transformGroup, transform:position(), id, 0, 1000, 0.1)
     id, rotation = sliderParameter(transformGroup, transform:rotation(), id, 0, 360, 0.1)
     transformGroup:binding(tostring(transform:position()) .. " " .. tostring(transform:rotation()))
         :members(px, py, rotation)
@@ -199,7 +209,7 @@ function mod.init(deps)
     id = sliderParameter(transformGroup, transform:scaleX(), id, 0, 100, 0.1, 100.0)
     id = sliderParameter(transformGroup, transform:scaleY(), id, 0, 100, 0.1, 100.0)
 
-    xyParameter(transformGroup, transform:anchor(), id)
+    xyParameter(transformGroup, transform:anchor(), id, 0, 1000, 0.1)
 
     return mod
 end

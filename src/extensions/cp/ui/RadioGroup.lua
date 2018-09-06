@@ -47,7 +47,7 @@ function RadioGroup.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXRadioGroup"
 end
 
---- cp.ui.RadioGroup:new(parent, finderFn[, cached]) -> cp.ui.RadioGroup
+--- cp.ui.RadioGroup(parent, finderFn[, cached]) -> cp.ui.RadioGroup
 --- Constructor
 --- Creates a new RadioGroup.
 ---
@@ -142,8 +142,10 @@ end
 function RadioGroup:nextOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
-    selected = selected >= count and 1 or selected + 1
-    self:selectedOption(selected)
+    if selected and count then
+        selected = selected >= count and 1 or selected + 1
+        self:selectedOption(selected)
+    end
     return self
 end
 
@@ -157,7 +159,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, that resolves to `true` if successful or sends an error if not.
-function RadioGroup:doNextOption()
+function RadioGroup.lazy.method:doNextOption()
     return If(self.isEnabled)
     :Then(function()
         local selected = self:selectedOption()
@@ -181,8 +183,10 @@ end
 function RadioGroup:previousOption()
     local selected = self:selectedOption()
     local count = self:optionCount()
-    selected = selected <= 1 and count or selected - 1
-    self:selectedOption(selected)
+    if selected and count then
+        selected = selected <= 1 and count or selected - 1
+        self:selectedOption(selected)
+    end
     return self
 end
 
@@ -196,7 +200,7 @@ end
 ---
 --- Returns:
 --- * The `Statement`, which resolves to `true` if successful or sends an error if not..
-function RadioGroup:doPreviousOption()
+function RadioGroup.lazy.method:doPreviousOption()
     return If(self.isEnabled)
     :Then(function()
         local selected = self:selectedOption()

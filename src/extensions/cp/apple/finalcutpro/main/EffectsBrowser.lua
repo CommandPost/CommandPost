@@ -558,8 +558,14 @@ end
 function EffectsBrowser:applyItem(itemUI)
     if itemUI then
         self:contents():showChild(itemUI)
-        local targetPoint = geometry.rect(itemUI:frame()).center
-        tools.ninjaDoubleClick(targetPoint)
+        local uiFrame = itemUI:frame()
+        if uiFrame then
+            local rect = geometry.rect(uiFrame)
+            local targetPoint = rect and rect.center
+            if targetPoint then
+                tools.ninjaDoubleClick(targetPoint)
+            end
+        end
     end
     return self
 end
@@ -671,7 +677,7 @@ end
 ---  * A `PopUpButton` object.
 function EffectsBrowser:group()
     if not self._group then
-        self._group = PopUpButton.new(self, function()
+        self._group = PopUpButton(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXPopUpButton")
         end)
     end

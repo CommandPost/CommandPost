@@ -21,7 +21,7 @@ local Element = class("Element"):include(lazy)
 
 --- cp.ui.Element.matches(element) -> boolean
 --- Function
---- Matches to any valid `hs._asm.axuielement`. Sub-types should provide their own `match` method.
+--- Matches to any valid `hs._asm.axuielement`. Sub-types should provide their own `matches` method.
 ---
 --- Parameters:
 --- * The element to check
@@ -30,6 +30,10 @@ local Element = class("Element"):include(lazy)
 --- * `true` if the element is a valid instance of an `hs._asm.axuielement`.
 function Element.static.matches(element)
     return element ~= nil and type(element.isValid) == "function" and element:isValid()
+end
+
+function Element:__tostring()
+    return self.class.name
 end
 
 function Element:initialize(parent, uiFinder)

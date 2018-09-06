@@ -56,8 +56,8 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local CheckBox                          = require("cp.ui.CheckBox")
 local Group                             = require("cp.ui.Group")
 local PopUpButton                       = require("cp.ui.PopUpButton")
@@ -77,7 +77,7 @@ local If                                = require("cp.rx.go.If")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextInspector = {}
+local TextInspector = Element:subclass("TextInspector")
 
 --- cp.apple.finalcutpro.inspector.text.TextInspector.matches(element)
 --- Function
@@ -88,8 +88,8 @@ local TextInspector = {}
 ---
 --- Returns:
 ---  * `true` if it matches, `false` if not.
-function TextInspector.matches(element)
-    if element then
+function TextInspector.static.matches(element)
+    if Element.matches(element) then
         if element:attributeValue("AXRole") == "AXGroup" and #element == 1 then
             local scrollArea = element[1]
             if scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and #scrollArea > 1 then
@@ -100,7 +100,7 @@ function TextInspector.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.text.TextInspector.new(parent) -> cp.apple.finalcutpro.text.TextInspector
+--- cp.apple.finalcutpro.inspector.text.TextInspector(parent) -> cp.apple.finalcutpro.text.TextInspector
 --- Constructor
 --- Creates a new `TextInspector` object
 ---
@@ -109,60 +109,21 @@ end
 ---
 --- Returns:
 ---  * A `TextInspector` object
-function TextInspector.new(parent)
-    local o
-    o = prop.extend({
-        _parent = parent,
-        _child = {},
-        _rows = {},
-
---- cp.apple.finalcutpro.inspector.color.TextInspector.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Returns the `hs._asm.axuielement` object for the Text Inspector.
-        UI = parent.panelUI:mutate(function(original)
-            return axutils.cache(o, "_ui",
-                function()
-                    local ui = original()
-                    return TextInspector.matches(ui) and ui or nil
-                end,
-                TextInspector.matches
-            )
-        end),
-
-    }, TextInspector)
-
-    prop.bind(o) {
---- cp.apple.finalcutpro.inspector.color.TextInspector.isShowing <cp.prop: boolean; read-only>
---- Field
---- Checks if the TextInspector is currently showing.
-        isShowing = o.UI:mutate(function(original)
-            return original() ~= nil
-        end),
-
---- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- The `axuielement` containing the properties rows, if available.
-        contentUI = o.UI:mutate(function(original)
-            return axutils.cache(o, "_contentUI", function()
+function TextInspector:initialize(parent)
+    local UI = parent.panelUI:mutate(function(original)
+        return axutils.cache(self, "_ui",
+            function()
                 local ui = original()
-                if ui then
-                    local scrollArea = ui[1]
-                    return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
-                end
-                return nil
-            end)
-        end),
-    }
-
-    -- The 'Shape Preset' popup
-
-    o.shapePreset = PopUpButton(o, function()
-        local ui = o.contentUI()
-        return ui and PopUpButton.matches(ui[1]) and ui[1]
+                return TextInspector.matches(ui) and ui or nil
+            end,
+            TextInspector.matches
+        )
     end)
 
+    Element.initialize(self, parent, UI)
+
     -- specify that the `contentUI` contains the PropertyRows.
-    hasProperties(o, o.contentUI) {
+    hasProperties(self, self.contentUI) {
         basic             = section "FCP Text Inspector Basic Heading" {
             font            = simple("Text Font Folder", function(row)
                 row.family        = PopUpButton(row, function()
@@ -293,34 +254,30 @@ function TextInspector.new(parent)
             angle               = slider "Text Drop Shadow Angle",
         },
     }
-
-    return o
 end
 
---- cp.apple.finalcutpro.inspector.text.TextInspector:parent() -> table
---- Method
---- Returns the TextInspector's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function TextInspector:parent()
-    return self._parent
+--- cp.apple.finalcutpro.inspector.color.TextInspector.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` containing the properties rows, if available.
+function TextInspector.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return axutils.cache(self, "_contentUI", function()
+            local ui = original()
+            if ui then
+                local scrollArea = ui[1]
+                return scrollArea and scrollArea:attributeValue("AXRole") == "AXScrollArea" and scrollArea
+            end
+            return nil
+        end)
+    end)
 end
 
---- cp.apple.finalcutpro.inspector.text.TextInspector:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function TextInspector:app()
-    return self:parent():app()
+-- The 'Shape Preset' popup
+function TextInspector.lazy.value:shapePreset()
+    return PopUpButton(self, function()
+        local ui = self.contentUI()
+        return ui and PopUpButton.matches(ui[1]) and ui[1]
+    end)
 end
 
 --------------------------------------------------------------------------------
@@ -355,7 +312,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function TextInspector:doShow()
+function TextInspector.lazy.method:doShow()
     return If(self.isShowing):IsNot(true)
     :Then(self:parent():doSelectTab("Text"))
     :Label("TextInspector:doShow")
@@ -370,9 +327,10 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function TextInspector:doHide()
+function TextInspector.lazy.method:doHide()
     return If(self.isShowing)
     :Then(self:parent():doHide())
     :Label("TextInspector:doHide")
 end
+
 return TextInspector

@@ -24,7 +24,7 @@ local Element                       = require("cp.ui.Element")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local TextField = Element:subclass("TextField")
+local TextField = Element:subclass("cp.ui.TextField")
 
 --- cp.ui.TextField.matches(element) -> boolean
 --- Function
@@ -39,7 +39,7 @@ function TextField.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXTextField"
 end
 
---- cp.ui.TextField:new(parent, uiFinder[, convertFn]) -> TextField
+--- cp.ui.TextField(parent, uiFinder[, convertFn]) -> TextField
 --- Method
 --- Creates a new TextField. They have a parent and a finder function.
 --- Additionally, an optional `convert` function can be provided, with the following signature:
@@ -84,15 +84,28 @@ function TextField.lazy.prop:value()
             local ui = original()
             if ui then
                 value = tostring(value)
-                local focused = ui:attributeValue("AXFocused")
-                ui:setAttributeValue("AXFocused", true)
+                local focused
+                if self._forceFocus then
+                    focused = ui:attributeValue("AXFocused")
+                    ui:setAttributeValue("AXFocused", true)
+                end
                 ui:setAttributeValue("AXValue", value)
-                ui:setAttributeValue("AXFocused", focused)
+                if self._forceFocus then
+                    ui:setAttributeValue("AXFocused", focused)
+                end
                 ui:performAction("AXConfirm")
             end
-
         end
     )
+end
+
+--- cp.ui.TextField:forceFocus()
+--- Method
+--- Configures the TextField to force a focus on the field before editing.
+--- Some fields seem to require this to actually update the
+function TextField:forceFocus()
+    self._forceFocus = true
+    return self
 end
 
 --- cp.ui.TextField:getValue() -> string
@@ -166,25 +179,11 @@ function TextField:loadLayout(layout)
     end
 end
 
--- cp.ui.TextField:__call(parent, value) -> self, boolean
--- Method
--- Allows the Text Field instance to be called as a function/method which will get/set the value.
---
--- Parameters:
---  * parent - (optional) The parent object.
---  * value - The value you want to set the Text Field to.
---
--- Returns:
---  * The value of the Static Text box.
 function TextField.__call(self, parent, value)
     if parent and parent ~= self:parent() then
         value = parent
     end
     return self:value(value)
-end
-
-function TextField.__tostring()
-    return "cp.ui.TextField"
 end
 
 return TextField

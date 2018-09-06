@@ -126,7 +126,7 @@ function PropertyRow.static.matches(element)
     return element ~= nil
 end
 
---- cp.ui.PropertyRow:new(parent, labelKey[, index]) -> cp.ui.PropertyRow
+--- cp.ui.PropertyRow(parent, labelKey[, index]) -> cp.ui.PropertyRow
 --- Constructor
 --- Creates a new `PropertyRow` with the specified parent and label key.
 ---
@@ -270,8 +270,8 @@ end
 ---
 --- Returns:
 ---  * self
-function PropertyRow:doShow()
-    return self:parent():doShow()
+function PropertyRow.lazy.method:doShow()
+    return self:parent():doShow():Label("PropertyRow:doShow")
 end
 
 --- cp.ui.PropertyRow:hide() -> self
@@ -297,8 +297,8 @@ end
 ---
 --- Returns:
 --- * The `Statement`.
-function PropertyRow:doHide()
-    return self:parent():doHide()
+function PropertyRow.lazy.method:doHide()
+    return self:parent():doHide():Label("PropertyRow:doHide")
 end
 
 --- cp.ui.PropertyRow:labelKeys() -> string

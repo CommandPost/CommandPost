@@ -40,7 +40,7 @@ function ScrollArea.static.matches(element)
     return Element.matches(element) and element:attributeValue("AXRole") == "AXScrollArea"
 end
 
---- cp.ui.ScrollArea:new(parent, uiFinder) -> cp.ui.ScrollArea
+--- cp.ui.ScrollArea(parent, uiFinder) -> cp.ui.ScrollArea
 --- Constructor
 --- Creates a new `ScrollArea`.
 ---
@@ -237,7 +237,10 @@ end
 ---  * Self
 function ScrollArea:selectChild(childUI)
     if childUI then
-        childUI:parent():setAttributeValue("AXSelectedChildren", { childUI } )
+        local parent = childUI:parent()
+        if parent then
+            parent:setAttributeValue("AXSelectedChildren", { childUI } )
+        end
     end
     return self
 end

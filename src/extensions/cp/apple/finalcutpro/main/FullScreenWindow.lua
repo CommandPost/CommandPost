@@ -80,7 +80,7 @@ function FullScreenWindow.new(app)
     end)
 
     -- provides access to common AXWindow properties.
-    local window = Window.new(app.app, UI)
+    local window = Window(app.app, UI)
     o._window = window
 
     local rootGroupUI = UI:mutate(function(original, self)

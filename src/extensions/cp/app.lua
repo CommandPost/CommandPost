@@ -651,7 +651,7 @@ end
 ---
 --- Notes:
 --- * By default the `Statement` will time out after 30 seconds, sending an error signal.
-function app:doLaunch()
+function app.lazy.method:doLaunch()
     return If(self.installed):Then(
         If(self.frontmost):Is(false):Then(
             If(self.hsApplication):Then(function(hsApp)
@@ -708,7 +708,7 @@ end
 ---
 --- Notes:
 ---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
-function app:doQuit()
+function app.lazy.method:doQuit()
     return If(self.hsApplication):Then(function(hsApp)
         hsApp:kill()
     end)
@@ -736,7 +736,7 @@ end
 ---
 --- Notes:
 ---  * The Statement will time out after 60 seconds by default. This can be changed by calling the `TimeoutAfter` method on the Statement before executing.
-function app:doRestart()
+function app.lazy.method:doRestart()
     return If(self.hsApplication):Then(function(hsApp)
         local appPath = hsApp:path()
 
@@ -791,7 +791,7 @@ end
 ---
 --- Returns:
 ---  * A `Statement`, resolving to `true` if the app is running and was successfully shown, or `false` otherwise.
-function app:doShow()
+function app.lazy.method:doShow()
     return If(self.hsApplication):Then(function(hsApp)
         if hsApp:isHidden() then
             hsApp:unhide()
@@ -831,7 +831,7 @@ end
 ---
 --- Returns:
 ---  * A `Statement`, resolving to `true` if the app is running and was successfully hidden, or `false` otherwise.
-function app:doHide()
+function app.lazy.method:doHide()
     return If(self.hsApplication):Then(function(hsApp)
         hsApp:hide()
     end)
