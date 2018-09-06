@@ -1088,7 +1088,7 @@ end
 --- Field
 --- Gets the 'Active Command Set' value from the Final Cut Pro preferences
 function fcp.lazy.prop:activeCommandSetPath()
-    return self.preferences:prop("Active Command Set", fcp:defaultCommandSetPath()):bind(fcp, "activeCommandSetPath")
+    return self.preferences:prop("Active Command Set", self:defaultCommandSetPath())
 end
 
 --- cp.apple.finalcutpro.commandSet(path) -> string
@@ -1100,7 +1100,7 @@ end
 ---
 --- Returns:
 ---  * The Command Set as a table, or `nil` if there was a problem.
-function fcp.commandSet(path)
+function fcp.static.commandSet(path)
     if not fs.attributes(path) then
         log.ef("Invalid Command Set Path: %s", path)
         return nil
@@ -1115,7 +1115,7 @@ end
 --- updated automatically if the command set changes.
 function fcp.lazy.prop:activeCommandSet()
     return prop(function()
-        local path = fcp.activeCommandSetPath()
+        local path = self:activeCommandSetPath()
         local commandSet = fcp.commandSet(path)
         ----------------------------------------------------------------------------------------
         -- Reset the command cache since we've loaded a new set:
