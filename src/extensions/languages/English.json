@@ -215,6 +215,7 @@
         "core_tangent_os_window_label": "Tangent: Windows Management",
         "core_tangent_prefs_label": "Tangent: Preferences",
         "core_touchbar_manager_label": "Manager: Touch Bar",
+        "core_touchbar_virtual_label": "Manager: Virtual Touch Bar",
         "core_touchbar_widgets_volume_label": "Widget: Volume Slider",
         "core_touchbar_widgets_windowslide_label": "Widget: Window Slider",
         "core_watchfolders_manager_label": "Manager: Watch Folders",
