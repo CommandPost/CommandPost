@@ -5,10 +5,6 @@ return {
     LogicPlugins = {
         PitchShifter						= "Pitch Shifter",
     },
-    EffectsBrowser = {
-        Sidebar								= "_NS:90",
-        Contents							= "_NS:53",
-    },
     LibrariesBrowser = {
         FilterToggle						= "_NS:9",
     },
