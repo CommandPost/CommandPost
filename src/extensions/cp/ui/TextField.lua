@@ -84,15 +84,28 @@ function TextField.lazy.prop:value()
             local ui = original()
             if ui then
                 value = tostring(value)
-                local focused = ui:attributeValue("AXFocused")
-                ui:setAttributeValue("AXFocused", true)
+                local focused
+                if self._forceFocus then
+                    focused = ui:attributeValue("AXFocused")
+                    ui:setAttributeValue("AXFocused", true)
+                end
                 ui:setAttributeValue("AXValue", value)
-                ui:setAttributeValue("AXFocused", focused)
+                if self._forceFocus then
+                    ui:setAttributeValue("AXFocused", focused)
+                end
                 ui:performAction("AXConfirm")
             end
-
         end
     )
+end
+
+--- cp.ui.TextField:forceFocus()
+--- Method
+--- Configures the TextField to force a focus on the field before editing.
+--- Some fields seem to require this to actually update the
+function TextField:forceFocus()
+    self._forceFocus = true
+    return self
 end
 
 --- cp.ui.TextField:getValue() -> string
