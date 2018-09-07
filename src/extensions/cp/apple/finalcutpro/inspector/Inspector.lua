@@ -21,6 +21,8 @@ local axutils                           = require("cp.ui.axutils")
 local Element                           = require("cp.ui.Element")
 local prop                              = require("cp.prop")
 
+local strings                           = require("cp.apple.finalcutpro.strings")
+
 local AudioInspector                    = require("cp.apple.finalcutpro.inspector.audio.AudioInspector")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
 local ColorInspector                    = require("cp.apple.finalcutpro.inspector.color.ColorInspector")
@@ -31,9 +33,6 @@ local TextInspector                     = require("cp.apple.finalcutpro.inspecto
 local TitleInspector                    = require("cp.apple.finalcutpro.inspector.title.TitleInspector")
 local TransitionInspector               = require("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 local VideoInspector                    = require("cp.apple.finalcutpro.inspector.video.VideoInspector")
-
-local id                                = require("cp.apple.finalcutpro.ids") "Inspector"
-local strings                           = require("cp.apple.finalcutpro.strings")
 
 local go                                = require("cp.rx.go")
 local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
@@ -77,8 +76,10 @@ Inspector.static.INSPECTOR_TABS = {
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function Inspector.static.matches(element)
-    return axutils.childWithID(element, id "DetailsPanel") ~= nil -- is inspecting
-        or axutils.childWithID(element, id "NothingToInspect") ~= nil   -- nothing to inspect
+    local children = axutils.children(element)
+    local groups = axutils.childrenWith(element, "AXRole", "AXGroup")
+    return (children and #children == 3 and groups and #groups == 3) -- is inspecting
+        or axutils.childWith(element, "AXValue", strings:find("Nothing to Inspect")) ~= nil -- nothing to inspect
         or ColorBoard.matchesOriginal(element) -- the 10.3 color board
 end
 
