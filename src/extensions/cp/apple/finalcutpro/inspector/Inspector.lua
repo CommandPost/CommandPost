@@ -34,9 +34,6 @@ local TitleInspector                    = require("cp.apple.finalcutpro.inspecto
 local TransitionInspector               = require("cp.apple.finalcutpro.inspector.transition.TransitionInspector")
 local VideoInspector                    = require("cp.apple.finalcutpro.inspector.video.VideoInspector")
 
-local id                                = require("cp.apple.finalcutpro.ids") "Inspector"
-local strings                           = require("cp.apple.finalcutpro.strings")
-
 local go                                = require("cp.rx.go")
 local If, Do, WaitUntil, List, Throw    = go.If, go.Do, go.WaitUntil, go.List, go.Throw
 local Given, Done                       = go.Given, go.Done
