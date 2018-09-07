@@ -2,20 +2,8 @@ return {
     LogicPlugins = {
         PitchShifter						= "Pitch Shifter",
     },
-    LibrariesBrowser = {
-        FilterToggle						= "_NS:9",
-    },
-    ColorInspector = {
-        ChooseColorCorrectorsBar			= "_NS:9",
-    },
     ColorBoard = {
         ColorBoard							= "Color Inspector",
-
-        ChooseColorCorrectorsBar			= "_NS:9",
-
-        ColorBoardGroup						= "_NS:41",
-
-        ColorSatExp							= "_NS:77",
 
         ColorReset							= "_NS:246",
         ColorGlobalPuck						= "_NS:104",
