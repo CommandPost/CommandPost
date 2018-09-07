@@ -6,6 +6,79 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.34</title>
+			<description><![CDATA[
+				<h2>Preparing for latest beta:</h2>
+				<p>CommandPost now comes with a one-click uninstall application that’s included in the download package. It will remove EVERYTHING CommandPost related from your system. Because Beta 30 was quite a major update, we recommend running the uninstaller first, to give CommandPost a completely fresh start if you've previously installed an earlier beta. You can find the uninstaller in the installation package when you download CommandPost from the website: <a href="https://commandpost.io">https://commandpost.io</a></p>
+
+				<hr />
+
+				<h2>New in Beta 34:</h2>
+				<ul><li>Fixed a bug with MIDI Color Board Controls introduced in Beta 33.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 33:</h2>
+				<ul><li>Improved Tangent responsiveness and reliability.</li>
+				<li>Fixed a bug where Batch Export would fail if it couldn't get focus on the timeline.</li>
+				<li>We now prevent users from inserting the same Touch Bar widget twice, which caused a crash.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 32:</h2>
+				<ul><li>Fixes a bug where the Final Cut Pro scanner could fail in some rare instances.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 31:</h2>
+				<ul><li>Added an option to disable the CommandPost Dock Icon in the General Preferences.</li>
+				<li>Moved the "Open Error Log on Dock Icon Click" option from Advanced to General Preferences.</li>
+				<li>Fixed a bug in "Paste Text as Caption".</li>
+				<li>Fixed a FCPXML Watch Folder Bug.</li>
+				<li>Fixed a bug which would cause the Final Cut Pro plugin scanner to fail if a plugin is contained with a folder that CommandPost doesn't have permission to access.</li></ul>
+
+				<hr />
+
+				<h2>New in Beta 30:</h2>
+				<ul><li>Added the ability to enable eGPU support to Final Cut Pro if running macOS 10.13.4 or later.</li>
+				<li>Added a Final Cut Pro Viewer Overlay, which allows for five customisable draggable guides, a customisable cross hair, a draggable letterbox, a customisable grid and five stills memories (so you can compare shots or load in reference images). You can access this feature by right clicking on the top of the Viewer in Final Cut Pro.</li>
+				<li>Added the ability to select Final Cut Pro Title Fonts from the CommandPost Console. This means you can assign individual fonts to shortcut keys, MIDI buttons, Tangent buttons, etc. for easy access.</li>
+				<li>Added the ability to change Final Cut Pro Title Alignment from the CommandPost Console.</li>
+				<li>Added the ability to change Final Cut Pro Spatial Conform Type from the CommandPost Console.</li>
+				<li>Added a “Paste Text as Caption” action.</li>
+				<li>Final Cut Pro Media Watch Folders has been completely re-written and improved.</li>
+				<li>Default Tangent layouts have been improved.</li></ul>
+
+				<h2>Other Improvements & Fixes:</h2>
+				<ul><li>Updated translations so you can use CommandPost in languages other than English.</li>
+				<li>Fixed various memory leaks and performance issues.</li>
+				<li>Fixed various Pasteboard bugs.</li>
+				<li>Moved various items from the menubar to the Preferences window to clean things up.</li>
+				<li>We’ve removed the ability to “insert” CommandPost shortcuts into the Final Cut Pro Command Editor to keep things simple.</li>
+				<li>Fixed reliability of scrolling timeline.</li>
+				<li>Shortcuts, Touch Bar, Stream Deck, Tangent Favourites, and MIDI Preferences are now stored in individual files for easier sharing. A future beta will add better import/export features for sharing preferences.</li>
+				<li>Adjusted the wording of "Send Screenshot" on Feedback Form to make it more obvious.</li>
+				<li>Fixed bug where “Enable Rendering during Playback” would display the opposite status than what it actually was.</li>
+				<li>Fixed various bugs in the Batch Export tool, including support for drop-frame timecode.</li>
+				<li>Cleaned up and improved the “setup” process.</li>
+				<li>Improved Tangent performance.</li>
+				<li>Added a filter search box to the Shortcuts Preferences panel.</li>
+				<li>Fixed bugs in the Apple Feedback Forms.</li>
+				<li>Fixed bugs in Keyword Presets.</li>
+				<li>Fixed bugs when using the Color Board actions in French, German & Japanese.</li>
+				<li>Fixed "Change Smart Collections" Action.</li>
+				<li>Fixed a bug assigning HUD actions.</li></ul>
+			]]>
+			</description>
+			<pubDate>Fri,  7 Sep 2018 20:16:21 +1000</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.34/CommandPost_1.0.0-beta.34.dmg"
+				sparkle:version="1.0.0-beta.34"
+				sparkle:dsaSignature="MC0CFBGrJ4i6vuLFRRVC9KnXCcT9b5K1AhUA0UicZDRoS6ge1ApEmB/1j8JjYS8="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.33</title>
 			<description><![CDATA[
 				<h2>Preparing for latest beta:</h2>
