@@ -140,7 +140,7 @@ function mod.details()
     return mod._details
 end
 
---- cp.apple.finalcutpro.export.destinations.names() -> table
+--- cp.apple.finalcutpro.export.destinations.names() -> table | nil, string
 --- Function
 --- Returns an array of the names of destinations, in their current order.
 ---
@@ -148,7 +148,8 @@ end
 ---  * None
 ---
 --- Returns:
----  * The table of Share Destination names.
+---  * The table of Share Destination names, or `nil` if an error has occurred.
+---  * An error message as a string.
 function mod.names()
     local list, err = mod.details()
     if list then

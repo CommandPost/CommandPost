@@ -812,7 +812,7 @@ function menu.mt:findMenuUI(path, options)
             insert(currentPath, menuItemName)
         else
             local value = type(step) == "string" and '"' .. step .. '" (' .. locale.code .. ")" or tostring(step)
-            log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
+            --log.wf("Unable to match step #%d in %s, a %s with a value of %s with the app in %s", i, inspect(path), type(step), value, appLocale)
             return nil
         end
     end
