@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log           = require("hs.logger").new("batch")
+local log           = require("hs.logger").new("batch")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -100,7 +100,6 @@ mod.ignoreMissingEffects = config.prop("batchExportIgnoreMissingEffects", false)
 --- Field
 --- Defines whether or not a Batch Export should Ignore Proxies.
 mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
-
 
 --- plugins.finalcutpro.export.batch.sendTimelineClipsToCompressor(clips) -> boolean
 --- Function
@@ -234,7 +233,7 @@ function mod.sendTimelineClipsToCompressor(clips)
             return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto start timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range Start"}) then
@@ -249,7 +248,7 @@ function mod.sendTimelineClipsToCompressor(clips)
             return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto end timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range End"}) then
@@ -641,7 +640,7 @@ function mod.batchExportTimelineClips(clips)
             return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto start timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range Start"}) then
@@ -656,7 +655,7 @@ function mod.batchExportTimelineClips(clips)
             return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto end timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range End"}) then
@@ -788,8 +787,13 @@ mod.destinationPreset = config.prop("batchExportDestinationPreset")
 ---  * None
 function mod.changeExportDestinationPreset()
     Do(function()
-        local destinationList = destinations.names()
+        local destinationList, destinationListError = destinations.names()
         local currentPreset = mod.destinationPreset()
+
+        if not destinationList then
+            log.ef("Destination List Error: %s", destinationListError)
+            destinationList = {}
+        end
 
         if compressor.isInstalled() then
             insert(destinationList, 1, i18n("sendToCompressor"))
@@ -976,7 +980,6 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.batchExport(mode)
-
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
@@ -1089,7 +1092,6 @@ function mod.batchExport(mode)
         mod._clips = selectedClips
         mod._bmMan.show()
     end
-
 end
 
 -- clipsToCountString(clips) -> string
