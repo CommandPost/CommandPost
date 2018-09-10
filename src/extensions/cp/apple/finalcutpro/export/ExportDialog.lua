@@ -171,7 +171,6 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
             local missingMediaAndInvalidCaptions = string.gsub(fcp:string("FFMissingMediaAndBrokenCaptionsMessageText"), "%%@", ".*")
             local invalidCaptions = string.gsub(fcp:string("FFBrokenCaptionsMessageText"), "%%@", ".*")
-            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
 
             while not self:isShowing() and counter < 100 do
                 if alert:isShowing() then
