@@ -116,15 +116,16 @@ end
 
 local destinationFormat = "(.+)…"
 
---- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
+--- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, ignoreInvalidCaptions, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
 --- Method
 --- Shows the Export Dialog with the Destination that matches the `destinationSelect`.
 ---
 --- Parameters:
----  * destinationSelect    - The name, number or match function of the destination to export with.
----  * ignoreProxyWarning   - if `true`, the warning regarding exporting Proxies will be ignored.
----  * ignoreMissingMedia   - if `true`, the warning regarding exporting with missing media will be ignored.
----  * quiet                - if `true`, no dialogs will be shown if there is an error.
+---  * destinationSelect        - The name, number or match function of the destination to export with.
+---  * ignoreProxyWarning       - if `true`, the warning regarding exporting Proxies will be ignored.
+---  * ignoreMissingMedia       - if `true`, the warning regarding exporting with missing media will be ignored.
+---  * ignoreInvalidCaptions    - if `true`, the warning regarding exporting with Bad Captions will be ignored.
+---  * quiet                    - if `true`, no dialogs will be shown if there is an error.
 ---
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.ExportDialog` object for method chaining.
@@ -132,7 +133,7 @@ local destinationFormat = "(.+)…"
 ---
 --- Notes:
 --- * If providing a function, it will be passed one item - the name of the destination, and should return `true` to indicate a match. The name will not contain " (default)" if present.
-function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet)
+function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, ignoreInvalidCaptions, quiet)
     if not self:isShowing() then
         if destinationSelect == nil then
             destinationSelect = isDefaultItem
@@ -168,9 +169,16 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             local counter = 0
             local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
             local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
+            local missingMediaAndInvalidCaptions = string.gsub(fcp:string("FFMissingMediaAndBrokenCaptionsMessageText"), "%%@", ".*")
+            local invalidCaptions = string.gsub(fcp:string("FFBrokenCaptionsMessageText"), "%%@", ".*")
+            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+
             while not self:isShowing() and counter < 100 do
                 if alert:isShowing() then
                     if alert:containsText(proxyPlaybackEnabled, true) then
+                        --------------------------------------------------------------------------------
+                        -- Proxy Warning:
+                        --------------------------------------------------------------------------------
                         if ignoreProxyWarning then
                             alert:pressDefault()
                         else
@@ -180,6 +188,9 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             return self, msg
                         end
                     elseif alert:containsText(missingMedia) then
+                        --------------------------------------------------------------------------------
+                        -- Missing Media Warning:
+                        --------------------------------------------------------------------------------
                         if ignoreMissingMedia then
                             alert:pressDefault()
                         else
@@ -188,7 +199,34 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
+                    elseif alert:containsText(missingMediaAndInvalidCaptions) then
+                        --------------------------------------------------------------------------------
+                        -- Missing Media & Invalid Captions Warning:
+                        --------------------------------------------------------------------------------
+                        if ignoreMissingMedia and ignoreInvalidCaptions then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportMissingFilesAndBadCaptionsDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
+                    elseif alert:containsText(invalidCaptions) then
+                        --------------------------------------------------------------------------------
+                        -- Invalid Captions Warning:
+                        --------------------------------------------------------------------------------
+                        if ignoreInvalidCaptions then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportInvalidCaptionsDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
                     else
+                        --------------------------------------------------------------------------------
+                        -- Unknown Error Message:
+                        --------------------------------------------------------------------------------
                         local msg = i18n("batchExportUnexpectedAlert")
                         return self, msg
                     end
