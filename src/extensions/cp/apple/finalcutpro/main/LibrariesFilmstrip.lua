@@ -7,15 +7,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local require = require
 local axutils							= require("cp.ui.axutils")
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local id								  = require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
-local Playhead					  = require("cp.apple.finalcutpro.main.Playhead")
+local id								= require("cp.apple.finalcutpro.ids") "LibrariesFilmstrip"
+local Playhead					        = require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
 
 --------------------------------------------------------------------------------

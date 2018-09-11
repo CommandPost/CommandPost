@@ -2,10 +2,6 @@ return {
     LogicPlugins = {
         PitchShifter						= "Pitch Shifter II",
     },
-    CommandEditor = {
-        KeyDetailPanel						= "_NS:273",
-        SaveButton							= "_NS:50",
-    },
     ExportDialog = {
         BackgroundImage						= "_NS:17",
     },
@@ -52,16 +48,8 @@ return {
         ExpHighlightsPuck					= "_NS:388",
         ExpHighlightsPct					= "_NS:35",
     },
-    EffectsBrowser = {
-        Sidebar								= "_NS:66",
-        Contents							= "_NS:9",
-    },
     GeneratorsBrowser = {
         Sidebar								= "_NS:9",
-    },
-    Inspector = {
-        DetailsPanel						= "_NS:112",
-        NothingToInspect					= "_NS:53",
     },
     LibrariesBrowser = {
         Search								= "_NS:34",
