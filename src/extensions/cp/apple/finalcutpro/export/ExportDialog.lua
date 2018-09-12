@@ -50,7 +50,7 @@ function ExportDialog.matches(element)
     if element then
         return element:attributeValue("AXSubrole") == "AXDialog"
            and element:attributeValue("AXModal")
-           and axutils.childWithID(element, id "BackgroundImage") ~= nil
+           and axutils.childWithDescription(element, "PE Share WindowBackground") ~= nil
     end
     return false
 end
@@ -169,8 +169,11 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
             local counter = 0
             local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
             local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
-            local missingMediaAndInvalidCaptions = string.gsub(fcp:string("FFMissingMediaAndBrokenCaptionsMessageText"), "%%@", ".*")
-            local invalidCaptions = string.gsub(fcp:string("FFBrokenCaptionsMessageText"), "%%@", ".*")
+
+            local missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
+            local missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
+            local invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
+            local invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
 
             while not self:isShowing() and counter < 100 do
                 if alert:isShowing() then
@@ -198,7 +201,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
-                    elseif alert:containsText(missingMediaAndInvalidCaptions) then
+                    elseif missingMediaAndInvalidCaptionsString and alert:containsText(missingMediaAndInvalidCaptions) then
                         --------------------------------------------------------------------------------
                         -- Missing Media & Invalid Captions Warning:
                         --------------------------------------------------------------------------------
@@ -210,7 +213,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
-                    elseif alert:containsText(invalidCaptions) then
+                    elseif invalidCaptionsString and alert:containsText(invalidCaptions) then
                         --------------------------------------------------------------------------------
                         -- Invalid Captions Warning:
                         --------------------------------------------------------------------------------

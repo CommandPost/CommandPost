@@ -2,9 +2,6 @@ return {
     LogicPlugins = {
         PitchShifter						= "Pitch Shifter II",
     },
-    ExportDialog = {
-        BackgroundImage						= "_NS:17",
-    },
     MediaImporter = {
         MainPanel							= "_NS:39",
     },
