@@ -1362,5 +1362,35 @@ function tools.tableMatch(t1,t2,ignoreMetatable)
     return true
 end
 
+--- cp.tools.convertSingleHexStringToDecimalString(hex) -> string
+--- Function
+--- Converts a single hex string (i.e. "3") to a binary string (i.e. "0011")
+---
+--- Parameters:
+---  * hex - A single string character
+---
+--- Returns:
+---  * A four character string
+function tools.convertSingleHexStringToDecimalString(hex)
+    local lookup = {
+        ["0"]   = "0000",
+        ["1"]   = "0001",
+        ["2"]   = "0010",
+        ["3"]   = "0011",
+        ["4"]   = "0100",
+        ["5"]   = "0101",
+        ["6"]   = "0110",
+        ["7"]   = "0111",
+        ["8"]   = "1000",
+        ["9"]   = "1001",
+        ["A"]   = "1010",
+        ["B"]   = "1011",
+        ["C"]   = "1100",
+        ["D"]   = "1101",
+        ["E"]   = "1110",
+        ["F"]   = "1111",
+    }
+    return lookup[hex]
+end
 
 return tools

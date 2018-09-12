@@ -7,11 +7,11 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local require = require
 local axutils							= require("cp.ui.axutils")
 local prop								= require("cp.prop")
 
@@ -22,6 +22,9 @@ local TimelineAppearance				= require("cp.apple.finalcutpro.main.TimelineAppeara
 
 local id								= require("cp.apple.finalcutpro.ids") "TimelineToolbar"
 
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local childMatching, childWithID        = axutils.childMatching, axutils.childWithID
 local childFromLeft                     = axutils.childFromLeft
 local cache                             = axutils.cache

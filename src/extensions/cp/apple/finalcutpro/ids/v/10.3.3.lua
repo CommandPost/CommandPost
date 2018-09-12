@@ -20,9 +20,6 @@ return {
         ExpMidtonesPuck						= "_NS:387",
         ExpHighlightsPuck					= "_NS:382",
     },
-    EffectsBrowser = {
-        Contents							= "_NS:52",
-    },
     TimelineToolbar = {
         SkimmingGroup						= "_NS:179",
         EffectsGroup						= "_NS:166",
