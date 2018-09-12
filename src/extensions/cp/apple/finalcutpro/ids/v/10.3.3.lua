@@ -36,7 +36,4 @@ return {
     LibrariesFilmstrip = {
         Content								= "_NS:18",
     },
-    TimelineAppearance = {
-        ZoomAmount							= "_NS:35",
-    },
 }

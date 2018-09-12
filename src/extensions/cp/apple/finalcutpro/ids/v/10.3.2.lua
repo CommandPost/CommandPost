@@ -65,10 +65,6 @@ return {
     MediaBrowser = {
         Sidebar								= "_NS:9",
     },
-    TimelineAppearance = {
-        Toggle								= "_NS:154",
-        ZoomAmount							= "_NS:56",
-    },
     TimelineToolbar = {
         ID									= "_NS:237",
         SkimmingGroup						= "_NS:178",

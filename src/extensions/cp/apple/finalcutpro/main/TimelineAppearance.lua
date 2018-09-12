@@ -8,6 +8,7 @@
 --
 --------------------------------------------------------------------------------
 local require = require
+
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
@@ -17,8 +18,6 @@ local axutils							= require("cp.ui.axutils")
 
 local CheckBox					        = require("cp.ui.CheckBox")
 local Slider							= require("cp.ui.Slider")
-
-local id								= require("cp.apple.finalcutpro.ids") "TimelineAppearance"
 
 --------------------------------------------------------------------------------
 --
@@ -97,7 +96,9 @@ end
 ---  * A `axuielementObject` object.
 function TimelineAppearance:toggleUI()
     return axutils.cache(self, "_toggleUI", function()
-        return axutils.childWithID(self:parent():UI(), id "Toggle")
+        return axutils.childFromRight(self:parent():UI(), 1, function(element)
+            return element:attributeValue("AXRole") == "AXCheckBox"
+        end)
     end)
 end
 
@@ -214,7 +215,9 @@ end
 function TimelineAppearance:zoomAmount()
     if not self._zoomAmount then
         self._zoomAmount = Slider(self, function()
-            return axutils.childWithID(self:UI(), id "ZoomAmount")
+            return axutils.childFromTop(self:UI(), 1, function(element)
+                return element:attributeValue("AXRole") == "AXSlider"
+            end)
         end)
     end
     return self._zoomAmount
