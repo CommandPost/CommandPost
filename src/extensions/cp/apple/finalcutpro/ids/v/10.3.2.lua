@@ -2,9 +2,6 @@ return {
     LogicPlugins = {
         PitchShifter						= "Pitch Shifter II",
     },
-    MediaImporter = {
-        MainPanel							= "_NS:39",
-    },
     ColorBoard = {
         ColorBoard							= "Color Board",
 
