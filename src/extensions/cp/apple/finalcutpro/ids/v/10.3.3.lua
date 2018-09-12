@@ -23,9 +23,6 @@ return {
     MediaBrowser = {
         Sidebar								= "_NS:57",
     },
-    GeneratorsBrowser = {
-        Sidebar								= "_NS:57",
-    },
     LibrariesBrowser = {
         Sidebar								= "_NS:57",
     },

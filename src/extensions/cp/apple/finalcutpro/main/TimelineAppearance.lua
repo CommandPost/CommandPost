@@ -20,6 +20,14 @@ local CheckBox					        = require("cp.ui.CheckBox")
 local Slider							= require("cp.ui.Slider")
 
 --------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                             = axutils.cache
+local childFromRight                    = axutils.childFromRight
+local childFromTop                      = axutils.childFromTop
+local childMatching                     = axutils.childMatching
+
+--------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
@@ -95,8 +103,8 @@ end
 --- Returns:
 ---  * A `axuielementObject` object.
 function TimelineAppearance:toggleUI()
-    return axutils.cache(self, "_toggleUI", function()
-        return axutils.childFromRight(self:parent():UI(), 1, function(element)
+    return cache(self, "_toggleUI", function()
+        return childFromRight(self:parent():UI(), 1, function(element)
             return element:attributeValue("AXRole") == "AXCheckBox"
         end)
     end)
@@ -130,8 +138,8 @@ end
 --- Returns:
 ---  * A `axuielementObject` object.
 function TimelineAppearance:UI()
-    return axutils.cache(self, "_ui", function()
-        return axutils.childMatching(self:toggleUI(), TimelineAppearance.matches)
+    return cache(self, "_ui", function()
+        return childMatching(self:toggleUI(), TimelineAppearance.matches)
     end,
     TimelineAppearance.matches)
 end
@@ -195,7 +203,7 @@ end
 function TimelineAppearance:clipHeight()
     if not self._clipHeight then
         self._clipHeight = Slider(self, function()
-            return axutils.childMatching(self:UI(), function(e)
+            return childMatching(self:UI(), function(e)
                 return e:attributeValue("AXRole") == "AXSlider" and e:attributeValue("AXMaxValue") == 210
             end)
         end)
@@ -215,7 +223,7 @@ end
 function TimelineAppearance:zoomAmount()
     if not self._zoomAmount then
         self._zoomAmount = Slider(self, function()
-            return axutils.childFromTop(self:UI(), 1, function(element)
+            return childFromTop(self:UI(), 1, function(element)
                 return element:attributeValue("AXRole") == "AXSlider"
             end)
         end)

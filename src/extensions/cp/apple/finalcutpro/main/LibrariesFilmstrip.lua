@@ -281,11 +281,14 @@ end
 --- Returns:
 ---  * A table of `Clip` objects or `nil` if no clip UI could be found.
 function LibrariesFilmstrip:clips(filterFn)
-    local clips = _uiToClips(self:clipsUI())
-    if filterFn then
-        clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+    local clipsUI = self:clipsUI()
+    if clipsUI then
+        local clips = _uiToClips(clipsUI)
+        if filterFn then
+            clips = _.filter(clips, function(_,clip) return filterFn(clip) end)
+        end
+        return clips
     end
-    return clips
 end
 
 --- cp.apple.finalcutpro.main.LibrariesFilmstrip:selectedClipsUI() -> table | nil

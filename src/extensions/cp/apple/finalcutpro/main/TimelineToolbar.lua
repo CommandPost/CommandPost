@@ -23,10 +23,10 @@ local TimelineAppearance				= require("cp.apple.finalcutpro.main.TimelineAppeara
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
-local childWithRole                     = axutils.childWithRole
-local childMatching, childWithID        = axutils.childMatching, axutils.childWithID
-local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
 local cache                             = axutils.cache
+local childFromLeft, childFromRight     = axutils.childFromLeft, axutils.childFromRight
+local childMatching, childWithID        = axutils.childMatching, axutils.childWithID
+local childWithRole                     = axutils.childWithRole
 
 --------------------------------------------------------------------------------
 --

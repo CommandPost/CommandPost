@@ -48,9 +48,6 @@ return {
         ExpHighlightsPuck					= "_NS:388",
         ExpHighlightsPct					= "_NS:35",
     },
-    GeneratorsBrowser = {
-        Sidebar								= "_NS:9",
-    },
     LibrariesBrowser = {
         Search								= "_NS:34",
         Sidebar								= "_NS:9",

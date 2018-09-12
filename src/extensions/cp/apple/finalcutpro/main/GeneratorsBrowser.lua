@@ -34,7 +34,11 @@ local ScrollArea						= require("cp.ui.ScrollArea")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
-local id								= require("cp.apple.finalcutpro.ids") "GeneratorsBrowser"
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                             = axutils.cache
+local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
 
 --------------------------------------------------------------------------------
 --
@@ -105,7 +109,7 @@ end
 ---  * `axuielementObject`
 function GeneratorsBrowser:UI()
     if self:isShowing() then
-        return axutils.cache(self, "_ui", function()
+        return cache(self, "_ui", function()
             return self:parent():UI()
         end)
     end
@@ -170,10 +174,10 @@ end
 --- Returns:
 ---  * `axuielementObject` object.
 function GeneratorsBrowser:mainGroupUI()
-    return axutils.cache(self, "_mainGroup",
+    return cache(self, "_mainGroup",
     function()
         local ui = self:UI()
-        return ui and axutils.childWithRole(ui, "AXSplitGroup")
+        return ui and childWithRole(ui, "AXSplitGroup")
     end)
 end
 
@@ -189,7 +193,7 @@ end
 function GeneratorsBrowser:sidebar()
     if not self._sidebar then
         self._sidebar = Table(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
+            return childWithRole(self:mainGroupUI(), "AXScrollArea")
         end):uncached()
     end
     return self._sidebar
@@ -207,7 +211,7 @@ end
 function GeneratorsBrowser:contents()
     if not self._contents then
         self._contents = ScrollArea(self, function()
-            local group = axutils.childMatching(self:mainGroupUI(), function(child)
+            local group = childMatching(self:mainGroupUI(), function(child)
                 return child:role() == "AXGroup" and #child == 1
             end)
             return group and group[1]
@@ -228,7 +232,7 @@ end
 function GeneratorsBrowser:group()
     if not self._group then
         self._group = PopUpButton(self, function()
-            return axutils.childWithRole(self:UI(), "AXPopUpButton")
+            return childWithRole(self:UI(), "AXPopUpButton")
         end)
     end
     return self._group
@@ -246,7 +250,7 @@ end
 function GeneratorsBrowser:search()
     if not self._search then
         self._search = TextField(self, function()
-            return axutils.childWithRole(self:mainGroupUI(), "AXTextField")
+            return childWithRole(self:mainGroupUI(), "AXTextField")
         end)
     end
     return self._search

@@ -31,6 +31,9 @@ local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 -- Local Lua Functions:
 --------------------------------------------------------------------------------
 local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
+local cache                             = axutils.cache
+local childWithRole, childMatching      = axutils.childWithRole, axutils.childMatching
+local childrenWithRole                  = axutils.childrenWithRole
 
 --------------------------------------------------------------------------------
 --
@@ -53,7 +56,7 @@ local Timeline = {}
 ---  * `element` should be an `AXGroup`, which contains an `AXSplitGroup` with an
 ---    `AXIdentifier` of `_NS:237` (as of Final Cut Pro 10.4)
 function Timeline.matches(element)
-    local splitGroup = axutils.childWithRole(element, "AXSplitGroup")
+    local splitGroup = childWithRole(element, "AXSplitGroup")
     return element:attributeValue("AXRole") == "AXGroup"
        and splitGroup
        and Timeline.matchesMain(splitGroup)
@@ -76,8 +79,8 @@ end
 ---    toolbar instead.
 function Timeline.matchesMain(element)
     local parent = element and element:attributeValue("AXParent")
-    local group = parent and axutils.childWithRole(parent, "AXGroup")
-    local buttons = group and axutils.childrenWithRole(group, "AXButton")
+    local group = parent and childWithRole(parent, "AXGroup")
+    local buttons = group and childrenWithRole(group, "AXButton")
     return buttons and #buttons >= 6
 end
 
@@ -96,7 +99,7 @@ function Timeline._findTimeline(...)
         if window then
             local ui = window:timelineGroupUI()
             if ui then
-                local timeline = axutils.childMatching(ui, Timeline.matches)
+                local timeline = childMatching(ui, Timeline.matches)
                 if timeline then return timeline end
             end
         end
@@ -120,7 +123,7 @@ function Timeline.new(app)
     },	Timeline)
 
     local UI = app.UI:mutate(function(_, self)
-        return axutils.cache(self, "_ui", function()
+        return cache(self, "_ui", function()
             return Timeline._findTimeline(app:secondaryWindow(), app:primaryWindow())
         end,
         Timeline.matches)
@@ -161,9 +164,9 @@ function Timeline.new(app)
         --- Field
         --- Returns the `axuielement` representing the 'timeline', or `nil` if not available.
         mainUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_main", function()
+            return cache(self, "_main", function()
                 local ui = original()
-                return ui and axutils.childMatching(ui, Timeline.matchesMain)
+                return ui and childMatching(ui, Timeline.matchesMain)
             end,
             Timeline.matchesMain)
         end),
