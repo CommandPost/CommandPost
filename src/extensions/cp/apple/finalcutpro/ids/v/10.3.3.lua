@@ -20,7 +20,4 @@ return {
         ExpMidtonesPuck						= "_NS:387",
         ExpHighlightsPuck					= "_NS:382",
     },
-    LibrariesFilmstrip = {
-        Content								= "_NS:18",
-    },
 }

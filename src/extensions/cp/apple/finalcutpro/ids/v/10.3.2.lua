@@ -48,9 +48,6 @@ return {
         ExpHighlightsPuck					= "_NS:388",
         ExpHighlightsPct					= "_NS:35",
     },
-    LibrariesFilmstrip = {
-        Content								=  "_NS:33",
-    },
     LibrariesList = {
         Player								= 1,
         RowIcon								= "_NS:11",

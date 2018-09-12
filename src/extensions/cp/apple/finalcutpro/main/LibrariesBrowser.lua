@@ -29,8 +29,6 @@ local Button							= require("cp.ui.Button")
 local Table								= require("cp.ui.Table")
 local TextField							= require("cp.ui.TextField")
 
-local id								= require("cp.apple.finalcutpro.ids") "LibrariesBrowser"
-
 local Observable                        = require("cp.rx").Observable
 local Do                                = require("cp.rx.go.Do")
 local Given                             = require("cp.rx.go.Given")
