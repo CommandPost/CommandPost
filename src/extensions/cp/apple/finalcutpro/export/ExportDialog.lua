@@ -23,12 +23,11 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
-local id                            = require("cp.apple.finalcutpro.ids") "ExportDialog"
 local dialog                        = require("cp.dialog")
+local i18n                          = require("cp.i18n")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
-local i18n                          = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
