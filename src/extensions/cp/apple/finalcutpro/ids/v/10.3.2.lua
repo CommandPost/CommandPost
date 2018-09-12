@@ -50,7 +50,6 @@ return {
     },
     LibrariesList = {
         Player								= 1,
-        RowIcon								= "_NS:11",
     },
     Viewer = {
         Title								= 3,
