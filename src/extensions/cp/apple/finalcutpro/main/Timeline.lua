@@ -18,9 +18,8 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils							= require("cp.ui.axutils")
+local go                                = require("cp.rx.go")
 local prop								= require("cp.prop")
-
-local id								= require("cp.apple.finalcutpro.ids") "Timeline"
 
 local EffectsBrowser					= require("cp.apple.finalcutpro.main.EffectsBrowser")
 local PrimaryWindow						= require("cp.apple.finalcutpro.main.PrimaryWindow")
@@ -28,7 +27,9 @@ local SecondaryWindow					= require("cp.apple.finalcutpro.main.SecondaryWindow")
 local TimelineContent					= require("cp.apple.finalcutpro.main.TimelineContents")
 local TimelineToolbar					= require("cp.apple.finalcutpro.main.TimelineToolbar")
 
-local go                                = require("cp.rx.go")
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
 local Do, If, WaitUntil                 = go.Do, go.If, go.WaitUntil
 
 --------------------------------------------------------------------------------
@@ -47,9 +48,15 @@ local Timeline = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`.
+---
+--- Notes:
+---  * `element` should be an `AXGroup`, which contains an `AXSplitGroup` with an
+---    `AXIdentifier` of `_NS:237` (as of Final Cut Pro 10.4)
 function Timeline.matches(element)
+    local splitGroup = axutils.childWithRole(element, "AXSplitGroup")
     return element:attributeValue("AXRole") == "AXGroup"
-       and axutils.childWith(element, "AXIdentifier", id "Contents") ~= nil
+       and splitGroup
+       and Timeline.matchesMain(splitGroup)
 end
 
 --- cp.apple.finalcutpro.main.Timeline.matchesMain(element) -> boolean
@@ -61,8 +68,17 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
+---
+--- Notes:
+---  * `element` should be an `AXSplitGroup` with an `AXIdentifier` of `_NS:237`
+---    (as of Final Cut Pro 10.4)
+---  * Because the timeline contents is hard to detect, we look for the timeline
+---    toolbar instead.
 function Timeline.matchesMain(element)
-    return element:attributeValue("AXIdentifier") == id "Contents"
+    local parent = element and element:attributeValue("AXParent")
+    local group = parent and axutils.childWithRole(parent, "AXGroup")
+    local buttons = group and axutils.childrenWithRole(group, "AXButton")
+    return buttons and #buttons >= 6
 end
 
 -- _findTimeline(...) -> window | nil
