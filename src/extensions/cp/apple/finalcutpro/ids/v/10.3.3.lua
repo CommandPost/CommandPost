@@ -20,10 +20,6 @@ return {
         ExpMidtonesPuck						= "_NS:387",
         ExpHighlightsPuck					= "_NS:382",
     },
-    TimelineToolbar = {
-        SkimmingGroup						= "_NS:179",
-        EffectsGroup						= "_NS:166",
-    },
     MediaBrowser = {
         Sidebar								= "_NS:57",
     },

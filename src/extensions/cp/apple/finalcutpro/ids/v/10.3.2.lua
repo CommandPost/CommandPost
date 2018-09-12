@@ -65,11 +65,6 @@ return {
     MediaBrowser = {
         Sidebar								= "_NS:9",
     },
-    TimelineToolbar = {
-        ID									= "_NS:237",
-        SkimmingGroup						= "_NS:178",
-        EffectsGroup						= "_NS:165",
-    },
     Viewer = {
         Title								= 3,
         Format								= 1,
