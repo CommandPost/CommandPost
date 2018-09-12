@@ -20,9 +20,6 @@ return {
         ExpMidtonesPuck						= "_NS:387",
         ExpHighlightsPuck					= "_NS:382",
     },
-    MediaBrowser = {
-        Sidebar								= "_NS:57",
-    },
     LibrariesBrowser = {
         Sidebar								= "_NS:57",
     },

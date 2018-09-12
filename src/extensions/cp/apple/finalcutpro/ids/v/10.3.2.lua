@@ -59,9 +59,6 @@ return {
         Player								= 1,
         RowIcon								= "_NS:11",
     },
-    MediaBrowser = {
-        Sidebar								= "_NS:9",
-    },
     Viewer = {
         Title								= 3,
         Format								= 1,
