@@ -34,6 +34,81 @@ local sort                      = table.sort
 --------------------------------------------------------------------------------
 local axutils = {}
 
+--- cp.ui.axutils.childrenInColumn(element, role, startIndex) -> table | nil
+--- Function
+--- Finds the children for an element, then checks to see if they match the supplied
+--- role. It then compares the vertical position data of all matching children
+--- and returns a table with only the elements that line up to the element defined
+--- by the startIndex.
+---
+--- Parameters:
+---  * element     - The element to retrieve the children from.
+---  * role        - The required role as a string.
+---  * startIndex  - A number which defines the index of the first element to use.
+---
+--- Returns:
+--- * The table of `axuielement` objects, otherwise `nil`.
+function axutils.childrenInColumn(element, role, startIndex, index)
+    local children = axutils.childrenWith(element, "AXRole", role)
+    if children and #children >= 2 then
+        local baseElement = children[startIndex]
+        if baseElement then
+            local frame = baseElement:attributeValue("AXFrame")
+            if frame then
+                local result = {}
+                for i=startIndex, #children do
+                    local child = children[i]
+                    local f = child and child:attributeValue("AXFrame")
+                    if child and f.x >= frame.x and f.x <= frame.x + frame.w then
+                        table.insert(result, child)
+                    end
+                end
+                if next(result) ~= nil then
+                    return result
+                end
+            end
+        end
+    end
+end
+
+--- cp.ui.axutils.childInColumn(element, role, startIndex, childIndex) -> table | nil
+--- Function
+--- Finds the children for an element, then checks to see if they match the supplied
+--- role. It then compares the vertical position data of all matching children
+--- and returns an element defined by the `childIndex`, which lines up vertially
+--- with the element defined by the `startIndex`.
+---
+--- Parameters:
+---  * element     - The element to retrieve the children from.
+---  * role        - The required role as a string.
+---  * startIndex  - A number which defines the index of the first element to use.
+---  * childIndex  - A number which defines the index of the element to return.
+---
+--- Returns:
+--- * The `axuielement` if it matches, otherwise `nil`.
+function axutils.childInColumn(element, role, startIndex, childIndex)
+    local children = axutils.childrenWith(element, "AXRole", role)
+    if children and #children >= 2 then
+        local baseElement = children[startIndex]
+        if baseElement then
+            local frame = baseElement:attributeValue("AXFrame")
+            if frame then
+                local result = {}
+                for i=startIndex, #children do
+                    local child = children[i]
+                    local f = child and child:attributeValue("AXFrame")
+                    if child and f.x >= frame.x and f.x <= frame.x + frame.w then
+                        table.insert(result, child)
+                    end
+                end
+                if result[childIndex] then
+                    return result[childIndex]
+                end
+            end
+        end
+    end
+end
+
 --- cp.ui.axutils.children(element) -> table | nil
 --- Function
 --- Finds the children for the element. If it is an `hs._asm.axuielement`, it will
