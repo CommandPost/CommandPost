@@ -47,8 +47,8 @@ local axutils = {}
 ---  * startIndex  - A number which defines the index of the first element to use.
 ---
 --- Returns:
---- * The table of `axuielement` objects, otherwise `nil`.
-function axutils.childrenInColumn(element, role, startIndex, index)
+---  * The table of `axuielement` objects, otherwise `nil`.
+function axutils.childrenInColumn(element, role, startIndex, childIndex)
     local children = axutils.childrenWith(element, "AXRole", role)
     if children and #children >= 2 then
         local baseElement = children[startIndex]
@@ -64,7 +64,13 @@ function axutils.childrenInColumn(element, role, startIndex, index)
                     end
                 end
                 if next(result) ~= nil then
-                    return result
+                    if childIndex then
+                        if result[childIndex] then
+                            return result[childIndex]
+                        end
+                    else
+                        return result
+                    end
                 end
             end
         end
@@ -85,28 +91,9 @@ end
 ---  * childIndex  - A number which defines the index of the element to return.
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.childInColumn(element, role, startIndex, childIndex)
-    local children = axutils.childrenWith(element, "AXRole", role)
-    if children and #children >= 2 then
-        local baseElement = children[startIndex]
-        if baseElement then
-            local frame = baseElement:attributeValue("AXFrame")
-            if frame then
-                local result = {}
-                for i=startIndex, #children do
-                    local child = children[i]
-                    local f = child and child:attributeValue("AXFrame")
-                    if child and f.x >= frame.x and f.x <= frame.x + frame.w then
-                        table.insert(result, child)
-                    end
-                end
-                if result[childIndex] then
-                    return result[childIndex]
-                end
-            end
-        end
-    end
+    return axutils.childrenInColumn(element, role, startIndex, childIndex)
 end
 
 --- cp.ui.axutils.children(element) -> table | nil
@@ -160,12 +147,12 @@ end
 --- If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
---- * element       - The element to check
---- * name          - The name of the attribute to check
---- * value         - The value of the attribute
+---  * element       - The element to check
+---  * name          - The name of the attribute to check
+---  * value         - The value of the attribute
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.withAttributeValue(element, name, value)
     return axutils.hasAttributeValue(element, name, value) and element or nil
 end
@@ -176,11 +163,11 @@ end
 --- If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
---- * element       - The element to check
---- * role          - The required role
+---  * element       - The element to check
+---  * role          - The required role
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.withRole(element, role)
     return axutils.withAttributeValue(element, "AXRole", role)
 end
@@ -191,11 +178,11 @@ end
 --- If so, the element is returned, otherwise `nil`.
 ---
 --- Parameters:
---- * element       - The element to check
---- * value         - The required value
+---  * element       - The element to check
+---  * value         - The required value
 ---
 --- Returns:
---- * The `axuielement` if it matches, otherwise `nil`.
+---  * The `axuielement` if it matches, otherwise `nil`.
 function axutils.withValue(element, value)
     return axutils.withAttributeValue(element, "AXValue", value)
 end
@@ -607,15 +594,15 @@ end
 --- get/set the value (if settable is `true`).
 ---
 --- Parameters:
---- * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs._asm.axuielement`.
---- * attributeName - the `AX` atrribute name the property links to.
---- * settable      - Defaults to `false`. If `true`, the property will also be settable.
+---  * uiFinder      - the `cp.prop` or `function` which will retrieve the current `hs._asm.axuielement`.
+---  * attributeName - the `AX` atrribute name the property links to.
+---  * settable      - Defaults to `false`. If `true`, the property will also be settable.
 ---
 --- Returns:
---- * The `cp.prop` for the attribute.
+---  * The `cp.prop` for the attribute.
 ---
 --- Notes:
---- * If the `uiFinder` is a `cp.prop`, it will be monitored for changes, making the resulting `prop` "live".
+---  * If the `uiFinder` is a `cp.prop`, it will be monitored for changes, making the resulting `prop` "live".
 function axutils.prop(uiFinder, attributeName, settable)
     if prop.is(uiFinder) then
         return uiFinder:mutate(function(original)
@@ -637,10 +624,10 @@ axutils.match = {}
 --- Returns a `match` function that will return true if the `axuielement` has the specified `AXRole`.
 ---
 --- Parameters:
---- * roleName  - The role to check for.
+---  * roleName  - The role to check for.
 ---
 --- Returns:
---- * `function(element) -> boolean` that checks the `AXRole` is `roleName`
+---  * `function(element) -> boolean` that checks the `AXRole` is `roleName`
 function axutils.match.role(roleName)
     return function(element)
         return axutils.hasAttributeValue(element, "AXRole", roleName)
