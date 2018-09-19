@@ -570,7 +570,7 @@ onRun(
             -- log.df("Testing FCPX in the '%s' language...", locale)
             self.name = originalName .. " > " .. locale.code
             if fcp.app:currentLocale(locale) then
-                just.doUntil(fcp.isRunning)
+                just.doUntil(fcp.isRunning, 10)
 
                 -- run the actual tests
                 runTests(self, ...)
@@ -622,8 +622,8 @@ onRun(
             error(format("Unable to find the Test Library in the copied destination: %s", targetLibraryPath))
         end
 
-        -- give the OS a second to catch up.
-        just.wait(1)
+        -- give the OS a chance to catch up.
+        just.wait(10)
 
         fcp:launch()
         just.doUntil(function() return fcp:isRunning() end, 10)
@@ -652,7 +652,7 @@ onRun(
         -- do this after each test.
         if fcp:closeLibrary(targetLibrary) then
             -- wait until the library actually closes...
-            just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 5, 0.1)
+            just.doWhile(function() return fcp:selectLibrary(targetLibrary) end, 10, 0.1)
 
             timer.doAfter(1, function()
                 -- delete the temporary library copy.
