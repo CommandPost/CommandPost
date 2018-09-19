@@ -208,7 +208,7 @@ function CorrectionsBar:activate(correctionType, number)
         return menuButton.isShowing()
     end)
 
-    if menuButton.isShowing() then
+    if result or menuButton.isShowing() then
         local pattern = "%s*"..correctionText.." "..number
         if not menuButton:selectItemMatching(pattern) then
             --------------------------------------------------------------------------------

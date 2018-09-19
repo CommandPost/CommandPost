@@ -20,7 +20,6 @@ local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
-local ids           = require("cp.apple.finalcutpro.ids")
 local localeID      = require("cp.i18n.localeID")
 local just          = require("cp.just")
 local test          = require("cp.test")
@@ -467,12 +466,27 @@ return test.suite("cp.apple.finalcutpro"):with(
         function()
             local toolbar = fcp:timeline():toolbar()
 
+            local skimmingGroup, effectsGroup
+            local version = fcp.version()
+
+            ok(version and type(version) == "table")
+
+            if version >= v("10.3.2") then
+                skimmingGroup = "_NS:178"
+                effectsGroup = "_NS:165"
+            end
+
+            if version >= v("10.3.3") then
+                skimmingGroup = "_NS:179"
+                effectsGroup = "_NS:166"
+            end
+
             ok(toolbar:isShowing())
             ok(toolbar:skimmingGroupUI() ~= nil)
-            ok(toolbar:skimmingGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "SkimmingGroup")
+            ok(skimmingGroup and toolbar:skimmingGroupUI():attributeValue("AXIdentifier") == skimmingGroup)
 
             ok(toolbar:effectsGroupUI() ~= nil)
-            ok(toolbar:effectsGroupUI():attributeValue("AXIdentifier") == ids "TimelineToolbar" "EffectsGroup")
+            ok(effectsGroup and toolbar:effectsGroupUI():attributeValue("AXIdentifier") == effectsGroup)
         end
     ),
     test(
