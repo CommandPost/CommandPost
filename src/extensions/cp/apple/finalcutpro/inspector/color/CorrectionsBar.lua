@@ -199,13 +199,16 @@ function CorrectionsBar:activate(correctionType, number)
     local correctionText = self:findCorrectionLabel(correctionType)
     if not correctionText then
         log.ef("Invalid Correction Type: '%s' (%s)", correctionType, correctionText)
+        return false
     end
 
     local menuButton = self:menuButton()
 
-    local result = just.doUntil(menuButton.isShowing)
+    local result = just.doUntil(function()
+        return menuButton.isShowing()
+    end)
 
-    if result then
+    if menuButton.isShowing() then
         local pattern = "%s*"..correctionText.." "..number
         if not menuButton:selectItemMatching(pattern) then
             --------------------------------------------------------------------------------

@@ -239,7 +239,7 @@ end
 --- Field
 --- Checks if the Viewer is showing on the Secondary Window.
 function Viewer.lazy.prop:isOnSecondary()
-    return self:mutate(function(original)
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and SecondaryWindow.matches(ui:window())
     end)
@@ -249,7 +249,7 @@ end
 --- Field
 --- Checks if the Viewer is showing on the Primary Window.
 function Viewer.lazy.prop:isOnPrimary()
-    return self:mutate(function(original)
+    return self.UI:mutate(function(original)
         local ui = original()
         return ui and PrimaryWindow.matches(ui:window())
     end)

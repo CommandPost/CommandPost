@@ -115,12 +115,12 @@ function axutils.children(element)
     -- NOTE: There seems to be some weirdness with some elements coming from
     --       `axuielement` without the correct metatable.
     --------------------------------------------------------------------------------
-    if element.attributeValue then
+    if element and element.attributeValue then
         --------------------------------------------------------------------------------
         -- It's an AXUIElement:
         --------------------------------------------------------------------------------
         children = element:attributeValue("AXChildren") or element
-    elseif is.callable(element.children) then
+    elseif element and is.callable(element.children) then
         children = element:children()
     end
     return children
