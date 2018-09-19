@@ -34,48 +34,12 @@ local If, Do, Throw                     = go.If, go.Do, go.Throw
 --------------------------------------------------------------------------------
 local ColorBoard = Element:subclass("ColorBoard")
 
-local CORRECTION_TYPE                   = "Color Board"
+local CORRECTION_TYPE = "Color Board"
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect -> table
 --- Constant
 --- A table containing tables of all the aspect panel settings
 ColorBoard.static.aspect                       = {"color", "saturation", "exposure"}
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect.color -> table
---- Constant
---- A table containing the Color Board Color panel settings
-ColorBoard.static.aspect.color                 = {
-    id                                  = 1,
-    reset                               = id "ColorReset",
-    global                              = { puck = id "ColorGlobalPuck", pct = id "ColorGlobalPct", angle = id "ColorGlobalAngle"},
-    shadows                             = { puck = id "ColorShadowsPuck", pct = id "ColorShadowsPct", angle = id "ColorShadowsAngle"},
-    midtones                            = { puck = id "ColorMidtonesPuck", pct = id "ColorMidtonesPct", angle = id "ColorMidtonesAngle"},
-    highlights                          = { puck = id "ColorHighlightsPuck", pct = id "ColorHighlightsPct", angle = id "ColorHighlightsAngle"}
-}
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect.saturation -> table
---- Constant
---- A table containing the Color Board Saturation panel settings
-ColorBoard.static.aspect.saturation            = {
-    id                                  = 2,
-    reset                               = id "SatReset",
-    global                              = { puck = id "SatGlobalPuck", pct = id "SatGlobalPct"},
-    shadows                             = { puck = id "SatShadowsPuck", pct = id "SatShadowsPct"},
-    midtones                            = { puck = id "SatMidtonesPuck", pct = id "SatMidtonesPct"},
-    highlights                          = { puck = id "SatHighlightsPuck", pct = id "SatHighlightsPct"}
-}
-
---- cp.apple.finalcutpro.inspector.color.ColorBoard.aspect.exposure -> table
---- Constant
---- A table containing the Color Board Exposure panel settings
-ColorBoard.static.aspect.exposure              = {
-    id                                  = 3,
-    reset                               = id "ExpReset",
-    global                              = { puck = id "ExpGlobalPuck", pct = id "ExpGlobalPct"},
-    shadows                             = { puck = id "ExpShadowsPuck", pct = id "ExpShadowsPct"},
-    midtones                            = { puck = id "ExpMidtonesPuck", pct = id "ExpMidtonesPct"},
-    highlights                          = { puck = id "ExpHighlightsPuck", pct = id "ExpHighlightsPct"}
-}
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.currentAspect -> string
 --- Variable
