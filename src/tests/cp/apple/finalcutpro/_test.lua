@@ -623,10 +623,10 @@ onRun(
         end
 
         -- give the OS a chance to catch up.
-        just.wait(10)
+        just.wait(3)
 
         fcp:launch()
-        just.doUntil(function() return fcp:isRunning() end, 10)
+        just.doUntil(function() return fcp:isRunning() end, 10, 0.1)
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})
 
@@ -635,11 +635,11 @@ onRun(
         end
 
         -- keep trying until the library loads successfully, waiting up to 5 seconds.
-        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 5.0) then
+        if not just.doUntil(function() return fcp:libraries():selectLibrary(targetLibrary) ~= nil end, 10, 0.1) then
             error(format("Unable to open the '%s' Library.", targetLibrary))
         end
 
-        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10) then
+        if not just.doUntil(function() return fcp:libraries():openClipTitled("Test Project") end, 10, 0.1) then
             error(format("Unable to open the 'Test Project' clip."))
         end
     end
