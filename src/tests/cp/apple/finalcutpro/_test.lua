@@ -1,31 +1,45 @@
 -- test cases for the FCP API
--- By default, this will run test cases across all supported locales in FCPX.
+-- By default, this will run all test cases across all supported locales in Final Cut Pro:
+--
+-- ```lua
+-- _test("cp.apple.finalcutpro")()
+-- ```
+--
+-- You can also trigger a specific version of Final Cut Pro by supplying it's path:
+--
+-- ```lua
+-- _test("cp.apple.finalcutpro")({"de", "es"}, "/Applications/Final Cut Pro 10.3.4", "Launch FCP", "Command Editor")
+-- ```
+--
 -- If you want to just run a specific test against a specific locale, you can do this:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")("en", "Launch FCP")
+-- _test("cp.apple.finalcutpro")("en", nil, "Launch FCP")
 -- ```
 --
 -- You can run multiple specific locales like so:
 --
 -- ```lua
--- _test("cp.apple.finalcutpro")({"de", "es"}, "Launch FCP", "Command Editor")
+-- _test("cp.apple.finalcutpro")({"de", "es"}, nil, "Launch FCP", "Command Editor")
 -- ```
+
+local require = require
 
 local log           = require("hs.logger").new("testfcp")
 local inspect       = require("hs.inspect")
 
+local application   = require("hs.application")
 local fs            = require("hs.fs")
 local timer         = require("hs.timer")
 
 local config        = require("cp.config")
 local fcp           = require("cp.apple.finalcutpro")
-local localeID      = require("cp.i18n.localeID")
 local just          = require("cp.just")
+local localeID      = require("cp.i18n.localeID")
 local test          = require("cp.test")
 local tools         = require("cp.tools")
 
-local v = require("semver")
+local v             = require("semver")
 
 local format = string.format
 local rmdir, mkdir, attributes = tools.rmdir, fs.mkdir, fs.attributes
@@ -36,12 +50,18 @@ local TEST_DIRECTORY = fs.temporaryDirectory() .. "CommandPost"
 
 local libraryCount = 0
 
+local APP_PATH
+
 return test.suite("cp.apple.finalcutpro"):with(
     test(
         "Launch FCP",
         function()
             -- Launch FCP
-            fcp:launch()
+            if APP_PATH then
+                fcp:launch(nil, APP_PATH)
+            else
+                fcp:launch()
+            end
             ok(fcp:isRunning(), "FCP is running")
         end
     ),
@@ -543,8 +563,17 @@ return test.suite("cp.apple.finalcutpro"):with(
 ):
 onRun(
     -- custom run function, that loops through all locales (or locales provided)
-    function(self, runTests, locales, ...)
+    function(self, runTests, locales, path, ...)
         local wasRunning = fcp:isRunning()
+
+        if path then
+            if tools.doesDirectoryExist(path .. ".app") then
+                log.df("Using specific Final Cut Pro path: %s", path)
+                APP_PATH = path
+            else
+                error(string.format("Invalid application path: %s", path))
+            end
+        end
 
         -- Figure out which locales to test
         if type(locales) == "table" then
@@ -615,8 +644,16 @@ onRun(
             error(format("Unable to create the '%s' directory: %s", targetDirectory, err))
         end
 
+        local version = fcp:version()
+        if APP_PATH then
+            local info = application.infoForBundlePath(APP_PATH .. ".app")
+            if info and info.CFBundleShortVersionString then
+                version = info.CFBundleShortVersionString
+            end
+        end
+
         -- copy the test library to the temporary directory
-        local sourceLibraryPath = format("%s/cp/apple/finalcutpro/_libraries/%s/%s.fcpbundle", config.testsPath, fcp:version(), TEST_LIBRARY)
+        local sourceLibraryPath = format("%s/cp/apple/finalcutpro/_libraries/%s/%s.fcpbundle", config.testsPath, version, TEST_LIBRARY)
 
         -- check it exists
         if fs.pathToAbsolute(sourceLibraryPath) == nil then
@@ -636,10 +673,15 @@ onRun(
             error(format("Unable to find the Test Library in the copied destination: %s", targetLibraryPath))
         end
 
-        -- give the OS a chance to catch up.
-        just.wait(3)
+        -- give the OS a second to catch up.
+        just.wait(1)
 
-        fcp:launch()
+        if APP_PATH then
+            fcp:launch(nil, APP_PATH)
+        else
+            fcp:launch()
+        end
+
         just.doUntil(function() return fcp:isRunning() end, 10, 0.1)
 
         fcp:selectMenu({"Window", "Workspaces", "Default"})

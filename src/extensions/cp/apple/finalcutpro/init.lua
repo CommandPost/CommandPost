@@ -390,17 +390,21 @@ function fcp:notifier()
     return self.app:notifier()
 end
 
---- cp.apple.finalcutpro:launch([waitSeconds]) -> self
+--- cp.apple.finalcutpro:launch([waitSeconds], [path]) -> self
 --- Method
 --- Launches Final Cut Pro, or brings it to the front if it was already running.
 ---
 --- Parameters:
----  * waitSeconds  - if provided, we will wait for up to the specified seconds for the launch to complete.
+---  * `waitSeconds` - If provided, the number of seconds to wait until the launch
+---                    completes. If `nil`, it will return immediately.
+---  * `path`        - An optional full path to an application without an extension
+---                    (i.e `/Applications/Final Cut Pro 10.3.4`). This allows you to
+---                    load previous versions of the application.
 ---
 --- Returns:
 ---  * The FCP instance.
-function fcp:launch(waitSeconds)
-    self.app:launch(waitSeconds)
+function fcp:launch(waitSeconds, path)
+    self.app:launch(waitSeconds, path)
     return self
 end
 

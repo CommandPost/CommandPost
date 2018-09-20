@@ -617,25 +617,40 @@ function app.lazy.method:menu()
     return menu.new(self)
 end
 
---- cp.app:launch([waitSeconds]) -> self
+--- cp.app:launch([waitSeconds], [path]) -> self
 --- Method
 --- Launches the application, or brings it to the front if it was already running.
 ---
 --- Parameters:
----  * `waitSeconds`    - If povided, the number of seconds to wait until the launch completes. If `nil`, it will return immediately.
+---  * `waitSeconds` - If provided, the number of seconds to wait until the launch
+---                    completes. If `nil`, it will return immediately.
+---  * `path`        - An optional full path to an application without an extension
+---                    (i.e `/Applications/Final Cut Pro 10.3.4`). This allows you to
+---                    load previous versions of the application.
 ---
 --- Returns:
 ---  * The `cp.app` instance.
-function app:launch(waitSeconds)
+function app:launch(waitSeconds, path)
     local hsApp = self:hsApplication()
     if hsApp == nil or not hsApp:isFrontmost() then
         -- Closed:
-        local ok = application.launchOrFocusByBundleID(self:bundleID())
-        if ok and waitSeconds then
-            just.doUntil(function() return self:running() end, waitSeconds, 0.1)
+        if path then
+            path = path .. ".app"
+            if tools.doesDirectoryExist(path) then
+                local ok = application.open(path)
+                if ok and waitSeconds then
+                    just.doUntil(function() return self:running() end, waitSeconds, 0.1)
+                end
+            else
+                log.ef("Application path does not exist: %s", path)
+            end
+        else
+            local ok = application.launchOrFocusByBundleID(self:bundleID())
+            if ok and waitSeconds then
+                just.doUntil(function() return self:running() end, waitSeconds, 0.1)
+            end
         end
     end
-
     return self
 end
 
