@@ -463,7 +463,7 @@
         "enabled": "Enabled",
         "enableDeveloperMode": "Enable Developer Mode",
         "enableDisableBalanceColor": "Enable/Disable Balance Color",
-        "enableEGPUSupport": "Enable eGPU Support (requires macOS 10.13.4+)",
+        "enableEGPUSupport": "Enable eGPU Support (macOS 10.13.4 to 10.13.6 only)",
         "enableFilenamePrefix": "Enable Filename Prefix",
         "enableHacksShortcuts": "Control CommandPost Shortcuts within Final Cut Pro",
         "enableHUD": "Enable HUD",
