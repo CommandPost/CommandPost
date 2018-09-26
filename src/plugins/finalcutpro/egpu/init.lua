@@ -84,7 +84,8 @@ function plugin.init(deps)
         --------------------------------------------------------------------------------
         local osVersion = tools.macOSVersion()
         local allowEGPU = false
-        if semver(osVersion) >= semver("10.13.4") then
+        local os = semver(osVersion)
+        if os >= semver("10.13.4") and os < semver("10.4.0") then
             allowEGPU = true
         end
 
