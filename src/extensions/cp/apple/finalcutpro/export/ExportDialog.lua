@@ -23,12 +23,16 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
-local id                            = require("cp.apple.finalcutpro.ids") "ExportDialog"
 local dialog                        = require("cp.dialog")
+local i18n                          = require("cp.i18n")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
-local i18n                          = require("cp.i18n")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local v                             = require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -50,7 +54,7 @@ function ExportDialog.matches(element)
     if element then
         return element:attributeValue("AXSubrole") == "AXDialog"
            and element:attributeValue("AXModal")
-           and axutils.childWithID(element, id "BackgroundImage") ~= nil
+           and axutils.childWithDescription(element, "PE Share WindowBackground") ~= nil
     end
     return false
 end
@@ -166,15 +170,27 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
 
             local alert = fcp:alert()
 
-            local counter = 0
-            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
-            local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
-            local missingMediaAndInvalidCaptions = string.gsub(fcp:string("FFMissingMediaAndBrokenCaptionsMessageText"), "%%@", ".*")
-            local invalidCaptions = string.gsub(fcp:string("FFBrokenCaptionsMessageText"), "%%@", ".*")
+            local missingMediaString = fcp:string("FFMissingMediaMessageText")
+            local missingMedia = missingMediaString and string.gsub(missingMediaString, "%%@", ".*")
 
+            local proxyPlaybackEnabled, missingMediaAndInvalidCaptionsString, missingMediaAndInvalidCaptions, invalidCaptionsString, invalidCaptions
+            if fcp:version() >= v("10.4.0") then
+                --------------------------------------------------------------------------------
+                -- These alerts are only available in Final Cut Pro 10.4 and later:
+                --------------------------------------------------------------------------------
+                proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+
+                missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
+                missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
+
+                invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
+                invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
+            end
+
+            local counter = 0
             while not self:isShowing() and counter < 100 do
                 if alert:isShowing() then
-                    if alert:containsText(proxyPlaybackEnabled, true) then
+                    if proxyPlaybackEnabled and alert:containsText(proxyPlaybackEnabled, true) then
                         --------------------------------------------------------------------------------
                         -- Proxy Warning:
                         --------------------------------------------------------------------------------
@@ -186,7 +202,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
-                    elseif alert:containsText(missingMedia) then
+                    elseif missingMedia and alert:containsText(missingMedia) then
                         --------------------------------------------------------------------------------
                         -- Missing Media Warning:
                         --------------------------------------------------------------------------------
@@ -198,7 +214,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
-                    elseif alert:containsText(missingMediaAndInvalidCaptions) then
+                    elseif missingMediaAndInvalidCaptions and alert:containsText(missingMediaAndInvalidCaptions) then
                         --------------------------------------------------------------------------------
                         -- Missing Media & Invalid Captions Warning:
                         --------------------------------------------------------------------------------
@@ -210,7 +226,7 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
-                    elseif alert:containsText(invalidCaptions) then
+                    elseif invalidCaptions and alert:containsText(invalidCaptions) then
                         --------------------------------------------------------------------------------
                         -- Invalid Captions Warning:
                         --------------------------------------------------------------------------------
