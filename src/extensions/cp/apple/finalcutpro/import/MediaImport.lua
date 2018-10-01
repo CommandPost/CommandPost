@@ -18,10 +18,16 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
-local id                            = require("cp.apple.finalcutpro.ids") "MediaImporter"
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
+local strings                       = require("cp.apple.finalcutpro.strings")
 local Window                        = require("cp.ui.Window")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                         = axutils.cache
+local childWith                     = axutils.childWith
 
 --------------------------------------------------------------------------------
 --
@@ -56,13 +62,13 @@ end
 --- Returns:
 ---  * `true` if matches otherwise `false`
 function MediaImport.matches(element)
-    if element then
-        return element:attributeValue("AXSubrole") == "AXDialog"
-           and element:attributeValue("AXMain")
-           and element:attributeValue("AXModal")
-           and axutils.childWith(element, "AXIdentifier", id "MainPanel") ~= nil
-    end
-    return false
+    local importAll = strings:find("PEImportAll_NoEllipsis")
+    return element
+       and element:attributeValue("AXSubrole") == "AXDialog"
+       and element:attributeValue("AXMain")
+       and element:attributeValue("AXModal")
+       and importAll
+       and childWith(element, "AXTitle", importAll) ~= nil
 end
 
 --- cp.apple.finalcutpro.import.MediaImport.new(app) -> MediaImport
@@ -87,7 +93,7 @@ function MediaImport.new(app)
 --- Returns:
 ---  * An `axuielementObject` or `nil`
     local UI = app.windowsUI:mutate(function(original, self)
-        return axutils.cache(self, "_ui", function()
+        return cache(self, "_ui", function()
             local windowsUI = original()
             return windowsUI and _findWindowUI(windowsUI)
         end,
