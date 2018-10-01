@@ -342,6 +342,13 @@ function Viewer.lazy.prop:timecode()
                 --------------------------------------------------------------------------------
                 -- Double click the timecode value in the Viewer:
                 --------------------------------------------------------------------------------
+                self:app():launch()
+                local result = just.doUntil(function()
+                    return self:app():isFrontmost()
+                end)
+                if not result then
+                    log.ef("Failed to make Final Cut Pro frontmost (cp.apple.finalcutpro.main.Viewer.timecode).")
+                end
                 tools.ninjaMouseClick(center)
 
                 --------------------------------------------------------------------------------
