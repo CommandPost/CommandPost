@@ -38,7 +38,7 @@ local mod = {}
 --- Returns:
 ---  * self
 function mod.init(deps)
-    if fcp:isInstalled() then
+    if fcp:isSupported() then
         if not fcp:plugins().scanned() then
             --------------------------------------------------------------------------------
             -- Final Cut Pro hasn't been scanned yet:

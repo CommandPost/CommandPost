@@ -40,7 +40,7 @@ local plugin = {
 function plugin.init(deps)
     local mod = {}
 
-    if fcp:isInstalled() then
+    if fcp:isSupported() then
         mod.panel = deps.manager.addPanel({
             priority    = 2040,
             id          = "finalcutpro",

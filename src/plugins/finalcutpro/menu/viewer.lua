@@ -75,15 +75,14 @@ function plugin.init(dependencies)
     --------------------------------------------------------------------------------
     -- Disable the section if the Timeline option is disabled:
     --------------------------------------------------------------------------------
-    shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
+    shortcuts:setDisabledFn(function()
+        return not fcp:isSupported() or not sectionEnabled() or not fcp:isFrontmost()
+    end)
 
     --------------------------------------------------------------------------------
     -- Add the separator and title for the section:
     --------------------------------------------------------------------------------
-    shortcuts:addSeparator(0)
-        :addItem(1, function()
-            return { title = string.upper(i18n("viewer")) .. ":", disabled = true }
-        end)
+    shortcuts:addHeading(i18n("viewer"))
 
     --------------------------------------------------------------------------------
     -- Add to General Preferences Panel:

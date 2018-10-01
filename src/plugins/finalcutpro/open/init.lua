@@ -69,7 +69,6 @@ local plugin = {
     id = "finalcutpro.open",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.top"] = "top",
         ["core.commands.global"] = "global",
         ["finalcutpro.commands"] = "fcpxCmds",
     }
@@ -79,27 +78,6 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-
-    --------------------------------------------------------------------------------
-    -- Menubar:
-    --------------------------------------------------------------------------------
-    deps.top
-        :addItem(PRIORITY + 1, function()
-            if fcp:isInstalled() then
-                return {
-                    title = i18n("launch") .. " " .. i18n("finalCutPro"),
-                    fn = mod.app,
-                }
-            end
-        end)
-        :addItem(PRIORITY, function()
-            if fcp:isInstalled()  then
-                return {
-                    title = i18n("openCommandEditor"),
-                    fn = mod.commandEditor,
-                }
-            end
-        end)
 
     --------------------------------------------------------------------------------
     -- Global Commands:

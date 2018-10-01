@@ -15,6 +15,11 @@ local require = require
 -- local log									= require("hs.logger").new("section")
 
 --------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
+local config                                = require("cp.config")
+
+--------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local fnutils 								= require("hs.fnutils")
@@ -29,12 +34,7 @@ local section = {}
 --- plugins.core.menu.manager.section.DEFAULT_PRIORITY -> number
 --- Constant
 --- The default priority
-section.DEFAULT_PRIORITY = 0
-
---- plugins.core.menu.manager.section.WARNING_LIMIT -> number
---- Constant
---- The limit of how much time a menu item takes to load before we post warnings to the Error Log
-section.WARNING_LIMIT = 0.005
+section.DEFAULT_PRIORITY = 1
 
 --- plugins.core.menu.manager.section:new() -> section
 --- Method
@@ -81,15 +81,15 @@ function section:isDisabled()
     return self._disabledFn and self._disabledFn()
 end
 
---- plugins.core.menu.manager.section:_addGenerator() -> section
---- Method
---- A private method for registering a generator. This should not be called directly.
----
---- Parameters:
----  * `generator`	- The generator being added.
----
---- Returns:
----  * section - The section.
+-- plugins.core.menu.manager.section:_addGenerator() -> section
+-- Method
+-- A private method for registering a generator. This should not be called directly.
+--
+-- Parameters:
+--  * `generator`	- The generator being added.
+--
+-- Returns:
+--  * section - The section.
 function section:_addGenerator(generator)
     self._generators[#self._generators + 1] = generator
     table.sort(self._generators, function(a, b) return a.priority < b.priority end)
@@ -131,6 +131,52 @@ function section:addItems(priority, itemsFn)
         priority = priority,
         itemsFn = itemsFn
     })
+    return self
+end
+
+--- plugins.core.menu.manager.section:addHeading(title) -> section
+--- Method
+--- Adds a heading to the top of a section.
+---
+--- Parameters:
+---  * title - The title of the heading.
+---
+--- Returns:
+---  * section - The new section that was created.
+function section:addHeading(title)
+    title = title and string.upper(title) or "TITLE MISSING"
+    self
+        :addSeparator(0.1)
+        :addItem(0.2, function()
+            if config.get("showSectionHeadingsInMenubar", false) then
+                return {
+                    title = title,
+                    disabled = true,
+                }
+            end
+        end)
+    return self
+end
+
+--- plugins.core.menu.manager.section:addApplicationHeading(title) -> section
+--- Method
+--- Adds a heading to the top of the section.
+---
+--- Parameters:
+---  * title - The title of the Application Heading.
+---
+--- Returns:
+---  * section - The new section that was created.
+function section:addApplicationHeading(title)
+    title = title or "APPLICATION TITLE MISSING"
+    self
+        :addItem(0.00001, function()
+            return {
+                title = "ACTIVE: " .. title,
+                disabled = true,
+            }
+        end)
+        :addSeparator(0.00002)
     return self
 end
 

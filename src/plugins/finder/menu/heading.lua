@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.menu.top ===
+--- === plugins.finder.menu.heading ===
 ---
---- The top menu section.
+--- The top heading of the menubar.
 
 --------------------------------------------------------------------------------
 --
@@ -16,6 +16,9 @@ local config                    = require("cp.config")
 local fcp                       = require("cp.apple.finalcutpro")
 local i18n                      = require("cp.i18n")
 
+
+local app                       = require("cp.app")
+
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
@@ -25,7 +28,7 @@ local i18n                      = require("cp.i18n")
 -- PRIORITY -> number
 -- Constant
 -- The menubar position priority.
-local PRIORITY = 1.1
+local PRIORITY = 0.1
 
 -- PREFERENCES_PRIORITY -> number
 -- Constant
@@ -54,8 +57,8 @@ local sectionEnabled = config.prop(SETTING, true)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.menu.top",
-    group           = "finalcutpro",
+    id              = "finder.menu.heading",
+    group           = "finder",
     dependencies    = {
         ["core.menu.manager"]               = "manager",
         ["core.preferences.panels.menubar"] = "prefs",
@@ -67,6 +70,8 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
 
+    local finder = app.forBundleID("com.apple.finder")
+
     --------------------------------------------------------------------------------
     -- Create the Timeline section:
     --------------------------------------------------------------------------------
@@ -75,27 +80,12 @@ function plugin.init(dependencies)
     --------------------------------------------------------------------------------
     -- Disable the section if the Timeline option is disabled:
     --------------------------------------------------------------------------------
-    shortcuts:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
+    shortcuts:setDisabledFn(function() return not finder:frontmost() end)
 
     --------------------------------------------------------------------------------
     -- Add the separator and title for the section:
     --------------------------------------------------------------------------------
-    shortcuts
-        :addItem(1, function()
-            return { title = string.upper(i18n("finalCutPro")) .. ":", disabled = true }
-        end)
-
-    --------------------------------------------------------------------------------
-    -- Add to General Preferences Panel:
-    --------------------------------------------------------------------------------
-    local prefs = dependencies.prefs
-    prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
-        {
-            label = i18n("show") .. " " .. i18n("finalCutPro"),
-            onchange = function(_, params) sectionEnabled(params.checked) end,
-            checked = sectionEnabled,
-        }
-    )
+    shortcuts:addApplicationHeading(i18n("finder"))
 
     return shortcuts
 end

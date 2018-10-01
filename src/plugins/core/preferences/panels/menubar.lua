@@ -17,8 +17,9 @@ local image                                     = require("hs.image")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local tools                                     = require("cp.tools")
+local config                                    = require("cp.config")
 local i18n                                      = require("cp.i18n")
+local tools                                     = require("cp.tools")
 
 --------------------------------------------------------------------------------
 --
@@ -27,6 +28,18 @@ local i18n                                      = require("cp.i18n")
 --------------------------------------------------------------------------------
 local APPEARANCE_HEADING    = 100
 local SECTIONS_HEADING      = 200
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
+
+--- plugins.core.preferences.panels.menubar.showSectionHeadingsInMenubar <cp.prop: boolean>
+--- Field
+--- Show section headings in menubar.
+mod.showSectionHeadingsInMenubar = config.prop("showSectionHeadingsInMenubar", true)
 
 --------------------------------------------------------------------------------
 --
@@ -46,6 +59,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
+
     local panel = deps.prefsMgr.addPanel({
         priority    = 2020,
         id          = "menubar",
@@ -58,16 +72,22 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    panel:addHeading(APPEARANCE_HEADING, i18n("appearance"))
-
-    :addCheckbox(APPEARANCE_HEADING + 10,
-        {
-            label = i18n("displayThisMenuAsIcon"),
-            onchange = function(_, params) deps.menuMgr.displayMenubarAsIcon(params.checked) end,
-            checked = deps.menuMgr.displayMenubarAsIcon,
-        }
-    )
-
+    panel
+        :addHeading(APPEARANCE_HEADING, i18n("appearance"))
+        :addCheckbox(APPEARANCE_HEADING + 1,
+            {
+                label = i18n("displayThisMenuAsIcon"),
+                onchange = function(_, params) deps.menuMgr.displayMenubarAsIcon(params.checked) end,
+                checked = deps.menuMgr.displayMenubarAsIcon,
+            }
+        )
+        :addCheckbox(APPEARANCE_HEADING + 2,
+            {
+                label = i18n("showSectionHeadingsInMenubar"),
+                onchange = function(_, params) mod.showSectionHeadingsInMenubar(params.checked) end,
+                checked = mod.showSectionHeadingsInMenubar,
+            }
+        )
     :addHeading(SECTIONS_HEADING, i18n("sections"))
 
     panel.APPEARANCE_HEADING    = APPEARANCE_HEADING

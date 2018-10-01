@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.menu.pasteboard ===
+--- === plugins.finalcutpro.menu.heading ===
 ---
---- The Pasteboard menu section.
+--- The top heading of the menubar.
 
 --------------------------------------------------------------------------------
 --
@@ -25,28 +25,7 @@ local i18n                      = require("cp.i18n")
 -- PRIORITY -> number
 -- Constant
 -- The menubar position priority.
-local PRIORITY = 2500
-
--- PREFERENCES_PRIORITY -> number
--- Constant
--- Preferences Priority
-local PREFERENCES_PRIORITY = 5
-
--- SETTING -> number
--- Constant
--- Setting Name
-local SETTING = "menubarPasteboardEnabled"
-
---------------------------------------------------------------------------------
---
--- THE MODULE:
---
---------------------------------------------------------------------------------
-
--- sectionEnabled <cp.prop: boolean>
--- Variable
--- Section Enabled
-local sectionEnabled = config.prop(SETTING, true)
+local PRIORITY = 0.1
 
 --------------------------------------------------------------------------------
 --
@@ -54,11 +33,10 @@ local sectionEnabled = config.prop(SETTING, true)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.menu.pasteboard",
+    id              = "finalcutpro.menu.heading",
     group           = "finalcutpro",
     dependencies    = {
-        ["core.menu.manager"]               = "manager",
-        ["core.preferences.panels.menubar"] = "prefs",
+        ["core.menu.manager"] = "manager",
     }
 }
 
@@ -68,33 +46,19 @@ local plugin = {
 function plugin.init(dependencies)
 
     --------------------------------------------------------------------------------
-    -- Create the Pasteboard section:
+    -- Create the section:
     --------------------------------------------------------------------------------
     local shortcuts = dependencies.manager.addSection(PRIORITY)
 
     --------------------------------------------------------------------------------
-    -- Disable the section if the Pasteboard option is disabled:
+    -- Disable the section if Final Cut Pro is not frontmost:
     --------------------------------------------------------------------------------
-    shortcuts:setDisabledFn(function()
-        return not fcp:isSupported() or not sectionEnabled() or not fcp:isFrontmost()
-    end)
+    shortcuts:setDisabledFn(function() return not fcp:isSupported() or not fcp:isFrontmost() end)
 
     --------------------------------------------------------------------------------
     -- Add the separator and title for the section:
     --------------------------------------------------------------------------------
-    shortcuts:addHeading(i18n("pasteboard"))
-
-    --------------------------------------------------------------------------------
-    -- Add to General Preferences Panel:
-    --------------------------------------------------------------------------------
-    local prefs = dependencies.prefs
-    prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
-        {
-            label = i18n("show") .. " " .. i18n("pasteboard"),
-            onchange = function(_, params) sectionEnabled(params.checked) end,
-            checked = sectionEnabled,
-        }
-    )
+    shortcuts:addApplicationHeading(i18n("finalCutPro"))
 
     return shortcuts
 end
