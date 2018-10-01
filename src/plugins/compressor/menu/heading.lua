@@ -1,4 +1,4 @@
---- === plugins.finder.menu.heading ===
+--- === plugins.compressor.menu.heading ===
 ---
 --- The top heading of the menubar.
 
@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local app                       = require("cp.app")
+local compressor                = require("cp.apple.compressor")
 local i18n                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
@@ -32,8 +32,8 @@ local PRIORITY = 0.1
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finder.menu.heading",
-    group           = "finder",
+    id              = "compressor.menu.heading",
+    group           = "compressor",
     dependencies    = {
         ["core.menu.manager"]               = "manager",
     }
@@ -44,8 +44,6 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(dependencies)
 
-    local finder = app.forBundleID("com.apple.finder")
-
     --------------------------------------------------------------------------------
     -- Create the Timeline section:
     --------------------------------------------------------------------------------
@@ -54,12 +52,12 @@ function plugin.init(dependencies)
     --------------------------------------------------------------------------------
     -- Disable the section if the Timeline option is disabled:
     --------------------------------------------------------------------------------
-    shortcuts:setDisabledFn(function() return not finder:frontmost() end)
+    shortcuts:setDisabledFn(function() return not compressor.app:frontmost() end)
 
     --------------------------------------------------------------------------------
     -- Add the separator and title for the section:
     --------------------------------------------------------------------------------
-    shortcuts:addApplicationHeading(i18n("finder"))
+    shortcuts:addApplicationHeading(i18n("compressor"))
 
     return shortcuts
 end
