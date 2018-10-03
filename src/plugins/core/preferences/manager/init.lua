@@ -236,6 +236,11 @@ local function windowCallback(action, _, frame)
     if action == "closing" then
         if not hs.shuttingDown then
             --------------------------------------------------------------------------------
+            -- Destroy the Webview:
+            --------------------------------------------------------------------------------
+            mod._webview = nil
+
+            --------------------------------------------------------------------------------
             -- Trigger Closing Callbacks:
             --------------------------------------------------------------------------------
             for _, v in ipairs(mod._panels) do
@@ -384,6 +389,7 @@ function mod.new()
             :allowTextEntry(true)
             :windowTitle(mod.DEFAULT_TITLE)
             :attachedToolbar(mod._toolbar)
+            :deleteOnClose(true)
             :windowCallback(windowCallback)
             :darkMode(true)
     end
@@ -401,17 +407,16 @@ end
 --- Returns:
 ---  * True if successful or nil if an error occurred
 function mod.show()
-
     if mod._webview == nil then
         mod.new()
-        mod.selectPanel(currentPanelID())
-        mod._webview:html(generateHTML())
     end
 
     if next(mod._panels) == nil then
         dialog.displayMessage("There are no Preferences Panels to display.")
         return nil
     else
+        mod.selectPanel(currentPanelID())
+        mod._webview:html(generateHTML())
         mod._webview:show()
         mod.focus()
     end

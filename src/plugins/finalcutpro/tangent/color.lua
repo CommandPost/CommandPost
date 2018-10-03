@@ -18,6 +18,7 @@ local log                                       = require("hs.logger").new("fcp_
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
 local deferred                                  = require("cp.deferred")
+local prop                                      = require("cp.prop")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -26,6 +27,9 @@ local ColorWell                                 = require("cp.apple.finalcutpro.
 local dialog                                    = require("cp.dialog")
 local fcp                                       = require("cp.apple.finalcutpro")
 local i18n                                      = require("cp.i18n")
+
+local go                                        = require("cp.rx.go")
+local If, Do                                    = go.If, go.Do
 
 --------------------------------------------------------------------------------
 -- Local Lua Functions:
@@ -106,23 +110,48 @@ function mod.init(tangentManager, fcpGroup)
 
             -- set up the UI update action...
             local percentChange, angleChange = 0, 0
-            updateUI:action(function()
-                if percentChange ~= 0 then
-                    local value = puck:show():percent()
-                    if value then
-                        puck:percent(value + percentChange)
-                        percentChange = 0
-                    end
-                end
+            local updating = prop.FALSE()
 
-                if angleChange ~= 0 then
-                    local value = puck:show():angle()
-                    if value then
-                        puck:angle(value + angleChange)
-                        angleChange = 0
-                    end
-                end
-            end)
+            local update = Do(
+                If(updating):Is(false):Then(
+                    Do(function()
+                        updating(true)
+                        return true
+                    end)
+                    :Then(
+                        If(function() return percentChange ~= 0 end)
+                        :Then(puck:doShow())
+                        :Then(function()
+                            local value = puck:percent()
+                            if value then
+                                puck:percent(value + percentChange)
+                                percentChange = 0
+                                return true
+                            end
+                            return false
+                        end)
+                        :ThenYield()
+                        :Otherwise(false)
+                    ):Then(
+                        If(function() return angleChange ~= 0 end)
+                        :Then(puck:doShow())
+                        :Then(function()
+                            local value = puck:angle()
+                            if value then
+                                puck:angle(value + angleChange)
+                                angleChange = 0
+                                return true
+                            end
+                            return false
+                        end)
+                        :ThenYield()
+                        :Otherwise(false)
+                    )
+                    :Finally(function() updating(false) end)
+                )
+            ):Label("color:update")
+
+            updateUI:action(update)
 
             local rangeID = aspectID + j*rangeBaseID
 
@@ -146,7 +175,7 @@ function mod.init(tangentManager, fcpGroup)
                     percentChange = percentChange + change
                     updateUI()
                 end)
-                :onReset(function() puck:show():reset() end)
+                :onReset(puck:doReset())
 
             if puck:hasAngle() then
                 local angle = cbGroup:parameter(rangeID + 1)
@@ -165,7 +194,7 @@ function mod.init(tangentManager, fcpGroup)
                         angleChange = angleChange + change
                         updateUI()
                     end)
-                    :onReset(function() puck:show():reset() end)
+                    :onReset(puck:doReset())
 
                 cbGroup:binding(format("%s %s %s", iColorBoard, pName, aName))
                     :member(angle)
@@ -193,20 +222,41 @@ function mod.init(tangentManager, fcpGroup)
 
         -- set up the UI update action...
         local rightChange, upChange, satChange, brightChange = 0, 0, 0, 0
-        updateUI:action(function()
-            if rightChange ~= 0 or upChange ~= 0 then
-                wheel:show():nudgeColor(rightChange, upChange)
-                rightChange, upChange = 0, 0
-            end
-            if satChange ~= 0 then
-                wheel:show():saturation():shiftValue(satChange)
-                satChange = 0
-            end
-            if brightChange ~= 0 then
-                wheel:show():brightness():shiftValue(brightChange)
-                brightChange = 0
-            end
+
+        local updating = prop.FALSE()
+        local update = Do(function()
+            updating(true)
+            return true
         end)
+        :Then(
+            If(function() return rightChange ~= 0 or upChange ~= 0 end)
+            :Then(wheel:doShow())
+            :Then(function()
+                wheel:nudgeColor(rightChange, upChange)
+                rightChange, upChange = 0, 0
+                return true
+            end)
+        ):Then(
+            If(function() return satChange ~= 0 end)
+            :Then(wheel:doShow())
+            :Then(function()
+                wheel:saturation():shiftValue(satChange)
+                satChange = 0
+                return true
+            end)
+        ):Then(
+            If(function() return brightChange ~= 0 end)
+            :Then(wheel:doShow())
+            :Then(function()
+                wheel:brightness():shiftValue(brightChange)
+                brightChange = 0
+                return true
+            end)
+        ):Finally(function()
+            updating(false)
+        end)
+
+        updateUI:action(update)
 
         local iWheel, iWheel4 = i18n(pKey), i18n(pKey.."4")
 
@@ -224,7 +274,7 @@ function mod.init(tangentManager, fcpGroup)
                 rightChange = rightChange + value
                 updateUI()
             end)
-            :onReset(function() wheel:colorWell():reset() end)
+            :onReset(wheel:colorWell():doReset())
 
         local vert = cwGroup:parameter(id + 2)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iVertical))
@@ -240,7 +290,7 @@ function mod.init(tangentManager, fcpGroup)
                 upChange = upChange + value
                 updateUI()
             end)
-            :onReset(function() wheel:colorWell():reset() end)
+            :onReset(wheel:colorWell():doReset())
 
         local sat = cwGroup:parameter(id + 3)
             :name(format("%s - %s - %s", iColorWheel, iWheel, iSaturation))
@@ -280,27 +330,47 @@ function mod.init(tangentManager, fcpGroup)
 
     -- Set up UI Updates:
     local tempChange, tintChange, hueChange, mixChange = 0, 0, 0, 0
-    updateUI:action(function()
-        if tempChange ~= 0 then
-            cw:show():temperatureSlider():shiftValue(tempChange)
+    local updating = prop.FALSE()
+    local update = Do(
+        function() updating(true) end
+    ):Then(
+        If(function() return tempChange ~= 0 end)
+        :Then(cw:doShow())
+        :Then(function()
+            cw:temperatureSlider():shiftValue(tempChange)
             tempChange = 0
-        end
-        if tintChange ~= 0 then
+            return true
+        end)
+    ):Then(
+        If(function() return tintChange ~= 0 end)
+        :Then(cw:doShow())
+        :Then(function()
             cw:show():tintSlider():shiftValue(tintChange)
             tintChange = 0
-        end
-        if hueChange ~= 0 then
+            return true
+        end)
+    ):Then(
+        If(function() return hueChange ~= 0 end)
+        :Then(cw:doShow())
+        :Then(function()
             local currentValue = cw:show():hue()
             if currentValue then
                 cw:hue(currentValue+hueChange)
             end
             hueChange = 0
-        end
-        if mixChange ~= 0 then
+            return true
+        end)
+    ):Then(
+        If(function() return mixChange ~= 0 end)
+        :Then(cw:doShow())
+        :Then(function()
             cw:show():mixSlider():shiftValue(mixChange)
             mixChange = 0
-        end
-    end)
+            return true
+        end)
+    )
+
+    updateUI:action(update)
 
     -- Color Wheel Temperature
     cwGroup:parameter(wheelsBaseID+0x0101)
@@ -417,49 +487,31 @@ function mod.init(tangentManager, fcpGroup)
     --------------------------------------------------------------------------------
 
     ciGroup:action(wheelsBaseID+0x0120, i18n("addColorBoardEffect"))
-        :onPress(function()
-            ci:addCorrection("Color Board")
-        end)
+        :onPress(ci:doAddCorrection("Color Board"))
 
     ciGroup:action(wheelsBaseID+0x0121, i18n("addColorWheelsEffect"))
-        :onPress(function()
-            ci:addCorrection("Color Wheels")
-        end)
+        :onPress(ci:doAddCorrection("Color Wheels"))
 
     ciGroup:action(wheelsBaseID+0x0122, i18n("addColorCurvesEffect"))
-        :onPress(function()
-            ci:addCorrection("Color Curves")
-        end)
+        :onPress(ci:doAddCorrection("Color Curves"))
 
     ciGroup:action(wheelsBaseID+0x0123, i18n("addHueSatCurvesEffect"))
-        :onPress(function()
-            cw:addCorrection("Hue/Saturation Curves")
-        end)
+        :onPress(ci:doAddCorrection("Hue/Saturation Curves"))
 
     cbGroup:action(wheelsBaseID+0x0124, i18n("colorBoardShowColor"))
-        :onPress(function()
-            cb:color():show()
-        end)
+        :onPress(cb:color():doShow())
 
     cbGroup:action(wheelsBaseID+0x0125, i18n("colorBoardShowSaturation"))
-        :onPress(function()
-            cb:saturation():show()
-        end)
+        :onPress(cb:saturation():doShow())
 
     cbGroup:action(wheelsBaseID+0x0126, i18n("colorBoardShowExposure"))
-        :onPress(function()
-            cb:exposure():show()
-        end)
+        :onPress(cb:exposure():doShow())
 
     cbGroup:action(wheelsBaseID+0x0127, i18n("colorBoardNextPane"))
-        :onPress(function()
-            cb:aspectGroup():nextOption()
-        end)
+        :onPress(cb:aspectGroup():doNextOption())
 
     cbGroup:action(wheelsBaseID+0x0128, i18n("colorBoardPreviousPane"))
-        :onPress(function()
-            cb:aspectGroup():previousOption()
-        end)
+        :onPress(cb:aspectGroup():doPreviousOption())
 
     cbGroup:action(wheelsBaseID+0x0129, i18n("resetAllControls"))
         :onPress(doShortcut("ColorBoard-ResetAllPucks"))

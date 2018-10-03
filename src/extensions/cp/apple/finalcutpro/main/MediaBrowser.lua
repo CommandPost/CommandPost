@@ -22,10 +22,14 @@ local prop								= require("cp.prop")
 local axutils							= require("cp.ui.axutils")
 
 local Table								= require("cp.ui.Table")
-local PopUpButton				  = require("cp.ui.PopUpButton")
-local TextField						= require("cp.ui.TextField")
+local PopUpButton				        = require("cp.ui.PopUpButton")
+local TextField						    = require("cp.ui.TextField")
 
-local id								  = require("cp.apple.finalcutpro.ids") "MediaBrowser"
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                             = axutils.cache
+local childWithRole                     = axutils.childWithRole
 
 --------------------------------------------------------------------------------
 --
@@ -95,9 +99,9 @@ function MediaBrowser.new(parent)
         --- Field
         --- Returns the main group UI for the Media Browser, or `nil` if not available.
         mainGroupUI = UI:mutate(function(original, self)
-            return axutils.cache(self, "_mainGroup", function()
+            return cache(self, "_mainGroup", function()
                 local ui = original()
-                return ui and axutils.childWithRole(ui, "AXSplitGroup")
+                return ui and childWithRole(ui, "AXSplitGroup")
             end)
         end),
     }
@@ -187,8 +191,8 @@ end
 ---  * `Table` object.
 function MediaBrowser:sidebar()
     if not self._sidebar then
-        self._sidebar = Table.new(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
+        self._sidebar = Table(self, function()
+            return childWithRole(self:mainGroupUI(), "AXScrollArea")
         end)
     end
     return self._sidebar
@@ -205,8 +209,8 @@ end
 ---  * `PopUpButton` object.
 function MediaBrowser:group()
     if not self._group then
-        self._group = PopUpButton.new(self, function()
-            return axutils.childWithRole(self:UI(), "AXPopUpButton")
+        self._group = PopUpButton(self, function()
+            return childWithRole(self:UI(), "AXPopUpButton")
         end)
     end
     return self._group
@@ -223,8 +227,8 @@ end
 ---  * `TextField` object.
 function MediaBrowser:search()
     if not self._search then
-        self._search = TextField.new(self, function()
-            return axutils.childWithRole(self:mainGroupUI(), "AXTextField")
+        self._search = TextField(self, function()
+            return childWithRole(self:mainGroupUI(), "AXTextField")
         end)
     end
     return self._search

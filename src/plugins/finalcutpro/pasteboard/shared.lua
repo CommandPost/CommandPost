@@ -21,6 +21,7 @@ local base64                                    = require("hs.base64")
 local fs                                        = require("hs.fs")
 local host                                      = require("hs.host")
 local json                                      = require("hs.json")
+local timer                                     = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -370,6 +371,16 @@ function mod.copyWithCustomClipNameAndFolder()
     end
 end
 
+--- plugins.finalcutpro.pasteboard.shared.doDecodeHistoryItem(folderName, index) -> string | nil
+--- Function
+--- Decodes a Paste History Item.
+---
+--- Parameters:
+---  * folderName - The folder name
+---  * index - The index of the item you want to decode
+---
+--- Returns:
+---  * The decoded Pasteboard History Item or `nil`.
 function mod.doDecodeHistoryItem(folderName, index)
     return Do(function()
         local item = mod.getHistory(folderName)[index]
@@ -395,6 +406,7 @@ end
 --- Returns:
 ---  * None
 function mod.doPasteHistoryItem(folderName, index)
+    local originalContents = mod._manager.readFCPXData()
     return Do(mod.doDecodeHistoryItem(folderName, index))
     :Then(function(data)
         --------------------------------------------------------------------------------
@@ -404,6 +416,16 @@ function mod.doPasteHistoryItem(folderName, index)
     end)
     :Then(fcp:doLaunch())
     :Then(fcp:doShortcut("Paste"))
+    :Then(function()
+        if originalContents then
+            --------------------------------------------------------------------------------
+            -- Restore the original Pasteboard Contents:
+            --------------------------------------------------------------------------------
+            timer.doAfter(0.3, function()
+                mod._manager.writeFCPXData(originalContents, true)
+            end)
+        end
+    end)
 end
 
 --- plugins.finalcutpro.pasteboard.shared.init() -> sharedPasteboard

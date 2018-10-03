@@ -232,14 +232,20 @@ function mod.getMode(id)
     return nil
 end
 
+--- plugins.core.tangent.manager.activeModeID <cp.prop: string>
+--- Field
+--- The current active mode ID.
+mod.activeModeID = config.prop("tangent.activeModeID")
+
 --- plugins.core.tangent.manager.activeMode <cp.prop: mode>
 --- Constant
 --- Represents the currently active `mode`.
-mod.activeMode = prop(
-    function()
-        return mod._activeMode
+mod.activeMode = mod.activeModeID:mutate(
+    function(original)
+        local id = original()
+        return id and mod.getMode(id)
     end,
-    function(newMode)
+    function(newMode, original)
         local m = mode.is(newMode) and newMode or mod.getMode(newMode)
         if m then
             local oldMode = mod._activeMode
@@ -251,6 +257,7 @@ mod.activeMode = prop(
                 m._activate()
             end
             tangent.sendModeValue(newMode.id)
+            original(newMode.id)
         else
             error("Expected a `mode` or a valid mode `ID`: %s", inspect(newMode))
         end
@@ -580,10 +587,12 @@ local function callback(commands)
 
         local fn = fromHub[id]
         if fn then
-            local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
-            if not ok then
-                log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
-            end
+            timer.doAfter(0, function()
+                local ok, result = xpcall(function() fn(metadata) end, debug.traceback)
+                if not ok then
+                    log.ef("Error while processing Tangent Message: '%#010x':\n%s", id, result)
+                end
+            end)
         else
             log.ef("Unexpected Tangent Message Recieved:\nid: %s, metadata: %s", id, inspect(metadata))
         end

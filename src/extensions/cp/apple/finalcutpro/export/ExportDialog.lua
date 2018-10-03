@@ -23,12 +23,16 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
-local id                            = require("cp.apple.finalcutpro.ids") "ExportDialog"
 local dialog                        = require("cp.dialog")
+local i18n                          = require("cp.i18n")
 local just                          = require("cp.just")
 local prop                          = require("cp.prop")
 local SaveSheet                     = require("cp.apple.finalcutpro.export.SaveSheet")
-local i18n                          = require("cp.i18n")
+
+--------------------------------------------------------------------------------
+-- 3rd Party Extensions:
+--------------------------------------------------------------------------------
+local v                             = require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -50,7 +54,7 @@ function ExportDialog.matches(element)
     if element then
         return element:attributeValue("AXSubrole") == "AXDialog"
            and element:attributeValue("AXModal")
-           and axutils.childWithID(element, id "BackgroundImage") ~= nil
+           and axutils.childWithDescription(element, "PE Share WindowBackground") ~= nil
     end
     return false
 end
@@ -116,15 +120,16 @@ end
 
 local destinationFormat = "(.+)…"
 
---- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
+--- cp.apple.finalcutpro.export.ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, ignoreInvalidCaptions, quiet) -> cp.apple.finalcutpro.export.ExportDialog, string
 --- Method
 --- Shows the Export Dialog with the Destination that matches the `destinationSelect`.
 ---
 --- Parameters:
----  * destinationSelect    - The name, number or match function of the destination to export with.
----  * ignoreProxyWarning   - if `true`, the warning regarding exporting Proxies will be ignored.
----  * ignoreMissingMedia   - if `true`, the warning regarding exporting with missing media will be ignored.
----  * quiet                - if `true`, no dialogs will be shown if there is an error.
+---  * destinationSelect        - The name, number or match function of the destination to export with.
+---  * ignoreProxyWarning       - if `true`, the warning regarding exporting Proxies will be ignored.
+---  * ignoreMissingMedia       - if `true`, the warning regarding exporting with missing media will be ignored.
+---  * ignoreInvalidCaptions    - if `true`, the warning regarding exporting with Bad Captions will be ignored.
+---  * quiet                    - if `true`, no dialogs will be shown if there is an error.
 ---
 --- Returns:
 ---  * The `cp.apple.finalcutpro.export.ExportDialog` object for method chaining.
@@ -132,7 +137,7 @@ local destinationFormat = "(.+)…"
 ---
 --- Notes:
 --- * If providing a function, it will be passed one item - the name of the destination, and should return `true` to indicate a match. The name will not contain " (default)" if present.
-function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, quiet)
+function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingMedia, ignoreInvalidCaptions, quiet)
     if not self:isShowing() then
         if destinationSelect == nil then
             destinationSelect = isDefaultItem
@@ -165,12 +170,30 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
 
             local alert = fcp:alert()
 
+            local missingMediaString = fcp:string("FFMissingMediaMessageText")
+            local missingMedia = missingMediaString and string.gsub(missingMediaString, "%%@", ".*")
+
+            local proxyPlaybackEnabled, missingMediaAndInvalidCaptionsString, missingMediaAndInvalidCaptions, invalidCaptionsString, invalidCaptions
+            if fcp:version() >= v("10.4.0") then
+                --------------------------------------------------------------------------------
+                -- These alerts are only available in Final Cut Pro 10.4 and later:
+                --------------------------------------------------------------------------------
+                proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
+
+                missingMediaAndInvalidCaptionsString = fcp:string("FFMissingMediaAndBrokenCaptionsMessageText")
+                missingMediaAndInvalidCaptions = missingMediaAndInvalidCaptionsString and string.gsub(missingMediaAndInvalidCaptionsString, "%%@", ".*")
+
+                invalidCaptionsString = fcp:string("FFBrokenCaptionsMessageText")
+                invalidCaptions = invalidCaptionsString and string.gsub(invalidCaptionsString, "%%@", ".*")
+            end
+
             local counter = 0
-            local proxyPlaybackEnabled = fcp:string("FFShareProxyPlaybackEnabledMessageText")
-            local missingMedia = string.gsub(fcp:string("FFMissingMediaMessageText"), "%%@", ".*")
             while not self:isShowing() and counter < 100 do
                 if alert:isShowing() then
-                    if alert:containsText(proxyPlaybackEnabled, true) then
+                    if proxyPlaybackEnabled and alert:containsText(proxyPlaybackEnabled, true) then
+                        --------------------------------------------------------------------------------
+                        -- Proxy Warning:
+                        --------------------------------------------------------------------------------
                         if ignoreProxyWarning then
                             alert:pressDefault()
                         else
@@ -179,7 +202,10 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
-                    elseif alert:containsText(missingMedia) then
+                    elseif missingMedia and alert:containsText(missingMedia) then
+                        --------------------------------------------------------------------------------
+                        -- Missing Media Warning:
+                        --------------------------------------------------------------------------------
                         if ignoreMissingMedia then
                             alert:pressDefault()
                         else
@@ -188,7 +214,34 @@ function ExportDialog:show(destinationSelect, ignoreProxyWarning, ignoreMissingM
                             if not quiet then dialog.displayMessage(msg) end
                             return self, msg
                         end
+                    elseif missingMediaAndInvalidCaptions and alert:containsText(missingMediaAndInvalidCaptions) then
+                        --------------------------------------------------------------------------------
+                        -- Missing Media & Invalid Captions Warning:
+                        --------------------------------------------------------------------------------
+                        if ignoreMissingMedia and ignoreInvalidCaptions then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportMissingFilesAndBadCaptionsDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
+                    elseif invalidCaptions and alert:containsText(invalidCaptions) then
+                        --------------------------------------------------------------------------------
+                        -- Invalid Captions Warning:
+                        --------------------------------------------------------------------------------
+                        if ignoreInvalidCaptions then
+                            alert:pressDefault()
+                        else
+                            alert:pressCancel()
+                            local msg = i18n("batchExportInvalidCaptionsDetected")
+                            if not quiet then dialog.displayMessage(msg) end
+                            return self, msg
+                        end
                     else
+                        --------------------------------------------------------------------------------
+                        -- Unknown Error Message:
+                        --------------------------------------------------------------------------------
                         local msg = i18n("batchExportUnexpectedAlert")
                         return self, msg
                     end

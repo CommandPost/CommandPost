@@ -34,8 +34,6 @@ local CheckBox							= require("cp.ui.CheckBox")
 local PopUpButton						= require("cp.ui.PopUpButton")
 local TextField							= require("cp.ui.TextField")
 
-local id								= require("cp.apple.finalcutpro.ids") "EffectsBrowser"
-
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
@@ -558,8 +556,14 @@ end
 function EffectsBrowser:applyItem(itemUI)
     if itemUI then
         self:contents():showChild(itemUI)
-        local targetPoint = geometry.rect(itemUI:frame()).center
-        tools.ninjaDoubleClick(targetPoint)
+        local uiFrame = itemUI:frame()
+        if uiFrame then
+            local rect = geometry.rect(uiFrame)
+            local targetPoint = rect and rect.center
+            if targetPoint then
+                tools.ninjaDoubleClick(targetPoint)
+            end
+        end
     end
     return self
 end
@@ -617,8 +621,10 @@ end
 ---  * A `Table` object.
 function EffectsBrowser:sidebar()
     if not self._sidebar then
-        self._sidebar = Table.new(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Sidebar")
+        self._sidebar = Table(self, function()
+            return axutils.childFromLeft(self:mainGroupUI(), 1, function(element)
+                return element:attributeValue("AXRole") == "AXScrollArea"
+            end)
         end):uncached()
     end
     return self._sidebar
@@ -635,8 +641,10 @@ end
 ---  * A `ScrollArea` object.
 function EffectsBrowser:contents()
     if not self._contents then
-        self._contents = ScrollArea.new(self, function()
-            return axutils.childWithID(self:mainGroupUI(), id "Contents")
+        self._contents = ScrollArea(self, function()
+            return axutils.childFromRight(self:mainGroupUI(), 1, function(element)
+                return element:attributeValue("AXRole") == "AXScrollArea"
+            end)
         end)
     end
     return self._contents
@@ -653,7 +661,7 @@ end
 ---  * A `CheckBox` object.
 function EffectsBrowser:sidebarToggle()
     if not self._sidebarToggle then
-        self._sidebarToggle = CheckBox.new(self, function()
+        self._sidebarToggle = CheckBox(self, function()
             return axutils.childWithRole(self:UI(), "AXCheckBox")
         end)
     end
@@ -671,7 +679,7 @@ end
 ---  * A `PopUpButton` object.
 function EffectsBrowser:group()
     if not self._group then
-        self._group = PopUpButton.new(self, function()
+        self._group = PopUpButton(self, function()
             return axutils.childWithRole(self:mainGroupUI(), "AXPopUpButton")
         end)
     end
@@ -689,7 +697,7 @@ end
 ---  * A `PopUpButton` object.
 function EffectsBrowser:search()
     if not self._search then
-        self._search = TextField.new(self, function()
+        self._search = TextField(self, function()
             return axutils.childWithRole(self:UI(), "AXTextField")
         end)
     end

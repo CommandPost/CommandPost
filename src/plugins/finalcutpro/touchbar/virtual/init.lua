@@ -55,18 +55,27 @@ mod.visibility = config.prop("virtualTouchBarVisibility", mod.VISIBILITY_FCP)
 --  * None
 function mod._checkVisibility(active)
     if mod.visibility() == mod.VISIBILITY_ALWAYS then
-        mod._manager.virtual.show()
+        mod._manager.show()
     else
         if active then
-            mod._manager.virtual.show()
+            mod._manager.show()
         else
-            mod._manager.virtual.hide()
+            mod._manager.hide()
         end
     end
 end
 
+-- updateStatus(enabled) -> none
+-- Function
+-- Update a Touch Bar Group Status
+--
+-- Parameters:
+--  * enabled - `true` if enabled, otherwise `false`
+--
+-- Returns:
+--  * None
 local function updateStatus(enabled)
-    mod._manager.groupStatus("fcpx", enabled)
+    mod._tbManager.groupStatus("fcpx", enabled)
 end
 
 --- plugins.finalcutpro.touchbar.virtual.enabled <cp.prop: boolean>
@@ -85,9 +94,9 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Add Callbacks to Control Location:
         --------------------------------------------------------------------------------
-        mod.updateLocationCallback = mod._manager.virtual.updateLocationCallback:new("fcp", function()
+        mod.updateLocationCallback = mod._manager.updateLocationCallback:new("fcp", function()
 
-            local displayVirtualTouchBarLocation = mod._manager.virtual.location()
+            local displayVirtualTouchBarLocation = mod._manager.location()
 
             --------------------------------------------------------------------------------
             -- Show Touch Bar at Top Centre of Timeline:
@@ -99,15 +108,19 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
                 --------------------------------------------------------------------------------
                 local viewFrame = timeline:contents():viewFrame()
                 if viewFrame then
-                    local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod._manager.touchBar():getFrame().w/2, y = viewFrame.y + 20}
-                    mod._manager.touchBar():topLeft(topLeft)
+                    if mod._manager._touchBar then
+                        local topLeft = {x = viewFrame.x + viewFrame.w/2 - mod._manager._touchBar:getFrame().w/2, y = viewFrame.y + 20}
+                        mod._manager._touchBar:topLeft(topLeft)
+                    end
                 end
-            elseif displayVirtualTouchBarLocation == mod._manager.virtual.LOCATION_MOUSE then
+            elseif displayVirtualTouchBarLocation == mod._manager.LOCATION_MOUSE then
 
                 --------------------------------------------------------------------------------
                 -- Position Touch Bar to Mouse Pointer Location:
                 --------------------------------------------------------------------------------
-                mod._manager.touchBar():atMousePosition()
+                if mod._manager._touchBar then
+                    mod._manager._touchBar:atMousePosition()
+                end
 
             end
         end)
@@ -128,24 +141,24 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Update the Virtual Touch Bar position if either of the main windows move:
         --------------------------------------------------------------------------------
-        fcp:primaryWindow().frame:watch(mod._manager.virtual.updateLocation)
-        fcp:secondaryWindow().frame:watch(mod._manager.virtual.updateLocation)
+        fcp:primaryWindow().frame:watch(mod._manager.updateLocation)
+        fcp:secondaryWindow().frame:watch(mod._manager.updateLocation)
 
         --------------------------------------------------------------------------------
         -- Start the Virtual Touch Bar:
         --------------------------------------------------------------------------------
-        mod._manager.virtual.start()
+        mod._manager.start()
 
         --------------------------------------------------------------------------------
         -- Update the visibility:
         --------------------------------------------------------------------------------
         if mod.visibility() == mod.VISIBILITY_ALWAYS then
-            mod._manager.virtual.show()
+            mod._manager.show()
         else
             if fcp.isFrontmost() then
-                mod._manager.virtual.show()
+                mod._manager.show()
             else
-                mod._manager.virtual.hide()
+                mod._manager.hide()
             end
         end
 
@@ -161,11 +174,11 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
             mod.isActive = nil
         end
         if mod._fcpPrimaryWindowWatcher then
-            mod._fcpPrimaryWindowWatcher:unwatch(mod._manager.virtual.updateLocation)
+            mod._fcpPrimaryWindowWatcher:unwatch(mod._manager.updateLocation)
             mod._fcpPrimaryWindowWatcher = nil
         end
         if mod._fcpSecondaryWindowWatcher then
-            fcp:secondaryWindow().frame:unwatch(mod._manager.virtual.updateLocation)
+            fcp:secondaryWindow().frame:unwatch(mod._manager.updateLocation)
             mod._fcpSecondaryWindowWatcher = nil
         end
         if mod.updateLocationCallback then
@@ -176,7 +189,7 @@ mod.enabled = config.prop("displayVirtualTouchBar", false):watch(function(enable
         --------------------------------------------------------------------------------
         -- Stop the Virtual Touch Bar:
         --------------------------------------------------------------------------------
-        mod._manager.virtual.stop()
+        mod._manager.stop()
     end
 end)
 
@@ -190,7 +203,8 @@ local plugin = {
     group = "finalcutpro",
     dependencies = {
         ["finalcutpro.commands"]        = "fcpxCmds",
-        ["core.touchbar.manager"]       = "manager",
+        ["core.touchbar.virtual"]       = "manager",
+        ["core.touchbar.manager"]       = "tbManager",
         ["core.commands.global"]        = "global",
     }
 }
@@ -204,6 +218,7 @@ function plugin.init(deps)
     -- Connect to Manager:
     --------------------------------------------------------------------------------
     mod._manager = deps.manager
+    mod._tbManager = deps.tbManager
 
     --------------------------------------------------------------------------------
     -- Add Commands if Supported:

@@ -12,14 +12,14 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log                           = require("hs.logger").new("alert")
+-- local log                           = require("hs.logger").new("alert")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                       = require("cp.ui.axutils")
+local Element                       = require("cp.ui.Element")
 local Button                        = require("cp.ui.Button")
-local prop                          = require("cp.prop")
 
 local If                            = require("cp.rx.go.If")
 local WaitUntil                     = require("cp.rx.go.WaitUntil")
@@ -29,7 +29,7 @@ local WaitUntil                     = require("cp.rx.go.WaitUntil")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Alert = {}
+local Alert = Element:subclass("Alert")
 
 --- cp.ui.Alert.matches(element) -> boolean
 --- Function
@@ -40,14 +40,11 @@ local Alert = {}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Alert.matches(element)
-    if element then
-        return element:attributeValue("AXRole") == "AXSheet"
-    end
-    return false
+function Alert.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXSheet"
 end
 
---- cp.ui.Alert.new(app) -> Alert
+--- cp.ui.Alert:new(app) -> Alert
 --- Constructor
 --- Creates a new `Alert` instance.
 ---
@@ -56,78 +53,33 @@ end
 ---
 --- Returns:
 ---  * A new `Browser` object.
-function Alert.new(parent)
+function Alert:initialize(parent)
     local UI = parent.UI:mutate(function(original)
         return axutils.childMatching(original(), Alert.matches)
     end)
 
-    local o = prop.extend({
-        _parent = parent,
-
---- cp.ui.Alert.UI <cp.prop: hs._asm.axuielement; read-only; live?>
---- Field
---- The `axuielement` for the Alert, or `nil` if not available.
-        UI = UI,
-
-
---- cp.ui.Alert.isShowing <cp.prop: boolean; read-only; live>
---- Field
---- Is the alert showing?
-        isShowing = UI:ISNOT(nil),
+    Element.initialize(self, parent, UI)
+end
 
 --- cp.ui.Alert.title <cp.prop: string>
 --- Field
 --- Gets the title of the alert.
-        title = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXTitle")
-        end),
-
-    }, Alert)
+function Alert.lazy.prop:title()
+    return axutils.prop(self.UI, "AXTitle")
+end
 
 --- cp.ui.Alert.default <cp.ui.Button>
 --- Field
 --- The default [Button](cp.ui.Button.md) for the `Alert`.
-    o.default = Button.new(o, UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXDefaultButton")
-    end))
+function Alert.lazy.value:default()
+    return Button(self, axutils.prop(self.UI, "AXDefaultButton"))
+end
 
 --- cp.ui.Alert.cancel <cp.ui.Button>
 --- Field
 --- The cancel [Button](cp.ui.Button.md) for the `Alert`.
-    o.cancel = Button.new(o, UI:mutate(function(original)
-        local ui = original()
-        return ui and ui:attributeValue("AXDefaultButton")
-    end))
-
-    return o
-end
-
---- cp.ui.Alert:parent() -> parent
---- Method
---- Returns the parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * parent
-function Alert:parent()
-    return self._parent
-end
-
---- cp.ui.Alert:app() -> App
---- Method
---- Returns the app instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Alert:app()
-    return self:parent():app()
+function Alert.lazy.value:cancel()
+    return Button(self, axutils.prop(self.UI, "AXCancelButton"))
 end
 
 --- cp.ui.Alert:hide() -> none
@@ -152,7 +104,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
-function Alert:doHide()
+function Alert.lazy.method:doHide()
     return If(self.isShowing):Then(
         self:doCancel()
     ):Then(WaitUntil(self.isShowing():NOT()))
@@ -170,7 +122,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
-function Alert:doCancel()
+function Alert.lazy.method:doCancel()
     return self.cancel:doPress()
 end
 
@@ -183,7 +135,7 @@ end
 ---
 --- Returns:
 --- * A [Statement](cp.rx.go.Statement.md) to execute, resolving to `true` if the button was present and clicked, otherwise `false`.
-function Alert:doDefault()
+function Alert.lazy.method:doDefault()
     return self.default:doPress()
 end
 

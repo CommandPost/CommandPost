@@ -18,22 +18,25 @@ local inspect                   = require("hs.inspect")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local ColorPuck                 = require("cp.apple.finalcutpro.inspector.color.ColorPuck")
+local Element                   = require("cp.ui.Element")
 local just                      = require("cp.just")
-local prop                      = require("cp.prop")
+
+local go                        = require("cp.rx.go")
+local If, Do, Throw, WaitUntil  = go.If, go.Do, go.Throw, go.WaitUntil
+
+local format = string.format
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorBoardAspect = {}
-
-local format = string.format
+local ColorBoardAspect = Element:subclass("ColorBoardAspect")
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.ids -> table
 --- Constant
 --- A table containing the list of aspect IDs ("color", "saturation", "exposure").
-ColorBoardAspect.ids = {"color", "saturation", "exposure"}
+ColorBoardAspect.static.ids = {"color", "saturation", "exposure"}
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoard.matches(element) -> boolean
 --- Function
@@ -44,11 +47,11 @@ ColorBoardAspect.ids = {"color", "saturation", "exposure"}
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function ColorBoardAspect.matches(element)
-    return element and element:attributeValue("AXRole") == "AXGroup"
+function ColorBoardAspect.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect.new(parent, index[, hasAngle]) -> ColorBoardAspect
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect(parent, index[, hasAngle]) -> ColorBoardAspect
 --- Constructor
 --- Creates a new `ColorBoardAspect` object.
 ---
@@ -59,61 +62,30 @@ end
 ---
 --- Returns:
 ---  * A new `ColorBoardAspect object.
-function ColorBoardAspect.new(parent, index, hasAngle)
+function ColorBoardAspect:initialize(parent, index, hasAngle)
     if index < 1 or index > #ColorBoardAspect.ids then
         error(format("The index must be between 1 and %s: %s", #ColorBoardAspect.ids, inspect(index)))
     end
 
-    local o = prop.extend({
-        _parent = parent,
-        _index = index,
-        _hasAngle = hasAngle,
-    }, ColorBoardAspect)
+    self._index = index
+    self._hasAngle = hasAngle
 
-    return o
+    local UI = parent.contentUI:mutate(function(original)
+        -- only return the if this is the currently-selected aspect
+        local ui = original()
+        if ui and parent:aspectGroup():selectedOption() == index then
+            return ui
+        end
+    end)
+
+    Element.initialize(self, parent, UI)
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:parent() -> object
---- Method
---- Returns the Parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function ColorBoardAspect:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:app() -> App
---- Method
---- Returns the App instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function ColorBoardAspect:app()
-    return self:parent():app()
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:UI() -> axuielementObject
---- Method
---- Returns the Color Board Aspect Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-function ColorBoardAspect:UI()
-    local parent = self:parent()
-    -- only return the if this is the currently-selected aspect
-    if parent:aspectGroup():selectedOption() == self._index then
-        return parent:contentUI()
-    end
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:selected() -> boolean
+--- Field
+--- Is the Color Board Aspect selected?
+function ColorBoardAspect.lazy.prop:selected()
+    return self.isShowing
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:show() -> cp.apple.finalcutpro.inspector.color.ColorBoardAspect
@@ -135,17 +107,26 @@ function ColorBoardAspect:show()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:isShowing() -> boolean
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:doShow() -> cp.rx.go.Statement
 --- Method
---- Gets whether or not the Color Board Aspect is showing.
+--- A [Statement](cp.rx.go.Statement.md) that shows this Color Board Aspect.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * `true` if showing or `false` if not.
-function ColorBoardAspect:isShowing()
-    return self:UI() ~= nil
+---  * The `Statement`, resolving to `true` if successful or throwing an error if not.
+function ColorBoardAspect.lazy.method:doShow()
+    local parent = self:parent()
+
+    return If(self.isShowing):Is(false)
+    :Then(parent:doSelectAspect(self._index))
+    :Then(
+        WaitUntil(self.isShowing)
+        :TimeoutAfter(3000, Throw("Unable to show the %q aspect of the Color Board", self:id()))
+    )
+    :Otherwise(true)
+    :Label("ColorBoardAspect:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:index() -> number
@@ -170,6 +151,9 @@ end
 ---
 --- Returns:
 --- * `true` if it has an `angle` propery.
+function ColorBoardAspect:hasAngle()
+    return self._hasAngle
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:id() -> string
 --- Method
@@ -180,21 +164,8 @@ end
 ---
 --- Returns:
 ---  * The ID as string.
-function ColorBoardAspect:id()
+function ColorBoardAspect.lazy.method:id()
     return ColorBoardAspect.ids[self._index]
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:selected() -> boolean
---- Method
---- Is the Color Board Aspect selected?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if selected otherwise `false`.
-function ColorBoardAspect:selected()
-    return self:isShowing()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:reset() -> cp.apple.finalcutpro.inspector.color.ColorBoardAspect
@@ -215,6 +186,24 @@ function ColorBoardAspect:reset()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:reset() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that resets all pucks in the the Color Board Aspect.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, which will resolve to `true` if sucessful, or throws an error if not.
+function ColorBoardAspect.lazy.method:doReset()
+    return Do(self:doShow())
+    :Then(self:master():doReset())
+    :Then(self:shadows():doReset())
+    :Then(self:midtones():doReset())
+    :Then(self:highlight():doReset())
+    :Labeled("ColorBoardAspect:doReset")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:master() -> ColorPuck
 --- Method
 --- Gets the Master ColorPuck object.
@@ -224,15 +213,12 @@ end
 ---
 --- Returns:
 ---  * The Master ColorPuck object.
-function ColorBoardAspect:master()
-    if not self._master then
-        self._master = ColorPuck.new(
-            self, ColorPuck.RANGE.master,
-            {"CPColorBoardMaster", "cb master puck display name"},
-            self._hasAngle
-        )
-    end
-    return self._master
+function ColorBoardAspect.lazy.method:master()
+    return ColorPuck(
+        self, ColorPuck.RANGE.master,
+        {"CPColorBoardMaster", "cb master puck display name"},
+        self._hasAngle
+    )
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:shadows() -> ColorPuck
@@ -244,15 +230,12 @@ end
 ---
 --- Returns:
 ---  * The Shadows ColorPuck object.
-function ColorBoardAspect:shadows()
-    if not self._shadows then
-        self._shadows = ColorPuck.new(
-            self, ColorPuck.RANGE.shadows,
-            {"CPBolorBoardShadows", "cb shadow puck display name"},
-            self._hasAngle
-        )
-    end
-    return self._shadows
+function ColorBoardAspect.lazy.method:shadows()
+    return ColorPuck(
+        self, ColorPuck.RANGE.shadows,
+        {"CPBolorBoardShadows", "cb shadow puck display name"},
+        self._hasAngle
+    )
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:midtones() -> ColorPuck
@@ -264,15 +247,12 @@ end
 ---
 --- Returns:
 ---  * The Midtones ColorPuck object.
-function ColorBoardAspect:midtones()
-    if not self._midtones then
-        self._midtones = ColorPuck.new(
-            self, ColorPuck.RANGE.midtones,
-            {"CPColorBoardMidtones", "cb midtone puck display name"},
-            self._hasAngle
-        )
-    end
-    return self._midtones
+function ColorBoardAspect.lazy.method:midtones()
+    return ColorPuck(
+        self, ColorPuck.RANGE.midtones,
+        {"CPColorBoardMidtones", "cb midtone puck display name"},
+        self._hasAngle
+    )
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:highlights() -> ColorPuck
@@ -284,15 +264,12 @@ end
 ---
 --- Returns:
 ---  * The Highlights ColorPuck object.
-function ColorBoardAspect:highlights()
-    if not self._highlights then
-        self._highlights = ColorPuck.new(
-            self, ColorPuck.RANGE.highlights,
-            {"CPColorBoardHighlights", "cb highlight puck display name"},
-            self._hasAngle
-        )
-    end
-    return self._highlights
+function ColorBoardAspect.lazy.method:highlights()
+    return ColorPuck(
+        self, ColorPuck.RANGE.highlights,
+        {"CPColorBoardHighlights", "cb highlight puck display name"},
+        self._hasAngle
+    )
 end
 
 -- cp.apple.finalcutpro.inspector.color.ColorBoardAspect:__tostring() -> string

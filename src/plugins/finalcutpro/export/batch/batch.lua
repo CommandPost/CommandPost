@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log           = require("hs.logger").new("batch")
+local log           = require("hs.logger").new("batch")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -96,11 +96,15 @@ mod.customFilename = config.prop("batchExportCustomFilename", mod.DEFAULT_CUSTOM
 --- Defines whether or not a Batch Export should Ignore Missing Effects.
 mod.ignoreMissingEffects = config.prop("batchExportIgnoreMissingEffects", false)
 
+--- plugins.finalcutpro.export.batch.ignoreInvalidCaptions <cp.prop: boolean>
+--- Field
+--- Defines whether or not a Batch Export should Ignore Invalid Captions.
+mod.ignoreInvalidCaptions = config.prop("batchExportIgnoreInvalidCaptions", false)
+
 --- plugins.finalcutpro.export.batch.ignoreProxies <cp.prop: boolean>
 --- Field
 --- Defines whether or not a Batch Export should Ignore Proxies.
 mod.ignoreProxies = config.prop("batchExportIgnoreProxies", false)
-
 
 --- plugins.finalcutpro.export.batch.sendTimelineClipsToCompressor(clips) -> boolean
 --- Function
@@ -141,10 +145,14 @@ function mod.sendTimelineClipsToCompressor(clips)
     end
 
     --------------------------------------------------------------------------------
-    -- Make sure the Timeline is selected:
+    -- Make sure the Timeline is focussed:
     --------------------------------------------------------------------------------
-    if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-        dialog.displayErrorMessage("Could not trigger 'Go To Timeline'.")
+    result = just.doUntil(function()
+        fcp:timeline():doFocus(true):Now()
+        return fcp:timeline():isFocused()
+    end, 10, 0.1)
+    if not result then
+        dialog.displayErrorMessage("Failed to focus on timeline.")
         return false
     end
 
@@ -168,10 +176,14 @@ function mod.sendTimelineClipsToCompressor(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'.")
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -226,7 +238,7 @@ function mod.sendTimelineClipsToCompressor(clips)
             return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto start timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range Start"}) then
@@ -241,7 +253,7 @@ function mod.sendTimelineClipsToCompressor(clips)
             return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto end timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range End"}) then
@@ -250,10 +262,14 @@ function mod.sendTimelineClipsToCompressor(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'.")
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -407,7 +423,7 @@ function mod.batchExportBrowserClips(clips)
         --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
         local errorMessage
-        _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
+        _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions())
         if errorMessage then
             return false
         end
@@ -549,10 +565,14 @@ function mod.batchExportTimelineClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'." .. errorFunction)
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -624,7 +644,7 @@ function mod.batchExportTimelineClips(clips)
             return playhead:timecode(startTimecode) == startTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto start timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto start timecode (%s).", startTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range Start"}) then
@@ -639,7 +659,7 @@ function mod.batchExportTimelineClips(clips)
             return playhead:timecode(endTimecode) == endTimecode
         end, 5, 0.1)
         if not result then
-            dialog.displayErrorMessage("Failed to goto end timecode.")
+            dialog.displayErrorMessage(string.format("Failed to goto end timecode (%s).", endTimecode))
             return false
         end
         if not fcp:selectMenu({"Mark", "Set Range End"}) then
@@ -648,10 +668,14 @@ function mod.batchExportTimelineClips(clips)
         end
 
         --------------------------------------------------------------------------------
-        -- Make sure the Timeline is selected:
+        -- Make sure the Timeline is focussed:
         --------------------------------------------------------------------------------
-        if not fcp:selectMenu({"Window", "Go To", "Timeline"}) then
-            dialog.displayErrorMessage("Could not trigger 'Go To Timeline'." .. errorFunction)
+        result = just.doUntil(function()
+            fcp:timeline():doFocus(true):Now()
+            return fcp:timeline():isFocused()
+        end, 10, 0.1)
+        if not result then
+            dialog.displayErrorMessage("Failed to focus on timeline.")
             return false
         end
 
@@ -660,7 +684,7 @@ function mod.batchExportTimelineClips(clips)
         --------------------------------------------------------------------------------
         local exportDialog = fcp:exportDialog()
         local errorMessage
-        _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects())
+        _, errorMessage = exportDialog:show(destinationPreset, mod.ignoreProxies(), mod.ignoreMissingEffects(), mod.ignoreInvalidCaptions())
         if errorMessage then
             return false
         end
@@ -766,8 +790,13 @@ mod.destinationPreset = config.prop("batchExportDestinationPreset")
 ---  * None
 function mod.changeExportDestinationPreset()
     Do(function()
-        local destinationList = destinations.names()
+        local destinationList, destinationListError = destinations.names()
         local currentPreset = mod.destinationPreset()
+
+        if not destinationList then
+            log.ef("Destination List Error: %s", destinationListError)
+            destinationList = {}
+        end
 
         if compressor.isInstalled() then
             insert(destinationList, 1, i18n("sendToCompressor"))
@@ -901,6 +930,12 @@ function mod.getDestinationPreset()
             local title = defaultItem:attributeValue("AXTitle")
             if title then
                 --log.df("Using Default Destination: '%s'", title)
+                --------------------------------------------------------------------------------
+                -- Remove the " (default)…" if it exists:
+                --------------------------------------------------------------------------------
+                if title:sub(-13) == " (default)…" then
+                    title = title:sub(1, -14)
+                end
                 destinationPreset = title
             end
         end
@@ -914,7 +949,12 @@ function mod.getDestinationPreset()
         if firstItem ~= nil then
             local title = firstItem:attributeValue("AXTitle")
             if title then
-                --log.df("Using first item: '%s'", title)
+                --------------------------------------------------------------------------------
+                -- Remove the "…" if it exists:
+                --------------------------------------------------------------------------------
+                if title:sub(-3) == "…" then
+                    title = title:sub(1, -4)
+                end
                 destinationPreset = title
             end
         end
@@ -943,7 +983,6 @@ end
 --- Returns:
 ---  * `true` if successful otherwise `false`
 function mod.batchExport(mode)
-
     --------------------------------------------------------------------------------
     -- Make sure Final Cut Pro is Active:
     --------------------------------------------------------------------------------
@@ -1056,7 +1095,6 @@ function mod.batchExport(mode)
         mod._clips = selectedClips
         mod._bmMan.show()
     end
-
 end
 
 -- clipsToCountString(clips) -> string
@@ -1168,7 +1206,7 @@ function plugin.init(deps)
         label       = i18n("browser"),
         image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerClipIcon.png")),
         tooltip     = i18n("browser"),
-        height      = 650,
+        height      = 670,
     })
 
         :addHeading(nextID(), "Batch Export from Browser")
@@ -1265,6 +1303,12 @@ function plugin.init(deps)
             })
         :addCheckbox(nextID(),
             {
+                label = i18n("ignoreInvalidCaptions"),
+                onchange = function(_, params) mod.ignoreInvalidCaptions(params.checked) end,
+                checked = mod.ignoreInvalidCaptions,
+            })
+        :addCheckbox(nextID(),
+            {
                 label = i18n("useCustomFilename"),
                 onchange = function(_, params)
                     mod.useCustomFilename(params.checked)
@@ -1293,7 +1337,7 @@ function plugin.init(deps)
         label       = i18n("timeline"),
         image       = image.imageFromPath(tools.iconFallback(fcpPath .. "/Contents/Frameworks/Flexo.framework/Versions/A/Resources/FFMediaManagerCompoundClipIcon.png")),
         tooltip     = i18n("timeline"),
-        height      = 650,
+        height      = 670,
     })
         :addHeading(nextID(), "Batch Export from Timeline")
         :addParagraph(nextID(), function()
@@ -1384,6 +1428,12 @@ function plugin.init(deps)
                 label = i18n("ignoreProxies"),
                 onchange = function(_, params) mod.ignoreProxies(params.checked) end,
                 checked = mod.ignoreProxies,
+            })
+        :addCheckbox(nextID(),
+            {
+                label = i18n("ignoreInvalidCaptions"),
+                onchange = function(_, params) mod.ignoreInvalidCaptions(params.checked) end,
+                checked = mod.ignoreInvalidCaptions,
             })
         :addCheckbox(nextID(),
             {

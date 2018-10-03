@@ -2114,7 +2114,7 @@ function Observable:retry(count)
       if active then
         cancelRef()
         retries = retries + 1
-        if count and retries > count then
+        if count and retries == count then
           active = false
           observer:onError(message)
         else
@@ -2177,7 +2177,7 @@ function Observable:retryWithDelay(count, delay, scheduler)
       if active then
         cancelRef()
         retries = retries + 1
-        if count and retries > count then
+        if count and retries == count then
           done()
           observer:onError(message)
         else
@@ -3554,8 +3554,10 @@ end
 --- * ...       - The values to send.
 function Subject:onNext(...)
   if not self.stopped then
+    local observer
     for i = 1, #self.observers do
-      self.observers[i]:onNext(...)
+      observer = self.observers[i]
+      if observer then observer:onNext(...) end
     end
   end
 end
@@ -3569,8 +3571,10 @@ end
 function Subject:onError(message)
   if not self.stopped then
     self.stopping = true
+    local observer
     for i = 1, #self.observers do
-      self.observers[i]:onError(message)
+      observer = self.observers[i]
+      if observer then observer:onError(message) end
     end
     self.stopping = true
     self:_stop()
@@ -3583,8 +3587,10 @@ end
 function Subject:onCompleted()
   if not self.stopped then
     self.stopping = true
+    local observer
     for i = 1, #self.observers do
-      self.observers[i]:onCompleted()
+      observer = self.observers[i]
+      if observer then observer:onCompleted() end
     end
     self.stopping = true
     self:_stop()

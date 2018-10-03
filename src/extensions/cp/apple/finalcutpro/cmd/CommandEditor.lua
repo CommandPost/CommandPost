@@ -97,7 +97,7 @@ function CommandEditor.new(app)
     end)
 
     -- provides access to common AXWindow properties.
-    local window = Window.new(app.app, UI)
+    local window = Window(app.app, UI)
     o._window = window
 
     prop.bind(o) {
@@ -130,14 +130,14 @@ function CommandEditor.new(app)
 --- cp.apple.finalcutpro.cmd.CommandEditor.save <cp.ui.Button>
 --- Field
 --- The "Save" [Button](cp.ui.Button.md).
-    o.save = Button.new(o, UI:mutate(function(original)
+    o.save = Button(o, UI:mutate(function(original)
         return axutils.childFromRight(original(), 1, Button.matches)
     end))
 
 --- cp.apple.finalcutpro.cmd.CommandEditor.close <cp.ui.Button>
 --- Field
 --- The "Close" [Button](cp.ui.Button.md).
-    o.close = Button.new(o, UI:mutate(function(original)
+    o.close = Button(o, UI:mutate(function(original)
         return axutils.childFromRight(original(), 2, Button.matches)
     end))
 

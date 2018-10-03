@@ -32,128 +32,23 @@ local tools                                     = require("cp.tools")
 local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
---
--- THE MODULE - CONTROLS:
---
+-- Local Extensions:
 --------------------------------------------------------------------------------
+local controls                                  = require("controls")
+local default                                   = require("default")
 
---- === plugins.core.midi.manager.controls ===
----
---- MIDI Manager Controls.
-
-local mod = {}
-
-local controls = {}
-controls._items = {}
-
-mod.controls = controls
-
---- plugins.core.midi.manager.controls:new(id, params) -> table
---- Method
---- Creates a new MIDI control.
----
---- Parameters:
---- * `id`      - The unique ID for this widget.
----
---- Returns:
----  * table that has been created
-function controls:new(id, params)
-
-    if controls._items[id] ~= nil then
-        error("Duplicate Control ID: " .. id)
-    end
-    local o = {
-        _id = id,
-        _params = params,
-    }
-    setmetatable(o, self)
-    self.__index = self
-
-    controls._items[id] = o
-    return o
-
-end
-
---- plugins.core.midi.manager.controls:get(id) -> table
---- Method
---- Gets a MIDI control.
----
---- Parameters:
---- * `id`      - The unique ID for the widget you want to return.
----
---- Returns:
----  * table containing the widget
-function controls:get(id)
-    return self._items[id]
-end
-
---- plugins.core.midi.manager.controls:getAll() -> table
---- Method
---- Returns all of the created controls.
----
---- Parameters:
---- * None
----
---- Returns:
----  * table containing all of the created callbacks
-function controls:getAll()
-    return self._items
-end
-
---- plugins.core.midi.manager.controls:id() -> string
---- Method
---- Returns the ID of the control.
----
---- Parameters:
---- * None
----
---- Returns:
----  * The ID of the widget as a `string`
-function controls:id()
-    return self._id
-end
-
---- plugins.core.midi.manager.controls:params() -> function
---- Method
---- Returns the paramaters of the control.
----
---- Parameters:
---- * None
----
---- Returns:
----  * The paramaters of the widget
-function controls:params()
-    return self._params
-end
-
---- plugins.core.midi.manager.controls.allGroups() -> table
---- Function
---- Returns a table containing all of the control groups.
----
---- Parameters:
---- * None
----
---- Returns:
----  * Table
-function controls.allGroups()
-    local result = {}
-    local allControls = controls:getAll()
-    for _, widget in pairs(allControls) do
-        local params = widget:params()
-        if params and params.group then
-            if not tools.tableContains(result, params.group) then
-                table.insert(result, params.group)
-            end
-        end
-    end
-    return result
-end
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local convertSingleHexStringToDecimalString     = tools.convertSingleHexStringToDecimalString
+local doAfter                                   = timer.doAfter
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
+local mod = {}
 
 --- plugins.core.midi.manager.DEFAULT_GROUP -> string
 --- Constant
@@ -173,376 +68,17 @@ mod.FOLDER_NAME = "MIDI Controls"
 --- plugins.core.midi.manager.DEFAULT_MIDI_CONTROLS -> table
 --- Constant
 --- The default MIDI controls, so that the user has a starting point.
-mod.DEFAULT_MIDI_CONTROLS = {
-  fcpx1 = {
-    ["1"] = {
-      action = {
-        id = "next"
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["3"] = {
-      action = {
-        id = "colorAnglePuckOne"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 1 (Angle)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["4"] = {
-      action = {
-        id = "colorPercentagePuckOne"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 1 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["5"] = {
-      action = {
-        id = "colorAnglePuckTwo"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 2 (Angle)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["6"] = {
-      action = {
-        id = "colorPercentagePuckTwo"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 2 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["7"] = {
-      action = {
-        id = "colorAnglePuckThree"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 3 (Angle)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["8"] = {
-      action = {
-        id = "colorPercentagePuckThree"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 3 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["9"] = {
-      action = {
-        id = "colorAnglePuckFour"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 4 (Angle)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["10"] = {
-      action = {
-        id = "colorPercentagePuckFour"
-      },
-      actionTitle = "MIDI: Color Board Color Puck 4 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["11"] = {
-      action = {
-        id = "exposurePercentagePuckOne"
-      },
-      actionTitle = "MIDI: Color Board Exposure Puck 1 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["12"] = {
-      action = {
-        id = "exposurePercentagePuckTwo"
-      },
-      actionTitle = "MIDI: Color Board Exposure Puck 2 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["13"] = {
-      action = {
-        id = "exposurePercentagePuckThree"
-      },
-      actionTitle = "MIDI: Color Board Exposure Puck 3 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["14"] = {
-      action = {
-        id = "exposurePercentagePuckFour"
-      },
-      actionTitle = "MIDI: Color Board Exposure Puck 4 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["15"] = {
-      action = {
-        id = "saturationPercentagePuckOne"
-      },
-      actionTitle = "MIDI: Color Board Saturation Puck 1 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["16"] = {
-      action = {
-        id = "saturationPercentagePuckTwo"
-      },
-      actionTitle = "MIDI: Color Board Saturation Puck 2 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["17"] = {
-      action = {
-        id = "saturationPercentagePuckThree"
-      },
-      actionTitle = "MIDI: Color Board Saturation Puck 3 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["18"] = {
-      action = {
-        id = "saturationPercentagePuckFour"
-      },
-      actionTitle = "MIDI: Color Board Saturation Puck 4 (Percentage)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["19"] = {
-      action = {
-        id = "puckOne"
-      },
-      actionTitle = "MIDI: Color Board Puck 1",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["20"] = {
-      action = {
-        id = "puckTwo"
-      },
-      actionTitle = "MIDI: Color Board Puck 2",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["21"] = {
-      action = {
-        id = "puckThree"
-      },
-      actionTitle = "MIDI: Color Board Puck 3",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["22"] = {
-      action = {
-        id = "puckFour"
-      },
-      actionTitle = "MIDI: Color Board Puck 4",
-      handlerID = "fcpx_midicontrols"
-    },
-  },
-  fcpx2 = {
-    ["1"] = {
-      action = {
-        id = "next"
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["3"] = {
-      action = {
-        id = "masterHorizontal"
-      },
-      actionTitle = "MIDI: Color Wheel Master (Horizontal)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["4"] = {
-      action = {
-        id = "masterVertical"
-      },
-      actionTitle = "MIDI: Color Wheel Master (Vertical)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["5"] = {
-      action = {
-        id = "highlightsHorizontal"
-      },
-      actionTitle = "MIDI: Color Wheel Highlights (Horizontal)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["6"] = {
-      action = {
-        id = "highlightsVertical"
-      },
-      actionTitle = "MIDI: Color Wheel Highlights (Vertical)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["7"] = {
-      action = {
-        id = "midtonesHorizontal"
-      },
-      actionTitle = "MIDI: Color Wheel Midtones (Horizontal)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["8"] = {
-      action = {
-        id = "midtonesVertical"
-      },
-      actionTitle = "MIDI: Color Wheel Midtones (Vertical)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["9"] = {
-      action = {
-        id = "shadowsHorizontal"
-      },
-      actionTitle = "MIDI: Color Wheel Shadows (Horizontal)",
-      handlerID = "fcpx_midicontrols"
-    },
-    ["10"] = {
-      action = {
-        id = "shadowsVertical"
-      },
-      actionTitle = "MIDI: Color Wheel Shadows (Vertical)",
-      handlerID = "fcpx_midicontrols"
-    },
-  },
-  fcpx3 = {
-    ["1"] = {
-      action = {
-        id = "next"
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["3"] = {
-      action = {
-        id = "zoomSlider",
-      },
-      actionTitle = "MIDI: Timeline Zoom",
-      handlerID = "fcpx_midicontrols",
-    },
-  },
-  fcpx4 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-  },
-  fcpx5 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    }
-  },
-  global1 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    }
-  },
-  global2 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    }
-  },
-  global3 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    }
-  },
-  global4 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    }
-  },
-  global5 = {
-    ["1"] = {
-      action = {
-        id = "next",
-      },
-      actionTitle = "Next MIDI Bank",
-      handlerID = "global_midibanks",
-    },
-    ["2"] = {
-      action = {
-        id = "previous",
-      },
-      actionTitle = "Previous MIDI Bank",
-      handlerID = "global_midibanks",
-    }
-  },
-}
+mod.DEFAULT_MIDI_CONTROLS = default
 
 --- plugins.core.midi.manager.learningMode -> boolean
 --- Variable
 --- Whether or not the MIDI Manager is in learning mode.
 mod.learningMode = false
+
+--- plugins.core.midi.manager.controls -> table
+--- Variable
+--- Controls
+mod.controls = controls
 
 -- plugins.core.midi.manager._deviceNames -> table
 -- Constant
@@ -910,37 +446,6 @@ function mod.registerCallback(id, fn)
     else
         log.ef("Could not register callback function. id: %s, fn: %s", id, fn)
     end
-end
-
--- convertSingleHexStringToDecimalString(hex) -> string
--- Function
--- Converts a single hex string (i.e. "3") to a binary string (i.e. "0011")
---
--- Parameters:
---  * hex - A single string character
---
--- Returns:
---  * A four character string
-local function convertSingleHexStringToDecimalString(hex)
-    local lookup = {
-        ["0"]   = "0000",
-        ["1"]   = "0001",
-        ["2"]   = "0010",
-        ["3"]   = "0011",
-        ["4"]   = "0100",
-        ["5"]   = "0101",
-        ["6"]   = "0110",
-        ["7"]   = "0111",
-        ["8"]   = "1000",
-        ["9"]   = "1001",
-        ["A"]   = "1010",
-        ["B"]   = "1011",
-        ["C"]   = "1100",
-        ["D"]   = "1101",
-        ["E"]   = "1110",
-        ["F"]   = "1111",
-    }
-    return lookup[hex]
 end
 
 --- plugins.core.midi.manager.sendMMC(deviceName, virtual, commandType, parameters) -> boolean
@@ -1451,7 +956,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     local listenMMCDevice = mod.listenMMCDevice()
     if mod.listenMMC() and listenMMCDevice and listenMMCDevice == deviceName and commandType == "systemExclusive" then
         for _, v in pairs(mod._listenMMCFunctions) do
-            timer.doAfter(0.0000000000000000000001, function()
+            doAfter(0, function()
                 local mmcType, timecode, framerate, subframe = mod.processMMC(metadata.sysexData)
                 if mmcType then
                     local ok, result = xpcall(function() v(mmcType, timecode, framerate, subframe) end, debug.traceback)
@@ -1469,7 +974,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     local listenMTCDevice = mod.listenMTCDevice()
     if mod.listenMTC() and listenMTCDevice and listenMTCDevice == deviceName and commandType == "systemTimecodeQuarterFrame" then
         for _, v in pairs(mod._listenMTCFunctions) do
-            timer.doAfter(0.0000000000000000000001, function()
+            doAfter(0, function()
                 local mtcType, timecode, framerate = mod.processMTC(metadata.data)
                 if mtcType then
                     local ok, result = xpcall(function() v(mtcType, timecode, framerate) end, debug.traceback)
@@ -1485,7 +990,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
     -- Listen for General Callbacks:
     --------------------------------------------------------------------------------
     for _, v in pairs(mod._generalCallbacks) do
-        timer.doAfter(0.0000000000000000000001, function()
+        doAfter(0, function()
             local ok, result = xpcall(function() v(object, deviceName, commandType, description, metadata) end, debug.traceback)
             if not ok then
                 log.ef("Error while processing MIDI General Callback: %s", result)
@@ -1536,7 +1041,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                                     if mod._lastControllerValue == controllerValue then
                                         return
                                     else
-                                        timer.doAfter(0.0001, function()
+                                        doAfter(0, function()
                                             if metadata.timestamp == mod._lastTimestamp then
                                                 local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
                                                 if not ok then
@@ -1550,7 +1055,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                                 mod._lastTimestamp = metadata and metadata.timestamp
                             else
                                 mod._alreadyProcessingCallback = true
-                                timer.doAfter(0.000000000000000000001, function()
+                                doAfter(0, function()
                                     local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
                                     if not ok then
                                         log.ef("Error while processing MIDI Callback: %s", result)
@@ -1585,7 +1090,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                                 if mod._lastPitchChange == metadata.pitchChange then
                                     return
                                 else
-                                    timer.doAfter(0.0001, function()
+                                    doAfter(0, function()
                                         if metadata.timestamp == mod._lastTimestamp then
                                             local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
                                             if not ok then
@@ -1599,7 +1104,7 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
                             mod._lastTimestamp = metadata and metadata.timestamp
                         else
                             mod._alreadyProcessingCallback = true
-                            timer.doAfter(0.000000000000000000001, function()
+                            doAfter(0, function()
                                 local ok, result = xpcall(function() params.fn(metadata, deviceName) end, debug.traceback)
                                 if not ok then
                                     log.ef("Error while processing MIDI Callback: %s", result)
@@ -1621,7 +1126,6 @@ function mod.midiCallback(object, deviceName, commandType, description, metadata
             end
         end
     end
-
 end
 
 --- plugins.core.midi.manager.devices() -> table
@@ -1999,6 +1503,7 @@ function plugin.postInit(deps)
                 return choices
             end)
             :onExecute(function() end)
+            :onActionId(function() return "midiControls" end)
     end
 
     --------------------------------------------------------------------------------

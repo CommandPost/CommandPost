@@ -1,6 +1,8 @@
 --- === cp.apple.finalcutpro.inspector.color.ColorInspector ===
 ---
 --- Color Inspector Module.
+---
+--- Extends [Element](cp.ui.Element.md).
 
 --------------------------------------------------------------------------------
 --
@@ -17,16 +19,21 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop                              = require("cp.prop")
 local axutils                           = require("cp.ui.axutils")
 
 local idBoard                           = require("cp.apple.finalcutpro.ids") "ColorBoard"
+
+local BasePanel                         = require("cp.apple.finalcutpro.inspector.BasePanel")
 
 local CorrectionsBar                    = require("cp.apple.finalcutpro.inspector.color.CorrectionsBar")
 local ColorBoard                        = require("cp.apple.finalcutpro.inspector.color.ColorBoard")
 local ColorWheels                       = require("cp.apple.finalcutpro.inspector.color.ColorWheels")
 local ColorCurves                       = require("cp.apple.finalcutpro.inspector.color.ColorCurves")
 local HueSaturationCurves               = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
+
+local If, WaitUntil                     = require("cp.rx.go.If"), require("cp.rx.go.WaitUntil")
+
+local withRole, childWithRole, childFromTop = axutils.withRole, axutils.childWithRole, axutils.childFromTop
 
 --------------------------------------------------------------------------------
 -- 3rd Party Extensions:
@@ -38,7 +45,7 @@ local v                                 = require("semver")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorInspector = {}
+local ColorInspector = BasePanel:subclass("cp.apple.finalcutpro.inspector.color.ColorInspector")
 
 local ADVANCED_VERSION = v("10.4")
 
@@ -51,18 +58,13 @@ local ADVANCED_VERSION = v("10.4")
 ---
 --- Returns:
 --- * `true` if the element is the Color Inspector.
-function ColorInspector.matches(element)
-    if element then
-        local role = element:attributeValue("AXRole") -- 10.4+
-        if role == "AXGroup" and #element == 1 then
-            local split = element[1]
-            if split:attributeValue("AXRole") == "AXSplitGroup" then
-                local top = axutils.childFromTop(split, 1)
-                if top and top:attributeValue("AXRole") == "AXGroup" and #top == 1 then
-                    -- check it's the correction bar.
-                    return CorrectionsBar.matches(top[1])
-                end
-            end
+function ColorInspector.static.matches(element)
+    if BasePanel.matches(element) then
+        local root = #element == 1 and withRole(element, "AXGroup")
+        if root then -- 10.4+
+            local split = childWithRole(root, "AXSplitGroup")
+            local top = split and withRole(childFromTop(split, 1), "AXGroup")
+            return top and #top == 1 and CorrectionsBar.matches(top[1]) or false
         else -- 10.3 Color Board
             return ColorBoard.matchesOriginal(element)
         end
@@ -70,7 +72,7 @@ function ColorInspector.matches(element)
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorInspector.new(parent) -> ColorInspector object
+--- cp.apple.finalcutpro.inspector.color.ColorInspector(parent) -> ColorInspector object
 --- Method
 --- Creates a new ColorInspector object
 ---
@@ -79,31 +81,15 @@ end
 ---
 --- Returns:
 ---  * A ColorInspector object
-function ColorInspector.new(parent)
-
-    local o = prop.extend({
-        _parent = parent,
-        _child = {}
-    }, ColorInspector)
-
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- Returns the `hs._asm.axuielement` object for the Color Inspector. Prior to FCPX 10.4 this will be the Color Board.
-    o.UI = parent.panelUI:mutate(function(original, self)
-        return axutils.cache(self, "_ui",
-            function()
-                local ui = original()
-                return ColorInspector.matches(ui) and ui or nil
-            end,
-            ColorInspector.matches
-        )
-    end):bind(o)
+function ColorInspector:initialize(parent)
+    BasePanel.initialize(self, parent, "Color")
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.topBarUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `hs._asm.axuielement` object representing the top bar.
-    o.topBarUI = o.UI:mutate(function(original, self)
+function ColorInspector.lazy.prop:topBarUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_topBar",
             function()
                 local ui = original()
@@ -115,12 +101,14 @@ function ColorInspector.new(parent)
             end,
             function(element) return element:attributeValue("AXRole") == "AXGroup" end
         )
-    end):bind(o)
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.correctorUI <cp.prop: hs._asm.axuielement; read-only>
 --- Field
 --- Returns the `hs._asm.axuielement` object representing the currently-selected corrector panel.
-    o.correctorUI = o.UI:mutate(function(original, self)
+function ColorInspector.lazy.prop:correctorUI()
+    return self.UI:mutate(function(original)
         return axutils.cache(self, "_corrector",
             function()
                 local ui = original()
@@ -135,51 +123,17 @@ function ColorInspector.new(parent)
                 return nil
             end, function(element) return original() ~= nil and element ~= nil end
         )
-    end):bind(o)
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector.isShowing <cp.prop: boolean; read-only; live>
---- Field
---- Checks if the Color Inspector is visible.
-    o.isShowing = o.UI:mutate(function(original)
-        return original() ~= nil
-    end):bind(o)
-
+    end)
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector.isAdvanced <cp.prop: boolean; read-only>
 --- Field
 --- Is the Color Inspector the advanced version that was added in 10.4?
-    o.isAdvanced = parent:app().app.version:mutate(function(original)
+function ColorInspector.lazy.prop:isAdvanced()
+    return self:app().app.version:mutate(function(original)
         local version = original()
         return version and version >= ADVANCED_VERSION
-    end):bind(o)
-
-    return o
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector:parent() -> table
---- Method
---- Returns the ColorInspector's parent table.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function ColorInspector:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorInspector:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function ColorInspector:app()
-    return self:parent():app()
+    end)
 end
 
 -----------------------------------------------------------------------
@@ -198,11 +152,8 @@ end
 ---
 --- Returns:
 --- * The `CorrectionsBar` instance.
-function ColorInspector:corrections()
-    if not self._corrections then
-        self._corrections = CorrectionsBar.new(self)
-    end
-    return self._corrections
+function ColorInspector.lazy.method:corrections()
+    return CorrectionsBar(self)
 end
 
 --------------------------------------------------------------------------------
@@ -227,6 +178,25 @@ function ColorInspector:show()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to show the Color Inspector.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful or sending an error if not.
+function ColorInspector.lazy.method:doShow()
+    return If(self.isShowing):Is(false)
+    :Then(
+        self:app():menu():doSelectMenu({"Window", "Go To", idBoard "ColorBoard"})
+    )
+    :Then(WaitUntil(self.isShowing):TimeoutAfter(2000, "Unable to activate the " .. idBoard("ColorBoard")))
+    :Otherwise(true)
+    :Label("ColorInspector:doShow")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:activateCorrection(correctionType[, number]) -> self
 --- Method
 --- Activates the named correction type and number, if present. If no corrector with the type/number combination exists, a new one is added.
@@ -242,6 +212,21 @@ function ColorInspector:activateCorrection(correctionType, number)
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:doActivateCorrection(correctionType[, number]) -> cp.rx.go.Statement<boolean>
+--- Method
+--- Returns a [Statement](cp.rx.go.Statement.md) that activates the named correction type and number, if present.
+--- If no corrector with the type/number combination exists, a new one is added.
+---
+--- Parameters:
+---  * correctionType   - The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.
+---  * number           - The correction number for that type. Defaults to `1`.
+---
+--- Returns:
+---  * The `Statement`, which sends a single `true` value if successful, or sends an error if not.
+function ColorInspector:doActivateCorrection(correctionType, number)
+    return self:corrections():doActivate(correctionType, number):Label("ColorInspector:doActivateCorrection")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:addCorrection(correctionType) -> self
 --- Method
 --- Adds the named correction type.
@@ -254,6 +239,19 @@ end
 function ColorInspector:addCorrection(correctionType)
     self:corrections():add(correctionType)
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorInspector:doAddCorrection(correctionType) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that adds the named correction type.
+---
+--- Parameters:
+---  * correctionType   - The string for the type of correction (in English). E.g. "Color Wheels", "Color Board", etc.
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful, or sending an error if not.
+function ColorInspector:doAddCorrection(correctionType)
+    return self:corrections():doAdd(correctionType):Label("ColorInspector:doAddCorrection")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorInspector:hide() -> ColorInspector
@@ -287,11 +285,8 @@ end
 ---
 --- Returns:
 ---  * A new ColorBoard object
-function ColorInspector:colorBoard()
-    if not self._colorBoard then
-        self._colorBoard = ColorBoard.new(self)
-    end
-    return self._colorBoard
+function ColorInspector.lazy.method:colorBoard()
+    return ColorBoard(self)
 end
 
 --------------------------------------------------------------------------------
@@ -309,11 +304,8 @@ end
 ---
 --- Returns:
 ---  * A new ColorWheels object
-function ColorInspector:colorWheels()
-    if not self._colorWheels then
-        self._colorWheels = ColorWheels.new(self)
-    end
-    return self._colorWheels
+function ColorInspector.lazy.method:colorWheels()
+    return ColorWheels(self)
 end
 
 --------------------------------------------------------------------------------
@@ -331,11 +323,8 @@ end
 ---
 --- Returns:
 ---  * A new ColorCurves object
-function ColorInspector:colorCurves()
-    if not self._colorCurves then
-        self._colorCurves = ColorCurves.new(self)
-    end
-    return self._colorCurves
+function ColorInspector.lazy.method:colorCurves()
+    return ColorCurves(self)
 end
 
 --------------------------------------------------------------------------------
@@ -353,11 +342,8 @@ end
 ---
 --- Returns:
 ---  * A new HueSaturationCurves object
-function ColorInspector:hueSaturationCurves()
-    if not self._hueSaturationCurves then
-        self._hueSaturationCurves = HueSaturationCurves.new(self)
-    end
-    return self._hueSaturationCurves
+function ColorInspector.lazy.method:hueSaturationCurves()
+    return HueSaturationCurves(self)
 end
 
 return ColorInspector

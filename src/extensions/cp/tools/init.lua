@@ -1149,7 +1149,7 @@ end
 ---  * path - A path as string
 ---
 --- Returns:
----  * A table containing filenames as strings.
+---  * A table containing filenames as strings, or `nil` followed by the error message if an error occurs.
 function tools.dirFiles(path)
     if not path then
         return nil
@@ -1159,7 +1159,9 @@ function tools.dirFiles(path)
         return nil
     end
     local contents, data = fs.dir(path)
-
+    if not contents then
+        return nil, data
+    end
     local files = {}
     for file in function() return contents(data) end do
         files[#files+1] = file
@@ -1180,21 +1182,28 @@ end
 ---  * `true` if successful, or `nil, err` if there was a problem.
 function tools.rmdir(path, recursive)
     if recursive then
-        -- remove the contents.
-        for name in fs.dir(path) do
-            if name ~= "." and name ~= ".." then
-                local filePath = path .. "/" .. name
-                local attrs = fs.symlinkAttributes(filePath)
-                local ok, err
-                if attrs == nil then
-                    return nil, "Unable to find file to remove: "..filePath
-                elseif attrs.mode == "directory" then
-                    ok, err = tools.rmdir(filePath, true)
-                else
-                    ok, err = os.remove(filePath)
-                end
-                if not ok then
-                    return nil, err
+        --------------------------------------------------------------------------------
+        -- Remove the contents:
+        --------------------------------------------------------------------------------
+        local iterFn, dirObj = fs.dir(path)
+        if not iterFn then
+            return nil, dirObj
+        else
+            for name in iterFn, dirObj do
+                if name ~= "." and name ~= ".." then
+                    local filePath = path .. "/" .. name
+                    local attrs = fs.symlinkAttributes(filePath)
+                    local ok, err
+                    if attrs == nil then
+                        return nil, "Unable to find file to remove: "..filePath
+                    elseif attrs.mode == "directory" then
+                        ok, err = tools.rmdir(filePath, true)
+                    else
+                        ok, err = os.remove(filePath)
+                    end
+                    if not ok then
+                        return nil, err
+                    end
                 end
             end
         end
@@ -1353,5 +1362,35 @@ function tools.tableMatch(t1,t2,ignoreMetatable)
     return true
 end
 
+--- cp.tools.convertSingleHexStringToDecimalString(hex) -> string
+--- Function
+--- Converts a single hex string (i.e. "3") to a binary string (i.e. "0011")
+---
+--- Parameters:
+---  * hex - A single string character
+---
+--- Returns:
+---  * A four character string
+function tools.convertSingleHexStringToDecimalString(hex)
+    local lookup = {
+        ["0"]   = "0000",
+        ["1"]   = "0001",
+        ["2"]   = "0010",
+        ["3"]   = "0011",
+        ["4"]   = "0100",
+        ["5"]   = "0101",
+        ["6"]   = "0110",
+        ["7"]   = "0111",
+        ["8"]   = "1000",
+        ["9"]   = "1001",
+        ["A"]   = "1010",
+        ["B"]   = "1011",
+        ["C"]   = "1100",
+        ["D"]   = "1101",
+        ["E"]   = "1110",
+        ["F"]   = "1111",
+    }
+    return lookup[hex]
+end
 
 return tools

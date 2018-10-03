@@ -31,7 +31,7 @@ end)
 :onObservable(function(context)
     local o = toObservable(context.resolvable)
     if context.delay then
-        return o:retryWithDelay(context.count, context.delay)
+        return o:retryWithDelay(context.count, context.delay, context.scheduler)
     else
         return o:retry(context.count)
     end
@@ -62,18 +62,20 @@ end)
 --- Constant
 --- A `Statement.Modifier` that sets the delay between retries.
 
---- cp.rx.go.Retry:DelayedBy(milliseconds) -> Retry.DelayedBy
+--- cp.rx.go.Retry:DelayedBy(milliseconds[, scheduler]) -> Retry.DelayedBy
 --- Method
 --- Specify a time in millieconds to delay by.
 ---
 --- Parameters:
 ---  * milliseconds - The amount of time do delay between retries.
+---  * scheduler    - The scheduler to use. Defaults to `cp.rx.util.defaultScheduler()`.
 ---
 --- Returns:
 ---  * The `DelayedBy` `Statement.Modifier`.
 Retry.modifier("DelayedBy")
-:onInit(function(context, milliseconds)
+:onInit(function(context, milliseconds, scheduler)
     context.delay = milliseconds
+    context.scheduler = scheduler
 end)
 :define()
 

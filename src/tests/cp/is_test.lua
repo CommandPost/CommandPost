@@ -63,6 +63,34 @@ return test.suite("cp.is"):with(
         ok(eq(is.userdata(callable), false))
     end),
 
+    test("instance", function()
+        local alpha = {}
+        local beta = setmetatable({}, {__index = alpha})
+        local gamma = setmetatable({}, {__class = alpha, __index = function(_, key) return alpha[key] end})
+
+        local a = setmetatable({}, {__index = alpha})
+        local b = setmetatable({}, {__index = beta})
+        local g = setmetatable({}, {__index = gamma})
+
+        ok(eq(is.instance(beta, alpha), true))
+        ok(eq(is.instance(gamma, alpha), true))
+        ok(eq(is.instance(beta, gamma), false))
+        ok(eq(is.instance(alpha, beta), false))
+        ok(eq(is.instance(alpha, gamma), false))
+
+        ok(eq(is.instance(a, alpha), true))
+        ok(eq(is.instance(a, beta), false))
+        ok(eq(is.instance(a, gamma), false))
+
+        ok(eq(is.instance(b, alpha), true))
+        ok(eq(is.instance(b, beta), true))
+        ok(eq(is.instance(b, gamma), false))
+
+        ok(eq(is.instance(g, alpha), true))
+        ok(eq(is.instance(g, beta), false))
+        ok(eq(is.instance(g, gamma), true))
+    end),
+
     test("object", function()
         ok(eq(is.object({}), true))
         ok(eq(is.object(newUserdata()), true))

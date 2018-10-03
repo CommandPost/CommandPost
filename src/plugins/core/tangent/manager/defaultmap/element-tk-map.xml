@@ -28,15 +28,15 @@
                         <Control type="Encoder" number="2"> <!-- Element-Tk Ring 1 -->
                             <Mapping mode="Std">
                                 <Key>0x0AA00001</Key> <!-- Volume -->
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
+                                <Display>Percentage</Display>
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="5"> <!-- Element-Tk Ring 2 -->
                             <Mapping mode="Std">
                                 <Key>0x0AD00001</Key> <!-- Brightness -->
-                                <Display>Number</Display>
-                                <Sensitivity>3</Sensitivity>
+                                <Display>Percentage</Display>
+                                <Sensitivity>5</Sensitivity>
                             </Mapping>
                         </Control>
                     </Bank>
@@ -362,6 +362,7 @@
                                 <Key>0x0F730007</Key> <!-- Anchor X -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                         <Control type="Encoder" number="7"> <!-- Element-Tk Trackerball 3 Y -->
@@ -369,6 +370,7 @@
                                 <Key>0x0F730008</Key> <!-- Anchor Y -->
                                 <Display>Number</Display>
                                 <Sensitivity>5</Sensitivity>
+                                <Argument>0x00000001</Argument> <!-- Reverse direction -->
                             </Mapping>
                         </Control>
                     </Bank>

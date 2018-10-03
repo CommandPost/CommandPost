@@ -12,11 +12,13 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
---local log                               = require("hs.logger").new("pasteTextAsCaption")
+--local log                               = require("hs.logger").new("doPasteTextAsCaption")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local eventtap                          = require("hs.eventtap")
+local keycodes                          = require("hs.keycodes")
 local pasteboard                        = require("hs.pasteboard")
 
 --------------------------------------------------------------------------------
@@ -24,9 +26,14 @@ local pasteboard                        = require("hs.pasteboard")
 --------------------------------------------------------------------------------
 local dialog                            = require("cp.dialog")
 local fcp                               = require("cp.apple.finalcutpro")
-
 local go                                = require("cp.rx.go")
-local Given, Require                    = go.Given, go.Require
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local event                             = eventtap.event
+local Given, Require, Retry             = go.Given, go.Require, go.Retry
+local map                               = keycodes.map
 
 --------------------------------------------------------------------------------
 --
@@ -35,29 +42,27 @@ local Given, Require                    = go.Given, go.Require
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.timeline.captions.pasteTextAsCaption() -> none
+--- plugins.finalcutpro.timeline.captions.doPasteTextAsCaption() -> cp.rx.go.Statement
 --- Function
---- Paste Text As Caption
+--- A [Statement](../cp/cp.rx.go.Statement.md) to Paste Text As Caption.
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
----  * None
-function mod.pasteTextAsCaption()
-
+---  * `cp.rx.go.Statement`
+function mod.doPasteTextAsCaption()
     --------------------------------------------------------------------------------
     -- Check Pasteboard contents for text:
     --------------------------------------------------------------------------------
     return Given(
-        Require(pasteboard.readString())
+        Require(pasteboard.readString)
         :OrThrow("No text could be found on the Pasteboard.")
     ):Then(
         --------------------------------------------------------------------------------
         -- Check that the timeline is showing:
         --------------------------------------------------------------------------------
-        Require(fcp:timeline():doShow())
-        :OrThrow("Unable to show the Timeline")
+        fcp:timeline():doShow()
     ):Then(
         --------------------------------------------------------------------------------
         -- Add Caption:
@@ -68,13 +73,19 @@ function mod.pasteTextAsCaption()
         --------------------------------------------------------------------------------
         -- Paste Text:
         --------------------------------------------------------------------------------
-        Require(fcp:doSelectMenu({"Edit", "Paste"}))
-        :OrThrow("Unable to paste text back into Final Cut Pro.")
-    )
-    :Catch(function(message)
+        Retry(fcp:doSelectMenu({"Edit", "Paste"}))
+        :UpTo(5):DelayedBy(100)
+    ):Then(
+        --------------------------------------------------------------------------------
+        -- Close Caption box & Move playhead to the end of the caption:
+        --------------------------------------------------------------------------------
+        function()
+            event.newKeyEvent(map.escape, true):post()
+            event.newKeyEvent(map.down, true):post()
+        end
+    ):Catch(function(message)
         dialog.displayErrorMessage("Unable to 'Paste Text as Caption': "..message)
     end)
-    :Now()
 end
 
 --------------------------------------------------------------------------------
@@ -100,7 +111,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.fcpxCmds then
         deps.fcpxCmds:add("cpPasteTextAsCaption")
-            :whenActivated(mod.pasteTextAsCaption)
+            :whenActivated(mod.doPasteTextAsCaption())
     end
 
     return mod

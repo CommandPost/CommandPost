@@ -7,15 +7,15 @@
 -- EXTENSIONS:
 --
 --------------------------------------------------------------------------------
+local require = require
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local require = require
 local axutils							= require("cp.ui.axutils")
 local Clip								= require("cp.apple.finalcutpro.content.Clip")
-local id								  = require("cp.apple.finalcutpro.ids") "LibrariesList"
-local Playhead						= require("cp.apple.finalcutpro.main.Playhead")
+local id								= require("cp.apple.finalcutpro.ids") "LibrariesList"
+local Playhead						    = require("cp.apple.finalcutpro.main.Playhead")
 local prop								= require("cp.prop")
 local Table								= require("cp.ui.Table")
 
@@ -23,6 +23,15 @@ local Table								= require("cp.ui.Table")
 -- 3rd Party Extensions:
 --------------------------------------------------------------------------------
 local _									= require("moses")
+
+--------------------------------------------------------------------------------
+-- Local Lua Functions:
+--------------------------------------------------------------------------------
+local cache                             = axutils.cache
+local childFromTop                      = axutils.childFromTop
+local childrenMatching                  = axutils.childrenMatching
+local childWithRole                     = axutils.childWithRole
+local isValid                           = axutils.isValid
 
 --------------------------------------------------------------------------------
 --
@@ -57,7 +66,7 @@ function LibrariesList.new(parent)
     local o = prop.extend({_parent = parent}, LibrariesList)
 
     local UI = parent.mainGroupUI:mutate(function(original)
-        return axutils.cache(o, "_ui", function()
+        return cache(o, "_ui", function()
             local main = original()
             if main then
                 for _,child in ipairs(main) do
@@ -73,8 +82,8 @@ function LibrariesList.new(parent)
     end)
 
     local playerUI = UI:mutate(function(original, self)
-        return axutils.cache(self, "_player", function()
-            return axutils.childFromTop(original(), id "Player")
+        return cache(self, "_player", function()
+            return childFromTop(original(), id "Player")
         end)
     end)
 
@@ -208,8 +217,8 @@ end
 ---  * `Table` object
 function LibrariesList:contents()
     if not self._content then
-        self._content = Table.new(self, function()
-            return axutils.childWithRole(self:UI(), "AXScrollArea")
+        self._content = Table(self, function()
+            return childWithRole(self:UI(), "AXScrollArea")
         end)
     end
     return self._content
@@ -230,10 +239,10 @@ function LibrariesList:clipsUI(filterFn)
         local level = 0
         -- if the first row has no icon, it's a group
         local firstCell = self:contents():findCellUI(1, "filmlist name col")
-        if firstCell and axutils.childWithID(firstCell, id "RowIcon") == nil then
+        if firstCell and childWithRole(firstCell, "AXImage") == nil then
             level = 1
         end
-        return axutils.childrenMatching(rowsUI, function(row)
+        return childrenMatching(rowsUI, function(row)
             return row:attributeValue("AXDisclosureLevel") == level
                and (filterFn == nil or filterFn(row))
         end)
@@ -327,7 +336,7 @@ end
 function LibrariesList:showClip(clip)
     if clip then
         local clipUI = clip:UI()
-        if axutils.isValid(clipUI) then
+        if isValid(clipUI) then
             self:contents():showRow(clipUI)
             return true
         end
@@ -347,7 +356,7 @@ end
 function LibrariesList:selectClip(clip)
     if clip then
         local clipUI = clip:UI()
-        if axutils.isValid(clipUI) then
+        if isValid(clipUI) then
             self:contents():selectRow(clip:UI())
             return true
         end

@@ -9,14 +9,14 @@
 --------------------------------------------------------------------------------
 local require = require
 local axutils						= require("cp.ui.axutils")
-local prop							= require("cp.prop")
+local Element                       = require("cp.ui.Element")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Slider = {}
+local Slider = Element:subclass("Element")
 
 --- cp.ui.Slider.matches(element) -> boolean
 --- Function
@@ -27,108 +27,43 @@ local Slider = {}
 ---
 --- Returns:
 ---  * `true` if it's a match, or `false` if not.
-function Slider.matches(element)
-    return element ~= nil and element:attributeValue("AXRole") == "AXSlider"
+function Slider.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXSlider"
 end
 
---- cp.ui.Slider.new(parent, finderFn) -> cp.ui.Slider
+--- cp.ui.Slider(parent, uiFinder) -> cp.ui.Slider
 --- Constructor
 --- Creates a new Slider
 ---
 --- Parameters:
 ---  * parent		- The parent object. Should have an `isShowing` property.
----  * finderFn		- The function which returns an `hs._asm.axuielement` for the slider, or `nil`.
+---  * uiFinder		- The function which returns an `hs._asm.axuielement` for the slider, or `nil`.
 ---
 --- Returns:
 ---  * A new `Slider` instance.
-function Slider.new(parent, finderFn)
-    local o = prop.extend({_parent = parent, _finder = finderFn}, Slider)
-
-    local UI = prop(function(self)
-        return axutils.cache(self, "_ui", function()
-            return self._finder()
-        end,
-        Slider.matches)
-    end)
-
-    prop.bind(o) {
-
-        --- cp.ui.Slider:UI() -> hs._asm.axuielement | nil
-        --- Method
-        --- Returns the `axuielement` representing the Slider, or `nil` if not available.
-        ---
-        --- Parameters:
-        ---  * None
-        ---
-        --- Return:
-        ---  * The `axuielement` or `nil`.
-        UI = UI,
-
-        --- cp.ui.Slider.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- If `true`, it is visible on screen.
-        isShowing = parent.isShowing:AND(UI),
-
-        --- cp.ui.Slider.value <cp.prop: number>
-        --- Field
-        --- Sets or gets the value of the slider.
-        value = UI:mutate(
-            function(original)
-                local ui = original()
-                return ui and ui:attributeValue("AXValue")
-            end,
-            function(value, original)
-                local ui = original()
-                if ui then
-                    ui:setAttributeValue("AXValue", value)
-                end
-            end
-        ),
-
-        --- cp.ui.Slider.minValue <cp.prop: number; read-only>
-        --- Field
-        --- Gets the minimum value of the slider.
-        minValue = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXMinValue")
-        end),
-
-        --- cp.ui.Slider.maxValue <cp.prop: number; read-only>
-        --- Field
-        --- Gets the maximum value of the slider.
-        maxValue = UI:mutate(function(original)
-            local ui = original()
-            return ui and ui:attributeValue("AXMaxValue")
-        end),
-    }
-
-    return o
+function Slider:initialize(parent, uiFinder)
+    Element.initialize(self, parent, uiFinder)
 end
 
---- cp.ui.Slider:parent() -> table
---- Method
---- The parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function Slider:parent()
-    return self._parent
+--- cp.ui.Slider.value <cp.prop: number>
+--- Field
+--- Sets or gets the value of the slider.
+function Slider.lazy.prop:value()
+    return axutils.prop(self.UI, "AXValue", true)
 end
 
---- cp.ui.Slider:app() -> App
---- Method
---- Returns the app instance.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Slider:app()
-    return self:parent():app()
+--- cp.ui.Slider.minValue <cp.prop: number; read-only>
+--- Field
+--- Gets the minimum value of the slider.
+function Slider.lazy.prop:minValue()
+    return axutils.prop(self.UI, "AXMinValue")
+end
+
+--- cp.ui.Slider.maxValue <cp.prop: number; read-only>
+--- Field
+--- Gets the maximum value of the slider.
+function Slider.lazy.prop:maxValue()
+    return axutils.prop(self.UI, "AXMaxValue")
 end
 
 --- cp.ui.Slider:getValue() -> number
@@ -233,20 +168,6 @@ function Slider:decrement()
     return self
 end
 
---- cp.ui.Slider:isEnabled() -> boolean
---- Method
---- Is the slider enabled?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if enabled, otherwise `false`.
-function Slider:isEnabled()
-    local ui = self:UI()
-    return ui and ui:enabled()
-end
-
 -- cp.ui.xxx:__call([parent], value) -> self, boolean
 -- Method
 -- Allows the slider to be called like a function, to set the value.
@@ -284,7 +205,7 @@ end
 --- Loads a Slider layout.
 ---
 --- Parameters:
----  * layout - A table containing the Slider layout settings - created using `cp.ui.Slider:saveLayout()`.
+---  * layout - A table containing the Slider layout settings - created using [saveLayout](#saveLayout].
 ---
 --- Returns:
 ---  * None
@@ -292,24 +213,6 @@ function Slider:loadLayout(layout)
     if layout then
         self:setValue(layout.value)
     end
-end
-
---- cp.ui.Slider:snapshot([path]) -> hs.image | nil
---- Method
---- Takes a snapshot of the UI in its current state as a PNG and returns it.
---- If the `path` is provided, the image will be saved at the specified location.
----
---- Parameters:
----  * path	- (optional) The path to save the file. Should include the extension (should be `.png`).
----
---- Return:
----  * The `hs.image` that was created, or `nil` if the UI is not available.
-function Slider:snapshot(path)
-    local ui = self:UI()
-    if ui then
-        return axutils.snapshot(ui, path)
-    end
-    return nil
 end
 
 return Slider

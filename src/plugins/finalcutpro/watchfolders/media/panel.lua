@@ -1,26 +1,63 @@
+--- === plugins.finalcutpro.watchfolders.media.panel ===
+---
+--- Watch Folder Media Panel.
+
+--------------------------------------------------------------------------------
+--
+-- EXTENSIONS:
+--
+--------------------------------------------------------------------------------
 local require = require
+
+--------------------------------------------------------------------------------
+-- Logger:
+--------------------------------------------------------------------------------
+--local log           = require("hs.logger").new("batch")
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
 local host              = require("hs.host")
 local image             = require("hs.image")
 
-local fcp               = require("cp.apple.finalcutpro")
+--------------------------------------------------------------------------------
+-- CommandPost Extensions:
+--------------------------------------------------------------------------------
 local dialog            = require("cp.dialog")
-local tools             = require("cp.tools")
+local Do                = require("cp.rx.go.Do")
+local fcp               = require("cp.apple.finalcutpro")
 local html				= require("cp.web.html")
-local ui                = require("cp.web.ui")
 local i18n              = require("cp.i18n")
+local tools             = require("cp.tools")
+local ui                = require("cp.web.ui")
+
+--------------------------------------------------------------------------------
+--
+-- THE MODULE:
+--
+--------------------------------------------------------------------------------
+local mod = {}
 
 -- uuid -> string
 -- Variable
 -- A unique ID.
 local uuid = host.uuid
 
-local mod = {}
-
---- plugins.finalcutpro.watchfolders.media.watchFolderTableID -> string
+--- plugins.finalcutpro.watchfolders.media.panel.watchFolderTableID -> string
 --- Variable
 --- Watch Folder Table ID
 mod.watchFolderTableID = "fcpMediaWatchFoldersTable"
 
+--- plugins.finalcutpro.watchfolders.media.panel.init(mediaFolderManager, panelManager) -> self
+--- Function
+--- Initialises the module.
+---
+--- Parameters:
+---  * mediaFolderManager - Media Folder Manager
+---  * panelManager - Panel Manager
+---
+--- Returns:
+---  * Self
 function mod.init(mediaFolderManager, panelManager)
     mod.manager = mediaFolderManager
     mod.panelManager = panelManager
@@ -85,7 +122,7 @@ function mod.init(mediaFolderManager, panelManager)
     return mod
 end
 
---- plugins.finalcutpro.watchfolders.media.controllerCallback(id, params) -> none
+--- plugins.finalcutpro.watchfolders.media.panel.controllerCallback(id, params) -> none
 --- Function
 --- Callback Controller
 ---
@@ -101,7 +138,7 @@ function mod.controllerCallback(_, params)
         --------------------------------------------------------------------------------
         -- Remove a Watch Folder:
         --------------------------------------------------------------------------------
-        mod.manager.removeWatchFolder(params.path)
+        mod.manager.removeMediaFolder(params.path)
 
         --------------------------------------------------------------------------------
         -- Refresh Table:
@@ -115,7 +152,7 @@ function mod.controllerCallback(_, params)
     end
 end
 
---- plugins.finalcutpro.watchfolders.media.generateTable() -> string
+--- plugins.finalcutpro.watchfolders.media.panel.generateTable() -> string
 --- Function
 --- Generate HTML Table
 ---
@@ -197,7 +234,7 @@ function mod.generateTable()
     return result
 end
 
---- plugins.finalcutpro.watchfolders.media.refreshTable() -> string
+--- plugins.finalcutpro.watchfolders.media.panel.refreshTable() -> string
 --- Function
 --- Refreshes the Final Cut Pro Watch Folder Panel via JavaScript Injection
 ---
@@ -223,7 +260,7 @@ function mod.refreshTable()
     mod.panelManager.injectScript(result)
 end
 
---- plugins.finalcutpro.watchfolders.media.styleSheet() -> string
+--- plugins.finalcutpro.watchfolders.media.panel.styleSheet() -> string
 --- Function
 --- Generates Style Sheet
 ---
@@ -321,7 +358,7 @@ function mod.styleSheet()
     ]]
 end
 
---- plugins.finalcutpro.watchfolders.media.addWatchFolder() -> none
+--- plugins.finalcutpro.watchfolders.media.panel.addWatchFolder() -> none
 --- Function
 --- Opens the "Add Watch Folder" Dialog.
 ---
@@ -331,49 +368,51 @@ end
 --- Returns:
 ---  * None
 function mod.addWatchFolder()
-    local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
-    if path then
+    Do(function()
+        local path = dialog.displayChooseFolder(i18n("selectFolderToWatch"))
+        if path then
 
-        --------------------------------------------------------------------------------
-        -- Make sure the folder isn't already being watched:
-        --------------------------------------------------------------------------------
-        if mod.manager:hasMediaFolder(path) then
-            dialog.displayMessage(i18n("alreadyWatched"))
-            return
+            --------------------------------------------------------------------------------
+            -- Make sure the folder isn't already being watched:
+            --------------------------------------------------------------------------------
+            if mod.manager:hasMediaFolder(path) then
+                dialog.displayMessage(i18n("alreadyWatched"))
+                return
+            end
+
+
+            --------------------------------------------------------------------------------
+            -- Finder Tags:
+            --------------------------------------------------------------------------------
+            local videoTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("video")}), "", "", function() return true end)
+            if videoTag == false then
+                return
+            else
+                videoTag = tools.trim(videoTag)
+            end
+
+            local audioTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("audio")}), "", "", function() return true end)
+            if audioTag == false then
+                return
+            else
+                audioTag = tools.trim(audioTag)
+            end
+
+            local imageTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("stills")}), "", "", function() return true end)
+            if imageTag == false then
+                return
+            else
+                imageTag = tools.trim(imageTag)
+            end
+
+            mod.manager.addMediaFolder(path, videoTag, audioTag, imageTag)
+
+            --------------------------------------------------------------------------------
+            -- Refresh HTML Table:
+            --------------------------------------------------------------------------------
+            mod.refreshTable()
         end
-
-
-        --------------------------------------------------------------------------------
-        -- Finder Tags:
-        --------------------------------------------------------------------------------
-        local videoTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("video")}), "", "", function() return true end)
-        if videoTag == false then
-            return
-        else
-            videoTag = tools.trim(videoTag)
-        end
-
-        local audioTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("audio")}), "", "", function() return true end)
-        if audioTag == false then
-            return
-        else
-            audioTag = tools.trim(audioTag)
-        end
-
-        local imageTag = dialog.displayTextBoxMessage(i18n("watchFolderAddFinderTag", {type=i18n("stills")}), "", "", function() return true end)
-        if imageTag == false then
-            return
-        else
-            imageTag = tools.trim(imageTag)
-        end
-
-        mod.addMediaFolder(path, videoTag, audioTag, imageTag)
-
-        --------------------------------------------------------------------------------
-        -- Refresh HTML Table:
-        --------------------------------------------------------------------------------
-        mod.refreshTable()
-    end
+    end):After(0)
 end
 
 return mod

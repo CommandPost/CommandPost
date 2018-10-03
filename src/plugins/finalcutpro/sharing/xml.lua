@@ -223,7 +223,6 @@ function mod.update()
     local enabled = mod.enabled()
 
     if enabled then
-        --log.d("Enabling XML Sharing")
         local sharingPath = mod.sharingPath()
         if sharingPath == nil then
             sharingPath = dialog.displayChooseFolder(i18n("xmlSharingWhichFolder"))
@@ -236,7 +235,9 @@ function mod.update()
             end
         end
 
-        -- Ensure the directory actually exists.
+        --------------------------------------------------------------------------------
+        -- Ensure the directory actually exists:
+        --------------------------------------------------------------------------------
         if not tools.doesDirectoryExist(sharingPath) then
             mod.enabled(false)
             return
@@ -246,11 +247,9 @@ function mod.update()
         -- Watch for Shared XML Folder Changes:
         --------------------------------------------------------------------------------
         if not mod._watcher then
-            log.df("Starting Shared XML Watcher")
             mod._watcher = pathwatcher.new(sharingPath, sharedXMLFileWatcher):start()
         end
     else
-        --log.d("Disabling XML Sharing")
         --------------------------------------------------------------------------------
         -- Stop Watchers:
         --------------------------------------------------------------------------------

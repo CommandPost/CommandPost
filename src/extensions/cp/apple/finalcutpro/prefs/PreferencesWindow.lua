@@ -66,7 +66,7 @@ function PreferencesWindow.new(app)
     end)
 
     -- provides access to common AXWindow properties.
-    local window = Window.new(app.app, UI)
+    local window = Window(app.app, UI)
     o._window = window
 
 
@@ -112,7 +112,7 @@ function PreferencesWindow.new(app)
                 local ui = original()
                 local group = ui and axutils.childWithRole(ui, "AXGroup")
                 -- The group conains another single group that contains the actual checkboxes, etc.
-                return group and #group == 1 and group[1]
+                return group and #group == 1 and group[1] or nil
             end)
         end),
     }
@@ -120,7 +120,7 @@ function PreferencesWindow.new(app)
 --- cp.apple.finalcutpro.prefs.PreferencesWindow.toolbar <cp.ui.Toolbar>
 --- Field
 --- The `Toolbar` for the Preferences Window.
-    o.toolbar = Toolbar.new(o, o.toolbarUI)
+    o.toolbar = Toolbar(o, o.toolbarUI)
 
     return o
 end

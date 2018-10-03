@@ -17,6 +17,7 @@ local log                                   = require("hs.logger").new("pasteboa
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
 --------------------------------------------------------------------------------
+local timer                                 = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -50,7 +51,7 @@ local mod = {}
 --- plugins.finalcutpro.pasteboard.history.FILE_NAME -> string
 --- Constant
 --- File name of settings file.
-mod.FILE_NAME = "Pasteboard History.json"
+mod.FILE_NAME = "Pasteboard History.cpPasteboard"
 
 --- plugins.finalcutpro.pasteboard.history.FOLDER_NAME -> string
 --- Constant
@@ -95,21 +96,23 @@ end
 --- Returns:
 ---  * None
 function mod.addHistoryItem(data, label)
-
     --------------------------------------------------------------------------------
     -- Encode the data to base64:
     --------------------------------------------------------------------------------
     local encodedData = base64.encode(data)
 
-    local history = mod.history()
-    local item = {encodedData, label}
-
     --------------------------------------------------------------------------------
     -- Drop old history items:
     --------------------------------------------------------------------------------
+    local history = mod.history()
     while (#(history) >= mod.HISTORY_MAXIMUM_SIZE) do
         table.remove(history,1)
     end
+
+    --------------------------------------------------------------------------------
+    -- Add data to history:
+    --------------------------------------------------------------------------------
+    local item = {encodedData, label}
     table.insert(history, item)
     mod.history:set(history)
 end
@@ -125,7 +128,7 @@ end
 ---  * A [Statement](cp.rx.go.Statement.md) to be executed.
 function mod.doPasteHistoryItem(index)
     local timeline = fcp:timeline()
-
+    local originalContents = mod._manager.readFCPXData()
     return If(function()
         return mod.history()[index]
     end)
@@ -142,8 +145,19 @@ function mod.doPasteHistoryItem(index)
                 --------------------------------------------------------------------------------
                 mod._manager.writeFCPXData(data, true)
             end)
-            :Then(
-                fcp:menu():doSelectMenu({"Edit", "Paste"})
+            :Then(function()
+                return Do(fcp:menu():doSelectMenu({"Edit", "Paste"}))
+                :Then(function()
+                    --------------------------------------------------------------------------------
+                    -- Restore the original Pasteboard Contents:
+                    --------------------------------------------------------------------------------
+                    if originalContents then
+                        timer.doAfter(0.3, function()
+                            mod._manager.writeFCPXData(originalContents, true)
+                        end)
+                    end
+                end)
+            end
             ):Otherwise(function()
                 dialog.displayAlertMessage(i18n("pasteboardHistory_TimelineEmpty"), i18n("pasteboardHistory_TimelineEmptyInfo"))
                 return false
@@ -157,7 +171,6 @@ function mod.doPasteHistoryItem(index)
     end)
     :Label("history.doPastHistoryItem")
 end
-
 
 -- watchUpdate(data, name) -> none
 -- Function

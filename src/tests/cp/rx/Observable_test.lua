@@ -1857,7 +1857,7 @@ return test.suite("cp.rx.Subject")
             end)
         end)
 
-        local result = sub(o:retry(2))
+        local result = sub(o:retry(3))
 
         ok(result:is({}, nil, false))
         ok(eq(#observers, 1))
@@ -1907,14 +1907,9 @@ return test.suite("cp.rx.Subject")
 
         observers[2]:onNext(2)
         observers[2]:onError("two")
-        ok(result:is({1,2}, nil, false))
-        ok(eq(#observers, 3))
+        ok(result:is({1,2}, "two", false))
+        ok(eq(#observers, 2))
         ok(eq(cancels, 2))
-
-        observers[3]:onError("three")
-        ok(result:is({1,2}, "three", false))
-        ok(eq(#observers, 3))
-        ok(eq(cancels, 3))
     end),
 
     test("retry cancelled", function()
@@ -1957,7 +1952,7 @@ return test.suite("cp.rx.Subject")
             end)
         end)
         local scheduler = mockScheduler(5)
-        local result = sub(o:retryWithDelay(2, 5, scheduler))
+        local result = sub(o:retryWithDelay(3, 5, scheduler))
 
         -- initially, 1 observer
         ok(result:is({}, nil, false))
@@ -2024,7 +2019,7 @@ return test.suite("cp.rx.Subject")
         end)
         local scheduler = mockScheduler(8)
 
-        local result = sub(o:retryWithDelay(2, 8, scheduler))
+        local result = sub(o:retryWithDelay(3, 8, scheduler))
 
         ok(result:is({}, nil, false))
         ok(eq(#observers, 1))

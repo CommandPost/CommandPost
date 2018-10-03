@@ -1,19 +1,15 @@
 --- === cp.apple.finalcutpro.inspector.color.HueSaturationCurves ===
 ---
---- Hue/Saturation Curves Module.
+--- Color Curves Module.
 ---
 --- Requires Final Cut Pro 10.4 or later.
 
 --------------------------------------------------------------------------------
 -- TODO:
---  * Add API to Reset Individual Curves
 --  * Add API to trigger Color Picker for Individual Curves
---  * Add API to adjust entire curve for each curve
---  * Add API for "Add Shape Mask", "Add Color Mask" and "Invert Masks".
 --  * Add API for "Save Effects Preset".
 --  * Add API for "Mask Inside/Output".
 --  * Add API for "View Masks".
---  * Add API for "Preserve Luma" Checkbox
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -26,109 +22,92 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log								= require("hs.logger").new("hueSaturationCurves")
+-- local log                               = require("hs.logger").new("colorCurves")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop								= require("cp.prop")
+local prop                              = require("cp.prop")
+local axutils                           = require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
+local MenuButton                        = require("cp.ui.MenuButton")
+local PropertyRow						= require("cp.ui.PropertyRow")
+local RadioGroup						= require("cp.ui.RadioGroup")
+local Slider							= require("cp.ui.Slider")
+local TextField                         = require("cp.ui.TextField")
+
+local If                                = require("cp.rx.go.If")
+
+local HueSaturationCurve                = require("cp.apple.finalcutpro.inspector.color.HueSaturationCurve")
+
+local cache, childMatching              = axutils.cache, axutils.childMatching
 
 --------------------------------------------------------------------------------
 --
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local CORRECTION_TYPE					= "Hue/Saturation Curves"
+
+local CORRECTION_TYPE                   = "Hue/Saturation Curves"
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local HueSaturationCurves = {}
+local HueSaturationCurves = Element:subclass("cp.apple.finalcutpro.inspector.color.HueSaturationCurves")
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.VIEW_MODES -> table
---- Constant
---- View Modes for Color Curves
-HueSaturationCurves.VIEW_MODES = {
-    ["6 Curves"]        = "PAEHSCurvesViewControllerVertical",
-    ["Single Curves"]   = "PAECurvesViewControllerSingleControl",
-}
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.matches(element)
+--- Function
+--- Checks if the specified element is the Color Curves element.
+---
+--- Parameters:
+--- * element	- The element to check
+---
+--- Returns:
+--- * `true` if the element is the Color Curves.
+function HueSaturationCurves.static.matches(element)
+    if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup"
+    and #element == 1 and element[1]:attributeValue("AXRole") == "AXGroup"
+    and #element[1] == 1 and element[1][1]:attributeValue("AXRole") == "AXScrollArea" then
+        local scroll = element[1][1]
+        return childMatching(scroll, HueSaturationCurve.matches) ~= nil
+    end
+    return false
+end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.CURVES -> table
---- Constant
---- Table containing all the different types of Color Curves
-HueSaturationCurves.CURVES = {
-    ["HvH"]             = "PAEHSCurvesViewControllerHueVsHue",
-    ["HvS"]             = "PAEHSCurvesViewControllerHueVsSat",
-    ["HvL"]             = "PAEHSCurvesViewControllerHueVsLuma",
-    ["LvS"]             = "PAEHSCurvesViewControllerLumaVsSat",
-    ["SvS"]             = "PAEHSCurvesViewControllerSatVsSat",
-    ["Orange"]          = "FFConsumerSolidOrange",
-}
-
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.new(parent) -> HueSaturationCurves object
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves(parent) -> HueSaturationCurves object
 --- Constructor
 --- Creates a new HueSaturationCurves object
 ---
 --- Parameters:
----  * `parent`		- The parent
+---  * `parent`     - The parent
 ---
 --- Returns:
----  * A HueSaturationCurves object
-function HueSaturationCurves.new(parent)
-    local o = {
-        _parent = parent,
-        _child = {}
-    }
+---  * A ColorInspector object
+function HueSaturationCurves:initialize(parent)
 
-    return prop.extend(o, HueSaturationCurves)
-end
+    local UI = parent.correctorUI:mutate(function(original)
+        return cache(self, "_ui", function()
+            local ui = original()
+            return HueSaturationCurves.matches(ui) and ui or nil
+        end, HueSaturationCurves.matches)
+    end)
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:parent() -> table
---- Method
---- Returns the HueSaturationCurves's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function HueSaturationCurves:parent()
-    return self._parent
-end
+    Element.initialize(self, parent, UI)
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function HueSaturationCurves:app()
-    return self:parent():app()
+    PropertyRow.prepareParent(self, self.contentUI)
+
+    -- NOTE: There is a bug in 10.4 where updating the slider alone doesn't update the temperature value.
+    -- link these fields so they mirror each other.
+    self:mixSlider().value:mirror(self:mixTextField().value)
 end
 
 --------------------------------------------------------------------------------
 --
--- HUE/SATURATION CURVES:
+-- COLOR CURVES:
 --
 --------------------------------------------------------------------------------
-
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:isShowing() -> boolean
---- Method
---- Is the Hue/Saturation Curves panel currently showing?
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing, otherwise `false`
-function HueSaturationCurves:isShowing()
-    return self:parent():isShowing(CORRECTION_TYPE)
-end
 
 --- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:show() -> boolean
 --- Method
@@ -146,222 +125,227 @@ function HueSaturationCurves:show()
     return self
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:viewMode([value]) -> string | nil
---- Method
---- Sets or gets the View Mode for the Hue/Saturation Curves.
----
---- Parameters:
----  * [value] - An optional value to set the View Mode, as defined in `cp.apple.finalcutpro.inspector.color.HueSaturationCurves.VIEW_MODES`.
----
---- Returns:
----  * A string containing the View Mode or `nil` if an error occurs.
----
---- Notes:
----  * Value can be:
----    * 6 Curves
----    * Single Curves
-function HueSaturationCurves:viewMode(value)
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value and not self.VIEW_MODES[value] then
-        log.ef("Invalid Mode: %s", value)
-        return nil
-    end
-    if not self:isShowing() then
-        log.ef("Hue/Saturation Curves not active.")
-        return nil
-    end
-    --------------------------------------------------------------------------------
-    -- Check that the Color Inspector UI is available:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    if ui and ui[2] then
-        --------------------------------------------------------------------------------
-        -- Determine wheel mode based on whether or not the Radio Group exists:
-        --------------------------------------------------------------------------------
-        local selectedValue = "6 Curves"
-        if ui[2]:attributeValue("AXRole") == "AXRadioGroup" then
-            selectedValue = "Single Curves"
-        end
-        if value and selectedValue ~= value then
-            --------------------------------------------------------------------------------
-            -- Setter:
-            --------------------------------------------------------------------------------
-            ui[1]:performAction("AXPress") -- Press the "View" button
-            if ui[1][1] then
-                for _, child in ipairs(ui[1][1]) do
-                    local title = child:attributeValue("AXTitle")
-                    --local selected = child:attributeValue("AXMenuItemMarkChar") ~= nil
-                    local app = self:app()
-                    if title == app:string(self.VIEW_MODES["6 Curves"]) and value == "6 Curves" then
-                        child:performAction("AXPress") -- Close the popup
-                        return "6 Curves"
-                    elseif title == app:string(self.VIEW_MODES["Single Curves"]) and value == "Single Curves" then
-                        child:performAction("AXPress") -- Close the popup
-                        return "Single Curves"
-                    end
-                end
-                log.df("Failed to determine which View Mode was selected")
-                return nil
-            end
-        else
-            --------------------------------------------------------------------------------
-            -- Getter:
-            --------------------------------------------------------------------------------
-            return selectedValue
-        end
-    else
-        log.ef("Could not find Color Inspector UI.")
-    end
-    return nil
+function HueSaturationCurves.lazy.method:doShow()
+    return If(self.isShowing):Is(false):Then(
+        self:parent():doActivateCorrection(CORRECTION_TYPE)
+    ):Otherwise(true)
+    :Label("HueSaturationCurves:doShow")
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:visibleCurve([value]) -> string | nil
---- Method
---- Sets or gets the selected hue/saturation curve.
----
---- Parameters:
----  * [value] - An optional value to set the visible curve, as defined in `cp.apple.finalcutpro.inspector.color.HueSaturationCurves.CURVES`.
----
---- Returns:
----  * A string containing the selected color curve or `nil` if an error occurs.
----
---- Notes:
----  * Value can be:
----    * 6 Curves
----    * HvH
----    * HvS
----    * HvL
----    * LvS
----    * SvS
----    * Orange
----  * Example Usage:
----    `require("cp.apple.finalcutpro"):inspector():color():hueSaturationCurves():visibleCurve("HvH")`
-function HueSaturationCurves:visibleCurve(value)
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value and not self.CURVES[value] then
-        log.ef("Invalid Curve: %s", value)
-        return nil
-    end
-    if not self:isShowing() then
-        log.ef("Color Curves not active.")
-        return nil
-    end
-    --------------------------------------------------------------------------------
-    -- Check that the Color Inspector UI is available:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    if ui and ui[2] then
-        --------------------------------------------------------------------------------
-        -- Setter:
-        --------------------------------------------------------------------------------
-        if value then
-            self:viewMode("Single Curves")
-            ui = self:parent():UI() -- Refresh the UI
-            if ui and ui[2] and ui[2][1] then
-                if value == "HvH" and ui[2][1]:attributeValue("AXValue") == 0 then
-                    ui[2][1]:performAction("AXPress")
-                elseif value == "HvS" and ui[2][2]:attributeValue("AXValue") == 0 then
-                    ui[2][2]:performAction("AXPress")
-                elseif value == "HvL" and ui[2][3]:attributeValue("AXValue") == 0 then
-                    ui[2][3]:performAction("AXPress")
-                elseif value == "LvS" and ui[2][4]:attributeValue("AXValue") == 0 then
-                    ui[2][4]:performAction("AXPress")
-                elseif value == "SvS" and ui[2][5]:attributeValue("AXValue") == 0 then
-                    ui[2][5]:performAction("AXPress")
-                elseif value == "Orange" and ui[2][6]:attributeValue("AXValue") == 0 then
-                    ui[2][6]:performAction("AXPress")
-                end
-            else
-                log.ef("Setting Visible Curve failed because UI was nil. This shouldn't happen.")
-            end
-        end
-        --------------------------------------------------------------------------------
-        -- Getter:
-        --------------------------------------------------------------------------------
-        if ui[2]:attributeValue("AXRole") == "AXRadioGroup" then
-            if ui[2][1]:attributeValue("AXValue") == 1 then
-                return "HvH"
-            elseif ui[2][2]:attributeValue("AXValue") == 1 then
-                return "HvS"
-            elseif ui[2][3]:attributeValue("AXValue") == 1 then
-                return "HvL"
-            elseif ui[2][4]:attributeValue("AXValue") == 1 then
-                return "LvS"
-            elseif ui[2][5]:attributeValue("AXValue") == 1 then
-                return "SvS"
-            elseif ui[2][6]:attributeValue("AXValue") == 1 then
-                return "Orange"
-            end
-        else
-            return "6 Curves"
-        end
-    else
-        log.ef("Could not find Color Inspector UI.")
-    end
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.contentUI <cp.prop: hs._asm.axuielement; read-only>
+--- Field
+--- The `axuielement` representing the content element of the HueSaturationCurves corrector.
+--- This contains all the individual UI elements of the corrector, and is typically an `AXScrollArea`.
+function HueSaturationCurves.lazy.prop:contentUI()
+    return self.UI:mutate(function(original)
+        return cache(self, "_content", function()
+            local ui = original()
+            return ui and #ui == 1 and #ui[1] == 1 and ui[1][1] or nil
+        end)
+    end)
 end
 
---- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:mix([value]) -> number | nil
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:viewModeButton() -> MenuButton
 --- Method
---- Sets or gets the Hue/Saturation Curves mix value.
+--- Returns the [MenuButton](cp.ui.MenuButton.md) for the View Mode.
 ---
 --- Parameters:
----  * [value] - An optional value you want to set the mix value to as number (0 to 1).
+--- * None
 ---
 --- Returns:
----  * A number containing the mix value or `nil` if an error occurs.
-function HueSaturationCurves:mix(value)
-
-    --------------------------------------------------------------------------------
-    -- Validation:
-    --------------------------------------------------------------------------------
-    if value then
-        if type(value) ~= "number" then
-            log.ef("Invalid Mix Value Type: %s", type(value))
-            return nil
+--- * The `MenuButton` for the View Mode.
+function HueSaturationCurves.lazy.method:viewModeButton()
+    return MenuButton(self, function()
+        local ui = self:contentUI()
+        if ui then
+            return childMatching(ui, MenuButton.matches)
         end
-        if value >= 0 and value <= 1 then
-            log.df("Valid Value: %s", value)
-        else
-            log.ef("Invalid Mix Value: %s", value)
-            return nil
+        return nil
+    end)
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.viewingAllCurves <cp.prop: boolean>
+--- Field
+--- Reports and modifies whether the corrector is showing "All Curves" (`true`) or "Single Curves" (`false`).
+function HueSaturationCurves.lazy.prop:viewingAllCurves()
+    return prop(
+        function()
+            local ui = self:contentUI()
+            if ui then
+                local curveOne = childMatching(ui, HueSaturationCurve.matches, 1)
+                local curveTwo = childMatching(ui, HueSaturationCurve.matches, 2)
+                local posOne = curveOne and curveOne:attributeValue("AXPosition")
+                local posTwo = curveTwo and curveTwo:attributeValue("AXPosition")
+                return posOne ~= nil and posTwo ~= nil and posOne.y ~= posTwo.y or false
+            end
+            return false
+        end,
+        function(allCurves, _, theProp)
+            local current = theProp:get()
+            if allCurves and not current then
+                self:viewModeButton():selectItem(1)
+            elseif not allCurves and current then
+                self:viewModeButton():selectItem(2)
+            end
         end
-    end
-    if not self:isShowing() then
-        log.ef("Hue/Saturation Curves not active.")
-        return nil
-    end
+    ):monitor(self.contentUI)
+end
 
-    --------------------------------------------------------------------------------
-    -- Find Mix Slider:
-    --------------------------------------------------------------------------------
-    local ui = self:parent():UI()
-    local slider = nil
-    for _, v in ipairs(ui) do
-      if v:attributeValue("AXRole") == "AXSlider" then
-        slider = v
-      end
-    end
-    if not slider then
-        log.ef("Could not find slider.")
-        return nil
-    end
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:curveType() -> RadioGroup
+--- Method
+--- Returns the `RadioGroup` that allows selection of the curve type. Only available when
+--- [viewingAllCurves](#viewingAllCurves) is `true`.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `RadioGroup`.
+function HueSaturationCurves.lazy.method:wheelType()
+    return RadioGroup(self,
+        function()
+            if not self:viewingAllCurves() then
+                local ui = self:contentUI()
+                return ui and childMatching(ui, RadioGroup.matches) or nil
+            end
+            return nil
+        end,
+        false -- not cached
+    )
+end
 
-    --------------------------------------------------------------------------------
-    -- Setter:
-    --------------------------------------------------------------------------------
-    if value then
-        slider:setAttributeValue("AXValue", value)
-    end
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:hueVsHue() -> HueSaturationCurve
+--- Method
+--- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- that allows control of the 'HUE vs HUE' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `HueSaturationCurve`.
+function HueSaturationCurves.lazy.method:hueVsHue()
+    return HueSaturationCurve(self, HueSaturationCurve.TYPE.HUE_VS_HUE)
+end
 
-    --------------------------------------------------------------------------------
-    -- Getter:
-    --------------------------------------------------------------------------------
-    return slider:attributeValue("AXValue")
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:hueVsSat() -> HueSaturationCurve
+--- Method
+--- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- that allows control of the 'HUE vs SAT' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `HueSaturationCurve`.
+function HueSaturationCurves.lazy.method:hueVsSat()
+    return HueSaturationCurve(self, HueSaturationCurve.TYPE.HUE_VS_SAT)
+end
 
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:hueVsLuma() -> HueSaturationCurve
+--- Method
+--- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- that allows control of the 'HUE vs LUMA' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `HueSaturationCurve`.
+function HueSaturationCurves.lazy.method:hueVsLuma()
+    return HueSaturationCurve(self, HueSaturationCurve.TYPE.HUE_VS_LUMA)
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:lumaVsSat() -> HueSaturationCurve
+--- Method
+--- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- that allows control of the 'LUMA vs SAT' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `HueSaturationCurve`.
+function HueSaturationCurves.lazy.method:lumaVsSat()
+    return HueSaturationCurve(self, HueSaturationCurve.TYPE.LUMA_VS_SAT)
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:satVsSat() -> HueSaturationCurve
+--- Method
+--- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- that allows control of the 'SAT vs SAT' color settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `HueSaturationCurve`.
+function HueSaturationCurves.lazy.method:satVsSat()
+    return HueSaturationCurve(self, HueSaturationCurve.TYPE.SAT_VS_SAT)
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:colorVsSat() -> HueSaturationCurve
+--- Method
+--- Returns a [HueSaturationCurve](cp.apple.finalcutpro.inspector.color.HueSaturationCurve.md)
+--- that allows control of the '<COLOR> vs SAT' color settings. The color is variable, but typically
+--- starts with 'ORANGE'.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `HueSaturationCurve`.
+function HueSaturationCurves.lazy.method:colorVsSat()
+    return HueSaturationCurve(self, HueSaturationCurve.TYPE.COLOR_VS_SAT)
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:mixRow() -> cp.ui.PropertyRow
+--- Method
+--- Returns a `PropertyRow` that provides access to the 'Mix' parameter, and `axuielement`
+--- values for that row.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `PropertyRow`.
+function HueSaturationCurves.lazy.method:mixRow()
+    return PropertyRow(self, "FFChannelMixName")
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves:mixSlider() -> cp.ui.Slider
+--- Method
+--- Returns a `Slider` that provides access to the 'Mix' slider.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The Mix `Slider`.
+function HueSaturationCurves.lazy.method:mixSlider()
+    return Slider(self,
+        function()
+            local ui = self:mixRow():children()
+            return ui and childMatching(ui, Slider.matches)
+        end
+    )
+end
+
+function HueSaturationCurves.lazy.method:mixTextField()
+    return TextField(self,
+        function()
+            local ui = self:mixRow():children()
+            return ui and childMatching(ui, TextField.matches)
+        end,
+        tonumber
+    )
+end
+
+--- cp.apple.finalcutpro.inspector.color.HueSaturationCurves.mix <cp.prop: number>
+--- Field
+--- The mix amount for this corrector. A number ranging from `0` to `1`.
+function HueSaturationCurves.lazy.prop:mix()
+    return self:mixSlider().value
 end
 
 return HueSaturationCurves

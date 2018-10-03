@@ -17,29 +17,41 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local prop                              = require("cp.prop")
 local axutils							= require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 
 local ColorWell							= require("cp.apple.finalcutpro.inspector.color.ColorWell")
 local ValueIndicator					= require("cp.apple.finalcutpro.inspector.color.ValueIndicator")
 local Button							= require("cp.ui.Button")
+
+local Do                                = require("cp.rx.go.Do")
+local If                                = require("cp.rx.go.If")
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local ColorWheel = {}
+local ColorWheel = Element:subclass("ColorWheel")
+
+function ColorWheel.__tostring()
+    return "cp.apple.finalcutpro.inspector.color.ColorWheel"
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.TYPE
 --- Constant
 --- The possible types of ColorWheels: MASTER, SHADOWS, MIDTONES, HIGHLIGHTS.
-ColorWheel.TYPE = {
+ColorWheel.static.TYPE = {
     MASTER      = { single = 1, all = 1 },
     SHADOWS     = { single = 2, all = 3 },
     MIDTONES    = { single = 3, all = 4 },
     HIGHLIGHTS  = { single = 4, all = 2 },
 }
+
+-- cp.apple.finalcutpro.inspector.clor.ColorWheel.HUE_SHIFT -> number
+-- Constant
+-- The hue shift currently being output from AXColorWell values.
+ColorWheel.static.HUE_SHIFT = 4183333/6000000
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.matches(element)
 --- Function
@@ -50,14 +62,14 @@ ColorWheel.TYPE = {
 ---
 --- Returns:
 --- * `true` if the element is a Color Well.
-function ColorWheel.matches(element)
-    if element and element:attributeValue("AXRole") == "AXGroup" and #element == 4 then
+function ColorWheel.static.matches(element)
+    if Element.matches(element) and element:attributeValue("AXRole") == "AXGroup" and #element == 4 then
         return axutils.childMatching(element, ColorWell.matches) ~= nil
     end
     return false
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.new(parent, type) -> ColorWheel
+--- cp.apple.finalcutpro.inspector.color.ColorWheel(parent, type) -> ColorWheel
 --- Constructor
 --- Creates a new `ColorWheel` instance, with the specified parent and type.
 ---
@@ -67,16 +79,8 @@ end
 ---
 --- Returns:
 --- * A new `ColorWheel` instance.
-function ColorWheel.new(parent, type)
-    local o = prop.extend({
-        _parent = parent,
-        _type = type,
-    }, ColorWheel)
-
---- cp.apple.finalcutpro.inspector.color.ColorWheel.UI <cp.prop: hs._asm.axuielement; read-only>
---- Field
---- The `axuielement` for the ColorWheel.
-    o.UI = parent.contentUI:mutate(function(original, self)
+function ColorWheel:initialize(parent, type)
+    local UI = parent.contentUI:mutate(function(original)
         return axutils.cache(self, "_ui", function()
             local ui = original()
             if ui then
@@ -101,75 +105,70 @@ function ColorWheel.new(parent, type)
             end
             return nil
         end, ColorWheel.matches)
-    end):bind(o)
+    end)
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel.isShowing <cp.prop: boolean; read-only>
---- Field
---- Checks if the ColorWheel is showing on screen.
-    o.isShowing = o.UI:mutate(function(original)
-        return original() ~= nil
-    end):bind(o)
+    Element.initialize(self, parent, UI)
 
+    self._type = type
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.focused <cp.pref: boolean>
 --- Field
 --- Gets and sets whether the Color Well has focus.
-    o.focused = o.UI:mutate(
-        function(original)
-            local ui = original()
-            return ui ~= nil and ui:attributeValue("AXFocused") == true
-        end,
-        function(value, original)
-            local ui = original()
-            if ui then
-                ui:setAttributeValue("AXFocused", value)
-            end
-        end
-    ):bind(o)
+function ColorWheel.lazy.prop:focused()
+    return axutils.prop(self.UI, "AXFocused", true)
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorValue <cp.prop: hs.drawing.color>
 --- Field
 --- The current color value, as a `hs.drawing.color` table.
-    o.colorValue = o:colorWell().value:wrap(o)
+function ColorWheel.lazy.prop:colorValue()
+    return self:colorWell().value
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.puckPosition <cp.prop: point>
 --- Field
 --- Absolute X/Y screen position for the puck in the Color Well. Colours outside the bounds are clamped inside the color well.
-    o.puckPosition = o:colorWell().puckPosition:wrap(o)
+function ColorWheel.lazy.prop:puckPosition()
+    return self:colorWell().puckPosition
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorPosition <cp.prop: point>
 --- Field
 --- X/Y screen position for the current color value of the Color Well. This ignores the bounds of the
 --- actual Color Well circle, which only extends to 85 out of 255 values.
-    o.colorPosition = o:colorWell().colorPosition:wrap(o)
+function ColorWheel.lazy.prop:colorPosition()
+    return self:colorWell().colorPosition
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.colorOrientation <cp.prop: table>
 --- Field
 --- Provides the orientation of the color as a table containing an `up` and `right` value.
 --- The values will have a range between `-1` and `1`.
-    o.colorOrientation = o:colorWell().colorOrientation:wrap(o)
+function ColorWheel.lazy.prop:colorOrientation()
+    return self:colorWell().colorOrientation
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.saturationValue <cp.prop: number>
 --- Field
 --- The current saturation value, as a number between 0 and 10.
-    o.saturationValue = o:saturation().value:wrap(o)
+function ColorWheel.lazy.prop:saturationValue()
+    return self:saturation().value
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel.brightnessValue <cp.prop: number>
 --- Field
 --- The current brightness value, as a number between -12 and 10.
-    o.brightnessValue = o:brightness().value:wrap(o)
-
-    return o
+function ColorWheel.lazy.prop:brightnessValue()
+    return self:brightness().value
 end
 
-function ColorWheel:parent()
-    return self._parent
-end
-
-function ColorWheel:app()
-    return self:parent():app()
-end
-
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:show() -> self
+--- Method
+--- Shows the `ColorWheel`, if possible.
+---
+--- Returns:
+--- * The same `ColorWheel` instance, for chaining.
 function ColorWheel:show()
     self:parent():show()
     -- ensure the wheel type is correct, if visible.
@@ -178,6 +177,24 @@ function ColorWheel:show()
         wheelType:selectedOption(self._type.single)
     end
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to show the `ColorWheel`.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if shown, `false` if not.
+function ColorWheel.lazy.method:doShow()
+    local wheelType = self:parent():wheelType()
+    return Do(self:parent():doShow())
+    :Then(
+        If(wheelType.isShowing):Then(
+            wheelType:doSelectOption(self._type.single)
+        )
+        :Otherwise(true)
+    )
+    :Label("ColorWheel:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:select() -> cp.apple.finalcutpro.inspector.color.ColorWheel
@@ -194,6 +211,20 @@ function ColorWheel:select()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:doSelect() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that attempts to select this `ColorWheel`.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if selected, otherwise `false`.
+function ColorWheel.lazy.method:doSelect()
+    return Do(self:doShow())
+    :Then(function()
+        self:focused(true)
+    end)
+    :ThenYield()
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:colorWell() -> ColorWell
 --- Method
 --- Returns the `ColorWell` for this ColorWheel.
@@ -203,13 +234,10 @@ end
 ---
 --- Returns:
 --- * The `ColorWell` instance.
-function ColorWheel:colorWell()
-    if not self._colorWell then
-        self._colorWell = ColorWell.new(self, function()
-            return axutils.childMatching(self:UI(), ColorWell.matches)
-        end)
-    end
-    return self._colorWell
+function ColorWheel.lazy.method:colorWell()
+    return ColorWell(self, function()
+        return axutils.childMatching(self:UI(), ColorWell.matches)
+    end, ColorWheel.HUE_SHIFT)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:saturation() -> ValueIndicator
@@ -221,22 +249,19 @@ end
 ---
 --- Returns:
 --- * The saturation `ValueIndicator` instance.
-function ColorWheel:saturation()
-    if not self._saturation then
-        self._saturation = ValueIndicator.new(self,
-            function()
-                return axutils.childFromLeft(self:UI(), 1)
-            end,
-            0, 10,
-            function(value) -- toAXValue
-                return value / 2
-            end,
-            function(value) -- fromAXValue
-                return value * 2
-            end
-        )
-    end
-    return self._saturation
+function ColorWheel.lazy.method:saturation()
+    return ValueIndicator(self,
+        self.UI:mutate(function(original)
+            return axutils.childFromLeft(original(), 1)
+        end),
+        0, 10,
+        function(value) -- toAXValue
+            return value / 2
+        end,
+        function(value) -- fromAXValue
+            return value * 2
+        end
+    )
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:brightness() -> ValueIndicator
@@ -248,53 +273,29 @@ end
 ---
 --- Returns:
 --- * The brightness `ValueIndicator` instance.
-function ColorWheel:brightness()
-    if not self._brightness then
-        self._brightness = ValueIndicator.new(self,
-            function()
-                return axutils.childFromRight(axutils.childrenWithRole(self:UI(), "AXValueIndicator"), 1)
-            end,
-            -12, 10,
-            function(value) -- toAXValue
-                return (value+1)/2
-            end,
-            function(value) -- fromAXValue
-                return value*2-1
-            end
-        )
-    end
-    return self._brightness
+function ColorWheel.lazy.method:brightness()
+    return ValueIndicator(self,
+        self.UI:mutate(function(original)
+            return axutils.childFromRight(axutils.childrenWithRole(original(), "AXValueIndicator"), 1)
+        end),
+        -12, 10,
+        function(value) -- toAXValue
+            return (value+1)/2
+        end,
+        function(value) -- fromAXValue
+            return value*2-1
+        end
+    )
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorWheel:resetButton() -> Button
---- Method
---- Returns the `Button` that triggers a value reset.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The reset `Button` instance.
-function ColorWheel:resetButton()
-    if not self._resetButton then
-        self._resetButton = Button.new(self, function()
-            return axutils.childWithRole(self:UI(), "AXButton")
-        end)
-    end
-    return self._resetButton
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorWheel:reset() -> ColorWheel
---- Method
---- Resets the color wheel values, if the ColorWheel is showing.
----
---- Parameters:
---- * None
----
---- Returns:
---- * The ColorWheel instance.
-function ColorWheel:reset()
-    return self:resetButton():press()
+--- cp.apple.finalcutpro.inspector.color.ColorWheel.reset <cp.ui.Button>
+--- Field
+--- A [Button](cp.ui.Button.md) that resets the color wheel values, if the `ColorWheel` is showing.
+--- May be called directly to click (e.g. `wheel:reset()`).
+function ColorWheel.lazy.value:reset()
+    return Button(self, function()
+        return axutils.childMatching(self:UI(), Button.matches)
+    end)
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorWheel:nudgeColor(right, up) -> self
@@ -311,6 +312,21 @@ end
 function ColorWheel:nudgeColor(right, up)
     self:colorWell():nudge(right, up)
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorWheel:doNudgeColor(right, up) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that nudges the `colorPosition` by `right`/`up` values.
+--- Negative `right` values shift left, negative `up` values shift down. You may have decimal shift values.
+---
+--- Parameters:
+---  * `right` - The number of steps to shift right. May be negative to shift left.
+---  * `up` - The number of pixels to shift down. May be negative to shift down.
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if successful.
+function ColorWheel:doNudgeColor(right, up)
+    return self:colorWheel():doNudge(right, up):Label("ColorWheel:doNudgeColor")
 end
 
 return ColorWheel

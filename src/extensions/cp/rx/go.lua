@@ -67,6 +67,7 @@ local Given         = require("cp.rx.go.Given")
 local If            = require("cp.rx.go.If")
 local Last          = require("cp.rx.go.Last")
 local List          = require("cp.rx.go.List")
+local Retry         = require("cp.rx.go.Retry")
 local Require       = require("cp.rx.go.Require")
 local Throw         = require("cp.rx.go.Throw")
 local WaitUntil     = require("cp.rx.go.WaitUntil")
@@ -84,6 +85,7 @@ return {
     First = First,
     Last = Last,
     List = List,
+    Retry = Retry,
     Throw = Throw,
     Done = Done,
     If = If,

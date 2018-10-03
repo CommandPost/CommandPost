@@ -23,19 +23,23 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local Button							= require("cp.ui.Button")
 local CheckBox                          = require("cp.ui.CheckBox")
 local just                              = require("cp.just")
-local prop                              = require("cp.prop")
 local RadioButton					    = require("cp.ui.RadioButton")
+local RadioGroup                        = require("cp.ui.RadioGroup")
 local TextField							= require("cp.ui.TextField")
+
+local cache, childMatching              = axutils.cache, axutils.childMatching
+local childFromLeft, childWithRole      = axutils.childFromLeft, axutils.childWithRole
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local BrowserMarkerPopover = {}
+local BrowserMarkerPopover = Element:subclass("cp.apple.finalcutpro.main.BrowserMarkerPopover")
 
 --- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.matches(element) -> boolean
 --- Function
@@ -46,11 +50,11 @@ local BrowserMarkerPopover = {}
 ---
 --- Returns:
 ---  * `true` if the `element` is the Browser Marker Popover otherwise `false`
-function BrowserMarkerPopover.matches(element)
-    return element and element:attributeValue("AXRole") == "AXPopover" and element:attributeValueCount("AXChildren") >= 5
+function BrowserMarkerPopover.static.matches(element)
+    return Element.matches(element) and #element >= 5 and element:attributeValue("AXRole") == "AXPopover"
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.new(parent) -> BrowserMarkerPopover
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover(parent) -> BrowserMarkerPopover
 --- Constructor
 --- Constructs a new Browser Marker Popover
 ---
@@ -59,35 +63,15 @@ end
 ---
 --- Returns:
 --- * The new `BrowserMarkerPopover` instance.
-function BrowserMarkerPopover.new(parent)
-    local o = prop.extend({_parent = parent}, BrowserMarkerPopover)
-    return o
-end
+function BrowserMarkerPopover:initialize(parent)
+    local UI = parent.UI:mutate(function(original)
+        return cache(self, "_ui", function()
+            return childMatching(original(), BrowserMarkerPopover.matches)
+        end,
+        BrowserMarkerPopover.matches)
+    end)
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:parent() -> table
---- Method
---- Returns the Browser Marker Popover's parent table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object as a table
-function BrowserMarkerPopover:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:app() -> table
---- Method
---- Returns the `cp.apple.finalcutpro` app table
----
---- Parameters:
----  * None
----
---- Returns:
----  * The application object as a table
-function BrowserMarkerPopover:app()
-    return self:parent():app()
+    Element.initialize(self, parent, UI)
 end
 
 -----------------------------------------------------------------------
@@ -95,30 +79,6 @@ end
 -- MARKER POPOVER UI:
 --
 -----------------------------------------------------------------------
-
-
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:UI() -> hs._asm.axuielement object
---- Method
---- Returns the `hs._asm.axuielement` object for the Browser Marker Popover
----
---- Parameters:
----  * None
----
---- Returns:
----  * A `hs._asm.axuielement` object
-function BrowserMarkerPopover:UI()
-    return axutils.cache(self, "_ui", function()
-        return axutils.childMatching(self:parent():UI(), BrowserMarkerPopover.matches)
-    end,
-    BrowserMarkerPopover.matches)
-end
-
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.isShowing <cp.prop: boolean>
---- Field
---- Is the Browser Marker Popover showing?
-BrowserMarkerPopover.isShowing = prop.new(function(self)
-    return self:UI() ~= nil
-end):bind(BrowserMarkerPopover)
 
 --- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:show() -> BrowserMarkerPopover
 --- Method
@@ -148,7 +108,7 @@ end
 function BrowserMarkerPopover:hide()
     local ui = self:UI()
     if ui then
-        self:done():press()
+        self:done()
     end
     just.doWhile(function() return self:isShowing() end)
     return self
@@ -160,6 +120,16 @@ end
 --
 -----------------------------------------------------------------------
 
+function BrowserMarkerPopover.lazy.method:type()
+    return RadioGroup(self, self.UI:mutate(function(original)
+        return cache(self, "_type", function()
+            return childMatching(original(), RadioGroup.matches)
+        end,
+        RadioGroup.matches
+    )
+    end))
+end
+
 --- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:standard() -> RadioButton
 --- Method
 --- Gets the "Standard" Marker button.
@@ -169,14 +139,10 @@ end
 ---
 --- Returns:
 ---  * A `RadioButton` object.
-function BrowserMarkerPopover:standard()
-    if not self._standard then
-        self._standard = RadioButton.new(self, function()
-            local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
-            return radioGroup and axutils.childFromLeft(radioGroup, 1)
-        end)
-    end
-    return self._standard
+function BrowserMarkerPopover.lazy.method:standard()
+    return RadioButton(self, self:type().UI:mutate(function(original)
+        return childFromLeft(original(), 1)
+    end))
 end
 
 --- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:toDo() -> RadioButton
@@ -188,17 +154,13 @@ end
 ---
 --- Returns:
 ---  * A `RadioButton` object.
-function BrowserMarkerPopover:toDo()
-    if not self._toDo then
-        self._toDo = RadioButton.new(self, function()
-            local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
-            return radioGroup and axutils.childFromLeft(radioGroup, 2)
-        end)
-    end
-    return self._toDo
+function BrowserMarkerPopover.lazy.method:toDo()
+    return RadioButton(self, self:type().UI:mutate(function(original)
+        return childFromLeft(original(), 2)
+    end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:chapter() -> RadioButton
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.chapter() -> RadioButton
 --- Method
 --- Gets the "Chapter" Marker button.
 ---
@@ -207,56 +169,44 @@ end
 ---
 --- Returns:
 ---  * A `RadioButton` object.
-function BrowserMarkerPopover:chapter()
-    if not self._chapter then
-        self._chapter = RadioButton.new(self, function()
-            local radioGroup = axutils.childWithRole(self:UI(), "AXRadioGroup")
-            return radioGroup and axutils.childFromLeft(radioGroup, 3)
-        end)
-    end
-    return self._chapter
+function BrowserMarkerPopover.lazy.method:chapter()
+    return RadioButton(self, self:type().UI:mutate(function(original)
+        return childFromLeft(original(), 3)
+    end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:done() -> Button
---- Method
---- Gets the "Done" button.
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.done <cp.ui.Button>
+--- Field
+--- The "Done" [Button](cp.ui.Button.md).
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * A `Button` object.
-function BrowserMarkerPopover:done()
-    if not self._done then
-        self._done = Button.new(self, function()
-            local buttons = axutils.childrenWithRole(self:UI(), "AXButton")
-            return buttons and buttons[1]
-        end)
-    end
-    return self._done
+function BrowserMarkerPopover.lazy.value:done()
+    return Button(self, self.UI:mutate(function(original)
+        return childWithRole(original(), "AXButton", 1)
+    end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:delete() -> Button
---- Method
---- Gets the "Delete" button.
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.delete <cp.ui.Button>
+--- Field
+--- Gets the "Delete" [Button](cp.ui.Button.md).
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * A `Button` object.
-function BrowserMarkerPopover:delete()
-    if not self._delete then
-        self._delete = Button.new(self, function()
-            local buttons = axutils.childrenWithRole(self:UI(), "AXButton")
-            return buttons and buttons[2]
-        end)
-    end
-    return self._delete
+function BrowserMarkerPopover.lazy.value:delete()
+    return Button(self, self.UI:mutate(function(original)
+        return childWithRole(original(), "AXButton", 2)
+    end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:completed() -> CheckBox
---- Method
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.completed <cp.ui.CheckBox>
+--- Field
 --- Gets the "Completed" checkbox. This only available if you have a "To Do" marker selected.
 ---
 --- Parameters:
@@ -264,32 +214,25 @@ end
 ---
 --- Returns:
 ---  * A `Button` object.
-function BrowserMarkerPopover:completed()
-    if not self._completed then
-        self._completed = CheckBox.new(self, function()
-            local checkbox = axutils.childrenWithRole(self:UI(), "AXCheckBox")
-            return checkbox and checkbox[1]
-        end)
-    end
-    return self._completed
+function BrowserMarkerPopover.lazy.value:completed()
+    return CheckBox(self, self.UI:mutate(function(original)
+        return childWithRole(original(), "AXCheckBox")
+    end))
 end
 
---- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover:name() -> TextField
---- Method
---- Gets the Marker Name text field.
+--- cp.apple.finalcutpro.main.Browser.BrowserMarkerPopover.name <cp.ui.TextField>
+--- Field
+--- Gets the Marker Name [TextField](cp.ui.TextField.md).
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * A `TextField` object.
-function BrowserMarkerPopover:name()
-    if not self._name then
-        self._name = TextField.new(self, function()
-            return axutils.childWithRole(self:UI(), "AXTextField")
-        end)
-    end
-    return self._name
+function BrowserMarkerPopover.lazy.value:name()
+    return TextField(self, self.UI:mutate(function(original)
+        return childWithRole(original(), "AXTextField")
+    end))
 end
 
 return BrowserMarkerPopover

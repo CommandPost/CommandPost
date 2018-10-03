@@ -190,7 +190,6 @@ function plugin.init(deps)
     deps.fcpxCmds
         :add("cpToggleMovingMarkers")
         :groupedBy("hacks")
-        :activatedBy():ctrl():option():cmd("y")
         :whenActivated(function() mod.enabled:toggle() end)
 
     return mod

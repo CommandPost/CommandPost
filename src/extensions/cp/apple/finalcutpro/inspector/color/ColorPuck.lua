@@ -1,6 +1,6 @@
 --- === cp.apple.finalcutpro.inspector.color.ColorPuck ===
 ---
---- Color Puck Module.
+--- Color ColorPuck Module.
 
 --------------------------------------------------------------------------------
 --
@@ -27,46 +27,55 @@ local timer                                 = require("hs.timer")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                               = require("cp.ui.axutils")
+local Element                               = require("cp.ui.Element")
 local prop                                  = require("cp.prop")
 local PropertyRow                           = require("cp.ui.PropertyRow")
 local TextField                             = require("cp.ui.TextField")
 local tools                                 = require("cp.tools")
+
+local go                                    = require("cp.rx.go")
+local Do, Throw                             = go.Do, go.Throw
 
 --------------------------------------------------------------------------------
 --
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Puck = {}
+local ColorPuck = Element:subclass("ColorPuck")
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.RANGE -> table
 --- Constant
 --- Table of puck ranges.
-Puck.RANGE = {master=1, shadows=2, midtones=3, highlights=4}
+ColorPuck.static.RANGE = {master=1, shadows=2, midtones=3, highlights=4}
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.NATURAL_LENGTH -> number
 --- Constant
 --- Natural Length as number.
-Puck.NATURAL_LENGTH = 20
+ColorPuck.static.NATURAL_LENGTH = 20
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.ELASTICITY -> number
 --- Constant
 --- Elasticity as number.
-Puck.ELASTICITY = Puck.NATURAL_LENGTH/10
-
--- cp.apple.finalcutpro.inspector.color.ColorPuck._active -> boolean
--- Constant
--- Is the ColorPuck active?
-Puck._active = nil
+ColorPuck.static.ELASTICITY = ColorPuck.NATURAL_LENGTH/10
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.DEFAULT_ANGLES -> table
 --- Constant
 --- The table of default angles for the various pucks (1-4).
-Puck.DEFAULT_ANGLES = { 110, 180, 215, 250 }
+ColorPuck.static.DEFAULT_ANGLES = { 110, 180, 215, 250 }
+
+-- cp.apple.finalcutpro.inspector.color.ColorPuck._active -> ColorPuck | nil
+-- Variable
+-- Which ColorPuck actively has a mouse puck running?
+ColorPuck.static._active = nil
+
+-- cp.apple.finalcutpro.inspector.color.ColorPuck._active -> ColorPuck | nil
+-- Variable
+-- Which ColorPuck actively has a mouse puck running?
+ColorPuck._active = nil
 
 -- tension(diff) -> number
 -- Function
--- Calculates the tension given the x/y difference value, based on the Puck elasticity and natural length.
+-- Calculates the tension given the x/y difference value, based on the ColorPuck elasticity and natural length.
 --
 -- Parameters:
 -- * diff   - The amount of stretch in a given dimension.
@@ -75,7 +84,7 @@ Puck.DEFAULT_ANGLES = { 110, 180, 215, 250 }
 -- * The tension factor.
 local function tension(diff)
     local factor = diff < 0 and -1 or 1
-    local t = Puck.ELASTICITY * (diff*factor-Puck.NATURAL_LENGTH) / Puck.NATURAL_LENGTH
+    local t = ColorPuck.ELASTICITY * (diff*factor-ColorPuck.NATURAL_LENGTH) / ColorPuck.NATURAL_LENGTH
     return t < 0 and 0 or t * factor
 end
 
@@ -88,11 +97,11 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Puck.matches(element)
-    return element and element:attributeValue("AXRole") == "AXButton"
+function ColorPuck.static.matches(element)
+    return Element.matches(element) and element:attributeValue("AXRole") == "AXButton"
 end
 
---- cp.apple.finalcutpro.inspector.color.ColorPuck.new(parent, puckNumber, labelKeys, hasAngle) -> ColorPuck
+--- cp.apple.finalcutpro.inspector.color.ColorPuck(parent, puckNumber, labelKeys, hasAngle) -> ColorPuck
 --- Constructor
 --- Creates a new `ColorPuck` object
 ---
@@ -104,40 +113,31 @@ end
 ---
 --- Returns:
 ---  * A ColorInspector object
-function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
+function ColorPuck:initialize(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 
     assert(
-        puckNumber >= Puck.RANGE.master and puckNumber <= Puck.RANGE.highlights,
-        string.format("Please supply a puck number between %s and %s.", Puck.RANGE.master, Puck.RANGE.highlights)
+        puckNumber >= ColorPuck.RANGE.master and puckNumber <= ColorPuck.RANGE.highlights,
+        string.format("Please supply a puck number between %s and %s.", ColorPuck.RANGE.master, ColorPuck.RANGE.highlights)
     )
 
-    local o = prop.extend({
-        _parent     = parent,
-        _puckNumber = puckNumber,
-        _labelKeys  = labelKeys,
-        _hasAngle   = hasAngle,
-        xShift = 0,
-        yShift = 0
-    }, Puck)
+    self._puckNumber = puckNumber
+    self._labelKeys  = labelKeys
+    self._hasAngle   = hasAngle
+    self.xShift = 0
+    self.yShift = 0
 
-    local UI = prop(function(self)
+    local UI = prop(function()
         return axutils.cache(self, "_ui", function()
             local buttons = axutils.childrenWithRole(self:parent():UI(), "AXButton")
             return buttons and #buttons == 5 and buttons[self._puckNumber+1] or nil
-        end, Puck.matches)
+        end, ColorPuck.matches)
     end)
 
-    prop.bind(o) {
---- cp.apple.finalcutpro.inspector.color.ColorPuck:UI() -> axuielementObject
---- Method
---- Returns the Color Puck Accessibility Object
----
---- Parameters:
----  * None
----
---- Returns:
----  * An `axuielementObject` or `nil`
-        UI = UI,
+    Element.initialize(self, parent, UI)
+
+    -- prepare the parent to provide the content UI.
+    PropertyRow.prepareParent(self, parent.UI)
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:contentUI() -> axuielementObject
 --- Method
@@ -148,59 +148,53 @@ function Puck.new(parent, puckNumber, labelKeys, hasAngle) -- luacheck: ignore
 ---
 --- Returns:
 ---  * An `axuielementObject` or `nil`
-        contentUI = UI,
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck:isShowing() -> boolean
---- Method
---- Gets whether or not the Color Puck is showing.
----
---- Parameters:
----  * None
----
---- Returns:
----  * `true` if showing or `false` if not.
-        isShowing = UI:ISNOT(nil),
+function ColorPuck.lazy.prop:contentUI()
+    return self.UI
+end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck.skimming <cp.prop: boolean>
 --- Field
 --- The Skimming Preferences value.
-        skimming = parent:app().preferences:prop("FFDisableSkimming", false):NOT(),
-    }
+function ColorPuck.lazy.prop:skimming()
+    return self:app().preferences:prop("FFDisableSkimming", false):NOT()
+end
 
-    -- prepare the parent to provide the content UI.
-    PropertyRow.prepareParent(o, function() return parent:UI() end)
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.row <cp.prop: PropertyRow>
+--- Field
+--- Finds the 'row' for the property type.
+function ColorPuck.lazy.value:row()
+    return PropertyRow(self, self._labelKeys)
+end
 
-    --- cp.apple.finalcutpro.inspector.color.ColorPuck.row <cp.prop: PropertyRow>
-    --- Field
-    --- Finds the 'row' for the property type.
-    o.row = PropertyRow.new(o, o._labelKeys)
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
+--- Field
+--- The human-readable label for the puck, in FCPX's current language.
+function ColorPuck.lazy.prop:label()
+    return self.row.label
+end
 
-    --- cp.apple.finalcutpro.inspector.color.ColorPuck.label <cp.prop: string; read-only>
-    --- Field
-    --- The human-readable label for the puck, in FCPX's current language.
-    o.label = o.row.label:wrap(o)
-
-    --- cp.apple.finalcutpro.inspector.color.ColorPuck.percent <cp.prop: TextField>
-    --- Field
-    --- The 'percent' text field.
-    o.percent = TextField.new(o, function()
-        local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.percent <cp.prop: TextField>
+--- Field
+--- The 'percent' text field.
+function ColorPuck.lazy.value:percent()
+    return TextField(self, function()
+        local fields = axutils.childrenWithRole(self.row:children(), "AXTextField")
         return fields and fields[#fields] or nil
     end, tonumber)
+end
 
-    --- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.prop: TextField>
-    --- Field
-    --- The 'angle' text field (only present for the 'color' aspect).
-    o.angle = TextField.new(o, function()
-        if o._hasAngle then
-            local fields = axutils.childrenWithRole(o.row:children(), "AXTextField")
+--- cp.apple.finalcutpro.inspector.color.ColorPuck.angle <cp.ui.TextField>
+--- Field
+--- The 'angle' text field (only present for the 'color' aspect).
+function ColorPuck.lazy.value:angle()
+    return TextField(self, function()
+        if self._hasAngle then
+            local fields = axutils.childrenWithRole(self.row:children(), "AXTextField")
             return fields and #fields > 1 and fields[1] or nil
         else
             return nil
         end
     end, tonumber)
-
-    return o
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:index() -> number
@@ -212,7 +206,7 @@ end
 ---
 --- Returns:
 --- * The puck number.
-function Puck:index()
+function ColorPuck:index()
     return self._puckNumber
 end
 
@@ -226,48 +220,35 @@ end
 ---
 --- Returns:
 --- * `true` if the puck has an `angle`.
-function Puck:hasAngle()
+function ColorPuck:hasAngle()
     return self._hasAngle
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck:parent() -> object
---- Method
---- Returns the Parent object.
----
---- Parameters:
----  * None
----
---- Returns:
----  * The parent object.
-function Puck:parent()
-    return self._parent
-end
-
---- cp.apple.finalcutpro.inspector.color.ColorPuck:app() -> App
---- Method
---- Returns the App instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
-function Puck:app()
-    return self:parent():app()
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:show() -> cp.apple.finalcutpro.inspector.color.ColorPuck
 --- Method
---- Shows the Color Puck
+--- Shows the Color ColorPuck
 ---
 --- Parameters:
 ---  * None
 ---
 --- Returns:
 ---  * The `cp.apple.finalcutpro.inspector.color.ColorPuck` object for method chaining.
-function Puck:show()
+function ColorPuck:show()
     self:parent():show()
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:doShow() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shows the Color ColorPuck.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful or sending an error if not.
+function ColorPuck.lazy.method:doShow()
+    return self:parent():doShow():Label("ColorPuck:doShow")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:select() -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -279,7 +260,7 @@ end
 ---
 --- Returns:
 ---  * The `ColorPuck` instance.
-function Puck:select()
+function ColorPuck:select()
     self:show()
     local ui = self:UI()
     if ui then
@@ -291,6 +272,31 @@ function Puck:select()
     return self
 end
 
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:doSelect() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that selects this puck.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * The `Statement`, resolving to `true` if successful or throwing an error if no.
+function ColorPuck.lazy.method:doSelect()
+    return Do(self:doShow())
+    :Then(function()
+        local ui = self:UI()
+        if ui then
+            local f = ui:frame()
+            local centre = geometry(f).center
+            tools.ninjaMouseClick(centre)
+            return true
+        else
+            return Throw("Unable to select the %q ColorPuck", self)
+        end
+    end)
+    :Label("ColorPuck:doSelect")
+end
+
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:shiftPercent(amount) -> cp.apple.finalcutpro.inspector.color.ColorPuck
 --- Method
 --- Shifts the percent value by the provide amount.
@@ -300,12 +306,29 @@ end
 ---
 --- Returns:
 ---  * The updated value.
-function Puck:shiftPercent(amount)
+function ColorPuck:shiftPercent(amount)
     local value = self:percent()
     if value ~= nil then
         value = self:percent(value + amount)
     end
     return value
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:doShiftPercent(amount) -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that shifts the percent value by the provide amount.
+---
+--- Parameters:
+---  * `amount` - The amount to shift the percent value.
+---
+--- Returns:
+---  * The `Statement`, resolving to the updated percent value, or throwing an error if there is a problem.
+function ColorPuck:doShiftPercent(amount)
+    return Do(self:doSelect())
+    :Then(function()
+        return self:shiftPercent(amount)
+    end)
+    :Label("ColorPuck:doShiftPercent")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:shiftAngle(amount) -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -317,12 +340,20 @@ end
 ---
 --- Returns:
 --- * The `ColorPuck` instance.
-function Puck:shiftAngle(amount)
+function ColorPuck:shiftAngle(amount)
     local value = self:angle()
     if value ~= nil then
         value = self:angle(value + amount)
     end
     return value
+end
+
+function ColorPuck:doShiftAngle(amount)
+    return Do(self:doSelect())
+    :Then(function()
+        return self:shiftAngle(amount)
+    end)
+    :Label("ColorPuck:doShiftAngle")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:reset() -> cp.apple.finalcutpro.inspector.color.ColorPuck
@@ -334,38 +365,57 @@ end
 ---
 --- Returns:
 --- * The `ColorPuck` instance.
-function Puck:reset()
+function ColorPuck:reset()
     self:percent(0)
-    self:angle(Puck.DEFAULT_ANGLES[self:index()])
+    self:angle(ColorPuck.DEFAULT_ANGLES[self:index()])
     return self
+end
+
+--- cp.apple.finalcutpro.inspector.color.ColorPuck:doReset() -> cp.rx.go.Statement
+--- Method
+--- A [Statement](cp.rx.go.Statement.md) that resets the puck to its default settings.
+---
+--- Parameters:
+--- * None
+---
+--- Returns:
+--- * The `Statement`, resolving to `true` if successful, or throwing an error if not.
+function ColorPuck.lazy.method:doReset()
+    return Do(self:doShow())
+    :Then(function()
+        self:reset()
+        return true
+    end)
+    :Label("ColorPuck:doReset")
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:start() -> cp.apple.finalcutpro.inspector.color.ColorPuck
 --- Method
---- Starts a Color Puck.
+--- Starts a Color ColorPuck.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * The `ColorPuck` instance.
-function Puck:start()
+function ColorPuck:start()
     --------------------------------------------------------------------------------
     -- Stop any running pucks when starting a new one:
     --------------------------------------------------------------------------------
-    if Puck._active then
-        Puck._active:stop()
+    if ColorPuck._active then
+        ColorPuck._active:stop()
+        ColorPuck._active = nil
     end
 
     --------------------------------------------------------------------------------
-    -- Disable skimming while the Puck is running:
+    -- Disable skimming while the ColorPuck is running:
     --------------------------------------------------------------------------------
     self.menuBar = self:parent():app():menu()
     if self:skimming() then
         self.menuBar:selectMenu({"View", "Skimming"})
     end
 
-    Puck._active = self
+    ColorPuck._active = self
 
     --------------------------------------------------------------------------------
     -- Select the puck to ensure properties are available:
@@ -382,7 +432,7 @@ function Puck:start()
     -- Start the timer:
     --------------------------------------------------------------------------------
     self.running = true
-    Puck.loop(self)
+    ColorPuck.loop(self)
     return self
 end
 
@@ -395,7 +445,7 @@ end
 ---
 --- Returns:
 ---  * The brightness value as number.
-function Puck:getBrightness()
+function ColorPuck:getBrightness()
     if self.property == "global" then
         return 0.25
     elseif self.property == "shadows" then
@@ -418,7 +468,7 @@ end
 ---
 --- Returns:
 ---  * The arc value as number.
-function Puck:getArc()
+function ColorPuck:getArc()
     if self.angleUI then
         return 135, 315
     elseif self.property == "global" then
@@ -437,8 +487,8 @@ end
 ---
 --- Returns:
 ---  * None
-function Puck:drawMarker()
-    local d = Puck.NATURAL_LENGTH*2
+function ColorPuck:drawMarker()
+    local d = ColorPuck.NATURAL_LENGTH*2
     local oFrame = geometry.rect(self.origin.x-d/2, self.origin.y-d/2, d, d)
 
     local brightness = self:getBrightness()
@@ -473,7 +523,7 @@ end
 ---
 --- Returns:
 ---  * None
-function Puck:colorMarker(pct, angle)
+function ColorPuck:colorMarker(pct, angle)
     local solidColor = nil
     local fillColor
 
@@ -504,27 +554,27 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:stop() -> none
 --- Method
---- Stops a Color Puck.
+--- Stops a Color ColorPuck.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * None
-function Puck:stop()
+function ColorPuck:stop()
     self.running = false
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:cleanup() -> none
 --- Method
---- Cleans up the Color Puck drawings.
+--- Cleans up the Color ColorPuck drawings.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * None
-function Puck:cleanup()
+function ColorPuck:cleanup()
     self.running = false
     if self.circle then
         self.circle:delete()
@@ -543,7 +593,7 @@ function Puck:cleanup()
         self.menuBar:selectMenu({"View", "Skimming"})
     end
     self.menuBar = nil
-    Puck._active = nil
+    ColorPuck._active = nil
 end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:accumulate() -> none
@@ -557,7 +607,7 @@ end
 --- Returns:
 --- * `x` - Accumulated `x` value as number
 --- * `y` - Accumulated `y` value as number
-function Puck:accumulate(xShift, yShift)
+function ColorPuck:accumulate(xShift, yShift)
     if xShift < 1 and xShift > -1 then
         self.xShift = self.xShift + xShift
         if self.xShift > 1 or self.xShift < -1 then
@@ -581,14 +631,14 @@ end
 
 --- cp.apple.finalcutpro.inspector.color.ColorPuck:loop() -> none
 --- Method
---- Loops the Color Puck function.
+--- Loops the Color ColorPuck function.
 ---
 --- Parameters:
 --- * None
 ---
 --- Returns:
 --- * None
-function Puck:loop()
+function ColorPuck:loop()
     if not self.running then
         self:cleanup()
         return
@@ -618,15 +668,15 @@ end
 
 -- cp.apple.finalcutpro.inspector.color.ColorPuck:__tostring() -> string
 -- Method
--- Gets the Puck ID.
+-- Gets the ColorPuck ID.
 --
 -- Parameters:
 -- * None
 --
 -- Returns:
--- * The Puck ID as string.
-function Puck:__tostring()
+-- * The ColorPuck ID as string.
+function ColorPuck:__tostring()
     return string.format("%s - %s", self:parent(), self:label() or "[Unknown]")
 end
 
-return Puck
+return ColorPuck

@@ -1,4 +1,4 @@
---- === plugins.core.quit ===
+--- === plugins.core.menu.restart ===
 ---
 --- Core CommandPost functionality
 
@@ -8,11 +8,11 @@
 --
 --------------------------------------------------------------------------------
 local require = require
+local hs = hs
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local config            = require("cp.config")
 local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
@@ -24,31 +24,11 @@ local PRIORITY          = 9999999
 
 --------------------------------------------------------------------------------
 --
--- THE MODULE:
---
---------------------------------------------------------------------------------
-local mod = {}
-
---- plugins.core.quit.quit() -> nil
---- Function
---- Quit's CommandPost
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function mod.quit()
-    config.application():kill()
-end
-
---------------------------------------------------------------------------------
---
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.quit",
+    id              = "core.menu.restart",
     group           = "core",
     dependencies    = {
         ["core.menu.bottom"] = "bottom",
@@ -59,11 +39,9 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    deps.bottom:addSeparator(9999998):addItem(PRIORITY, function()
-        return { title = i18n("quit"),  fn = mod.quit }
+    deps.bottom:addSeparator(PRIORITY):addItem(PRIORITY + 1, function()
+        return { title = i18n("restart"),  fn = hs.reload }
     end)
-
-    return mod
 end
 
 return plugin

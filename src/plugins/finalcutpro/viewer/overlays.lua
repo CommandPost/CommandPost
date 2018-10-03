@@ -26,6 +26,7 @@ local hid               = require("hs.hid")
 local image             = require("hs.image")
 local menubar           = require("hs.menubar")
 local mouse             = require("hs.mouse")
+local timer             = require("hs.timer")
 
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
@@ -487,6 +488,30 @@ function mod.show()
                     --------------------------------------------------------------------------------
                     if draggableGuideEnabled then
                         for i=1, mod.NUMBER_OF_DRAGGABLE_GUIDES do
+                            --------------------------------------------------------------------------------
+                            -- Reset Guide on Double Click:
+                            --------------------------------------------------------------------------------
+                            if id == "dragCentre" .. i and event == "mouseUp" then
+                                if mod._draggableGuideDoubleClick then
+
+                                    local newX = frame.w/2
+                                    local newY = frame.h/2
+
+                                    mod._canvas["dragCentre" .. i].center = { x = newX, y = newY}
+                                    mod._canvas["dragCentreKill" .. i].center = {x = newX, y = newY }
+                                    mod._canvas["dragVertical" .. i].coordinates = { { x = newX, y = 0 }, { x = newX, y = frame.h } }
+                                    mod._canvas["dragHorizontal" .. i].coordinates = { { x = 0, y = newY }, { x = frame.w, y = newY } }
+                                    mod.setGuidePosition(i, {x=newX, y=newY})
+
+                                    mod._draggableGuideDoubleClick = false
+                                else
+                                    mod._draggableGuideDoubleClick = true
+                                    timer.doAfter(eventtap.doubleClickInterval(), function()
+                                        mod._draggableGuideDoubleClick = false
+                                    end)
+                                end
+                            end
+
                             if id == "dragCentre" .. i and event == "mouseDown" then
                                 if not mod._mouseMoveTracker then
                                     mod._mouseMoveTracker = {}

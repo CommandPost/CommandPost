@@ -23,6 +23,7 @@ local require = require
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils                           = require("cp.ui.axutils")
+local Element                           = require("cp.ui.Element")
 local CheckBox                          = require("cp.ui.CheckBox")
 local GeneratorsBrowser                 = require("cp.apple.finalcutpro.main.GeneratorsBrowser")
 local LibrariesBrowser                  = require("cp.apple.finalcutpro.main.LibrariesBrowser")
@@ -40,8 +41,7 @@ local If                                = require("cp.rx.go.If")
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
-local Browser = {}
-
+local Browser = Element:subclass("cp.apple.finalcutpro.main.Browser")
 
 -- _findBrowser(...) -> window | nil
 -- Function
@@ -75,12 +75,15 @@ end
 ---
 --- Returns:
 ---  * `true` if matches otherwise `false`
-function Browser.matches(element)
-    local checkBoxes = axutils.childrenWithRole(element, "AXCheckBox")
-    return checkBoxes and #checkBoxes >= 3
+function Browser.static.matches(element)
+    if Element.matches(element) then
+        local checkBoxes = axutils.childrenWithRole(element, "AXCheckBox")
+        return checkBoxes and #checkBoxes >= 3
+    end
+    return false
 end
 
---- cp.apple.finalcutpro.main.Browser.new(app) -> Browser
+--- cp.apple.finalcutpro.main.Browser(app) -> Browser
 --- Constructor
 --- Creates a new `Browser` instance.
 ---
@@ -89,89 +92,74 @@ end
 ---
 --- Returns:
 ---  * The new `Browser`.
-function Browser.new(app)
-    local o = prop.extend({_app = app}, Browser)
-
-    local UI = prop(function(self)
+function Browser:initialize(app)
+    local UI = prop(function()
         return axutils.cache(self, "_ui", function()
             return _findBrowser(app:secondaryWindow(), app:primaryWindow())
         end,
         Browser.matches)
     end):monitor(app:toolbar().browserShowing)
 
-    prop.bind(o) {
-
-        --- cp.apple.finalcutpro.main.Browser.UI <cp.prop: hs._asm.axuielement; read-only>
-        --- Field
-        --- The `axuielement` for the browser, or `nil` if not available.
-        UI = UI,
-
-        --- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
-        --- Field
-        --- Is the Browser on the Secondary Window?
-        isOnSecondary = UI:mutate(function(original)
-            local ui = original()
-            return ui and SecondaryWindow.matches(ui:window())
-        end),
-
-        --- cp.apple.finalcutpro.main.Browser.isOnPrimary <cp.prop: boolean; read-only>
-        --- Field
-        --- Is the Browser on the Primary Window?
-        isOnPrimary = UI:mutate(function(uiProp)
-            local ui = uiProp()
-            return ui and PrimaryWindow.matches(ui:window())
-        end),
-
-        --- cp.apple.finalcutpro.main.Browser.isShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Is the Browser showing somewhere?
-        isShowing = UI:mutate(function(original)
-            return original() ~= nil
-        end),
-
-        --- cp.apple.finalcutpro.main.Browser.librariesShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Is the 'Libraries' button active, and thus showing?
-        librariesShowing = o:showLibraries().checked,
-
-        --- cp.apple.finalcutpro.main.Browser.mediaShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Is the 'Media' button active, and thus showing?
-        mediaShowing = o:showMedia().checked,
-
-        --- cp.apple.finalcutpro.main.Browser.generatorsShowing <cp.prop: boolean; read-only>
-        --- Field
-        --- Is the 'Generators' button active, and thus showing?
-        generatorsShowing = o:showGenerators().checked,
-    }
+    Element.initialize(self, app, UI)
 
     -- wire up the libraries/media/generators buttons up to listen for updates from the app
     app:notifier():watchFor("AXValueChanged", function(element)
         if element:attributeValue("AXRole") == "AXImage" then
             local parent = element:attributeValue("AXParent")
-            local ui = o:UI()
+            local ui = self:UI()
             if parent ~= nil and parent == ui then -- it's from inside the Browser UI
-                o:showLibraries().checked:update()
-                o:showMedia().checked:update()
-                o:showGenerators().checked:update()
+                self:showLibraries().checked:update()
+                self:showMedia().checked:update()
+                self:showGenerators().checked:update()
             end
         end
     end)
 
-    return o
 end
 
---- cp.apple.finalcutpro.main.Browser:app() -> App
---- Method
---- Returns the app instance representing Final Cut Pro.
----
---- Parameters:
----  * None
----
---- Returns:
----  * App
 function Browser:app()
-    return self._app
+    return self:parent()
+end
+
+--- cp.apple.finalcutpro.main.Browser.isOnSecondary <cp.prop: boolean; read-only>
+--- Field
+--- Is the Browser on the Secondary Window?
+function Browser.lazy.prop:isOnSecondary()
+    return self.UI:mutate(function(original)
+        local ui = original()
+        return ui and SecondaryWindow.matches(ui:window())
+    end)
+end
+
+--- cp.apple.finalcutpro.main.Browser.isOnPrimary <cp.prop: boolean; read-only>
+--- Field
+--- Is the Browser on the Primary Window?
+function Browser.lazy.prop:isOnPrimary()
+    return self.UI:mutate(function(uiProp)
+        local ui = uiProp()
+        return ui and PrimaryWindow.matches(ui:window())
+    end)
+end
+
+--- cp.apple.finalcutpro.main.Browser.librariesShowing <cp.prop: boolean; read-only>
+--- Field
+--- Is the 'Libraries' button active, and thus showing?
+function Browser.lazy.prop:librariesShowing()
+    return self:showLibraries().checked
+end
+
+--- cp.apple.finalcutpro.main.Browser.mediaShowing <cp.prop: boolean; read-only>
+--- Field
+--- Is the 'Media' button active, and thus showing?
+function Browser.lazy.prop:mediaShowing()
+    return self:showMedia().checked
+end
+
+--- cp.apple.finalcutpro.main.Browser.generatorsShowing <cp.prop: boolean; read-only>
+--- Field
+--- Is the 'Generators' button active, and thus showing?
+function Browser.lazy.prop:generatorsShowing()
+    return self:showGenerators().checked
 end
 
 -----------------------------------------------------------------------
@@ -213,7 +201,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function Browser:doShowOnPrimary()
+function Browser.lazy.method:doShowOnPrimary()
     local menuBar = self:app():menu()
 
     return Do(
@@ -223,7 +211,7 @@ function Browser:doShowOnPrimary()
     ):Then(
         If(self.isShowing):IsNot(true):Then(
             menuBar:doSelectMenu({"Window", "Show in Workspace", "Browser"})
-        )
+        ):Otherwise(true)
     )
     :Label("Browser:doShowOnPrimary")
 end
@@ -256,7 +244,7 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function Browser:doShowOnSecondary()
+function Browser.lazy.method:doShowOnSecondary()
     local menuBar = self:app():menu()
 
     return Do(
@@ -264,7 +252,7 @@ function Browser:doShowOnSecondary()
     ):Then(
         If(self.isOnSecondary):IsNot(true):Then(
             menuBar:doSelectMenu({"Window", "Show in Secondary Display", "Browser"})
-        )
+        ):Otherwise(true)
     )
     :Label("Browser:doShowOnSecondary")
 end
@@ -280,11 +268,9 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function Browser:doShow()
-    return Do(
-        If(self.isShowing):IsNot(true):Then(
-            self:doShowOnPrimary()
-        )
+function Browser.lazy.method:doShow()
+    return If(self.isShowing):IsNot(true):Then(
+        self:doShowOnPrimary()
     )
     :Label("Browser:doShow")
 end
@@ -315,10 +301,10 @@ end
 ---
 --- Returns:
 ---  * The `Statement` to execute.
-function Browser:doHide()
+function Browser.lazy.method:doHide()
     return If(self.isShowing):Then(
         self:app():menu():doSelectMenu({"Window", "Show in Workspace", "Browser"})
-    )
+    ):Label("Browser:doHide")
 end
 
 -----------------------------------------------------------------------
@@ -336,18 +322,15 @@ end
 ---
 --- Returns:
 ---  * A `CheckBox` object.
-function Browser:showLibraries()
-    if not self._showLibraries then
-        self._showLibraries = CheckBox.new(self, function()
-            local ui = self:UI()
-            if ui and #ui > 3 then
-                -- The library toggle is always the last element.
-                return ui[#ui]
-            end
-            return nil
-        end)
-    end
-    return self._showLibraries
+function Browser.lazy.method:showLibraries()
+    return CheckBox(self, function()
+        local ui = self:UI()
+        if ui and #ui > 3 then
+            -- The library toggle is always the last element.
+            return ui[#ui]
+        end
+        return nil
+    end)
 end
 
 --- cp.apple.finalcutpro.main.Browser:showMedia() -> CheckBox
@@ -359,18 +342,15 @@ end
 ---
 --- Returns:
 ---  * A `CheckBox` object.
-function Browser:showMedia()
-    if not self._showMedia then
-        self._showMedia = CheckBox.new(self, function()
-            local ui = self:UI()
-            if ui and #ui > 3 then
-                -- The media toggle is always the second-last element.
-                return ui[#ui-1]
-            end
-            return nil
-        end)
-    end
-    return self._showMedia
+function Browser.lazy.method:showMedia()
+    return CheckBox(self, function()
+        local ui = self:UI()
+        if ui and #ui > 3 then
+            -- The media toggle is always the second-last element.
+            return ui[#ui-1]
+        end
+        return nil
+    end)
 end
 
 --- cp.apple.finalcutpro.main.Browser:showGenerators() -> CheckBox
@@ -382,18 +362,15 @@ end
 ---
 --- Returns:
 ---  * A `CheckBox` object.
-function Browser:showGenerators()
-    if not self._showGenerators then
-        self._showGenerators = CheckBox.new(self, function()
-            local ui = self:UI()
-            if ui and #ui > 3 then
-                -- The generators toggle is always the third-last element.
-                return ui[#ui-2]
-            end
-            return nil
-        end)
-    end
-    return self._showGenerators
+function Browser.lazy.method:showGenerators()
+    return CheckBox(self, function()
+        local ui = self:UI()
+        if ui and #ui > 3 then
+            -- The generators toggle is always the third-last element.
+            return ui[#ui-2]
+        end
+        return nil
+    end)
 end
 
 --- cp.apple.finalcutpro.main.Browser:libraries() -> LibrariesBrowser
@@ -405,11 +382,8 @@ end
 ---
 --- Returns:
 ---  * A `LibrariesBrowser` object.
-function Browser:libraries()
-    if not self._libraries then
-        self._libraries = LibrariesBrowser.new(self)
-    end
-    return self._libraries
+function Browser.lazy.method:libraries()
+    return LibrariesBrowser(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:media() -> MediaBrowser
@@ -421,11 +395,8 @@ end
 ---
 --- Returns:
 ---  * A `MediaBrowser` object.
-function Browser:media()
-    if not self._media then
-        self._media = MediaBrowser.new(self)
-    end
-    return self._media
+function Browser.lazy.method:media()
+    return MediaBrowser.new(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:generators() -> GeneratorsBrowser
@@ -437,11 +408,8 @@ end
 ---
 --- Returns:
 ---  * A `GeneratorsBrowser` object.
-function Browser:generators()
-    if not self._generators then
-        self._generators = GeneratorsBrowser.new(self)
-    end
-    return self._generators
+function Browser.lazy.method:generators()
+    return GeneratorsBrowser.new(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:markerPopover() -> BrowserMarkerPopover
@@ -453,11 +421,8 @@ end
 ---
 --- Returns:
 ---  * A `BrowserMarkerPopover` object.
-function Browser:markerPopover()
-    if not self._browserMarkerPopover then
-        self._browserMarkerPopover = BrowserMarkerPopover.new(self)
-    end
-    return self._browserMarkerPopover
+function Browser.lazy.method:markerPopover()
+    return BrowserMarkerPopover(self)
 end
 
 --- cp.apple.finalcutpro.main.Browser:saveLayout() -> table

@@ -45,6 +45,10 @@ local mod = {}
 --- Returns:
 ---  * The JSON file converted into table, or `nil`.
 function mod.read(path)
+    if not path then
+        log.ef("Path is required for `cp.json.read`.")
+        return false
+    end
     if path then
         local filePath = fs.pathToAbsolute(path)
         if filePath then
@@ -70,15 +74,25 @@ end
 --- Returns:
 ---  * `true` if successfully saved, otherwise `false`.
 function mod.write(path, data)
-    if path and data then
-        local encodedData = json.encode(data)
-        if encodedData then
-            local file = io.open(path, "w")
-            if file then
-                file:write(encodedData)
-                file:close()
-                return true
-            end
+    if not data then
+        log.ef("Data is required for `cp.json.write`.")
+        return false
+    end
+    if data and type(data) ~= "table" then
+        log.ef("Data must be a table, not a '%s' for `cp.json.write`.", type(data))
+        return false
+    end
+    if not path then
+        log.ef("Path is required for `cp.json.write`.")
+        return false
+    end
+    local encodedData = json.encode(data)
+    if encodedData then
+        local file = io.open(path, "w")
+        if file then
+            file:write(encodedData)
+            file:close()
+            return true
         end
     end
     return false
