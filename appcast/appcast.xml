@@ -6,6 +6,32 @@
 		<description>Most recent changes with links to updates.</description>
 		<language>en</language>
 		<item>
+			<title>Version 1.0.0-beta.35</title>
+			<description><![CDATA[
+				<h2>IMPORTANT CHANGE:</h2>
+				<p>As of Beta 35 we've decided that due to limited development resources, we're now only going to support the latest and greatest version of Final Cut Pro (currently 10.4.4). If you're using an older version of Final Cut Pro do NOT update CommandPost, and continue to use Beta 34.</p>
+
+				<h2>New in Beta 35:</h2>
+				<ul><li>CommandPost now only supports the latest version of Final Cut Pro (10.4.4).</li>
+				<li>Removed Timecode Overlays & Batch Export from Browser as this functionality is now native to Final Cut Pro 10.4.4.</li>
+				<li>Fixed a bug in Batch Export destinations.</li>
+				<li>Added ability to ignore invalid captions when Batch Exporting from the timeline.</li>
+				<li>Renamed "Single Match Frame and Highlight" to "Reveal Single Clip in Browser & Highlight" to be consistent with the Final Cut Pro naming.</li></ul>
+
+				<h2>Known Issues:</h2>
+				<ul><li>Controlling colour wheels using a Tangent panel or MIDI device is currently broken. This will be fixed in an upcoming beta.</li>
+				<li>In some cases, CommandPost will crash after completing the initial setup of a fresh install, but will work as expected when restarted. This will be fixed in an upcoming beta.</li></ul>
+			]]>
+			</description>
+			<pubDate>Sat, 17 Nov 2018 01:16:30 +1100</pubDate>
+			<enclosure url="https://github.com/CommandPost/CommandPost/releases/download/1.0.0-beta.35/CommandPost_1.0.0-beta.35.dmg"
+				sparkle:version="1.0.0-beta.35"
+				sparkle:dsaSignature="MC0CFQCVEVV47N6+UASGKrPRoNkvYLDU2AIUNs1NmrSGM4F8N+lVWzAJ0eH/AEQ="
+				type="application/octet-stream"
+			/>
+			<sparkle:minimumSystemVersion>10.10</sparkle:minimumSystemVersion>
+		</item>
+		<item>
 			<title>Version 1.0.0-beta.34</title>
 			<description><![CDATA[
 				<h2>Preparing for latest beta:</h2>
