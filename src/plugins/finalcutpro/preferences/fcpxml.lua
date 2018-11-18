@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.egpu ===
+--- === plugins.finalcutpro.preferences.fcpxml ===
 ---
---- Final Cut Pro eGPU Support.
+--- Adds preferences for extra FCPXML import and export options.
 
 --------------------------------------------------------------------------------
 --
@@ -20,12 +20,6 @@ local require = require
 local fcp                               = require("cp.apple.finalcutpro")
 local i18n                              = require("cp.i18n")
 local prop                              = require("cp.prop")
-local tools                             = require("cp.tools")
-
---------------------------------------------------------------------------------
--- 3rd Party Extensions:
---------------------------------------------------------------------------------
-local semver                            = require("semver")
 
 --------------------------------------------------------------------------------
 --
@@ -34,24 +28,41 @@ local semver                            = require("semver")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.fullscreen.shortcuts.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.preferences.fcpxml.importEnabled <cp.prop: boolean>
 --- Variable
---- Is the module enabled?
-mod.enabled = prop.new(function()
+--- Are extra FCPXML import options enabled?
+mod.importEnabled = prop.new(function()
     --------------------------------------------------------------------------------
     -- Getter:
     --------------------------------------------------------------------------------
-    return fcp.preferences.GPUSelectionPolicy ~= nil
+    return fcp.preferences.FFXMLImportShowExtraOptions == "1"
 end, function(value)
     --------------------------------------------------------------------------------
     -- Setter:
     --------------------------------------------------------------------------------
     if value then
-        fcp.preferences.GPUSelectionPolicy = "preferRemovable"
-        fcp.preferences.GPUEjectPolicy = "relaunch"
+        fcp.preferences.FFXMLImportShowExtraOptions = "1"
     else
-        fcp.preferences.GPUSelectionPolicy = nil
-        fcp.preferences.GPUEjectPolicy = nil
+        fcp.preferences.FFXMLImportShowExtraOptions = "0"
+    end
+end)
+
+--- plugins.finalcutpro.preferences.fcpxml.exportEnabled <cp.prop: boolean>
+--- Variable
+--- Are extra FCPXML export options enabled?
+mod.exportEnabled = prop.new(function()
+    --------------------------------------------------------------------------------
+    -- Getter:
+    --------------------------------------------------------------------------------
+    return fcp.preferences.FFXMLExportShowExtraOptions == "1"
+end, function(value)
+    --------------------------------------------------------------------------------
+    -- Setter:
+    --------------------------------------------------------------------------------
+    if value then
+        fcp.preferences.FFXMLExportShowExtraOptions = "1"
+    else
+        fcp.preferences.FFXMLExportShowExtraOptions = "0"
     end
 end)
 
@@ -61,7 +72,7 @@ end)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.egpu",
+    id              = "finalcutpro.preferences.fcpxml",
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.preferences.app"] = "prefs",
@@ -73,34 +84,26 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
     if deps.prefs.panel then
-
-        --------------------------------------------------------------------------------
-        -- Check macOS Version:
-        --------------------------------------------------------------------------------
-        local osVersion = tools.macOSVersion()
-        local allowEGPU = false
-        local os = semver(osVersion)
-        if os >= semver("10.13.4") and os < semver("10.4.0") then
-            allowEGPU = true
-        end
-
         deps.prefs.panel
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
             --------------------------------------------------------------------------------
-            :addCheckbox(1.01,
+            :addCheckbox(1.3,
             {
-                label = i18n("enableEGPUSupport"),
-                onchange = function(_, params) mod.enabled(params.checked) end,
-                checked = mod.enabled,
-                disabled = not allowEGPU,
-            }
-        )
+                label = i18n("showHiddenFCPXMLImportOptions"),
+                onchange = function(_, params) mod.importEnabled(params.checked) end,
+                checked = mod.importEnabled,
+            })
+            :addCheckbox(1.4,
+            {
+                label = i18n("showHiddenFCPXMLExportOptions"),
+                onchange = function(_, params) mod.exportEnabled(params.checked) end,
+                checked = mod.exportEnabled,
+            })
     end
 
     return mod
