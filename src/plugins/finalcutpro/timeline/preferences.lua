@@ -101,7 +101,7 @@ local plugin = {
     id = "finalcutpro.timeline.preferences",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.mediaimport"]    = "menu",
+        ["finalcutpro.menu.manager"]        = "menu",
         ["finalcutpro.commands"]            = "fcpxCmds",
     }
 }
@@ -114,7 +114,7 @@ function plugin.init(deps)
     -- Add Menu:
     ---------------------------------------------------------------------------------
     if deps.menu then
-        deps.menu:addItems(PRIORITY, function()
+        deps.menu.mediaImport:addItems(PRIORITY, function()
             local fcpxRunning = fcp:isRunning()
 
             return {

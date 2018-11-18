@@ -17,9 +17,11 @@ local image                                     = require("hs.image")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
+local commands                                  = require("cp.commands")
 local config                                    = require("cp.config")
 local i18n                                      = require("cp.i18n")
 local tools                                     = require("cp.tools")
+local ui                                        = require("cp.web.ui")
 
 --------------------------------------------------------------------------------
 --
@@ -35,6 +37,11 @@ local SECTIONS_HEADING      = 200
 --
 --------------------------------------------------------------------------------
 local mod = {}
+
+--- plugins.core.preferences.panels.menubar.lastGroup <cp.prop: string>
+--- Field
+--- Last group used in the Preferences Drop Down.
+mod.lastGroup = config.prop("menubarPreferencesLastGroup", nil)
 
 --- plugins.core.preferences.panels.menubar.showSectionHeadingsInMenubar <cp.prop: boolean>
 --- Field
@@ -66,7 +73,7 @@ function plugin.init(deps)
         label       = i18n("menubarPanelLabel"),
         image       = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/DesktopScreenEffectsPref.prefPane/Contents/Resources/DesktopScreenEffectsPref.icns", "/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")),
         tooltip     = i18n("menubarPanelTooltip"),
-        height      = 350,
+        height      = 380,
     })
 
     --------------------------------------------------------------------------------
@@ -88,10 +95,8 @@ function plugin.init(deps)
                 checked = mod.showSectionHeadingsInMenubar,
             }
         )
-    :addHeading(SECTIONS_HEADING, i18n("sections"))
 
-    panel.APPEARANCE_HEADING    = APPEARANCE_HEADING
-    panel.SECTIONS_HEADING      = SECTIONS_HEADING
+        :addHeading(APPEARANCE_HEADING + 3, i18n("shared") .. " " .. i18n("sections"))
 
     return panel
 end

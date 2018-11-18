@@ -94,7 +94,7 @@ local plugin = {
     id              = "finalcutpro.timeline.disablewaveforms",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.timeline"]   = "menu",
+        ["finalcutpro.menu.manager"]    = "menu",
         ["finalcutpro.commands"]        = "fcpxCmds",
     }
 }
@@ -108,7 +108,7 @@ function plugin.init(deps)
     -- Setup Menu:
     --------------------------------------------------------------------------------
     if deps.menu then
-        deps.menu
+        deps.menu.timeline
             :addItem(PRIORITY, function()
                 return { title = i18n("enableWaveformDrawing"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
             end)

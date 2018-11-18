@@ -70,7 +70,7 @@ local plugin = {
     id              = "core.preferences.updates",
     group           = "core",
     dependencies    = {
-        ["core.menu.top"]                   = "menu",
+        ["core.menu.manager"]               = "menu",
         ["core.preferences.panels.general"] = "general",
     }
 }
@@ -86,7 +86,7 @@ function plugin.init(deps)
         hs.checkForUpdates(true)
     end
 
-    deps.menu:addItem(UPDATE_BANNER_PRIORITY, function()
+    deps.menu.top:addItem(UPDATE_BANNER_PRIORITY, function()
         if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
             return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",    fn = mod.checkForUpdates }
         end

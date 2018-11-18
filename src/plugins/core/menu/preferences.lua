@@ -26,7 +26,7 @@ local plugin = {
     group           = "core",
     required        = true,
     dependencies    = {
-        ["core.menu.bottom"]            = "bottom",
+        ["core.menu.manager"]           = "menu",
         ["core.preferences.manager"]    = "prefs",
     }
 }
@@ -36,7 +36,7 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-    deps.bottom
+    deps.menu.bottom
         :addHeading(i18n("settings"))
         :addItem(10.1, function()
             return { title = i18n("preferences") .. "...", fn = deps.prefs.show }

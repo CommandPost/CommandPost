@@ -64,7 +64,7 @@ function plugin.init(dependencies)
     -- Add to General Preferences Panel:
     --------------------------------------------------------------------------------
     local prefs = dependencies.prefs
-    prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
+    prefs:addCheckbox(104,
         {
             label = i18n("show") .. " " .. i18n("helpAndSupport"),
             onchange = function(_, params) sectionEnabled(params.checked) end,

@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp				= require("cp.apple.finalcutpro")
+local fcp		= require("cp.apple.finalcutpro")
 local i18n      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ local plugin = {
     id				= "finalcutpro.viewer.showtimelineinplayer",
     group			= "finalcutpro",
     dependencies	= {
-        ["finalcutpro.menu.viewer"]		= "menu",
+        ["finalcutpro.menu.manager"]	= "menu",
         ["finalcutpro.commands"] 		= "fcpxCmds",
     }
 }
@@ -74,7 +74,7 @@ function plugin.init(deps)
     -- Setup Menu:
     --------------------------------------------------------------------------------
     if deps.menu then
-        deps.menu:addItem(PRIORITY, function()
+        deps.menu.viewer:addItem(PRIORITY, function()
             return { title = i18n("showTimelineInPlayer"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
         end)
     end

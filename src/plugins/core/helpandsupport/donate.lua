@@ -54,7 +54,7 @@ local plugin = {
     id              = "core.helpandsupport.donate",
     group           = "core",
     dependencies    = {
-        ["core.menu.bottom"]    = "menu",
+        ["core.menu.manager"]    = "menu",
     }
 }
 
@@ -66,7 +66,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    deps.menu
+    deps.menu.bottom
         :addItem(PRIORITY, function()
             return { title = i18n("donateToDevelopers"), fn = mod.show }
         end)

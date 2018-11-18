@@ -333,7 +333,7 @@ local plugin = {
     id = "finalcutpro.os.voice",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.tools"]          = "prefs",
+        ["finalcutpro.menu.manager"]        = "menuManager",
         ["finalcutpro.commands"]            = "fcpxCmds",
         ["core.commands.global"]            = "globalCmds",
     }
@@ -353,8 +353,8 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menu Items:
     --------------------------------------------------------------------------------
-    if deps.prefs then
-        deps.prefs:addMenu(PRIORITY, function() return i18n("voiceCommands") end)
+    if deps.menuManager then
+        deps.menuManager.tools:addMenu(PRIORITY, function() return i18n("voiceCommands") end)
             :addItem(500, function()
                 return { title = i18n("enableVoiceCommands"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() }
             end)

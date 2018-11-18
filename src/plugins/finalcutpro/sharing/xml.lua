@@ -401,7 +401,7 @@ local plugin = {
     id              = "finalcutpro.sharing.xml",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.tools"]          = "menu",
+        ["finalcutpro.menu.manager"] = "menu",
     }
 }
 
@@ -418,7 +418,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Tools Menus:
     --------------------------------------------------------------------------------
-    deps.menu:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
+    deps.menu.tools:addMenu(PRIORITY, function() return i18n("sharedXMLFiles") end)
 
         :addItem(1, function()
             return { title = i18n("enableXMLSharing"),  fn = function() mod.enabled:toggle() end,   checked = mod.enabled()}

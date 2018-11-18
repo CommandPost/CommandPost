@@ -135,7 +135,7 @@ local plugin = {
     id = "finalcutpro.timeline.playhead",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.timeline"]               = "timelineMenu",
+        ["finalcutpro.menu.manager"]                = "menuManager",
         ["finalcutpro.commands"]                    = "fcpxCmds",
         ["finalcutpro.preferences.app"]             = "prefs",
     }
@@ -145,7 +145,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    local menu, cmds = deps.timelineMenu, deps.fcpxCmds
+    local menu, cmds = deps.menuManager.timeline, deps.fcpxCmds
 
     --------------------------------------------------------------------------------
     -- Setup Menu:

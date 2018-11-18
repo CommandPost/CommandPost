@@ -232,7 +232,7 @@ local plugin = {
     id              = "finalcutpro.import.preferences",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.mediaimport"]    = "menu",
+        ["finalcutpro.menu.manager"]        = "menu",
         ["finalcutpro.commands"]            = "fcpxCmds",
     }
 }
@@ -244,7 +244,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menus:
     --------------------------------------------------------------------------------
-    deps.menu:addItems(PRIORITY, function()
+    deps.menu.mediaImport:addItems(PRIORITY, function()
         local fcpxRunning = fcp:isRunning()
         return {
             { title = i18n("createOptimizedMedia"),         fn = function() mod.createOptimizedMedia:toggle() end,              checked = mod.createOptimizedMedia(),               disabled = not fcpxRunning },

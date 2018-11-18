@@ -31,7 +31,7 @@ local plugin = {
     id              = "core.menu.restart",
     group           = "core",
     dependencies    = {
-        ["core.menu.bottom"] = "bottom",
+        ["core.menu.manager"] = "menu",
     }
 }
 
@@ -39,7 +39,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    deps.bottom:addSeparator(PRIORITY):addItem(PRIORITY + 1, function()
+    deps.menu.bottom:addSeparator(PRIORITY):addItem(PRIORITY + 1, function()
         return { title = i18n("restart"),  fn = hs.reload }
     end)
 end

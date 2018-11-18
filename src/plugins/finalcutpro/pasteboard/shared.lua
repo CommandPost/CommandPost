@@ -531,9 +531,9 @@ local plugin = {
     id              = "finalcutpro.pasteboard.shared",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.pasteboard.manager"]   = "manager",
+        ["finalcutpro.pasteboard.manager"]  = "manager",
         ["finalcutpro.commands"]            = "fcpxCmds",
-        ["finalcutpro.menu.pasteboard"]      = "menu",
+        ["finalcutpro.menu.manager"]        = "menu",
     }
 }
 
@@ -555,7 +555,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    deps.menu
+    deps.menu.pasteboard
       :addMenu(TOOLS_PRIORITY, function() return i18n("sharedPasteboardHistory") end)
       :addItem(1000, function()
           return { title = i18n("enableSharedPasteboard"), fn = function() mod.enabled:toggle() end, checked = mod.enabled() and mod.validRootPath() }

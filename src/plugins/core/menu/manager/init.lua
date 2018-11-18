@@ -25,7 +25,7 @@ local menubar									= require("hs.menubar")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config									= require("cp.config")
-local i18n                    = require("cp.i18n")
+local i18n                                      = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 -- Module Extensions:
@@ -156,7 +156,10 @@ function manager.updateMenubarIcon()
     title = title .. titleSuffix
 
     manager.menubar:setIcon(icon)
-    -- HACK for #406: For some reason setting the title to " " temporarily fixes El Capitan
+    --------------------------------------------------------------------------------
+    -- Issue #406:
+    -- For some reason setting the title to " " temporarily fixes El Capitan.
+    --------------------------------------------------------------------------------
     manager.menubar:setTitle(" ")
     manager.menubar:setTitle(title)
 
@@ -190,7 +193,6 @@ end
 --- Returns:
 ---  * None
 function manager.addTitleSuffix(fnTitleSuffix)
-
     manager.titleSuffix[#manager.titleSuffix + 1] = fnTitleSuffix
     manager.updateMenubarIcon()
 end
@@ -241,6 +243,19 @@ function plugin.init(deps)
             end
         end
     end, true)
+
+    --------------------------------------------------------------------------------
+    -- Top Section:
+    --------------------------------------------------------------------------------
+    manager.top = manager.addSection(1)
+
+    --------------------------------------------------------------------------------
+    -- Bottom Section:
+    --------------------------------------------------------------------------------
+    manager.bottom = manager.addSection(9999999)
+        :addItem(0, function()
+            return { title = "-" }
+        end)
 
     return manager
 end

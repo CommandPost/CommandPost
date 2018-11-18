@@ -36,6 +36,11 @@ local section = {}
 --- The default priority
 section.DEFAULT_PRIORITY = 1
 
+--- plugins.core.menu.manager.section.SECTION_DISABLED_PREFERENCES_KEY_PREFIX -> string
+--- Constant
+--- The preferences key prefix for a disabled section.
+section.SECTION_DISABLED_PREFERENCES_KEY_PREFIX = "menubar.sectionDisabled."
+
 --- plugins.core.menu.manager.section:new() -> section
 --- Method
 --- Creates a new menu section, which can have items and sub-menus added to it.
@@ -55,7 +60,21 @@ function section:new()
     return o
 end
 
---- plugins.core.menu.manager.section:setDisabledFn(disabledFn) -> none
+--- plugins.core.menu.manager.section:setDisabledPreferenceKey(key) -> self
+--- Method
+--- Sets the Disabled Preferences Key.
+---
+--- Parameters:
+---  * key - A string which contains the unique preferences key.
+---
+--- Returns:
+---  * Self
+function section:setDisabledPreferenceKey(key)
+    self._key = key
+    return self
+end
+
+--- plugins.core.menu.manager.section:setDisabledFn(disabledFn) -> self
 --- Method
 --- Sets the Disabled Function
 ---
@@ -63,12 +82,26 @@ end
 ---  * disabledFn - The disabled function.
 ---
 --- Returns:
----  * None
+---  * Self
 function section:setDisabledFn(disabledFn)
     self._disabledFn = disabledFn
+    return self
 end
 
---- plugins.core.menu.manager.section:isDisabled() -> voolean
+--- plugins.core.menu.manager.section:getDisabledPreferenceKey() -> string
+--- Method
+--- Gets the disabled preferences key.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if the section has a disabled preferences key defined, otherwise `false`.
+function section:getDisabledPreferenceKey()
+    return self._key
+end
+
+--- plugins.core.menu.manager.section:isDisabled() -> boolean
 --- Method
 --- Gets the disabled status
 ---
@@ -78,7 +111,7 @@ end
 --- Returns:
 ---  * `true` if the section is disabled, otherwise `false`
 function section:isDisabled()
-    return self._disabledFn and self._disabledFn()
+    return (self._key and config.get(section.SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. self._key, false)) or (self._disabledFn and self._disabledFn())
 end
 
 -- plugins.core.menu.manager.section:_addGenerator() -> section
@@ -168,16 +201,30 @@ end
 --- Returns:
 ---  * section - The new section that was created.
 function section:addApplicationHeading(title)
+    self._isApplicationHeading = true
     title = title or "APPLICATION TITLE MISSING"
     self
         :addItem(0.00001, function()
             return {
-                title = "ACTIVE: " .. title,
+                title = title,
                 disabled = true,
             }
         end)
         :addSeparator(0.00002)
     return self
+end
+
+--- plugins.core.menu.manager.section:isApplicationHeading() -> boolean
+--- Method
+--- Does this section contain an application heading?
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * `true` if it does contain an application heading, otherwise `false`.
+function section:isApplicationHeading()
+    return self._isApplicationHeading
 end
 
 --- plugins.core.menu.manager.section:addSeparator(priority) -> section
