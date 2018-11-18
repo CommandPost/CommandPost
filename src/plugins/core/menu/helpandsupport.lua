@@ -53,22 +53,18 @@ function plugin.init(dependencies)
     -- Disable the section if the Timeline option is disabled:
     --------------------------------------------------------------------------------
     local sectionEnabled = config.prop(SETTING, true)
-    section:setDisabledFn(function() return not fcp:isInstalled() or not sectionEnabled() end)
+    section:setDisabledFn(function() return not sectionEnabled() end)
 
     --------------------------------------------------------------------------------
-    -- Add the separator and title for the section:
+    -- Add the heading for the section:
     --------------------------------------------------------------------------------
-    section
-        :addSeparator(0)
-        :addItem(1, function()
-            return { title = string.upper(i18n("helpAndSupport")) .. ":", disabled = true }
-        end)
+    section:addHeading(i18n("helpAndSupport"))
 
     --------------------------------------------------------------------------------
     -- Add to General Preferences Panel:
     --------------------------------------------------------------------------------
     local prefs = dependencies.prefs
-    prefs:addCheckbox(prefs.SECTIONS_HEADING + PREFERENCES_PRIORITY,
+    prefs:addCheckbox(104,
         {
             label = i18n("show") .. " " .. i18n("helpAndSupport"),
             onchange = function(_, params) sectionEnabled(params.checked) end,

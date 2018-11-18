@@ -57,7 +57,7 @@ local plugin = {
     id              = "finalcutpro.hacks.playbackrendering",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.timeline"]   = "menu",
+        ["finalcutpro.menu.manager"]    = "menu",
         ["finalcutpro.commands"]        = "fcpxCmds",
     }
 }
@@ -70,7 +70,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Setup Menu:
     --------------------------------------------------------------------------------
-    deps.menu
+    deps.menu.timeline
         :addItem(PRIORITY, function()
             return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
         end)

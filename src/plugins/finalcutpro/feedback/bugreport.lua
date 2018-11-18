@@ -420,7 +420,7 @@ local plugin = {
     id              = "finalcutpro.feedback.bugreport",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.helpandsupport.finalcutpro"]     = "menu",
+        ["finalcutpro.menu.manager"]    = "menu",
         ["core.commands.global"]        = "global",
     }
 }
@@ -433,7 +433,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    deps.menu
+    deps.menu.helpAndSupport
         :addItem(PRIORITY, function()
             return { title = i18n("suggestFeatureToApple"), fn = function() mod.open(false) end }
         end)

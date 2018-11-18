@@ -1,4 +1,4 @@
---- === plugins.core.preferences.menuitem ===
+--- === plugins.core.menu.preferences ===
 ---
 --- Adds a 'Preferences...' menu item to the menu.
 ---
@@ -22,11 +22,11 @@ local i18n        = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.preferences.menuitem",
+    id              = "core.menu.preferences",
     group           = "core",
     required        = true,
     dependencies    = {
-        ["core.menu.bottom"]            = "bottom",
+        ["core.menu.manager"]           = "menu",
         ["core.preferences.manager"]    = "prefs",
     }
 }
@@ -36,12 +36,8 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init(deps)
 
-    deps.bottom
-
-        :addItem(10, function()
-            return { title = string.upper(i18n("settings")) .. ":", disabled = true }
-        end)
-
+    deps.menu.bottom
+        :addHeading(i18n("settings"))
         :addItem(10.1, function()
             return { title = i18n("preferences") .. "...", fn = deps.prefs.show }
         end)

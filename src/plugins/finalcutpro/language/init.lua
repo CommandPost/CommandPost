@@ -31,7 +31,7 @@ local insert        = table.insert
 -- PRIORITY
 -- Constant
 -- The menubar position priority.
-local PRIORITY = 6
+local PRIORITY = 10.3
 
 --------------------------------------------------------------------------------
 --
@@ -110,7 +110,7 @@ local plugin = {
     id = "finalcutpro.language",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.menu.top"]            = "top",
+        ["core.menu.manager"] = "menu",
     }
 }
 
@@ -122,13 +122,13 @@ function plugin.init(deps)
     -------------------------------------------------------------------------------
     -- New Menu Section:
     -------------------------------------------------------------------------------
-    local section = deps.top:addSection(PRIORITY)
+    local section = deps.menu.bottom:addSection(PRIORITY)
 
     -------------------------------------------------------------------------------
     -- The FCPX Languages Menu:
     -------------------------------------------------------------------------------
     local fcpxLangs = section:addMenu(100, function()
-        if fcp.app:installed() then
+        if fcp:isSupported() then
             return i18n("finalCutProLanguage")
         end
     end)

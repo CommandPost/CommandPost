@@ -22,9 +22,9 @@ local timer				= require("hs.timer")
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local fcp				  = require("cp.apple.finalcutpro")
 local dialog			= require("cp.dialog")
-local i18n        = require("cp.i18n")
+local fcp				= require("cp.apple.finalcutpro")
+local i18n              = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -32,19 +32,6 @@ local i18n        = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 local mod = {}
-
---- plugins.finalcutpro.timeline.audioeffects.init() -> none
---- Function
---- Initialise the Module
----
---- Parameters:
----  * None
----
---- Returns:
----  * The Module
-function mod.init()
-    return mod
-end
 
 --- plugins.finalcutpro.timeline.audioeffects(action) -> boolean
 --- Function
@@ -186,13 +173,6 @@ local plugin = {
 --------------------------------------------------------------------------------
 function plugin.init()
     return mod
-end
-
---------------------------------------------------------------------------------
--- POST INITIALISE PLUGIN:
---------------------------------------------------------------------------------
-function plugin.postInit()
-    return mod.init()
 end
 
 return plugin

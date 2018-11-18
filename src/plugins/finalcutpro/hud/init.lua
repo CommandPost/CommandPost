@@ -804,10 +804,10 @@ local plugin = {
     id              = "finalcutpro.hud",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.sharing.xml"] = "xmlSharing",
-        ["finalcutpro.menu.tools"]  = "menu",
-        ["finalcutpro.commands"]    = "fcpxCmds",
-        ["core.action.manager"]     = "actionmanager",
+        ["finalcutpro.sharing.xml"]     = "xmlSharing",
+        ["finalcutpro.menu.manager"]    = "menu",
+        ["finalcutpro.commands"]        = "fcpxCmds",
+        ["core.action.manager"]         = "actionmanager",
     }
 }
 
@@ -824,7 +824,7 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Setup Menus:
     --------------------------------------------------------------------------------
-   deps.menu
+   deps.menu.tools
         :addMenu(PRIORITY, function() return i18n("hud") end)
         :addItem(1000, function()
             return { title = i18n("enableHUD"), fn = function() hud.enabled:toggle() end,       checked = hud.enabled()}

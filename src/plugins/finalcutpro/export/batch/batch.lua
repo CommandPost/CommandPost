@@ -851,7 +851,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["core.menu.manager"]                   = "manager",
-        ["finalcutpro.menu.tools"]              = "prefs",
+        ["finalcutpro.menu.manager"]            = "menuManager",
         ["finalcutpro.commands"]                = "fcpxCmds",
         ["finalcutpro.export.batch.manager"]    = "batchExportManager",
     }
@@ -1001,7 +1001,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add items to Menubar:
     --------------------------------------------------------------------------------
-    local section = deps.prefs:addSection(PRIORITY)
+    local section = deps.menuManager.tools:addSection(PRIORITY)
     local menu = section:addMenu(1000, function() return i18n("batchExport") end)
     menu:addItems(1, function()
         return {

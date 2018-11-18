@@ -238,7 +238,7 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["finalcutpro.pasteboard.manager"]  = "manager",
-        ["finalcutpro.menu.pasteboard"]     = "menu",
+        ["finalcutpro.menu.manager"]        = "menu",
 
     }
 }
@@ -256,7 +256,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add menu items:
     --------------------------------------------------------------------------------
-    deps.menu:addMenu(TOOLS_PRIORITY, function() return i18n("localPasteboardHistory") end)
+    deps.menu.pasteboard:addMenu(TOOLS_PRIORITY, function() return i18n("localPasteboardHistory") end)
         :addItem(OPTIONS_PRIORITY, function()
             return { title = i18n("enablePasteboardHistory"),    fn = function()
                 mod.enabled:toggle()

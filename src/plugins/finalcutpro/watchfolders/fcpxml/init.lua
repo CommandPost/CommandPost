@@ -791,7 +791,9 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps, env)
-    return mod.init(deps, env)
+    if fcp:isSupported() then
+        return mod.init(deps, env)
+    end
 end
 
 return plugin

@@ -23,7 +23,7 @@ local plugin = {
     id				= "core.watchfolders.menuitem",
     group			= "core",
     dependencies	= {
-        ["core.menu.bottom"]			= "bottom",
+        ["core.menu.manager"]			= "menu",
         ["core.watchfolders.manager"]	= "watchfolders",
     }
 }
@@ -32,7 +32,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    deps.bottom:addItem(10.2, function()
+    deps.menu.bottom:addItem(10.2, function()
         return { title = i18n("setupWatchFolders"), fn = deps.watchfolders.show }
     end)
 end

@@ -31,7 +31,7 @@ local plugin = {
     id              = "core.menu.quit",
     group           = "core",
     dependencies    = {
-        ["core.menu.bottom"] = "bottom",
+        ["core.menu.manager"] = "menu",
     }
 }
 
@@ -39,7 +39,7 @@ local plugin = {
 -- INITIALISE PLUGIN:
 --------------------------------------------------------------------------------
 function plugin.init(deps)
-    deps.bottom:addItem(PRIORITY, function()
+    deps.menu.bottom:addItem(PRIORITY, function()
         return { title = i18n("quit"),  fn = function() config.application():kill() end }
     end)
 end
