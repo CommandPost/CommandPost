@@ -337,10 +337,48 @@ function tools.getModelName()
             if modelName == "MacBook Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 11, 12))
                 local minorVersion = tonumber(string.sub(modelIdentifier, 14, 15))
-                if minorVersion >= 2 and majorVersion >= 13 then
-                    return "MacBook Pro (Touch Bar)"
+                if majorVersion == 15 and minorVersion == 1 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 3 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 3 then
+                    return "15-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 15 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 14 and minorVersion == 1 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 2 then
+                    return "13-inch MacBook Pro (Touch Bar)"
+                elseif majorVersion == 13 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 4 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 5 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 12 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 2 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 3 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 1 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 2 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 11 and minorVersion == 3 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 10 and minorVersion == 1 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 10 and minorVersion == 2 then
+                    return "13-inch MacBook Pro"
+                elseif majorVersion == 9 and minorVersion == 1 then
+                    return "15-inch MacBook Pro"
+                elseif majorVersion == 9 and minorVersion == 2 then
+                    return "13-inch MacBook Pro"
                 else
-                    return "MacBook Pro"
+                    return ""
                 end
             elseif modelName == "Mac Pro" then
                 local majorVersion = tonumber(string.sub(modelIdentifier, 7, 7))
@@ -355,6 +393,8 @@ function tools.getModelName()
                 return "MacBook"
             elseif modelName == "iMac" then
                 return "iMac"
+            elseif modelName == "iMac Pro" then
+                return "iMac Pro"
             elseif modelName == "Mac mini" then
                 return "Mac mini"
             end
@@ -417,7 +457,9 @@ function tools.getmacOSVersion()
     local macOSVersion = tools.macOSVersion()
     if macOSVersion then
         local result = ""
-        if v(macOSVersion) >= v("10.13") then
+        if v(macOSVersion) >= v("10.14") then
+            result = "macOS Mojave" .. " " .. tostring(macOSVersion)
+        elseif v(macOSVersion) >= v("10.13") then
             result = "macOS High Sierra" .. " " .. tostring(macOSVersion)
         elseif v(macOSVersion) >= v("10.12") then
             result = "macOS Sierra 10.12.x"
