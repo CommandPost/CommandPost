@@ -436,6 +436,7 @@ function app.lazy.prop:version()
 end
 
 --- cp.app.displayName <cp.prop: string; read-only; live>
+--- Field
 --- The application display name as a string.
 function app.lazy.prop:displayName()
     return self.info:mutate(function(original)

@@ -45,36 +45,28 @@ local config        = require("cp.config")
 --
 --------------------------------------------------------------------------------
 
+local dev = {}
+
 --------------------------------------------------------------------------------
 -- DESTROY DEVELOPER MODE:
 --------------------------------------------------------------------------------
-function _G.destroyDeveloperMode()
-    _G._plugins = nil
-    _G._fcp = nil
-    _G._findUnusedLanguageStrings = nil
-    _G._which = nil
-    _G._elementAtMouse = nil
-    _G._inspectAtMouse = nil
-    _G._inspect = nil
-    _G._inspectElement = nil
-    _G._highlight = nil
-    _G._highlightPoint = nil
-    _G._inspectElementAtMousePath = nil
-    _G._test = nil
-    _G.destroyDeveloper = nil
+function dev.destroyDeveloperMode()
+    for k,_ in pairs(dev) do
+        _G[k] = nil
+    end
     package.loaded["cp.developer"] = nil
 end
 
 --------------------------------------------------------------------------------
 -- DEVELOPER SHORTCUTS FOR USE IN ERROR LOG:
 --------------------------------------------------------------------------------
-_G._plugins            = require("cp.plugins")
-_G._fcp                = require("cp.apple.finalcutpro")
+dev._plugins            = require("cp.plugins")
+dev._fcp                = require("cp.apple.finalcutpro")
 
 --------------------------------------------------------------------------------
 -- FIND UNUSED LANGUAGES STRINGS:
 --------------------------------------------------------------------------------
-function _G._findUnusedLanguageStrings()
+function dev._findUnusedLanguageStrings()
 
     local path = config.languagePath .. "English.json"
     local data = io.open(path, "r")
@@ -124,7 +116,7 @@ end
 -- FIND TEXT:
 --------------------------------------------------------------------------------
 local whiches = {}
-function _G._which(cmd)
+function dev._which(cmd)
     local path = whiches[cmd]
     if not path then
         local output, ok = hs.execute(string.format("which %q", cmd))
@@ -141,14 +133,14 @@ end
 --------------------------------------------------------------------------------
 -- ELEMENT AT MOUSE:
 --------------------------------------------------------------------------------
-function _G._elementAtMouse()
+function dev._elementAtMouse()
     return ax.systemElementAtPosition(mouse.getAbsolutePosition())
 end
 
 --------------------------------------------------------------------------------
 -- INSPECT ELEMENT AT MOUSE:
 --------------------------------------------------------------------------------
-function _G._inspectAtMouse(options)
+function dev._inspectAtMouse(options)
     options = options or {}
     local element = _G._elementAtMouse()
     if options.parents then
@@ -176,7 +168,7 @@ end
 --------------------------------------------------------------------------------
 -- INSPECT:
 --------------------------------------------------------------------------------
-function _G._inspect(e, options)
+function dev._inspect(e, options)
     if e == nil then
         return "<nil>"
     elseif type(e) ~= "userdata" or not e.attributeValue then
@@ -203,8 +195,8 @@ end
 --------------------------------------------------------------------------------
 -- INSPECT ELEMENT:
 --------------------------------------------------------------------------------
-function _G._inspectElement(e, options)
-    _G._highlight(e)
+function dev._inspectElement(e, options)
+    dev._highlight(e)
 
     local depth = options and options.depth or 1
     local out = "\n      Role       = " .. inspect(e:attributeValue("AXRole"))
@@ -225,7 +217,7 @@ end
 --------------------------------------------------------------------------------
 -- HIGHLIGHT ELEMENT:
 --------------------------------------------------------------------------------
-function _G._highlight(e)
+function dev._highlight(e)
     if not e or not e.frame then
         return e
     end
@@ -259,7 +251,7 @@ function _G._highlight(e)
 end
 
 local SIZE = 100
-function _G._highlightPoint(point)
+function dev._highlightPoint(point)
     --------------------------------------------------------------------------------
     -- Get Highlight Colour Preferences:
     --------------------------------------------------------------------------------
@@ -291,7 +283,7 @@ end
 --------------------------------------------------------------------------------
 -- INSPECT ELEMENT AT MOUSE PATH:
 --------------------------------------------------------------------------------
-function _G._inspectElementAtMousePath()
+function dev._inspectElementAtMousePath()
     return inspect(_G._elementAtMouse():path())
 end
 
@@ -319,7 +311,7 @@ end
 --
 -- Returns:
 -- * A [cp.test] to execute.
-function _G._test(id)
+function dev._test(id)
     id = id or ""
     local testsRoot = config.testsPath
     if not testsRoot then
@@ -353,3 +345,16 @@ function _G._test(id)
         return result
     end
 end
+
+function dev._debug(port)
+    port = port or 21110
+    dev.lrdb = require("lrdb_server")
+    dev.lrdb.activate(port)
+end
+
+-- apply dev functions to the global scope.
+for k,v in pairs(dev) do
+    _G[k] = v
+end
+
+return dev
