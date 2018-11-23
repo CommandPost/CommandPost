@@ -195,7 +195,7 @@ local function saveToFile(favourites)
     --------------------------------------------------------------------------------
     local faves = {}
     for i = 1, mod.MAX_ITEMS do
-        local favourite = favourites[i]
+        local favourite = favourites and favourites[i]
         if favourite then
             faves[tostring(i)] = favourite
         end
