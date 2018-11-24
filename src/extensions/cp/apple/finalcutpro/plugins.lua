@@ -965,6 +965,10 @@ function mod.mt:scanUserMotionTemplates(locale)
     --------------------------------------------------------------------------------
     local path = "~/Movies/Motion Templates.localized"
     local pathToAbsolute = fs.pathToAbsolute(path)
+    if not pathToAbsolute then
+        report("Folder does not exist: %s", path)
+        return nil
+    end
 
     --------------------------------------------------------------------------------
     -- Restore from cache:
