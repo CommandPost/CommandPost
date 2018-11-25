@@ -1,4 +1,4 @@
---- === plugins.finalcutpro.viewer.showtimelineinplayer ===
+--- === plugins.finalcutpro.advanced.showtimelineinplayer ===
 ---
 --- Show Timeline In Player.
 
@@ -43,7 +43,7 @@ local PREFERENCES_KEY 	= "FFPlayerDisplayedTimeline"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.viewer.showtimelineinplayer.enabled <cp.prop: boolean; live>
+--- plugins.finalcutpro.advanced.showtimelineinplayer.enabled <cp.prop: boolean; live>
 --- Constant
 --- Show Timeline in Player Enabled?
 mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE):mutate(
@@ -57,11 +57,11 @@ mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE):mutate(
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id				= "finalcutpro.viewer.showtimelineinplayer",
+    id				= "finalcutpro.advanced.showtimelineinplayer",
     group			= "finalcutpro",
     dependencies	= {
-        ["finalcutpro.menu.manager"]	= "menu",
         ["finalcutpro.commands"] 		= "fcpxCmds",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
@@ -71,12 +71,19 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Setup Menu:
+    -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    if deps.menu then
-        deps.menu.viewer:addItem(PRIORITY, function()
-            return { title = i18n("showTimelineInPlayer"),	fn = function() mod.enabled:toggle() end, checked=mod.enabled() }
-        end)
+    if deps.prefs.panel then
+        deps.prefs.panel
+            --------------------------------------------------------------------------------
+            -- Add Preferences Checkbox:
+            --------------------------------------------------------------------------------
+            :addCheckbox(2204.2,
+            {
+                label = i18n("showTimelineInPlayer"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = function() return mod.enabled() end,
+            })
     end
 
     --------------------------------------------------------------------------------
@@ -84,7 +91,6 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     if deps.fcpxCmds then
         deps.fcpxCmds:add("cpShowTimelineInPlayer")
-            :groupedBy("hacks")
             :whenActivated(function() mod.enabled:toggle() end)
     end
 

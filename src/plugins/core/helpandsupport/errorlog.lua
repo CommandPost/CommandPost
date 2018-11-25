@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local i18n                  = require("cp.i18n")
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -40,11 +40,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.helpandsupport.errorlog",
-    group           = "core",
-    dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+    id = "core.helpandsupport.errorlog",
+    group = "core",
+    dependencies = {
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -66,12 +66,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
-        helpandsupport
-            :addItem(1, function() return { title = i18n("openErrorLog"), fn = mod.open } end)
-            :addSeparator(2)
-    end
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
+    helpandsupport
+        :addItem(1, function() return { title = i18n("openErrorLog"), fn = mod.open } end)
+        :addSeparator(2)
 
     return mod
 end

@@ -46,6 +46,11 @@ mod.lastGroup = config.prop("menubarPreferencesLastGroup", nil)
 --- Show section headings in menubar.
 mod.showSectionHeadingsInMenubar = config.prop("showSectionHeadingsInMenubar", true)
 
+--- plugins.core.preferences.panels.menubar.displayMenubarAsIcon <cp.prop: boolean>
+--- Field
+--- If `true`, the menubar item will be the app icon. If not, it will be the app name.
+mod.displayMenubarAsIcon = config.prop("displayMenubarAsIcon", true)
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -56,7 +61,6 @@ local plugin = {
     group           = "core",
     dependencies    = {
         ["core.preferences.manager"]            = "prefsMgr",
-        ["core.menu.manager"]                   = "menuMgr",
     }
 }
 
@@ -71,19 +75,32 @@ function plugin.init(deps)
         label       = i18n("menubarPanelLabel"),
         image       = image.imageFromPath(tools.iconFallback("/System/Library/PreferencePanes/DesktopScreenEffectsPref.prefPane/Contents/Resources/DesktopScreenEffectsPref.icns", "/System/Library/PreferencePanes/Appearance.prefPane/Contents/Resources/GeneralPrefsIcons.icns")),
         tooltip     = i18n("menubarPanelTooltip"),
-        height      = 380,
+        height      = 250,
     })
 
     --------------------------------------------------------------------------------
     -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
     panel
+        :addContent(0.1, [[
+            <style>
+                .menubarRow {
+                    display: flex;
+                }
+
+                .menubarColumn {
+                    flex: 50%;
+                }
+            </style>
+            <div class="menubarRow">
+                <div class="menubarColumn">
+        ]], false)
         :addHeading(APPEARANCE_HEADING, i18n("appearance"))
         :addCheckbox(APPEARANCE_HEADING + 1,
             {
                 label = i18n("displayThisMenuAsIcon"),
-                onchange = function(_, params) deps.menuMgr.displayMenubarAsIcon(params.checked) end,
-                checked = deps.menuMgr.displayMenubarAsIcon,
+                onchange = function(_, params) mod.displayMenubarAsIcon(params.checked) end,
+                checked = mod.displayMenubarAsIcon,
             }
         )
         :addCheckbox(APPEARANCE_HEADING + 2,
@@ -93,8 +110,16 @@ function plugin.init(deps)
                 checked = mod.showSectionHeadingsInMenubar,
             }
         )
-
         :addHeading(APPEARANCE_HEADING + 3, i18n("shared") .. " " .. i18n("sections"))
+        :addContent(400, [[
+                </div>
+                <div class="menubarColumn">
+        ]], false)
+        :addContent(9000, [[
+                </div>
+            </div>
+        ]], false)
+
 
     return panel
 end

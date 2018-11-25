@@ -43,8 +43,8 @@ local plugin = {
     id              = "core.helpandsupport.facebook",
     group           = "core",
     dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -66,12 +66,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
         helpandsupport
             :addItem(8, function() return { title = i18n("cpFacebookGroup_title"), fn = mod.show } end)
             :addSeparator(9)
-    end
 
     return mod
 end

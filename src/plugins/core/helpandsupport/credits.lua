@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local i18n                  = require("cp.i18n")
+local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
@@ -40,11 +40,11 @@ end
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "core.helpandsupport.credits",
-    group           = "core",
-    dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+    id = "core.helpandsupport.credits",
+    group = "core",
+    dependencies = {
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -66,11 +66,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
-        helpandsupport
-            :addItem(10, function() return { title = i18n("credits"), fn = mod.show } end)
-    end
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
+    helpandsupport
+        :addItem(10, function() return { title = i18n("credits"), fn = mod.show } end)
 
     return mod
 end

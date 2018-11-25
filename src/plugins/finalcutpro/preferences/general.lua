@@ -24,7 +24,7 @@ local plugin = {
     id              = "finalcutpro.preferences.general",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 

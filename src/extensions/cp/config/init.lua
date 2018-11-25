@@ -143,7 +143,7 @@ mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css", ".json" }
 --- cp.config.sourceWatcher -> SourceWatcher
 --- Constant
 --- A `cp.sourcewatcher` that will watch for source files and reload CommandPost if any change.
-mod.sourceWatcher		= sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
+mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
 
 --- cp.config.bundleID -> string
 --- Constant
@@ -316,26 +316,19 @@ end
 --- cp.config.developerMode <cp.prop: boolean>
 --- Constant
 --- When `true`, the app is in developer mode.
-mod.developerMode = mod.prop("debugMode", false):watch(function(value)
-    if value then
-        --log.df("Developer Mode Enabled")
-    else
-        --log.df("Developer Mode Disabled")
-    end
-end)
+mod.developerMode = mod.prop("debugMode", false)
 
 --- cp.config.automaticScriptReloading <cp.prop: boolean>
 --- Variable
 --- Automatic Script Reloading.
 mod.automaticScriptReloading = mod.prop("automaticScriptReloading", true):watch(function(value)
     if value then
-        --log.df("Automatic Script Reloading Enabled")
         mod.sourceWatcher:start()
     else
-        --log.df("Automatic Script Reloading Disabled")
         mod.sourceWatcher:stop()
     end
 end)
+mod.automaticScriptReloading:update()
 
 --------------------------------------------------------------------------------
 --

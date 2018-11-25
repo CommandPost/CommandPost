@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.preferences.app ===
+--- === plugins.finalcutpro.preferences.manager ===
 ---
---- Final Cut Pro Preferences Panel
+--- Final Cut Pro Preferences Panel Manager.
 
 --------------------------------------------------------------------------------
 --
@@ -27,7 +27,7 @@ local i18n                                      = require("cp.i18n")
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.preferences.app",
+    id              = "finalcutpro.preferences.manager",
     group           = "finalcutpro",
     dependencies    = {
         ["core.preferences.manager"]    = "manager",
@@ -47,7 +47,7 @@ function plugin.init(deps)
             label       = i18n("finalCutProPanelLabel"),
             image       = image.imageFromPath(tools.iconFallback(fcp:getPath() .. "/Contents/Resources/Final Cut.icns")),
             tooltip     = i18n("finalCutProPanelTooltip"),
-            height      = 430,
+            height      = 410,
         })
     end
 

@@ -220,7 +220,8 @@ local plugin = {
     group		= "core",
     required	= true,
     dependencies	= {
-        ["core.setup"] 			= "setup",
+        ["core.preferences.panels.menubar"] = "prefs",
+        ["core.preferences.manager"] = "prefsManager",
     }
 }
 
@@ -230,19 +231,16 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Disable the menu when the Setup Panel is open:
+    -- Plugin Dependancies:
     --------------------------------------------------------------------------------
-    deps.setup.visible:watch(function(visible)
-        if visible then
-            manager.disable()
-        else
-            if manager.menubar then
-                manager.enable()
-            else
-                manager.init()
-            end
-        end
-    end, true)
+    local prefs = deps.prefs
+    local prefsManager = deps.prefsManager
+
+    --------------------------------------------------------------------------------
+    -- Setup Menubar Manager:
+    --------------------------------------------------------------------------------
+    manager.init()
+    manager.enable()
 
     --------------------------------------------------------------------------------
     -- Top Section:
@@ -256,6 +254,54 @@ function plugin.init(deps)
         :addItem(0, function()
             return { title = "-" }
         end)
+
+    --------------------------------------------------------------------------------
+    -- Help & Support Section:
+    --------------------------------------------------------------------------------
+    local helpAndSupport = manager.addSection(8888888)
+    local helpAndSupportEnabled = config.prop("menubarHelpEnabled", true)
+    helpAndSupport:setDisabledFn(function() return not helpAndSupportEnabled() end)
+    helpAndSupport:addHeading(i18n("helpAndSupport"))
+    prefs:addCheckbox(104,
+        {
+            label = i18n("show") .. " " .. i18n("helpAndSupport"),
+            onchange = function(_, params) helpAndSupportEnabled(params.checked) end,
+            checked = helpAndSupportEnabled,
+        }
+    )
+    manager.helpAndSupport = helpAndSupport
+
+    --------------------------------------------------------------------------------
+    -- Help & Support > CommandPost Section:
+    --------------------------------------------------------------------------------
+    manager.commandPostHelpAndSupport = helpAndSupport:addMenu(10, function() return i18n("appName") end)
+
+    --------------------------------------------------------------------------------
+    -- Settings Section:
+    --------------------------------------------------------------------------------
+    manager.settings = manager.bottom
+        :addHeading(i18n("settings"))
+        :addItem(10.1, function()
+            return { title = i18n("preferences") .. "...", fn = prefsManager.show }
+        end)
+        :addItem(11, function()
+            return { title = "-" }
+        end)
+
+    --------------------------------------------------------------------------------
+    -- Restart Menu Item:
+    --------------------------------------------------------------------------------
+    manager.bottom:addSeparator(9999999):addItem(10000000, function()
+        return { title = i18n("restart"),  fn = hs.reload }
+    end)
+
+    --------------------------------------------------------------------------------
+    -- Quit Menu Item:
+    --------------------------------------------------------------------------------
+    manager.bottom:addItem(99999999, function()
+        return { title = i18n("quit"),  fn = function() config.application():kill() end }
+    end)
+
 
     return manager
 end

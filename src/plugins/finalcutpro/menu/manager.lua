@@ -33,7 +33,6 @@ local plugin = {
     group           = "finalcutpro",
     dependencies    = {
         ["core.menu.manager"] = "menuManager",
-        ["core.menu.helpandsupport"] = "helpandsupport",
         ["core.preferences.panels.menubar"] = "prefs",
     }
 }
@@ -44,8 +43,9 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- TODO: The menubar preferences should be automatically setup, this is
-    --       currently a lazy manual workaround.
+    -- TODO: The menubar preferences should be automatically populated in the
+    --       preference panel - this is currently a lazy manual workaround.
+    --       Sorry David.
     --------------------------------------------------------------------------------
 
     local menuManager = deps.menuManager
@@ -94,29 +94,11 @@ function plugin.init(deps)
     mod.timeline = timeline
 
     local timelineDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "timeline", false)
-    prefs:addCheckbox(401,
+    prefs:addCheckbox(402,
         {
             label = i18n("show") .. " " .. i18n("timeline"),
             onchange = function(_, params) timelineDisabled(not params.checked) end,
             checked = function() return not timelineDisabled() end,
-        }
-    )
-
-    --------------------------------------------------------------------------------
-    -- Add "Viewer" section to the menubar:
-    --------------------------------------------------------------------------------
-    local viewer = menuManager.addSection(3000)
-    viewer:setDisabledFn(disabledFn)
-    viewer:setDisabledPreferenceKey("viewer")
-    viewer:addHeading(i18n("viewer"))
-    mod.viewer = viewer
-
-    local viewerDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "viewer", false)
-    prefs:addCheckbox(401,
-        {
-            label = i18n("show") .. " " .. i18n("viewer"),
-            onchange = function(_, params) viewerDisabled(not params.checked) end,
-            checked = function() return not viewerDisabled() end,
         }
     )
 
@@ -130,7 +112,7 @@ function plugin.init(deps)
     mod.pasteboard = pasteboard
 
     local pasteboardDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "pasteboard", false)
-    prefs:addCheckbox(401,
+    prefs:addCheckbox(403,
         {
             label = i18n("show") .. " " .. i18n("pasteboard"),
             onchange = function(_, params) pasteboardDisabled(not params.checked) end,
@@ -148,7 +130,7 @@ function plugin.init(deps)
     mod.tools = tools
 
     local toolsDisabled = config.prop(SECTION_DISABLED_PREFERENCES_KEY_PREFIX .. "tools", false)
-    prefs:addCheckbox(401,
+    prefs:addCheckbox(404,
         {
             label = i18n("show") .. " " .. i18n("tools"),
             onchange = function(_, params) toolsDisabled(not params.checked) end,
@@ -159,7 +141,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add "Help & Support" sub-section to the menubar:
     --------------------------------------------------------------------------------
-    mod.helpAndSupport = deps.helpandsupport:addMenu(20, function() return i18n("finalCutPro") end)
+    mod.helpAndSupport = menuManager.helpAndSupport:addMenu(20, function() return i18n("finalCutPro") end)
 
     return mod
 end
