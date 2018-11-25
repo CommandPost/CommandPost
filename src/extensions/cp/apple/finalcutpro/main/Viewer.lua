@@ -20,7 +20,7 @@ local log                               = require("hs.logger").new("viewer")
 local canvas					        = require("hs.canvas")
 local eventtap                          = require("hs.eventtap")
 local geometry                          = require("hs.geometry")
--- local inspect                           = require("hs.inspect")
+local pasteboard                        = require("hs.pasteboard")
 local timer                             = require("hs.timer")
 
 --------------------------------------------------------------------------------
@@ -360,10 +360,47 @@ function Viewer.lazy.prop:timecode()
                 end, 5)
                 if ready then
                     --------------------------------------------------------------------------------
-                    -- Type in Original Timecode & Press Return Key:
+                    -- Get current Pasteboard Contents:
                     --------------------------------------------------------------------------------
-                    eventtap.keyStrokes(tc:toTimecode(framerate))
-                    eventtap.keyStroke({}, 'return')
+                    local originalPasteboard = pasteboard.getContents()
+
+                    --------------------------------------------------------------------------------
+                    -- Set Pasteboard Contents to timecode value we want to go to:
+                    --------------------------------------------------------------------------------
+                    pasteboard.setContents(timecodeValue)
+
+                    --------------------------------------------------------------------------------
+                    -- Wait until the timecode is on the pasteboard:
+                    --------------------------------------------------------------------------------
+                    local pasteboardReady = just.doUntil(function()
+                        return pasteboard.getContents() == timecodeValue
+                    end, 5)
+
+                    if not pasteboardReady then
+                        log.ef("Failed to add timecode to pasteboard")
+                    else
+                        --------------------------------------------------------------------------------
+                        -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
+                        -- via the Final Cut Pro API doesn't work - probably needs to be Rx-ified.
+                        --------------------------------------------------------------------------------
+                        eventtap.keyStroke({"cmd"}, "v")
+
+                        --------------------------------------------------------------------------------
+                        -- Wait until we see the timecode in the viewer:
+                        --------------------------------------------------------------------------------
+                        local pasteboardPasteResult = just.doUntil(function()
+                            return tcField:value() == timecodeValue
+                        end, 5)
+
+                        --------------------------------------------------------------------------------
+                        -- Press return to complete the timecode entry:
+                        --------------------------------------------------------------------------------
+                        if not pasteboardPasteResult then
+                            log.ef("Failed to paste to timecode entry.")
+                        else
+                            eventtap.keyStroke({}, 'return')
+                        end
+                    end
                     return self
                 end
             else
