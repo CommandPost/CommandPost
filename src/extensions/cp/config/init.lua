@@ -143,7 +143,10 @@ mod.sourceExtensions	= { ".lua", ".html", ".htm", ".css", ".json" }
 --- cp.config.sourceWatcher -> SourceWatcher
 --- Constant
 --- A `cp.sourcewatcher` that will watch for source files and reload CommandPost if any change.
-mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions):watchPath(mod.scriptPath)
+mod.sourceWatcher = sourcewatcher.new(mod.sourceExtensions)
+    :watchPath(mod.scriptPath)
+    :watchPath(mod.userPluginsPath)
+    :watchPath(mod.bundledPluginsPath)
 
 --- cp.config.bundleID -> string
 --- Constant
