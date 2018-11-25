@@ -1,4 +1,4 @@
---- === plugins.finalcutpro.hacks.playbackrendering ===
+--- === plugins.finalcutpro.advanced.playbackrendering ===
 ---
 --- Playback Rendering Plugin.
 
@@ -43,7 +43,7 @@ local PREFERENCES_KEY   = "FFSuspendBGOpsDuringPlay"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.hacks.playbackrendering.enabled <cp.prop: boolean>
+--- plugins.finalcutpro.advanced.playbackrendering.enabled <cp.prop: boolean>
 --- Variable
 --- Gets whether or not Playback Rendering is enabled.
 mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE)
@@ -54,11 +54,11 @@ mod.enabled = fcp.preferences:prop(PREFERENCES_KEY, DEFAULT_VALUE)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.hacks.playbackrendering",
+    id              = "finalcutpro.advanced.playbackrendering",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.menu.manager"]    = "menu",
         ["finalcutpro.commands"]        = "fcpxCmds",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
@@ -68,19 +68,26 @@ local plugin = {
 function plugin.init(deps)
 
     --------------------------------------------------------------------------------
-    -- Setup Menu:
+    -- Setup Menubar Preferences Panel:
     --------------------------------------------------------------------------------
-    deps.menu.timeline
-        :addItem(PRIORITY, function()
-            return { title = i18n("enableRenderingDuringPlayback"), fn = function() mod.enabled:toggle() end, checked=not mod.enabled() }
-        end)
+    if deps.prefs.panel then
+        deps.prefs.panel
+            --------------------------------------------------------------------------------
+            -- Add Preferences Checkbox:
+            --------------------------------------------------------------------------------
+            :addCheckbox(2204.1,
+            {
+                label = i18n("enableRenderingDuringPlayback"),
+                onchange = function(_, params) mod.enabled(params.checked) end,
+                checked = function() return not mod.enabled() end,
+            })
+    end
 
     --------------------------------------------------------------------------------
     -- Setup Commands:
     --------------------------------------------------------------------------------
     deps.fcpxCmds
         :add("cpAllowTasksDuringPlayback")
-        :groupedBy("hacks")
         :whenActivated(function() mod.enabled:toggle() end)
 
     return mod

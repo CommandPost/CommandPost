@@ -16,13 +16,6 @@ local i18n = require("cp.i18n")
 
 --------------------------------------------------------------------------------
 --
--- CONSTANTS:
---
---------------------------------------------------------------------------------
-local UPDATE_BANNER_PRIORITY = 1
-
---------------------------------------------------------------------------------
---
 -- THE MODULE:
 --
 --------------------------------------------------------------------------------
@@ -41,7 +34,6 @@ function mod.toggleCheckForUpdates()
     local automaticallyCheckForUpdates = hs.automaticallyCheckForUpdates()
     hs.automaticallyCheckForUpdates(not automaticallyCheckForUpdates)
     mod.automaticallyCheckForUpdates = not automaticallyCheckForUpdates
-
     if not automaticallyCheckForUpdates then
         hs.checkForUpdates(true)
     end
@@ -86,7 +78,7 @@ function plugin.init(deps)
         hs.checkForUpdates(true)
     end
 
-    deps.menu.top:addItem(UPDATE_BANNER_PRIORITY, function()
+    deps.menu.top:addItem(0.00000000000000000000000000001, function()
         if hs.updateAvailable() and hs.automaticallyCheckForUpdates() then
             return { title = i18n("updateAvailable") .. " (" .. hs.updateAvailable() .. ")",    fn = mod.checkForUpdates }
         end

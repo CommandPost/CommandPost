@@ -31,7 +31,7 @@ local plugin = {
     id              = "finalcutpro.preferences.clearcache",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
         ["core.preferences.manager"]    = "manager",
     }
 }

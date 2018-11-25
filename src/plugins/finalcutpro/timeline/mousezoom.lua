@@ -572,7 +572,7 @@ local plugin = {
     id = "finalcutpro.timeline.mousezoom",
     group = "finalcutpro",
     dependencies = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 

@@ -258,7 +258,7 @@ local plugin = {
     id              = "finalcutpro.fullscreen.shortcuts",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 

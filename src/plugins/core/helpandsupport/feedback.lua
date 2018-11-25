@@ -44,8 +44,8 @@ local plugin = {
     id              = "core.helpandsupport.feedback",
     group           = "core",
     dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]        = "global",
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -67,12 +67,10 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
-        deps.helpandsupport
-            :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = mod.show } end)
-            :addSeparator(4)
-    end
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
+    helpandsupport
+        :addItem(3, function() return { title = i18n("provideFeedback") .. "...",  fn = mod.show } end)
+        :addSeparator(4)
 
     return mod
 end

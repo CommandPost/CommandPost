@@ -126,7 +126,7 @@ local plugin = {
     id              = "finalcutpro.import.ignorecard",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 

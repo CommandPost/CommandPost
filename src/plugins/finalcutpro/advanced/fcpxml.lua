@@ -1,4 +1,4 @@
---- === plugins.finalcutpro.preferences.fcpxml ===
+--- === plugins.finalcutpro.advanced.fcpxml ===
 ---
 --- Adds preferences for extra FCPXML import and export options.
 
@@ -28,7 +28,7 @@ local prop                              = require("cp.prop")
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.preferences.fcpxml.importEnabled <cp.prop: boolean>
+--- plugins.finalcutpro.advanced.fcpxml.importEnabled <cp.prop: boolean>
 --- Variable
 --- Are extra FCPXML import options enabled?
 mod.importEnabled = prop.new(function()
@@ -47,7 +47,7 @@ end, function(value)
     end
 end)
 
---- plugins.finalcutpro.preferences.fcpxml.exportEnabled <cp.prop: boolean>
+--- plugins.finalcutpro.advanced.fcpxml.exportEnabled <cp.prop: boolean>
 --- Variable
 --- Are extra FCPXML export options enabled?
 mod.exportEnabled = prop.new(function()
@@ -72,10 +72,10 @@ end)
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.preferences.fcpxml",
+    id              = "finalcutpro.advanced.fcpxml",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.preferences.app"] = "prefs",
+        ["finalcutpro.preferences.manager"] = "prefs",
     }
 }
 
@@ -92,13 +92,13 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
             --------------------------------------------------------------------------------
-            :addCheckbox(1.3,
+            :addCheckbox(2205,
             {
                 label = i18n("showHiddenFCPXMLImportOptions"),
                 onchange = function(_, params) mod.importEnabled(params.checked) end,
                 checked = mod.importEnabled,
             })
-            :addCheckbox(1.4,
+            :addCheckbox(2206,
             {
                 label = i18n("showHiddenFCPXMLExportOptions"),
                 onchange = function(_, params) mod.exportEnabled(params.checked) end,

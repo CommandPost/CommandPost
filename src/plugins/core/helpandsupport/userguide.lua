@@ -43,8 +43,8 @@ local plugin = {
     id              = "core.helpandsupport.userguide",
     group           = "core",
     dependencies    = {
-        ["core.menu.helpandsupport.commandpost"]    = "helpandsupport",
-        ["core.commands.global"]                    = "global",
+        ["core.menu.manager"] = "menuManager",
+        ["core.commands.global"] = "global",
     }
 }
 
@@ -66,11 +66,9 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Menubar:
     --------------------------------------------------------------------------------
-    local helpandsupport = deps.helpandsupport
-    if helpandsupport then
-        helpandsupport
-            :addItem(5, function() return { title = i18n("userGuide"), fn = mod.show } end)
-    end
+    local helpandsupport = deps.menuManager.commandPostHelpAndSupport
+    helpandsupport
+        :addItem(5, function() return { title = i18n("userGuide"), fn = mod.show } end)
 
     return mod
 end
