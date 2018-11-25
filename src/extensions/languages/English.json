@@ -63,6 +63,7 @@
         "badTouchBarIcon": "Only supported image files (JPEG, PNG, TIFF, GIF or BMP) are supported as Touch Bar icons.",
         "basicGrid": "Basic Grid",
         "batchExport": "Batch Export",
+        "batchExportActiveTimeline": "Batch Export Active Timeline",
         "batchExportComplete": "Batch Export is now complete.\n\nThe selected clips/projects have been added to your Final Cut Pro or Compressor render queue.",
         "batchExportDestinationDisabled": "Target destination is disabled.",
         "batchExportInvalidCaptionsDetected": "Captions or subtitles with unresolved validation errors were detected, which has aborted the Batch Export.\n\nInvalid Captions can be ignored via the Batch Export Preferences if required.",
