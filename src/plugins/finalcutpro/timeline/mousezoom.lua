@@ -626,16 +626,16 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
             --------------------------------------------------------------------------------
-            :addCheckbox(101,
+            :addCheckbox(1.3,
             {
                 label = i18n("allowZoomingWithModifierKey"),
                 onchange = function(_, params) mod.enabled(params.checked) end,
                 checked = mod.enabled,
             })
-            :addContent(101.2, [[
+            :addContent(1.4, [[
                 <div style="padding-left: 19px">
             ]], false)
-            :addSelect(101.3,
+            :addSelect(1.5,
             {
                 label		= i18n("modifierKey"),
                 value		= mod.customModifier,
@@ -668,7 +668,7 @@ function plugin.init(deps)
                 required	= true,
                 onchange	= function(_, params) mod.customModifier(params.value) end,
             })
-            :addContent(101.4, "</div>", false)
+            :addContent(1.6, "</div>", false)
     end
 
     return mod

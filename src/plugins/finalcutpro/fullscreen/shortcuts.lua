@@ -274,7 +274,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             -- Add Preferences Checkbox:
             --------------------------------------------------------------------------------
-            :addCheckbox(1.2,
+            :addCheckbox(1.01,
             {
                 label = i18n("enableShortcutsDuringFullscreen"),
                 onchange = function(_, params) mod.enabled(params.checked) end,
