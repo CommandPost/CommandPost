@@ -12,7 +12,6 @@ local require = require
 --------------------------------------------------------------------------------
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
-local dialog            = require("cp.dialog")
 local fcp               = require("cp.apple.finalcutpro")
 local i18n              = require("cp.i18n")
 local prop              = require("cp.prop")

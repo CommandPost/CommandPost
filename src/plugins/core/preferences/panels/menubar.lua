@@ -18,7 +18,6 @@ local image                                     = require("hs.image")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config                                    = require("cp.config")
-local html                                      = require("cp.web.html")
 local i18n                                      = require("cp.i18n")
 local tools                                     = require("cp.tools")
 
