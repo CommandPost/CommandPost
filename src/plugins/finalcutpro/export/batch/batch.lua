@@ -1001,12 +1001,11 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add items to Menubar:
     --------------------------------------------------------------------------------
-    local section = deps.menuManager.tools:addSection(PRIORITY)
-    local menu = section:addMenu(1000, function() return i18n("batchExport") end)
-    menu:addItems(1, function()
+    local menuManager = deps.menuManager
+    menuManager.timeline:addItems(1001, function()
         return {
             {
-                title       = i18n("timeline"),
+                title       = i18n("batchExportActiveTimeline"),
                 fn          = function() mod.batchExport("timeline") end,
                 disabled    = not fcp:isRunning()
             },
