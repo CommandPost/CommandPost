@@ -333,12 +333,16 @@ function Viewer.lazy.prop:timecode()
         function(timecodeValue, original)
             local tcField = self:timecodeText()
             if not tcField:isShowing() then
+                log.ef("Timecode text not showing (cp.apple.finalcutpro.main.Viewer.timecode).")
                 return
             end
-            local framerate = self:framerate()
-            local tc = framerate and flicks.parse(timecodeValue, framerate)
-            if tc then
-                local center = geometry(tcField:frame()).center
+            if timecodeValue then
+                local frame = tcField:frame()
+                if not frame then
+                    log.ef("Failed to find timecode frame (cp.apple.finalcutpro.main.Viewer.timecode).")
+                    return
+                end
+                local center = geometry(frame).center
                 --------------------------------------------------------------------------------
                 -- Double click the timecode value in the Viewer:
                 --------------------------------------------------------------------------------
@@ -348,6 +352,7 @@ function Viewer.lazy.prop:timecode()
                 end)
                 if not result then
                     log.ef("Failed to make Final Cut Pro frontmost (cp.apple.finalcutpro.main.Viewer.timecode).")
+                    return
                 end
                 tools.ninjaMouseClick(center)
 
@@ -377,7 +382,8 @@ function Viewer.lazy.prop:timecode()
                     end, 5)
 
                     if not pasteboardReady then
-                        log.ef("Failed to add timecode to pasteboard")
+                        log.ef("Failed to add timecode to pasteboard (cp.apple.finalcutpro.main.Viewer.timecode).")
+                        return
                     else
                         --------------------------------------------------------------------------------
                         -- Trigger CMD+V. For some weird reason trigging the menubar or Paste shortcut
@@ -396,15 +402,24 @@ function Viewer.lazy.prop:timecode()
                         -- Press return to complete the timecode entry:
                         --------------------------------------------------------------------------------
                         if not pasteboardPasteResult then
-                            log.ef("Failed to paste to timecode entry.")
+                            log.ef("Failed to paste to timecode entry (cp.apple.finalcutpro.main.Viewer.timecode).")
+                            return
                         else
                             eventtap.keyStroke({}, 'return')
                         end
                     end
+
+                    --------------------------------------------------------------------------------
+                    -- Restore Original Pasteboard Contents:
+                    --------------------------------------------------------------------------------
+                    if originalPasteboard then
+                        pasteboard.setContents(originalPasteboard)
+                    end
+
                     return self
                 end
             else
-                log.ef("Timecode value is invalid: %s", timecodeValue)
+                log.ef("Timecode value is invalid: %s (cp.apple.finalcutpro.main.Viewer.timecode).", timecodeValue)
             end
         end
     )
