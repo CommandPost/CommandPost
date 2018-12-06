@@ -707,7 +707,7 @@ function mod.addWatchFolder()
         if tools.doesDirectoryExist(settingsPath) then
             defaultPath = settingsPath
         end
-        local settingFile = dialog.displayChooseFile(i18n("selectCompressorSettingsFile"), "cmprstng", defaultPath)
+        local settingFile = dialog.displayChooseFile(i18n("selectCompressorSettingsFile"), {"cmprstng", "compressorsetting"}, defaultPath)
         if not settingFile then
             return
         end
