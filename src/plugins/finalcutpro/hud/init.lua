@@ -121,17 +121,13 @@ hud.position = config.prop("hud.position", nil)
 local function getHUDHeight()
 
     local hudShowInspector      = hud.inspectorShown()
-    local hudShowDropTargets    = hud.isDropTargetsAvailable()
     local hudShowButtons        = hud.buttonsShown()
 
     local hudHeight = 0
     if hudShowInspector then hudHeight = hudHeight + hud.HEIGHT_INSPECTOR end
-    if hudShowDropTargets then hudHeight = hudHeight + hud.HEIGHT_DROP_TARGETS end
     if hudShowButtons then hudHeight = hudHeight + hud.HEIGHT_BUTTONS end
 
-    if hudShowInspector and hudShowDropTargets and (not hudShowButtons) then hudHeight = hudHeight - 15 end
-    if hudShowInspector and (not hudShowDropTargets) and hudShowButtons then hudHeight = hudHeight - 20 end
-    if hudShowInspector and hudShowDropTargets and hudShowButtons then  hudHeight = hudHeight - 20 end
+    if hudShowInspector and hudShowButtons then hudHeight = hudHeight - 20 end
 
     return hudHeight
 
@@ -316,9 +312,7 @@ local function getEnv()
     end
 
     env.hudInspector        = displayDiv( hud.inspectorShown() )
-    env.hr1                 = displayDiv( hud.inspectorShown() and (hud.isDropTargetsAvailable() or hud.buttonsShown()) )
-    env.hudDropTargets      = displayDiv( hud.isDropTargetsAvailable() )
-    env.hr2                 = displayDiv( (hud.isDropTargetsAvailable() and hud.buttonsShown()) )
+    env.hr1                 = displayDiv( hud.inspectorShown() and hud.buttonsShown() )
     env.hudButtons          = displayDiv( hud.buttonsShown() )
 
     return env
@@ -367,8 +361,6 @@ function hud.refresh()
 
         document.getElementById('hudInspector').style.display = ']] .. env.hudInspector .. [[';
         document.getElementById('hr1').style.display = ']] .. env.hr1 .. [[';
-        document.getElementById('hudDropTargets').style.display = ']] .. env.hudDropTargets .. [[';
-        document.getElementById('hr2').style.display = ']] .. env.hr2 .. [[';
         document.getElementById('hudButtons').style.display = ']] .. env.hudButtons .. [[';
     ]]
     hud.webview:evaluateJavaScript(javascriptToInject)
@@ -694,25 +686,6 @@ function hud.generateHTML()
 
 end
 
---- plugins.finalcutpro.hud.javaScriptCallback() -> none
---- Function
---- Javascript Callback
----
---- Parameters:
----  * message - the message for the callback
----
---- Returns:
----  * None
-function hud.javaScriptCallback(message)
-    if message["body"] ~= nil then
-        if string.find(message["body"], "<!DOCTYPE fcpxml>") ~= nil then
-            hud.xmlSharing.shareXML(message["body"])
-        else
-            dialog.displayMessage(i18n("hudDropZoneError"))
-        end
-    end
-end
-
 --- plugins.finalcutpro.hud.update() -> none
 --- Function
 --- Enables or Disables the HUD.
@@ -771,30 +744,6 @@ function hud.update()
     end
 end
 
---- plugins.finalcutpro.hud.init() -> none
---- Function
---- Initialise HUD Module.
----
---- Parameters:
----  * None
----
---- Returns:
----  * None
-function hud.init(xmlSharing, actionmanager, env)
-    hud.xmlSharing      = xmlSharing
-    hud.actionmanager   = actionmanager
-    hud.renderTemplate  = env:compileTemplate("html/hud.html")
-
-    --------------------------------------------------------------------------------
-    -- Set up checking for XML Sharing:
-    --------------------------------------------------------------------------------
-    xmlSharing.enabled:watch(hud.refresh)
-    hud.isDropTargetsAvailable = hud.dropTargetsShown:AND(xmlSharing.enabled)
-
-    hud.enabled:watch(hud.update)
-    return hud
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -804,7 +753,6 @@ local plugin = {
     id              = "finalcutpro.hud",
     group           = "finalcutpro",
     dependencies    = {
-        ["finalcutpro.sharing.xml"]     = "xmlSharing",
         ["finalcutpro.menu.manager"]    = "menu",
         ["finalcutpro.commands"]        = "fcpxCmds",
         ["core.action.manager"]         = "actionmanager",
@@ -819,7 +767,9 @@ function plugin.init(deps, env)
     --------------------------------------------------------------------------------
     -- Initialise Module:
     --------------------------------------------------------------------------------
-    hud.init(deps.xmlSharing, deps.actionmanager, env)
+    hud.actionmanager   = deps.actionmanager
+    hud.renderTemplate  = env:compileTemplate("html/hud.html")
+    hud.enabled:watch(hud.update)
 
     --------------------------------------------------------------------------------
     -- Setup Menus:
@@ -833,11 +783,11 @@ function plugin.init(deps, env)
         :addMenu(3000, function() return i18n("hudOptions") end)
         :addItems(1000, function()
             return {
-                { title = i18n("showInspector"),    fn = function() hud.inspectorShown:toggle() end,        checked = hud.inspectorShown()},
-                { title = i18n("showDropTargets"),  fn = function() hud.dropTargetsShown:toggle() end,  checked = hud.isDropTargetsAvailable(), disabled = not hud.xmlSharing.enabled()},
+                { title = i18n("showInspector"),    fn = function() hud.inspectorShown:toggle() end,    checked = hud.inspectorShown()},
                 { title = i18n("showButtons"),      fn = function() hud.buttonsShown:toggle() end,      checked = hud.buttonsShown()},
             }
         end)
+        :addSeparator(2000)
         :addMenu(4000, function() return i18n("assignHUDButtons") end)
         :addItems(1000, function()
             local items = {}
