@@ -1,6 +1,6 @@
---- === plugins.finalcutpro.feedback.bugreport ===
+--- === plugins.compressor.feedback.bugreport ===
 ---
---- Sends Apple a Bug Report or Feature Request for Final Cut Pro.
+--- Sends Apple a Bug Report or Feature Request for Compressor.
 
 --------------------------------------------------------------------------------
 --
@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("fcpBug")
+local log               = require("hs.logger").new("compBug")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -25,7 +25,7 @@ local webview           = require("hs.webview")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config            = require("cp.config")
-local fcp               = require("cp.apple.finalcutpro")
+local compressor        = require("cp.apple.compressor")
 local just              = require("cp.just")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
@@ -35,8 +35,8 @@ local i18n              = require("cp.i18n")
 -- CONSTANTS:
 --
 --------------------------------------------------------------------------------
-local PRIORITY          = 1
-local FEEDBACK_URL      = "https://www.apple.com/feedback/finalcutpro.html"
+local PRIORITY          = 1000
+local FEEDBACK_URL      = "https://www.apple.com/feedback/compressor.html"
 local FEEDBACK_TYPE     = "Bug Report"
 
 --------------------------------------------------------------------------------
@@ -46,27 +46,27 @@ local FEEDBACK_TYPE     = "Bug Report"
 --------------------------------------------------------------------------------
 local mod = {}
 
---- plugins.finalcutpro.feedback.bugreport.DEFAULT_WINDOW_STYLE -> table
+--- plugins.compressor.feedback.bugreport.DEFAULT_WINDOW_STYLE -> table
 --- Constant
 --- Default Window Style
 mod.DEFAULT_WINDOW_STYLE = {"titled", "closable", "nonactivating", "resizable"}
 
---- plugins.finalcutpro.feedback.bugreport.DEFAULT_WIDTH -> number
+--- plugins.compressor.feedback.bugreport.DEFAULT_WIDTH -> number
 --- Constant
 --- Default Window Width
 mod.DEFAULT_WIDTH = 650
 
---- plugins.finalcutpro.feedback.bugreport.DEFAULT_HEIGHT -> number
+--- plugins.compressor.feedback.bugreport.DEFAULT_HEIGHT -> number
 --- Constant
 --- Default Window Height
 mod.DEFAULT_HEIGHT = 500
 
---- plugins.finalcutpro.feedback.bugreport.DEFAULT_TITLE -> string
+--- plugins.compressor.feedback.bugreport.DEFAULT_TITLE -> string
 --- Constant
 --- Default Window Title
-mod.DEFAULT_TITLE = i18n("reportFinalCutProBugToApple")
+mod.DEFAULT_TITLE = i18n("reportCompressorBugToApple")
 
-mod.position = config.prop("finalcutpro.bugreport.position", nil)
+mod.position = config.prop("compressor.bugreport.position", nil)
 
 -- centredPosition() -> none
 -- Function
@@ -129,7 +129,7 @@ end
 -- Returns:
 --  * None
 local function navigationCallback(action, webView)
-    if action == "didFinishNavigation" and webView and webView:title() == "Feedback - Final Cut Pro - Apple" then
+    if action == "didFinishNavigation" and webView and webView:title() == "Feedback - Compressor - Apple" then
 
         local defaultFeedback = "WHAT WENT WRONG?\n\n\nWHAT DID YOU EXPECT TO HAPPEN?\n\n\nWHAT ARE THE STEPS TO RECREATE THE PROBLEM?\n\n"
 
@@ -155,18 +155,17 @@ local function navigationCallback(action, webView)
             document.getElementById("customer_name").value = "]] .. mod.fullname .. [[";
             document.getElementById("customer_email").value = "]] .. mod.email .. [[";
             document.getElementById("feedback_type").value = "]] .. FEEDBACK_TYPE .. [[";
-            document.getElementById("app_version").value = "]] .. mod.finalCutProVersion .. [[";
+            document.getElementById("app_version").value = "]] .. mod.compressorVersion .. [[";
             document.getElementById("osversion").value = "]] .. mod.macOSVersion .. [[";
             document.getElementById("installed_ram").value = "]] .. mod.ramSize .. [[";
             document.getElementById("installed_video_ram").value = "]] .. mod.vramSize .. [[";
             document.getElementById("machine_config").value = "]] .. mod.modelName .. [[";
             document.getElementsByName("third_party")[0].value = `]] .. mod.externalDevices .. [[`;
             document.getElementById("feedback_comment").value = `]] .. defaultFeedback .. [[`;
-            document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
-            document.getElementById("FinalCutPro_usage_purpose").value = "]] .. mod.fcpUsage .. [[";
-            document.getElementById("FinalCutPro_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
+            //document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
+            document.getElementById("Compressor_usage_purpose").value = "]] .. mod.compressorUsage .. [[";
+            document.getElementById("Compressor_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
             document.getElementById("documentation_context").value = "]] .. mod.documentationContext .. [[";
-            document.getElementById("video_output").value = "]] .. mod.videoOutput .. [[";
 
             /* CUSTOMER NAME: */
             var customerName = document.getElementById("customer_name");
@@ -197,6 +196,7 @@ local function navigationCallback(action, webView)
             });
 
             /* FEEDBACK: */
+            /*
             var feedback = document.getElementById("feedback");
             feedback.addEventListener('change', function()
             {
@@ -209,14 +209,15 @@ local function navigationCallback(action, webView)
                     alert('An error has occurred. Does the controller exist yet?');
                 }
             });
+            */
 
             /* FINAL CUT PRO USAGE: */
-            var fcpUsage = document.getElementById("FinalCutPro_usage_purpose");
-            fcpUsage.addEventListener('change', function()
+            var compressorUsage = document.getElementById("Compressor_usage_purpose");
+            compressorUsage.addEventListener('change', function()
             {
                 var result = {};
-                result["id"] = "fcpUsage";
-                result["value"] = fcpUsage.value;
+                result["id"] = "compressorUsage";
+                result["value"] = compressorUsage.value;
                 try {
                     webkit.messageHandlers.bugreport.postMessage(result);
                 } catch(err) {
@@ -225,7 +226,7 @@ local function navigationCallback(action, webView)
             });
 
             /* DOCUMENTATION USAGE: */
-            var documentationUsage = document.getElementById("FinalCutPro_documentation_usage_frequency");
+            var documentationUsage = document.getElementById("Compressor_documentation_usage_frequency");
             documentationUsage.addEventListener('change', function()
             {
                 var result = {};
@@ -252,20 +253,6 @@ local function navigationCallback(action, webView)
                 }
             });
 
-            /* VIDEO OUTPUT: */
-            var videoOutput = document.getElementById("video_output");
-            videoOutput.addEventListener('change', function()
-            {
-                var result = {};
-                result["id"] = "videoOutput";
-                result["value"] = videoOutput.value;
-                try {
-                    webkit.messageHandlers.bugreport.postMessage(result);
-                } catch(err) {
-                    alert('An error has occurred. Does the controller exist yet?');
-                }
-            });
-
             /* FOCUS ON SUBJECT FIELD: */
             document.getElementById("subject").focus();
 
@@ -282,7 +269,7 @@ local function navigationCallback(action, webView)
     end
 end
 
---- plugins.finalcutpro.feedback.bugreport.open(bugReport) -> none
+--- plugins.compressor.feedback.bugreport.open(bugReport) -> none
 --- Function
 --- Opens Final Cut Pro Feedback Screen
 ---
@@ -305,21 +292,21 @@ function mod.open(bugReport)
     --------------------------------------------------------------------------------
     -- Gather Data:
     --------------------------------------------------------------------------------
-    mod.fullname = config.get("finalCutPro.bugReportCustomerName", "")
+    mod.fullname = config.get("compressor.bugReportCustomerName", "")
     if mod.fullname == "" then
         mod.fullname = tools.getFullname() or ""
     end
 
-    mod.email = config.get("finalCutPro.bugReportCustomerEmail", "")
+    mod.email = config.get("compressor.bugReportCustomerEmail", "")
     if mod.email == "" and mod.fullname ~= "" then
         mod.email = tools.getEmail(mod.fullname) or ""
     end
 
-    mod.videoOutput = config.get("finalCutPro.bugReportVideoOutput", "None")
-    mod.feedback = config.get("finalCutPro.bugReportFeedback", "")
-    mod.fcpUsage = config.get("finalCutPro.bugReportFCPUsage", "")
-    mod.documentationUsage = config.get("finalCutPro.bugReportDocumentationUsage", "")
-    mod.documentationContext = config.get("finalCutPro.bugReportDocumentationContext", "")
+    mod.videoOutput = config.get("compressor.bugReportVideoOutput", "")
+    mod.feedback = config.get("compressor.bugReportFeedback", "")
+    mod.compressorUsage = config.get("compressor.bugReportFCPUsage", "")
+    mod.documentationUsage = config.get("compressor.bugReportDocumentationUsage", "")
+    mod.documentationContext = config.get("compressor.bugReportDocumentationContext", "")
 
     if not mod.macOSVersion then
         mod.macOSVersion = tools.getmacOSVersion()
@@ -337,7 +324,7 @@ function mod.open(bugReport)
         mod.externalDevices = tools.getExternalDevices()
     end
 
-    mod.finalCutProVersion = fcp:versionString()
+    mod.compressorVersion = compressor:versionString()
 
     --------------------------------------------------------------------------------
     -- Use last Position or Centre on Screen:
@@ -360,19 +347,19 @@ function mod.open(bugReport)
             --log.df("Result: %s | %s", id, value)
 
             if id == "customerName" then
-                config.set("finalCutPro.bugReportCustomerName", value)
+                config.set("compressor.bugReportCustomerName", value)
             elseif id == "customerEmail" then
-                config.set("finalCutPro.bugReportCustomerEmail", value)
+                config.set("compressor.bugReportCustomerEmail", value)
             elseif id == "feedback" then
-                config.set("finalCutPro.bugReportFeedback", value)
-            elseif id == "fcpUsage" then
-                config.set("finalCutPro.bugReportFCPUsage", value)
+                config.set("compressor.bugReportFeedback", value)
+            elseif id == "compressorUsage" then
+                config.set("compressor.bugReportFCPUsage", value)
             elseif id == "documentationUsage" then
-                config.set("finalCutPro.bugReportDocumentationUsage", value)
+                config.set("compressor.bugReportDocumentationUsage", value)
             elseif id == "documentationContext" then
-                config.set("finalCutPro.bugReportDocumentationContext", value)
+                config.set("compressor.bugReportDocumentationContext", value)
             elseif id == "videoOutput" then
-                config.set("finalCutPro.bugReportVideoOutput", value)
+                config.set("compressor.bugReportVideoOutput", value)
             else
                 log.ef("Bug Report Controller recieved something it didn't expect.")
             end
@@ -410,27 +397,14 @@ function mod.open(bugReport)
 
 end
 
--- appleBugReporter() -> none
--- Function
--- Opens the Apple Bug Reporter
---
--- Parameters:
---  * None
---
--- Returns:
---  * None
-local function appleBugReporter()
-    os.execute('open "https://bugreport.apple.com/"')
-end
-
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
 --
 --------------------------------------------------------------------------------
 local plugin = {
-    id              = "finalcutpro.feedback.bugreport",
-    group           = "finalcutpro",
+    id              = "compressor.feedback.bugreport",
+    group           = "compressor",
     dependencies    = {
         ["core.menu.manager"]           = "menu",
         ["core.commands.global"]        = "global",
@@ -446,35 +420,26 @@ function plugin.init(deps)
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menu.appleHelpAndSupport
-        :addItem(PRIORITY + 0.2, function()
-            return { title = i18n("suggestFinalCutProFeatureToApple"), fn = function() mod.open(false) end }
+        :addItem(PRIORITY, function()
+            return { title = i18n("suggestCompressorFeatureToApple"), fn = function() mod.open(false) end }
         end)
-        :addItem(PRIORITY + 0.3, function()
-            return { title = i18n("reportFinalCutProBugToApple"),  fn = function() mod.open(true) end }
+        :addItem(PRIORITY + 0.1, function()
+            return { title = i18n("reportCompressorBugToApple"),  fn = function() mod.open(true) end }
         end)
-        :addSeparator(PRIORITY + 0.4)
-        :addSeparator(10000.1)
-        :addItem(10000, function()
-            return { title = i18n("appleBugReporter"), fn = appleBugReporter }
-        end)
+        :addSeparator(PRIORITY + 0.2)
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.global:add("cpFinalCutProBugReport")
+    deps.global:add("cpCompressorBugReport")
         :whenActivated(function() mod.open(true) end)
         :groupedBy("helpandsupport")
-        :titled(i18n("reportFinalCutProBugToApple"))
+        :titled(i18n("suggestCompressorFeatureToApple"))
 
-    deps.global:add("cpFinalCutProFeatureRequest")
+    deps.global:add("cpCompressorFeatureRequest")
         :whenActivated(function() mod.open(false) end)
         :groupedBy("helpandsupport")
-        :titled(i18n("suggestFinalCutProFeatureToApple"))
-
-    deps.global:add("cpAppleBugReporter")
-        :whenActivated(appleBugReporter)
-        :groupedBy("helpandsupport")
-        :titled(i18n("appleBugReporter"))
+        :titled(i18n("reportCompressorBugToApple"))
 
     return mod
 

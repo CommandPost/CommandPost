@@ -277,6 +277,11 @@ function plugin.init(deps)
     manager.commandPostHelpAndSupport = helpAndSupport:addMenu(10, function() return i18n("appName") end)
 
     --------------------------------------------------------------------------------
+    -- Help & Support > Apple Section:
+    --------------------------------------------------------------------------------
+    manager.appleHelpAndSupport = helpAndSupport:addMenu(20, function() return i18n("apple") end)
+
+    --------------------------------------------------------------------------------
     -- Settings Section:
     --------------------------------------------------------------------------------
     manager.settings = manager.bottom
