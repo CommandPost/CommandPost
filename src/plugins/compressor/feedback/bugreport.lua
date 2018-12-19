@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("bugreport")
+local log               = require("hs.logger").new("compBug")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -162,11 +162,10 @@ local function navigationCallback(action, webView)
             document.getElementById("machine_config").value = "]] .. mod.modelName .. [[";
             document.getElementsByName("third_party")[0].value = `]] .. mod.externalDevices .. [[`;
             document.getElementById("feedback_comment").value = `]] .. defaultFeedback .. [[`;
-            document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
+            //document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
             document.getElementById("Compressor_usage_purpose").value = "]] .. mod.compressorUsage .. [[";
             document.getElementById("Compressor_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
             document.getElementById("documentation_context").value = "]] .. mod.documentationContext .. [[";
-            document.getElementById("video_output").value = "]] .. mod.videoOutput .. [[";
 
             /* CUSTOMER NAME: */
             var customerName = document.getElementById("customer_name");
@@ -197,6 +196,7 @@ local function navigationCallback(action, webView)
             });
 
             /* FEEDBACK: */
+            /*
             var feedback = document.getElementById("feedback");
             feedback.addEventListener('change', function()
             {
@@ -209,6 +209,7 @@ local function navigationCallback(action, webView)
                     alert('An error has occurred. Does the controller exist yet?');
                 }
             });
+            */
 
             /* FINAL CUT PRO USAGE: */
             var compressorUsage = document.getElementById("Compressor_usage_purpose");
@@ -245,20 +246,6 @@ local function navigationCallback(action, webView)
                 var result = {};
                 result["id"] = "documentationContext";
                 result["value"] = documentationContext.value;
-                try {
-                    webkit.messageHandlers.bugreport.postMessage(result);
-                } catch(err) {
-                    alert('An error has occurred. Does the controller exist yet?');
-                }
-            });
-
-            /* VIDEO OUTPUT: */
-            var videoOutput = document.getElementById("video_output");
-            videoOutput.addEventListener('change', function()
-            {
-                var result = {};
-                result["id"] = "videoOutput";
-                result["value"] = videoOutput.value;
                 try {
                     webkit.messageHandlers.bugreport.postMessage(result);
                 } catch(err) {
@@ -444,13 +431,15 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.global:add("cpBugReport")
+    deps.global:add("cpCompressorBugReport")
         :whenActivated(function() mod.open(true) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("suggestCompressorFeatureToApple"))
 
-    deps.global:add("cpFeatureRequest")
+    deps.global:add("cpCompressorFeatureRequest")
         :whenActivated(function() mod.open(false) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("reportCompressorBugToApple"))
 
     return mod
 

@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("bugreport")
+local log               = require("hs.logger").new("fcpBug")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -315,7 +315,7 @@ function mod.open(bugReport)
         mod.email = tools.getEmail(mod.fullname) or ""
     end
 
-    mod.videoOutput = config.get("finalCutPro.bugReportVideoOutput", "")
+    mod.videoOutput = config.get("finalCutPro.bugReportVideoOutput", "None")
     mod.feedback = config.get("finalCutPro.bugReportFeedback", "")
     mod.fcpUsage = config.get("finalCutPro.bugReportFCPUsage", "")
     mod.documentationUsage = config.get("finalCutPro.bugReportDocumentationUsage", "")
@@ -410,6 +410,19 @@ function mod.open(bugReport)
 
 end
 
+-- appleBugReporter() -> none
+-- Function
+-- Opens the Apple Bug Reporter
+--
+-- Parameters:
+--  * None
+--
+-- Returns:
+--  * None
+local function appleBugReporter()
+    os.execute('open "https://bugreport.apple.com/"')
+end
+
 --------------------------------------------------------------------------------
 --
 -- THE PLUGIN:
@@ -433,10 +446,6 @@ function plugin.init(deps)
     -- Menubar:
     --------------------------------------------------------------------------------
     deps.menu.appleHelpAndSupport
-        :addItem(PRIORITY, function()
-            return { title = i18n("appleBugReporter"), fn = function() os.execute('open "https://bugreport.apple.com/"') end }
-        end)
-        :addSeparator(PRIORITY + 0.1)
         :addItem(PRIORITY + 0.2, function()
             return { title = i18n("suggestFinalCutProFeatureToApple"), fn = function() mod.open(false) end }
         end)
@@ -444,17 +453,28 @@ function plugin.init(deps)
             return { title = i18n("reportFinalCutProBugToApple"),  fn = function() mod.open(true) end }
         end)
         :addSeparator(PRIORITY + 0.4)
+        :addSeparator(10000.1)
+        :addItem(10000, function()
+            return { title = i18n("appleBugReporter"), fn = appleBugReporter }
+        end)
 
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.global:add("cpBugReport")
+    deps.global:add("cpFinalCutProBugReport")
         :whenActivated(function() mod.open(true) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("reportFinalCutProBugToApple"))
 
-    deps.global:add("cpFeatureRequest")
+    deps.global:add("cpFinalCutProFeatureRequest")
         :whenActivated(function() mod.open(false) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("suggestFinalCutProFeatureToApple"))
+
+    deps.global:add("cpAppleBugReporter")
+        :whenActivated(appleBugReporter)
+        :groupedBy("helpandsupport")
+        :titled(i18n("appleBugReporter"))
 
     return mod
 

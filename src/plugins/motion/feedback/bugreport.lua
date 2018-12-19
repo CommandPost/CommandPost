@@ -12,7 +12,7 @@ local require = require
 --------------------------------------------------------------------------------
 -- Logger:
 --------------------------------------------------------------------------------
-local log               = require("hs.logger").new("bugreport")
+local log               = require("hs.logger").new("motionBug")
 
 --------------------------------------------------------------------------------
 -- Hammerspoon Extensions:
@@ -25,7 +25,7 @@ local webview           = require("hs.webview")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local config            = require("cp.config")
-local compressor        = require("cp.apple.compressor")
+local motion            = require("cp.apple.motion")
 local just              = require("cp.just")
 local tools             = require("cp.tools")
 local i18n              = require("cp.i18n")
@@ -151,22 +151,21 @@ local function navigationCallback(action, webView)
             document.getElementsByClassName("column last sidebar")[0].style.display = "none";
 
             /* AUTO-COMPLETE FORM: */
-            document.getElementById("app_area").value = "Other";
+            document.getElementById("anonymous_element_2").value = "Other";
             document.getElementById("customer_name").value = "]] .. mod.fullname .. [[";
             document.getElementById("customer_email").value = "]] .. mod.email .. [[";
-            document.getElementById("feedback_type").value = "]] .. FEEDBACK_TYPE .. [[";
-            document.getElementById("app_version").value = "]] .. mod.compressorVersion .. [[";
-            document.getElementById("osversion").value = "]] .. mod.macOSVersion .. [[";
+            document.getElementById("anonymous_element_1").value = "]] .. FEEDBACK_TYPE .. [[";
+            document.getElementById("app_version").value = "]] .. mod.motionVersion .. [[";
+            document.getElementById("os_version").value = "]] .. mod.macOSVersion .. [[";
             document.getElementById("installed_ram").value = "]] .. mod.ramSize .. [[";
             document.getElementById("installed_video_ram").value = "]] .. mod.vramSize .. [[";
             document.getElementById("machine_config").value = "]] .. mod.modelName .. [[";
             document.getElementsByName("third_party")[0].value = `]] .. mod.externalDevices .. [[`;
-            document.getElementById("feedback_comment").value = `]] .. defaultFeedback .. [[`;
-            document.getElementById("feedback").value = "]] .. mod.feedback .. [[";
-            document.getElementById("Motion_usage_purpose").value = "]] .. mod.compressorUsage .. [[";
+            document.getElementById("anonymous_element_3").value = `]] .. defaultFeedback .. [[`;
+            //document.getElementById("subject").value = "]] .. mod.feedback .. [[";
+            document.getElementById("Motion_usage_purpose").value = "]] .. mod.motionUsage .. [[";
             document.getElementById("Motion_documentation_usage_frequency").value = "]] .. mod.documentationUsage .. [[";
             document.getElementById("documentation_context").value = "]] .. mod.documentationContext .. [[";
-            document.getElementById("video_output").value = "]] .. mod.videoOutput .. [[";
 
             /* CUSTOMER NAME: */
             var customerName = document.getElementById("customer_name");
@@ -197,7 +196,7 @@ local function navigationCallback(action, webView)
             });
 
             /* FEEDBACK: */
-            var feedback = document.getElementById("feedback");
+            var feedback = document.getElementById("anonymous_element_3");
             feedback.addEventListener('change', function()
             {
                 var result = {};
@@ -211,12 +210,12 @@ local function navigationCallback(action, webView)
             });
 
             /* FINAL CUT PRO USAGE: */
-            var compressorUsage = document.getElementById("Motion_usage_purpose");
-            compressorUsage.addEventListener('change', function()
+            var motionUsage = document.getElementById("Motion_usage_purpose");
+            motionUsage.addEventListener('change', function()
             {
                 var result = {};
-                result["id"] = "compressorUsage";
-                result["value"] = compressorUsage.value;
+                result["id"] = "motionUsage";
+                result["value"] = motionUsage.value;
                 try {
                     webkit.messageHandlers.bugreport.postMessage(result);
                 } catch(err) {
@@ -245,20 +244,6 @@ local function navigationCallback(action, webView)
                 var result = {};
                 result["id"] = "documentationContext";
                 result["value"] = documentationContext.value;
-                try {
-                    webkit.messageHandlers.bugreport.postMessage(result);
-                } catch(err) {
-                    alert('An error has occurred. Does the controller exist yet?');
-                }
-            });
-
-            /* VIDEO OUTPUT: */
-            var videoOutput = document.getElementById("video_output");
-            videoOutput.addEventListener('change', function()
-            {
-                var result = {};
-                result["id"] = "videoOutput";
-                result["value"] = videoOutput.value;
                 try {
                     webkit.messageHandlers.bugreport.postMessage(result);
                 } catch(err) {
@@ -305,21 +290,21 @@ function mod.open(bugReport)
     --------------------------------------------------------------------------------
     -- Gather Data:
     --------------------------------------------------------------------------------
-    mod.fullname = config.get("compressor.bugReportCustomerName", "")
+    mod.fullname = config.get("motion.bugReportCustomerName", "")
     if mod.fullname == "" then
         mod.fullname = tools.getFullname() or ""
     end
 
-    mod.email = config.get("compressor.bugReportCustomerEmail", "")
+    mod.email = config.get("motion.bugReportCustomerEmail", "")
     if mod.email == "" and mod.fullname ~= "" then
         mod.email = tools.getEmail(mod.fullname) or ""
     end
 
-    mod.videoOutput = config.get("compressor.bugReportVideoOutput", "")
-    mod.feedback = config.get("compressor.bugReportFeedback", "")
-    mod.compressorUsage = config.get("compressor.bugReportFCPUsage", "")
-    mod.documentationUsage = config.get("compressor.bugReportDocumentationUsage", "")
-    mod.documentationContext = config.get("compressor.bugReportDocumentationContext", "")
+    mod.videoOutput = config.get("motion.bugReportVideoOutput", "")
+    mod.feedback = config.get("motion.bugReportFeedback", "")
+    mod.motionUsage = config.get("motion.bugReportMotionUsage", "")
+    mod.documentationUsage = config.get("motion.bugReportDocumentationUsage", "")
+    mod.documentationContext = config.get("motion.bugReportDocumentationContext", "")
 
     if not mod.macOSVersion then
         mod.macOSVersion = tools.getmacOSVersion()
@@ -337,7 +322,7 @@ function mod.open(bugReport)
         mod.externalDevices = tools.getExternalDevices()
     end
 
-    mod.compressorVersion = compressor:versionString()
+    mod.motionVersion = "Motion " .. motion:versionString()
 
     --------------------------------------------------------------------------------
     -- Use last Position or Centre on Screen:
@@ -360,19 +345,19 @@ function mod.open(bugReport)
             --log.df("Result: %s | %s", id, value)
 
             if id == "customerName" then
-                config.set("compressor.bugReportCustomerName", value)
+                config.set("motion.bugReportCustomerName", value)
             elseif id == "customerEmail" then
-                config.set("compressor.bugReportCustomerEmail", value)
+                config.set("motion.bugReportCustomerEmail", value)
             elseif id == "feedback" then
-                config.set("compressor.bugReportFeedback", value)
-            elseif id == "compressorUsage" then
-                config.set("compressor.bugReportFCPUsage", value)
+                config.set("motion.bugReportFeedback", value)
+            elseif id == "motionUsage" then
+                config.set("motion.bugReportMotionUsage", value)
             elseif id == "documentationUsage" then
-                config.set("compressor.bugReportDocumentationUsage", value)
+                config.set("motion.bugReportDocumentationUsage", value)
             elseif id == "documentationContext" then
-                config.set("compressor.bugReportDocumentationContext", value)
+                config.set("motion.bugReportDocumentationContext", value)
             elseif id == "videoOutput" then
-                config.set("compressor.bugReportVideoOutput", value)
+                config.set("motion.bugReportVideoOutput", value)
             else
                 log.ef("Bug Report Controller recieved something it didn't expect.")
             end
@@ -444,13 +429,15 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Commands:
     --------------------------------------------------------------------------------
-    deps.global:add("cpBugReport")
+    deps.global:add("cpMotionBugReport")
         :whenActivated(function() mod.open(true) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("reportMotionBugToApple"))
 
-    deps.global:add("cpFeatureRequest")
+    deps.global:add("cpMotionFeatureRequest")
         :whenActivated(function() mod.open(false) end)
         :groupedBy("helpandsupport")
+        :titled(i18n("suggestMotionFeatureToApple"))
 
     return mod
 
