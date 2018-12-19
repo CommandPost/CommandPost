@@ -138,11 +138,6 @@ function plugin.init(deps)
         }
     )
 
-    --------------------------------------------------------------------------------
-    -- Add "Help & Support" sub-section to the menubar:
-    --------------------------------------------------------------------------------
-    mod.helpAndSupport = menuManager.helpAndSupport:addMenu(20, function() return i18n("finalCutPro") end)
-
     return mod
 end
 
