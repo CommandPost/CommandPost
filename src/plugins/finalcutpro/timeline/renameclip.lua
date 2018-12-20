@@ -19,8 +19,12 @@ local log = require("hs.logger").new("renameClip")
 --------------------------------------------------------------------------------
 local axutils = require("cp.ui.axutils")
 local fcp = require("cp.apple.finalcutpro")
-local If = require("cp.rx.go.If")
+local go = require("cp.rx.go")
 local tools = require("cp.tools")
+
+local If, Do = go.If, go.Do
+
+local MenuButton = require("cp.ui.MenuButton")
 
 --------------------------------------------------------------------------------
 --
@@ -44,8 +48,9 @@ function plugin.init(deps)
     -- Rename Clip Rx:
     --------------------------------------------------------------------------------
     local doRenameClip = function()
+
+        local selectedClip, item
         return If(function()
-            local selectedClip
             local content = fcp:timeline():contents()
             local selectedClips = content:selectedClipsUI()
             if selectedClips and #selectedClips == 1 then
@@ -53,24 +58,25 @@ function plugin.init(deps)
             end
             return selectedClip
         end)
-        :Then(function(selectedClip)
-            selectedClip:performAction("AXShowMenu")
-            return selectedClip
-        end)
-        :Then(function(selectedClip)
+        :Then(
+            Do(function()
+                selectedClip:performAction("AXShowMenu")
+            end):ThenYield()
+        )
+        :Then(function()
             local parent = selectedClip:attributeValue("AXParent")
             local menu = axutils.childWithRole(parent, "AXMenu")
-            local item = axutils.childWith(menu, "AXTitle", fcp:string("FFRename Bin Object"))
-            if item then
-                item:performAction("AXPress")
-                return
-            end
+            item = axutils.childWith(menu, "AXTitle", fcp:string("FFRename Bin Object"))
         end)
+        :Then(
+            Do(function()
+                item:performAction("AXPress")
+            end):ThenYield()
+        )
         :Catch(function(message)
             tools.playErrorSound()
             log.ef("doRenameClip: %s", message)
         end)
-
     end
 
     --------------------------------------------------------------------------------
