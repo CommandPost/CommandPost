@@ -18,12 +18,17 @@ local log = require("hs.logger").new("renameClip")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils = require("cp.ui.axutils")
-local eventtap = require("hs.eventtap")
 local fcp = require("cp.apple.finalcutpro")
 local go = require("cp.rx.go")
 local tools = require("cp.tools")
 
 local If, Do = go.If, go.Do
+
+--------------------------------------------------------------------------------
+-- Hammerspoon Extensions:
+--------------------------------------------------------------------------------
+local eventtap = require("hs.eventtap")
+local geometry = require("hs.geometry")
 
 --------------------------------------------------------------------------------
 --
@@ -67,7 +72,7 @@ function plugin.init(deps)
                 -- Here's an ugly workaround:
                 --------------------------------------------------------------------------------
                 local frame = selectedClip:attributeValue("AXFrame")
-                local point = hs.geometry.new(frame).center
+                local point = geometry.new(frame).center
 
                 local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
                 local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
