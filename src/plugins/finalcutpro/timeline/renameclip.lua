@@ -47,6 +47,7 @@ function plugin.init(deps)
     --------------------------------------------------------------------------------
     -- Add Commands:
     --------------------------------------------------------------------------------
+    local renameClip = fcp:string("FFRename Bin Object")
     deps.fcpxCmds:add("renameClip")
         :whenActivated(function()
             local selectedClip
@@ -58,15 +59,20 @@ function plugin.init(deps)
             if selectedClip then
                 local frame = selectedClip:attributeValue("AXFrame")
                 if frame then
-                    local point = geometry.new(frame).center
-                    if point then
+                    local geoFrame = geometry.new(frame)
+                    local center = geoFrame and geoFrame.center
+                    local topleft = geoFrame and geoFrame.topleft
+                    local point = center and topleft and geometry.point(topleft.x + 10, center.y)
+                    if point and tools.isOffScreen(point) == false then
                         tools.ninjaRightMouseClick(point)
                         local parent = selectedClip:attributeValue("AXParent")
                         local menu = parent and axutils.childWithRole(parent, "AXMenu")
-                        local item = menu and axutils.childWith(menu, "AXTitle", fcp:string("FFRename Bin Object"))
-                        if item then
+                        local item = menu and axutils.childWith(menu, "AXTitle", renameClip)
+                        if item and item:attributeValue("AXEnabled") == true then
                             item:performAction("AXPress")
                             return
+                        else
+                            menu:performAction("AXShowMenu")
                         end
                     end
                 end
@@ -76,7 +82,7 @@ function plugin.init(deps)
             --------------------------------------------------------------------------------
             tools.playErrorSound()
         end)
-        :titled(fcp:string("FFRename Bin Object"))
+        :titled(renameClip)
 
 end
 
