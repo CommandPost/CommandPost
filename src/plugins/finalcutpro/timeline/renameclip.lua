@@ -71,6 +71,12 @@ function plugin.init(deps)
                         point = topleft and center and geometry.point(topleft.x + 10, center.y)
                     end
                     if point and tools.isOffScreen(point) == false then
+                        --------------------------------------------------------------------------------
+                        -- TODO: Eventually, it would be way better if we could just do
+                        --       `item:performAction("AXShowMenu")`, rather than a dodgy ninja mouse
+                        --       click but there's currently a 5-10sec delay.
+                        --       https://github.com/asmagill/hs._asm.axuielement/issues/13
+                        --------------------------------------------------------------------------------
                         tools.ninjaRightMouseClick(point)
                         local parent = selectedClip:attributeValue("AXParent")
                         local menu = parent and axutils.childWithRole(parent, "AXMenu")
