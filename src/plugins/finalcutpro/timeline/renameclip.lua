@@ -79,7 +79,9 @@ function plugin.init(deps)
                             item:performAction("AXPress")
                             return
                         else
-                            menu:performAction("AXShowMenu")
+                            if menu then
+                                menu:performAction("AXShowMenu")
+                            end
                         end
                     end
                 end
