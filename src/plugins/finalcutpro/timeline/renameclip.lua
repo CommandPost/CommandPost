@@ -18,13 +18,12 @@ local log = require("hs.logger").new("renameClip")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils = require("cp.ui.axutils")
+local eventtap = require("hs.eventtap")
 local fcp = require("cp.apple.finalcutpro")
 local go = require("cp.rx.go")
 local tools = require("cp.tools")
 
 local If, Do = go.If, go.Do
-
-local MenuButton = require("cp.ui.MenuButton")
 
 --------------------------------------------------------------------------------
 --
@@ -48,7 +47,6 @@ function plugin.init(deps)
     -- Rename Clip Rx:
     --------------------------------------------------------------------------------
     local doRenameClip = function()
-
         local selectedClip, item
         return If(function()
             local content = fcp:timeline():contents()
@@ -60,7 +58,24 @@ function plugin.init(deps)
         end)
         :Then(
             Do(function()
-                selectedClip:performAction("AXShowMenu")
+                --------------------------------------------------------------------------------
+                -- For some weird reason `AXShowMenu` seems to freeze the system:
+                --------------------------------------------------------------------------------
+                --selectedClip:performAction("AXShowMenu")
+
+                --------------------------------------------------------------------------------
+                -- Here's an ugly workaround:
+                --------------------------------------------------------------------------------
+                local frame = selectedClip:attributeValue("AXFrame")
+                local point = hs.geometry.new(frame).center
+
+                local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
+                local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
+                local CLICK_STATE = eventtap.event.properties.mouseEventClickState
+
+                eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, 1):post()
+                eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, 1):post()
+
             end):ThenYield()
         )
         :Then(function()
