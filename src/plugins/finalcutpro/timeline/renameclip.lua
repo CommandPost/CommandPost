@@ -62,7 +62,14 @@ function plugin.init(deps)
                     local geoFrame = geometry.new(frame)
                     local center = geoFrame and geoFrame.center
                     local topleft = geoFrame and geoFrame.topleft
-                    local point = center and topleft and geometry.point(topleft.x + 10, center.y)
+                    local bottomright = geoFrame and geoFrame.bottomright
+                    local point = center and topleft and bottomright and geometry.point(topleft.x + 10, center.y)
+                    if point and tools.isOffScreen(point) then
+                        point = geometry.point(bottomright.x - 10, center.y)
+                    end
+                    if point and tools.isOffScreen(point) then
+                        point = geometry.point(center.x, center.y)
+                    end
                     if point and tools.isOffScreen(point) == false then
                         tools.ninjaRightMouseClick(point)
                         local parent = selectedClip:attributeValue("AXParent")
