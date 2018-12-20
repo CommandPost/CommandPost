@@ -61,6 +61,16 @@ local LEFT_MOUSE_DOWN = eventtap.event.types["leftMouseDown"]
 -- Left Mouse Up ID.
 local LEFT_MOUSE_UP = eventtap.event.types["leftMouseUp"]
 
+-- RIGHT_MOUSE_DOWN -> number
+-- Constant
+-- Right Mouse Down ID.
+local RIGHT_MOUSE_DOWN = eventtap.event.types["rightMouseDown"]
+
+-- RIGHT_MOUSE_UP -> number
+-- Constant
+-- Right Mouse Up ID.
+local RIGHT_MOUSE_UP = eventtap.event.types["rightMouseUp"]
+
 -- CLICK_STATE -> number
 -- Constant
 -- Click State ID.
@@ -947,6 +957,25 @@ function tools.leftClick(point, delay, clickNumber)
     eventtap.event.newMouseEvent(LEFT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
 end
 
+--- cp.tools.rightClick(point[, delay, clickNumber]) -> none
+--- Function
+--- Performs a Right Mouse Click.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---  * clickNumber - The optional number of times you want to perform the click.
+---
+--- Returns:
+---  * None
+function tools.rightClick(point, delay, clickNumber)
+    delay = delay or DEFAULT_DELAY
+    clickNumber = clickNumber or 1
+    eventtap.event.newMouseEvent(RIGHT_MOUSE_DOWN, point):setProperty(CLICK_STATE, clickNumber):post()
+    if delay > 0 then timer.usleep(delay) end
+    eventtap.event.newMouseEvent(RIGHT_MOUSE_UP, point):setProperty(CLICK_STATE, clickNumber):post()
+end
+
 --- cp.tools.doubleLeftClick(point[, delay]) -> none
 --- Function
 --- Performs a Left Mouse Double Click.
@@ -977,6 +1006,24 @@ function tools.ninjaMouseClick(point, delay)
     delay = delay or DEFAULT_DELAY
     local originalMousePoint = mouse.getAbsolutePosition()
     tools.leftClick(point, delay)
+    if delay > 0 then timer.usleep(delay) end
+    mouse.setAbsolutePosition(originalMousePoint)
+end
+
+--- cp.tools.ninjaRightMouseClick(point[, delay]) -> none
+--- Function
+--- Performs a right mouse click, but returns the mouse to the original position without the users knowledge.
+---
+--- Parameters:
+---  * point - A point-table containing the absolute x and y co-ordinates to move the mouse pointer to
+---  * delay - The optional delay between multiple mouse clicks
+---
+--- Returns:
+---  * None
+function tools.ninjaRightMouseClick(point, delay)
+    delay = delay or DEFAULT_DELAY
+    local originalMousePoint = mouse.getAbsolutePosition()
+    tools.rightClick(point, delay)
     if delay > 0 then timer.usleep(delay) end
     mouse.setAbsolutePosition(originalMousePoint)
 end
