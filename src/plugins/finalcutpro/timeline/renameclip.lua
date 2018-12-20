@@ -18,10 +18,8 @@ local log = require("hs.logger").new("renameClip")
 -- CommandPost Extensions:
 --------------------------------------------------------------------------------
 local axutils = require("cp.ui.axutils")
-local Do = require("cp.rx.go.Do")
 local fcp = require("cp.apple.finalcutpro")
 local If = require("cp.rx.go.If")
-local just = require("cp.just")
 local tools = require("cp.tools")
 
 --------------------------------------------------------------------------------
