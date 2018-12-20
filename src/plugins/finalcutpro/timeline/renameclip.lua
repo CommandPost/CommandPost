@@ -80,8 +80,6 @@ function plugin.init(deps)
         :whenActivated(function() doRenameClip():Now() end)
         :titled(fcp:string("FFRename Bin Object"))
 
-    return mod
-
 end
 
 return plugin
